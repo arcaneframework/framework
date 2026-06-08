@@ -109,7 +109,6 @@ _init()
       n = 1;
     m_default_nb_stride = n;
   }
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -208,7 +207,7 @@ notifyEndExecuteKernel()
     return;
 
   Int64 diff_time_ns = 0;
-  if (m_use_profiling){
+  if (m_use_profiling) {
     diff_time_ns = m_stop_event->elapsedTime(m_start_event);
     runner()->addTime((double)diff_time_ns / 1.0e9);
   }

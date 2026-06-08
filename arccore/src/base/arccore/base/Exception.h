@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -57,7 +57,7 @@ class ARCCORE_BASE_EXPORT Exception
    * Constructs an exception of name \a name and
    * sent from the function \a where.
    */
-  Exception(const String& name,const String& where);
+  Exception(const String& name, const String& where);
   /*!
    * Constructs an exception of name \a name and
    * sent from the function \a awhere.
@@ -77,24 +77,24 @@ class ARCCORE_BASE_EXPORT Exception
    * Constructs an exception of name \a name and
    * sent from the function \a where.
    */
-  Exception(const String& name,const String& where,const StackTrace& stack_trace);
+  Exception(const String& name, const String& where, const StackTrace& stack_trace);
   /*!
    * Constructs an exception of name \a name and
    * sent from the function \a where.
    */
-  Exception(const String& name,const TraceInfo& where,const StackTrace& stack_trace);
+  Exception(const String& name, const TraceInfo& where, const StackTrace& stack_trace);
   /*!
    * Constructs an exception of name \a name,
    * sent from the function \a where and with the message \a message.
    */
-  Exception(const String& name,const String& where,
-            const String& message,const StackTrace& stack_trace);
+  Exception(const String& name, const String& where,
+            const String& message, const StackTrace& stack_trace);
   /*!
    * Constructs an exception of name \a name,
    * sent from the function \a where and with the message \a message.
    */
-  Exception(const String& name,const TraceInfo& trace,
-            const String& message,const StackTrace& stack_trace);
+  Exception(const String& name, const TraceInfo& trace,
+            const String& message, const StackTrace& stack_trace);
   //! Copy constructor.
   Exception(const Exception&);
 
@@ -102,7 +102,7 @@ class ARCCORE_BASE_EXPORT Exception
   ~Exception() ARCCORE_NOEXCEPT override;
 
  public:
- 
+
   virtual void write(std::ostream& o) const;
 
   //! True if it is a collective error (concerns all processors)
@@ -181,7 +181,7 @@ class ARCCORE_BASE_EXPORT Exception
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

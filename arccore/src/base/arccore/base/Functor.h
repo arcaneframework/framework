@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,21 +31,23 @@ namespace Arcane
  * \internal
  * \brief Functor associated with a method of a class \a T.
  */
-template<typename T>
+template <typename T>
 class FunctorT
 : public IFunctor
 {
  public:
-	
+
   typedef void (T::*FuncPtr)(); //!< Type of the method pointer
 
  public:
-	
-  //! Constructor
-  FunctorT(T* object,FuncPtr funcptr)
-  : m_function(funcptr), m_object(object){}
 
-  ~FunctorT() override { }
+  //! Constructor
+  FunctorT(T* object, FuncPtr funcptr)
+  : m_function(funcptr)
+  , m_object(object)
+  {}
+
+  ~FunctorT() override {}
 
  protected:
 
@@ -56,6 +58,7 @@ class FunctorT
   }
 
  private:
+
   FuncPtr m_function; //!< Pointer to the associated method.
   T* m_object; //!< Associated object.
 };
@@ -67,19 +70,21 @@ class FunctorT
  * \internal
  * \brief Functor associated with a method of a class \a T.
  */
-template<typename ClassType,typename ArgType>
+template <typename ClassType, typename ArgType>
 class FunctorWithArgumentT
 : public IFunctorWithArgumentT<ArgType>
 {
  public:
-	
+
   typedef void (ClassType::*FuncPtr)(ArgType); //!< Type of the method pointer
 
  public:
-	
+
   //! Constructor
-  FunctorWithArgumentT(ClassType* object,FuncPtr funcptr)
-  : m_object(object), m_function(funcptr) {}
+  FunctorWithArgumentT(ClassType* object, FuncPtr funcptr)
+  : m_object(object)
+  , m_function(funcptr)
+  {}
 
  protected:
 
@@ -88,13 +93,12 @@ class FunctorWithArgumentT
   {
     (m_object->*m_function)(arg);
   }
-  
+
  private:
 
   ClassType* m_object; //!< Associated object.
   FuncPtr m_function; //!< Pointer to the associated method.
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -103,18 +107,18 @@ class FunctorWithArgumentT
  * \internal
  * \brief Generic Functor using the std::function class.
  */
-template<typename ArgType>
+template <typename ArgType>
 class StdFunctorWithArgumentT
 : public IFunctorWithArgumentT<ArgType>
 {
  public:
-	
+
   //! Constructor
   StdFunctorWithArgumentT(const std::function<void(ArgType)>& function)
-  : m_function(function) {}
+  : m_function(function)
+  {}
 
  public:
-
  protected:
 
   //! Executes the associated method
@@ -122,7 +126,7 @@ class StdFunctorWithArgumentT
   {
     m_function(arg);
   }
-  
+
  private:
 
   std::function<void(ArgType)> m_function;
@@ -131,7 +135,7 @@ class StdFunctorWithArgumentT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

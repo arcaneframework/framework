@@ -24,7 +24,7 @@ namespace Arcane::Accelerator::Impl
 
 namespace
 {
-AcceleratorSpecificMemoryCopyList m_singleton_instance;
+  AcceleratorSpecificMemoryCopyList m_singleton_instance;
 }
 
 /*---------------------------------------------------------------------------*/

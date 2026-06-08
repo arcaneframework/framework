@@ -81,8 +81,8 @@ class MemoryPool::Impl
       std::unique_lock<std::mutex> lg(m_mutex);
       auto x = m_allocated_memory_map.find(ptr);
       ARCCORE_FATAL_IF((x != m_allocated_memory_map.end()),
-                      "MemoryPool '{0}': pointer {1} (for size={2}) is already in the allocated map (with size={3})",
-                      m_name, ptr, size, x->second);
+                       "MemoryPool '{0}': pointer {1} (for size={2}) is already in the allocated map (with size={3})",
+                       m_name, ptr, size, x->second);
       m_allocated_memory_map.insert(std::make_pair(ptr, size));
     }
 

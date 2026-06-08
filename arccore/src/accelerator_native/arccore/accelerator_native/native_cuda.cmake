@@ -5,13 +5,13 @@
 set(ARCCORE_SOURCES
   CudaAccelerator.cc
   CudaAccelerator.h
-  )
+)
 
 find_package(CUDAToolkit REQUIRED)
 
 if (ARCCORE_HAS_CXX23 AND (CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 13.0))
   message(FATAL_ERROR "CUDA <=12 doesn't support C++23. Add -DARCCORE_CXX_STANDARD=20 to the configuration")
-endif()
+endif ()
 
 # Create an interface target to propagate compilation options
 # common for CUDA compilation
@@ -23,7 +23,7 @@ option(ARCCORE_CUDA_DEVICE_DEBUG "If True, add '--device-debug' to cuda compiler
 set(_CUDA_DEBUG_FLAGS "-lineinfo")
 if (ARCCORE_CUDA_DEVICE_DEBUG)
   set(_CUDA_DEBUG_FLAGS "--device-debug")
-endif()
+endif ()
 
 if (CMAKE_CUDA_COMPILER_ID STREQUAL "Clang")
   # When compiling with clang, certain debug information should not be generated
@@ -34,7 +34,7 @@ if (CMAKE_CUDA_COMPILER_ID STREQUAL "Clang")
     "$<$<COMPILE_LANGUAGE:CUDA>:-Xarch_device>"
     "$<$<COMPILE_LANGUAGE:CUDA>:-g0>"
   )
-else()
+else ()
   # Classic CUDA compiler (NVCC or NVHPC)
   target_compile_options(arccore_cuda_compile_flags INTERFACE
     "$<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>"
@@ -47,7 +47,7 @@ else()
   target_compile_options(arccore_cuda_build_compile_flags INTERFACE
     "$<$<COMPILE_LANGUAGE:CUDA>:${_CUDA_DEBUG_FLAGS}>"
   )
-endif()
+endif ()
 
 install(TARGETS arccore_cuda_compile_flags EXPORT ArccoreTargets)
 install(TARGETS arccore_cuda_build_compile_flags EXPORT ArccoreTargets)

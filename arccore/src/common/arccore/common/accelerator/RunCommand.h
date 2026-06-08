@@ -23,8 +23,8 @@ namespace Arcane::Accelerator
 {
 namespace Impl
 {
-extern "C++" ARCCORE_COMMON_EXPORT IReduceMemoryImpl*
-internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+  extern "C++" ARCCORE_COMMON_EXPORT IReduceMemoryImpl*
+  internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 }
 
 /*---------------------------------------------------------------------------*/

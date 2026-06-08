@@ -11,10 +11,8 @@
 /* The segments of these windows are not contiguous in memory and can        */
 /* be resized. A process can possess multiple segments.                      */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMULTIMACHINESHMEMWINBASEINTERNAL_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMULTIMACHINESHMEMWINBASEINTERNAL_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

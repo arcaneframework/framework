@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,7 +36,6 @@ namespace Arcane
 class ARCCORE_TRACE_EXPORT ITimeMetricCollector
 {
  public:
-
  public:
 
   // Releases resources.
@@ -44,15 +43,15 @@ class ARCCORE_TRACE_EXPORT ITimeMetricCollector
 
  public:
 
-  virtual TimeMetricAction getAction(const TimeMetricActionBuildInfo& x) =0;
-  virtual TimeMetricId beginAction(const TimeMetricAction& handle) =0;
-  virtual void endAction(const TimeMetricId& metric_id) =0;
+  virtual TimeMetricAction getAction(const TimeMetricActionBuildInfo& x) = 0;
+  virtual TimeMetricId beginAction(const TimeMetricAction& handle) = 0;
+  virtual void endAction(const TimeMetricId& metric_id) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

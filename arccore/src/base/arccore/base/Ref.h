@@ -257,7 +257,7 @@ class RefImpl
    * \brief Releases the reference counter pointer without destroying it.
    * This is only allowed if the implementation uses 'std::shared_ptr'.
    */
-  template<typename T = ThatClass, typename std::enable_if_t<T::RefType == REF_TAG_SHARED_PTR, bool> = true>
+  template <typename T = ThatClass, typename std::enable_if_t<T::RefType == REF_TAG_SHARED_PTR, bool> = true>
   InstanceType* _release()
   {
     // Releases the instance. To do this, we indicate to the destructor
@@ -469,7 +469,7 @@ createRef(Args&&... args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -487,7 +487,7 @@ using Arcane::makeRefFromInstance;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

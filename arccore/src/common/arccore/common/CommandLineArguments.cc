@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -35,6 +35,7 @@ namespace Arcane
 class CommandLineArguments::Impl
 {
  public:
+
   /*!
    * \brief Command line parameters.
    *
@@ -44,12 +45,18 @@ class CommandLineArguments::Impl
   class NameValuePair
   {
    public:
-    NameValuePair(const String& n,const String& v) : name(n), value(v){}
+
+    NameValuePair(const String& n, const String& v)
+    : name(n)
+    , value(v)
+    {}
     String name;
     String value;
   };
+
  public:
-  Impl(int* argc,char*** argv)
+
+  Impl(int* argc, char*** argv)
   : m_nb_ref(0)
   , m_args()
   , m_argc(argc)
@@ -70,15 +77,15 @@ class CommandLineArguments::Impl
     Integer nb_arg = aargs.count();
     m_argc_orig = new int;
     m_argc = m_argc_orig;
-    *m_argc = nb_arg+1;
+    *m_argc = nb_arg + 1;
 
     m_argv_orig = new char**;
     char*** argv = m_argv_orig;
-    *argv = new char*[nb_arg+1];
+    *argv = new char*[nb_arg + 1];
     m_argv0 = ::strdup("arcane");
     (*argv)[0] = m_argv0;
-    for(Integer i=0; i<nb_arg; ++i )
-      (*argv)[i+1] = (char*)m_args[i].localstr();
+    for (Integer i = 0; i < nb_arg; ++i)
+      (*argv)[i + 1] = (char*)m_args[i].localstr();
     m_argv = argv;
   }
 
@@ -103,7 +110,7 @@ class CommandLineArguments::Impl
   }
   ~Impl()
   {
-    if (m_need_destroy){
+    if (m_need_destroy) {
       delete m_argc_orig;
       if (m_argv_orig)
         delete[] (*m_argv_orig);
@@ -111,15 +118,17 @@ class CommandLineArguments::Impl
       ::free(m_argv0);
     }
   }
+
  public:
+
   void addReference() { ++m_nb_ref; }
   void removeReference()
   {
     // Decrements and returns the previous value.
     // If it equals 1, it means there are no more references
     // on the object and it must be destroyed.
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
+    Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
+    if (v == 1)
       delete this;
   }
   void parseParameters(const CommandLineArguments& command_line_args)
@@ -145,8 +154,8 @@ class CommandLineArguments::Impl
       if (arg_value.null() || arg_value.empty())
         continue;
       UniqueArray<String> values;
-      arg_value.split(values,',');
-      for( const auto& x : values ){
+      arg_value.split(values, ',');
+      for (const auto& x : values) {
         m_parameter_list.addParameterLine(x);
       }
     }
@@ -156,9 +165,9 @@ class CommandLineArguments::Impl
     return m_parameter_list.getParameterOrNull(param_name);
   }
 
-  void fillParameters(StringList& param_names,StringList& values) const
+  void fillParameters(StringList& param_names, StringList& values) const
   {
-    m_parameter_list.fillParameters(param_names,values);
+    m_parameter_list.fillParameters(param_names, values);
   }
 
   bool needHelp() const
@@ -167,6 +176,7 @@ class CommandLineArguments::Impl
   }
 
  public:
+
   std::atomic<Int32> m_nb_ref;
   StringList m_args;
   int* m_argc; //!< Number of command line arguments
@@ -183,8 +193,8 @@ class CommandLineArguments::Impl
 /*---------------------------------------------------------------------------*/
 
 CommandLineArguments::
-CommandLineArguments(int* argc,char*** argv)
-: m_p(new Impl(argc,argv))
+CommandLineArguments(int* argc, char*** argv)
+: m_p(new Impl(argc, argv))
 {
   m_p->parseParameters(*this);
 }
@@ -263,7 +273,7 @@ fillArgs(StringList& aargs) const
   int nargc = *m_p->m_argc;
   char** nargv = *m_p->m_argv;
   aargs.resize(nargc);
-  for( int i=0; i<nargc; ++i )
+  for (int i = 0; i < nargc; ++i)
     aargs[i] = nargv[i];
 }
 
@@ -289,11 +299,11 @@ addParameterLine(const String& line)
 /*---------------------------------------------------------------------------*/
 
 void CommandLineArguments::
-fillParameters(StringList& param_names,StringList& values) const
+fillParameters(StringList& param_names, StringList& values) const
 {
-  m_p->fillParameters(param_names,values);
+  m_p->fillParameters(param_names, values);
 }
- 
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

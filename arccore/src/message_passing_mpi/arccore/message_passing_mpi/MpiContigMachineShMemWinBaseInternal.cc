@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiContigMachineShMemWinBaseInternal.h                      (C) 2000-2026 */
+/* MpiContigMachineShMemWinBaseInternal.cc                     (C) 2000-2026 */
 /*                                                                           */
 /* Class allowing the creation of a memory window for a calculation node     */
 /* with MPI. This window will be contiguous for all processes on the same    */
 /* node.                                                                     */
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternal.h"

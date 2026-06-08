@@ -36,8 +36,8 @@
 namespace Arcane
 {
 using RunQueue = Accelerator::RunQueue;
-using Impl::ISpecificMemoryCopyList;
 using Impl::GlobalMemoryCopyList;
+using Impl::ISpecificMemoryCopyList;
 
 /*!
  * \namespace MemoryUtils

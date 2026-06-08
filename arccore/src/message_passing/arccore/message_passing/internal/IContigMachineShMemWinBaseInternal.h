@@ -10,10 +10,8 @@
 /* Class interface allowing the creation of a memory window for a node       */
 /* of computation. This window will be contiguous in memory.                 */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCCORE_MESSAGEPASSING_INTERNAL_ICONTIGMACHINESHMEMWINBASEINTERNAL_H
 #define ARCCORE_MESSAGEPASSING_INTERNAL_ICONTIGMACHINESHMEMWINBASEINTERNAL_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -129,7 +127,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IContigMachineShMemWinBaseInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

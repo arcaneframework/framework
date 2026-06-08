@@ -46,10 +46,10 @@ class ARCCORE_CONCURRENCY_EXPORT IThreadBarrier
  public:
 
   //! Initializes the barrier for \a nb_thread.
-  virtual void init(Integer nb_thread) =0;
+  virtual void init(Integer nb_thread) = 0;
 
   //! Destroys the barrier.
-  virtual void destroy() =0;
+  virtual void destroy() = 0;
 
   //! Blocks and waits until all threads call this method.
   virtual void wait() = 0;
@@ -58,7 +58,7 @@ class ARCCORE_CONCURRENCY_EXPORT IThreadBarrier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

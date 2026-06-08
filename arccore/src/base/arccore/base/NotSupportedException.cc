@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ namespace Arcane
 
 NotSupportedException::
 NotSupportedException(const String& where)
-: Exception("NotSupported",where)
+: Exception("NotSupported", where)
 {
 }
 
@@ -33,8 +33,8 @@ NotSupportedException(const String& where)
 /*---------------------------------------------------------------------------*/
 
 NotSupportedException::
-NotSupportedException(const String& where,const String& message)
-: Exception("NotSupported",where)
+NotSupportedException(const String& where, const String& message)
+: Exception("NotSupported", where)
 , m_message(message)
 {
 }
@@ -44,7 +44,7 @@ NotSupportedException(const String& where,const String& message)
 
 NotSupportedException::
 NotSupportedException(const TraceInfo& where)
-: Exception("NotSupported",where)
+: Exception("NotSupported", where)
 {
 }
 
@@ -52,8 +52,8 @@ NotSupportedException(const TraceInfo& where)
 /*---------------------------------------------------------------------------*/
 
 NotSupportedException::
-NotSupportedException(const TraceInfo& where,const String& message)
-: Exception("NotSupported",where)
+NotSupportedException(const TraceInfo& where, const String& message)
+: Exception("NotSupported", where)
 , m_message(message)
 {
 }
@@ -83,7 +83,7 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -34,15 +34,25 @@ namespace Arcane
 {
 class ISerializer;
 class ITimeMetricCollector;
-}
+} // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arccore
 {
 using Arcane::ISerializer;
 using Arcane::ITimeMetricCollector;
-}
+} // namespace Arccore
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arcane::MessagePassing
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*!
  * \brief Number corresponding to a null rank.
@@ -86,9 +96,9 @@ class Dispatchers;
 class IProfiler;
 class ISubRequest;
 class IControlDispatcher;
-template<typename DataType> class ITypeDispatcher;
+template <typename DataType> class ITypeDispatcher;
 class GatherMessageInfoBase;
-template<typename DataType> class GatherMessageInfo;
+template <typename DataType> class GatherMessageInfo;
 class PointToPointSerializerMng;
 class ISerializeMessage;
 class ISerializeMessageList;
@@ -101,7 +111,7 @@ enum eReduceType
 {
   ReduceMin, //!< Minimum of values
   ReduceMax, //!< Maximum of values
-  ReduceSum  //!< Sum of values
+  ReduceSum //!< Sum of values
 };
 
 /*!
@@ -149,13 +159,13 @@ namespace Arcane::MessagePassing::internal
 {
 class BasicSerializeMessage;
 class SerializeMessageList;
-}
+} // namespace Arcane::MessagePassing::internal
 
 namespace Arccore::MessagePassing::internal
 {
 using Arcane::MessagePassing::internal::BasicSerializeMessage;
 using Arcane::MessagePassing::internal::SerializeMessageList;
-}
+} // namespace Arccore::MessagePassing::internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -172,7 +182,7 @@ using Arcane::MessagePassing::IMessagePassingMng;
 using Arcane::MessagePassing::ISerializeMessage;
 using Arcane::MessagePassing::ISerializeMessageList;
 using Arcane::MessagePassing::ITypeDispatcher;
-}
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -202,38 +212,38 @@ using Arcane::MessagePassing::IRequestCreator;
 using Arcane::MessagePassing::IRequestList;
 using Arcane::MessagePassing::ISubRequest;
 using Arcane::MessagePassing::MessageId;
+using Arcane::MessagePassing::MessagePassingMng;
 using Arcane::MessagePassing::MessageRank;
 using Arcane::MessagePassing::MessageSourceInfo;
 using Arcane::MessagePassing::MessageTag;
 using Arcane::MessagePassing::PointToPointMessageInfo;
 using Arcane::MessagePassing::Request;
-using Arcane::MessagePassing::MessagePassingMng;
 using Arcane::MessagePassing::SubRequestCompletionInfo;
 
 using Arcane::MessagePassing::Communicator;
+using Arcane::MessagePassing::Dispatchers;
+using Arcane::MessagePassing::IDispatchers;
 using Arcane::MessagePassing::IProfiler;
+using Arcane::MessagePassing::ISerializeDispatcher;
 using Arcane::MessagePassing::IStat;
 using Arcane::MessagePassing::Stat;
-using Arcane::MessagePassing::ISerializeDispatcher;
-using Arcane::MessagePassing::IDispatchers;
-using Arcane::MessagePassing::Dispatchers;
 
+using Arcane::MessagePassing::A_ANY_SOURCE_RANK;
 using Arcane::MessagePassing::A_NULL_RANK;
 using Arcane::MessagePassing::A_NULL_TAG_VALUE;
-using Arcane::MessagePassing::A_ANY_SOURCE_RANK;
 using Arcane::MessagePassing::A_PROC_NULL_RANK;
 
-using Arcane::MessagePassing::GatherMessageInfoBase;
 using Arcane::MessagePassing::GatherMessageInfo;
+using Arcane::MessagePassing::GatherMessageInfoBase;
 
-using Arcane::MessagePassing::OneStat;
-using Arcane::MessagePassing::StatData;
 using Arcane::MessagePassing::IControlDispatcher;
 using Arcane::MessagePassing::IMessagePassingMng;
-using Arcane::MessagePassing::PointToPointSerializerMng;
 using Arcane::MessagePassing::ISerializeMessage;
 using Arcane::MessagePassing::ISerializeMessageList;
-}
+using Arcane::MessagePassing::OneStat;
+using Arcane::MessagePassing::PointToPointSerializerMng;
+using Arcane::MessagePassing::StatData;
+} // namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -271,7 +281,7 @@ using Arcane::MessagePassing::PointToPointMessageInfo;
 using Arcane::MessagePassing::Request;
 
 using Arcane::MessagePassing::Communicator;
-}
+} // namespace Arcane::Parallel
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

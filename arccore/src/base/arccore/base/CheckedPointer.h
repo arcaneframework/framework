@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ namespace Arcane
  * The template parameter does not need to be defined. This class can therefore
  * be instantiated for an opaque type.
  */
-template<class T>
+template <class T>
 class CheckedPointer
 {
  protected:
@@ -51,7 +51,7 @@ class CheckedPointer
     m_value = from.m_value;
     return (*this);
   }
-  
+
   template <typename T2>
   const CheckedPointer<T>& operator=(const CheckedPointer<T2>& from)
   {
@@ -59,51 +59,61 @@ class CheckedPointer
     return (*this);
   }
 
-
   //! Assigns the value \a new_value to the instance
   const CheckedPointer<T>& operator=(T* new_value)
   {
-    m_value = new_value; return (*this);
+    m_value = new_value;
+    return (*this);
   }
 
   //! Constructs a reference referring to \a from
-  CheckedPointer(const CheckedPointer<T>& from) : m_value(from.m_value) {}
+  CheckedPointer(const CheckedPointer<T>& from)
+  : m_value(from.m_value)
+  {}
 
   //! Constructs a reference referring to \a from
   template <typename T2>
-  CheckedPointer(const CheckedPointer<T2>& from) : m_value(from.m_value) {}
+  CheckedPointer(const CheckedPointer<T2>& from)
+  : m_value(from.m_value)
+  {}
 
  public:
 
   //! Constructs an instance without a reference
-  CheckedPointer() : m_value(nullptr) {}
+  CheckedPointer()
+  : m_value(nullptr)
+  {}
 
   //! Constructs an instance referring to \a t
-  explicit CheckedPointer(T* t) : m_value(t) {}
+  explicit CheckedPointer(T* t)
+  : m_value(t)
+  {}
 
  public:
-  explicit operator bool() const { return get()!=nullptr; }
+
+  explicit operator bool() const { return get() != nullptr; }
+
  public:
-  
+
   //! Returns the object referenced by the instance
   inline T* operator->() const
-    {
+  {
 #ifdef ARCCORE_CHECK
-      if (!m_value)
-        arccoreNullPointerError();
+    if (!m_value)
+      arccoreNullPointerError();
 #endif
-      return m_value;
-    }
+    return m_value;
+  }
 
   //! Returns the object referenced by the instance
   inline T& operator*() const
-    {
+  {
 #ifdef ARCCORE_CHECK
-      if (!m_value)
-        arccoreNullPointerError();
+    if (!m_value)
+      arccoreNullPointerError();
 #endif
-      return *m_value;
-    }
+    return *m_value;
+  }
 
   /*!
    * \brief Returns the object referenced by the instance
@@ -121,15 +131,14 @@ class CheckedPointer
     return (!m_value);
   }
 
-
   /*!
    * \brief Compares the objects referenced by \a v1 and \a v2
    * The comparison is done pointer by pointer.
    * \retval true if they are equal
    * \retval false otherwise
    */
-  template<typename T2> friend bool
-  operator==(const CheckedPointer<T>& v1,const CheckedPointer<T2>& v2)
+  template <typename T2> friend bool
+  operator==(const CheckedPointer<T>& v1, const CheckedPointer<T2>& v2)
   {
     return v1.get() == v2.get();
   }
@@ -140,21 +149,21 @@ class CheckedPointer
    * \retval false if they are equal
    * \retval true otherwise
    */
-  template<typename T2> friend bool
-  operator!=(const CheckedPointer<T>& v1,const CheckedPointer<T2>& v2)
+  template <typename T2> friend bool
+  operator!=(const CheckedPointer<T>& v1, const CheckedPointer<T2>& v2)
   {
     return v1.get() != v2.get();
   }
 
  protected:
-  
+
   T* m_value; //!< Pointer to the referenced object
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

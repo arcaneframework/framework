@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -27,9 +27,9 @@ namespace Arccore
 void MessagePassing::PointToPointInfo::
 print(std::ostream& o) const
 {
-  if (m_type==Type::T_Null)
+  if (m_type == Type::T_Null)
     o << "(null)";
-  else if (m_type==T_RankTag)
+  else if (m_type == T_RankTag)
     o << "(rank=" << m_rank << ",tag=" << tag << ")";
   else
     o << m_message_id;

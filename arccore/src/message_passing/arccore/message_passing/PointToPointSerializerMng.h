@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -46,8 +46,10 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointSerializerMng
   ~PointToPointSerializerMng();
 
  public:
+
   PointToPointSerializerMng(const PointToPointSerializerMng&) = delete;
   PointToPointSerializerMng& operator=(const PointToPointSerializerMng&) = delete;
+
  public:
 
   //! Associated message manager
@@ -69,7 +71,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointSerializerMng
    * \return the number of messages completely executed or (-1) if they
    * all have been.
    */
-  Integer waitMessages(eWaitType wt,std::function<void(ISerializeMessage*)> functor);
+  Integer waitMessages(eWaitType wt, std::function<void(ISerializeMessage*)> functor);
 
   //! Indicates if there are remaining messages that have not yet finished.
   bool hasMessages() const;
@@ -123,7 +125,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointSerializerMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

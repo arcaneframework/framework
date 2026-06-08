@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ namespace Arcane
  * the eventual destruction of the object when the reference counter reaches
  * zero is handled by the object itself.
  */
-template<class T>
+template <class T>
 class ReferenceCounter
 : public CheckedPointer<T>
 {
@@ -54,12 +54,21 @@ class ReferenceCounter
  public:
 
   //! Constructs an instance without a reference
-  ReferenceCounter() : BaseClass(nullptr) {}
+  ReferenceCounter()
+  : BaseClass(nullptr)
+  {}
   //! Constructs an instance referencing \a t
-  explicit ReferenceCounter(T* t) : BaseClass(nullptr) { _changeValue(t); }
+  explicit ReferenceCounter(T* t)
+  : BaseClass(nullptr)
+  {
+    _changeValue(t);
+  }
   //! Constructs a reference referencing \a from
   ReferenceCounter(const ReferenceCounter<T>& from)
-  : BaseClass(nullptr) { _changeValue(from.m_value); }
+  : BaseClass(nullptr)
+  {
+    _changeValue(from.m_value);
+  }
 
   //! Copy operator
   ReferenceCounter<T>& operator=(const ReferenceCounter<T>& from)
@@ -79,7 +88,7 @@ class ReferenceCounter
   ~ReferenceCounter() { _removeRef(); }
 
  private:
-	
+
   //! Removes a reference to the encapsulated object if not null
   void _removeRef()
   {
@@ -89,7 +98,7 @@ class ReferenceCounter
   //! Changes the referenced object to \a new_value
   void _changeValue(T* new_value)
   {
-    if (m_value==new_value)
+    if (m_value == new_value)
       return;
     // Always add first in case the new value
     // and the old value are from the same instance.
@@ -103,7 +112,7 @@ class ReferenceCounter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

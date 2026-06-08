@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,7 +31,7 @@ namespace Arcane
  * This class is used to adapt array classes to STL iterators. It provides
  * methods such as begin()/end().
  */
-template<typename T>
+template <typename T>
 class ArrayRange
 {
  public:
@@ -53,9 +53,13 @@ class ArrayRange
  public:
 
   //! Constructs an empty range.
-  ArrayRange() ARCCORE_NOEXCEPT : m_begin(nullptr), m_end(nullptr) { }
+  ArrayRange() ARCCORE_NOEXCEPT : m_begin(nullptr)
+  , m_end(nullptr)
+  {}
   //! Constructs a range going from \a abegin to \a aend.
-  ArrayRange(pointer abegin,pointer aend) ARCCORE_NOEXCEPT : m_begin(abegin), m_end(aend) { }
+  ArrayRange(pointer abegin, pointer aend) ARCCORE_NOEXCEPT : m_begin(abegin)
+  , m_end(aend)
+  {}
 
  public:
 
@@ -73,7 +77,7 @@ class ArrayRange
   //! Constant pointer to the underlying array.
   const value_type* data() const { return m_begin; }
   //! Indicates if the array is empty.
-  bool empty() const { return m_end==m_begin; }
+  bool empty() const { return m_end == m_begin; }
 
  private:
 
@@ -84,7 +88,7 @@ class ArrayRange
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

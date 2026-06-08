@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -39,6 +39,7 @@ class TraceMessage;
 class ARCCORE_TRACE_EXPORT TraceAccessor
 {
  public:
+
   // NOTE: The 'default' versions of the constructors,
   // destructors and copy operators must not be used unless 'ITraceMng' is known
   // because of the use of 'Ref' and we do not want to include
@@ -115,11 +116,13 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
 
 #ifdef ARCCORE_DEBUG
   //! Flow for a debug message
-  TraceMessageDbg debug(Trace::eDebugLevel =Trace::Medium) const;
+  TraceMessageDbg debug(Trace::eDebugLevel = Trace::Medium) const;
 #else
   //! Flow for a debug message
-  TraceMessageDbg debug(Trace::eDebugLevel =Trace::Medium) const
-  { return TraceMessageDbg(); }
+  TraceMessageDbg debug(Trace::eDebugLevel = Trace::Medium) const
+  {
+    return TraceMessageDbg();
+  }
 #endif
 
   //! Debug level of the configuration file
@@ -137,13 +140,13 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
   //! Flow for an information message with the local information level of this instance.
   TraceMessage linfo(Int32 relative_level) const
   {
-    return info(m_local_verbose_level+relative_level);
+    return info(m_local_verbose_level + relative_level);
   }
 
   void fatalMessage [[noreturn]] (const StandaloneTraceMessage& o) const;
 
  protected:
-  
+
   void _setLocalVerboseLevel(Int32 v) { m_local_verbose_level = v; }
   Int32 _localVerboseLevel() const { return m_local_verbose_level; }
 
@@ -156,7 +159,7 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -35,15 +35,15 @@ class ARCCORE_BASE_EXPORT IndexOutOfRangeException
 : public Exception
 {
  public:
-	
-  IndexOutOfRangeException(const TraceInfo& where,const String& message,
-                           Int64 index,Int64 min_value_inclusive,
+
+  IndexOutOfRangeException(const TraceInfo& where, const String& message,
+                           Int64 index, Int64 min_value_inclusive,
                            Int64 max_value_exclusive);
 
  public:
-	
+
   void explain(std::ostream& m) const override;
-  
+
   //! Index
   Int64 index() const { return m_index; }
   //! Valid minimum value (inclusive)
@@ -61,7 +61,7 @@ class ARCCORE_BASE_EXPORT IndexOutOfRangeException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

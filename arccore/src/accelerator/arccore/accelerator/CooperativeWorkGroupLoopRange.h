@@ -34,7 +34,7 @@ namespace Arcane::Accelerator
  */
 class CooperativeHostWorkItemGrid
 {
-  template<typename T> friend class CooperativeWorkGroupLoopContext;
+  template <typename T> friend class CooperativeWorkGroupLoopContext;
 
  private:
 

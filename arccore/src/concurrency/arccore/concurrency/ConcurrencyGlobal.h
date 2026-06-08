@@ -121,19 +121,19 @@ using Arcane::ThreadImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arccore::Concurrency
 {
+using Arcane::Concurrency::createGlibThreadImplementation;
+using Arcane::Concurrency::createNullThreadImplementation;
+using Arcane::Concurrency::createStdThreadImplementation;
 using Arcane::Concurrency::getThreadImplementation;
 using Arcane::Concurrency::setThreadImplementation;
-using Arcane::Concurrency::createGlibThreadImplementation;
-using Arcane::Concurrency::createStdThreadImplementation;
-using Arcane::Concurrency::createNullThreadImplementation;
-}
+} // namespace Arccore::Concurrency
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

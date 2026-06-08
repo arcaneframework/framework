@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,10 +45,15 @@ class ARCCORE_MESSAGEPASSING_EXPORT SerializeMessageList
   struct ProbeInfo
   {
    public:
+
     ProbeInfo() = default;
-    ProbeInfo(BasicSerializeMessage* sm,const PointToPointMessageInfo& message_info)
-    : m_serialize_message(sm), m_message_info(message_info){}
+    ProbeInfo(BasicSerializeMessage* sm, const PointToPointMessageInfo& message_info)
+    : m_serialize_message(sm)
+    , m_message_info(message_info)
+    {}
+
    public:
+
     BasicSerializeMessage* m_serialize_message = nullptr;
     PointToPointMessageInfo m_message_info;
     bool m_is_probe_done = false;
@@ -64,7 +69,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT SerializeMessageList
   void processPendingMessages() override;
   Integer waitMessages(eWaitType wait_type) override;
   Ref<ISerializeMessage>
-  createAndAddMessage(MessageRank destination,ePointToPointMessageType type) override;
+  createAndAddMessage(MessageRank destination, ePointToPointMessageType type) override;
 
   void setAllowAnyRankReceive(bool v) { m_allow_any_rank_receive = v; }
 
@@ -80,7 +85,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT SerializeMessageList
   TimeMetricAction m_message_passing_phase;
 
   Integer _waitMessages(eWaitType wait_type);
-  void _addMessage(BasicSerializeMessage* sm,const PointToPointMessageInfo& message_info);
+  void _addMessage(BasicSerializeMessage* sm, const PointToPointMessageInfo& message_info);
   PointToPointMessageInfo buildMessageInfo(ISerializeMessage* sm);
   void _doProbe();
 };
@@ -88,7 +93,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT SerializeMessageList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing::internal
+} // namespace Arcane::MessagePassing::internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

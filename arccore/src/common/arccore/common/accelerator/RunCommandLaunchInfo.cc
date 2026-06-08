@@ -148,7 +148,7 @@ void RunCommandLaunchInfo::
 _computeInitialKernelLaunchArgs()
 {
   int threads_per_block = m_command.nbThreadPerBlock();
-  if (threads_per_block<=0)
+  if (threads_per_block <= 0)
     threads_per_block = 256;
   Int64 big_b = (m_total_loop_size + threads_per_block - 1) / threads_per_block;
   int blocks_per_grid = CheckedConvert::toInt32(big_b);
@@ -257,7 +257,7 @@ _setIsNeedBarrier(bool v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

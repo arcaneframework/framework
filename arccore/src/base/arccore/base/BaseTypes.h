@@ -79,14 +79,14 @@ class StringFormatterArg;
 struct ReferenceCounterTag;
 
 class IRangeFunctor;
-template<int RankValue> class IMDRangeFunctor;
-template<typename InstanceType> class RangeFunctorT;
-template<typename LambdaType> class LambdaRangeFunctorT;
-template<typename LambdaType, typename... Views> class LambdaRangeFunctorTVa;
+template <int RankValue> class IMDRangeFunctor;
+template <typename InstanceType> class RangeFunctorT;
+template <typename LambdaType> class LambdaRangeFunctorT;
+template <typename LambdaType, typename... Views> class LambdaRangeFunctorTVa;
 class ForLoopTraceInfo;
-template<typename IndexType_ = Int32> class ForLoopRange;
-template<int RankValue, typename IndexType_ = Int32> class SimpleForLoopRanges;
-template<int RankValue, typename IndexType_ = Int32> class ComplexForLoopRanges;
+template <typename IndexType_ = Int32> class ForLoopRange;
+template <int RankValue, typename IndexType_ = Int32> class SimpleForLoopRanges;
+template <int RankValue, typename IndexType_ = Int32> class ComplexForLoopRanges;
 class ForLoopOneExecStat;
 class ForLoopRunInfo;
 class ParallelLoopOptions;
@@ -143,12 +143,12 @@ template <typename T>
 class ArrayRange;
 namespace Impl
 {
-class BasicTranscoder;
-template <class DataType> class CoreArray;
-class ForLoopStatInfoList;
-class ForLoopStatInfoListImpl;
-class ForLoopCumulativeStat;
-}
+  class BasicTranscoder;
+  template <class DataType> class CoreArray;
+  class ForLoopStatInfoList;
+  class ForLoopStatInfoListImpl;
+  class ForLoopCumulativeStat;
+} // namespace Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -158,9 +158,9 @@ class ForLoopCumulativeStat;
 // The definition is in 'arcane_accelerator_core'
 namespace Accelerator
 {
-class Runner;
-class RunQueue;
-}
+  class Runner;
+  class RunQueue;
+} // namespace Accelerator
 using Accelerator::Runner;
 using Accelerator::RunQueue;
 
@@ -168,41 +168,41 @@ using Accelerator::RunQueue;
 /*---------------------------------------------------------------------------*/
 
 class DefaultLayout;
-template<int RankValue> class RightLayoutN;
-template<int RankValue> class LeftLayoutN;
-template<int RankValue> class MDDimType;
+template <int RankValue> class RightLayoutN;
+template <int RankValue> class LeftLayoutN;
+template <int RankValue> class MDDimType;
 class ConstMemoryView;
 class MutableMemoryView;
 class IMemoryResourceMng;
 // TODO: Deprecate
 using IMemoryRessourceMng = IMemoryResourceMng;
 template <typename IndexType_ = Int32, Int32... RankSize> class ExtentsV;
-template<class DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
+template <class DataType, typename Extents, typename LayoutPolicy = DefaultLayout>
 class MDSpan;
-template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
-using MDSpanBase ARCCORE_DEPRECATED_REASON("Use 'MDSpan' type instead") = MDSpan<DataType,Extents,LayoutPolicy>;
-template<typename ExtentType> class ArrayBounds;
+template <typename DataType, typename Extents, typename LayoutPolicy = DefaultLayout>
+using MDSpanBase ARCCORE_DEPRECATED_REASON("Use 'MDSpan' type instead") = MDSpan<DataType, Extents, LayoutPolicy>;
+template <typename ExtentType> class ArrayBounds;
 
-template<class DataType,typename Extents,typename LayoutType = DefaultLayout >
+template <class DataType, typename Extents, typename LayoutType = DefaultLayout>
 class NumArray;
-template<typename DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
-using NumArrayBase ARCCORE_DEPRECATED_REASON("Use 'NumArray' type instead") = NumArray<DataType,Extents,LayoutPolicy>;
+template <typename DataType, typename Extents, typename LayoutPolicy = DefaultLayout>
+using NumArrayBase ARCCORE_DEPRECATED_REASON("Use 'NumArray' type instead") = NumArray<DataType, Extents, LayoutPolicy>;
 
-template<typename Extents,typename LayoutPolicy> class ArrayExtentsWithOffset;
-template<int RankValue, typename IndexType_ = Int32> class MDIndexBase;
-template<int RankValue, typename IndexType_ = Int32> class MDIndex;
-template<int RankValue, typename IndexType_ = Int32> using ArrayIndexBase = MDIndexBase<RankValue,IndexType_>;
-template<int RankValue, typename IndexType_ = Int32> using ArrayIndex = MDIndex<RankValue,IndexType_>;
-template<int RankValue> using ArrayBoundsIndexBase ARCCORE_DEPRECATED_REASON("Use 'MDIndexBase' type instead") = ArrayIndexBase<RankValue>;
-template<int RankValue> using ArrayBoundsIndex ARCCORE_DEPRECATED_REASON("Use 'MDIndex' type instead") = ArrayIndex<RankValue>;
-template<typename Extents> class ArrayExtentsBase;
-template<typename Extents> class ArrayExtents;
-template<int RankValue> class ArrayStridesBase;
-template<int RankValue> class IMDRangeFunctor;
-template<int RankValue> class ArrayExtentsValueDynamic;
+template <typename Extents, typename LayoutPolicy> class ArrayExtentsWithOffset;
+template <int RankValue, typename IndexType_ = Int32> class MDIndexBase;
+template <int RankValue, typename IndexType_ = Int32> class MDIndex;
+template <int RankValue, typename IndexType_ = Int32> using ArrayIndexBase = MDIndexBase<RankValue, IndexType_>;
+template <int RankValue, typename IndexType_ = Int32> using ArrayIndex = MDIndex<RankValue, IndexType_>;
+template <int RankValue> using ArrayBoundsIndexBase ARCCORE_DEPRECATED_REASON("Use 'MDIndexBase' type instead") = ArrayIndexBase<RankValue>;
+template <int RankValue> using ArrayBoundsIndex ARCCORE_DEPRECATED_REASON("Use 'MDIndex' type instead") = ArrayIndex<RankValue>;
+template <typename Extents> class ArrayExtentsBase;
+template <typename Extents> class ArrayExtents;
+template <int RankValue> class ArrayStridesBase;
+template <int RankValue> class IMDRangeFunctor;
+template <int RankValue> class ArrayExtentsValueDynamic;
 namespace impl
 {
-template<typename IndexType_, Int32... RankSize> class ArrayExtentsValue;
+  template <typename IndexType_, Int32... RankSize> class ArrayExtentsValue;
 }
 template <typename T, Int32 NbElement>
 class FixedArray;
@@ -305,7 +305,7 @@ typedef Span<const Integer> IntegerConstSpan;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -324,40 +324,40 @@ using Arcane::ConstArrayView;
 using Arcane::ConstIterT;
 using Arcane::eBasicDataType;
 using Arcane::IterT;
+using Arcane::LargeSpan;
 using Arcane::SmallSpan;
 using Arcane::SmallSpan2;
-using Arcane::LargeSpan;
 using Arcane::Span;
 using Arcane::Span2;
 using Arcane::Span2Impl;
 using Arcane::SpanImpl;
+using Arcane::StringBuilder;
 using Arcane::StringImpl;
 using Arcane::StringVector;
-using Arcane::StringBuilder;
 
-using Arcane::TraceInfo;
-using Arcane::StackTrace;
-using Arcane::Exception;
-using Arcane::StackFrame;
-using Arcane::FixedStackFrameArray;
-using Arcane::IStackTraceService;
+using Arcane::ArgumentException;
 using Arcane::CheckedPointer;
+using Arcane::Exception;
+using Arcane::FatalErrorException;
+using Arcane::FixedStackFrameArray;
+using Arcane::IndexOutOfRangeException;
+using Arcane::IStackTraceService;
+using Arcane::NotImplementedException;
+using Arcane::NotSupportedException;
+using Arcane::Ref;
 using Arcane::ReferenceCounter;
 using Arcane::ReferenceCounterImpl;
 using Arcane::RefTraits;
-using Arcane::Ref;
-using Arcane::ArgumentException;
-using Arcane::IndexOutOfRangeException;
-using Arcane::FatalErrorException;
-using Arcane::NotSupportedException;
-using Arcane::NotImplementedException;
+using Arcane::StackFrame;
+using Arcane::StackTrace;
 using Arcane::TimeoutException;
+using Arcane::TraceInfo;
 
-using Arcane::IFunctor;
-using Arcane::IFunctorWithArgumentT;
-using Arcane::IFunctorWithArgAndReturn2;
 using Arcane::FunctorT;
 using Arcane::FunctorWithArgumentT;
+using Arcane::IFunctor;
+using Arcane::IFunctorWithArgAndReturn2;
+using Arcane::IFunctorWithArgumentT;
 using Arcane::StdFunctorWithArgumentT;
 
 using Arcane::Byte;
@@ -366,55 +366,51 @@ using Arcane::Single;
 using Arcane::UChar;
 using Arcane::UInt16;
 
-using Arcane::PointerArrayView;
-using Arcane::ByteArrayView;
-using Arcane::UCharArrayView;
-using Arcane::Int64ArrayView;
-using Arcane::Int32ArrayView;
-using Arcane::Int16ArrayView;
-using Arcane::IntegerArrayView;
-using Arcane::RealArrayView;
 using Arcane::BoolArrayView;
+using Arcane::ByteArrayView;
+using Arcane::Int16ArrayView;
+using Arcane::Int32ArrayView;
+using Arcane::Int64ArrayView;
 using Arcane::IntegerArrayView;
+using Arcane::PointerArrayView;
+using Arcane::RealArrayView;
+using Arcane::UCharArrayView;
 
-using Arcane::PointerConstArrayView;
-using Arcane::ByteConstArrayView;
-using Arcane::UCharConstArrayView;
-using Arcane::Int64ConstArrayView;
-using Arcane::Int32ConstArrayView;
-using Arcane::Int16ConstArrayView;
-using Arcane::IntegerConstArrayView;
-using Arcane::RealConstArrayView;
 using Arcane::BoolConstArrayView;
+using Arcane::ByteConstArrayView;
+using Arcane::Int16ConstArrayView;
+using Arcane::Int32ConstArrayView;
+using Arcane::Int64ConstArrayView;
 using Arcane::IntegerConstArrayView;
+using Arcane::PointerConstArrayView;
+using Arcane::RealConstArrayView;
+using Arcane::UCharConstArrayView;
 
-using Arcane::PointerSpan;
-using Arcane::ByteSpan;
-using Arcane::UCharSpan;
-using Arcane::Int64Span;
-using Arcane::Int32Span;
-using Arcane::Int16Span;
-using Arcane::IntegerSpan;
-using Arcane::RealSpan;
 using Arcane::BoolSpan;
+using Arcane::ByteSpan;
+using Arcane::Int16Span;
+using Arcane::Int32Span;
+using Arcane::Int64Span;
 using Arcane::IntegerSpan;
+using Arcane::PointerSpan;
+using Arcane::RealSpan;
+using Arcane::UCharSpan;
 
-using Arcane::PointerConstSpan;
-using Arcane::ByteConstSpan;
-using Arcane::UCharConstSpan;
-using Arcane::Int64ConstSpan;
-using Arcane::Int32ConstSpan;
-using Arcane::Int16ConstSpan;
-using Arcane::IntegerConstSpan;
-using Arcane::RealConstSpan;
 using Arcane::BoolConstSpan;
+using Arcane::ByteConstSpan;
+using Arcane::Int16ConstSpan;
+using Arcane::Int32ConstSpan;
+using Arcane::Int64ConstSpan;
 using Arcane::IntegerConstSpan;
+using Arcane::PointerConstSpan;
+using Arcane::RealConstSpan;
+using Arcane::UCharConstSpan;
 
 using Arcane::DynExtent;
 
 // These classes are internal to Arccore/Arcane
 using Arcane::ArrayRange;
-}
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

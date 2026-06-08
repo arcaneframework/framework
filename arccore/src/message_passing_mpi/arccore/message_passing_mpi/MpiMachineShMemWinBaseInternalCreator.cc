@@ -10,6 +10,7 @@
 /* Class allowing the creation of objects of type                            */
 /* MpiContigMachineShMemWinBaseInternal.                                     */
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternalCreator.h"
 

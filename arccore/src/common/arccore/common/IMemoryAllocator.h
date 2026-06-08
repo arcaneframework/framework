@@ -114,7 +114,7 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
    *
    * If there is no guarantee, it returns 0.
    */
-  virtual size_t guaranteedAlignment(MemoryAllocationArgs args) const =0;
+  virtual size_t guaranteedAlignment(MemoryAllocationArgs args) const = 0;
 
   /*!
    * \brief Value of the alignment guaranteed by the allocator.
@@ -157,7 +157,7 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

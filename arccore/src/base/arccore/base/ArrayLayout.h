@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -35,7 +35,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<Int32 I,Int32 J>
+template <Int32 I, Int32 J>
 class ArrayLayout2
 {
  public:
@@ -43,12 +43,12 @@ class ArrayLayout2
   static constexpr Int64 LastExtent = J;
 
   static ARCCORE_HOST_DEVICE constexpr Int64
-  offset(ArrayIndex<2> idx,Int64 extent1)
+  offset(ArrayIndex<2> idx, Int64 extent1)
   {
     return (extent1 * idx[I]) + Int64(idx[J]);
   }
 
-  static constexpr std::array<Int32,2> layoutInfo() { return { I, J }; }
+  static constexpr std::array<Int32, 2> layoutInfo() { return { I, J }; }
   static constexpr ARCCORE_HOST_DEVICE Int32 layout0() { return I; }
   static constexpr ARCCORE_HOST_DEVICE Int32 layout1() { return J; }
 };
@@ -56,7 +56,7 @@ class ArrayLayout2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<Int32 I,Int32 J,Int32 K>
+template <Int32 I, Int32 J, Int32 K>
 class ArrayLayout3
 {
  public:
@@ -64,18 +64,18 @@ class ArrayLayout3
   static constexpr Int64 LastExtent = K;
 
   static ARCCORE_HOST_DEVICE constexpr Int64
-  offset(ArrayIndex<3> idx,Int64 extent1,Int64 extent2)
+  offset(ArrayIndex<3> idx, Int64 extent1, Int64 extent2)
   {
-    return (extent2 * idx[I]) + (extent1*idx[J]) + idx.asInt64(K);
+    return (extent2 * idx[I]) + (extent1 * idx[J]) + idx.asInt64(K);
   }
 
-  template<typename ExtentType> static ARCCORE_HOST_DEVICE constexpr Int64
+  template <typename ExtentType> static ARCCORE_HOST_DEVICE constexpr Int64
   computeOffsetIndexes(const ExtentType& extents)
   {
     return extents.template constLargeExtent<J>() * extents.template constLargeExtent<K>();
   }
 
-  static constexpr std::array<Int32,3> layoutInfo() { return { I, J, K }; }
+  static constexpr std::array<Int32, 3> layoutInfo() { return { I, J, K }; }
 
   static constexpr ARCCORE_HOST_DEVICE Int32 layout0() { return I; }
   static constexpr ARCCORE_HOST_DEVICE Int32 layout1() { return J; }
@@ -87,12 +87,13 @@ class ArrayLayout3
 
 // Default layout for each dimension
 
-template<int N> class RightLayoutN;
-template<int N> class LeftLayoutN;
+template <int N> class RightLayoutN;
+template <int N> class LeftLayoutN;
 
 class RightLayout
 {
  public:
+
   //! Implementation for rank N
   template <int Rank> using LayoutType = RightLayoutN<Rank>;
   using Layout1Type = LayoutType<1>;
@@ -104,6 +105,7 @@ class RightLayout
 class LeftLayout
 {
  public:
+
   template <int Rank> using LayoutType = LeftLayoutN<Rank>;
   using Layout1Type = LayoutType<1>;
   using Layout2Type = LayoutType<2>;
@@ -111,11 +113,15 @@ class LeftLayout
   using Layout4Type = LayoutType<4>;
 };
 
-template<> class RightLayoutN<2> : public ArrayLayout2<0,1> {};
-template<> class RightLayoutN<3> : public ArrayLayout3<0,1,2> {};
+template <> class RightLayoutN<2> : public ArrayLayout2<0, 1>
+{};
+template <> class RightLayoutN<3> : public ArrayLayout3<0, 1, 2>
+{};
 
-template<> class LeftLayoutN<2> : public ArrayLayout2<1,0> {};
-template<> class LeftLayoutN<3> : public ArrayLayout3<2,1,0> {};
+template <> class LeftLayoutN<2> : public ArrayLayout2<1, 0>
+{};
+template <> class LeftLayoutN<3> : public ArrayLayout3<2, 1, 0>
+{};
 
 // The following 4 usings are for compatibility. To be removed in 3.9
 using LeftLayout2 = LeftLayout;
@@ -124,7 +130,8 @@ using RightLayout2 = RightLayout;
 using RightLayout3 = RightLayout;
 
 //! The default layout is always RightLayout
-class DefaultLayout : public RightLayout {};
+class DefaultLayout : public RightLayout
+{};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

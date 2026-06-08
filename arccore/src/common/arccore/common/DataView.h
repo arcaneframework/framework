@@ -177,41 +177,41 @@ class DataViewSetter
     m_ptr->z = value;
   }
 
-  ARCCORE_HOST_DEVICE void setXX(Real value) requires( requires() { DataType::x.x; } )
+  ARCCORE_HOST_DEVICE void setXX(Real value) requires(requires() { DataType::x.x; })
   {
     m_ptr->x.x = value;
   }
-  ARCCORE_HOST_DEVICE void setYX(Real value) requires( requires() { DataType::y.x; } )
+  ARCCORE_HOST_DEVICE void setYX(Real value) requires(requires() { DataType::y.x; })
   {
     m_ptr->y.x = value;
   }
-  ARCCORE_HOST_DEVICE void setZX(Real value) requires( requires() { DataType::z.x; } )
+  ARCCORE_HOST_DEVICE void setZX(Real value) requires(requires() { DataType::z.x; })
   {
     m_ptr->z.x = value;
   }
 
-  ARCCORE_HOST_DEVICE void setXY(Real value) requires( requires() { DataType::x.y; } )
+  ARCCORE_HOST_DEVICE void setXY(Real value) requires(requires() { DataType::x.y; })
   {
     m_ptr->x.y = value;
   }
-  ARCCORE_HOST_DEVICE void setYY(Real value) requires( requires() { DataType::y.y; } )
+  ARCCORE_HOST_DEVICE void setYY(Real value) requires(requires() { DataType::y.y; })
   {
     m_ptr->y.y = value;
   }
-  ARCCORE_HOST_DEVICE void setZY(Real value) requires( requires() { DataType::z.y; } )
+  ARCCORE_HOST_DEVICE void setZY(Real value) requires(requires() { DataType::z.y; })
   {
     m_ptr->z.y = value;
   }
 
-  ARCCORE_HOST_DEVICE void setXZ(Real value) requires( requires() { DataType::x.z; } )
+  ARCCORE_HOST_DEVICE void setXZ(Real value) requires(requires() { DataType::x.z; })
   {
     m_ptr->x.z = value;
   }
-  ARCCORE_HOST_DEVICE void setYZ(Real value) requires( requires() { DataType::y.z; } )
+  ARCCORE_HOST_DEVICE void setYZ(Real value) requires(requires() { DataType::y.z; })
   {
     m_ptr->y.z = value;
   }
-  ARCCORE_HOST_DEVICE void setZZ(Real value) requires( requires() { DataType::z.z; } )
+  ARCCORE_HOST_DEVICE void setZZ(Real value) requires(requires() { DataType::z.z; })
   {
     m_ptr->z.z = value;
   }
@@ -283,22 +283,22 @@ class DataViewGetterSetter
     return AccessorReturnType(ptr);
   }
 
-  //! Applies, if it exists, the operator operator[](Int32) on the type 
+  //! Applies, if it exists, the operator operator[](Int32) on the type
   template <typename X = DataType, typename SubscriptType = decltype(std::declval<const X>()[0])>
   ARCCORE_HOST_DEVICE DataViewGetterSetter<SubscriptType> operator[](Int32 index)
   {
     return DataViewGetterSetter<SubscriptType>(&m_ptr->operator[](index));
   }
 
-  //! Applies, if it exists, the operator operator()(Int32) on the type 
+  //! Applies, if it exists, the operator operator()(Int32) on the type
   template <typename X = DataType, typename DataTypeReturnType = decltype(std::declval<const X>()(0))>
   constexpr ARCCORE_HOST_DEVICE DataViewGetterSetter<DataTypeReturnType> operator()(Int32 i0)
   {
     return DataViewGetterSetter<DataTypeReturnType>(&m_ptr->operator()(i0));
   }
 
-  //! Applies, if it exists, the operator operator()(Int32,Int32) on the type 
-  template <typename X = DataType, typename DataTypeReturnType = decltype(std::declval<const X>()(0,0))>
+  //! Applies, if it exists, the operator operator()(Int32,Int32) on the type
+  template <typename X = DataType, typename DataTypeReturnType = decltype(std::declval<const X>()(0, 0))>
   constexpr ARCCORE_HOST_DEVICE DataViewGetterSetter<DataTypeReturnType> operator()(Int32 i0, Int32 i1)
   {
     return DataViewGetterSetter<DataTypeReturnType>(&m_ptr->operator()(i0, i1));

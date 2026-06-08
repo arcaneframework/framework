@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -68,7 +68,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessageList
    * has been called. The user retains ownership of the message, which
    * must not be destroyed until it is finished.
    */
-  virtual void addMessage(ISerializeMessage* msg) =0;
+  virtual void addMessage(ISerializeMessage* msg) = 0;
 
   /*!
    * \brief Sends the messages in the list that have not yet been sent.
@@ -77,7 +77,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessageList
    * yet been sent. It is generally not necessary to call this
    * method because it is done automatically when calling waitMessages().
    */
-  virtual void processPendingMessages() =0;
+  virtual void processPendingMessages() = 0;
 
   /*!
    * \brief Waits until the messages have finished execution.
@@ -92,7 +92,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessageList
    * \return the number of completely executed messages or (-1) if
    * they have all been executed.
    */
-  virtual Integer waitMessages(eWaitType wt) =0;
+  virtual Integer waitMessages(eWaitType wt) = 0;
 
   /*!
    * \brief Creates and adds a serialization message.
@@ -109,13 +109,13 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessageList
    */
   virtual Ref<ISerializeMessage>
   createAndAddMessage(MessageRank destination,
-                      ePointToPointMessageType type) =0;
+                      ePointToPointMessageType type) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

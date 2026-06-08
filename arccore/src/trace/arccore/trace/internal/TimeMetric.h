@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -46,14 +46,23 @@ enum class TimeMetricPhase
 class ARCCORE_TRACE_EXPORT TimeMetricActionBuildInfo
 {
  public:
+
   explicit TimeMetricActionBuildInfo(const String& name)
-  : m_name(name), m_phase(-1){}
-  TimeMetricActionBuildInfo(const String& name,int phase)
-  : m_name(name), m_phase(phase){}
+  : m_name(name)
+  , m_phase(-1)
+  {}
+  TimeMetricActionBuildInfo(const String& name, int phase)
+  : m_name(name)
+  , m_phase(phase)
+  {}
+
  public:
+
   const String& name() const { return m_name; }
   int phase() const { return m_phase; }
+
  public:
+
   String m_name;
   int m_phase = -1;
 };
@@ -64,15 +73,25 @@ class ARCCORE_TRACE_EXPORT TimeMetricActionBuildInfo
 class ARCCORE_TRACE_EXPORT TimeMetricAction
 {
  public:
+
   TimeMetricAction()
-  : m_collector(nullptr), m_phase(-1) {}
-  TimeMetricAction(ITimeMetricCollector* c,const TimeMetricActionBuildInfo& x)
-  : m_collector(c), m_name(x.name()), m_phase(x.phase()){}
+  : m_collector(nullptr)
+  , m_phase(-1)
+  {}
+  TimeMetricAction(ITimeMetricCollector* c, const TimeMetricActionBuildInfo& x)
+  : m_collector(c)
+  , m_name(x.name())
+  , m_phase(x.phase())
+  {}
+
  public:
+
   ITimeMetricCollector* collector() const { return m_collector; }
   const String& name() const { return m_name; }
   int phase() const { return m_phase; }
+
  private:
+
   ITimeMetricCollector* m_collector;
   String m_name;
   int m_phase;
@@ -84,12 +103,19 @@ class ARCCORE_TRACE_EXPORT TimeMetricAction
 class ARCCORE_TRACE_EXPORT TimeMetricId
 {
  public:
-  TimeMetricId() : m_id(-1){}
-  explicit TimeMetricId(const TimeMetricAction& action,Int64 id)
-  : m_action(action), m_id(id){}
+
+  TimeMetricId()
+  : m_id(-1)
+  {}
+  explicit TimeMetricId(const TimeMetricAction& action, Int64 id)
+  : m_action(action)
+  , m_id(id)
+  {}
   const TimeMetricAction& action() const { return m_action; }
   Int64 id() const { return m_id; }
+
  public:
+
   TimeMetricAction m_action;
   Int64 m_id;
 };
@@ -103,9 +129,13 @@ class ARCCORE_TRACE_EXPORT TimeMetricId
 class ARCCORE_TRACE_EXPORT TimeMetricSentry
 {
  public:
-  TimeMetricSentry() : m_collector(nullptr){}
+
+  TimeMetricSentry()
+  : m_collector(nullptr)
+  {}
   TimeMetricSentry(TimeMetricSentry&& rhs)
-  : m_collector(rhs.m_collector), m_id(rhs.m_id)
+  : m_collector(rhs.m_collector)
+  , m_id(rhs.m_id)
   {
     // Set rhs to null to prevent it from calling 'endAction'.
     rhs.m_collector = nullptr;
@@ -118,10 +148,12 @@ class ARCCORE_TRACE_EXPORT TimeMetricSentry
   }
   ~TimeMetricSentry() noexcept(false)
   {
-  if (m_collector)
-    m_collector->endAction(m_id);
+    if (m_collector)
+      m_collector->endAction(m_id);
   }
+
  private:
+
   ITimeMetricCollector* m_collector;
   TimeMetricId m_id;
 };
@@ -135,18 +167,25 @@ class ARCCORE_TRACE_EXPORT TimeMetricSentry
 class ARCCORE_TRACE_EXPORT StandardPhaseTimeMetrics
 {
  public:
+
   StandardPhaseTimeMetrics() = default;
   StandardPhaseTimeMetrics(ITimeMetricCollector* c) { initialize(c); }
+
  public:
+
   void initialize(ITimeMetricCollector* collector);
+
  public:
+
   //! Action to indicate that we are in a message passing phase
   const TimeMetricAction& messagePassingPhase() const { return m_message_passing_phase; }
   //! Action to indicate that we are in an input-output phase.
   const TimeMetricAction& inputOutputPhase() const { return m_input_output_phase; }
   //! Action to indicate that we are in a computation phase.
   const TimeMetricAction& computationPhase() const { return m_computation_phase; }
+
  private:
+
   TimeMetricAction m_message_passing_phase;
   TimeMetricAction m_input_output_phase;
   TimeMetricAction m_computation_phase;
@@ -165,7 +204,7 @@ timeMetricPhaseComputation(ITimeMetricCollector* c);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

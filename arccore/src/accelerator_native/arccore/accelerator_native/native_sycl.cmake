@@ -10,7 +10,7 @@ set(ARCCORE_SOURCES
 # For compatibility with existing code
 if (DEFINED ARCANE_CXX_SYCL_FLAGS AND NOT DEFINED ARCCORE_CXX_SYCL_FLAGS)
   set(ARCCORE_CXX_SYCL_FLAGS "${ARCANE_CXX_SYCL_FLAGS}")
-endif()
+endif ()
 
 # Created an interface target to propagate compilation options
 # common for SYCL compilation
@@ -22,7 +22,7 @@ target_compile_options(arccore_sycl_compile_flags INTERFACE
 )
 if (CMAKE_CXX_COMPILER_ID STREQUAL IntelLLVM)
   target_link_options(arccore_sycl_compile_flags INTERFACE "-lsycl")
-endif()
+endif ()
 
 install(TARGETS arccore_sycl_compile_flags EXPORT ArccoreTargets)
 
@@ -49,8 +49,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL IntelLLVM)
   message(STATUS "[Sycl] oneDPL found?=${oneDPL_FOUND} Version=${oneDPL_VERSION}")
   if (oneDPL_FOUND)
     target_compile_definitions(arccore_accelerator_sycl PUBLIC ARCCORE_HAS_ONEDPL ARCANE_HAS_ONEDPL)
-  endif()
-endif()
+  endif ()
+endif ()
 
 # ----------------------------------------------------------------------------
 # Local Variables:

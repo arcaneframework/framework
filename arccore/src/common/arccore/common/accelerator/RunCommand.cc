@@ -129,7 +129,7 @@ RunCommand& RunCommand::
 addNbStride(Int32 v)
 {
   // Grid stride is only managed on accelerator.
-  if (m_p->m_use_accelerator){
+  if (m_p->m_use_accelerator) {
     if (v < 0)
       v = 1;
     m_p->m_nb_stride = v;
@@ -158,8 +158,7 @@ parallelLoopOptions() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_COMMON_EXPORT
-RunCommand&
+extern "C++" ARCCORE_COMMON_EXPORT RunCommand&
 operator<<(RunCommand& command, const TraceInfo& trace_info)
 {
   return command.addTraceInfo(trace_info);

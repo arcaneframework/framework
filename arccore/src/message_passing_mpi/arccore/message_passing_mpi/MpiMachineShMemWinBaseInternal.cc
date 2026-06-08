@@ -11,11 +11,9 @@
 /* The segments of these windows are not contiguous in memory and can        */
 /* be resized.                                                               */
 /*---------------------------------------------------------------------------*/
-
 #include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternal.h"
 
 #include "arccore/base/FatalErrorException.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

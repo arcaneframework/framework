@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,12 +45,15 @@ class MpiLock
   typedef Mutex LockType;
 
  public:
+
   class Section
   {
    public:
-    Section(MpiLock* lock) : mpi_lock(lock)
+
+    Section(MpiLock* lock)
+    : mpi_lock(lock)
     {
-      if (mpi_lock){
+      if (mpi_lock) {
         manual_lock.lock(mpi_lock->m_lock);
       }
     }
@@ -59,22 +62,28 @@ class MpiLock
       if (mpi_lock)
         manual_lock.unlock(mpi_lock->m_lock);
     }
+
    private:
+
     MpiLock* mpi_lock;
     LockType::ManualLock manual_lock;
   };
   friend class Section;
+
  public:
+
   MpiLock() {}
+
  public:
  private:
+
   LockType m_lock;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::MessagePassing::Mpi
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

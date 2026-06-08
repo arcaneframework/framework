@@ -225,7 +225,7 @@ getFileDirName(const String& file_name);
  * Copies \a len bytes from address \a from to address \a to.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
-stdMemcpy(void* to,const void* from,::size_t len);
+stdMemcpy(void* to, const void* from, ::size_t len);
 
 /*!
  * \brief Memory used in bytes
@@ -265,7 +265,7 @@ timeToHourMinuteSecond(Real t);
 
 /*!
  * \brief Returns \a true if \a v is denormalized (invalid float).
- *  
+ *
  * If the platform does not support this concept, it always returns \a false.
  */
 extern "C++" ARCCORE_BASE_EXPORT bool
@@ -285,8 +285,7 @@ getStackTraceService();
  * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
-ARCCORE_BASE_EXPORT IStackTraceService*
-setStackTraceService(IStackTraceService* service);
+ARCCORE_BASE_EXPORT IStackTraceService* setStackTraceService(IStackTraceService* service);
 
 /*!
  * \brief Returns a string containing the call stack.
@@ -313,8 +312,7 @@ getSymbolizerService();
  * Returns the previously used service.
  */
 extern "C++" ARCCORE_DEPRECATED_REASON("Y2025: This method is internal to Arcane")
-ARCCORE_BASE_EXPORT ISymbolizerService*
-setSymbolizerService(ISymbolizerService* service);
+ARCCORE_BASE_EXPORT ISymbolizerService* setSymbolizerService(ISymbolizerService* service);
 
 /*
  * \brief Copies a character string with overflow check.
@@ -324,7 +322,7 @@ setSymbolizerService(ISymbolizerService* service);
  * \param output_len memory allocated for \a output.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
-safeStringCopy(char* output,Integer output_len,const char* input);
+safeStringCopy(char* output, Integer output_len, const char* input);
 
 /*!
  * \brief Puts the process to sleep for \a nb_second seconds.
@@ -396,7 +394,6 @@ getCompilerId();
 extern "C++" ARCCORE_BASE_EXPORT Int64
 getPageSize();
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -417,7 +414,7 @@ getLoadedSharedLibraryFullPath(const String& dll_name);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Platform
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -436,53 +433,53 @@ namespace Arcane::platform
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-using Arcane::Platform::getCurrentDate;
-using Arcane::Platform::getCurrentTime;
-using Arcane::Platform::getCurrentDateTime;
-using Arcane::Platform::getHostName;
-using Arcane::Platform::getCurrentDirectory;
-using Arcane::Platform::getProcessId;
-using Arcane::Platform::getUserName;
-using Arcane::Platform::getHomeDirectory;
-using Arcane::Platform::getFileLength;
-using Arcane::Platform::getEnvironmentVariable;
-using Arcane::Platform::recursiveCreateDirectory;
 using Arcane::Platform::createDirectory;
-using Arcane::Platform::removeFile;
-using Arcane::Platform::isFileReadable;
-using Arcane::Platform::getFileDirName;
-using Arcane::Platform::stdMemcpy;
-using Arcane::Platform::getMemoryUsed;
 using Arcane::Platform::getCPUTime;
+using Arcane::Platform::getCurrentDate;
+using Arcane::Platform::getCurrentDateTime;
+using Arcane::Platform::getCurrentDirectory;
+using Arcane::Platform::getCurrentTime;
+using Arcane::Platform::getEnvironmentVariable;
+using Arcane::Platform::getFileDirName;
+using Arcane::Platform::getFileLength;
+using Arcane::Platform::getHomeDirectory;
+using Arcane::Platform::getHostName;
+using Arcane::Platform::getMemoryUsed;
+using Arcane::Platform::getPageSize;
+using Arcane::Platform::getProcessId;
 using Arcane::Platform::getRealTime;
 using Arcane::Platform::getRealTimeNS;
-using Arcane::Platform::timeToHourMinuteSecond;
+using Arcane::Platform::getUserName;
 using Arcane::Platform::isDenormalized;
+using Arcane::Platform::isFileReadable;
+using Arcane::Platform::recursiveCreateDirectory;
+using Arcane::Platform::removeFile;
 using Arcane::Platform::safeStringCopy;
 using Arcane::Platform::sleep;
-using Arcane::Platform::getPageSize;
+using Arcane::Platform::stdMemcpy;
+using Arcane::Platform::timeToHourMinuteSecond;
 
 using Arcane::Platform::enableFloatingException;
+using Arcane::Platform::hasFloatingExceptionSupport;
 using Arcane::Platform::isFloatingExceptionEnabled;
 using Arcane::Platform::raiseFloatingException;
-using Arcane::Platform::hasFloatingExceptionSupport;
 
-using Arcane::Platform::getStackTraceService;
-using Arcane::Platform::setStackTraceService;
-using Arcane::Platform::getSymbolizerService;
-using Arcane::Platform::setSymbolizerService;
-using Arcane::Platform::getStackTrace;
 using Arcane::Platform::dumpStackTrace;
+using Arcane::Platform::getStackTrace;
+using Arcane::Platform::getStackTraceService;
+using Arcane::Platform::getSymbolizerService;
+using Arcane::Platform::setStackTraceService;
+using Arcane::Platform::setSymbolizerService;
 
-using Arcane::Platform::getConsoleHasColor;
 using Arcane::Platform::getCompilerId;
+using Arcane::Platform::getConsoleHasColor;
 
 using Arcane::Platform::getLoadedSharedLibraryFullPath;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::platform
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

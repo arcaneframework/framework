@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ namespace Arcane
 
 FatalErrorException::
 FatalErrorException(const String& awhere)
-: Exception("FatalError",awhere)
+: Exception("FatalError", awhere)
 {
   arccoreDebugPause("FatalError");
 }
@@ -34,8 +34,8 @@ FatalErrorException(const String& awhere)
 /*---------------------------------------------------------------------------*/
 
 FatalErrorException::
-FatalErrorException(const String& awhere,const String& amessage)
-: Exception("FatalError",awhere,amessage)
+FatalErrorException(const String& awhere, const String& amessage)
+: Exception("FatalError", awhere, amessage)
 {
   arccoreDebugPause("FatalError");
 }
@@ -45,7 +45,7 @@ FatalErrorException(const String& awhere,const String& amessage)
 
 FatalErrorException::
 FatalErrorException(const TraceInfo& awhere)
-: Exception("FatalError",awhere)
+: Exception("FatalError", awhere)
 {
   arccoreDebugPause("FatalError");
 }
@@ -54,8 +54,8 @@ FatalErrorException(const TraceInfo& awhere)
 /*---------------------------------------------------------------------------*/
 
 FatalErrorException::
-FatalErrorException(const TraceInfo& awhere,const String& amessage)
-: Exception("FatalError",awhere,amessage)
+FatalErrorException(const TraceInfo& awhere, const String& amessage)
+: Exception("FatalError", awhere, amessage)
 {
   arccoreDebugPause("FatalError");
 }
@@ -82,7 +82,7 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -20,7 +20,10 @@
 // The following two lines allow using 64-bit indices
 // instead of the default 32-bit ones.
 #define RAPIDJSON_NO_SIZETYPEDEFINE
-namespace rapidjson { typedef ::std::size_t SizeType; }
+namespace rapidjson
+{
+typedef ::std::size_t SizeType;
+}
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include "arccore/common/internal/json/rapidjson/writer.h"

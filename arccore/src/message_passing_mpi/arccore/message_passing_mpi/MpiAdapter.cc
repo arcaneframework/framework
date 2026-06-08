@@ -50,46 +50,52 @@ class MpiAdapter::RequestSet
 : public TraceAccessor
 {
  public:
+
   struct RequestInfo
   {
     TraceInfo m_trace;
     String m_stack_trace;
   };
+
  public:
-  typedef std::map<MPI_Request,RequestInfo>::iterator Iterator;
+
+  typedef std::map<MPI_Request, RequestInfo>::iterator Iterator;
+
  public:
 
   explicit RequestSet(ITraceMng* tm)
   : TraceAccessor(tm)
   {
     m_trace_mng_ref = makeRef(tm);
-    if (arccoreIsCheck()){
+    if (arccoreIsCheck()) {
       m_no_check_request = false;
       m_request_error_is_fatal = true;
     }
-    if (Platform::getEnvironmentVariable("ARCCORE_NOREPORT_ERROR_MPIREQUEST")=="TRUE")
+    if (Platform::getEnvironmentVariable("ARCCORE_NOREPORT_ERROR_MPIREQUEST") == "TRUE")
       m_is_report_error_in_request = false;
-    if (Platform::getEnvironmentVariable("ARCCORE_MPIREQUEST_STACKTRACE")=="TRUE")
+    if (Platform::getEnvironmentVariable("ARCCORE_MPIREQUEST_STACKTRACE") == "TRUE")
       m_use_trace_full_stack = true;
-    if (Platform::getEnvironmentVariable("ARCCORE_TRACE_MPIREQUEST")=="TRUE")
+    if (Platform::getEnvironmentVariable("ARCCORE_TRACE_MPIREQUEST") == "TRUE")
       m_trace_mpirequest = true;
   }
+
  public:
+
   void addRequest(MPI_Request request)
   {
     if (m_no_check_request)
       return;
     if (m_trace_mpirequest)
       info() << "MpiAdapter: AddRequest r=" << request;
-    _addRequest(request,TraceInfo());
+    _addRequest(request, TraceInfo());
   }
-  void addRequest(MPI_Request request,const TraceInfo& ti)
+  void addRequest(MPI_Request request, const TraceInfo& ti)
   {
     if (m_no_check_request)
       return;
     if (m_trace_mpirequest)
       info() << "MpiAdapter: AddRequest r=" << request;
-    _addRequest(request,ti);
+    _addRequest(request, ti);
   }
   void removeRequest(MPI_Request request)
   {
@@ -103,7 +109,7 @@ class MpiAdapter::RequestSet
   {
     if (m_no_check_request)
       return;
-    if (request_iter==m_allocated_requests.end()){
+    if (request_iter == m_allocated_requests.end()) {
       if (m_trace_mpirequest)
         info() << "MpiAdapter: RemoveRequestIter null iterator";
       return;
@@ -121,8 +127,8 @@ class MpiAdapter::RequestSet
     if (_isEmptyRequest(request))
       return m_allocated_requests.end();
     auto ireq = m_allocated_requests.find(request);
-    if (ireq==m_allocated_requests.end()){
-      if (m_is_report_error_in_request || m_request_error_is_fatal){
+    if (ireq == m_allocated_requests.end()) {
+      if (m_is_report_error_in_request || m_request_error_is_fatal) {
         error() << "MpiAdapter::testRequest() request not referenced "
                 << " id=" << request;
         _checkFatalInRequest();
@@ -130,14 +136,16 @@ class MpiAdapter::RequestSet
     }
     return ireq;
   }
+
  private:
+
   /*!
    * \warning This function must be called with the mpi_lock lock active.
    */
-  void _addRequest(MPI_Request request,const TraceInfo& trace_info)
+  void _addRequest(MPI_Request request, const TraceInfo& trace_info)
   {
-    if (request==MPI_REQUEST_NULL){
-      if (m_is_report_error_in_request || m_request_error_is_fatal){
+    if (request == MPI_REQUEST_NULL) {
+      if (m_is_report_error_in_request || m_request_error_is_fatal) {
         error() << "MpiAdapter::_addRequest() trying to add null request";
         _checkFatalInRequest();
       }
@@ -148,8 +156,8 @@ class MpiAdapter::RequestSet
     ++m_total_added_request;
     //info() << "MPI_ADAPTER:ADD REQUEST " << request;
     auto i = m_allocated_requests.find(request);
-    if (i!=m_allocated_requests.end()){
-      if (m_is_report_error_in_request || m_request_error_is_fatal){
+    if (i != m_allocated_requests.end()) {
+      if (m_is_report_error_in_request || m_request_error_is_fatal) {
         error() << "MpiAdapter::_addRequest() request already referenced "
                 << " id=" << request;
         _checkFatalInRequest();
@@ -160,7 +168,7 @@ class MpiAdapter::RequestSet
     rinfo.m_trace = trace_info;
     if (m_use_trace_full_stack)
       rinfo.m_stack_trace = Platform::getStackTrace();
-    m_allocated_requests.insert(std::make_pair(request,rinfo));
+    m_allocated_requests.insert(std::make_pair(request, rinfo));
   }
 
   /*!
@@ -169,8 +177,8 @@ class MpiAdapter::RequestSet
   void _removeRequest(MPI_Request request)
   {
     //info() << "MPI_ADAPTER:REMOVE REQUEST " << request;
-    if (request==MPI_REQUEST_NULL){
-      if (m_is_report_error_in_request || m_request_error_is_fatal){
+    if (request == MPI_REQUEST_NULL) {
+      if (m_is_report_error_in_request || m_request_error_is_fatal) {
         error() << "MpiAdapter::_removeRequest() null request (" << MPI_REQUEST_NULL << ")";
         _checkFatalInRequest();
       }
@@ -179,8 +187,8 @@ class MpiAdapter::RequestSet
     if (_isEmptyRequest(request))
       return;
     auto i = m_allocated_requests.find(request);
-    if (i==m_allocated_requests.end()){
-      if (m_is_report_error_in_request || m_request_error_is_fatal){
+    if (i == m_allocated_requests.end()) {
+      if (m_is_report_error_in_request || m_request_error_is_fatal) {
         error() << "MpiAdapter::_removeRequest() request not referenced "
                 << " id=" << request;
         _checkFatalInRequest();
@@ -189,7 +197,9 @@ class MpiAdapter::RequestSet
     else
       m_allocated_requests.erase(i);
   }
+
  public:
+
   void _checkFatalInRequest()
   {
     if (m_request_error_is_fatal)
@@ -200,57 +210,63 @@ class MpiAdapter::RequestSet
   void printRequests() const
   {
     info() << "PRINT REQUESTS\n";
-    for( auto& x : m_allocated_requests ){
+    for (auto& x : m_allocated_requests) {
       info() << "Request id=" << x.first << " trace=" << x.second.m_trace
              << " stack=" << x.second.m_stack_trace;
     }
   }
-  void setEmptyRequests(MPI_Request r1,MPI_Request r2)
+  void setEmptyRequests(MPI_Request r1, MPI_Request r2)
   {
     m_empty_request1 = r1;
     m_empty_request2 = r2;
   }
+
  public:
+
   bool m_request_error_is_fatal = false;
   bool m_is_report_error_in_request = true;
   bool m_trace_mpirequest = false;
   //! True if requests are not checked
   bool m_no_check_request = true;
+
  private:
-  std::map<MPI_Request,RequestInfo> m_allocated_requests;
+
+  std::map<MPI_Request, RequestInfo> m_allocated_requests;
   bool m_use_trace_full_stack = false;
   MPI_Request m_empty_request1 = MPI_REQUEST_NULL;
   MPI_Request m_empty_request2 = MPI_REQUEST_NULL;
   Int64 m_total_added_request = 0;
   Ref<ITraceMng> m_trace_mng_ref;
+
  private:
+
   bool _isEmptyRequest(MPI_Request r) const
   {
-    return (r==m_empty_request1 || r==m_empty_request2);
+    return (r == m_empty_request1 || r == m_empty_request2);
   }
 };
 
-#define ARCCORE_ADD_REQUEST(request)\
-  m_request_set->addRequest(request,A_FUNCINFO);
+#define ARCCORE_ADD_REQUEST(request) \
+  m_request_set->addRequest(request, A_FUNCINFO);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace
 {
-int _checkSize(Int64 i64_size)
-{
-  if (i64_size>INT32_MAX)
-    ARCCORE_FATAL("Can not convert '{0}' to type integer",i64_size);
-  return (int)i64_size;
-}
-}
+  int _checkSize(Int64 i64_size)
+  {
+    if (i64_size > INT32_MAX)
+      ARCCORE_FATAL("Can not convert '{0}' to type integer", i64_size);
+    return (int)i64_size;
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MpiAdapter::
-MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
+MpiAdapter(ITraceMng* trace, IStat* stat, MPI_Comm comm,
            MpiLock* mpi_lock, IMpiProfiling* mpi_op)
 : TraceAccessor(trace)
 , m_stat(stat)
@@ -264,7 +280,7 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
 {
   m_request_set = new RequestSet(trace);
 
-  if (Platform::getEnvironmentVariable("ARCCORE_TRACE_MPI")=="TRUE")
+  if (Platform::getEnvironmentVariable("ARCCORE_TRACE_MPI") == "TRUE")
     m_is_trace = true;
   {
     String s = Platform::getEnvironmentVariable("ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE");
@@ -274,8 +290,8 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
       m_is_allow_null_rank_for_any_source = false;
   }
 
-  ::MPI_Comm_rank(m_communicator,&m_comm_rank);
-  ::MPI_Comm_size(m_communicator,&m_comm_size);
+  ::MPI_Comm_rank(m_communicator, &m_comm_rank);
+  ::MPI_Comm_size(m_communicator, &m_comm_size);
 
   // By default, we do not do MPI profiling; we will use the appropriate set
   // method to change it
@@ -307,9 +323,9 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
             50505, m_communicator, &m_empty_request2);
 
   MPI_Recv(m_recv_buffer_for_empty_request2, 1, MPI_CHAR, m_comm_rank,
-            50505, m_communicator, MPI_STATUS_IGNORE);
+           50505, m_communicator, MPI_STATUS_IGNORE);
 
-  m_request_set->setEmptyRequests(m_empty_request1,m_empty_request2);
+  m_request_set->setEmptyRequests(m_empty_request1, m_empty_request2);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -331,9 +347,9 @@ MpiAdapter::
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-buildRequest(int ret,MPI_Request mpi_request)
+buildRequest(int ret, MPI_Request mpi_request)
 {
-  return MpiRequest(ret,this,mpi_request);
+  return MpiRequest(ret, this, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -345,7 +361,7 @@ _checkHasNoRequests()
   Int64 nb_request = m_request_set->nbRequest();
   // We cannot perform this test in the destructor because it could
   // potentially throw an exception, and this should not be done in a destructor.
-  if (nb_request!=0){
+  if (nb_request != 0) {
     warning() << " Pending mpi requests size=" << nb_request;
     m_request_set->printRequests();
     _checkFatalInRequest();
@@ -417,7 +433,8 @@ _trace(const char* function)
   if (m_is_trace) {
     IStackTraceService* stack_service = Platform::getStackTraceService();
     if (stack_service)
-      info() << "MPI_TRACE: " << function << "\n" << stack_service->stackTrace().toString();
+      info() << "MPI_TRACE: " << function << "\n"
+             << stack_service->stackTrace().toString();
     else
       info() << "MPI_TRACE: " << function;
   }
@@ -427,7 +444,7 @@ _trace(const char* function)
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-broadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
+broadcast(void* buf, Int64 nb_elem, Int32 root, MPI_Datatype datatype)
 {
   int _nb_elem = _checkSize(nb_elem);
   _trace(MpiInfo(eMpiName::Bcast).name().localstr());
@@ -441,36 +458,36 @@ broadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
 
   m_mpi_prof->broadcast(buf, _nb_elem, datatype, root, m_communicator);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add(MpiInfo(eMpiName::Bcast).name(),sr_time,0);
+  m_stat->add(MpiInfo(eMpiName::Bcast).name(), sr_time, 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-nonBlockingBroadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
+nonBlockingBroadcast(void* buf, Int64 nb_elem, Int32 root, MPI_Datatype datatype)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
   int _nb_elem = _checkSize(nb_elem);
   _trace(" MPI_Bcast");
   double begin_time = MPI_Wtime();
-  ret = MPI_Ibcast(buf,_nb_elem,datatype,root,m_communicator,&mpi_request);
+  ret = MPI_Ibcast(buf, _nb_elem, datatype, root, m_communicator, &mpi_request);
   double end_time = MPI_Wtime();
-  double sr_time = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add("IBroadcast",sr_time,0);
+  m_stat->add("IBroadcast", sr_time, 0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return buildRequest(ret,mpi_request);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-gather(const void* send_buf,void* recv_buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
+gather(const void* send_buf, void* recv_buf, Int64 nb_elem, Int32 root, MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int _nb_elem = _checkSize(nb_elem);
@@ -479,17 +496,17 @@ gather(const void* send_buf,void* recv_buf,Int64 nb_elem,Int32 root,MPI_Datatype
   double begin_time = MPI_Wtime();
   m_mpi_prof->gather(_sbuf, _nb_elem, datatype, recv_buf, _nb_elem, datatype, _root, m_communicator);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add(MpiInfo(eMpiName::Gather).name(),sr_time,0);
+  m_stat->add(MpiInfo(eMpiName::Gather).name(), sr_time, 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-nonBlockingGather(const void* send_buf,void* recv_buf,
-                  Int64 nb_elem,Int32 root,MPI_Datatype datatype)
+nonBlockingGather(const void* send_buf, void* recv_buf,
+                  Int64 nb_elem, Int32 root, MPI_Datatype datatype)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
@@ -498,22 +515,22 @@ nonBlockingGather(const void* send_buf,void* recv_buf,
   int _root = static_cast<int>(root);
   _trace("MPI_Igather");
   double begin_time = MPI_Wtime();
-  ret = MPI_Igather(_sbuf,_nb_elem,datatype,recv_buf,_nb_elem,datatype,_root,
-                    m_communicator,&mpi_request);
+  ret = MPI_Igather(_sbuf, _nb_elem, datatype, recv_buf, _nb_elem, datatype, _root,
+                    m_communicator, &mpi_request);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add("IGather",sr_time,0);
+  m_stat->add("IGather", sr_time, 0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return buildRequest(ret,mpi_request);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-allGather(const void* send_buf,void* recv_buf,
-          Int64 nb_elem,MPI_Datatype datatype)
+allGather(const void* send_buf, void* recv_buf,
+          Int64 nb_elem, MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int _nb_elem = _checkSize(nb_elem);
@@ -521,17 +538,17 @@ allGather(const void* send_buf,void* recv_buf,
   double begin_time = MPI_Wtime();
   m_mpi_prof->allGather(_sbuf, _nb_elem, datatype, recv_buf, _nb_elem, datatype, m_communicator);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add(MpiInfo(eMpiName::Allgather).name(),sr_time,0);
+  m_stat->add(MpiInfo(eMpiName::Allgather).name(), sr_time, 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-nonBlockingAllGather(const void* send_buf,void* recv_buf,
-                     Int64 nb_elem,MPI_Datatype datatype)
+nonBlockingAllGather(const void* send_buf, void* recv_buf,
+                     Int64 nb_elem, MPI_Datatype datatype)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
@@ -539,22 +556,22 @@ nonBlockingAllGather(const void* send_buf,void* recv_buf,
   int _nb_elem = _checkSize(nb_elem);
   _trace("MPI_Iallgather");
   double begin_time = MPI_Wtime();
-  ret = MPI_Iallgather(_sbuf,_nb_elem,datatype,recv_buf,_nb_elem,datatype,
-                       m_communicator,&mpi_request);
+  ret = MPI_Iallgather(_sbuf, _nb_elem, datatype, recv_buf, _nb_elem, datatype,
+                       m_communicator, &mpi_request);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add("IAllGather",sr_time,0);
+  m_stat->add("IAllGather", sr_time, 0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return buildRequest(ret,mpi_request);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-gatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
-               const int* recv_indexes,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
+gatherVariable(const void* send_buf, void* recv_buf, const int* recv_counts,
+               const int* recv_indexes, Int64 nb_elem, Int32 root, MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int _nb_elem = _checkSize(nb_elem);
@@ -563,20 +580,20 @@ gatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
   double begin_time = MPI_Wtime();
   m_mpi_prof->gatherVariable(_sbuf, _nb_elem, datatype, recv_buf, recv_counts, recv_indexes, datatype, _root, m_communicator);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add(MpiInfo(eMpiName::Gatherv).name().localstr(),sr_time,0);
+  m_stat->add(MpiInfo(eMpiName::Gatherv).name().localstr(), sr_time, 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-allGatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
-                  const int* recv_indexes,Int64 nb_elem,MPI_Datatype datatype)
+allGatherVariable(const void* send_buf, void* recv_buf, const int* recv_counts,
+                  const int* recv_indexes, Int64 nb_elem, MPI_Datatype datatype)
 {
-  void* _sbuf    = const_cast<void*>(send_buf);
-  int   _nb_elem = _checkSize(nb_elem);
+  void* _sbuf = const_cast<void*>(send_buf);
+  int _nb_elem = _checkSize(nb_elem);
   _trace(MpiInfo(eMpiName::Allgatherv).name().localstr());
   //info() << " ALLGATHERV N=" << _nb_elem;
   //for( int i=0; i<m_comm_size; ++i )
@@ -585,17 +602,17 @@ allGatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
   double begin_time = MPI_Wtime();
   m_mpi_prof->allGatherVariable(_sbuf, _nb_elem, datatype, recv_buf, recv_counts, recv_indexes, datatype, m_communicator);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add(MpiInfo(eMpiName::Allgatherv).name().localstr(),sr_time,0);
+  m_stat->add(MpiInfo(eMpiName::Allgatherv).name().localstr(), sr_time, 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-scatterVariable(const void* send_buf,const int* send_count,const int* send_indexes,
-                void* recv_buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
+scatterVariable(const void* send_buf, const int* send_count, const int* send_indexes,
+                void* recv_buf, Int64 nb_elem, Int32 root, MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int* _send_count = const_cast<int*>(send_count);
@@ -604,25 +621,25 @@ scatterVariable(const void* send_buf,const int* send_count,const int* send_index
   _trace(MpiInfo(eMpiName::Scatterv).name().localstr());
   double begin_time = MPI_Wtime();
   m_mpi_prof->scatterVariable(_sbuf,
-                         _send_count,
-                         _send_indexes,
-                         datatype,
-                         recv_buf,
-                         _nb_elem,
-                         datatype,
-                         root,
-                         m_communicator);
+                              _send_count,
+                              _send_indexes,
+                              datatype,
+                              recv_buf,
+                              _nb_elem,
+                              datatype,
+                              root,
+                              m_communicator);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add(MpiInfo(eMpiName::Scatterv).name(),sr_time,0);
+  m_stat->add(MpiInfo(eMpiName::Scatterv).name(), sr_time, 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-allToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Datatype datatype)
+allToAll(const void* send_buf, void* recv_buf, Integer count, MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int icount = _checkSize(count);
@@ -630,16 +647,16 @@ allToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Datatype datatype
   double begin_time = MPI_Wtime();
   m_mpi_prof->allToAll(_sbuf, icount, datatype, recv_buf, icount, datatype, m_communicator);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add(MpiInfo(eMpiName::Alltoall).name().localstr(),sr_time,0);
+  m_stat->add(MpiInfo(eMpiName::Alltoall).name().localstr(), sr_time, 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-nonBlockingAllToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Datatype datatype)
+nonBlockingAllToAll(const void* send_buf, void* recv_buf, Integer count, MPI_Datatype datatype)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
@@ -647,22 +664,22 @@ nonBlockingAllToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Dataty
   int icount = _checkSize(count);
   _trace("MPI_IAlltoall");
   double begin_time = MPI_Wtime();
-  ret = MPI_Ialltoall(_sbuf,icount,datatype,recv_buf,icount,datatype,m_communicator,&mpi_request);
+  ret = MPI_Ialltoall(_sbuf, icount, datatype, recv_buf, icount, datatype, m_communicator, &mpi_request);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add("IAllToAll",sr_time,0);
+  m_stat->add("IAllToAll", sr_time, 0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return buildRequest(ret,mpi_request);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-allToAllVariable(const void* send_buf,const int* send_counts,
-                 const int* send_indexes,void* recv_buf,const int* recv_counts,
-                 const int* recv_indexes,MPI_Datatype datatype)
+allToAllVariable(const void* send_buf, const int* send_counts,
+                 const int* send_indexes, void* recv_buf, const int* recv_counts,
+                 const int* recv_indexes, MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int* _send_counts = const_cast<int*>(send_counts);
@@ -673,20 +690,20 @@ allToAllVariable(const void* send_buf,const int* send_counts,
   _trace(MpiInfo(eMpiName::Alltoallv).name().localstr());
   double begin_time = MPI_Wtime();
   m_mpi_prof->allToAllVariable(_sbuf, _send_counts, _send_indexes, datatype,
-                          recv_buf, _recv_counts, _recv_indexes, datatype, m_communicator);
+                               recv_buf, _recv_counts, _recv_indexes, datatype, m_communicator);
   double end_time = MPI_Wtime();
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add(MpiInfo(eMpiName::Alltoallv).name(),sr_time,0);
+  m_stat->add(MpiInfo(eMpiName::Alltoallv).name(), sr_time, 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
-                            const int* send_indexes,void* recv_buf,const int* recv_counts,
-                            const int* recv_indexes,MPI_Datatype datatype)
+nonBlockingAllToAllVariable(const void* send_buf, const int* send_counts,
+                            const int* send_indexes, void* recv_buf, const int* recv_counts,
+                            const int* recv_indexes, MPI_Datatype datatype)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
@@ -698,15 +715,15 @@ nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
 
   _trace("MPI_Ialltoallv");
   double begin_time = MPI_Wtime();
-  ret = MPI_Ialltoallv(_sbuf,_send_counts,_send_indexes,datatype,
-                       recv_buf,_recv_counts,_recv_indexes,datatype,
-                       m_communicator,&mpi_request);
+  ret = MPI_Ialltoallv(_sbuf, _send_counts, _send_indexes, datatype,
+                       recv_buf, _recv_counts, _recv_indexes, datatype,
+                       m_communicator, &mpi_request);
   double end_time = MPI_Wtime();
-  double sr_time = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   //TODO determine the message size
-  m_stat->add("IAllToAll",sr_time,0);
+  m_stat->add("IAllToAll", sr_time, 0);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return buildRequest(ret,mpi_request);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -730,27 +747,26 @@ nonBlockingBarrier()
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
-  ret = MPI_Ibarrier(m_communicator,&mpi_request);
+  ret = MPI_Ibarrier(m_communicator, &mpi_request);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return buildRequest(ret,mpi_request);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-allReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op)
+allReduce(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int _n = _checkSize(count);
   double begin_time = MPI_Wtime();
   _trace(MpiInfo(eMpiName::Allreduce).name().localstr());
-  try{
+  try {
     ++m_nb_all_reduce;
     m_mpi_prof->allReduce(_sbuf, recv_buf, _n, datatype, op, m_communicator);
   }
-  catch(TimeoutException& ex)
-  {
+  catch (TimeoutException& ex) {
     std::ostringstream ostr;
     ostr << "MPI_Allreduce"
          << " send_buf=" << send_buf
@@ -763,14 +779,14 @@ allReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,
     throw;
   }
   double end_time = MPI_Wtime();
-  m_stat->add(MpiInfo(eMpiName::Allreduce).name(),end_time-begin_time,count);
+  m_stat->add(MpiInfo(eMpiName::Allreduce).name(), end_time - begin_time, count);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-nonBlockingAllReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op)
+nonBlockingAllReduce(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op)
 {
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = -1;
@@ -778,30 +794,29 @@ nonBlockingAllReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatyp
   int _n = _checkSize(count);
   double begin_time = MPI_Wtime();
   _trace("MPI_IAllreduce");
-  ret = MPI_Iallreduce(_sbuf,recv_buf,_n,datatype,op,m_communicator,&mpi_request);
+  ret = MPI_Iallreduce(_sbuf, recv_buf, _n, datatype, op, m_communicator, &mpi_request);
   double end_time = MPI_Wtime();
-  m_stat->add("IReduce",end_time-begin_time,_n);
+  m_stat->add("IReduce", end_time - begin_time, _n);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return buildRequest(ret,mpi_request);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-reduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op,Integer root)
+reduce(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op, Integer root)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int _n = _checkSize(count);
   int _root = static_cast<int>(root);
   double begin_time = MPI_Wtime();
   _trace(MpiInfo(eMpiName::Reduce).name().localstr());
-  try{
+  try {
     ++m_nb_reduce;
     m_mpi_prof->reduce(_sbuf, recv_buf, _n, datatype, op, _root, m_communicator);
   }
-  catch(TimeoutException& ex)
-  {
+  catch (TimeoutException& ex) {
     std::ostringstream ostr;
     ostr << "MPI_reduce"
          << " send_buf=" << send_buf
@@ -814,16 +829,16 @@ reduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI
     ex.setAdditionalInfo(ostr.str());
     throw;
   }
-  
+
   double end_time = MPI_Wtime();
-  m_stat->add(MpiInfo(eMpiName::Reduce).name(),end_time-begin_time,0);
+  m_stat->add(MpiInfo(eMpiName::Reduce).name(), end_time - begin_time, 0);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-scan(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op)
+scan(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int _n = _checkSize(count);
@@ -831,16 +846,16 @@ scan(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_O
   _trace(MpiInfo(eMpiName::Scan).name().localstr());
   m_mpi_prof->scan(_sbuf, recv_buf, _n, datatype, op, m_communicator);
   double end_time = MPI_Wtime();
-  m_stat->add(MpiInfo(eMpiName::Scan).name(),end_time-begin_time,count);
+  m_stat->add(MpiInfo(eMpiName::Scan).name(), end_time - begin_time, count);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-directSendRecv(const void* send_buffer,Int64 send_buffer_size,
-               void* recv_buffer,Int64 recv_buffer_size,
-               Int32 proc,Int64 elem_size,MPI_Datatype data_type)
+directSendRecv(const void* send_buffer, Int64 send_buffer_size,
+               void* recv_buffer, Int64 recv_buffer_size,
+               Int32 proc, Int64 elem_size, MPI_Datatype data_type)
 {
   void* v_send_buffer = const_cast<void*>(send_buffer);
   MPI_Status mpi_status;
@@ -849,24 +864,24 @@ directSendRecv(const void* send_buffer,Int64 send_buffer_size,
   int sbuf_size = _checkSize(send_buffer_size);
   int rbuf_size = _checkSize(recv_buffer_size);
   m_mpi_prof->sendRecv(v_send_buffer, sbuf_size, data_type, proc, 99,
-                  recv_buffer, rbuf_size, data_type, proc, 99,
-                  m_communicator, &mpi_status);
+                       recv_buffer, rbuf_size, data_type, proc, 99,
+                       m_communicator, &mpi_status);
   double end_time = MPI_Wtime();
   Int64 send_size = send_buffer_size * elem_size;
   Int64 recv_size = recv_buffer_size * elem_size;
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
 
   //debug(Trace::High) << "MPI SendRecv: send " << send_size << " recv "
   //                      << recv_size << " time " << sr_time ;
-  m_stat->add(MpiInfo(eMpiName::Sendrecv).name(),sr_time,send_size+recv_size);
+  m_stat->add(MpiInfo(eMpiName::Sendrecv).name(), sr_time, send_size + recv_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-sendNonBlockingNoStat(const void* send_buffer,Int64 send_buffer_size,
-                      Int32 dest_rank,MPI_Datatype data_type,int mpi_tag)
+sendNonBlockingNoStat(const void* send_buffer, Int64 send_buffer_size,
+                      Int32 dest_rank, MPI_Datatype data_type, int mpi_tag)
 {
   void* v_send_buffer = const_cast<void*>(send_buffer);
   MPI_Request mpi_request = MPI_REQUEST_NULL;
@@ -876,17 +891,16 @@ sendNonBlockingNoStat(const void* send_buffer,Int64 send_buffer_size,
   if (m_is_trace)
     info() << " ISend ret=" << ret << " proc=" << dest_rank << " tag=" << mpi_tag << " request=" << mpi_request;
   ARCCORE_ADD_REQUEST(mpi_request);
-  return buildRequest(ret,mpi_request);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-directSend(const void* send_buffer,Int64 send_buffer_size,
-           Int32 proc,Int64 elem_size,MPI_Datatype data_type,
-           int mpi_tag,bool is_blocked
-           )
+directSend(const void* send_buffer, Int64 send_buffer_size,
+           Int32 proc, Int64 elem_size, MPI_Datatype data_type,
+           int mpi_tag, bool is_blocked)
 {
   void* v_send_buffer = const_cast<void*>(send_buffer);
   MPI_Request mpi_request = MPI_REQUEST_NULL;
@@ -902,12 +916,12 @@ directSend(const void* send_buffer,Int64 send_buffer_size,
            << " tag=" << mpi_tag
            << " datatype=" << data_type
            << " blocking " << is_blocked;
-  if (is_blocked){
+  if (is_blocked) {
     // if m_mpi_lock is not null, we must
     // use an MPI_ISend followed by an
     // active MPI_Test loop to avoid any
     // dead lock issues.
-    if (m_mpi_lock){
+    if (m_mpi_lock) {
       {
         MpiLock::Section mls(m_mpi_lock);
         begin_time = MPI_Wtime();
@@ -916,17 +930,17 @@ directSend(const void* send_buffer,Int64 send_buffer_size,
       }
       int is_finished = 0;
       MPI_Status mpi_status;
-      while (is_finished==0){
+      while (is_finished == 0) {
         MpiLock::Section mls(m_mpi_lock);
-	      MPI_Request_get_status(mpi_request,&is_finished,&mpi_status);
-        if (is_finished!=0){
-          m_mpi_prof->wait(&mpi_request, (MPI_Status *) MPI_STATUS_IGNORE);
+        MPI_Request_get_status(mpi_request, &is_finished, &mpi_status);
+        if (is_finished != 0) {
+          m_mpi_prof->wait(&mpi_request, (MPI_Status*)MPI_STATUS_IGNORE);
           end_time = MPI_Wtime();
           mpi_request = MPI_REQUEST_NULL;
         }
       }
     }
-    else{
+    else {
       MpiLock::Section mls(m_mpi_lock);
       begin_time = MPI_Wtime();
       int sbuf_size = _checkSize(send_buffer_size);
@@ -934,7 +948,7 @@ directSend(const void* send_buffer,Int64 send_buffer_size,
       end_time = MPI_Wtime();
     }
   }
-  else{
+  else {
     {
       MpiLock::Section mls(m_mpi_lock);
       begin_time = MPI_Wtime();
@@ -945,28 +959,28 @@ directSend(const void* send_buffer,Int64 send_buffer_size,
       end_time = MPI_Wtime();
       ARCCORE_ADD_REQUEST(mpi_request);
     }
-    if (m_is_trace){
+    if (m_is_trace) {
       info() << "MPI Send: send after"
              << " request=" << mpi_request;
     }
   }
-  double sr_time   = (end_time-begin_time);
-  
+  double sr_time = (end_time - begin_time);
+
   debug(Trace::High) << "MPI Send: send " << send_size
                      << " time " << sr_time << " blocking " << is_blocked;
   // TODO(FL): look into how to profile Isend
-  m_stat->add(MpiInfo(eMpiName::Send).name(),end_time-begin_time,send_size);
-  return buildRequest(ret,mpi_request);
+  m_stat->add(MpiInfo(eMpiName::Send).name(), end_time - begin_time, send_size);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-directSendPack(const void* send_buffer,Int64 send_buffer_size,
-               Int32 proc,int mpi_tag,bool is_blocked)
+directSendPack(const void* send_buffer, Int64 send_buffer_size,
+               Int32 proc, int mpi_tag, bool is_blocked)
 {
-  return directSend(send_buffer,send_buffer_size,proc,1,MPI_PACKED,mpi_tag,is_blocked);
+  return directSend(send_buffer, send_buffer_size, proc, 1, MPI_PACKED, mpi_tag, is_blocked);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -989,43 +1003,43 @@ commSplit(bool keep)
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-receiveNonBlockingNoStat(void* recv_buffer,Int64 recv_buffer_size,
-                         Int32 source_rank,MPI_Datatype data_type,int mpi_tag)
+receiveNonBlockingNoStat(void* recv_buffer, Int64 recv_buffer_size,
+                         Int32 source_rank, MPI_Datatype data_type, int mpi_tag)
 {
   int rbuf_size = _checkSize(recv_buffer_size);
   int ret = 0;
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, source_rank, mpi_tag, m_communicator, &mpi_request);
   ARCCORE_ADD_REQUEST(mpi_request);
-  return buildRequest(ret,mpi_request);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-directRecv(void* recv_buffer,Int64 recv_buffer_size,
-           Int32 proc,Int64 elem_size,MPI_Datatype data_type,
-           int mpi_tag,bool is_blocked)
+directRecv(void* recv_buffer, Int64 recv_buffer_size,
+           Int32 proc, Int64 elem_size, MPI_Datatype data_type,
+           int mpi_tag, bool is_blocked)
 {
-  MPI_Status  mpi_status;
+  MPI_Status mpi_status;
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   int ret = 0;
   double begin_time = 0.0;
   double end_time = 0.0;
-  
+
   int i_proc = 0;
-  if (proc==A_PROC_NULL_RANK)
-    ARCCORE_THROW(NotImplementedException,"Receive with MPI_PROC_NULL");
+  if (proc == A_PROC_NULL_RANK)
+    ARCCORE_THROW(NotImplementedException, "Receive with MPI_PROC_NULL");
   if (proc == A_NULL_RANK && !m_is_allow_null_rank_for_any_source)
     ARCCORE_FATAL("Can not use A_NULL_RANK for any source. Use A_ANY_SOURCE_RANK instead");
-  if (proc==A_NULL_RANK || proc==A_ANY_SOURCE_RANK)
+  if (proc == A_NULL_RANK || proc == A_ANY_SOURCE_RANK)
     i_proc = MPI_ANY_SOURCE;
   else
     i_proc = static_cast<int>(proc);
 
   Int64 recv_size = recv_buffer_size * elem_size;
-  if (m_is_trace){
+  if (m_is_trace) {
     info() << "MPI_TRACE: MPI Recv: recv before "
            << " size=" << recv_size
            << " from=" << i_proc
@@ -1033,12 +1047,12 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
            << " datatype=" << data_type
            << " blocking=" << is_blocked;
   }
-  if (is_blocked){
+  if (is_blocked) {
     // if m_mpi_lock is not null, we must
     // use an MPI_IRecv followed by an
     // active MPI_Test loop to avoid any
     // dead lock issues.
-    if (m_mpi_lock){
+    if (m_mpi_lock) {
       {
         MpiLock::Section mls(m_mpi_lock);
         begin_time = MPI_Wtime();
@@ -1047,17 +1061,17 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
       }
       int is_finished = 0;
       MPI_Status mpi_status;
-      while (is_finished==0){
+      while (is_finished == 0) {
         MpiLock::Section mls(m_mpi_lock);
-	      MPI_Request_get_status(mpi_request,&is_finished,&mpi_status);
-        if (is_finished!=0){
+        MPI_Request_get_status(mpi_request, &is_finished, &mpi_status);
+        if (is_finished != 0) {
           end_time = MPI_Wtime();
-          m_mpi_prof->wait(&mpi_request, (MPI_Status *) MPI_STATUS_IGNORE);
+          m_mpi_prof->wait(&mpi_request, (MPI_Status*)MPI_STATUS_IGNORE);
           mpi_request = MPI_REQUEST_NULL;
         }
       }
     }
-    else{
+    else {
       MpiLock::Section mls(m_mpi_lock);
       begin_time = MPI_Wtime();
       int rbuf_size = _checkSize(recv_buffer_size);
@@ -1065,7 +1079,7 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
       end_time = MPI_Wtime();
     }
   }
-  else{
+  else {
     {
       MpiLock::Section mls(m_mpi_lock);
       begin_time = MPI_Wtime();
@@ -1074,24 +1088,24 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
       end_time = MPI_Wtime();
       ARCCORE_ADD_REQUEST(mpi_request);
     }
-    if (m_is_trace){
+    if (m_is_trace) {
       info() << "MPI Recv: recv after "
              << " request=" << mpi_request;
     }
   }
-  double sr_time   = (end_time-begin_time);
-  
+  double sr_time = (end_time - begin_time);
+
   debug(Trace::High) << "MPI Recv: recv after " << recv_size
                      << " time " << sr_time << " blocking " << is_blocked;
-  m_stat->add(MpiInfo(eMpiName::Recv).name(),end_time-begin_time,recv_size);
-  return buildRequest(ret,mpi_request);
+  m_stat->add(MpiInfo(eMpiName::Recv).name(), end_time - begin_time, recv_size);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc)
+probeRecvPack(UniqueArray<Byte>& recv_buffer, Int32 proc)
 {
   double begin_time = MPI_Wtime();
   MPI_Status status;
@@ -1105,10 +1119,10 @@ probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc)
 
   double end_time = MPI_Wtime();
   Int64 recv_size = recv_buffer_size;
-  double sr_time   = (end_time-begin_time);
+  double sr_time = (end_time - begin_time);
   debug(Trace::High) << "MPI probeRecvPack " << recv_size
                      << " time " << sr_time;
-  m_stat->add(MpiInfo(eMpiName::Recv).name(),end_time-begin_time,recv_size);
+  m_stat->add(MpiInfo(eMpiName::Recv).name(), end_time - begin_time, recv_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1119,17 +1133,17 @@ _buildSourceInfoFromStatus(const MPI_Status& mpi_status)
 {
   // Retrieves the message size in bytes.
   MPI_Count message_size = 0;
-  MPI_Get_elements_x(&mpi_status,MPI_BYTE,&message_size);
+  MPI_Get_elements_x(&mpi_status, MPI_BYTE, &message_size);
   MessageTag tag(mpi_status.MPI_TAG);
   MessageRank rank(mpi_status.MPI_SOURCE);
-  return MessageSourceInfo(rank,tag,message_size);
+  return MessageSourceInfo(rank, tag, message_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MessageId MpiAdapter::
-_probeMessage(MessageRank source,MessageTag tag,bool is_blocking)
+_probeMessage(MessageRank source, MessageTag tag, bool is_blocking)
 {
   MPI_Status mpi_status;
   int has_message = 0;
@@ -1137,7 +1151,7 @@ _probeMessage(MessageRank source,MessageTag tag,bool is_blocking)
   int ret = 0;
   int mpi_source = source.value();
   if (source.isProcNull())
-    ARCCORE_THROW(NotImplementedException,"Probe with MPI_PROC_NULL");
+    ARCCORE_THROW(NotImplementedException, "Probe with MPI_PROC_NULL");
   if (source.isNull() && !m_is_allow_null_rank_for_any_source)
     ARCCORE_FATAL("Can not use MPI_Mprobe with null rank. Use MessageRank::anySourceRank() instead");
   if (source.isNull() || source.isAnySource())
@@ -1145,19 +1159,19 @@ _probeMessage(MessageRank source,MessageTag tag,bool is_blocking)
   int mpi_tag = tag.value();
   if (tag.isNull())
     mpi_tag = MPI_ANY_TAG;
-  if (is_blocking){
-    ret = MPI_Mprobe(mpi_source,mpi_tag,m_communicator,&message,&mpi_status);
+  if (is_blocking) {
+    ret = MPI_Mprobe(mpi_source, mpi_tag, m_communicator, &message, &mpi_status);
     has_message = true;
   }
   else {
     ret = MPI_Improbe(mpi_source, mpi_tag, m_communicator, &has_message, &message, &mpi_status);
   }
-  if (ret!=0)
-    ARCCORE_FATAL("Error during call to MPI_Mprobe r={0}",ret);
+  if (ret != 0)
+    ARCCORE_FATAL("Error during call to MPI_Mprobe r={0}", ret);
   MessageId ret_message;
-  if (has_message!=0){
+  if (has_message != 0) {
     MessageSourceInfo si(_buildSourceInfoFromStatus(mpi_status));
-    ret_message = MessageId(si,message);
+    ret_message = MessageId(si, message);
   }
   return ret_message;
 }
@@ -1175,21 +1189,21 @@ probeMessage(PointToPointMessageInfo message)
   if (!message.isRankTag())
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
-  return _probeMessage(message.destinationRank(),message.tag(),message.isBlocking());
+  return _probeMessage(message.destinationRank(), message.tag(), message.isBlocking());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MessageSourceInfo MpiAdapter::
-_legacyProbeMessage(MessageRank source,MessageTag tag,bool is_blocking)
+_legacyProbeMessage(MessageRank source, MessageTag tag, bool is_blocking)
 {
   MPI_Status mpi_status;
   int has_message = 0;
   int ret = 0;
   int mpi_source = source.value();
   if (source.isProcNull())
-    ARCCORE_THROW(NotImplementedException,"Probe with MPI_PROC_NULL");
+    ARCCORE_THROW(NotImplementedException, "Probe with MPI_PROC_NULL");
   if (source.isNull() && !m_is_allow_null_rank_for_any_source)
     ARCCORE_FATAL("Can not use MPI_Probe with null rank. Use MessageRank::anySourceRank() instead");
   if (source.isNull() || source.isAnySource())
@@ -1197,15 +1211,15 @@ _legacyProbeMessage(MessageRank source,MessageTag tag,bool is_blocking)
   int mpi_tag = tag.value();
   if (tag.isNull())
     mpi_tag = MPI_ANY_TAG;
-  if (is_blocking){
-    ret = MPI_Probe(mpi_source,mpi_tag,m_communicator,&mpi_status);
+  if (is_blocking) {
+    ret = MPI_Probe(mpi_source, mpi_tag, m_communicator, &mpi_status);
     has_message = true;
   }
   else
-    ret = MPI_Iprobe(mpi_source,mpi_tag,m_communicator,&has_message,&mpi_status);
-  if (ret!=0)
-    ARCCORE_FATAL("Error during call to MPI_Mprobe r={0}",ret);
-  if (has_message!=0)
+    ret = MPI_Iprobe(mpi_source, mpi_tag, m_communicator, &has_message, &mpi_status);
+  if (ret != 0)
+    ARCCORE_FATAL("Error during call to MPI_Mprobe r={0}", ret);
+  if (has_message != 0)
     return _buildSourceInfoFromStatus(mpi_status);
   return {};
 }
@@ -1223,7 +1237,7 @@ legacyProbeMessage(PointToPointMessageInfo message)
   if (!message.isRankTag())
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
-  return _legacyProbeMessage(message.destinationRank(),message.tag(),message.isBlocking());
+  return _legacyProbeMessage(message.destinationRank(), message.tag(), message.isBlocking());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1231,11 +1245,11 @@ legacyProbeMessage(PointToPointMessageInfo message)
 
 //! Reception via MPI_Mrecv() or MPI_Imrecv()
 Request MpiAdapter::
-directRecv(void* recv_buffer,Int64 recv_buffer_size,
-           MessageId message,Int64 elem_size,MPI_Datatype data_type,
+directRecv(void* recv_buffer, Int64 recv_buffer_size,
+           MessageId message, Int64 elem_size, MPI_Datatype data_type,
            bool is_blocked)
 {
-  MPI_Status  mpi_status;
+  MPI_Status mpi_status;
   MPI_Request mpi_request = MPI_REQUEST_NULL;
   MPI_Message mpi_message = (MPI_Message)message;
   int ret = 0;
@@ -1243,79 +1257,79 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
   double end_time = 0.0;
 
   Int64 recv_size = recv_buffer_size * elem_size;
-  if (m_is_trace){
+  if (m_is_trace) {
     info() << "MPI_TRACE: MPI Mrecv: recv before "
            << " size=" << recv_size
            << " from_msg=" << message
            << " datatype=" << data_type
            << " blocking=" << is_blocked;
   }
-  if (is_blocked){
+  if (is_blocked) {
     // if m_mpi_lock is not null, we must
     // use an MPI_IRecv followed by an
     // active MPI_Test loop to avoid any
     // dead lock issues.
-    if (m_mpi_lock){
+    if (m_mpi_lock) {
       {
         MpiLock::Section mls(m_mpi_lock);
         begin_time = MPI_Wtime();
         int rbuf_size = _checkSize(recv_buffer_size);
-        MPI_Imrecv(recv_buffer,rbuf_size,data_type,&mpi_message,&mpi_request);
+        MPI_Imrecv(recv_buffer, rbuf_size, data_type, &mpi_message, &mpi_request);
         //m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, i_proc, mpi_tag, m_communicator, &mpi_request);
       }
       int is_finished = 0;
       MPI_Status mpi_status;
-      while (is_finished==0){
+      while (is_finished == 0) {
         MpiLock::Section mls(m_mpi_lock);
-	      MPI_Request_get_status(mpi_request,&is_finished,&mpi_status);
-        if (is_finished!=0){
+        MPI_Request_get_status(mpi_request, &is_finished, &mpi_status);
+        if (is_finished != 0) {
           end_time = MPI_Wtime();
-          m_mpi_prof->wait(&mpi_request, (MPI_Status *) MPI_STATUS_IGNORE);
+          m_mpi_prof->wait(&mpi_request, (MPI_Status*)MPI_STATUS_IGNORE);
           mpi_request = MPI_REQUEST_NULL;
         }
       }
     }
-    else{
+    else {
       MpiLock::Section mls(m_mpi_lock);
       begin_time = MPI_Wtime();
       int rbuf_size = _checkSize(recv_buffer_size);
-      MPI_Mrecv(recv_buffer,rbuf_size,data_type,&mpi_message,&mpi_status);
+      MPI_Mrecv(recv_buffer, rbuf_size, data_type, &mpi_message, &mpi_status);
       //m_mpi_prof->recv(recv_buffer, rbuf_size, data_type, i_proc, mpi_tag, m_communicator, &mpi_status);
       end_time = MPI_Wtime();
     }
   }
-  else{
+  else {
     {
       MpiLock::Section mls(m_mpi_lock);
       begin_time = MPI_Wtime();
       int rbuf_size = _checkSize(recv_buffer_size);
       //m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, i_proc, mpi_tag, m_communicator, &mpi_request);
-      ret = MPI_Imrecv(recv_buffer,rbuf_size,data_type,&mpi_message,&mpi_request);
+      ret = MPI_Imrecv(recv_buffer, rbuf_size, data_type, &mpi_message, &mpi_request);
       //m_mpi_prof->iRecv(recv_buffer, rbuf_size, data_type, i_proc, mpi_tag, m_communicator, &mpi_request);
       end_time = MPI_Wtime();
       ARCCORE_ADD_REQUEST(mpi_request);
     }
-    if (m_is_trace){
+    if (m_is_trace) {
       info() << "MPI Recv: recv after "
              << " request=" << mpi_request;
     }
   }
-  double sr_time   = (end_time-begin_time);
-  
+  double sr_time = (end_time - begin_time);
+
   debug(Trace::High) << "MPI Recv: recv after " << recv_size
                      << " time " << sr_time << " blocking " << is_blocked;
-  m_stat->add(MpiInfo(eMpiName::Recv).name(),end_time-begin_time,recv_size);
-  return buildRequest(ret,mpi_request);
+  m_stat->add(MpiInfo(eMpiName::Recv).name(), end_time - begin_time, recv_size);
+  return buildRequest(ret, mpi_request);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Request MpiAdapter::
-directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
-               Int32 proc,int mpi_tag,bool is_blocking)
+directRecvPack(void* recv_buffer, Int64 recv_buffer_size,
+               Int32 proc, int mpi_tag, bool is_blocking)
 {
-  return directRecv(recv_buffer,recv_buffer_size,proc,1,MPI_PACKED,mpi_tag,is_blocking);
+  return directRecv(recv_buffer, recv_buffer_size, proc, 1, MPI_PACKED, mpi_tag, is_blocking);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1327,7 +1341,7 @@ waitAllRequests(ArrayView<Request> requests)
 {
   UniqueArray<bool> indexes(requests.size());
   UniqueArray<MPI_Status> mpi_status(requests.size());
-  while (_waitAllRequestsMPI(requests, indexes, mpi_status)){
+  while (_waitAllRequestsMPI(requests, indexes, mpi_status)) {
     ; // Continue as long as there are requests.
   }
 }
@@ -1367,28 +1381,28 @@ struct MpiAdapter::SubRequestInfo
 /*---------------------------------------------------------------------------*/
 
 bool MpiAdapter::
-_handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
+_handleEndRequests(ArrayView<Request> requests, ArrayView<bool> done_indexes,
                    ArrayView<MPI_Status> status)
 {
   UniqueArray<SubRequestInfo> new_requests;
   Integer size = requests.size();
   {
     MpiLock::Section mls(m_mpi_lock);
-    for( Integer i=0; i<size; ++i ) {
-      if (done_indexes[i]){
+    for (Integer i = 0; i < size; ++i) {
+      if (done_indexes[i]) {
         // Be careful to use a reference, otherwise the reset won't
         // apply to the correct variable
         Request& r = requests[i];
         // Note: the request might not be valid (for example, if it is)
         // a blocking request but still have a sub-request.
-        if (r.hasSubRequest()){
+        if (r.hasSubRequest()) {
           if (m_is_trace)
             info() << "Done request with sub-request r=" << r << " mpi_r=" << r << " i=" << i
                    << " source_rank=" << status[i].MPI_SOURCE
                    << " source_tag=" << status[i].MPI_TAG;
           new_requests.add(SubRequestInfo(r.subRequest(), i, status[i].MPI_SOURCE, status[i].MPI_TAG));
         }
-        if (r.isValid()){
+        if (r.isValid()) {
           _removeRequest((MPI_Request)(r));
           r.reset();
         }
@@ -1399,20 +1413,20 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
   // NOTE: calls to sub-requests can generate other requests.
   // Care must be taken not to use sub-requests while the lock is active.
   bool has_new_request = false;
-  if (!new_requests.empty()){
+  if (!new_requests.empty()) {
     // Contains the status of the i-th request
     UniqueArray<MPI_Status> old_status(size);
     {
       Integer index = 0;
-      for( Integer i=0; i<size; ++i ){
-        if (done_indexes[i]){
+      for (Integer i = 0; i < size; ++i) {
+        if (done_indexes[i]) {
           old_status[i] = status[index];
           ++index;
         }
       }
     }
     // If there are new requests, the values in 'status' must be shifted
-    for( SubRequestInfo& sri : new_requests ){
+    for (SubRequestInfo& sri : new_requests) {
       Integer index = sri.index;
       if (m_is_trace)
         info() << "Before handle new request index=" << index
@@ -1425,7 +1439,7 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
       // If there is a new request, it replaces
       // the old one, so we must act as if
       // the original request is not finished.
-      if (r.isValid()){
+      if (r.isValid()) {
         has_new_request = true;
         requests[index] = r;
         done_indexes[index] = false;
@@ -1433,14 +1447,13 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
     }
     {
       Integer index = 0;
-      for( Integer i=0; i<size; ++i ){
-        if (done_indexes[i]){
+      for (Integer i = 0; i < size; ++i) {
+        if (done_indexes[i]) {
           status[index] = old_status[i];
           ++index;
         }
       }
     }
-
   }
   return has_new_request;
 }
@@ -1454,30 +1467,30 @@ _waitAllRequestsMPI(ArrayView<Request> requests,
                     ArrayView<MPI_Status> mpi_status)
 {
   Integer size = requests.size();
-  if (size==0)
+  if (size == 0)
     return false;
   //ATTENTION: Mpi modifies this array upon return from MPI_Waitall
   UniqueArray<MPI_Request> mpi_request(size);
-  for( Integer i=0; i<size; ++i ){
+  for (Integer i = 0; i < size; ++i) {
     mpi_request[i] = (MPI_Request)(requests[i]);
   }
   if (m_is_trace)
     info() << " MPI_waitall begin size=" << size;
   double diff_time = 0.0;
-  if (m_mpi_lock){
+  if (m_mpi_lock) {
     double begin_time = MPI_Wtime();
-    for( Integer i=0; i<size; ++i ){
+    for (Integer i = 0; i < size; ++i) {
       MPI_Request request = (MPI_Request)(mpi_request[i]);
       int is_finished = 0;
-      while (is_finished==0){
+      while (is_finished == 0) {
         MpiLock::Section mls(m_mpi_lock);
-        m_mpi_prof->test(&request, &is_finished, (MPI_Status *) MPI_STATUS_IGNORE);
+        m_mpi_prof->test(&request, &is_finished, (MPI_Status*)MPI_STATUS_IGNORE);
       }
     }
     double end_time = MPI_Wtime();
     diff_time = end_time - begin_time;
   }
-  else{
+  else {
     //TODO: transform into a while loop and MPI_Testall if m_mpi_lock is non-null
     MpiLock::Section mls(m_mpi_lock);
     double begin_time = MPI_Wtime();
@@ -1487,14 +1500,14 @@ _waitAllRequestsMPI(ArrayView<Request> requests,
   }
 
   // Indicates that each request has been processed because we performed a waitall.
-  for( Integer i=0; i<size; ++i ){
+  for (Integer i = 0; i < size; ++i) {
     indexes[i] = true;
   }
 
-  bool has_new_request = _handleEndRequests(requests,indexes,mpi_status);
+  bool has_new_request = _handleEndRequests(requests, indexes, mpi_status);
   if (m_is_trace)
     info() << " MPI_waitall end size=" << size;
-  m_stat->add(MpiInfo(eMpiName::Waitall).name(),diff_time,size);
+  m_stat->add(MpiInfo(eMpiName::Waitall).name(), diff_time, size);
   return has_new_request;
 }
 
@@ -1502,11 +1515,11 @@ _waitAllRequestsMPI(ArrayView<Request> requests,
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
-                    ArrayView<MPI_Status> mpi_status,bool is_non_blocking)
+waitSomeRequestsMPI(ArrayView<Request> requests, ArrayView<bool> indexes,
+                    ArrayView<MPI_Status> mpi_status, bool is_non_blocking)
 {
   Integer size = requests.size();
-  if (size==0)
+  if (size == 0)
     return;
   //TODO: use StackArray (when they become available...)
   UniqueArray<MPI_Request> mpi_request(size);
@@ -1536,8 +1549,8 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
 
   double begin_time = MPI_Wtime();
 
-  try{
-    if (is_non_blocking){
+  try {
+    if (is_non_blocking) {
       _trace(MpiInfo(eMpiName::Testsome).name().localstr());
       {
         MpiLock::Section mls(m_mpi_lock);
@@ -1546,11 +1559,11 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
       }
       //If there is no active handle in the list, it returns outcount = MPI_UNDEFINED.
       if (nb_completed_request == MPI_UNDEFINED) // If no requests were valid.
-      	nb_completed_request = 0;
+        nb_completed_request = 0;
       if (is_print_debug)
         debug() << "WaitSomeRequestMPI: TestSome nb_completed=" << nb_completed_request;
     }
-    else{
+    else {
       _trace(MpiInfo(eMpiName::Waitsome).name().localstr());
       {
         // TODO: if the lock exists, a testSome() loop must be performed
@@ -1562,13 +1575,12 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
       // One must not use mpi_request[i] because it is modified by Mpi
       // mpi_request[i] == MPI_REQUEST_NULL
       if (nb_completed_request == MPI_UNDEFINED) // If no requests were valid.
-      	nb_completed_request = 0;
+        nb_completed_request = 0;
       if (is_print_debug)
         debug() << "WaitSomeRequest nb_completed=" << nb_completed_request;
     }
   }
-  catch(TimeoutException& ex)
-  {
+  catch (TimeoutException& ex) {
     std::ostringstream ostr;
     if (is_non_blocking)
       ostr << MpiInfo(eMpiName::Testsome).name();
@@ -1580,7 +1592,7 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
     throw;
   }
 
-  for( int z=0; z<nb_completed_request; ++z ){
+  for (int z = 0; z < nb_completed_request; ++z) {
     int index = completed_requests[z];
     if (is_print_debug)
       debug() << "Completed my_rank=" << m_comm_rank << " z=" << z
@@ -1591,14 +1603,14 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
     indexes[index] = true;
   }
 
-  bool has_new_request = _handleEndRequests(requests,indexes,mpi_status);
-  if (has_new_request){
+  bool has_new_request = _handleEndRequests(requests, indexes, mpi_status);
+  if (has_new_request) {
     // If there are new requests, it is possible that no
     // request has completed. In the case of testSome, this is not serious.
     // In the case of waitSome, this means that we must wait again.
   }
   double end_time = MPI_Wtime();
-  m_stat->add(MpiInfo(eMpiName::Waitsome).name(),end_time-begin_time,size);
+  m_stat->add(MpiInfo(eMpiName::Waitsome).name(), end_time - begin_time, size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1607,7 +1619,7 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
 void MpiAdapter::
 freeRequest(Request& request)
 {
-  if (!request.isValid()){
+  if (!request.isValid()) {
     warning() << "MpiAdapter::freeRequest() null request r=" << (MPI_Request)request;
     _checkFatalInRequest();
     return;
@@ -1617,7 +1629,7 @@ freeRequest(Request& request)
 
     auto mr = (MPI_Request)request;
     _removeRequest(mr);
-	  MPI_Request_free(&mr);
+    MPI_Request_free(&mr);
   }
   request.reset();
 }
@@ -1643,12 +1655,12 @@ testRequest(Request& request)
     // and thus we will no longer be able to remove it
     RequestSet::Iterator request_iter = m_request_set->findRequest(mr);
 
-    m_mpi_prof->test(&mr, &is_finished, (MPI_Status *) MPI_STATUS_IGNORE);
+    m_mpi_prof->test(&mr, &is_finished, (MPI_Status*)MPI_STATUS_IGNORE);
     //info() << "** TEST REQUEST r=" << mr << " is_finished=" << is_finished;
-    if (is_finished!=0){
+    if (is_finished != 0) {
       m_request_set->removeRequest(request_iter);
       if (request.hasSubRequest())
-        ARCCORE_THROW(NotImplementedException,"SubRequest support");
+        ARCCORE_THROW(NotImplementedException, "SubRequest support");
       request.reset();
       return true;
     }
@@ -1708,7 +1720,7 @@ _checkFatalInRequest()
 void MpiAdapter::
 setMpiProfiling(IMpiProfiling* mpi_profiling)
 {
-	m_mpi_prof = mpi_profiling;
+  m_mpi_prof = mpi_profiling;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1717,7 +1729,7 @@ setMpiProfiling(IMpiProfiling* mpi_profiling)
 IMpiProfiling* MpiAdapter::
 getMpiProfiling() const
 {
-	return m_mpi_prof;
+  return m_mpi_prof;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1726,7 +1738,7 @@ getMpiProfiling() const
 void MpiAdapter::
 setProfiler(IProfiler* profiler)
 {
-  if (!profiler){
+  if (!profiler) {
     m_mpi_prof = nullptr;
     return;
   }
@@ -1734,7 +1746,7 @@ setProfiler(IProfiler* profiler)
   IMpiProfiling* p = dynamic_cast<IMpiProfiling*>(profiler);
   if (!p)
     ARCCORE_FATAL("Invalid profiler. Profiler has to implemented interface 'IMpiProfiling'");
-	m_mpi_prof = p;
+  m_mpi_prof = p;
 }
 
 /*---------------------------------------------------------------------------*/

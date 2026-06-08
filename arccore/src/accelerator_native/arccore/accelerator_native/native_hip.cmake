@@ -18,7 +18,7 @@ add_library(arccore_hip_compile_flags INTERFACE)
 target_link_directories(arccore_hip_compile_flags INTERFACE ${HIP_CLANG_INCLUDE_PATH}/lib/linux)
 
 target_compile_options(arccore_hip_compile_flags INTERFACE
-# No specific option for now
+  # No specific option for now
 )
 install(TARGETS arccore_hip_compile_flags EXPORT ArccoreTargets)
 

@@ -83,16 +83,16 @@ using Arccore::ArrayTraits;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> class EnumeratorT;
-template<typename T> class ListEnumeratorT;
+template <typename T> class EnumeratorT;
+template <typename T> class ListEnumeratorT;
 
-template<typename T> class Collection;
-template<typename T> class List;
+template <typename T> class Collection;
+template <typename T> class List;
 
 class EventObservableBase;
 class EventObserverBase;
-template<typename... Args> class EventObservable;
-template<typename... Args> class EventObserver;
+template <typename... Args> class EventObservable;
+template <typename... Args> class EventObserver;
 template <typename... Args> class EventObservableView;
 
 using StringList = List<String>;
@@ -216,10 +216,10 @@ static const Integer SIMD_PADDING_SIZE = 8;
 
 namespace Impl
 {
-class StridedLoopRangesBase;
-template <typename LoopRangesType>
-class StridedLoopRanges;
-};
+  class StridedLoopRangesBase;
+  template <typename LoopRangesType>
+  class StridedLoopRanges;
+}; // namespace Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

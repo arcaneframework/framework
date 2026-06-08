@@ -67,7 +67,8 @@ class CoreArray
   CoreArray() {}
   //! Constructs an empty array.
   CoreArray(ConstArrayView<DataType> v)
-  : m_p(v.begin(),v.end()) {}
+  : m_p(v.begin(), v.end())
+  {}
   CoreArray(Span<const DataType> v)
   : m_p(v.begin(), v.end())
   {}
@@ -157,7 +158,7 @@ class CoreArray
   }
   void add(const DataType& v)
   {
-    CoreArray::_add(m_p,v);
+    CoreArray::_add(m_p, v);
   }
   DataType& back()
   {
@@ -220,9 +221,9 @@ class CoreArray
   static Span<DataType> _span(std::vector<DataType>& c)
   {
     Int64 s = static_cast<Int64>(c.size());
-    return Span<DataType>(c.data(),s);
+    return Span<DataType>(c.data(), s);
   }
-  static void _add(std::vector<DataType>& c,const DataType& v)
+  static void _add(std::vector<DataType>& c, const DataType& v)
   {
     c.push_back(v);
   }
@@ -234,6 +235,7 @@ class CoreArray
   {
     return c.data();
   }
+
  private:
 
   ContainerType m_p;
@@ -242,7 +244,7 @@ class CoreArray
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

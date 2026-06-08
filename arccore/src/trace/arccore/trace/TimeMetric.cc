@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,13 +25,13 @@ namespace Arcane
 
 namespace
 {
-inline TimeMetricAction _build(ITimeMetricCollector* c,TimeMetricPhase p)
-{
-  if (c)
-    return TimeMetricAction(c,TimeMetricActionBuildInfo(String(),(int)p));
-  return TimeMetricAction();
-}
-}
+  inline TimeMetricAction _build(ITimeMetricCollector* c, TimeMetricPhase p)
+  {
+    if (c)
+      return TimeMetricAction(c, TimeMetricActionBuildInfo(String(), (int)p));
+    return TimeMetricAction();
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,9 +41,9 @@ initialize(ITimeMetricCollector* collector)
 {
   if (!collector)
     return;
-  m_message_passing_phase = _build(collector,TimeMetricPhase::MessagePassing);
-  m_input_output_phase = _build(collector,TimeMetricPhase::InputOutput);
-  m_computation_phase = _build(collector,TimeMetricPhase::Computation);
+  m_message_passing_phase = _build(collector, TimeMetricPhase::MessagePassing);
+  m_input_output_phase = _build(collector, TimeMetricPhase::InputOutput);
+  m_computation_phase = _build(collector, TimeMetricPhase::Computation);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ initialize(ITimeMetricCollector* collector)
 TimeMetricAction
 timeMetricPhaseMessagePassing(ITimeMetricCollector* c)
 {
-  return _build(c,TimeMetricPhase::MessagePassing);
+  return _build(c, TimeMetricPhase::MessagePassing);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -61,7 +61,7 @@ timeMetricPhaseMessagePassing(ITimeMetricCollector* c)
 TimeMetricAction
 timeMetricPhaseInputOutput(ITimeMetricCollector* c)
 {
-  return _build(c,TimeMetricPhase::InputOutput);
+  return _build(c, TimeMetricPhase::InputOutput);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -70,13 +70,13 @@ timeMetricPhaseInputOutput(ITimeMetricCollector* c)
 TimeMetricAction
 timeMetricPhaseComputation(ITimeMetricCollector* c)
 {
-  return _build(c,TimeMetricPhase::Computation);
+  return _build(c, TimeMetricPhase::Computation);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

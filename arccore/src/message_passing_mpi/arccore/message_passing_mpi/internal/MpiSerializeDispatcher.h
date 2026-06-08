@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,8 +38,11 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   class SerializeSubRequest
   {
    public:
+
     static const int MAX_REQUEST_SIZE = 256;
+
    public:
+
     Byte m_bytes[MAX_REQUEST_SIZE];
     Request m_request;
   };
@@ -52,30 +55,30 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
  public:
 
   Ref<ISerializeMessageList> createSerializeMessageListRef() override;
-  Request sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message) override;
-  Request receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message) override;
+  Request sendSerializer(const ISerializer* s, const PointToPointMessageInfo& message) override;
+  Request receiveSerializer(ISerializer* s, const PointToPointMessageInfo& message) override;
 
  public:
 
   // These methods are specific to the MPI version.
   //!@{
   Int64 serializeBufferSize() const { return m_serialize_buffer_size; }
-  Request legacySendSerializer(ISerializer* values,const PointToPointMessageInfo& message);
-  Request sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message,bool force_one_message);
-  void legacyReceiveSerializer(ISerializer* values,MessageRank rank,MessageTag mpi_tag);
+  Request legacySendSerializer(ISerializer* values, const PointToPointMessageInfo& message);
+  Request sendSerializer(const ISerializer* s, const PointToPointMessageInfo& message, bool force_one_message);
+  void legacyReceiveSerializer(ISerializer* values, MessageRank rank, MessageTag mpi_tag);
   void checkFinishedSubRequests();
   MpiAdapter* adapter() const { return m_adapter; }
   static MessageTag nextSerializeTag(MessageTag tag);
   //!@}
 
-  void broadcastSerializer(ISerializer* values,MessageRank rank);
+  void broadcastSerializer(ISerializer* values, MessageRank rank);
   ITraceMng* traceMng() const { return m_trace; }
 
  protected:
 
   // These two methods are also used by 'MpiSerializeMessageList'
-  Request _recvSerializerBytes(Span<Byte> bytes,MessageRank rank,MessageTag tag,bool is_blocking);
-  Request _recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking);
+  Request _recvSerializerBytes(Span<Byte> bytes, MessageRank rank, MessageTag tag, bool is_blocking);
+  Request _recvSerializerBytes(Span<Byte> bytes, MessageId message_id, bool is_blocking);
 
  private:
 
@@ -93,17 +96,17 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
   BasicSerializer* _castSerializer(ISerializer* serializer);
   const BasicSerializer* _castSerializer(const ISerializer* serializer);
   void _checkBigMessage(Int64 message_size);
-  Request _sendSerializerWithTag(ISerializer* values,MessageRank rank,
-                                 MessageTag mpi_tag,bool is_blocking);
-  Request _sendSerializerBytes(Span<const Byte> bytes,MessageRank rank,
-                               MessageTag tag,bool is_blocking);
+  Request _sendSerializerWithTag(ISerializer* values, MessageRank rank,
+                                 MessageTag mpi_tag, bool is_blocking);
+  Request _sendSerializerBytes(Span<const Byte> bytes, MessageRank rank,
+                               MessageTag tag, bool is_blocking);
   void _init();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::MessagePassing::Mpi
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

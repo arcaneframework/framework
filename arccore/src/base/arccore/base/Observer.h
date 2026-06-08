@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -58,26 +58,30 @@ class ARCCORE_BASE_EXPORT AbstractObserver
  * \ingroup Core
  * \brief Observer for a type T
  */
-template<class T>
+template <class T>
 class ObserverT
 : public AbstractObserver
 {
  public:
-	
+
   typedef void (T::*Func0Ptr)(); //!< Type of the member function pointer
   typedef void (T::*Func1Ptr)(const IObservable&); //!< Type of the member function pointer
 
  public:
-	
+
   //! Constructor
-  ObserverT(T* object,Func1Ptr funcptr)
-  : m_object(object), m_function0(nullptr), m_function1(funcptr) {}
-  ObserverT(T* object,Func0Ptr funcptr)
-  : m_object(object), m_function0(funcptr), m_function1(nullptr) {}
+  ObserverT(T* object, Func1Ptr funcptr)
+  : m_object(object)
+  , m_function0(nullptr)
+  , m_function1(funcptr)
+  {}
+  ObserverT(T* object, Func0Ptr funcptr)
+  : m_object(object)
+  , m_function0(funcptr)
+  , m_function1(nullptr)
+  {}
 
  public:
-  
-
  public:
 
   //! Executes the associated method
@@ -91,7 +95,7 @@ class ObserverT
 
  private:
 
-  T* m_object;    //!< Associated object.
+  T* m_object; //!< Associated object.
   Func0Ptr m_function0; //!< Pointer to the associated method.
   Func1Ptr m_function1; //!< Pointer to the associated method.
 };

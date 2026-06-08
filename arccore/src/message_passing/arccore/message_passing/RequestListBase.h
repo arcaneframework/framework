@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -23,6 +23,9 @@
 
 namespace Arcane::MessagePassing::internal
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*!
  * \internal
@@ -57,7 +60,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
   virtual void _add(Span<Request> rlist)
   {
     m_requests.addRange(rlist);
-    m_requests_done.addRange(false,rlist.size());
+    m_requests_done.addRange(false, rlist.size());
   }
   virtual void _removeRequestAtIndex(Integer pos)
   {
@@ -71,7 +74,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
    * value \a true for every completed request unless
    * \a wait_type equals WaitAll.
    */
-  virtual void _wait(eWaitType wait_type) =0;
+  virtual void _wait(eWaitType wait_type) = 0;
 
  protected:
 
@@ -88,7 +91,10 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing::internal
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arccore::MessagePassing::internal
 {

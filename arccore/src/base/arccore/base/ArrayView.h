@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -30,9 +30,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> class ConstArrayView;
-template<typename T> class ConstIterT;
-template<typename T> class IterT;
+template <typename T> class ConstArrayView;
+template <typename T> class ConstIterT;
+template <typename T> class IterT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,7 +54,7 @@ template<typename T> class IterT;
  container is not reallocated.
  Similarly, the constructor and the copy operator only copy the pointers
  without reallocating memory. Therefore, they must be used with caution.
- 
+
  If %Arccore is compiled in check mode (ARCCORE_CHECK is defined), accesses
  via the operator operator[]() are checked, and an
  IndexOutOfRangeException exception is thrown if an array overflow occurs.
@@ -91,7 +91,7 @@ template<typename T> class IterT;
  \endcode
 
 */
-template<class T>
+template <class T>
 class ArrayView
 {
   template <typename T2, Int64 Extent> friend class Span;
@@ -121,9 +121,9 @@ class ArrayView
   typedef std::ptrdiff_t difference_type;
 
   //! Type of an iterator over the entire array
-  typedef IterT< ArrayView<T> > iter;
+  typedef IterT<ArrayView<T>> iter;
   //! Type of a constant iterator over the entire array
-  typedef ConstIterT< ArrayView<T> > const_iter;
+  typedef ConstIterT<ArrayView<T>> const_iter;
 
   typedef std::reverse_iterator<iterator> reverse_iterator;
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
@@ -131,26 +131,34 @@ class ArrayView
  public:
 
   //! Constructs an empty view.
-  constexpr ArrayView() noexcept : m_size(0), m_ptr(nullptr) {}
+  constexpr ArrayView() noexcept
+  : m_size(0)
+  , m_ptr(nullptr)
+  {}
 
   //! Copy constructor from another view
   ArrayView(const ArrayView<T>& from) = default;
 
   //! Constructs a view over a memory region starting at \a ptr and
   // containing \a asize elements.
-  constexpr ArrayView(Integer asize,pointer ptr)  noexcept : m_size(asize), m_ptr(ptr) {}
+  constexpr ArrayView(Integer asize, pointer ptr) noexcept
+  : m_size(asize)
+  , m_ptr(ptr)
+  {}
 
   //! Constructs a view over a memory region starting at \a ptr and
   //! containing \a asize elements.
-  template<std::size_t N>
-  constexpr ArrayView(std::array<T,N>& v)
-  : m_size(arccoreCheckArraySize(v.size())), m_ptr(v.data()) {}
+  template <std::size_t N>
+  constexpr ArrayView(std::array<T, N>& v)
+  : m_size(arccoreCheckArraySize(v.size()))
+  , m_ptr(v.data())
+  {}
 
   //! Copy assignment operator
   ArrayView<T>& operator=(const ArrayView<T>& from) = default;
 
-  template<std::size_t N>
-  constexpr ArrayView<T>& operator=(std::array<T,N>& from)
+  template <std::size_t N>
+  constexpr ArrayView<T>& operator=(std::array<T, N>& from)
   {
     m_size = arccoreCheckArraySize(from.size());
     m_ptr = from.data();
@@ -161,9 +169,9 @@ class ArrayView
 
   //! Constructs a view over a memory region starting at \a ptr and
   // containing \a asize elements.
-  static constexpr ThatClass create(pointer ptr,Integer asize) noexcept
+  static constexpr ThatClass create(pointer ptr, Integer asize) noexcept
   {
-    return ThatClass(asize,ptr);
+    return ThatClass(asize, ptr);
   }
 
  public:
@@ -175,7 +183,7 @@ class ArrayView
    */
   constexpr reference operator[](Integer i)
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -186,7 +194,7 @@ class ArrayView
    */
   constexpr const_reference operator[](Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -197,7 +205,7 @@ class ArrayView
    */
   constexpr reference operator()(Integer i)
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -208,7 +216,7 @@ class ArrayView
    */
   constexpr const_reference operator()(Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -219,7 +227,7 @@ class ArrayView
    */
   constexpr const_reference item(Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -228,9 +236,9 @@ class ArrayView
    *
    * In \a check mode, checks for overflows.
    */
-  constexpr void setItem(Integer i,const_reference v)
+  constexpr void setItem(Integer i, const_reference v)
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     m_ptr[i] = v;
   }
 
@@ -242,11 +250,11 @@ class ArrayView
   //! Iterator to the first element of the array.
   constexpr iterator begin() noexcept { return iterator(m_ptr); }
   //! Iterator to the first element after the end of the array.
-  constexpr iterator end() noexcept { return iterator(m_ptr+m_size); }
+  constexpr iterator end() noexcept { return iterator(m_ptr + m_size); }
   //! Constant iterator to the first element of the array.
   constexpr const_iterator begin() const noexcept { return const_iterator(m_ptr); }
   //! Constant iterator to the first element after the end of the array.
-  constexpr const_iterator end() const noexcept { return const_iterator(m_ptr+m_size); }
+  constexpr const_iterator end() const noexcept { return const_iterator(m_ptr + m_size); }
   //! Reverse iterator to the first element of the array.
   constexpr reverse_iterator rbegin() noexcept { return std::make_reverse_iterator(end()); }
   //! Reverse iterator to the first element of the array.
@@ -262,48 +270,49 @@ class ArrayView
   ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<pointer> range()
   {
-    return ArrayRange<pointer>(m_ptr,m_ptr+m_size);
+    return ArrayRange<pointer>(m_ptr, m_ptr + m_size);
   }
   //! Iteration range from the first to the last element.
   ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<const_pointer> range() const
   {
-    return ArrayRange<const_pointer>(m_ptr,m_ptr+m_size);
+    return ArrayRange<const_pointer>(m_ptr, m_ptr + m_size);
   }
 
  public:
+
   //! Address of the index-th element
   constexpr pointer ptrAt(Integer index)
   {
-    ARCCORE_CHECK_AT(index,m_size);
-    return m_ptr+index;
+    ARCCORE_CHECK_AT(index, m_size);
+    return m_ptr + index;
   }
 
   //! Address of the index-th element
   constexpr const_pointer ptrAt(Integer index) const
   {
-    ARCCORE_CHECK_AT(index,m_size);
-    return m_ptr+index;
+    ARCCORE_CHECK_AT(index, m_size);
+    return m_ptr + index;
   }
 
   // Element at index \a i. Always checks for overflows
   constexpr const_reference at(Integer i) const
   {
-    arccoreCheckAt(i,m_size);
+    arccoreCheckAt(i, m_size);
     return m_ptr[i];
   }
 
   // Sets the element at index \a i. Always checks for overflows
-  void setAt(Integer i,const_reference value)
+  void setAt(Integer i, const_reference value)
   {
-    arccoreCheckAt(i,m_size);
+    arccoreCheckAt(i, m_size);
     m_ptr[i] = value;
   }
 
   //! Fills the array with the value \a o
   void fill(const T& o) noexcept
   {
-    for( Integer i=0, n=m_size; i<n; ++i )
+    for (Integer i = 0, n = m_size; i < n; ++i)
       m_ptr[i] = o;
   }
 
@@ -312,7 +321,7 @@ class ArrayView
    */
   constexpr ConstArrayView<T> constView() const noexcept
   {
-    return ConstArrayView<T>(m_size,m_ptr);
+    return ConstArrayView<T>(m_size, m_ptr);
   }
 
   /*!
@@ -322,12 +331,12 @@ class ArrayView
    * If (\a abegin+ \a asize) is greater than the size of the array,
    * the view is truncated to this size, potentially returning an empty view.
    */
-  constexpr ArrayView<T> subView(Integer abegin,Integer asize) noexcept
+  constexpr ArrayView<T> subView(Integer abegin, Integer asize) noexcept
   {
-    if (abegin>=m_size)
+    if (abegin >= m_size)
       return ArrayView<T>();
-    asize = _min(asize,m_size-abegin);
-    return ArrayView<T>(asize,m_ptr+abegin);
+    asize = _min(asize, m_size - abegin);
+    return ArrayView<T>(asize, m_ptr + abegin);
   }
 
   /*!
@@ -337,9 +346,9 @@ class ArrayView
    * If (\a abegin+ \a asize) is greater than the size of the array,
    * the view is truncated to this size, potentially returning an empty view.
    */
-  constexpr ThatClass subPart(Integer abegin,Integer asize) noexcept
+  constexpr ThatClass subPart(Integer abegin, Integer asize) noexcept
   {
-    return subView(abegin,asize);
+    return subView(abegin, asize);
   }
 
   /*!
@@ -349,24 +358,24 @@ class ArrayView
    * If (\a abegin+ \a asize) is greater than the size of the array,
    * the view is truncated to this size, potentially returning an empty view.
    */
-  constexpr ConstArrayView<T> subConstView(Integer abegin,Integer asize) const noexcept
+  constexpr ConstArrayView<T> subConstView(Integer abegin, Integer asize) const noexcept
   {
-    if (abegin>=m_size)
+    if (abegin >= m_size)
       return ConstArrayView<T>();
-    asize = _min(asize,m_size-abegin);
-    return ConstArrayView<T>(asize,m_ptr+abegin);
+    asize = _min(asize, m_size - abegin);
+    return ConstArrayView<T>(asize, m_ptr + abegin);
   }
 
   //! Sub-view corresponding to the interval \a index over \a nb_interval
-  constexpr ArrayView<T> subViewInterval(Integer index,Integer nb_interval)
+  constexpr ArrayView<T> subViewInterval(Integer index, Integer nb_interval)
   {
-    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sub-view corresponding to the interval \a index over \a nb_interval
-  constexpr ThatClass subPartInterval(Integer index,Integer nb_interval)
+  constexpr ThatClass subPartInterval(Integer index, Integer nb_interval)
   {
-    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   /*!
@@ -377,26 +386,26 @@ class ArrayView
    * current number of elements. If it is smaller, the elements of the
    * current array located at the end of the array remain unchanged.
    */
-  template<class U>
+  template <class U>
   void copy(const U& copy_array)
   {
     auto copy_size = copy_array.size();
     const_pointer copy_begin = copy_array.data();
     pointer to_ptr = m_ptr;
     Integer n = m_size;
-    if (copy_size<m_size)
+    if (copy_size < m_size)
       n = (Integer)copy_size;
-    for( Integer i=0; i<n; ++i )
+    for (Integer i = 0; i < n; ++i)
       to_ptr[i] = copy_begin[i];
   }
 
   //! Returns \a true if the array is empty (zero dimension)
-  constexpr bool empty() const noexcept { return m_size==0; }
+  constexpr bool empty() const noexcept { return m_size == 0; }
   //! \a true if the array contains the element with value \a v
   bool contains(const_reference v) const
   {
-    for( Integer i=0; i<m_size; ++i ){
-      if (m_ptr[i]==v)
+    for (Integer i = 0; i < m_size; ++i) {
+      if (m_ptr[i] == v)
         return true;
     }
     return false;
@@ -454,17 +463,17 @@ class ArrayView
 
   friend inline bool operator==(const ArrayView<T>& rhs, const ArrayView<T>& lhs)
   {
-    return impl::areEqual(rhs,lhs);
+    return impl::areEqual(rhs, lhs);
   }
 
   friend inline bool operator!=(const ArrayView<T>& rhs, const ArrayView<T>& lhs)
   {
-    return !(rhs==lhs);
+    return !(rhs == lhs);
   }
 
   friend std::ostream& operator<<(std::ostream& o, const ArrayView<T>& val)
   {
-    impl::dumpArray(o,val,500);
+    impl::dumpArray(o, val, 500);
     return o;
   }
 
@@ -484,14 +493,18 @@ class ArrayView
    * necessary to consider deleting it)
    */
   constexpr const_pointer _ptr() const noexcept { return m_ptr; }
-  
+
   /*!
    * \brief Modifies the pointer and size of the array.
    *
    * It is up to the derived class to verify the consistency between the pointer
    * allocated and the given dimension.
    */
-  void _setArray(pointer v,Integer s) noexcept { m_ptr = v; m_size = s; }
+  void _setArray(pointer v, Integer s) noexcept
+  {
+    m_ptr = v;
+    m_size = s;
+  }
 
   /*!
    * \brief Modifies the pointer to the start of the array.
@@ -512,13 +525,13 @@ class ArrayView
  private:
 
   Integer m_size; //!< Number of elements
-  pointer m_ptr;  //!< Pointer to the array
+  pointer m_ptr; //!< Pointer to the array
 
  private:
 
-  static constexpr Integer _min(Integer a,Integer b) noexcept
+  static constexpr Integer _min(Integer a, Integer b) noexcept
   {
-    return ( (a<b) ? a : b );
+    return ((a < b) ? a : b);
   }
 };
 
@@ -526,13 +539,13 @@ class ArrayView
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \ingroup Collection 
+ * \ingroup Collection
  * \brief Constant view of an array of type \a T.
  *
  * This class functions the same way as ArrayView with the only
  * difference being that the elements of the array cannot be modified.
  */
-template<class T>
+template <class T>
 class ConstArrayView
 {
   friend class Span<T>;
@@ -560,17 +573,22 @@ class ConstArrayView
   using const_value_type = typename std::add_const_t<value_type>;
 
   //! Type of a constant iterator over the entire array
-  typedef ConstIterT< ConstArrayView<T> > const_iter;
+  typedef ConstIterT<ConstArrayView<T>> const_iter;
 
   typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
  public:
 
   //! Constructs an empty array.
-  constexpr ConstArrayView() noexcept : m_size(0), m_ptr(nullptr) {}
+  constexpr ConstArrayView() noexcept
+  : m_size(0)
+  , m_ptr(nullptr)
+  {}
   //! Constructs an array with \a s elements
-  constexpr ConstArrayView(Integer s,const_pointer ptr) noexcept
-  : m_size(s), m_ptr(ptr) {}
+  constexpr ConstArrayView(Integer s, const_pointer ptr) noexcept
+  : m_size(s)
+  , m_ptr(ptr)
+  {}
   //! Copy constructor.
   ConstArrayView(const ConstArrayView<T>& from) = default;
   /*!
@@ -578,12 +596,16 @@ class ConstArrayView
    * \warning Only the pointer is copied. No memory copy is performed.
    */
   constexpr ConstArrayView(const ArrayView<T>& from) noexcept
-  : m_size(from.size()), m_ptr(from.data()) { }
+  : m_size(from.size())
+  , m_ptr(from.data())
+  {}
 
   //! Creation from a std::array
-  template<std::size_t N,typename X,typename = std::enable_if_t<std::is_same_v<X,const_value_type>> >
-  constexpr ConstArrayView(const std::array<X,N>& v)
-  : m_size(arccoreCheckArraySize(v.size())), m_ptr(v.data()) {}
+  template <std::size_t N, typename X, typename = std::enable_if_t<std::is_same_v<X, const_value_type>>>
+  constexpr ConstArrayView(const std::array<X, N>& v)
+  : m_size(arccoreCheckArraySize(v.size()))
+  , m_ptr(v.data())
+  {}
 
   /*!
    * \brief Copy assignment operator.
@@ -598,26 +620,26 @@ class ConstArrayView
   constexpr ConstArrayView<T>& operator=(const ArrayView<T>& from)
   {
     m_size = from.size();
-    m_ptr  = from.data();
+    m_ptr = from.data();
     return (*this);
   }
 
   //! Copy assignment operator
-  template<std::size_t N,typename X,typename = std::enable_if_t<std::is_same_v<X,const_value_type>> >
-  constexpr ConstArrayView<T>& operator=(const std::array<X,N>& from)
+  template <std::size_t N, typename X, typename = std::enable_if_t<std::is_same_v<X, const_value_type>>>
+  constexpr ConstArrayView<T>& operator=(const std::array<X, N>& from)
   {
     m_size = arccoreCheckArraySize(from.size());
     m_ptr = from.data();
     return (*this);
   }
- 
+
  public:
 
   //! Constructs a view over a memory region starting at \a ptr and
   //! containing \a asize elements.
-  static constexpr ThatClass create(const_pointer ptr,Integer asize) noexcept
+  static constexpr ThatClass create(const_pointer ptr, Integer asize) noexcept
   {
-    return ThatClass(asize,ptr);
+    return ThatClass(asize, ptr);
   }
 
  public:
@@ -629,12 +651,12 @@ class ConstArrayView
    * If `(abegin+asize)` is greater than the array size,
    * the view is truncated to that size, potentially returning an empty view.
    */
-  constexpr ConstArrayView<T> subView(Integer abegin,Integer asize) const noexcept
+  constexpr ConstArrayView<T> subView(Integer abegin, Integer asize) const noexcept
   {
-    if (abegin>=m_size)
+    if (abegin >= m_size)
       return ConstArrayView<T>();
-    asize = _min(asize,m_size-abegin);
-    return ConstArrayView<T>(asize,m_ptr+abegin);
+    asize = _min(asize, m_size - abegin);
+    return ConstArrayView<T>(asize, m_ptr + abegin);
   }
 
   /*!
@@ -644,9 +666,9 @@ class ConstArrayView
    * If `(abegin+asize)` is greater than the array size,
    * the view is truncated to that size, potentially returning an empty view.
    */
-  constexpr ThatClass subPart(Integer abegin,Integer asize) const noexcept
+  constexpr ThatClass subPart(Integer abegin, Integer asize) const noexcept
   {
-    return subView(abegin,asize);
+    return subView(abegin, asize);
   }
 
   /*!
@@ -656,28 +678,28 @@ class ConstArrayView
    * If `(abegin+asize)` is greater than the array size,
    * the view is truncated to that size, potentially returning an empty view.
    */
-  constexpr ConstArrayView<T> subConstView(Integer abegin,Integer asize) const noexcept
+  constexpr ConstArrayView<T> subConstView(Integer abegin, Integer asize) const noexcept
   {
-    return subView(abegin,asize);
+    return subView(abegin, asize);
   }
 
   //! Sub-view corresponding to the interval \a index over \a nb_interval
-  constexpr ConstArrayView<T> subViewInterval(Integer index,Integer nb_interval) const
+  constexpr ConstArrayView<T> subViewInterval(Integer index, Integer nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sub-view corresponding to the interval \a index over \a nb_interval
-  constexpr ThatClass subPartInterval(Integer index,Integer nb_interval) const
+  constexpr ThatClass subPartInterval(Integer index, Integer nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this,index,nb_interval);
+    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Address of the index-th element
   constexpr const_pointer ptrAt(Integer index) const
   {
-    ARCCORE_CHECK_AT(index,m_size);
-    return m_ptr+index;
+    ARCCORE_CHECK_AT(index, m_size);
+    return m_ptr + index;
   }
 
   /*!
@@ -687,7 +709,7 @@ class ConstArrayView
    */
   constexpr const_reference operator[](Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -698,7 +720,7 @@ class ConstArrayView
    */
   constexpr const_reference operator()(Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -709,7 +731,7 @@ class ConstArrayView
    */
   constexpr const_reference item(Integer i) const
   {
-    ARCCORE_CHECK_AT(i,m_size);
+    ARCCORE_CHECK_AT(i, m_size);
     return m_ptr[i];
   }
 
@@ -720,18 +742,18 @@ class ConstArrayView
   //! Iterator over the first element of the array.
   constexpr const_iterator begin() const noexcept { return const_iterator(m_ptr); }
   //! Iterator over the first element after the end of the array.
-  constexpr const_iterator end() const noexcept { return const_iterator(m_ptr+m_size); }
+  constexpr const_iterator end() const noexcept { return const_iterator(m_ptr + m_size); }
   //! Reverse iterator over the first element of the array.
   constexpr const_reverse_iterator rbegin() const noexcept { return std::make_reverse_iterator(end()); }
   //! Reverse iterator over the first element after the end of the array.
   constexpr const_reverse_iterator rend() const noexcept { return std::make_reverse_iterator(begin()); }
   //! \a true if the array is empty (size()==0)
-  constexpr bool empty() const noexcept { return m_size==0; }
+  constexpr bool empty() const noexcept { return m_size == 0; }
   //! \a true if the array contains the element of value \a v
   bool contains(const_reference v) const
   {
-    for( Integer i=0; i<m_size; ++i ){
-      if (m_ptr[i]==v)
+    for (Integer i = 0; i < m_size; ++i) {
+      if (m_ptr[i] == v)
         return true;
     }
     return false;
@@ -766,37 +788,37 @@ class ConstArrayView
   ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<const_pointer> range() const
   {
-    return ArrayRange<const_pointer>(m_ptr,m_ptr+m_size);
+    return ArrayRange<const_pointer>(m_ptr, m_ptr + m_size);
   }
 
  public:
 
   friend inline bool operator==(const ConstArrayView<T>& rhs, const ConstArrayView<T>& lhs)
   {
-    return Arcane::impl::areEqual(rhs,lhs);
+    return Arcane::impl::areEqual(rhs, lhs);
   }
 
   friend inline bool operator!=(const ConstArrayView<T>& rhs, const ConstArrayView<T>& lhs)
   {
-    return !(rhs==lhs);
+    return !(rhs == lhs);
   }
 
   friend std::ostream& operator<<(std::ostream& o, const ConstArrayView<T>& val)
   {
-    Arcane::impl::dumpArray(o,val,500);
+    Arcane::impl::dumpArray(o, val, 500);
     return o;
   }
 
  private:
 
-  Integer m_size; //!< Number of elements 
+  Integer m_size; //!< Number of elements
   const_pointer m_ptr; //!< Pointer to the start of the array
 
  private:
 
-  static constexpr Integer _min(Integer a,Integer b) noexcept
+  static constexpr Integer _min(Integer a, Integer b) noexcept
   {
-    return ( (a<b) ? a : b );
+    return ((a < b) ? a : b);
   }
 };
 
@@ -811,16 +833,16 @@ class ConstArrayView
  * \a max_print, the first and last
  * (max_print/2) elements are displayed.
  */
-template<typename T> inline void
-dumpArray(std::ostream& o,ConstArrayView<T> val,int max_print)
+template <typename T> inline void
+dumpArray(std::ostream& o, ConstArrayView<T> val, int max_print)
 {
-  impl::dumpArray(o,val,max_print);
+  impl::dumpArray(o, val, max_print);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

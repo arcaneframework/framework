@@ -34,12 +34,17 @@ class BadAllocException
 : public std::bad_alloc
 {
  public:
-  explicit BadAllocException(std::string str) : m_message(std::move(str)){}
+
+  explicit BadAllocException(std::string str)
+  : m_message(std::move(str))
+  {}
   const char* what() const ARCCORE_NOEXCEPT override
   {
     return m_message.c_str();
   }
+
  public:
+
   std::string m_message;
 };
 
@@ -78,13 +83,13 @@ _checkAllocator() const
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-_setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type)
+_setMemoryLocationHint(eMemoryLocationHint new_hint, void* ptr, Int64 sizeof_true_type)
 {
   MemoryAllocationArgs old_args = _getAllocationArgs();
   allocation_options.setMemoryLocationHint(new_hint);
   MemoryAllocationArgs new_args = _getAllocationArgs();
-  AllocatedMemoryInfo mem_info(ptr,size*sizeof_true_type,capacity*sizeof_true_type);
-  _allocator()->notifyMemoryArgsChanged(old_args,new_args,mem_info);
+  AllocatedMemoryInfo mem_info(ptr, size * sizeof_true_type, capacity * sizeof_true_type);
+  _allocator()->notifyMemoryArgsChanged(old_args, new_args, mem_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -264,8 +269,8 @@ _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const Allocat
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-overlapError(const void* begin1,Int64 size1,
-             const void* begin2,Int64 size2)
+overlapError(const void* begin1, Int64 size1,
+             const void* begin2, Int64 size2)
 {
   ARCCORE_UNUSED(begin1);
   ARCCORE_UNUSED(begin2);
@@ -331,7 +336,7 @@ debugName() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

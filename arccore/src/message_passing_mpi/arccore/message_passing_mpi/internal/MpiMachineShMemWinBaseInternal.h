@@ -11,10 +11,8 @@
 /* The segments of these windows are not contiguous in memory and can        */
 /* be resized.                                                               */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINESHMEMWINBASEINTERNAL_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINESHMEMWINBASEINTERNAL_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

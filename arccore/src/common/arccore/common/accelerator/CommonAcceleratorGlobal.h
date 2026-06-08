@@ -334,7 +334,7 @@ namespace Arcane::Accelerator::impl
 // For compatibility with older versions of Arcane.
 // To be deprecated by the end of 2026.
 using Arcane::Accelerator::isAcceleratorPolicy;
-}
+} // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

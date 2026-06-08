@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool RefBase::DeleterBase::
-_destroyHandleTrue(const void* instance,Internal::ExternalRef& handle)
+_destroyHandleTrue(const void* instance, Internal::ExternalRef& handle)
 {
   ARCCORE_UNUSED(instance);
   //std::cerr << "DELETE SERVICE i=" << instance << " h=" << handle << "\n";
@@ -47,24 +47,24 @@ _destroyHandleTrue(const void* instance,Internal::ExternalRef& handle)
 /*---------------------------------------------------------------------------*/
 
 bool RefBase::DeleterBase::
-_destroyHandle(const void* instance,Internal::ExternalRef& handle)
+_destroyHandle(const void* instance, Internal::ExternalRef& handle)
 {
-  return _destroyHandleTrue(instance,handle);
+  return _destroyHandleTrue(instance, handle);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool RefBase::DeleterBase::
-_destroyHandle(void* instance,Internal::ExternalRef& handle)
+_destroyHandle(void* instance, Internal::ExternalRef& handle)
 {
-  return _destroyHandleTrue(instance,handle);
+  return _destroyHandleTrue(instance, handle);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

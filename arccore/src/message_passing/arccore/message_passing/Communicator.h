@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,6 +25,7 @@
 
 namespace Arcane::MessagePassing
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -102,12 +103,11 @@ class ARCCORE_MESSAGEPASSING_EXPORT Communicator
     m_communicator.st = acommunicator;
   }
 
-
  public:
 
-  template<typename T>
+  template <typename T>
   operator const T*() const { return (const T*)m_communicator.cv; }
-  template<typename T>
+  template <typename T>
   operator T*() const { return (T*)m_communicator.v; }
   operator int() const { return m_communicator.i; }
   operator long() const { return m_communicator.l; }
@@ -123,20 +123,20 @@ class ARCCORE_MESSAGEPASSING_EXPORT Communicator
    */
   bool isValid() const
   {
-    if (m_type==T_Null)
+    if (m_type == T_Null)
       return false;
     // If the request type is different from the null request type,
     // then the request is considered valid.
-    if (m_type!=null_communicator_type)
+    if (m_type != null_communicator_type)
       return true;
-    if (m_type==T_Int)
-      return m_communicator.i!=null_communicator.i;
-    if (m_type==T_Long)
-      return m_communicator.l!=null_communicator.l;
-    if (m_type==T_SizeT)
-      return m_communicator.st!=null_communicator.st;
-    if (m_type==T_Ptr)
-      return m_communicator.cv!=null_communicator.cv;
+    if (m_type == T_Int)
+      return m_communicator.i != null_communicator.i;
+    if (m_type == T_Long)
+      return m_communicator.l != null_communicator.l;
+    if (m_type == T_SizeT)
+      return m_communicator.st != null_communicator.st;
+    if (m_type == T_Ptr)
+      return m_communicator.cv != null_communicator.cv;
     return false;
   }
 
@@ -154,7 +154,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Communicator
 
   void print(std::ostream& o) const;
 
-  friend inline std::ostream& operator<<(std::ostream& o,const Communicator& pcommunicator)
+  friend inline std::ostream& operator<<(std::ostream& o, const Communicator& pcommunicator)
   {
     pcommunicator.print(o);
     return o;
@@ -174,7 +174,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Communicator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

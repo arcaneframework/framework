@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,23 +31,22 @@ namespace Arcane::impl
 /*---------------------------------------------------------------------------*/
 
 //! Sub-view corresponding to the interval `index` over `nb_interval`
-template<typename ViewType> ARCCORE_HOST_DEVICE
-auto subViewInterval(ViewType view,
-                     typename ViewType::size_type index,
-                     typename ViewType::size_type nb_interval) -> ViewType
+template <typename ViewType> ARCCORE_HOST_DEVICE auto subViewInterval(ViewType view,
+                                                                      typename ViewType::size_type index,
+                                                                      typename ViewType::size_type nb_interval) -> ViewType
 {
   using size_type = typename ViewType::size_type;
-  if (nb_interval<=0)
+  if (nb_interval <= 0)
     return ViewType();
-  if (index<0 || index>=nb_interval)
+  if (index < 0 || index >= nb_interval)
     return ViewType();
   size_type n = view.size();
   size_type isize = n / nb_interval;
   size_type ibegin = index * isize;
   // For the last interval, take the remaining elements
-  if ((index+1)==nb_interval)
+  if ((index + 1) == nb_interval)
     isize = n - ibegin;
-  return ViewType::create(view.data()+ibegin,isize);
+  return ViewType::create(view.data() + ibegin, isize);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -60,27 +59,27 @@ auto subViewInterval(ViewType view,
  * If `max_print` is greater than 0, it indicates the maximum number of values
  * to display.
  */
-template<typename ViewType> inline void
-dumpArray(std::ostream& o,ViewType val,int max_print)
+template <typename ViewType> inline void
+dumpArray(std::ostream& o, ViewType val, int max_print)
 {
   using size_type = typename ViewType::size_type;
   size_type n = val.size();
-  if (max_print>0 && n>max_print){
+  if (max_print > 0 && n > max_print) {
     // Only displays the first (max_print/2) and the last (max_print/2)
     // otherwise if the array is very large it can generate enormous
     // output listings.
-    size_type z = (max_print/2);
+    size_type z = (max_print / 2);
     size_type z2 = n - z;
     o << "[0]=\"" << val[0] << '"';
-    for( size_type i=1; i<z; ++i )
+    for (size_type i = 1; i < z; ++i)
       o << " [" << i << "]=\"" << val[i] << '"';
     o << " ... ... (skipping indexes " << z << " to " << z2 << " ) ... ... ";
-    for( size_type i=(z2+1); i<n; ++i )
+    for (size_type i = (z2 + 1); i < n; ++i)
       o << " [" << i << "]=\"" << val[i] << '"';
   }
-  else{
-    for( size_type i=0; i<n; ++i ){
-      if (i!=0)
+  else {
+    for (size_type i = 0; i < n; ++i) {
+      if (i != 0)
         o << ' ';
       o << "[" << i << "]=\"" << val[i] << '"';
     }
@@ -91,15 +90,15 @@ dumpArray(std::ostream& o,ViewType val,int max_print)
 /*---------------------------------------------------------------------------*/
 
 //! Indicates if the two views are equal
-template<typename ViewType> inline bool
+template <typename ViewType> inline bool
 areEqual(ViewType rhs, ViewType lhs)
 {
   using size_type = typename ViewType::size_type;
-  if (rhs.size()!=lhs.size())
+  if (rhs.size() != lhs.size())
     return false;
   size_type s = rhs.size();
-  for( size_type i=0; i<s; ++i ){
-    if (rhs[i]!=lhs[i])
+  for (size_type i = 0; i < s; ++i) {
+    if (rhs[i] != lhs[i])
       return false;
   }
   return true;
@@ -109,19 +108,19 @@ areEqual(ViewType rhs, ViewType lhs)
 /*---------------------------------------------------------------------------*/
 
 //! Indicates if the two views are equal
-template<typename View2DType> inline bool
+template <typename View2DType> inline bool
 areEqual2D(View2DType rhs, View2DType lhs)
 {
   using size_type = typename View2DType::size_type;
   const size_type dim1_size = rhs.dim1Size();
   const size_type dim2_size = rhs.dim2Size();
-  if (dim1_size!=lhs.dim1Size())
+  if (dim1_size != lhs.dim1Size())
     return false;
-  if (dim2_size!=lhs.dim2Size())
+  if (dim2_size != lhs.dim2Size())
     return false;
-  for( size_type i=0; i<dim1_size; ++i ){
-    for( size_type j=0; j<dim2_size; ++j ){
-      if (rhs(i,j)!=lhs(i,j))
+  for (size_type i = 0; i < dim1_size; ++i) {
+    for (size_type j = 0; j < dim2_size; ++j) {
+      if (rhs(i, j) != lhs(i, j))
         return false;
     }
   }
@@ -148,7 +147,7 @@ arccoreThrowNegativeSize [[noreturn]] (Int64 size);
 inline constexpr ARCCORE_HOST_DEVICE void
 arccoreCheckIsPositive(Int64 size)
 {
-  if (size<0){
+  if (size < 0) {
 #ifdef ARCCORE_DEVICE_CODE
     assert("'size' is negative");
 #else
@@ -161,7 +160,7 @@ arccoreCheckIsPositive(Int64 size)
 inline constexpr ARCCORE_HOST_DEVICE void
 arccoreCheckIsValidInteger(Int64 size)
 {
-  if (size>=ARCCORE_INTEGER_MAX){
+  if (size >= ARCCORE_INTEGER_MAX) {
 #ifdef ARCCORE_DEVICE_CODE
     assert("'size' is bigger than ARCCORE_INTEGER_MAX");
 #else
@@ -174,7 +173,7 @@ arccoreCheckIsValidInteger(Int64 size)
 inline constexpr ARCCORE_HOST_DEVICE void
 arccoreCheckIsValidInt64(size_t size)
 {
-  if (size>=ARCCORE_INT64_MAX){
+  if (size >= ARCCORE_INT64_MAX) {
 #ifdef ARCCORE_DEVICE_CODE
     assert("'size' is bigger than ARCCORE_INT64_MAX");
 #else
@@ -186,7 +185,7 @@ arccoreCheckIsValidInt64(size_t size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::impl
+} // namespace Arcane::impl
 
 namespace Arcane
 {
@@ -322,7 +321,7 @@ class ArraySizeChecker<Int64>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -339,13 +338,13 @@ using Arcane::impl::areEqual;
 using Arcane::impl::areEqual2D;
 using Arcane::impl::dumpArray;
 using Arcane::impl::subViewInterval;
-} // namespace Arcane::impl
+} // namespace Arccore::impl
 
 namespace Arccore
 {
 using Arcane::arccoreCheckArraySize;
 using Arcane::arccoreCheckLargeArraySize;
-} // namespace Arcane
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

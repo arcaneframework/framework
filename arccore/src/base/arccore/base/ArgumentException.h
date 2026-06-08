@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,11 +33,11 @@ class ARCCORE_BASE_EXPORT ArgumentException
 : public Exception
 {
  public:
-	
+
   explicit ArgumentException(const String& where);
-  ArgumentException(const String& where,const String& message);
+  ArgumentException(const String& where, const String& message);
   explicit ArgumentException(const TraceInfo& where);
-  ArgumentException(const TraceInfo& where,const String& message);
+  ArgumentException(const TraceInfo& where, const String& message);
   ArgumentException(const ArgumentException& rhs) ARCCORE_NOEXCEPT;
   ~ArgumentException() ARCCORE_NOEXCEPT override;
 
@@ -47,7 +47,7 @@ class ARCCORE_BASE_EXPORT ArgumentException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arrcore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

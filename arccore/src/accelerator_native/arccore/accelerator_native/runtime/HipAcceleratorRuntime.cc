@@ -803,7 +803,7 @@ void _setAllocator(Accelerator::AcceleratorMemoryAllocatorBase* allocator)
   mrm->setAllocator(mem, allocator);
   mrm->setMemoryPool(mem, allocator->memoryPool());
 }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

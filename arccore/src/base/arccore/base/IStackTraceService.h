@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ class ARCCORE_BASE_EXPORT IStackTraceService
 
  public:
 
-  virtual void build() =0;
+  virtual void build() = 0;
 
  public:
 
@@ -47,7 +47,7 @@ class ARCCORE_BASE_EXPORT IStackTraceService
    * \a first_function indicates the number in the stack of the first function
    * displayed in the trace.
    */
-  virtual StackTrace stackTrace(int first_function=0) =0;
+  virtual StackTrace stackTrace(int first_function = 0) = 0;
 
   /*!
    * \brief Name of a function in the call stack.
@@ -56,13 +56,13 @@ class ARCCORE_BASE_EXPORT IStackTraceService
    * call stack. For example, 0 indicates the current function, 1 the previous one
    * (i.e., the one calling this method).
    */
-  virtual StackTrace stackTraceFunction(int function_index) =0;
+  virtual StackTrace stackTraceFunction(int function_index) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

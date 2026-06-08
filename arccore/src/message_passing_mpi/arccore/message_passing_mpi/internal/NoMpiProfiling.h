@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,6 +38,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT NoMpiProfiling
 : public IMpiProfiling
 {
  public:
+
   NoMpiProfiling() = default;
   virtual ~NoMpiProfiling() = default;
 
@@ -47,6 +48,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT NoMpiProfiling
   }
 
  public:
+
   // Bcast
   ReturnType broadcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm) final
   {
@@ -190,7 +192,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT NoMpiProfiling
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::MessagePassing::Mpi
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

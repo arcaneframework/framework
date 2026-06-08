@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -32,12 +32,16 @@ using internal::BasicSerializeMessage;
 class PointToPointSerializerMng::Impl
 {
  public:
+
   Impl(IMessagePassingMng* mpm)
-  : m_message_passing_mng(mpm), m_rank(mpm->commRank())
+  : m_message_passing_mng(mpm)
+  , m_rank(mpm->commRank())
   {
     m_message_list = mpCreateSerializeMessageListRef(mpm);
   }
+
  public:
+
   void addMessage(Ref<ISerializeMessage> message)
   {
     message->setStrategy(m_strategy);
@@ -45,19 +49,19 @@ class PointToPointSerializerMng::Impl
   }
   void processPendingMessages()
   {
-    for( auto& x : m_pending_messages ){
+    for (auto& x : m_pending_messages) {
       m_message_list->addMessage(x.get());
       m_waiting_messages.add(x);
     }
     m_pending_messages.clear();
   }
-  Integer waitMessages(eWaitType wt,const std::function<void(ISerializeMessage*)>& functor)
+  Integer waitMessages(eWaitType wt, const std::function<void(ISerializeMessage*)>& functor)
   {
     processPendingMessages();
     Integer n = m_message_list->waitMessages(wt);
     UniqueArray<Ref<ISerializeMessage>> new_waiting_messages;
-    for( auto& x : m_waiting_messages ){
-      if (x->finished()){
+    for (auto& x : m_waiting_messages) {
+      if (x->finished()) {
         functor(x.get());
       }
       else
@@ -68,13 +72,17 @@ class PointToPointSerializerMng::Impl
     return n;
   }
   bool hasMessages() const { return !m_pending_messages.empty() || !m_waiting_messages.empty(); }
+
  public:
+
   IMessagePassingMng* m_message_passing_mng;
   MessageRank m_rank;
   Ref<ISerializeMessageList> m_message_list;
   ISerializeMessage::eStrategy m_strategy = ISerializeMessage::eStrategy::Default;
   MessageTag m_tag = BasicSerializeMessage::defaultTag();
+
  private:
+
   UniqueArray<Ref<ISerializeMessage>> m_pending_messages;
   UniqueArray<Ref<ISerializeMessage>> m_waiting_messages;
 };
@@ -119,9 +127,9 @@ processPendingMessages()
 /*---------------------------------------------------------------------------*/
 
 Integer PointToPointSerializerMng::
-waitMessages(eWaitType wt,std::function<void(ISerializeMessage*)> functor)
+waitMessages(eWaitType wt, std::function<void(ISerializeMessage*)> functor)
 {
-  return m_p->waitMessages(wt,functor);
+  return m_p->waitMessages(wt, functor);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -161,7 +169,7 @@ setStrategy(ISerializeMessage::eStrategy strategy)
 Ref<ISerializeMessage> PointToPointSerializerMng::
 addSendMessage(MessageRank receiver_rank)
 {
-  auto x = BasicSerializeMessage::create(m_p->m_rank,receiver_rank,m_p->m_tag,MsgSend);
+  auto x = BasicSerializeMessage::create(m_p->m_rank, receiver_rank, m_p->m_tag, MsgSend);
   m_p->addMessage(x);
   return x;
 }
@@ -172,7 +180,7 @@ addSendMessage(MessageRank receiver_rank)
 Ref<ISerializeMessage> PointToPointSerializerMng::
 addReceiveMessage(MessageRank sender_rank)
 {
-  auto x = BasicSerializeMessage::create(m_p->m_rank,sender_rank,m_p->m_tag,MsgReceive);
+  auto x = BasicSerializeMessage::create(m_p->m_rank, sender_rank, m_p->m_tag, MsgReceive);
   m_p->addMessage(x);
   return x;
 }
@@ -183,7 +191,7 @@ addReceiveMessage(MessageRank sender_rank)
 Ref<ISerializeMessage> PointToPointSerializerMng::
 addReceiveMessage(MessageId message_id)
 {
-  auto x = BasicSerializeMessage::create(m_p->m_rank,message_id);
+  auto x = BasicSerializeMessage::create(m_p->m_rank, message_id);
   m_p->addMessage(x);
   return x;
 }

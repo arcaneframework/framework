@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,6 +41,7 @@ namespace Arcane
 class GlibMutex::Impl
 {
  public:
+
   Impl() ARCCORE_NOEXCEPT
   : m_mutex(nullptr)
   {
@@ -51,11 +52,15 @@ class GlibMutex::Impl
   {
     g_mutex_clear(m_mutex);
   }
+
  public:
+
   GMutex* value() const { return m_mutex; }
   void lock() { g_mutex_lock(m_mutex); }
   void unlock() { g_mutex_unlock(m_mutex); }
+
  private:
+
   GMutex m_mutex_instance;
   GMutex* m_mutex;
 };
@@ -75,17 +80,30 @@ GlibMutex::
   delete m_p;
 }
 
-void GlibMutex::lock() { m_p->lock(); }
-void GlibMutex::unlock() { m_p->unlock(); }
+void GlibMutex::lock()
+{
+  m_p->lock();
+}
+void GlibMutex::unlock()
+{
+  m_p->unlock();
+}
 
-GlibMutex::Lock::Lock(GlibMutex& x) : m_mutex(x.m_p){ m_mutex->lock(); }
-GlibMutex::Lock::~Lock() { m_mutex->unlock(); }
+GlibMutex::Lock::Lock(GlibMutex& x)
+: m_mutex(x.m_p)
+{
+  m_mutex->lock();
+}
+GlibMutex::Lock::~Lock()
+{
+  m_mutex->unlock();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 namespace
 {
-GPrivate null_gprivate = G_PRIVATE_INIT(nullptr);
+  GPrivate null_gprivate = G_PRIVATE_INIT(nullptr);
 }
 
 /*!
@@ -95,6 +113,7 @@ GPrivate null_gprivate = G_PRIVATE_INIT(nullptr);
 class GlibPrivate::Impl
 {
  public:
+
   Impl() ARCCORE_NOEXCEPT
   : m_private(nullptr)
   {
@@ -109,13 +128,15 @@ class GlibPrivate::Impl
   }
   void setValue(void* value)
   {
-    g_private_set(m_private,value);
+    g_private_set(m_private, value);
   }
   void* getValue()
   {
     return g_private_get(m_private);
   }
+
  private:
+
   GPrivate m_private_instance;
   GPrivate* m_private;
 };
@@ -135,9 +156,18 @@ GlibPrivate::
   delete m_p;
 }
 
-void GlibPrivate::create() { m_p->create(); }
-void GlibPrivate::setValue(void* value) { m_p->setValue(value); }
-void* GlibPrivate::getValue() { return m_p->getValue(); }
+void GlibPrivate::create()
+{
+  m_p->create();
+}
+void GlibPrivate::setValue(void* value)
+{
+  m_p->setValue(value);
+}
+void* GlibPrivate::getValue()
+{
+  return m_p->getValue();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -145,7 +175,9 @@ void* GlibPrivate::getValue() { return m_p->getValue(); }
 class GlibCond::Impl
 {
  public:
-  Impl() : m_cond(nullptr)
+
+  Impl()
+  : m_cond(nullptr)
   {
     m_cond = &m_cond_instance;
     g_cond_init(m_cond);
@@ -154,10 +186,14 @@ class GlibCond::Impl
   {
     g_cond_clear(m_cond);
   }
+
  public:
+
   void broadcast() { g_cond_broadcast(m_cond); }
-  void wait(GlibMutex::Impl* mutex) { g_cond_wait(m_cond,mutex->value()); }
+  void wait(GlibMutex::Impl* mutex) { g_cond_wait(m_cond, mutex->value()); }
+
  private:
+
   GCond m_cond_instance;
   GCond* m_cond;
 };
@@ -165,15 +201,26 @@ class GlibCond::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-GlibCond::GlibCond() : m_p(new GlibCond::Impl()){}
-GlibCond::~GlibCond() { delete m_p; }
-void GlibCond::broadcast() { m_p->broadcast(); }
-void GlibCond::wait(GlibMutex* mutex) { m_p->wait(mutex->m_p); }
+GlibCond::GlibCond()
+: m_p(new GlibCond::Impl())
+{}
+GlibCond::~GlibCond()
+{
+  delete m_p;
+}
+void GlibCond::broadcast()
+{
+  m_p->broadcast();
+}
+void GlibCond::wait(GlibMutex* mutex)
+{
+  m_p->wait(mutex->m_p);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

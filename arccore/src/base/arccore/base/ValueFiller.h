@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -179,19 +179,19 @@ class FloatFillTraitsT
 
 template <>
 class FillTraitsT<char>
-: public IntegerFillTraitsT<char,std::conditional<std::is_signed_v<char>,short,unsigned short>::type>
+: public IntegerFillTraitsT<char, std::conditional<std::is_signed_v<char>, short, unsigned short>::type>
 {
 };
 
 template <>
 class FillTraitsT<signed char>
-: public IntegerFillTraitsT<signed char,short>
+: public IntegerFillTraitsT<signed char, short>
 {
 };
 
 template <>
 class FillTraitsT<unsigned char>
-: public IntegerFillTraitsT<unsigned char,unsigned short>
+: public IntegerFillTraitsT<unsigned char, unsigned short>
 {
 };
 
@@ -242,7 +242,6 @@ class FillTraitsT<unsigned long long>
 : public IntegerFillTraitsT<unsigned long long>
 {
 };
-
 
 template <>
 class FillTraitsT<Int128>
@@ -303,8 +302,7 @@ namespace Arccore::ValueFiller
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType> inline
-void fillRandom(Int64 seed, Span<DataType> values)
+template <typename DataType> inline void fillRandom(Int64 seed, Span<DataType> values)
 {
   std::seed_seq rng_seed{ seed };
   using TraitsType = impl::FillTraitsT<DataType>;

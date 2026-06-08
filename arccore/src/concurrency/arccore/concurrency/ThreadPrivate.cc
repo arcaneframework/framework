@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ ThreadPrivateStorage::
 void ThreadPrivateStorage::
 initialize()
 {
-  if (!m_storage){
+  if (!m_storage) {
     m_storage = new GlibPrivate();
     m_storage->create();
   }
@@ -47,7 +47,6 @@ getValue()
 {
   return m_storage->getValue();
 }
-
 
 void ThreadPrivateStorage::
 setValue(void* v)
@@ -62,7 +61,7 @@ void* ThreadPrivateBase::
 item()
 {
   void* ptr = m_key->getValue();
-  if (ptr){
+  if (ptr) {
     return ptr;
   }
   void* new_ptr = nullptr;
@@ -77,7 +76,7 @@ item()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

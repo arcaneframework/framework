@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ class ARCCORE_COMMON_EXPORT DeviceInfo
   void setTotalConstMemory(Int32 v) { m_total_const_memory = v; }
   void setPCIDomainID(int v) { m_pci_domain_id = v; }
   void setPCIBusID(int v) { m_pci_bus_id = v; }
-  void setPCIDeviceID(int v ){ m_pci_device_id = v; }
+  void setPCIDeviceID(int v) { m_pci_device_id = v; }
 
  private:
 

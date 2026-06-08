@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -28,9 +28,6 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*!
  * \brief View of a UTF-8 character string.
  *
@@ -51,13 +48,13 @@ class ARCCORE_BASE_EXPORT StringView
   StringView() = default;
   //! Creates a view from \a str encoded in UTF-8. \a str may be null.
   StringView(const char* str) ARCCORE_NOEXCEPT
-  : StringView(str ? std::string_view(str) : std::string_view()){}
+  : StringView(str ? std::string_view(str) : std::string_view()) {}
   //! Creates a string from \a str in UTF-8 encoding
   StringView(std::string_view str) ARCCORE_NOEXCEPT
-  : m_v(reinterpret_cast<const Byte*>(str.data()),str.size()){}
+  : m_v(reinterpret_cast<const Byte*>(str.data()), str.size()) {}
   //! Creates a string from \a str in UTF-8 encoding
   constexpr StringView(Span<const Byte> str) ARCCORE_NOEXCEPT
-  : m_v(str){}
+  : m_v(str) {}
   //! Copy constructor
   constexpr StringView(const StringView& str) = default;
   //! Copies the view \a str into this instance.
@@ -71,7 +68,7 @@ class ARCCORE_BASE_EXPORT StringView
   //! Creates a view from \a str encoded in UTF-8
   StringView& operator=(std::string_view str) ARCCORE_NOEXCEPT
   {
-    m_v = Span<const Byte>(reinterpret_cast<const Byte*>(str.data()),str.size());
+    m_v = Span<const Byte>(reinterpret_cast<const Byte*>(str.data()), str.size());
     return (*this);
   }
   //! Creates a view from \a str encoded in UTF-8
@@ -102,7 +99,7 @@ class ARCCORE_BASE_EXPORT StringView
   constexpr Int64 size() const ARCCORE_NOEXCEPT { return m_v.size(); }
 
   //! True if the string is null or empty.
-  constexpr bool empty() const ARCCORE_NOEXCEPT { return size()==0; }
+  constexpr bool empty() const ARCCORE_NOEXCEPT { return size() == 0; }
 
  public:
 
@@ -111,18 +108,18 @@ class ARCCORE_BASE_EXPORT StringView
    */
   std::string_view toStdStringView() const ARCCORE_NOEXCEPT
   {
-    return std::string_view(reinterpret_cast<const char*>(m_v.data()),m_v.size());
+    return std::string_view(reinterpret_cast<const char*>(m_v.data()), m_v.size());
   }
 
   //! StringView output operator
-  friend ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const StringView&);
+  friend ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o, const StringView&);
 
   /*!
    * \brief Compares two views.
    * \retval true if they are equal,
    * \retval false otherwise.
    */
-  friend ARCCORE_BASE_EXPORT bool operator==(const StringView& a,const StringView& b);
+  friend ARCCORE_BASE_EXPORT bool operator==(const StringView& a, const StringView& b);
 
   /*!
    * \brief Compares two Unicode strings.
@@ -130,9 +127,9 @@ class ARCCORE_BASE_EXPORT StringView
    * \retval false if they are equal.
    * \relate String
    */
-  friend inline bool operator!=(const StringView& a,const StringView& b)
+  friend inline bool operator!=(const StringView& a, const StringView& b)
   {
-    return !operator==(a,b);
+    return !operator==(a, b);
   }
 
   /*!
@@ -141,7 +138,7 @@ class ARCCORE_BASE_EXPORT StringView
    * \retval false otherwise.
    * \relate String
    */
-  friend ARCCORE_BASE_EXPORT bool operator==(const char* a,const StringView& b);
+  friend ARCCORE_BASE_EXPORT bool operator==(const char* a, const StringView& b);
 
   /*!
    * \brief Compares two Unicode strings.
@@ -149,7 +146,7 @@ class ARCCORE_BASE_EXPORT StringView
    * \retval false if they are equal.
    * \relate String
    */
-  friend bool operator!=(const char* a,const StringView& b){ return !operator==(a,b); }
+  friend bool operator!=(const char* a, const StringView& b) { return !operator==(a, b); }
 
   /*!
    * \brief Compares two Unicode strings.
@@ -157,7 +154,7 @@ class ARCCORE_BASE_EXPORT StringView
    * \retval false otherwise.
    * \relate String
    */
-  friend ARCCORE_BASE_EXPORT bool operator==(const StringView& a,const char* b);
+  friend ARCCORE_BASE_EXPORT bool operator==(const StringView& a, const char* b);
 
   /*!
    * \brief Compares two Unicode strings.
@@ -165,9 +162,9 @@ class ARCCORE_BASE_EXPORT StringView
    * \retval false if they are equal.
    * \relate String
    */
-  friend inline bool operator!=(const StringView& a,const char* b)
+  friend inline bool operator!=(const StringView& a, const char* b)
   {
-    return !operator==(a,b);
+    return !operator==(a, b);
   }
 
   /*!
@@ -176,7 +173,7 @@ class ARCCORE_BASE_EXPORT StringView
    * \retval false otherwise.
    * \relate String
    */
-  friend ARCCORE_BASE_EXPORT bool operator<(const StringView& a,const StringView& b);
+  friend ARCCORE_BASE_EXPORT bool operator<(const StringView& a, const StringView& b);
 
  public:
 
@@ -187,7 +184,7 @@ class ARCCORE_BASE_EXPORT StringView
   StringView subView(Int64 pos) const;
 
   //! Substring starting at position \a pos and of length \a len
-  StringView subView(Int64 pos,Int64 len) const;
+  StringView subView(Int64 pos, Int64 len) const;
 
  private:
 
@@ -197,7 +194,7 @@ class ARCCORE_BASE_EXPORT StringView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -35,11 +35,20 @@ namespace Arcane
 class StackFrame
 {
  public:
-  explicit StackFrame(intptr_t v) : m_address(v){}
-  StackFrame() : m_address(0){}
+
+  explicit StackFrame(intptr_t v)
+  : m_address(v)
+  {}
+  StackFrame()
+  : m_address(0)
+  {}
+
  public:
+
   intptr_t address() const { return m_address; }
+
  private:
+
   intptr_t m_address;
 };
 
@@ -53,12 +62,17 @@ class StackFrame
 class FixedStackFrameArray
 {
  public:
+
   static const int MAX_FRAME = 32;
-  FixedStackFrameArray() : m_nb_frame(0){}
+  FixedStackFrameArray()
+  : m_nb_frame(0)
+  {}
+
  public:
+
   ConstArrayView<StackFrame> view() const
   {
-    return ConstArrayView<StackFrame>(m_nb_frame,m_addresses);
+    return ConstArrayView<StackFrame>(m_nb_frame, m_addresses);
   }
 
   /*!
@@ -67,13 +81,15 @@ class FixedStackFrameArray
    */
   void addFrame(const StackFrame& frame)
   {
-    if (m_nb_frame<MAX_FRAME){
+    if (m_nb_frame < MAX_FRAME) {
       m_addresses[m_nb_frame] = frame;
       ++m_nb_frame;
     }
   }
   Integer nbFrame() const { return m_nb_frame; }
+
  private:
+
   //! List of call stack addresses. Stores up to 32 calls.
   StackFrame m_addresses[MAX_FRAME];
   Integer m_nb_frame;
@@ -91,10 +107,16 @@ class ARCCORE_BASE_EXPORT StackTrace
  public:
 
   StackTrace() {}
-  StackTrace(const FixedStackFrameArray& stack_frames) : m_stack_frames(stack_frames){}
-  StackTrace(const String& msg) : m_stack_trace_string(msg){}
-  StackTrace(const FixedStackFrameArray& stack_frames,const String& msg)
-  : m_stack_frames(stack_frames), m_stack_trace_string(msg){}
+  StackTrace(const FixedStackFrameArray& stack_frames)
+  : m_stack_frames(stack_frames)
+  {}
+  StackTrace(const String& msg)
+  : m_stack_trace_string(msg)
+  {}
+  StackTrace(const FixedStackFrameArray& stack_frames, const String& msg)
+  : m_stack_frames(stack_frames)
+  , m_stack_trace_string(msg)
+  {}
 
  public:
 
@@ -114,12 +136,12 @@ class ARCCORE_BASE_EXPORT StackTrace
 /*---------------------------------------------------------------------------*/
 
 //! Stream insertion operator for a StackTrace
-ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const StackTrace&);
+ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o, const StackTrace&);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

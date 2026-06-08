@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -71,8 +71,8 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(TestArccore::IntSubClass);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCCORE_UT_CHECK(expr,message) \
-if ( ! (expr) )\
+#define ARCCORE_UT_CHECK(expr, message) \
+  if (!(expr)) \
   throw Arccore::FatalErrorException((message))
 
 namespace TestArccore
@@ -119,8 +119,7 @@ class IntPtrSubClass
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename T> inline
-void _checkSameInfoArray2(const Array2<T>& a, const Array2<T>& b)
+template <typename T> inline void _checkSameInfoArray2(const Array2<T>& a, const Array2<T>& b)
 {
   ASSERT_EQ(a.allocator(), b.allocator());
   ASSERT_EQ(a.totalNbElement(), b.totalNbElement());

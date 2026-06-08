@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -27,12 +27,15 @@ namespace Arcane::MessagePassing::internal
 ePointToPointMessageType BasicSerializeMessage::
 _toP2PType(eMessageType mtype)
 {
-  switch(mtype){
-  case MT_Send: return MsgSend;
-  case MT_Recv: return MsgReceive;
-  case MT_Broadcast: return MsgSend;
+  switch (mtype) {
+  case MT_Send:
+    return MsgSend;
+  case MT_Recv:
+    return MsgReceive;
+  case MT_Broadcast:
+    return MsgSend;
   }
-  ARCCORE_FATAL("Unsupported value '{0}'",mtype);
+  ARCCORE_FATAL("Unsupported value '{0}'", mtype);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -41,19 +44,21 @@ _toP2PType(eMessageType mtype)
 ISerializeMessage::eMessageType BasicSerializeMessage::
 _toMessageType(ePointToPointMessageType type)
 {
-  switch(type){
-  case MsgSend: return MT_Send;
-  case MsgReceive: return MT_Recv;
+  switch (type) {
+  case MsgSend:
+    return MT_Send;
+  case MsgReceive:
+    return MT_Recv;
   }
-  ARCCORE_FATAL("Unsupported value '{0}'",type);
+  ARCCORE_FATAL("Unsupported value '{0}'", type);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 BasicSerializeMessage::
-BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
-                      MessageTag tag,ePointToPointMessageType type,
+BasicSerializeMessage(MessageRank orig_rank, MessageRank dest_rank,
+                      MessageTag tag, ePointToPointMessageType type,
                       BasicSerializer* s)
 : m_orig_rank(orig_rank)
 , m_dest_rank(dest_rank)
@@ -70,10 +75,10 @@ BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
 /*---------------------------------------------------------------------------*/
 
 BasicSerializeMessage::
-BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
+BasicSerializeMessage(MessageRank orig_rank, MessageRank dest_rank,
                       ePointToPointMessageType type,
                       BasicSerializer* s)
-: BasicSerializeMessage(orig_rank,dest_rank,defaultTag(),type,s)
+: BasicSerializeMessage(orig_rank, dest_rank, defaultTag(), type, s)
 {
 }
 
@@ -81,7 +86,7 @@ BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
 /*---------------------------------------------------------------------------*/
 
 BasicSerializeMessage::
-BasicSerializeMessage(MessageRank orig_rank,MessageId message_id,
+BasicSerializeMessage(MessageRank orig_rank, MessageId message_id,
                       BasicSerializer* s)
 : m_orig_rank(orig_rank)
 , m_dest_rank(message_id.sourceInfo().rank())
@@ -99,9 +104,9 @@ BasicSerializeMessage(MessageRank orig_rank,MessageId message_id,
 /*---------------------------------------------------------------------------*/
 
 BasicSerializeMessage::
-BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
-                      MessageTag tag,ePointToPointMessageType type)
-: BasicSerializeMessage(orig_rank,dest_rank,tag,type,new BasicSerializer())
+BasicSerializeMessage(MessageRank orig_rank, MessageRank dest_rank,
+                      MessageTag tag, ePointToPointMessageType type)
+: BasicSerializeMessage(orig_rank, dest_rank, tag, type, new BasicSerializer())
 {
 }
 
@@ -109,9 +114,9 @@ BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
 /*---------------------------------------------------------------------------*/
 
 BasicSerializeMessage::
-BasicSerializeMessage(MessageRank orig_rank,MessageRank dest_rank,
+BasicSerializeMessage(MessageRank orig_rank, MessageRank dest_rank,
                       ePointToPointMessageType type)
-: BasicSerializeMessage(orig_rank,dest_rank,defaultTag(),type)
+: BasicSerializeMessage(orig_rank, dest_rank, defaultTag(), type)
 {
 }
 
@@ -130,7 +135,7 @@ BasicSerializeMessage::
 void BasicSerializeMessage::
 _init()
 {
-  switch(m_old_message_type){
+  switch (m_old_message_type) {
   case MT_Send:
   case MT_Broadcast:
     m_is_send = true;
@@ -156,10 +161,10 @@ setStrategy(eStrategy strategy)
 /*---------------------------------------------------------------------------*/
 
 Ref<ISerializeMessage> BasicSerializeMessage::
-create(MessageRank source,MessageRank destination,MessageTag tag,
+create(MessageRank source, MessageRank destination, MessageTag tag,
        ePointToPointMessageType type)
 {
-  ISerializeMessage* m = new BasicSerializeMessage(source,destination,tag,type);
+  ISerializeMessage* m = new BasicSerializeMessage(source, destination, tag, type);
   return makeRef(m);
 }
 
@@ -167,9 +172,9 @@ create(MessageRank source,MessageRank destination,MessageTag tag,
 /*---------------------------------------------------------------------------*/
 
 Ref<ISerializeMessage> BasicSerializeMessage::
-create(MessageRank source,MessageRank destination,ePointToPointMessageType type)
+create(MessageRank source, MessageRank destination, ePointToPointMessageType type)
 {
-  ISerializeMessage* m = new BasicSerializeMessage(source,destination,type);
+  ISerializeMessage* m = new BasicSerializeMessage(source, destination, type);
   return makeRef(m);
 }
 
@@ -177,16 +182,16 @@ create(MessageRank source,MessageRank destination,ePointToPointMessageType type)
 /*---------------------------------------------------------------------------*/
 
 Ref<ISerializeMessage> BasicSerializeMessage::
-create(MessageRank source,MessageId message_id)
+create(MessageRank source, MessageId message_id)
 {
-  ISerializeMessage* m = new BasicSerializeMessage(source,message_id,new BasicSerializer());
+  ISerializeMessage* m = new BasicSerializeMessage(source, message_id, new BasicSerializer());
   return makeRef(m);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing::internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

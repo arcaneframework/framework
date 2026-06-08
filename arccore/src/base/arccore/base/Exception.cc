@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ arccoreCallExplainInExceptionConstructor(bool v)
 /*---------------------------------------------------------------------------*/
 
 Exception::
-Exception(const String& aname,const String& awhere)
+Exception(const String& aname, const String& awhere)
 : m_name(aname)
 , m_where(awhere)
 {
@@ -83,7 +83,7 @@ Exception(const String& aname,const String& awhere)
 /*---------------------------------------------------------------------------*/
 
 Exception::
-Exception(const String& aname,const String& awhere,const String& amessage)
+Exception(const String& aname, const String& awhere, const String& amessage)
 : m_name(aname)
 , m_where(awhere)
 , m_message(amessage)
@@ -97,7 +97,7 @@ Exception(const String& aname,const String& awhere,const String& amessage)
 /*---------------------------------------------------------------------------*/
 
 Exception::
-Exception(const String& aname,const String& awhere,
+Exception(const String& aname, const String& awhere,
           const StackTrace& stack_trace)
 : m_name(aname)
 , m_where(awhere)
@@ -111,8 +111,8 @@ Exception(const String& aname,const String& awhere,
 /*---------------------------------------------------------------------------*/
 
 Exception::
-Exception(const String& aname,const String& awhere,
-          const String& amessage,const StackTrace& stack_trace)
+Exception(const String& aname, const String& awhere,
+          const String& amessage, const StackTrace& stack_trace)
 : m_name(aname)
 , m_where(awhere)
 , m_stack_trace(stack_trace)
@@ -126,7 +126,7 @@ Exception(const String& aname,const String& awhere,
 /*---------------------------------------------------------------------------*/
 
 Exception::
-Exception(const String& aname,const TraceInfo& awhere)
+Exception(const String& aname, const TraceInfo& awhere)
 : m_name(aname)
 {
   ++m_nb_pending_exception;
@@ -139,7 +139,7 @@ Exception(const String& aname,const TraceInfo& awhere)
 /*---------------------------------------------------------------------------*/
 
 Exception::
-Exception(const String& aname,const TraceInfo& awhere,const String& amessage)
+Exception(const String& aname, const TraceInfo& awhere, const String& amessage)
 : m_name(aname)
 , m_message(amessage)
 , m_is_collective(false)
@@ -154,7 +154,7 @@ Exception(const String& aname,const TraceInfo& awhere,const String& amessage)
 /*---------------------------------------------------------------------------*/
 
 Exception::
-Exception(const String& aname,const TraceInfo& awhere,
+Exception(const String& aname, const TraceInfo& awhere,
           const StackTrace& stack_trace)
 : m_name(aname)
 , m_stack_trace(stack_trace)
@@ -169,8 +169,8 @@ Exception(const String& aname,const TraceInfo& awhere,
 /*---------------------------------------------------------------------------*/
 
 Exception::
-Exception(const String& aname,const TraceInfo& awhere,
-          const String& amessage,const StackTrace& stack_trace)
+Exception(const String& aname, const TraceInfo& awhere,
+          const String& amessage, const StackTrace& stack_trace)
 : m_name(aname)
 , m_stack_trace(stack_trace)
 , m_message(amessage)
@@ -212,7 +212,7 @@ void Exception::
 _setStackTrace()
 {
   IStackTraceService* stack_service = Platform::getStackTraceService();
-  if (stack_service){
+  if (stack_service) {
     m_stack_trace = stack_service->stackTrace();
   }
 }
@@ -238,7 +238,7 @@ write(std::ostream& o) const
     o << "Message: " << m_message << '\n';
   this->explain(o);
   String st = m_stack_trace.toString();
-  if (!st.null()){
+  if (!st.null()) {
     o << "\nCall stack:\n";
     o << st << '\n';
   }
@@ -251,7 +251,7 @@ bool Exception::
 hasPendingException()
 {
   //TODO use atomic test
-  return m_nb_pending_exception.load()!=0;
+  return m_nb_pending_exception.load() != 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -275,7 +275,7 @@ explain(std::ostream&) const
 /*---------------------------------------------------------------------------*/
 
 std::ostream&
-operator<<(std::ostream& o,const Exception& ex)
+operator<<(std::ostream& o, const Exception& ex)
 {
   ex.write(o);
   return o;
@@ -287,17 +287,17 @@ operator<<(std::ostream& o,const Exception& ex)
 void Exception::
 _checkExplainAndPause()
 {
-  if (global_explain_in_constructor){
+  if (global_explain_in_constructor) {
     std::cerr << "** Exception:" << (*this) << "\n";
   }
 
-  if (global_pause_in_constructor){
+  if (global_pause_in_constructor) {
     std::cerr << "** Exception: Debug mode activated. Execution paused.\n";
     std::cerr << "** Exception: To find the location of the exception, start the debugger\n";
     // Uses format to ensure the message will not be displayed in several
     // pieces
     std::cerr << String::format("** Exception: using process number {0} on host '{1}'\n",
-                                Platform::getProcessId(),Platform::getHostName());
+                                Platform::getProcessId(), Platform::getHostName());
 
 #ifndef ARCCORE_OS_WIN32
     ::pause();
@@ -308,7 +308,7 @@ _checkExplainAndPause()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

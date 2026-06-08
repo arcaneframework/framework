@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -114,8 +114,8 @@ String(StringImpl* impl)
 /*---------------------------------------------------------------------------*/
 
 String::
-String(const char* str,Integer len)
-: m_p(new StringImpl(std::string_view(str,len)))
+String(const char* str, Integer len)
+: m_p(new StringImpl(std::string_view(str, len)))
 , m_const_ptr_size(-1)
 {
   m_p->addReference();
@@ -136,16 +136,16 @@ String(char* str)
 /*---------------------------------------------------------------------------*/
 
 String::
-String(const char* str,bool do_alloc)
+String(const char* str, bool do_alloc)
 : m_p(nullptr)
 , m_const_ptr(nullptr)
 , m_const_ptr_size(-1)
 {
-  if (do_alloc){
+  if (do_alloc) {
     m_p = new StringImpl(str);
     m_p->addReference();
   }
-  else{
+  else {
     m_const_ptr = str;
     if (m_const_ptr)
       m_const_ptr_size = std::strlen(str);
@@ -190,7 +190,6 @@ operator=(String&& str)
   str._resetFields();
 
   return (*this);
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -252,8 +251,8 @@ ConstArrayView<UChar> String::
 _internalUtf16BE() const
 {
   A_FASTLOCK(this);
-  if (!m_p){
-    if (m_const_ptr){
+  if (!m_p) {
+    if (m_const_ptr) {
       _checkClone();
     }
   }
@@ -279,10 +278,10 @@ utf8() const
 {
   if (m_p)
     return m_p->largeUtf8().smallView();
-  if (m_const_ptr){
-    Int64 ts = m_const_ptr_size+1;
+  if (m_const_ptr) {
+    Int64 ts = m_const_ptr_size + 1;
     Int32 s = arccoreCheckArraySize(ts);
-    return ByteConstArrayView(s,reinterpret_cast<const Byte*>(m_const_ptr));
+    return ByteConstArrayView(s, reinterpret_cast<const Byte*>(m_const_ptr));
   }
   return ByteConstArrayView();
 }
@@ -296,7 +295,7 @@ bytes() const
   if (m_p)
     return m_p->bytes();
   if (m_const_ptr)
-    return Span<const Byte>(reinterpret_cast<const Byte*>(m_const_ptr),m_const_ptr_size);
+    return Span<const Byte>(reinterpret_cast<const Byte*>(m_const_ptr), m_const_ptr_size);
   return Span<const Byte>();
 }
 
@@ -308,7 +307,7 @@ null() const
 {
   if (m_const_ptr)
     return false;
-  return m_p==0;
+  return m_p == 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -318,7 +317,7 @@ bool String::
 empty() const
 {
   if (m_const_ptr)
-    return m_const_ptr[0]=='\0';
+    return m_const_ptr[0] == '\0';
   if (m_p)
     return m_p->empty();
   return true;
@@ -350,11 +349,11 @@ length() const
 std::string_view String::
 toStdStringView() const
 {
-  if (m_const_ptr){
+  if (m_const_ptr) {
 #ifdef ARCCORE_CHECK
     Int64 xlen = std::strlen(m_const_ptr);
-    if (xlen!=m_const_ptr_size)
-      ARCCORE_FATAL("Bad length (computed={0} stored={1})",xlen,m_const_ptr_size);
+    if (xlen != m_const_ptr_size)
+      ARCCORE_FATAL("Bad length (computed={0} stored={1})", xlen, m_const_ptr_size);
 #endif
     return _viewFromConstChar();
   }
@@ -390,7 +389,7 @@ String::operator StringView() const
 void String::
 _checkClone() const
 {
-  if (m_const_ptr || !m_p){
+  if (m_const_ptr || !m_p) {
     std::string_view sview;
     if (m_const_ptr)
       sview = _viewFromConstChar();
@@ -400,7 +399,7 @@ _checkClone() const
     m_const_ptr_size = -1;
     return;
   }
-  if (m_p->nbReference()!=1){
+  if (m_p->nbReference() != 1) {
     StringImpl* old_p = m_p;
     m_p = m_p->clone();
     m_p->addReference();
@@ -428,7 +427,7 @@ _append(const String& str)
   if (str.null())
     return *this;
   _checkClone();
-  if (str.m_const_ptr){
+  if (str.m_const_ptr) {
     m_p = m_p->append(str._viewFromConstChar());
   }
   else
@@ -578,10 +577,10 @@ fromNumber(const APReal& v)
 }
 
 String String::
-fromNumber(double v,Integer nb_digit_after_point)
+fromNumber(double v, Integer nb_digit_after_point)
 {
   Int64 mulp = 1;
-  for( Integer z=0; z<nb_digit_after_point; ++z )
+  for (Integer z = 0; z < nb_digit_after_point; ++z)
     mulp *= 10;
   Int64 p = (Int64)(v * (Real)mulp);
   Int64 after_digit = p % mulp;
@@ -590,14 +589,14 @@ fromNumber(double v,Integer nb_digit_after_point)
   {
     Integer nb_zero = 0;
     Int64 mv = mulp / 10;
-    for( Integer i=0; i<(nb_digit_after_point-1); ++i ){
-      if (after_digit>=mv){
+    for (Integer i = 0; i < (nb_digit_after_point - 1); ++i) {
+      if (after_digit >= mv) {
         break;
       }
       ++nb_zero;
       mv /= 10;
     }
-    for( Integer i=0; i<nb_zero; ++i )
+    for (Integer i = 0; i < nb_zero; ++i)
       s += "0";
   }
   s += String::fromNumber(after_digit);
@@ -676,10 +675,10 @@ operator+(const APReal& v) const
 bool String::
 isLess(const String& b) const
 {
-  if (m_const_ptr){
+  if (m_const_ptr) {
     if (b.m_const_ptr)
-      return CStringUtils::isLess(m_const_ptr,b.m_const_ptr);
-    if (b.m_p){
+      return CStringUtils::isLess(m_const_ptr, b.m_const_ptr);
+    if (b.m_p) {
       if (b.m_p->isEqual(m_const_ptr))
         return false;
       return !(b.m_p->isLessThan(m_const_ptr));
@@ -688,14 +687,14 @@ isLess(const String& b) const
     return false;
   }
 
-  if (b.m_const_ptr){
+  if (b.m_const_ptr) {
     if (m_p)
       return m_p->isLessThan(b.m_const_ptr);
     // Je suis la chaîne nulle mais pas b.
-    return true;    
+    return true;
   }
 
-  if (m_p){
+  if (m_p) {
     if (b.m_p)
       return m_p->isLessThan(b.m_p);
     // b est la chaine nulle mais pas moi
@@ -703,7 +702,7 @@ isLess(const String& b) const
   }
 
   // Je suis la chaine nulle
-  return b.m_p==nullptr;
+  return b.m_p == nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -722,7 +721,7 @@ void String::
 internalDump(std::ostream& ostr) const
 {
   ostr << "StringDump(m_const_ptr=" << (void*)m_const_ptr << ",m_p=" << m_p;
-  if (m_p){
+  if (m_p) {
     ostr << ",";
     m_p->internalDump(ostr);
   }
@@ -738,7 +737,7 @@ hashCode() const
   Span<const Byte> s = bytes();
   Int32 h = 0;
   Int64 n = s.size();
-  for( Int64 i=0; i<n; ++i ){
+  for (Int64 i = 0; i < n; ++i) {
     h = (h << 5) - h + s[i];
   }
   return h;
@@ -762,27 +761,32 @@ _formatReal(Real avalue)
 class StringFormatter
 {
  public:
+
   StringFormatter(const String& format)
-  : m_format(format), m_current_arg(0) {}
+  : m_format(format)
+  , m_current_arg(0)
+  {}
+
  public:
+
   void addArg(const String& ostr)
   {
     char buf[20];
     Integer nb_z = 0;
     Integer z = m_current_arg;
     ++m_current_arg;
-    if (z>=100){
+    if (z >= 100) {
       // N'arrive normalement jamais car seul ce fichier a accès à cette
       // méthode.
       std::cerr << "Too many args (maximum is 100)";
       return;
     }
-    else if (z>=10){
+    else if (z >= 10) {
       nb_z = 2;
       buf[0] = (char)('0' + (z / 10));
       buf[1] = (char)('0' + (z % 10));
     }
-    else{
+    else {
       nb_z = 1;
       buf[0] = (char)('0' + z);
     }
@@ -794,19 +798,19 @@ class StringFormatter
     const char* local_str = str.c_str();
     // TODO: ne pas utiliser de String mais un StringBuilder pour format
     const Int64 slen = str.length();
-    for( Int64 i=0; i<slen; ++i ){
-      if (local_str[i]=='{'){
-        if (i+nb_z>=slen)
+    for (Int64 i = 0; i < slen; ++i) {
+      if (local_str[i] == '{') {
+        if (i + nb_z >= slen)
           break;
         bool is_ok = true;
-        for( Integer j=0; j<nb_z; ++j )
-          if (local_str[i+1+j]!=buf[j]){
+        for (Integer j = 0; j < nb_z; ++j)
+          if (local_str[i + 1 + j] != buf[j]) {
             is_ok = false;
             break;
           }
-        if (is_ok){
-          std::string str1(local_str,local_str+i);
-          std::string str2(local_str+i+1+nb_z);
+        if (is_ok) {
+          std::string str1(local_str, local_str + i);
+          std::string str2(local_str + i + 1 + nb_z);
           m_format = String(str1) + ostr + str2;
           // Il faut quitter tout de suite car str n'est plus valide
           // puisque m_format a changé.
@@ -815,11 +819,16 @@ class StringFormatter
       }
     }
   }
+
  public:
+
   const String& value() const { return m_format; }
+
  public:
+
   String m_format;
   Integer m_current_arg;
+
  public:
 };
 
@@ -836,7 +845,7 @@ format(const String& str)
 /*---------------------------------------------------------------------------*/
 
 String String::
-format(const String& str,const StringFormatterArg& arg1)
+format(const String& str, const StringFormatterArg& arg1)
 {
   StringFormatter sf(str);
   sf.addArg(arg1.value());
@@ -847,7 +856,7 @@ format(const String& str,const StringFormatterArg& arg1)
 /*---------------------------------------------------------------------------*/
 
 String String::
-format(const String& str,const StringFormatterArg& arg1,
+format(const String& str, const StringFormatterArg& arg1,
        const StringFormatterArg& arg2)
 {
   StringFormatter sf(str);
@@ -860,7 +869,7 @@ format(const String& str,const StringFormatterArg& arg1,
 /*---------------------------------------------------------------------------*/
 
 String String::
-format(const String& str,const StringFormatterArg& arg1,
+format(const String& str, const StringFormatterArg& arg1,
        const StringFormatterArg& arg2,
        const StringFormatterArg& arg3)
 {
@@ -875,7 +884,7 @@ format(const String& str,const StringFormatterArg& arg1,
 /*---------------------------------------------------------------------------*/
 
 String String::
-format(const String& str,const StringFormatterArg& arg1,
+format(const String& str, const StringFormatterArg& arg1,
        const StringFormatterArg& arg2,
        const StringFormatterArg& arg3,
        const StringFormatterArg& arg4)
@@ -892,7 +901,7 @@ format(const String& str,const StringFormatterArg& arg1,
 /*---------------------------------------------------------------------------*/
 
 String String::
-format(const String& str,const StringFormatterArg& arg1,
+format(const String& str, const StringFormatterArg& arg1,
        const StringFormatterArg& arg2,
        const StringFormatterArg& arg3,
        const StringFormatterArg& arg4,
@@ -911,7 +920,7 @@ format(const String& str,const StringFormatterArg& arg1,
 /*---------------------------------------------------------------------------*/
 
 String String::
-format(const String& str,const StringFormatterArg& arg1,
+format(const String& str, const StringFormatterArg& arg1,
        const StringFormatterArg& arg2,
        const StringFormatterArg& arg3,
        const StringFormatterArg& arg4,
@@ -932,7 +941,7 @@ format(const String& str,const StringFormatterArg& arg1,
 /*---------------------------------------------------------------------------*/
 
 String String::
-format(const String& str,const StringFormatterArg& arg1,
+format(const String& str, const StringFormatterArg& arg1,
        const StringFormatterArg& arg2,
        const StringFormatterArg& arg3,
        const StringFormatterArg& arg4,
@@ -955,7 +964,7 @@ format(const String& str,const StringFormatterArg& arg1,
 /*---------------------------------------------------------------------------*/
 
 String String::
-format(const String& str,const StringFormatterArg& arg1,
+format(const String& str, const StringFormatterArg& arg1,
        const StringFormatterArg& arg2,
        const StringFormatterArg& arg3,
        const StringFormatterArg& arg4,
@@ -980,7 +989,7 @@ format(const String& str,const StringFormatterArg& arg1,
 /*---------------------------------------------------------------------------*/
 
 String String::
-format(const String& str,const StringFormatterArg& arg1,
+format(const String& str, const StringFormatterArg& arg1,
        const StringFormatterArg& arg2,
        const StringFormatterArg& arg3,
        const StringFormatterArg& arg4,
@@ -1016,7 +1025,7 @@ String String::
 concat(const StringFormatterArg& arg1,
        const StringFormatterArg& arg2)
 {
-  return arg1.value()+arg2.value();
+  return arg1.value() + arg2.value();
 }
 
 String String::
@@ -1024,7 +1033,7 @@ concat(const StringFormatterArg& arg1,
        const StringFormatterArg& arg2,
        const StringFormatterArg& arg3)
 {
-  return arg1.value()+arg2.value()+arg3.value();
+  return arg1.value() + arg2.value() + arg3.value();
 }
 
 String String::
@@ -1033,34 +1042,34 @@ concat(const StringFormatterArg& arg1,
        const StringFormatterArg& arg3,
        const StringFormatterArg& arg4)
 {
-  return arg1.value()+arg2.value()+arg3.value()+arg4.value();
+  return arg1.value() + arg2.value() + arg3.value() + arg4.value();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 String String::
-plural(const Integer n, const String & str, const bool with_number)
+plural(const Integer n, const String& str, const bool with_number)
 {
-  return String::plural(n, str, str+"s", with_number);
+  return String::plural(n, str, str + "s", with_number);
 }
 
 namespace
 {
-inline int
-_abs(Integer a)
-{
-  return (a>0) ? a : (-a);
-}
-}
+  inline int
+  _abs(Integer a)
+  {
+    return (a > 0) ? a : (-a);
+  }
+} // namespace
 
 String String::
-plural(const Integer n, const String & str, const String & str2, const bool with_number)
+plural(const Integer n, const String& str, const String& str2, const bool with_number)
 {
   if (with_number)
-    return String::concat(n, " ", ((_abs(n) > 1)?str2:str) );
+    return String::concat(n, " ", ((_abs(n) > 1) ? str2 : str));
   else
-    return ((_abs(n) > 1)?str2:str);
+    return ((_abs(n) > 1) ? str2 : str);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1089,10 +1098,10 @@ endsWith(const String& s) const
   Span<const Byte> ref = s.bytes();
   Int64 ref_size = ref.size();
   Int64 v_size = v.size();
-  if (ref_size>v_size)
+  if (ref_size > v_size)
     return false;
-  const Byte* v_begin = &v[v_size-ref_size];
-  return std::memcmp(v_begin,ref.data(),ref_size)==0;
+  const Byte* v_begin = &v[v_size - ref_size];
+  return std::memcmp(v_begin, ref.data(), ref_size) == 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1105,9 +1114,9 @@ startsWith(const String& s) const
   Span<const Byte> ref = s.bytes();
   Int64 ref_size = ref.size();
   Int64 v_size = v.size();
-  if (ref_size>v_size)
+  if (ref_size > v_size)
     return false;
-  return memcmp(v.data(),ref.data(),ref_size)==0;
+  return memcmp(v.data(), ref.data(), ref_size) == 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1116,20 +1125,20 @@ startsWith(const String& s) const
 String String::
 substring(Int64 pos) const
 {
-  return substring(pos,length()-pos);
+  return substring(pos, length() - pos);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 String String::
-substring(Int64 pos,Int64 len) const
+substring(Int64 pos, Int64 len) const
 {
-  if (pos<0)
+  if (pos < 0)
     pos = 0;
   //TODO: normally _checkClone() is not useful
   _checkClone();
-  String s2(StringImpl::substring(m_p,pos,len));
+  String s2(StringImpl::substring(m_p, pos, len));
   return s2;
 }
 
@@ -1137,11 +1146,11 @@ substring(Int64 pos,Int64 len) const
 /*---------------------------------------------------------------------------*/
 
 String String::
-join(String delim,ConstArrayView<String> strs)
+join(String delim, ConstArrayView<String> strs)
 {
   StringBuilder sb;
-  for( Integer i=0, n=strs.size(); i<n; ++i ){
-    if (i!=0)
+  for (Integer i = 0, n = strs.size(); i < n; ++i) {
+    if (i != 0)
       sb += delim;
     sb += strs[i];
   }
@@ -1152,24 +1161,24 @@ join(String delim,ConstArrayView<String> strs)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" bool
-operator==(const String& a,const String& b)
+operator==(const String& a, const String& b)
 {
   //cout << "COMPARE String String a='" << a << "' b='" << b << "'\n";
-  if (a.m_const_ptr){
+  if (a.m_const_ptr) {
     if (b.m_const_ptr)
-      return CStringUtils::isEqual(a.m_const_ptr,b.m_const_ptr);
+      return CStringUtils::isEqual(a.m_const_ptr, b.m_const_ptr);
     if (b.m_p)
       return b.m_p->isEqual(a.m_const_ptr);
     // If I am here, 'b' is the null string and not 'a'
     return false;
   }
 
-  if (b.m_const_ptr){
+  if (b.m_const_ptr) {
     if (a.m_p)
       return a.m_p->isEqual(b.m_const_ptr);
     return false;
   }
-  if (a.m_p){
+  if (a.m_p) {
     if (b.m_p)
       return a.m_p->isEqual(b.m_p);
     // b is the null string but not me
@@ -1177,24 +1186,23 @@ operator==(const String& a,const String& b)
   }
 
   // I am the null string
-  return b.m_p==nullptr;
+  return b.m_p == nullptr;
 }
 
 extern "C++" bool
-operator==(const String& a,const char* b)
+operator==(const String& a, const char* b)
 {
-  return a==String(b);
+  return a == String(b);
 }
 
-
 extern "C++" bool
-operator==(const char* a,const String& b)
+operator==(const char* a, const String& b)
 {
-  return String(a)==b;
+  return String(a) == b;
 }
 
 extern "C++" bool
-operator<(const String& a,const String& b)
+operator<(const String& a, const String& b)
 {
   bool v = a.isLess(b);
   //cout << "IsLess a='" << a << "' b='" << b << "' v=" << v << '\n';
@@ -1208,9 +1216,9 @@ operator<(const String& a,const String& b)
 }
 
 extern "C++" String
-operator+(const char* a,const String& b)
+operator+(const char* a, const String& b)
 {
-  return String(a)+b;
+  return String(a) + b;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1218,10 +1226,10 @@ operator+(const char* a,const String& b)
 
 namespace
 {
-bool global_write_utf8 = false;
+  bool global_write_utf8 = false;
 }
 std::ostream&
-operator<<(std::ostream& o,const String& str)
+operator<<(std::ostream& o, const String& str)
 {
   // To be used later when the default encoding is UTF8
   if (global_write_utf8)
@@ -1240,14 +1248,14 @@ writeBytes(std::ostream& o) const
 {
   Span<const Byte> v = this->bytes();
   Int64 vlen = v.size();
-  o.write((const char*)v.data(),vlen);
+  o.write((const char*)v.data(), vlen);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 std::istream&
-operator>>(std::istream& i,String& str)
+operator>>(std::istream& i, String& str)
 {
   std::string s;
   i >> s;
@@ -1261,16 +1269,17 @@ operator>>(std::istream& i,String& str)
 class StringUtilsImpl
 {
  public:
+
   static std::vector<UChar>
   toUtf16BE(const String& str)
   {
     ConstArrayView<UChar> x{ str._internalUtf16BE() };
     Int32 n = x.size();
-    if (n==0)
+    if (n == 0)
       return {};
     // x normally always contains a terminal zero that is not put into
     // the vector
-    return { x.begin(), x.begin()+(n-1) };
+    return { x.begin(), x.begin() + (n - 1) };
   }
 };
 
@@ -1293,10 +1302,10 @@ convertToStdWString([[maybe_unused]] const String& str)
   ConstArrayView<UChar> utf16 = str.utf16();
   const wchar_t* wdata = reinterpret_cast<const wchar_t*>(utf16.data());
   const size_t wlen = utf16.size();
-  std::wstring_view wstr_view(wdata,wlen);
+  std::wstring_view wstr_view(wdata, wlen);
   return std::wstring(wstr_view);
 #else
-  ARCCORE_THROW(NotSupportedException,"This function is only supported on Win32");
+  ARCCORE_THROW(NotSupportedException, "This function is only supported on Win32");
 #endif
 }
 
@@ -1312,14 +1321,14 @@ convertToArcaneString([[maybe_unused]] const std::wstring_view& wstr)
   ConstArrayView<UChar> buf(len, ux);
   return String(buf);
 #else
-  ARCCORE_THROW(NotSupportedException,"This function is only supported on Win32");
+  ARCCORE_THROW(NotSupportedException, "This function is only supported on Win32");
 #endif
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

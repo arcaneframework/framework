@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,12 +40,14 @@ template <class DataType>
 class BasicSerializerDataT
 {
  public:
+
   BasicSerializerDataT()
   : m_reserved_size(0)
   , m_current_position(0)
   {}
 
  public:
+
   void put(Span<const DataType> values)
   {
     Int64 n = values.size();
@@ -75,6 +77,7 @@ class BasicSerializerDataT
   }
 
  public:
+
   Int64 m_reserved_size;
   Int64 m_current_position;
   Span<DataType> m_buffer;
@@ -92,8 +95,8 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 {
   friend Arcane::BasicSerializeGatherMessage;
   typedef BasicSerializer ThatClass;
-  using ISerializer::reserveSpan;
   using ISerializer::putSpan;
+  using ISerializer::reserveSpan;
 
  public:
 
@@ -101,9 +104,14 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   class SizesPrinter
   {
    public:
-    explicit SizesPrinter(const BasicSerializer& sbuf) : m_sbuf(sbuf){}
+
+    explicit SizesPrinter(const BasicSerializer& sbuf)
+    : m_sbuf(sbuf)
+    {}
     const BasicSerializer& buf() const { return m_sbuf; }
+
    private:
+
     const BasicSerializer& m_sbuf;
   };
 
@@ -127,6 +135,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   using ISerializer::reserve;
 
  public:
+
   void reserveSpan(eDataType dt, Int64 n) override;
   void reserveSpan(eBasicDataType dt, Int64 n) override;
   void reserve(eBasicDataType dt, Int64 n) override;
@@ -403,7 +412,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
    *
    * It is only useful to set this option during writing. In reading,
    * the information is contained in the serializer.
-   */  
+   */
   void setSerializeTypeInfo(bool v);
   bool isSerializeTypeInfo() const;
 
@@ -440,7 +449,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   void printSizes(std::ostream& o) const;
 
   friend inline std::ostream&
-  operator<<(std::ostream& o,const BasicSerializer::SizesPrinter& x)
+  operator<<(std::ostream& o, const BasicSerializer::SizesPrinter& x)
   {
     x.buf().printSizes(o);
     return o;
@@ -477,7 +486,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

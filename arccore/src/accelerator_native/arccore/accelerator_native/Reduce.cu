@@ -14,7 +14,7 @@ template class ReduceFunctorSum<double>;
 template class ReduceFunctorMin<int>;
 template class ReduceFunctorMax<int>;
 template class ReduceFunctorSum<int>;
-}
+} // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

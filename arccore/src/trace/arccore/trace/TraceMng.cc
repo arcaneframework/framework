@@ -46,6 +46,7 @@ namespace Arcane
 class TraceTimer
 {
  public:
+
   double getTime() { return 0.0; }
 };
 
@@ -59,13 +60,18 @@ class FileTraceStream
 : public ITraceStream
 {
  public:
+
   explicit FileTraceStream(const String& filename)
-  : m_nb_ref(0), m_stream(nullptr), m_need_destroy(true)
+  : m_nb_ref(0)
+  , m_stream(nullptr)
+  , m_need_destroy(true)
   {
     m_stream = new std::ofstream(filename.localstr());
   }
-  FileTraceStream(std::ostream* stream,bool need_destroy)
-  : m_nb_ref(0), m_stream(stream), m_need_destroy(need_destroy)
+  FileTraceStream(std::ostream* stream, bool need_destroy)
+  : m_nb_ref(0)
+  , m_stream(stream)
+  , m_need_destroy(need_destroy)
   {
   }
   ~FileTraceStream() override
@@ -73,19 +79,23 @@ class FileTraceStream
     if (m_need_destroy)
       delete m_stream;
   }
+
  public:
+
   void addReference() override { ++m_nb_ref; }
   void removeReference() override
   {
     // Decrements and returns the previous value.
     // If it equals 1, it means there are no more references
     // to the object and it must be destroyed.
-    Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
-    if (v==1)
+    Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
+    if (v == 1)
       delete this;
   }
   std::ostream* stream() override { return m_stream; }
+
  private:
+
   std::atomic<Int32> m_nb_ref;
   std::ostream* m_stream;
   bool m_need_destroy;
@@ -104,9 +114,9 @@ createFileStream(const String& filename)
 /*---------------------------------------------------------------------------*/
 
 ITraceStream* ITraceStream::
-createStream(std::ostream* stream,bool need_destroy)
+createStream(std::ostream* stream, bool need_destroy)
 {
-  return new FileTraceStream(stream,need_destroy);
+  return new FileTraceStream(stream, need_destroy);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -122,6 +132,7 @@ createStream(std::ostream* stream,bool need_destroy)
 class TraceMngStreamList
 {
  public:
+
   // A mettre en correspondance avec Trace::Trace::eMessageType
   static const Integer NB_STREAM = 9;
   TraceMngStreamList()
@@ -136,12 +147,14 @@ class TraceMngStreamList
     m_str_list[Trace::Debug] = &m_str_debug;
     m_str_list[Trace::Null] = &m_str_null;
 
-    for( Integer i=0; i<NB_STREAM; ++i ){
+    for (Integer i = 0; i < NB_STREAM; ++i) {
       m_str_count[i] = 0;
       m_str_list[i]->precision(std::numeric_limits<Real>::digits10);
     }
   }
+
  public:
+
   std::ostringstream m_str_std;
   std::ostringstream m_str_info;
   std::ostringstream m_str_warning;
@@ -165,25 +178,28 @@ class TraceMngStreamList
 class TraceMngStreamListStorage
 {
  public:
-  TraceMngStreamListStorage() ARCCORE_NOEXCEPT : m_str_list(nullptr){}
+
+  TraceMngStreamListStorage() ARCCORE_NOEXCEPT : m_str_list(nullptr) {}
   ~TraceMngStreamListStorage()
   {
     delete m_str_list;
   }
   TraceMngStreamList* item()
   {
-    if (!m_str_list){
+    if (!m_str_list) {
       m_str_list = new TraceMngStreamList();
     }
     return m_str_list;
   }
+
  private:
+
   TraceMngStreamList* m_str_list;
 };
 
 namespace
 {
-thread_local TraceMngStreamListStorage global_stream_list_storage;
+  thread_local TraceMngStreamListStorage global_stream_list_storage;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -210,10 +226,10 @@ class TraceMng
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 
  public:
-	
+
   TraceMessage operator()()
   {
-    return TraceMessage(_getStream(Trace::Normal),this,Trace::Normal);
+    return TraceMessage(_getStream(Trace::Normal), this, Trace::Normal);
   }
   TraceMessage info() override
   {
@@ -241,7 +257,7 @@ class TraceMng
   }
   TraceMessage warning() override
   {
-    return TraceMessage(_getStream(Trace::Warning),this,Trace::Warning);
+    return TraceMessage(_getStream(Trace::Warning), this, Trace::Warning);
   }
   TraceMessage pwarning() override
   {
@@ -249,7 +265,7 @@ class TraceMng
   }
   TraceMessage error() override
   {
-    return TraceMessage(_getStream(Trace::Error),this,Trace::Error);
+    return TraceMessage(_getStream(Trace::Error), this, Trace::Error);
   }
   TraceMessage perror() override
   {
@@ -269,11 +285,11 @@ class TraceMng
   }
   TraceMessage fatal() override
   {
-    return TraceMessage(_getStream(Trace::Fatal),this,Trace::Fatal);
+    return TraceMessage(_getStream(Trace::Fatal), this, Trace::Fatal);
   }
   TraceMessage pfatal() override
   {
-    return TraceMessage(_getStream(Trace::ParallelFatal),this,Trace::ParallelFatal);
+    return TraceMessage(_getStream(Trace::ParallelFatal), this, Trace::ParallelFatal);
   }
   TraceMessage devNull() override
   {
@@ -281,12 +297,12 @@ class TraceMng
   }
   TraceMessageDbg debug(Trace::eDebugLevel dbg_lvl) override
   {
-    return (dbg_lvl<=_configDbgLevel()) ? _dbg() : _dbgDevNull();
+    return (dbg_lvl <= _configDbgLevel()) ? _dbg() : _dbgDevNull();
   }
   void endTrace(const TraceMessage* msg) override;
   void beginTrace(const TraceMessage* msg) override;
-  void putTrace(const String& message,int type) override;
-	
+  void putTrace(const String& message, int type) override;
+
   void addListener(ITraceMessageListener* v) override;
   void removeListener(ITraceMessageListener* v) override;
 
@@ -307,7 +323,7 @@ class TraceMng
 
   void setRedirectStream(std::ostream* ro) override
   {
-    m_listing_stream = new FileTraceStream(ro,false);
+    m_listing_stream = new FileTraceStream(ro, false);
   }
   void setRedirectStream(ITraceStream* stream) override
   {
@@ -319,7 +335,7 @@ class TraceMng
   void setErrorFileName(const String& file_name) override;
   void setLogFileName(const String& file_name) override;
 
-  void setClassConfig(const String& name,const TraceClassConfig& config) override;
+  void setClassConfig(const String& name, const TraceClassConfig& config) override;
   TraceClassConfig classConfig(const String& name) const override;
   void removeAllClassConfig() override;
 
@@ -334,44 +350,44 @@ class TraceMng
 
   void resetThreadStatus() override;
 
-  void writeDirect(const TraceMessage* msg,const String& str) override;
+  void writeDirect(const TraceMessage* msg, const String& str) override;
 
   void setTraceId(const String& id) override { m_trace_id = id; }
   const String& traceId() const override { return m_trace_id; }
 
-  void visitClassConfigs(IFunctorWithArgumentT<std::pair<String,TraceClassConfig>>* functor) override;
+  void visitClassConfigs(IFunctorWithArgumentT<std::pair<String, TraceClassConfig>>* functor) override;
 
  protected:
-	
+
   TraceMessage _log(bool print_date)
   {
-    if (print_date){
-      TraceMessage msg(_getStream(Trace::Log),this,Trace::Log);
+    if (print_date) {
+      TraceMessage msg(_getStream(Trace::Log), this, Trace::Log);
       _putDate(msg.file());
       return msg;
     }
-    return TraceMessage(_getStream(Trace::Log),this,Trace::Log);
+    return TraceMessage(_getStream(Trace::Log), this, Trace::Log);
   }
   TraceMessage _info()
   {
-    return TraceMessage(_getStream(Trace::Info),this,Trace::Info);
+    return TraceMessage(_getStream(Trace::Info), this, Trace::Info);
   }
   TraceMessage _info(Int32 verbose_level)
   {
-    return TraceMessage(_getStream(Trace::Info),this,Trace::Info,verbose_level);
+    return TraceMessage(_getStream(Trace::Info), this, Trace::Info, verbose_level);
   }
   TraceMessage _devNull()
   {
-    return TraceMessage(_getStream(Trace::Null),this,Trace::Null);
+    return TraceMessage(_getStream(Trace::Null), this, Trace::Null);
   }
 #ifdef ARCCORE_DEBUG
   TraceMessageDbg _dbg()
   {
-    return TraceMessage(_getStream(Trace::Debug),this,Trace::Debug);
+    return TraceMessage(_getStream(Trace::Debug), this, Trace::Debug);
   }
   TraceMessageDbg _dbgDevNull()
   {
-    return TraceMessage(_getStream(Trace::Null),this,Trace::Null);
+    return TraceMessage(_getStream(Trace::Null), this, Trace::Null);
   }
 #else
   TraceMessageDbg _dbg() { return TraceMessageDbg(); }
@@ -408,7 +424,6 @@ class TraceMng
     return dbg_level;
   }
 
-
  private:
 
   /*!
@@ -417,9 +432,14 @@ class TraceMng
   class TraceClass
   {
    public:
-    TraceClass(const String& name,const TraceClassConfig* mci)
-    : m_name(name), m_info(mci) {}
+
+    TraceClass(const String& name, const TraceClassConfig* mci)
+    : m_name(name)
+    , m_info(mci)
+    {}
+
    public:
+
     String m_name;
     const TraceClassConfig* m_info; //!< Information output configuration
   };
@@ -438,7 +458,7 @@ class TraceMng
   std::atomic<Int32> m_current_class_flags = Trace::PF_Default;
   ListenerList* m_listeners = nullptr;
   bool m_is_info_activated = true;
-  std::map<String,TraceClassConfig*> m_trace_class_config_map;
+  std::map<String, TraceClassConfig*> m_trace_class_config_map;
   TraceClassStack m_trace_class_stack;
   TraceClassConfig m_default_trace_class_config;
   TraceClass m_default_trace_class;
@@ -470,13 +490,13 @@ class TraceMng
     ostr->str(std::string());
     return ostr;
   }
-  bool _sendToProxy2(const TraceMessage* msg,Span<const Byte> str);
+  bool _sendToProxy2(const TraceMessage* msg, Span<const Byte> str);
 
   //NOTE: this method must be called with the m_trace_mutex lock held.
   const TraceClassConfig* _msgClassConfig(const String& s) const
   {
     auto ci = m_trace_class_config_map.find(s);
-    if (ci!=m_trace_class_config_map.end()){
+    if (ci != m_trace_class_config_map.end()) {
       return ci->second;
     }
     return &m_default_trace_class_config;
@@ -487,32 +507,31 @@ class TraceMng
     return m_current_msg_class.m_name;
   }
   void _checkFlush();
-  void _putStream(std::ostream& ostr,Span<const Byte> buffer);
-  void _putTraceMessage(std::ostream& ostr,Trace::eMessageType id,Span<const Byte>);
+  void _putStream(std::ostream& ostr, Span<const Byte> buffer);
+  void _putTraceMessage(std::ostream& ostr, Trace::eMessageType id, Span<const Byte>);
   void _putDate(std::ostream& ostr);
   std::ostream* _errorStream();
   std::ostream* _logStream();
-  void _write(std::ostream& output,Span<const Byte> input,bool do_flush=false);
-  void _writeColor(std::ostream& output,Span<const Byte> input,int color,bool do_flush);
-  void _writeListing(Span<const Byte> input,int level,int color,bool do_flush);
-  void _write(std::ostream* output,Span<const Byte> input,bool do_flush=false);
-  void _writeStackTrace(std::ostream* output,const String& stack_trace);
+  void _write(std::ostream& output, Span<const Byte> input, bool do_flush = false);
+  void _writeColor(std::ostream& output, Span<const Byte> input, int color, bool do_flush);
+  void _writeListing(Span<const Byte> input, int level, int color, bool do_flush);
+  void _write(std::ostream* output, Span<const Byte> input, bool do_flush = false);
+  void _writeStackTrace(std::ostream* output, const String& stack_trace);
   void _endTrace(const TraceMessage* msg);
   void _putFunctionName(std::ostream& out);
-  void _writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
+  void _writeDirect(const TraceMessage* msg, Span<const Byte> buf_array,
                     Span<const Byte> orig_message);
   void _putTraceId(std::ostream& out);
   void _updateCurrentClassConfig();
   void _flushStream(ITraceStream* stream);
-  void _writeSpan(std::ostream& o,Span<const Byte> text);
+  void _writeSpan(std::ostream& o, Span<const Byte> text);
   FileTraceStream* _createFileStream(StringView file_name);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_TRACE_EXPORT
-ITraceMng* arccoreCreateDefaultTraceMng()
+extern "C++" ARCCORE_TRACE_EXPORT ITraceMng* arccoreCreateDefaultTraceMng()
 {
   return new TraceMng();
 }
@@ -535,7 +554,7 @@ TraceMng()
 TraceMng::
 ~TraceMng()
 {
-  for( const auto& i : m_trace_class_config_map )
+  for (const auto& i : m_trace_class_config_map)
     delete i.second;
   delete m_listeners;
 }
@@ -544,14 +563,14 @@ TraceMng::
 /*---------------------------------------------------------------------------*/
 
 bool TraceMng::
-_sendToProxy2(const TraceMessage* msg,Span<const Byte> buf)
+_sendToProxy2(const TraceMessage* msg, Span<const Byte> buf)
 {
-  if (m_listeners){
+  if (m_listeners) {
     // TODO: change the prototype to use Span
     const char* buf_data = reinterpret_cast<const char*>(buf.data());
-    ConstArrayView<char> cbuf(arccoreCheckArraySize(buf.size()),buf_data);
-    TraceMessageListenerArgs args(msg,cbuf);
-    for( auto itml : (*m_listeners) ){
+    ConstArrayView<char> cbuf(arccoreCheckArraySize(buf.size()), buf_data);
+    TraceMessageListenerArgs args(msg, cbuf);
+    for (auto itml : (*m_listeners)) {
       if (itml->visitMessage(args))
         return true;
     }
@@ -619,7 +638,7 @@ _createFileStream(Arccore::StringView file_name)
 void TraceMng::
 setErrorFileName(const String& file_name)
 {
-  if (m_error_file_name==file_name)
+  if (m_error_file_name == file_name)
     return;
   m_error_file_name = file_name;
   m_error_file = nullptr;
@@ -634,7 +653,7 @@ setErrorFileName(const String& file_name)
 void TraceMng::
 setLogFileName(const String& file_name)
 {
-  if (m_log_file_name==file_name)
+  if (m_log_file_name == file_name)
     return;
   m_log_file_name = file_name;
   m_is_log_disabled = m_log_file_name.null();
@@ -656,7 +675,7 @@ _putDate(std::ostream& ostr)
   ::time(&now_time);
   now_tm = ::localtime(&now_time);
 
-  strftime(str,max_len,"[%m/%d/%Y %X] ",now_tm);
+  strftime(str, max_len, "[%m/%d/%Y %X] ", now_tm);
   ostr << str;
 }
 
@@ -681,7 +700,7 @@ _checkFlush()
 {
   std::cout.flush();
   ++m_nb_flush;
-  if ( (m_nb_flush % 50) == 0 ){
+  if ((m_nb_flush % 50) == 0) {
     m_nb_flush = 0;
     _flushStream(m_listing_stream.get());
     std::cout.flush();
@@ -693,9 +712,9 @@ _checkFlush()
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_writeSpan(std::ostream& o,Span<const Byte> text)
+_writeSpan(std::ostream& o, Span<const Byte> text)
 {
-  o.write(reinterpret_cast<const char*>(text.data()),text.size());
+  o.write(reinterpret_cast<const char*>(text.data()), text.size());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -713,8 +732,8 @@ _putFunctionName(std::ostream& out)
 
   std::string s = sts_str.localstr();
   std::string::size_type spos = s.find('(');
-  if (spos!=std::string::npos)
-    s.erase(s.begin()+spos,s.end());
+  if (spos != std::string::npos)
+    s.erase(s.begin() + spos, s.end());
   out << s << "() --> ";
 }
 
@@ -724,7 +743,7 @@ _putFunctionName(std::ostream& out)
 void TraceMng::
 _putTraceId(std::ostream& out)
 {
-  if (!m_trace_id.null() && !m_trace_id.empty()){
+  if (!m_trace_id.null() && !m_trace_id.empty()) {
     out << " (" << m_trace_id << ")";
     return;
   }
@@ -738,13 +757,15 @@ _writeTimeString(std::ostream& out)
 {
   char trace_timer_buffer[256];
   unsigned long t = static_cast<unsigned long>(m_trace_timer.getTime());
-  const unsigned long hour = t/3600; t -= hour*3600;
-  const unsigned long min  = t/60;   t -= min*60;
+  const unsigned long hour = t / 3600;
+  t -= hour * 3600;
+  const unsigned long min = t / 60;
+  t -= min * 60;
   // TODO use a portable method.
 #ifdef ARCCORE_OS_WIN32
-  _snprintf(trace_timer_buffer,256,"%04lu:%02lu:%02lu",hour,min,t);
+  _snprintf(trace_timer_buffer, 256, "%04lu:%02lu:%02lu", hour, min, t);
 #else
-  snprintf(trace_timer_buffer,256,"%04lu:%02lu:%02lu",hour,min,t);
+  snprintf(trace_timer_buffer, 256, "%04lu:%02lu:%02lu", hour, min, t);
 #endif
   out << trace_timer_buffer;
 }
@@ -753,76 +774,76 @@ _writeTimeString(std::ostream& out)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_putTraceMessage(std::ostream& out,Trace::eMessageType id,Span<const Byte> msg_str)
+_putTraceMessage(std::ostream& out, Trace::eMessageType id, Span<const Byte> msg_str)
 {
-  if (m_want_trace_timer || (m_current_class_flags & Trace::PF_ElapsedTime)){
+  if (m_want_trace_timer || (m_current_class_flags & Trace::PF_ElapsedTime)) {
     _writeTimeString(out);
     out << " ";
   }
-  switch(id){
-   case Trace::Info:
-     if (!(m_current_class_flags & Trace::PF_NoClassName)){
-       out << "*I-";
-       out.width(10);
-       out.flags(std::ios::left);
-       out << _currentTraceClassName();
-       out << ' ';
-     }
-     _putStream(out,msg_str);
-     break;
-   case Trace::Warning:
-     flush();
-     out << "*W* Code:---------------------------------------------\n";
-     out << "*W*   WARNING";
-     _putTraceId(out);
-     out << ": ";
-     _putStream(out,msg_str);
-     break;
-   case Trace::Error:
-     flush();
-     out << "*E* Code:---------------------------------------------\n";
-     out << "*E*   ERROR";
-     _putTraceId(out);
-     out << ": ";
-     _putStream(out,msg_str);
-     break;
-   case Trace::Log:
-     out << "*L-";
-     out.width(8);
-     out.flags(std::ios::left);
-     out << _currentTraceClassName();
-     out << ' ';
-     _putStream(out,msg_str);
-     break;
-   case Trace::Fatal:
-     flush();
-     out << "*F* Code:---------------------------------------------\n";
-     out << "*F*   FATAL";
-     _putTraceId(out);
-     out << ": ";
-     _putStream(out,msg_str);
-     break;
-   case Trace::ParallelFatal:
-     flush();
-     out << "*F* Code:---------------------------------------------\n";
-     out << "*F*   FATAL";
-     _putTraceId(out);
-     out << ": ";
-     _putStream(out,msg_str);
-     break;
-   case Trace::Debug:
-     out << "*D-";
-     out.flags(std::ios::left);
-     out.width(10);
-     out << _currentTraceClassName();
-     out << ' ';
-     _putStream(out,msg_str);
-     break;
-   case Trace::Normal:
-     break;
-   case Trace::Null:
-     out << '\0';
-     return;
+  switch (id) {
+  case Trace::Info:
+    if (!(m_current_class_flags & Trace::PF_NoClassName)) {
+      out << "*I-";
+      out.width(10);
+      out.flags(std::ios::left);
+      out << _currentTraceClassName();
+      out << ' ';
+    }
+    _putStream(out, msg_str);
+    break;
+  case Trace::Warning:
+    flush();
+    out << "*W* Code:---------------------------------------------\n";
+    out << "*W*   WARNING";
+    _putTraceId(out);
+    out << ": ";
+    _putStream(out, msg_str);
+    break;
+  case Trace::Error:
+    flush();
+    out << "*E* Code:---------------------------------------------\n";
+    out << "*E*   ERROR";
+    _putTraceId(out);
+    out << ": ";
+    _putStream(out, msg_str);
+    break;
+  case Trace::Log:
+    out << "*L-";
+    out.width(8);
+    out.flags(std::ios::left);
+    out << _currentTraceClassName();
+    out << ' ';
+    _putStream(out, msg_str);
+    break;
+  case Trace::Fatal:
+    flush();
+    out << "*F* Code:---------------------------------------------\n";
+    out << "*F*   FATAL";
+    _putTraceId(out);
+    out << ": ";
+    _putStream(out, msg_str);
+    break;
+  case Trace::ParallelFatal:
+    flush();
+    out << "*F* Code:---------------------------------------------\n";
+    out << "*F*   FATAL";
+    _putTraceId(out);
+    out << ": ";
+    _putStream(out, msg_str);
+    break;
+  case Trace::Debug:
+    out << "*D-";
+    out.flags(std::ios::left);
+    out.width(10);
+    out << _currentTraceClassName();
+    out << ' ';
+    _putStream(out, msg_str);
+    break;
+  case Trace::Normal:
+    break;
+  case Trace::Null:
+    out << '\0';
+    return;
   }
   out << '\n';
 }
@@ -831,33 +852,32 @@ _putTraceMessage(std::ostream& out,Trace::eMessageType id,Span<const Byte> msg_s
 /*---------------------------------------------------------------------------*/
 
 // To be mapped to Trace::Color
-const char* color_fmt[] =
-  {
-    "30",
-    "31", "32", "33", "34", "35", "36", "37",
-    "1;31", "1;32", "1;33", "1;34", "1;35", "1;36", "1;37"
-  };
+const char* color_fmt[] = {
+  "30",
+  "31", "32", "33", "34", "35", "36", "37",
+  "1;31", "1;32", "1;33", "1;34", "1;35", "1;36", "1;37"
+};
 
 void TraceMng::
-_writeColor(std::ostream& output,Span<const Byte> input,int color, bool do_flush)
+_writeColor(std::ostream& output, Span<const Byte> input, int color, bool do_flush)
 {
-  if (color>Trace::Color::LAST_COLOR || color<0)
+  if (color > Trace::Color::LAST_COLOR || color < 0)
     color = 0;
   // To ensure that the messages are written in a single go,
   // only one write should be performed.
-  if (color!=0){
+  if (color != 0) {
     std::scoped_lock sl(m_trace_mutex);
     output << "\33[" << color_fmt[color] << "m";
     Int64 len = input.size();
     // The message always ends with a '\n'. We write the end of the color
     // before the '\n'
-    if (len>0)
+    if (len > 0)
       --len;
-    _writeSpan(output,input.subspan(0,len));
+    _writeSpan(output, input.subspan(0, len));
     output << "\33[0m\n";
   }
   else
-    _writeSpan(output,input);
+    _writeSpan(output, input);
 
   if (do_flush)
     output.flush();
@@ -874,7 +894,7 @@ _writeColor(std::ostream& output,Span<const Byte> input,int color, bool do_flush
  * can be different in both cases.
  */
 void TraceMng::
-_writeListing(Span<const Byte> input,Int32 level,int color,bool do_flush)
+_writeListing(Span<const Byte> input, Int32 level, int color, bool do_flush)
 {
   std::ostream* listing_stream = (m_listing_stream) ? m_listing_stream->stream() : nullptr;
   if (!m_has_color)
@@ -885,25 +905,25 @@ _writeListing(Span<const Byte> input,Int32 level,int color,bool do_flush)
   Int32 message_level = level;
 
   // ITraceStream output.
-  if (listing_stream){
+  if (listing_stream) {
     Int32 verbosity_level = m_current_class_verbosity_level;
-    if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
+    if (verbosity_level == Trace::UNSPECIFIED_VERBOSITY_LEVEL)
       verbosity_level = m_verbosity_level;
     // No color if outputs are redirected
     int listing_color = 0;
     bool is_printed = (message_level <= verbosity_level);
     if (is_printed)
-      _writeColor(*listing_stream,input,listing_color,do_flush);
+      _writeColor(*listing_stream, input, listing_color, do_flush);
   }
 
   // std::cout output
-  if (m_is_master || !listing_stream){
+  if (m_is_master || !listing_stream) {
     Int32 verbosity_level = m_current_class_verbosity_level;
-    if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
+    if (verbosity_level == Trace::UNSPECIFIED_VERBOSITY_LEVEL)
       verbosity_level = (listing_stream) ? m_stdout_verbosity_level : m_verbosity_level;
     bool is_printed = (message_level <= verbosity_level);
     if (is_printed)
-      _writeColor(std::cout,input,color,do_flush);
+      _writeColor(std::cout, input, color, do_flush);
   }
 }
 
@@ -911,9 +931,9 @@ _writeListing(Span<const Byte> input,Int32 level,int color,bool do_flush)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_write(std::ostream& output,Span<const Byte> input,bool do_flush)
+_write(std::ostream& output, Span<const Byte> input, bool do_flush)
 {
-  _writeSpan(output,input);
+  _writeSpan(output, input);
   if (do_flush)
     output.flush();
 }
@@ -922,11 +942,11 @@ _write(std::ostream& output,Span<const Byte> input,bool do_flush)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_write(std::ostream* output,Span<const Byte> input,bool do_flush)
+_write(std::ostream* output, Span<const Byte> input, bool do_flush)
 {
   if (!output)
     return;
-  _write(*output,input,do_flush);
+  _write(*output, input, do_flush);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -936,9 +956,9 @@ void TraceMng::
 beginTrace(const TraceMessage* msg)
 {
   Trace::eMessageType id = msg->type();
-  if (id==Trace::Null)
+  if (id == Trace::Null)
     return;
-  if (id<Trace::Normal || id>Trace::Null)
+  if (id < Trace::Normal || id > Trace::Null)
     return;
   ++(_getStreamList()->m_str_count[id]);
 }
@@ -950,12 +970,12 @@ void TraceMng::
 endTrace(const TraceMessage* msg)
 {
   Trace::eMessageType id = msg->type();
-  if (id==Trace::Null)
+  if (id == Trace::Null)
     return;
-  if (id<Trace::Normal || id>Trace::Null)
+  if (id < Trace::Normal || id > Trace::Null)
     return;
   Integer n = --(_getStreamList()->m_str_count[id]);
-  if (n==0){
+  if (n == 0) {
     _endTrace(msg);
   }
 }
@@ -964,10 +984,10 @@ endTrace(const TraceMessage* msg)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-putTrace(const String& message,int type)
+putTrace(const String& message, int type)
 {
   auto message_type = static_cast<Trace::eMessageType>(type);
-  switch(message_type){
+  switch (message_type) {
   case Trace::Normal:
   case Trace::Info:
     this->info() << message;
@@ -1005,30 +1025,30 @@ _endTrace(const TraceMessage* msg)
   TraceMngStreamList* ts = _getStreamList();
   const std::string& str = ts->m_str_list[id]->str();
   const Byte* str_data = reinterpret_cast<const Byte*>(str.data());
-  std::vector<Byte> msg_str_copy(str_data,str_data+str.length());
-  Span<const Byte> msg_str(msg_str_copy.data(),msg_str_copy.size());
+  std::vector<Byte> msg_str_copy(str_data, str_data + str.length());
+  Span<const Byte> msg_str(msg_str_copy.data(), msg_str_copy.size());
 
   ts->m_str_list[id]->str(std::string());
   if (msg_str.empty())
     return;
 
   ts->m_tmp_buf.str(std::string());
-  _putTraceMessage(ts->m_tmp_buf,id,msg_str);
+  _putTraceMessage(ts->m_tmp_buf, id, msg_str);
   const std::string& tmp_buf_str = ts->m_tmp_buf.str();
   const Byte* tmp_buf_str_data = reinterpret_cast<const Byte*>(tmp_buf_str.data());
-  Span<const Byte> buf_array(tmp_buf_str_data,tmp_buf_str.length());
+  Span<const Byte> buf_array(tmp_buf_str_data, tmp_buf_str.length());
 
-  if (_sendToProxy2(msg,buf_array))
+  if (_sendToProxy2(msg, buf_array))
     return;
 
-  _writeDirect(msg,buf_array,msg_str);
+  _writeDirect(msg, buf_array, msg_str);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
+_writeDirect(const TraceMessage* msg, Span<const Byte> buf_array,
              Span<const Byte> orig_message)
 {
   std::ostream* listing_stream = (m_listing_stream) ? m_listing_stream->stream() : nullptr;
@@ -1039,59 +1059,57 @@ _writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
   int color = msg->color();
   // TODO Make configurable.
   const bool write_stack_trace_for_error = false;
-  switch(id){
+  switch (id) {
   case Trace::Normal:
-    _writeListing(buf_array,print_level,color,false);
+    _writeListing(buf_array, print_level, color, false);
     _checkFlush();
     break;
   case Trace::Info:
-    _writeListing(buf_array,msg->level(),color,false);
+    _writeListing(buf_array, msg->level(), color, false);
     _checkFlush();
     break;
   case Trace::Log:
-    _write(_logStream(),buf_array);
+    _write(_logStream(), buf_array);
     _checkFlush();
     break;
   case Trace::Warning:
-  case Trace::Error:
-    {
-      auto error_stream = _errorStream();
-      auto log_stream = _logStream();
-      auto tc_color = (id==Trace::Warning) ? Trace::Color::DarkYellow : Trace::Color::DarkRed;
-      _writeListing(buf_array,print_level,tc_color,true);
-      _write(error_stream,buf_array,true);
-      String stack_trace = Platform::getStackTrace();
-      if (write_stack_trace_for_error)
-        _writeStackTrace(&def_out,stack_trace);
-      _write(log_stream,buf_array,true);
-      _writeStackTrace(log_stream,stack_trace);
-      if (listing_stream){
-        _write(std::cerr,buf_array);
-      }
+  case Trace::Error: {
+    auto error_stream = _errorStream();
+    auto log_stream = _logStream();
+    auto tc_color = (id == Trace::Warning) ? Trace::Color::DarkYellow : Trace::Color::DarkRed;
+    _writeListing(buf_array, print_level, tc_color, true);
+    _write(error_stream, buf_array, true);
+    String stack_trace = Platform::getStackTrace();
+    if (write_stack_trace_for_error)
+      _writeStackTrace(&def_out, stack_trace);
+    _write(log_stream, buf_array, true);
+    _writeStackTrace(log_stream, stack_trace);
+    if (listing_stream) {
+      _write(std::cerr, buf_array);
     }
-    break;
+  } break;
   case Trace::Fatal:
   case Trace::ParallelFatal:
-    if (m_is_master || id==Trace::Fatal){
+    if (m_is_master || id == Trace::Fatal) {
       auto error_stream = _errorStream();
       auto log_stream = _logStream();
-      _writeListing(buf_array,print_level,Trace::Color::Red,true);
-      _write(error_stream,buf_array,true);
-      _write(log_stream,buf_array,true);
+      _writeListing(buf_array, print_level, Trace::Color::Red, true);
+      _write(error_stream, buf_array, true);
+      _write(log_stream, buf_array, true);
       String stack_trace = Platform::getStackTrace();
-      _writeStackTrace(log_stream,stack_trace);
+      _writeStackTrace(log_stream, stack_trace);
       if (listing_stream)
-        _write(std::cerr,buf_array);
+        _write(std::cerr, buf_array);
     }
     {
       String s1(orig_message);
-      FatalErrorException ex("TraceMng::endTrace()",s1);
-      if (id==Trace::ParallelFatal)
+      FatalErrorException ex("TraceMng::endTrace()", s1);
+      if (id == Trace::ParallelFatal)
         ex.setCollective(true);
       throw ex;
     }
   case Trace::Debug:
-    _writeListing(buf_array,print_level,color,true);
+    _writeListing(buf_array, print_level, color, true);
     break;
   case Trace::Null:
     break;
@@ -1102,22 +1120,23 @@ _writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-writeDirect(const TraceMessage* msg,const String& str)
+writeDirect(const TraceMessage* msg, const String& str)
 {
   Span<const Byte> buf_array(str.bytes());
-  _writeDirect(msg,buf_array,buf_array);
+  _writeDirect(msg, buf_array, buf_array);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_writeStackTrace(std::ostream* output,const String& stack_trace)
+_writeStackTrace(std::ostream* output, const String& stack_trace)
 {
   if (!output)
     return;
-  if (!stack_trace.null()){
-    (*output) << "Stack\n" << stack_trace << "\n";
+  if (!stack_trace.null()) {
+    (*output) << "Stack\n"
+              << stack_trace << "\n";
     output->flush();
   }
 }
@@ -1126,10 +1145,10 @@ _writeStackTrace(std::ostream* output,const String& stack_trace)
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-_putStream(std::ostream& ostr,Span<const Byte> buffer)
+_putStream(std::ostream& ostr, Span<const Byte> buffer)
 {
   _putFunctionName(ostr);
-  _writeSpan(ostr,buffer);
+  _writeSpan(ostr, buffer);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1150,7 +1169,7 @@ pushTraceClass(const String& name)
 {
   std::scoped_lock sl(m_trace_mutex);
   const TraceClassConfig* tcc = _msgClassConfig(name);
-  m_trace_class_stack.push_back(TraceClass(name,tcc));
+  m_trace_class_stack.push_back(TraceClass(name, tcc));
   m_current_msg_class = m_trace_class_stack.back();
   _updateCurrentClassConfig();
 }
@@ -1178,10 +1197,10 @@ void TraceMng::
 finishInitialize()
 {
   std::scoped_lock sl(m_trace_mutex);
-  m_default_trace_class = TraceClass("Internal",&m_default_trace_class_config);
+  m_default_trace_class = TraceClass("Internal", &m_default_trace_class_config);
   m_current_msg_class = m_default_trace_class;
   m_trace_class_stack.push_back(m_default_trace_class);
-  if (m_is_master){
+  if (m_is_master) {
     Platform::removeFile(m_error_file_name);
   }
 }
@@ -1190,19 +1209,19 @@ finishInitialize()
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-setClassConfig(const String& name,const TraceClassConfig& config)
+setClassConfig(const String& name, const TraceClassConfig& config)
 {
   std::scoped_lock sl(m_trace_mutex);
-  if (name=="*"){
+  if (name == "*") {
     m_default_trace_class_config = config;
   }
-  else{
+  else {
     auto iter = m_trace_class_config_map.find(name);
-    if (iter==m_trace_class_config_map.end()){
+    if (iter == m_trace_class_config_map.end()) {
       TraceClassConfig* tcc = new TraceClassConfig(config);
-      m_trace_class_config_map.insert(std::make_pair(name,tcc));
+      m_trace_class_config_map.insert(std::make_pair(name, tcc));
     }
-    else{
+    else {
       TraceClassConfig* tcc = iter->second;
       *tcc = config;
     }
@@ -1230,10 +1249,10 @@ removeAllClassConfig()
   std::scoped_lock sl(m_trace_mutex);
   // Since all TraceClassConfig will be destroyed, they should no longer
   // be referenced in TraceClass.
-  for( auto& i : m_trace_class_stack )
+  for (auto& i : m_trace_class_stack)
     i.m_info = &m_default_trace_class_config;
   m_current_msg_class.m_info = &m_default_trace_class_config;
-  for( const auto& i : m_trace_class_config_map )
+  for (const auto& i : m_trace_class_config_map)
     delete i.second;
   m_trace_class_config_map.clear();
 }
@@ -1242,12 +1261,12 @@ removeAllClassConfig()
 /*---------------------------------------------------------------------------*/
 
 void TraceMng::
-visitClassConfigs(IFunctorWithArgumentT<std::pair<String,TraceClassConfig>>* functor)
+visitClassConfigs(IFunctorWithArgumentT<std::pair<String, TraceClassConfig>>* functor)
 {
   if (!functor)
     return;
-  for( const auto& i : m_trace_class_config_map ){
-    functor->executeFunctor(std::make_pair(i.first,*(i.second)));
+  for (const auto& i : m_trace_class_config_map) {
+    functor->executeFunctor(std::make_pair(i.first, *(i.second)));
   }
 }
 

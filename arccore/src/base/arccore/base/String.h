@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ class ARCCORE_BASE_EXPORT String
 {
  public:
 
-  friend ARCCORE_BASE_EXPORT bool operator<(const String& a,const String& b);
+  friend ARCCORE_BASE_EXPORT bool operator<(const String& a, const String& b);
   friend class StringBuilder;
   friend class StringUtilsImpl;
 
@@ -85,7 +85,7 @@ class ARCCORE_BASE_EXPORT String
    * (i.e., it is a compile-time constant string.
    * If the string passed as an argument can be deallocated,
    * use String(std::string_view) instead.
-   */   
+   */
   String(const char* str)
   : m_const_ptr(str)
   {
@@ -96,10 +96,10 @@ class ARCCORE_BASE_EXPORT String
   String(char* str);
   //! Creates a string from \a str in UTF-8 encoding
   ARCCORE_DEPRECATED_2019("Use String::String(StringView) instead")
-  String(const char* str,bool do_alloc);
+  String(const char* str, bool do_alloc);
   //! Creates a string from \a str in UTF-8 encoding
   ARCCORE_DEPRECATED_2019("Use String::String(StringView) instead")
-  String(const char* str,Integer len);
+  String(const char* str, Integer len);
   //! Creates a string from \a str in UTF-8 encoding
   String(std::string_view str);
   //! Creates a string from \a str in UTF-8 encoding
@@ -118,7 +118,9 @@ class ARCCORE_BASE_EXPORT String
   String(const String& str);
   //! Creates a string from \a str
   String(String&& str)
-  : m_p(str.m_p), m_const_ptr(str.m_const_ptr),  m_const_ptr_size(str.m_const_ptr_size)
+  : m_p(str.m_p)
+  , m_const_ptr(str.m_const_ptr)
+  , m_const_ptr_size(str.m_const_ptr_size)
   {
     str._resetFields();
   }
@@ -288,7 +290,7 @@ class ARCCORE_BASE_EXPORT String
   //! Returns the length of the string in 32 bits.
   ARCCORE_DEPRECATED_2019("Use method String::length() instead")
   Integer len() const;
-  
+
   //! Returns the length of the string.
   Int64 length() const;
 
@@ -309,7 +311,7 @@ class ARCCORE_BASE_EXPORT String
    * \retval false otherwise.
    * \relate String
    */
-  friend ARCCORE_BASE_EXPORT bool operator==(const String& a,const String& b);
+  friend ARCCORE_BASE_EXPORT bool operator==(const String& a, const String& b);
 
   /*!
    * \brief Compares two unicode strings.
@@ -318,31 +320,31 @@ class ARCCORE_BASE_EXPORT String
    * \retval false if they are equal.
    * \relate String
    */
-  friend bool operator!=(const String& a,const String& b)
+  friend bool operator!=(const String& a, const String& b)
   {
-    return !operator==(a,b);
+    return !operator==(a, b);
   }
 
   //! String output operator
-  friend ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const String&);
+  friend ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o, const String&);
   //! String input operator
-  friend ARCCORE_BASE_EXPORT std::istream& operator>>(std::istream& o,String&);
+  friend ARCCORE_BASE_EXPORT std::istream& operator>>(std::istream& o, String&);
 
   /*!
    * \brief Compares two unicode strings.
    * \retval true if they are equal,
    * \retval false otherwise.
    */
-  friend ARCCORE_BASE_EXPORT bool operator==(const char* a,const String& b);
+  friend ARCCORE_BASE_EXPORT bool operator==(const char* a, const String& b);
 
   /*!
    * \brief Compares two unicode strings.
    * \retval true if they are different,
    * \retval false if they are equal.
    */
-  inline friend bool operator!=(const char* a,const String& b)
+  inline friend bool operator!=(const char* a, const String& b)
   {
-    return !operator==(a,b);
+    return !operator==(a, b);
   }
 
   /*!
@@ -350,22 +352,22 @@ class ARCCORE_BASE_EXPORT String
    * \retval true if they are equal,
    * \retval false otherwise.
    */
-  friend ARCCORE_BASE_EXPORT bool operator==(const String& a,const char* b);
+  friend ARCCORE_BASE_EXPORT bool operator==(const String& a, const char* b);
 
   /*!
    * \brief Compares two unicode strings.
    * \retval true if they are different,
    * \retval false if they are equal.
    */
-  inline friend bool operator!=(const String& a,const char* b)
+  inline friend bool operator!=(const String& a, const char* b)
   {
-    return !operator==(a,b);
+    return !operator==(a, b);
   }
 
   //! Adds two strings.
-  friend ARCCORE_BASE_EXPORT String operator+(const char* a,const String& b);
+  friend ARCCORE_BASE_EXPORT String operator+(const char* a, const String& b);
 
-  friend ARCCORE_BASE_EXPORT bool operator<(const String& a,const String& b);
+  friend ARCCORE_BASE_EXPORT bool operator<(const String& a, const String& b);
 
  public:
 
@@ -399,7 +401,7 @@ class ARCCORE_BASE_EXPORT String
   static String fromNumber(unsigned long v);
   static String fromNumber(unsigned int v);
   static String fromNumber(double v);
-  static String fromNumber(double v,Integer nb_digit_after_point);
+  static String fromNumber(double v, Integer nb_digit_after_point);
   static String fromNumber(long double v);
   static String fromNumber(int v);
   static String fromNumber(long v);
@@ -410,35 +412,35 @@ class ARCCORE_BASE_EXPORT String
  public:
 
   static String format(const String& str);
-  static String format(const String& str,const StringFormatterArg& arg1);
-  static String format(const String& str,const StringFormatterArg& arg1,
+  static String format(const String& str, const StringFormatterArg& arg1);
+  static String format(const String& str, const StringFormatterArg& arg1,
                        const StringFormatterArg& arg2);
-  static String format(const String& str,const StringFormatterArg& arg1,
+  static String format(const String& str, const StringFormatterArg& arg1,
                        const StringFormatterArg& arg2,
                        const StringFormatterArg& arg3);
-  static String format(const String& str,const StringFormatterArg& arg1,
+  static String format(const String& str, const StringFormatterArg& arg1,
                        const StringFormatterArg& arg2,
                        const StringFormatterArg& arg3,
                        const StringFormatterArg& arg4);
-  static String format(const String& str,const StringFormatterArg& arg1,
+  static String format(const String& str, const StringFormatterArg& arg1,
                        const StringFormatterArg& arg2,
                        const StringFormatterArg& arg3,
                        const StringFormatterArg& arg4,
                        const StringFormatterArg& arg5);
-  static String format(const String& str,const StringFormatterArg& arg1,
+  static String format(const String& str, const StringFormatterArg& arg1,
                        const StringFormatterArg& arg2,
                        const StringFormatterArg& arg3,
                        const StringFormatterArg& arg4,
                        const StringFormatterArg& arg5,
                        const StringFormatterArg& arg6);
-  static String format(const String& str,const StringFormatterArg& arg1,
+  static String format(const String& str, const StringFormatterArg& arg1,
                        const StringFormatterArg& arg2,
                        const StringFormatterArg& arg3,
                        const StringFormatterArg& arg4,
                        const StringFormatterArg& arg5,
                        const StringFormatterArg& arg6,
                        const StringFormatterArg& arg7);
-  static String format(const String& str,const StringFormatterArg& arg1,
+  static String format(const String& str, const StringFormatterArg& arg1,
                        const StringFormatterArg& arg2,
                        const StringFormatterArg& arg3,
                        const StringFormatterArg& arg4,
@@ -446,7 +448,7 @@ class ARCCORE_BASE_EXPORT String
                        const StringFormatterArg& arg6,
                        const StringFormatterArg& arg7,
                        const StringFormatterArg& arg8);
-  static String format(const String& str,const StringFormatterArg& arg1,
+  static String format(const String& str, const StringFormatterArg& arg1,
                        const StringFormatterArg& arg2,
                        const StringFormatterArg& arg3,
                        const StringFormatterArg& arg4,
@@ -467,9 +469,9 @@ class ARCCORE_BASE_EXPORT String
                        const StringFormatterArg& arg4);
 
   //! Standard plural form by adding an 's'
-  static String plural(const Integer n, const String & str, const bool with_number = true);
+  static String plural(const Integer n, const String& str, const bool with_number = true);
   //! Special plural form by variant
-  static String plural(const Integer n, const String & str, const String & str2, const bool with_number = true);
+  static String plural(const Integer n, const String& str, const String& str2, const bool with_number = true);
 
   //! Indicates if the string contains \a s
   bool contains(const String& s) const;
@@ -484,20 +486,20 @@ class ARCCORE_BASE_EXPORT String
   String substring(Int64 pos) const;
 
   //! Substring starting at position \a pos and of length \a len
-  String substring(Int64 pos,Int64 len) const;
+  String substring(Int64 pos, Int64 len) const;
 
-  static String join(String delim,ConstArrayView<String> strs);
+  static String join(String delim, ConstArrayView<String> strs);
 
   //! Splits the string based on the character \a c
-  template<typename StringContainer> void
-  split(StringContainer& str_array,char c) const
+  template <typename StringContainer> void
+  split(StringContainer& str_array, char c) const
   {
     const String& str = *this;
     //TODO: pass through String::bytes().
     const char* str_str = str.localstr();
     Int64 offset = 0;
     Int64 len = str.length();
-    for( Int64 i=0; i<len; ++i ){
+    for (Int64 i = 0; i < len; ++i) {
       // GG: temporarily reverts to the old semantics (equivalent to strtok())
       // and removes the IFPEN modification because it causes too many incompatibilities with
       // the existing code. Note that the implementation of the old semantics
@@ -508,13 +510,13 @@ class ARCCORE_BASE_EXPORT String
       //   2. If it starts with the delimiter, the delimiter is returned:
       // With ':X:Y', we return {':X','Y'} instead of {'X','Y'}
       //if (str_str[i]==c){
-      if (str_str[i]==c && i!=offset){
-        str_array.push_back(std::string_view(str_str+offset,i-offset));
-        offset = i+1;
+      if (str_str[i] == c && i != offset) {
+        str_array.push_back(std::string_view(str_str + offset, i - offset));
+        offset = i + 1;
       }
     }
-    if (len!=offset)
-      str_array.push_back(std::string_view(str_str+offset,len-offset));
+    if (len != offset)
+      str_array.push_back(std::string_view(str_str + offset, len - offset));
   }
 
  public:
@@ -538,7 +540,7 @@ class ARCCORE_BASE_EXPORT String
   // Only call if 'm_const_ptr' is not null otherwise m_const_ptr_size is (-1)
   std::string_view _viewFromConstChar() const
   {
-    return std::string_view(m_const_ptr,m_const_ptr_size);
+    return std::string_view(m_const_ptr, m_const_ptr_size);
   }
   void _removeReference();
   ConstArrayView<UChar> _internalUtf16BE() const;
@@ -574,11 +576,12 @@ class ARCCORE_BASE_EXPORT String
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename U>
+template <typename U>
 class StringFormatterArgToString
 {
  public:
-  static void toString(const U& v,String& s)
+
+  static void toString(const U& v, String& s)
   {
     std::ostringstream ostr;
     ostr << v;
@@ -596,10 +599,11 @@ class StringFormatterArgToString
 class ARCCORE_BASE_EXPORT StringFormatterArg
 {
  public:
-  template<typename U>
+
+  template <typename U>
   StringFormatterArg(const U& avalue)
   {
-    StringFormatterArgToString<U>::toString(avalue,m_str_value);
+    StringFormatterArgToString<U>::toString(avalue, m_str_value);
   }
   StringFormatterArg(Real avalue)
   {
@@ -609,11 +613,17 @@ class ARCCORE_BASE_EXPORT StringFormatterArg
   : m_str_value(s)
   {
   }
+
  public:
+
   const String& value() const { return m_str_value; }
+
  private:
+
   String m_str_value;
+
  private:
+
   void _formatReal(Real avalue);
 };
 

@@ -32,6 +32,9 @@
 namespace Arcane
 {
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * Tries to instantiate a service implementing \a InterfaceType with
  * the list of service names \a names. Returns the found instance

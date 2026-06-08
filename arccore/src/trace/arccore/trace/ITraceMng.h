@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,9 +42,14 @@ namespace Arcane
 class ARCCORE_TRACE_EXPORT TraceMessageListenerArgs
 {
  public:
-  TraceMessageListenerArgs(const TraceMessage* msg,ConstArrayView<char> buf)
-  : m_message(msg), m_buffer(buf){}
+
+  TraceMessageListenerArgs(const TraceMessage* msg, ConstArrayView<char> buf)
+  : m_message(msg)
+  , m_buffer(buf)
+  {}
+
  public:
+
   //! Trace message information
   const TraceMessage* message() const
   {
@@ -56,7 +61,9 @@ class ARCCORE_TRACE_EXPORT TraceMessageListenerArgs
   {
     return m_buffer;
   }
+
  private:
+
   const TraceMessage* m_message;
   ConstArrayView<char> m_buffer;
 };
@@ -70,6 +77,7 @@ class ARCCORE_TRACE_EXPORT TraceMessageListenerArgs
 class ARCCORE_TRACE_EXPORT ITraceMessageListener
 {
  public:
+
   virtual ~ITraceMessageListener() {}
   /*!
    * \brief Receiving message \a msg containing string \a str.
@@ -82,7 +90,7 @@ class ARCCORE_TRACE_EXPORT ITraceMessageListener
    * \warning Attention, this function must be thread-safe because it can be
    * called simultaneously by multiple threads.
    */
-  virtual bool visitMessage(const TraceMessageListenerArgs& args) =0;
+  virtual bool visitMessage(const TraceMessageListenerArgs& args) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -97,19 +105,26 @@ class ARCCORE_TRACE_EXPORT ITraceMessageListener
 class ARCCORE_TRACE_EXPORT ITraceStream
 {
  public:
+
   typedef ReferenceCounterTag ReferenceCounterTagType;
+
  public:
+
   virtual ~ITraceStream() = default;
+
  public:
+
   //! Adds a reference.
-  virtual void addReference() =0;
+  virtual void addReference() = 0;
   //! Removes a reference.
-  virtual void removeReference() =0;
+  virtual void removeReference() = 0;
   //! Associated standard stream. May return null.
-  virtual std::ostream* stream() =0;
+  virtual std::ostream* stream() = 0;
+
  public:
+
   static ITraceStream* createFileStream(const String& filename);
-  static ITraceStream* createStream(std::ostream* stream,bool need_destroy);
+  static ITraceStream* createStream(std::ostream* stream, bool need_destroy);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -159,43 +174,47 @@ class ARCCORE_TRACE_EXPORT ITraceStream
 class ARCCORE_TRACE_EXPORT ITraceMng
 {
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  public:
+
   virtual ~ITraceMng() = default;
+
  public:
+
   //! Stream for an error message
-  virtual TraceMessage error() =0;
+  virtual TraceMessage error() = 0;
   //! Stream for a parallel error message
-  virtual TraceMessage perror() =0;
+  virtual TraceMessage perror() = 0;
   //! Stream for a fatal error message
-  virtual TraceMessage fatal() =0;
+  virtual TraceMessage fatal() = 0;
   //! Stream for a parallel fatal error message
-  virtual TraceMessage pfatal() =0;
+  virtual TraceMessage pfatal() = 0;
   //! Stream for a warning message
-  virtual TraceMessage warning() =0;
+  virtual TraceMessage warning() = 0;
   //! Stream for a parallel warning message
-  virtual TraceMessage pwarning() =0;
+  virtual TraceMessage pwarning() = 0;
   //! Stream for an information message
-  virtual TraceMessage info() =0;
+  virtual TraceMessage info() = 0;
   //! Stream for a parallel information message
-  virtual TraceMessage pinfo() =0;
+  virtual TraceMessage pinfo() = 0;
   //! Stream for an information message of a given category
-  virtual TraceMessage info(char category) =0;
+  virtual TraceMessage info(char category) = 0;
   //! Stream for an information message of a given level
-  virtual TraceMessage info(Int32 level) =0;
+  virtual TraceMessage info(Int32 level) = 0;
   //! Stream for a parallel information message of a given category
-  virtual TraceMessage pinfo(char category) =0;
+  virtual TraceMessage pinfo(char category) = 0;
   //! Stream for a conditional information message.
-  virtual TraceMessage info(bool) =0;
+  virtual TraceMessage info(bool) = 0;
   //! Stream for a log message.
-  virtual TraceMessage log() =0;
+  virtual TraceMessage log() = 0;
   //! Stream for a parallel log message.
-  virtual TraceMessage plog() =0;
+  virtual TraceMessage plog() = 0;
   //! Stream for a log message preceded by the time.
-  virtual TraceMessage logdate() =0;
+  virtual TraceMessage logdate() = 0;
   //! Stream for a debug message.
-  virtual TraceMessageDbg debug(Trace::eDebugLevel =Trace::Medium) =0;
+  virtual TraceMessageDbg debug(Trace::eDebugLevel = Trace::Medium) = 0;
   //! Stream for an unused message
-  virtual TraceMessage devNull() =0;
+  virtual TraceMessage devNull() = 0;
 
   //! \deprecated Use setInfoActivated() instead
   ARCCORE_DEPRECATED_2018 virtual bool setActivated(bool v) { return setInfoActivated(v); }
@@ -204,39 +223,39 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    *
    * \return the previous activation state.
    */
-  virtual bool setInfoActivated(bool v) =0;
+  virtual bool setInfoActivated(bool v) = 0;
   //! Indicates if info message outputs are activated.
-  virtual bool isInfoActivated() const =0;
+  virtual bool isInfoActivated() const = 0;
 
   //! Finishes initialization
-  virtual void finishInitialize() =0;
+  virtual void finishInitialize() = 0;
 
   /*!
    * \brief Adds class \a s to the stack of active message classes.
    * \threadsafe
    */
-  virtual void pushTraceClass(const String& name) =0;
-	
+  virtual void pushTraceClass(const String& name) = 0;
+
   /*!
    * \brief Removes the last message class from the stack.
    * \threadsafe
    */
-  virtual void popTraceClass() =0;
-	
+  virtual void popTraceClass() = 0;
+
   //! Flushes all streams.
-  virtual void flush() =0;
+  virtual void flush() = 0;
 
   /*!
    * \brief Redirects all messages to the stream \a o.
    * \deprecated Use the setRedirectStream(ITraceStream*) overload.
    */
-  ARCCORE_DEPRECATED_2018 virtual void setRedirectStream(std::ostream* o) =0;
+  ARCCORE_DEPRECATED_2018 virtual void setRedirectStream(std::ostream* o) = 0;
 
   //! Redirects all messages to the stream \a o
-  virtual void setRedirectStream(ITraceStream* o) =0;
+  virtual void setRedirectStream(ITraceStream* o) = 0;
 
   //! Returns the dbg level of the configuration file
-  virtual Trace::eDebugLevel configDbgLevel() const =0;
+  virtual Trace::eDebugLevel configDbgLevel() const = 0;
 
  public:
 
@@ -246,10 +265,10 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * The caller remains the owner of \a v and must remove it
    * via removeListener() before destroying it.
    */
-  virtual void addListener(ITraceMessageListener* v) =0;
+  virtual void addListener(ITraceMessageListener* v) = 0;
 
   //! Removes observer \a v from this message manager.
-  virtual void removeListener(ITraceMessageListener* v) =0;
+  virtual void removeListener(ITraceMessageListener* v) = 0;
 
   /*!
    * \brief Sets the manager identifier.
@@ -259,10 +278,10 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * can be arbitrary. By default, it is the process rank and
    * the machine name.
    */
-  virtual void setTraceId(const String& id) =0;
+  virtual void setTraceId(const String& id) = 0;
 
   //! Manager identifier.
-  virtual const String& traceId() const =0;
+  virtual const String& traceId() const = 0;
 
   /*!
    * \brief Sets the error file name to \a file_name.
@@ -272,7 +291,7 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    *
    * If \a file_name is the null string, no error file is used.
    */
-  virtual void setErrorFileName(const String& file_name) =0;
+  virtual void setErrorFileName(const String& file_name) = 0;
 
   /*!
    * \brief Sets the log file name to \a file_name.
@@ -282,15 +301,15 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    *
    * If \a file_name is the null string, no log file is used.
    */
-  virtual void setLogFileName(const String& file_name) =0;
+  virtual void setLogFileName(const String& file_name) = 0;
 
  public:
 
   //! Signals the start of writing message \a message
-  virtual void beginTrace(const TraceMessage* message) =0;
+  virtual void beginTrace(const TraceMessage* message) = 0;
 
   //! Signals the end of writing message \a message
-  virtual void endTrace(const TraceMessage* message) =0;
+  virtual void endTrace(const TraceMessage* message) = 0;
 
   /*!
    * \brief Directly sends a message of type \a type.
@@ -298,15 +317,15 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * \a type must correspond to Trace::eMessageType.
    * This method should only be used by the .NET wrapping.
    */
-  virtual void putTrace(const String& message,int type) =0;
+  virtual void putTrace(const String& message, int type) = 0;
 
  public:
-  
+
   //! Sets the configuration for the message class \a name
-  virtual void setClassConfig(const String& name,const TraceClassConfig& config) =0;
+  virtual void setClassConfig(const String& name, const TraceClassConfig& config) = 0;
 
   //! Configuration associated with the message class \a name
-  virtual TraceClassConfig classConfig(const String& name) const =0;
+  virtual TraceClassConfig classConfig(const String& name) const = 0;
 
   /*!
    * \brief Sets the 'master' state of the instance.
@@ -316,10 +335,10 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * perror() and pwarning(). It is therefore preferable that there be
    * only one master ITraceMng instance.
    */
-  virtual void setMaster(bool is_master) =0;
+  virtual void setMaster(bool is_master) = 0;
 
   // Indicates if the instance is master.
-  virtual bool isMaster() const =0;
+  virtual bool isMaster() const = 0;
 
   /*!
    * \brief Sets the verbosity level of the outputs.
@@ -328,10 +347,10 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * The level used is the one given as an argument to info(Int32).
    * The default level is the one given by TraceMessage::DEFAULT_LEVEL.
    */
-  virtual void setVerbosityLevel(Int32 level) =0;
+  virtual void setVerbosityLevel(Int32 level) = 0;
 
   //! Message verbosity level
-  virtual Int32 verbosityLevel() const =0;
+  virtual Int32 verbosityLevel() const = 0;
 
   /*!
    * \brief Sets the verbosity level of outputs on std::cout
@@ -340,10 +359,10 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * if the listings outputs have been redirected. Otherwise, the property
    * verbosityLevel() is used.
    */
-  virtual void setStandardOutputVerbosityLevel(Int32 level) =0;
+  virtual void setStandardOutputVerbosityLevel(Int32 level) = 0;
 
   //! Message verbosity level on std::cout
-  virtual Int32 standardOutputVerbosityLevel() const =0;
+  virtual Int32 standardOutputVerbosityLevel() const = 0;
 
   /*!
    * \internal
@@ -351,7 +370,7 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * managing multi-threading must be re-declared.
    * Internal to Arccore, do not use.
    */
-  virtual void resetThreadStatus() =0;
+  virtual void resetThreadStatus() = 0;
 
   /*!
    * \brief Writes a message directly.
@@ -362,10 +381,10 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * only be used by an ITraceMessageListener. For other cases,
    * standard traces must be used.
    */
-  virtual void writeDirect(const TraceMessage* msg,const String& str) =0;
+  virtual void writeDirect(const TraceMessage* msg, const String& str) = 0;
 
   //! Removes all configuration classes set via setClassConfig().
-  virtual void removeAllClassConfig() =0;
+  virtual void removeAllClassConfig() = 0;
 
   /*!
    * \biref Applies the functor \a functor to all registered TraceClassConfig.
@@ -376,8 +395,7 @@ class ARCCORE_TRACE_EXPORT ITraceMng
    * It is permitted to modify the TraceClassConfig during visitation via
    * a call to setClassConfig().
    */
-  virtual void visitClassConfigs(IFunctorWithArgumentT<std::pair<String,TraceClassConfig>>* functor) =0;
-
+  virtual void visitClassConfigs(IFunctorWithArgumentT<std::pair<String, TraceClassConfig>>* functor) = 0;
 
  public:
 
@@ -405,13 +423,12 @@ class ARCCORE_TRACE_EXPORT ITraceMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCCORE_TRACE_EXPORT
-ITraceMng* arccoreCreateDefaultTraceMng();
+extern "C++" ARCCORE_TRACE_EXPORT ITraceMng* arccoreCreateDefaultTraceMng();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

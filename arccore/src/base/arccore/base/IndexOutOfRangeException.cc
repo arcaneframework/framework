@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,10 +25,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 IndexOutOfRangeException::
-IndexOutOfRangeException(const TraceInfo& where,const String& message,
-                         Int64 index,Int64 min_value_inclusive,
+IndexOutOfRangeException(const TraceInfo& where, const String& message,
+                         Int64 index, Int64 min_value_inclusive,
                          Int64 max_value_exclusive)
-: Exception("IndexOutOfRange",where,message)
+: Exception("IndexOutOfRange", where, message)
 , m_index(index)
 , m_min_value_inclusive(min_value_inclusive)
 , m_max_value_exclusive(max_value_exclusive)
@@ -50,7 +50,7 @@ explain(std::ostream& m) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -24,6 +24,10 @@
 
 namespace Arccore::MessagePassing
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \brief MessageId.
  *
@@ -59,35 +63,35 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
     m_message = null_message;
   }
 
-  MessageId(int return_value,void* amessage)
+  MessageId(int return_value, void* amessage)
   : m_return_value(return_value)
   {
     m_type = T_Ptr;
     m_message.v = amessage;
   }
 
-  MessageId(int return_value,const void* amessage)
+  MessageId(int return_value, const void* amessage)
   : m_return_value(return_value)
   {
     m_type = T_Ptr;
     m_message.cv = amessage;
   }
 
-  MessageId(int return_value,int amessage)
+  MessageId(int return_value, int amessage)
   : m_return_value(return_value)
   {
     m_type = T_Int;
     m_message.i = amessage;
   }
 
-  MessageId(int return_value,long amessage)
+  MessageId(int return_value, long amessage)
   : m_return_value(return_value)
   {
     m_type = T_Long;
     m_message.l = amessage;
   }
 
-  MessageId(int return_value,std::size_t amessage)
+  MessageId(int return_value, std::size_t amessage)
   : m_return_value(return_value)
   {
     m_type = T_SizeT;
@@ -95,7 +99,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
   }
 
   MessageId(const MessageId& rhs)
-  : m_return_value(rhs.m_return_value), m_type(rhs.m_type)
+  : m_return_value(rhs.m_return_value)
+  , m_type(rhs.m_type)
   {
     m_message.cv = rhs.m_message.cv;
   }
@@ -110,9 +115,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 
  public:
 
-  template<typename T>
+  template <typename T>
   explicit operator const T*() const { return (const T*)m_message.cv; }
-  template<typename T>
+  template <typename T>
   explicit operator T*() const { return (T*)m_message.v; }
   explicit operator int() const { return m_message.i; }
   explicit operator long() const { return m_message.l; }
@@ -123,21 +128,22 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
   //int returnValue() const { return m_return_value; }
   bool isValid() const
   {
-    if (m_type==T_Null)
+    if (m_type == T_Null)
       return false;
-    if (m_type==T_Int)
-      return m_message.i!=null_message.i;
-    if (m_type==T_Long)
-      return m_message.l!=null_message.l;
-    if (m_type==T_SizeT)
-      return m_message.st!=null_message.st;
-    return m_message.cv!=null_message.cv;
+    if (m_type == T_Int)
+      return m_message.i != null_message.i;
+    if (m_type == T_Long)
+      return m_message.l != null_message.l;
+    if (m_type == T_SizeT)
+      return m_message.st != null_message.st;
+    return m_message.cv != null_message.cv;
   }
   void* messageAsVoidPtr() const { return m_message.v; }
 
   static void setNullMessage(MessageId r) { null_message = r.m_message; }
 
-  void reset() {
+  void reset()
+  {
     m_message = null_message;
   }
 
@@ -156,7 +162,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 /*---------------------------------------------------------------------------*/
 
 inline std::ostream&
-operator<<(std::ostream& o,const MessageId& pmessage)
+operator<<(std::ostream& o, const MessageId& pmessage)
 {
   pmessage.print(o);
   return o;

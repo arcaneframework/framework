@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,31 +42,31 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 inline bool
-operator<(const APReal& a,const APReal& b)
+operator<(const APReal& a, const APReal& b)
 {
   return a.v[0] < b.v[0];
 }
 
 inline bool
-operator>(const APReal& a,const APReal& b)
+operator>(const APReal& a, const APReal& b)
 {
   return a.v[0] > b.v[0];
 }
 
 inline bool
-operator==(const APReal& a,const APReal& b)
+operator==(const APReal& a, const APReal& b)
 {
-  return a.v[0]==b.v[0];
+  return a.v[0] == b.v[0];
 }
 
 inline bool
-operator!=(const APReal& a,const APReal& b)
+operator!=(const APReal& a, const APReal& b)
 {
-  return !operator==(a,b);
+  return !operator==(a, b);
 }
 
 inline APReal
-operator+(const APReal& a,const APReal& b)
+operator+(const APReal& a, const APReal& b)
 {
   APReal result;
   result.v[0] = a.v[0] + b.v[0];
@@ -77,14 +77,14 @@ operator+(const APReal& a,const APReal& b)
 /*---------------------------------------------------------------------------*/
 
 inline std::ostream&
-operator<< (std::ostream& o,APReal t)
+operator<<(std::ostream& o, APReal t)
 {
   o << t.v[0];
   return o;
 }
 
 inline std::istream&
-operator>> (std::istream& i,APReal& t)
+operator>>(std::istream& i, APReal& t)
 {
   i >> t.v[0];
   return i;
@@ -98,7 +98,7 @@ operator>> (std::istream& i,APReal& t)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

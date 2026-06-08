@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -24,6 +24,9 @@
 namespace Arcane::MessagePassing
 {
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Message tag.
  *
@@ -42,42 +45,51 @@ namespace Arcane::MessagePassing
 class ARCCORE_MESSAGEPASSING_EXPORT MessageTag
 {
  public:
-  MessageTag() : m_tag(A_NULL_TAG_VALUE){}
-  explicit MessageTag(Int32 tag) : m_tag(tag){}
-  friend bool operator==(const MessageTag& a,const MessageTag& b)
+
+  MessageTag()
+  : m_tag(A_NULL_TAG_VALUE)
+  {}
+  explicit MessageTag(Int32 tag)
+  : m_tag(tag)
+  {}
+  friend bool operator==(const MessageTag& a, const MessageTag& b)
   {
-    return a.m_tag==b.m_tag;
+    return a.m_tag == b.m_tag;
   }
-  friend bool operator!=(const MessageTag& a,const MessageTag& b)
+  friend bool operator!=(const MessageTag& a, const MessageTag& b)
   {
-    return a.m_tag!=b.m_tag;
+    return a.m_tag != b.m_tag;
   }
-  friend bool operator<(const MessageTag& a,const MessageTag& b)
+  friend bool operator<(const MessageTag& a, const MessageTag& b)
   {
-    return a.m_tag<b.m_tag;
+    return a.m_tag < b.m_tag;
   }
   Int32 value() const { return m_tag; }
-  bool isNull() const { return m_tag==A_NULL_TAG_VALUE; }
+  bool isNull() const { return m_tag == A_NULL_TAG_VALUE; }
   void print(std::ostream& o) const;
   friend inline std::ostream&
-  operator<<(std::ostream& o,const MessageTag& tag)
+  operator<<(std::ostream& o, const MessageTag& tag)
   {
     tag.print(o);
     return o;
   }
+
  public:
+
   //! Default tag value.
   static constexpr Int32 DEFAULT_TAG_VALUE = 100;
   //! Default tag for send/receive without tag argument.
   static MessageTag defaultTag() { return MessageTag(DEFAULT_TAG_VALUE); }
+
  private:
+
   Int32 m_tag;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

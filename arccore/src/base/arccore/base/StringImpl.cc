@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,7 +33,7 @@ bool global_arccore_debug_string = false;
 
 namespace
 {
-const char* const global_empty_string = "";
+  const char* const global_empty_string = "";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -43,13 +43,18 @@ class StringException
 : public std::exception
 {
  public:
-  StringException(const char* where) : m_where(where) {}
+
+  StringException(const char* where)
+  : m_where(where)
+  {}
   ~StringException() ARCCORE_NOEXCEPT {}
   virtual const char* what() const ARCCORE_NOEXCEPT
   {
     return m_where;
   }
+
  private:
+
   const char* m_where;
 };
 
@@ -68,7 +73,7 @@ inline void StringImpl::
 _checkReference()
 {
 #ifdef ARCCORE_DEBUG_UNISTRING
-  if (m_nb_ref.value()<=0){
+  if (m_nb_ref.value() <= 0) {
     _badStringImplReference(this);
   }
 #endif
@@ -84,7 +89,7 @@ _finalizeUtf8Creation()
   // \a m_utf8_array must always have a null terminator.
   if (m_utf8_array.empty())
     m_utf8_array.add('\0');
-  else if (m_utf8_array.back()!='\0')
+  else if (m_utf8_array.back() != '\0')
     m_utf8_array.add('\0');
 }
 
@@ -107,7 +112,7 @@ StringImpl(std::string_view str)
 , m_flags(0)
 {
   auto b = reinterpret_cast<const Byte*>(str.data());
-  _initFromSpan(Span<const Byte>(b,str.size()));
+  _initFromSpan(Span<const Byte>(b, str.size()));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -163,8 +168,8 @@ bytes()
 {
   Span<const Byte> x = largeUtf8();
   Int64 size = x.size();
-  if (size>0)
-    return { x.data(), size-1 };
+  if (size > 0)
+    return { x.data(), size - 1 };
   // Should not normally happen, but if it does, we return
   // a view of the empty string because this method guarantees a
   // null terminator at the end.
@@ -182,7 +187,7 @@ std::string_view StringImpl::
 toStdStringView()
 {
   Span<const Byte> x = bytes();
-  return std::string_view(reinterpret_cast<const char*>(x.data()),x.size());
+  return std::string_view(reinterpret_cast<const char*>(x.data()), x.size());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -213,7 +218,7 @@ removeReference()
   _checkReference();
   Int32 r = --m_nb_ref;
 #ifndef ARCCORE_DEBUG_UNISTRING
-  if (r==0)
+  if (r == 0)
     delete this;
 #endif
 }
@@ -249,7 +254,7 @@ isEqual(StringImpl* str)
   _checkReference();
   _createUtf8();
   Span<const Byte> ref_array = str->largeUtf8();
-  bool v = CStringUtils::isEqual((const char*)ref_array.data(),(const char*)m_utf8_array.data());
+  bool v = CStringUtils::isEqual((const char*)ref_array.data(), (const char*)m_utf8_array.data());
   return v;
 }
 
@@ -261,12 +266,12 @@ isLessThan(StringImpl* str)
 {
   _checkReference();
   _createUtf8();
-  if (m_flags & eValidUtf8){
+  if (m_flags & eValidUtf8) {
     Span<const Byte> ref_array = str->largeUtf8();
-    bool v = CStringUtils::isLess((const char*)m_utf8_array.data(),(const char*)ref_array.data());
+    bool v = CStringUtils::isLess((const char*)m_utf8_array.data(), (const char*)ref_array.data());
     return v;
   }
-  ARCCORE_ASSERT((0),("InternalError in StringImpl::isEqual()"));
+  ARCCORE_ASSERT((0), ("InternalError in StringImpl::isEqual()"));
   return true;
 }
 
@@ -312,14 +317,14 @@ empty()
 {
   _checkReference();
   if (m_flags & eValidUtf8) {
-    ARCCORE_ASSERT((!m_utf8_array.empty()),("Not 0 terminated utf8 encoding"));
-    return m_utf8_array.size()<=1; // Counts the terminal 0
+    ARCCORE_ASSERT((!m_utf8_array.empty()), ("Not 0 terminated utf8 encoding"));
+    return m_utf8_array.size() <= 1; // Counts the terminal 0
   }
   if (m_flags & eValidUtf16) {
-    ARCCORE_ASSERT((!m_utf16_array.empty()),("Not 0 terminated utf16 encoding"));
-    return m_utf16_array.size()<=1; // Counts the terminal 0
+    ARCCORE_ASSERT((!m_utf16_array.empty()), ("Not 0 terminated utf16 encoding"));
+    return m_utf16_array.size() <= 1; // Counts the terminal 0
   }
-  ARCCORE_ASSERT((0),("InternalError in StringImpl::empty()"));
+  ARCCORE_ASSERT((0), ("InternalError in StringImpl::empty()"));
   return false;
 }
 
@@ -349,7 +354,8 @@ append(StringView str)
   _checkReference();
   _createUtf8();
 
-  _appendUtf8(Span<const Byte>(str_bytes.data(),str_bytes.size() + 1));;
+  _appendUtf8(Span<const Byte>(str_bytes.data(), str_bytes.size() + 1));
+  ;
   return this;
 }
 
@@ -363,13 +369,13 @@ _appendUtf8(Span<const Byte> ref_str)
   Int64 utf8_size = m_utf8_array.size();
   Int64 current_size = utf8_size - 1;
 
-  ARCCORE_ASSERT((ref_size>0),("Bad ref_size"));
-  ARCCORE_ASSERT((utf8_size>0),("Bad utf8_size"));
-  ARCCORE_ASSERT((ref_str[ref_size-1]==0),("Bad ref null terminal"));
-  ARCCORE_ASSERT((m_utf8_array[utf8_size-1]==0),("Bad ref null terminal"));
+  ARCCORE_ASSERT((ref_size > 0), ("Bad ref_size"));
+  ARCCORE_ASSERT((utf8_size > 0), ("Bad utf8_size"));
+  ARCCORE_ASSERT((ref_str[ref_size - 1] == 0), ("Bad ref null terminal"));
+  ARCCORE_ASSERT((m_utf8_array[utf8_size - 1] == 0), ("Bad ref null terminal"));
 
   m_utf8_array.resize(current_size + ref_size);
-  std::memcpy(&m_utf8_array[current_size],ref_str.data(),ref_size);
+  std::memcpy(&m_utf8_array[current_size], ref_str.data(), ref_size);
 
   m_flags |= eValidUtf8;
   _invalidateUtf16();
@@ -427,10 +433,10 @@ toLower()
 /*---------------------------------------------------------------------------*/
 
 StringImpl* StringImpl::
-substring(StringImpl* str,Int64 pos,Int64 len)
+substring(StringImpl* str, Int64 pos, Int64 len)
 {
   StringImpl* s = new StringImpl();
-  Impl::BasicTranscoder::substring(s->m_utf8_array,str->largeUtf8(),pos,len);
+  Impl::BasicTranscoder::substring(s->m_utf8_array, str->largeUtf8(), pos, len);
   s->m_flags |= eValidUtf8;
   return s;
 }
@@ -444,14 +450,14 @@ _createUtf16()
   if (m_flags & eValidUtf16)
     return;
 
-  if (m_flags & eValidUtf8){
-    ARCCORE_ASSERT(m_utf16_array.empty(),("Not empty utf16_array"));
-    Impl::BasicTranscoder::transcodeFromUtf8ToUtf16(m_utf8_array,m_utf16_array);
+  if (m_flags & eValidUtf8) {
+    ARCCORE_ASSERT(m_utf16_array.empty(), ("Not empty utf16_array"));
+    Impl::BasicTranscoder::transcodeFromUtf8ToUtf16(m_utf8_array, m_utf16_array);
     m_flags |= eValidUtf16;
     return;
   }
 
-  ARCCORE_ASSERT((0),("InternalError in StringImpl::_createUtf16()"));
+  ARCCORE_ASSERT((0), ("InternalError in StringImpl::_createUtf16()"));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -463,14 +469,14 @@ _createUtf8()
   if (m_flags & eValidUtf8)
     return;
 
-  if (m_flags & eValidUtf16){
-    ARCCORE_ASSERT(m_utf8_array.empty(),("Not empty utf8_array"));
-    Impl::BasicTranscoder::transcodeFromUtf16ToUtf8(m_utf16_array,m_utf8_array);
+  if (m_flags & eValidUtf16) {
+    ARCCORE_ASSERT(m_utf8_array.empty(), ("Not empty utf8_array"));
+    Impl::BasicTranscoder::transcodeFromUtf16ToUtf8(m_utf16_array, m_utf8_array);
     _finalizeUtf8Creation();
     return;
   }
 
-  ARCCORE_ASSERT((0),("InternalError in StringImpl::_createUtf16()"));
+  ARCCORE_ASSERT((0), ("InternalError in StringImpl::_createUtf16()"));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -482,7 +488,7 @@ _setUtf16(Span<const UChar> src)
   m_utf16_array = src;
   if (m_utf16_array.empty())
     m_utf16_array.add(0);
-  else if (m_utf16_array.back()!='\0')
+  else if (m_utf16_array.back() != '\0')
     m_utf16_array.add(0);
 }
 
@@ -510,12 +516,12 @@ _invalidateUtf8()
 /*---------------------------------------------------------------------------*/
 
 void StringImpl::
-_printStrUtf16(std::ostream& o,Span<const UChar> str)
+_printStrUtf16(std::ostream& o, Span<const UChar> str)
 {
   Int64 buf_size = str.size();
   o << "(bufsize=" << buf_size
     << " begin=" << str.data() << " - ";
-  for( Int64 i=0; i<buf_size; ++i )
+  for (Int64 i = 0; i < buf_size; ++i)
     o << (int)str[i] << ' ';
   o << ")";
 }
@@ -524,11 +530,11 @@ _printStrUtf16(std::ostream& o,Span<const UChar> str)
 /*---------------------------------------------------------------------------*/
 
 void StringImpl::
-_printStrUtf8(std::ostream& o,Span<const Byte> str)
+_printStrUtf8(std::ostream& o, Span<const Byte> str)
 {
   Int64 buf_size = str.size();
   o << "(bufsize=" << buf_size << " - ";
-  for( Int64 i=0; i<buf_size; ++i )
+  for (Int64 i = 0; i < buf_size; ++i)
     o << (int)str[i] << ' ';
   o << ")";
 }
@@ -539,21 +545,21 @@ _printStrUtf8(std::ostream& o,Span<const Byte> str)
 void StringImpl::
 internalDump(std::ostream& ostr)
 {
-  ostr << "(utf8=valid=" << ((m_flags & eValidUtf8)!=0)
+  ostr << "(utf8=valid=" << ((m_flags & eValidUtf8) != 0)
        << ",len=" << m_utf8_array.size() << ",val=";
-  _printStrUtf8(ostr,m_utf8_array);
+  _printStrUtf8(ostr, m_utf8_array);
   ostr << ")";
 
-  ostr << "(utf16=valid=" << ((m_flags & eValidUtf16)!=0)
+  ostr << "(utf16=valid=" << ((m_flags & eValidUtf16) != 0)
        << ",len=" << m_utf16_array.size() << ",val=";
-  _printStrUtf16(ostr,m_utf16_array);
+  _printStrUtf16(ostr, m_utf16_array);
   ostr << ")";
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -10,10 +10,8 @@
 /* Class allowing the creation of objects of type                            */
 /* MpiContigMachineShMemWinBaseInternal.                                     */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINESHMEMWINBASEINTERNALCREATOR_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINESHMEMWINBASEINTERNALCREATOR_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

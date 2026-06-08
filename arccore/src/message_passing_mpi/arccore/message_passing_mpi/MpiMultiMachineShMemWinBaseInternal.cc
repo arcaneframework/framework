@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiMultiMachineShMemWinBaseInternal.h                       (C) 2000-2026 */
+/* MpiMultiMachineShMemWinBaseInternal.cc                      (C) 2000-2026 */
 /*                                                                           */
 /* Class allowing the creation of memory windows for a compute node.         */
 /* The segments of these windows are not contiguous in memory and can        */
 /* be resized. A process can possess multiple segments.                      */
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/internal/MpiMultiMachineShMemWinBaseInternal.h"

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -48,10 +48,10 @@ class ARCCORE_COMMON_EXPORT IAcceleratorMng
    *
    * \pre isInitialized()==false
    */
-  virtual void initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info) =0;
+  virtual void initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info) = 0;
 
   //! Indicates if the instance has been initialized via the call to initialize()
-  virtual bool isInitialized() const =0;
+  virtual bool isInitialized() const = 0;
 
   /*!
    * \brief Default runner.
@@ -63,7 +63,7 @@ class ARCCORE_COMMON_EXPORT IAcceleratorMng
    *
    * \pre isInitialized()==true
    */
-  virtual Runner* defaultRunner() =0;
+  virtual Runner* defaultRunner() = 0;
 
   /*!
    * \brief Default run queue.
@@ -75,7 +75,7 @@ class ARCCORE_COMMON_EXPORT IAcceleratorMng
    *
    * * \pre isInitialized()==true
    */
-  virtual RunQueue* defaultQueue() =0;
+  virtual RunQueue* defaultQueue() = 0;
 
  public:
 
@@ -99,7 +99,7 @@ class ARCCORE_COMMON_EXPORT IAcceleratorMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

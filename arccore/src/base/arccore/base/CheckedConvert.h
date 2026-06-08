@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -28,14 +28,14 @@
  */
 namespace Arcane::CheckedConvert::Impl
 {
-  inline Integer
-  toInteger(Int64 v)
-  {
-    if (v > std::numeric_limits<Integer>::max() || v < std::numeric_limits<Integer>::min())
-      ARCCORE_THROW(BadCastException, "Invalid conversion from '{0}' to type Integer", v);
-    return static_cast<Integer>(v);
-  }
+inline Integer
+toInteger(Int64 v)
+{
+  if (v > std::numeric_limits<Integer>::max() || v < std::numeric_limits<Integer>::min())
+    ARCCORE_THROW(BadCastException, "Invalid conversion from '{0}' to type Integer", v);
+  return static_cast<Integer>(v);
 }
+} // namespace Arcane::CheckedConvert::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -109,7 +109,7 @@ inline Int32
 toInt32(Int64 v)
 {
   if (v > std::numeric_limits<Int32>::max() || v < std::numeric_limits<Int32>::min())
-    ARCCORE_THROW(BadCastException,"Invalid conversion from '{0}' to type Int32", v);
+    ARCCORE_THROW(BadCastException, "Invalid conversion from '{0}' to type Int32", v);
   return static_cast<Int32>(v);
 }
 
@@ -121,7 +121,7 @@ inline Int16
 toInt16(Int64 v)
 {
   if (v > std::numeric_limits<Int16>::max() || v < std::numeric_limits<Int16>::min())
-    ARCCORE_THROW(BadCastException,"Invalid conversion from '{0}' to type Int16", v);
+    ARCCORE_THROW(BadCastException, "Invalid conversion from '{0}' to type Int16", v);
   return static_cast<Int16>(v);
 }
 

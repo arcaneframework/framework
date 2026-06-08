@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -32,9 +32,11 @@ namespace Arcane
 class ARCCORE_CONCURRENCY_EXPORT Mutex
 {
  public:
+
   class ScopedLock
   {
    public:
+
     ScopedLock(Mutex& m)
     : m_p(&m)
     {
@@ -49,13 +51,16 @@ class ARCCORE_CONCURRENCY_EXPORT Mutex
     {
       m_p->unlock();
     }
+
    private:
+
     Mutex* m_p;
   };
 
   class ManualLock
   {
    public:
+
     void lock(Mutex& m)
     {
       m.lock();
@@ -64,6 +69,7 @@ class ARCCORE_CONCURRENCY_EXPORT Mutex
     {
       m.unlock();
     }
+
    private:
   };
 
@@ -71,12 +77,17 @@ class ARCCORE_CONCURRENCY_EXPORT Mutex
   friend class ManualLock;
 
  public:
+
   Mutex();
   ~Mutex();
+
  private:
+
   void lock();
   void unlock();
+
  private:
+
   MutexImpl* m_p;
   //! Implementation used for this mutex.
   ReferenceCounter<IThreadImplementation> m_thread_impl;
@@ -91,9 +102,11 @@ class ARCCORE_CONCURRENCY_EXPORT Mutex
 class ARCCORE_CONCURRENCY_EXPORT GlobalMutex
 {
  public:
+
   class ScopedLock
   {
    public:
+
     ScopedLock()
     {
       GlobalMutex::lock();
@@ -104,17 +117,24 @@ class ARCCORE_CONCURRENCY_EXPORT GlobalMutex
     }
   };
   friend class ScopedLock;
+
  public:
-  GlobalMutex(){}
+
+  GlobalMutex() {}
   ~GlobalMutex() {}
+
  public:
+
   //! Initializes the global mutex. Internal to Arccore. Must be allocated by new
   static void init(MutexImpl* p);
   static void lock();
   static void unlock();
   static void destroy();
+
  private:
+
   static MutexImpl* m_p;
+
  private:
 };
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,16 +33,16 @@ class ARCCORE_BASE_EXPORT NotSupportedException
 : public Exception
 {
  public:
-	
+
   explicit NotSupportedException(const String& where);
-  NotSupportedException(const String& where,const String& message);
+  NotSupportedException(const String& where, const String& message);
   explicit NotSupportedException(const TraceInfo& where);
-  NotSupportedException(const TraceInfo& where,const String& message);
+  NotSupportedException(const TraceInfo& where, const String& message);
   NotSupportedException(const NotSupportedException& ex) ARCCORE_NOEXCEPT;
   ~NotSupportedException() ARCCORE_NOEXCEPT {}
 
  public:
-	
+
   virtual void explain(std::ostream& m) const;
 
  private:
@@ -53,7 +53,7 @@ class ARCCORE_BASE_EXPORT NotSupportedException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

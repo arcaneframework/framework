@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -268,25 +268,24 @@ Int64 utf16_to_ucs4(Span<const UChar> uchar, Int64 index, Int32& wc)
  * \param wc ucs4 value of the character to convert
  * \param uchar[out] Array containing the converted utf16 characters
  */
-void
-ucs4_to_utf16(Int32 wc,Impl::CoreArray<UChar>& uchar)
+void ucs4_to_utf16(Int32 wc, Impl::CoreArray<UChar>& uchar)
 {
-  if (wc < 0xd800){
+  if (wc < 0xd800) {
     uchar.add((UChar)wc);
     return;
   }
-  if (wc < 0xe000){
+  if (wc < 0xe000) {
     std::cout << "WARNING: ucs4_to_utf16(): Invalid sequence in conversion input\n";
     uchar.add(0x1A);
     return;
   }
-  if (wc < 0x10000){
+  if (wc < 0x10000) {
     uchar.add((UChar)wc);
     return;
   }
-  if (wc < 0x110000){
-	  uchar.add( (UChar) ((wc - 0x10000) / 0x400 + 0xd800) );
-	  uchar.add( (UChar) ((wc - 0x10000) % 0x400 + 0xdc00) );
+  if (wc < 0x110000) {
+    uchar.add((UChar)((wc - 0x10000) / 0x400 + 0xd800));
+    uchar.add((UChar)((wc - 0x10000) % 0x400 + 0xdc00));
     return;
   }
   std::cerr << "WARNING: ucs4_to_utf16(): Invalid sequence in conversion input\n";

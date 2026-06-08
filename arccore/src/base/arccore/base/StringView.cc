@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -27,7 +27,7 @@ namespace Arcane
 void StringView::
 writeBytes(std::ostream& o) const
 {
-  o.write((const char*)m_v.data(),m_v.size());
+  o.write((const char*)m_v.data(), m_v.size());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -54,7 +54,7 @@ subView(Int64 pos, Int64 len) const
 /*---------------------------------------------------------------------------*/
 
 std::ostream&
-operator<<(std::ostream& o,const StringView& str)
+operator<<(std::ostream& o, const StringView& str)
 {
   str.writeBytes(o);
   return o;
@@ -63,10 +63,9 @@ operator<<(std::ostream& o,const StringView& str)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-operator==(const StringView& a,const StringView& b)
+bool operator==(const StringView& a, const StringView& b)
 {
-  bool is_equal = (a.toStdStringView()==b.toStdStringView());
+  bool is_equal = (a.toStdStringView() == b.toStdStringView());
   //std::cout << "COMPARE: a=" << a.length() << " '" << a << "'"
   //          << " b=" << b.length() << " '" << b << "' v=" << is_equal << '\n';
   return is_equal;
@@ -75,31 +74,31 @@ operator==(const StringView& a,const StringView& b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool operator==(const char* a,const StringView& b)
+bool operator==(const char* a, const StringView& b)
 {
-  return operator==(StringView(a),b);
+  return operator==(StringView(a), b);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool operator==(const StringView& a,const char* b)
+bool operator==(const StringView& a, const char* b)
 {
-  return operator==(a,StringView(b));
+  return operator==(a, StringView(b));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool operator<(const StringView& a,const StringView& b)
+bool operator<(const StringView& a, const StringView& b)
 {
-  return a.toStdStringView()<b.toStdStringView();
+  return a.toStdStringView() < b.toStdStringView();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
