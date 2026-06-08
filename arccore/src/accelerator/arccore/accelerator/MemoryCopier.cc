@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryCopier.cc                                             (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions diverses de copie mémoire.                                      */
+/* Various memory copy functions.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,8 +36,8 @@ AcceleratorSpecificMemoryCopyList()
   using namespace Arcane::Impl;
   GlobalMemoryCopyList::setAcceleratorInstance(this);
 
-  // Pour raccourcir les temps de compilation, les instantiations
-  // explicites sont faites dans plusieurs fichiers.
+  // To shorten compilation times, the explicit instantiations
+  // are done in several files.
   addExplicitTemplate1();
   addExplicitTemplate2();
   addExplicitTemplate3();

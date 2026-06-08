@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GlibDynamicLibraryLoader.cc                                 (C) 2000-2025 */
 /*                                                                           */
-/* Chargeur dynamique de bibliothèque avec Glib (utilise gmodule).           */
+/* Dynamic library loader with Glib (uses gmodule).                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -56,8 +56,9 @@ class GlibDynamicLibrary
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une chargeur dynamique de bibliothèque.
+ * \brief Interface for a dynamic library loader.
  */
 class GlibDynamicLibraryLoader
 : public IDynamicLibraryLoader
@@ -77,9 +78,9 @@ class GlibDynamicLibraryLoader
   {
     IDynamicLibrary* dl = _tryOpen(directory, name);
     if (!dl) {
-      // Si on ne trouve pas, essaie avec l'extension '.dll' ou '.dylib' car sous
-      // windows ou macos, certaines version de la GLIB prefixent automatiquement le
-      // nom de la bibliothèque par 'lib' si elle ne finit pas par '.dll' ou '.dylib'.
+      // If not found, try with the '.dll' or '.dylib' extension because on
+      // windows or macos, some versions of GLIB automatically prefix the
+      // library name with 'lib' if it does not end with '.dll' or '.dylib'.
 #ifdef ARCCORE_OS_WIN32
       dl = _tryOpen(directory, name + ".dll");
 #endif
@@ -88,12 +89,12 @@ class GlibDynamicLibraryLoader
 #endif
     }
     if (!dl) {
-      // Si on ne trouve pas, essaie en cherchant à côté du binaire
+      // If not found, try searching next to the binary
       dl = _tryOpen(".", name);
     }
     if (!dl) {
-      // Si on ne trouve pas, essaie en cherchant à côté du binaire
-      // et avec l'extension dll ou dylib
+      // If not found, try searching next to the binary
+      // and with the dll or dylib extension
 #ifdef ARCCORE_OS_WIN32
       dl = _tryOpen(".", name + ".dll");
 #endif
@@ -131,7 +132,7 @@ class GlibDynamicLibraryLoader
 
   void closeLibraries() override
   {
-    // Cette méthode va modifier m opened libraries donc il faut le copier avant.
+    // This method will modify m_opened_libraries, so it must be copied first.
     std::vector<GlibDynamicLibrary*> libs(m_opened_libraries.begin(), m_opened_libraries.end());
     for (auto lib : libs) {
       lib->close();

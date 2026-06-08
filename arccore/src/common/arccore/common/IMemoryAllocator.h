@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMemoryAllocator.h                                          (C) 2000-2026 */
 /*                                                                           */
-/* Interface d'un allocateur mémoire.                                        */
+/* Memory allocator interface.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_IMEMORYALLOCATOR_H
 #define ARCCORE_COMMON_IMEMORYALLOCATOR_H
@@ -24,18 +24,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un allocateur pour la mémoire.
+ * \brief Interface for a memory allocator.
  *
- * Cette classe définit une interface pour l'allocation mémoire utilisée
- * par les classes tableaux de Arccore (Array, UniqueArray).
+ * This class defines an interface for the memory allocation used
+ * by Arccore array classes (Array, UniqueArray).
  *
- * Une instance de cette classe doit rester valide tant qu'il existe
- * des tableaux l'utilisant. Comme l'allocateur est transféré lors des copies,
- * il est préférable que les allocateurs soient des objets statiques qui
- * dont la durée de vie est celle du programme.
+ * An instance of this class must remain valid as long as there are
+ * arrays using it. Since the allocator is transferred during copies,
+ * it is preferable that allocators be static objects whose
+ * lifetime is that of the program.
  *
- * Les allocateurs n'ont pas d'état modifiables spécifiques et doivent fonctionner en
+ * Allocators do not have specific mutable state and must function in
  * multi-threading.
  */
 class ARCCORE_COMMON_EXPORT IMemoryAllocator
@@ -43,81 +44,80 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
  public:
 
   /*!
-   * \brief Détruit l'allocateur.
+   * \brief Destroys the allocator.
    *
-   * Les objets alloués par l'allocateur doivent tous avoir été désalloués.
+   * All objects allocated by the allocator must have been deallocated.
    */
   virtual ~IMemoryAllocator() = default;
 
  public:
 
   /*!
-   * \brief Indique si l'allocateur supporte la sémantique de realloc.
+   * \brief Indicates whether the allocator supports realloc semantics.
    *
-   * Les allocateurs par défaut du C (malloc/realloc/free) supportent
-   * évidemment le realloc mais ce n'est pas forcément le cas
-   * des allocateurs spécifiques avec alignement mémoire (comme
-   * par exemple posix_memalign).
+   * Default C allocators (malloc/realloc/free) obviously support
+   * realloc, but this is not necessarily the case for specific
+   * allocators with memory alignment (such as
+   * posix_memalign).
    */
   virtual bool hasRealloc(MemoryAllocationArgs) const { return false; }
 
   /*!
-   * \brief Alloue de la mémoire pour \a new_size octets et retourne le pointeur.
+   * \brief Allocates memory for \a new_size bytes and returns the pointer.
    *
-   * La sémantique est équivalent à malloc():
-   * - \a new_size peut valoir zéro et dans ce cas le pointeur retourné
-   * est soit nul, soit une valeur spécifique
-   * - le pointeur retourné peut être nul si la mémoire n'a pas pu être allouée.
+   * The semantics are equivalent to malloc():
+   * - \a new_size can be zero, in which case the returned pointer
+   * is either null or a specific value
+   * - the returned pointer may be null if the memory could not be allocated.
    */
   virtual AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) = 0;
 
   /*!
-   * \brief Réalloue de la mémoire pour \a new_size octets et retourne le pointeur.
+   * \brief Reallocates memory for \a new_size bytes and returns the pointer.
    *
-   * Le pointeur \a current_ptr doit avoir été alloué via l'appel à
-   * allocate() ou reallocate() de cette instance.
+   * The pointer \a current_ptr must have been allocated via a call to
+   * allocate() or reallocate() on this instance.
    *
-   * La sémantique de cette méthode est équivalente à realloc():
-   * - \a current_ptr peut-être nul auquel cas cet appel est équivalent
-   * à allocate().
-   * - le pointeur retourné peut être nul si la mémoire n'a pas pu être allouée.
+   * The semantics of this method are equivalent to realloc():
+   * - \a current_ptr may be null, in which case this call is equivalent
+   * to allocate().
+   * - the returned pointer may be null if the memory could not be allocated.
    */
   virtual AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) = 0;
 
   /*!
-   * \brief Libère la mémoire dont l'adresse de base est \a ptr.
+   * \brief Frees the memory whose base address is \a ptr.
    *
-   * Le pointeur \a ptr doit avoir été alloué via l'appel à
-   * allocate() ou reallocate() de cette instance.
+   * The pointer \a ptr must have been allocated via a call to
+   * allocate() or reallocate() on this instance.
    *
-   * La sémantique de cette méthode équivalente à free() et donc \a ptr
-   * peut être nul auquel cas aucune opération n'est effectuée.
+   * The semantics of this method are equivalent to free(), and thus \a ptr
+   * may be null, in which case no operation is performed.
    */
   virtual void deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr) = 0;
 
   /*!
-   * \brief Ajuste la capacité suivant la taille d'élément.
+   * \brief Adjusts the capacity based on the element size.
    *
-   * Cette méthode est utilisée pour éventuellement modifié le nombre
-   * d'éléments alloués suivant leur taille. Cela permet par exemple
-   * pour les allocateurs alignés de garantir que le nombre d'éléments
-   * alloués est un multiple de cet alignement.
-   * 
+   * This method is used to optionally modify the number
+   * of allocated elements based on their size. This allows, for example,
+   * aligned allocators to ensure that the number of elements
+   * allocated is a multiple of this alignment.
    */
   virtual Int64 adjustedCapacity(MemoryAllocationArgs args, Int64 wanted_capacity, Int64 element_size) const = 0;
 
   /*!
-   * \brief Valeur de l'alignement garanti par l'allocateur.
+   * \brief Value of the alignment guaranteed by the allocator.
    *
-   * Cette méthode permet de s'assurer qu'un allocateur a un alignement suffisant
-   * pour certaines opérations comme la vectorisation par exemple.
+   * This method ensures that an allocator has sufficient alignment
+   * for certain operations such as vectorization, for example.
    *
-   * S'il n'y a aucune garantie, retourne 0.
+   * If there is no guarantee, it returns 0.
    */
   virtual size_t guaranteedAlignment(MemoryAllocationArgs args) const =0;
 
   /*!
-   * \brief Valeur de l'alignement garanti par l'allocateur.
+   * \brief Value of the alignment guaranteed by the allocator.
    *
    * \sa guaranteedAlignment()
    */
@@ -125,31 +125,31 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
   virtual size_t guarantedAlignment(MemoryAllocationArgs args) const;
 
   /*!
-   * \brief Notifie du changement des arguments spécifiques à l'instance.
+   * \brief Notifies of a change in instance-specific arguments.
    *
-   * \param ptr zone mémoire allouée
-   * \param old_args ancienne valeur des arguments
-   * \param new_args nouvelle valeur des arguments
+   * \param ptr allocated memory region
+   * \param old_args old value of the arguments
+   * \param new_args new value of the arguments
    */
   virtual void notifyMemoryArgsChanged(MemoryAllocationArgs old_args, MemoryAllocationArgs new_args, AllocatedMemoryInfo ptr);
 
   /*!
-   * \brief Copie la mémoire entre deux zones.
+   * \brief Copies memory between two regions.
    *
-   * L'implémentation par défaut utilise std::memcpy().
+   * The default implementation uses std::memcpy().
    *
-   * \param args arguments de la zone mémoire
-   * \param destination destination de la copie
-   * \param destination source de la copie
+   * \param args memory region arguments
+   * \param destination destination of the copy
+   * \param source source of the copy
    */
   virtual void copyMemory(MemoryAllocationArgs args, AllocatedMemoryInfo destination, AllocatedMemoryInfo source);
 
-  //! Ressource mémoire fournie par l'allocateur
+  //! Memory resource provided by the allocator
   virtual eMemoryResource memoryResource() const { return eMemoryResource::Unknown; }
 
   /*!
-   * \brief Indique si les appels à l'allocateur doivent être effectués
-   * collectivement.
+   * \brief Indicates whether calls to the allocator must be performed
+   * collectively.
    */
   virtual bool isCollective() const { return false; }
 };
@@ -162,5 +162,4 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

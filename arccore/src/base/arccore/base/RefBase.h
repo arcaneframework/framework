@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RefBase.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base de la gestion des références sur une instance.             */
+/* Base class for reference management on an instance.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_REFBASE_H
 #define ARCCORE_BASE_REFBASE_H
@@ -25,8 +25,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base de gestion d'une référence.
+ * \brief Base class for reference management.
  */
 class ARCCORE_BASE_EXPORT RefBase
 {
@@ -71,11 +72,11 @@ class ARCCORE_BASE_EXPORT RefBase
 
    protected:
 
-    //! Handle externe qui se charge de la destruction de l'instance
+    //! External handle responsible for the destruction of the instance
     Internal::ExternalRef m_handle;
     /*!
-     * \brief Indique si on doit appeler le destructeur de l'instance
-     * lorsqu'il n'y a plus de références dessus.
+     * \brief Indicates whether the instance destructor should be called
+     * when there are no more references to it.
      */
     bool m_no_destroy = false;
   };

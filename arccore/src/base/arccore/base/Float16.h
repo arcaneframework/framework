@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Float16.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Type flottant demi-précision.                                             */
+/* Half-precision floating-point type.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_FLOAT16_H
 #define ARCCORE_BASE_FLOAT16_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type flottant demi-précision
+ * \brief Half-precision floating-point type
  */
 class ARCCORE_BASE_EXPORT Float16
 {

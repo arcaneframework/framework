@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayRange.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Intervalle sur les Array, ArrayView, ConstArrayView, ...                  */
+/* Interval over Array, ArrayView, ConstArrayView, ...                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARRAYRANGE_H
 #define ARCCORE_BASE_ARRAYRANGE_H
@@ -24,11 +24,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Intervalle sur les classes tableau de %Arccore.
+ * \brief Interval over %Arccore array classes.
  *
- * Cette classe est utilisée pour adapter les classes tableaux aux
- * itérateurs de la STL. Elle fourniy les méthodes telles que begin()/end().
+ * This class is used to adapt array classes to STL iterators. It provides
+ * methods such as begin()/end().
  */
 template<typename T>
 class ArrayRange
@@ -44,34 +45,34 @@ class ArrayRange
   typedef typename _TraitsType::reference reference;
   typedef typename _TraitsType::pointer pointer;
   typedef const value_type* const_pointer;
-  //! Type de l'itérateur sur un élément du tableau
+  //! Type of the iterator for an element of the array
   typedef ArrayIterator<pointer> iterator;
-  //! Type de l'itérateur constant sur un élément du tableau
+  //! Type of the constant iterator for an element of the array
   typedef ArrayIterator<const_pointer> const_iterator;
 
  public:
 
-  //! Construit un interval vide.
+  //! Constructs an empty range.
   ArrayRange() ARCCORE_NOEXCEPT : m_begin(nullptr), m_end(nullptr) { }
-  //! Construit un interval allant de \a abegin à \a aend.
+  //! Constructs a range going from \a abegin to \a aend.
   ArrayRange(pointer abegin,pointer aend) ARCCORE_NOEXCEPT : m_begin(abegin), m_end(aend) { }
 
  public:
 
-  //! Retourne un iterateur sur le premier élément du tableau
+  //! Returns an iterator to the first element of the array
   iterator begin() { return iterator(m_begin); }
-  //! Retourne un iterateur sur le premier élément après la fin du tableau
+  //! Returns an iterator to the first element after the end of the array
   iterator end() { return iterator(m_end); }
-  //! Retourne un iterateur constant sur le premier élément du tableau
+  //! Returns a constant iterator to the first element of the array
   const_iterator begin() const { return const_iterator(m_begin); }
-  //! Retourne un iterateur constant sur le premier élément après la fin du tableau
+  //! Returns a constant iterator to the first element after the end of the array
   const_iterator end() const { return const_iterator(m_end); }
 
-  //! Pointeur sur le tableau sous-jacent.
+  //! Pointer to the underlying array.
   value_type* data() { return m_begin; }
-  //! Pointeur constant sur le tableau sous-jacent.
+  //! Constant pointer to the underlying array.
   const value_type* data() const { return m_begin; }
-  //! Indique si le tableau est vide.
+  //! Indicates if the array is empty.
   bool empty() const { return m_end==m_begin; }
 
  private:
@@ -88,4 +89,4 @@ class ArrayRange
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

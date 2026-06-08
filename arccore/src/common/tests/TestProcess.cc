@@ -17,8 +17,8 @@ using namespace Arcane;
 
 TEST(TestProcess, ProcessEcho)
 {
-  // Teste 'echo -n TotoTiti'
-  // Doit retourner 'TotoTiti' dans outputBytes()
+  // Tests 'echo -n TotoTiti'
+  // Must return 'TotoTiti' in outputBytes()
   ProcessExecArgs process_args;
   process_args.setCommand("/bin/echo");
   UniqueArray<String> command_args;
@@ -38,8 +38,8 @@ TEST(TestProcess, ProcessEcho)
 
 TEST(TestProcess, ProcessCat)
 {
-  // Teste 'cat -' avec TotoTitiTata en entrée.
-  // Doit retourner 'TotoTitiTata' dans outputBytes()
+  // Tests 'cat -' with TotoTitiTata as input.
+  // Must return 'TotoTitiTata' in outputBytes()
   ProcessExecArgs process_args;
   process_args.setCommand("/bin/cat");
   UniqueArray<String> command_args;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeMetric.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Classes gérant les métriques temporelles.                                 */
+/* Classes managing temporal metrics.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_TRACE_INTERNAL_TIMEMETRIC_H
 #define ARCCORE_TRACE_INTERNAL_TIMEMETRIC_H
@@ -20,16 +20,18 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * API en cours de définition. Ne pas utiliser en dehors de Arccore/Arcane.
+ * API under definition. Do not use outside of Arccore/Arcane.
  */
 namespace Arcane
 {
+
 /*!
- * \brief Catégories standards pour les phases temporelles.
+ * \brief Standard categories for temporal phases.
  *
- * \note Les valeurs de ces catégories doivent correspondre à celle
- * de l'énumération eTimePhase de %Arcane.
+ * \note The values of these categories must correspond to those
+ * of the eTimePhase enumeration in %Arcane.
  */
 enum class TimeMetricPhase
 {
@@ -94,8 +96,9 @@ class ARCCORE_TRACE_EXPORT TimeMetricId
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sentinelle pour collecter les informations temporelles.
+ * \brief Sentinel for collecting temporal information.
  */
 class ARCCORE_TRACE_EXPORT TimeMetricSentry
 {
@@ -104,7 +107,7 @@ class ARCCORE_TRACE_EXPORT TimeMetricSentry
   TimeMetricSentry(TimeMetricSentry&& rhs)
   : m_collector(rhs.m_collector), m_id(rhs.m_id)
   {
-    // Met à nul \a rhs pour ne pas qu'il appelle 'endAction'.
+    // Set rhs to null to prevent it from calling 'endAction'.
     rhs.m_collector = nullptr;
   }
   explicit TimeMetricSentry(const TimeMetricAction& action)
@@ -125,8 +128,9 @@ class ARCCORE_TRACE_EXPORT TimeMetricSentry
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief s standards pour les phases temporelles.
+ * \brief Standards for temporal phases.
  */
 class ARCCORE_TRACE_EXPORT StandardPhaseTimeMetrics
 {
@@ -136,11 +140,11 @@ class ARCCORE_TRACE_EXPORT StandardPhaseTimeMetrics
  public:
   void initialize(ITimeMetricCollector* collector);
  public:
-  //! Action pour indiquer qu'on est dans une phase d'échange de message
+  //! Action to indicate that we are in a message passing phase
   const TimeMetricAction& messagePassingPhase() const { return m_message_passing_phase; }
-  //! Action pour indiquer qu'on est dans une phase d'entrée-sortie.
+  //! Action to indicate that we are in an input-output phase.
   const TimeMetricAction& inputOutputPhase() const { return m_input_output_phase; }
-  //! Action pour indiquer qu'on est dans une phase de calcul.
+  //! Action to indicate that we are in a computation phase.
   const TimeMetricAction& computationPhase() const { return m_computation_phase; }
  private:
   TimeMetricAction m_message_passing_phase;

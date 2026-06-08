@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SpecificMemoryCopy.cc                                       (C) 2000-2026 */
 /*                                                                           */
-/* Classes pour gérer des fonctions spécialisées de copie mémoire.           */
+/* Classes to manage specialized memory copy functions.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,7 +35,7 @@ class HostIndexedCopyTraits
   using RefType = SpecificMemoryCopyRef<HostIndexedCopyTraits>;
 };
 
-//! Copieur spécifique lorsqu'aucun runtime accélérateur n'est initialisé
+//! Specific copier when no accelerator runtime is initialized
 class HostSpecificMemoryCopyList
 : public SpecificMemoryCopyList<Impl::HostIndexedCopyTraits>
 {
@@ -44,7 +44,7 @@ class HostSpecificMemoryCopyList
   HostSpecificMemoryCopyList()
   {
     using impl::ExtentValue;
-    //! Ajoute des implémentations spécifiques pour les tailles courantes
+    //! Adds specific implementations for common sizes
     addCopier<SpecificType<std::byte, ExtentValue<1>>>(); // 1
     addCopier<SpecificType<Int16, ExtentValue<1>>>(); // 2
     addCopier<SpecificType<std::byte, ExtentValue<3>>>(); // 3
@@ -70,7 +70,7 @@ class HostSpecificMemoryCopyList
 
 namespace
 {
-  // Copieur spécifique lorsqu'aucun runtime accélérateur n'est initialisé
+  // Specific copier when no accelerator runtime is initialized
   HostSpecificMemoryCopyList global_host_copy_list;
 } // namespace
 

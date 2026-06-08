@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMemoryResourceMngInternal.h                                (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne à Arcane de 'IMemoryResourceMng'.                          */
+/* Internal part of Arcane's 'IMemoryResourceMng'.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_IMEMORYRESOURCEMNGINTERNAL_H
 #define ARCCORE_COMMON_INTERNAL_IMEMORYRESOURCEMNGINTERNAL_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Partie interne à Arcane de 'IMemoryRessourceMng'.
+ * \brief Internal part of Arcane's 'IMemoryResourceMng'.
  */
 class ARCCORE_COMMON_EXPORT IMemoryResourceMngInternal
 {
@@ -40,16 +41,16 @@ class ARCCORE_COMMON_EXPORT IMemoryResourceMngInternal
 
  public:
 
-  //! Positionne l'allocateur pour la ressource \a r
+  //! Sets the allocator for resource \a r
   virtual void setAllocator(eMemoryResource r, IMemoryAllocator* allocator) = 0;
 
-  //! Positionne le pool mémoire pour la ressource \a r
+  //! Sets the memory pool for resource \a r
   virtual void setMemoryPool(eMemoryResource r, IMemoryPool* pool) = 0;
 
-  //! Positionne l'instance gérant les copies.
+  //! Sets the copying instance.
   virtual void setCopier(IMemoryCopier* copier) = 0;
 
-  //! Indique si un accélérateur est disponible.
+  //! Indicates if an accelerator is available.
   virtual void setIsAccelerator(bool v) = 0;
 };
 

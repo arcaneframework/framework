@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArccoreApplicationBuildInfoImpl.h                           (C) 2000-2026 */
 /*                                                                           */
-/* Informations pour construire une instance d'une application.              */
+/* Information for building an instance of an application.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_ARCCOREAPPLICATIONBUILDINFOIMPL_H
 #define ARCCORE_COMMON_INTERNAL_ARCCOREAPPLICATIONBUILDINFOIMPL_H
@@ -59,5 +59,4 @@ class ARCCORE_COMMON_EXPORT ArccoreApplicationBuildInfoImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

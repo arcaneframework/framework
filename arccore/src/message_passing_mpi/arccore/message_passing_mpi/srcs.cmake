@@ -1,5 +1,4 @@
-
-set(SOURCES
+﻿set(SOURCES
   MessagePassingMpiGlobal.h
   MessagePassingMpiGlobal.cc
   MessagePassingMpiEnum.cc

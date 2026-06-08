@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StandaloneTraceMessage.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Message de trace indépendant du 'ITraceMng'.                              */
+/* Trace message independent of 'ITraceMng'.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_TRACE_STANDALONETRACEMESSAGE_H
 #define ARCCORE_TRACE_STANDALONETRACEMESSAGE_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion d'un message autonome.
+ * \brief Management of a standalone message.
  */
 class ARCCORE_TRACE_EXPORT StandaloneTraceMessage
 {
@@ -45,14 +46,14 @@ class ARCCORE_TRACE_EXPORT StandaloneTraceMessage
  public:
   std::string value() const { return m_stream.str(); }
  private:
-  //! Flot sur lequel le message est envoyé
+  //! Stream to which the message is sent
   mutable std::ostringstream m_stream;
-  //! Type de message
+  //! Message type
   Trace::eMessageType m_type = Trace::Normal;
-  //! Niveau du message
+  //! Message level
   int m_level = TraceMessage::DEFAULT_LEVEL;
  public:
-  //! Couleur du message.
+  //! Message color.
   mutable int m_color = 0;
 };
 
@@ -82,4 +83,3 @@ operator<<(const StandaloneTraceMessage& o,const T& v)
 /*---------------------------------------------------------------------------*/
 
 #endif
-

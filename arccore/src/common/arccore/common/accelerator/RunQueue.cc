@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunQueue.cc                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Gestion d'une file d'exécution sur accélérateur.                          */
+/* Management of an execution queue on an accelerator.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,9 +35,9 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// NOTE : Les constructeurs et destructeurs doivent être dans le fichier source,
-// car le type \a m_p est opaque pour l'utilisation n'est pas connu dans
-// la définition de la classe.
+// NOTE: Constructors and destructors must be in the source file,
+// because the type \a m_p is opaque and its usage is not known in
+// the class definition.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

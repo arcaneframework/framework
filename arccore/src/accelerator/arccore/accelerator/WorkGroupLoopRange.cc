@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* WorkGroupLoopRange.cc                                       (C) 2000-2026 */
 /*                                                                           */
-/* Boucle pour le parallélisme hiérarchique.                                 */
+/* Loop for hierarchical parallelism.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,8 +44,8 @@ template <bool IsCooperativeLaunch, typename IndexType_> ARCCORE_ACCELERATOR_EXP
 WorkGroupLoopRangeBase<IsCooperativeLaunch, IndexType_>::
 setBlockSize(RunCommand& command)
 {
-  // TODO: en multi-threading, à calculer en fonction du nombre de threads
-  // disponibles et du nombre total d'éléments
+  // TODO: in multi-threading, calculate based on the number of threads
+  // available and the total number of elements
   IndexType block_size = 1024;
   eExecutionPolicy policy = command.executionPolicy();
   if (isAcceleratorPolicy(policy))
@@ -62,9 +62,9 @@ setBlockSize(RunCommand& command)
     return;
   }
   else if (IsCooperativeLaunch) {
-    // TODO: gérer le multi-threading.
-    // En séquentiel, il n'y a qu'un seul bloc dont la taille est le nombre
-    // d'éléments.
+    // TODO: handle multi-threading.
+    // In sequential mode, there is only one block whose size is the number
+    // of elements.
     m_block_size = m_nb_element;
     m_nb_block = 1;
     return;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryUtils.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires de gestion mémoire.                                 */
+/* Memory management utility functions.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_MEMORYUTILS_H
 #define ARCCORE_COMMON_MEMORYUTILS_H
@@ -28,7 +28,7 @@ namespace Arcane::MemoryUtils
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Allocateur spécifique pour les accélérateurs.
+ * \brief Specific allocator for accelerators.
  *
  * \deprecated Use MemoryUtils::getDefaultDataAllocator() instead.
  */
@@ -38,12 +38,12 @@ getAcceleratorHostMemoryAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ressource mémoire utilisée par l'allocateur par défaut pour les données.
+ * \brief Memory resource used by the default allocator for data.
  *
- * Par défaut, si un runtime accélérateur est initialisé, la ressource
- * associée est eMemoryResource::UnifiedMemory. Sinon, il s'agit de
- * eMemoryResource::Host.
+ * By default, if an accelerator runtime is initialized, the associated resource
+ * is eMemoryResource::UnifiedMemory. Otherwise, it is eMemoryResource::Host.
  *
  * \sa getDefaultDataAllocator();
  */
@@ -52,32 +52,34 @@ getDefaultDataMemoryResource();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne la ressource mémoire par son nom.
+ * \brief Returns the memory resource by its name.
  *
- * Le nom correspond au nom de la valeur de l'énumération (par exemple
- * 'Device' pour eMemoryResource::Device.
+ * The name corresponds to the name of the enumeration value (e.g.,
+ * 'Device' for eMemoryResource::Device.
  *
- * Si \a name est nul, retourne eMemoryResource::Unknown.
- * Si \a name ne correspondant pas à une valeur valide, lève une exception.
+ * If \a name is null, returns eMemoryResource::Unknown.
+ * If \a name does not correspond to a valid value, throws an exception.
  */
 extern "C++" ARCCORE_COMMON_EXPORT eMemoryResource
 getMemoryResourceFromName(const String& name);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur par défaut pour les données.
+ * \brief Default allocator for data.
  *
- * L'allocateur par défaut pour les données est un allocateur qui permet
- * d'accéder à la zone mémoire à la fois par l'hôte et l'accélérateur.
+ * The default allocator for data is an allocator that allows access to the
+ * memory region both by the host and the accelerator.
  *
- * Il est possible de récupérer la ressource mémoire associée via
+ * It is possible to retrieve the associated memory resource via
  * getDefaultDataMemoryResource();
  *
- * Cet appel est équivalent à getAllocator(getDefaultDataMemoryResource()).
+ * This call is equivalent to getAllocator(getDefaultDataMemoryResource()).
  *
- * Il est garanti que l'alignement est au moins celui retourné par
+ * It is guaranteed that the alignment is at least that returned by
  * AlignedMemoryAllocator::Simd().
  */
 extern "C++" ARCCORE_COMMON_EXPORT IMemoryAllocator*
@@ -85,51 +87,53 @@ getDefaultDataAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur par défaut pour les données avec informations sur
- * la localisation attendue.
+ * \brief Default allocator for data with expected location information.
  *
- * Cette fonction retourne l'allocateur de getDefaulDataAllocator() mais
- * ajoute les informations de gestion mémoire spécifiées par \a hint.
+ * This function returns the allocator of getDefaulDataAllocator() but
+ * adds the memory management information specified by \a hint.
  */
 extern "C++" ARCCORE_COMMON_EXPORT MemoryAllocationOptions
 getDefaultDataAllocator(eMemoryLocationHint hint);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne l'allocateur sur l'hôte ou sur le device.
+ * \brief Returns the host or device allocator.
  *
- * Si un runtime accélérateur est initialisé, l'allocateur retourné permet
- * d'allouer en utilisant la mémoire de l'accélérateur par défaut
- * (eMemoryResource::Device). Sinon, utilise l'allocateur de l'hôte
- * (eMemoryResource::Host).
+ * If an accelerator runtime is initialized, the returned allocator allows
+ * allocation using the default accelerator memory (eMemoryResource::Device).
+ * Otherwise, it uses the host allocator (eMemoryResource::Host).
  */
 extern "C++" ARCCORE_COMMON_EXPORT IMemoryAllocator*
 getDeviceOrHostAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur par défaut pour les données essentiellement en
- * lecture.
+ * \brief Default allocator for mostly read-only data.
  *
- * Cet appel est équivalent à getDefaultDataAllocator(eMemoryLocationHint::HostAndDeviceMostlyRead).
+ * This call is equivalent to
+ * getDefaultDataAllocator(eMemoryLocationHint::HostAndDeviceMostlyRead).
  */
 extern "C++" ARCCORE_COMMON_EXPORT MemoryAllocationOptions
 getAllocatorForMostlyReadOnlyData();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocation par défaut pour la ressource \a mem_resource.
+ * \brief Default allocation for the resource \a mem_resource.
  *
- * Lève une exception si aucune allocateur n'est disponible pour la ressource
- * (par exemple si on demande eMemoryResource::Device et qu'il n'y a pas de
- * support pour les accélérateurs.
+ * Throws an exception if no allocator is available for the resource
+ * (for example, if eMemoryResource::Device is requested and there is no
+ * support for accelerators.
  *
- * La ressource eMemoryResource::UnifiedMemory est toujours disponible. Si
- * aucun runtime accélérateur n'est chargé, alors c'est équivalent à
+ * The eMemoryResource::UnifiedMemory resource is always available. If
+ * no accelerator runtime is loaded, then it is equivalent to
  * eMemoryResource::Host.
  */
 extern "C++" ARCCORE_COMMON_EXPORT MemoryAllocationOptions
@@ -137,11 +141,12 @@ getAllocationOptions(eMemoryResource mem_resource);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur par défaut pour la ressource \a mem_resource.
+ * \brief Default allocator for the resource \a mem_resource.
  *
- * Lève une exception si aucun allocateur n'est disponible pour la
- * ressource \a mem_resource.
+ * Throws an exception if no allocator is available for the
+ * resource \a mem_resource.
  *
  * \sa getAllocationOptions().
  */
@@ -150,23 +155,26 @@ getAllocator(eMemoryResource mem_resource);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Pool mémoire pour la ressource \a mem_resource.
+ * \brief Memory pool for the resource \a mem_resource.
  *
- * Retourne \a nullptr si aucun pool mémoire n'est disponible pour
- * la ressource \a mem_resource.
+ * Returns \a nullptr if no memory pool is available for
+ * the resource \a mem_resource.
  */
 extern "C++" ARCCORE_COMMON_EXPORT IMemoryPool*
 getMemoryPoolOrNull(eMemoryResource mem_resource);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Copie de \a source vers \a destination en utilisant la file \a queue.
+ * \brief Copies \a source to \a destination using the queue \a queue.
  *
- * Il est possible de spécifier la ressource mémoire où se trouve la source
- * et la destination. Si on ne les connait pas, il est préférable d'utiliser
- * la surcharge copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue).
+ * It is possible to specify the memory resource where the source
+ * and destination are located. If they are unknown, it is preferable to use
+ * the overload
+ * copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue).
  */
 extern "C++" ARCCORE_COMMON_EXPORT void
 copy(MutableMemoryView destination, eMemoryResource destination_mem,
@@ -176,7 +184,7 @@ copy(MutableMemoryView destination, eMemoryResource destination_mem,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Copie de \a source vers \a destination en utilisant la file \a queue.
+//! Copies \a source to \a destination using the queue \a queue.
 inline void
 copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queue = nullptr)
 {
@@ -187,7 +195,7 @@ copy(MutableMemoryView destination, ConstMemoryView source, const RunQueue* queu
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Copie de \a source vers \a destination en utilisant la file \a queue.
+//! Copies \a source to \a destination using the queue \a queue.
 template <typename DataType> inline void
 copy(Span<DataType> destination, Span<const DataType> source,
      const RunQueue* queue = nullptr)
@@ -200,7 +208,7 @@ copy(Span<DataType> destination, Span<const DataType> source,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Copie de \a source vers \a destination en utilisant la file \a queue.
+//! Copies \a source to \a destination using the queue \a queue.
 template <typename DataType> inline void
 copy(SmallSpan<DataType> destination, SmallSpan<const DataType> source,
      const RunQueue* queue = nullptr)
@@ -210,13 +218,13 @@ copy(SmallSpan<DataType> destination, SmallSpan<const DataType> source,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Copie sur l'hôte des données avec indirection.
+ * \brief Copies data on the host with indirection.
  *
- * Copie dans \a destination les données de \a source
- * indexées par \a indexes
+ * Copies the data from \a source into \a destination indexed by \a indexes
  *
- * L'opération est équivalente au pseudo-code suivant:
+ * The operation is equivalent to the following pseudo-code:
  *
  * \code
  * Int64 n = indexes.size();
@@ -233,11 +241,11 @@ copyHostWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Copie sur l'hôte des données avec indirection.
+ * \brief Copies data on the host with indirection.
  *
- * Copie dans \a destination les données de \a source
- * indexées par \a indexes
+ * Copies the data from \a source into \a destination indexed by \a indexes
  *
  * \code
  * Int32 n = indexes.size();
@@ -245,7 +253,7 @@ copyHostWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
  *   destination[i] = source[indexes[i]];
  * \endcode
  *
- * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ * If \a run_queue is not null, it will be used for the copy.
  *
  * \pre destination.datatypeSize() == source.datatypeSize();
  * \pre source.nbElement() >= indexes.size();
@@ -257,10 +265,11 @@ copyWithIndexedSource(MutableMemoryView destination, ConstMemoryView source,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Copie dans \a destination les données de \a source.
+ * \brief Copies the data from \a source into \a destination.
  *
- * Utilise std::memmove pour la copie.
+ * Uses std::memmove for the copy.
  *
  * \pre source.bytes.size() >= destination.bytes.size()
  */
@@ -269,10 +278,11 @@ copyHost(MutableMemoryView destination, ConstMemoryView source);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Copie dans l'instance les données indexées de \a v.
+ * \brief Copies indexed data from \a v into the instance.
  *
- * L'opération est équivalente au pseudo-code suivant:
+ * The operation is equivalent to the following pseudo-code:
  *
  * \code
  * Int64 n = indexes.size();
@@ -289,13 +299,14 @@ copyHostWithIndexedDestination(MutableMemoryView destination, ConstMemoryView so
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Copie mémoire avec indirection
+ * \brief Memory copy with indirection
  *
- * Copie les données de \a source dans \a destination pour les indices
- * spécifiés par \a indexes.
+ * Copies the data from \a source into \a destination for the indices
+ * specified by \a indexes.
  *
- * L'opération est équivalente au pseudo-code suivant :
+ * The operation is equivalent to the following pseudo-code:
  *
  * \code
  * Int32 n = indexes.size();
@@ -303,7 +314,7 @@ copyHostWithIndexedDestination(MutableMemoryView destination, ConstMemoryView so
  *   destination[indexes[i]] = source[i];
  * \endcode
  *
- * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ * If \a run_queue is not null, it will be used for the copy.
  *
  * \pre destination.datatypeSize() == source.datatypeSize();
  * \pre destination.nbElement() >= indexes.size();
@@ -314,14 +325,15 @@ copyWithIndexedDestination(MutableMemoryView destination, ConstMemoryView source
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit une zone mémoire indexée avec une valeur.
+ * \brief Fills an indexed memory region with a value.
  *
- * Remplit les indices \a indexes de la zone mémoire \a destination avec
- * la valeur de la zone mémoire \a source. \a source doit avoir une seule valeur.
- * La zone mémoire \a source être accessible depuis l'hôte.
+ * Fills the indices \a indexes of the memory region \a destination with
+ * the value of the memory region \a source. \a source must have a single value.
+ * The memory region \a source must be accessible from the host.
  *
- * L'opération est équivalente au pseudo-code suivant:
+ * The operation is equivalent to the following pseudo-code:
  *
  * \code
  * Int32 n = indexes.size();
@@ -329,7 +341,7 @@ copyWithIndexedDestination(MutableMemoryView destination, ConstMemoryView source
  *   destination[indexes[i]] = source[0];
  * \endcode
  *
- * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ * If \a run_queue is not null, it will be used for the copy.
  *
  * \pre destination.datatypeSize() == source.datatypeSize();
  * \pre destination.nbElement() >= indexes.size();
@@ -340,14 +352,15 @@ fillIndexed(MutableMemoryView destination, ConstMemoryView source,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit une zone mémoire avec une valeur.
+ * \brief Fills a memory region with a value.
  *
- * Remplit les valeurs de la zone mémoire \a destination avec
- * la valeur de la zone mémoire \a source. \a source doit avoir une seule valeur.
- * La zone mémoire \a source être accessible depuis l'hôte.
+ * Fills the values of the memory region \a destination with
+ * the value of the memory region \a source. \a source must have a single value.
+ * The memory region \a source must be accessible from the host.
  *
- * L'opération est équivalente au pseudo-code suivant :
+ * The operation is equivalent to the following pseudo-code:
  *
  * \code
  * Int32 n = nbElement();
@@ -355,7 +368,7 @@ fillIndexed(MutableMemoryView destination, ConstMemoryView source,
  *   destination[i] = source[0];
  * \endcode
  *
- * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ * If \a run_queue is not null, it will be used for the copy.
  *
  * \pre destination.datatypeSize() == source.datatypeSize();
  */
@@ -365,10 +378,11 @@ fill(MutableMemoryView destination, ConstMemoryView source,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Copie dans \a destination les données de \a source indexées.
+ * \brief Copies indexed data from \a source into \a destination.
  *
- * L'opération est équivalente au pseudo-code suivant :
+ * The operation is equivalent to the following pseudo-code:
  *
  * \code
  * Int32 n = indexes.size();
@@ -379,10 +393,10 @@ fill(MutableMemoryView destination, ConstMemoryView source,
  * }
  * \endcode
  *
- * Le tableau \a indexes doit avoir une taille multiple de 2. Les valeurs
- * paires servent à indexer le premier tableau et les valeurs impaires le 2ème.
+ * The array \a indexes must have a size that is a multiple of 2.
+ * Even values are used to index the first array and odd values the second.
  *
- * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ * If \a run_queue is not null, it will be used for the copy.
  *
  * \pre destination.datatypeSize() == source.datatypeSize();
  * \pre destination.nbElement() >= indexes.size();
@@ -393,10 +407,11 @@ copyWithIndexedSource(MutableMemoryView destination, ConstMultiMemoryView source
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Copie les éléments indéxés de \a destination avec les données de \a source.
+ * \brief Copies indexed elements of \a destination with data from \a source.
  *
- * L'opération est équivalente au pseudo-code suivant :
+ * The operation is equivalent to the following pseudo-code:
  *
  * \code
  * Int32 n = indexes.size();
@@ -407,10 +422,10 @@ copyWithIndexedSource(MutableMemoryView destination, ConstMultiMemoryView source
  * }
  * \endcode
  *
- * Le tableau \a indexes doit avoir une taille multiple de 2. Les valeurs
- * paires servent à indexer le premier tableau et les valeurs impaires le 2ème.
+ * The array \a indexes must have a size that is a multiple of 2.
+ * Even values are used to index the first array and odd values the second.
  *
- * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ * If \a run_queue is not null, it will be used for the copy.
  *
  * \pre destination.datatypeSize() == v.datatypeSize();
  * \pre source.nbElement() >= indexes.size();
@@ -421,14 +436,15 @@ copyWithIndexedDestination(MutableMultiMemoryView destination, ConstMemoryView s
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les éléments indéxés de \a destination avec la donnée \a source.
+ * \brief Fills indexed elements of \a destination with data \a source.
  *
- * \a source doit avoir une seule valeur. Cette valeur sera utilisée
- * pour remplir les valeurs de l'instance aux indices spécifiés par
- * \a indexes. Elle doit être accessible depuis l'hôte.
+ * \a source must have a single value. This value will be used
+ * to fill the values of the instance at the indices specified by
+ * \a indexes. It must be accessible from the host.
  *
- * L'opération est équivalente au pseudo-code suivant :
+ * The operation is equivalent to the following pseudo-code:
  *
  * \code
  * Int32 n = indexes.size();
@@ -439,7 +455,7 @@ copyWithIndexedDestination(MutableMultiMemoryView destination, ConstMemoryView s
  * }
  * \endcode
  *
- * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ * If \a run_queue is not null, it will be used for the copy.
  *
  * \pre destination.datatypeSize() == source.datatypeSize();
  * \pre destination.nbElement() >= indexes.size();
@@ -450,12 +466,13 @@ fillIndexed(MutableMultiMemoryView destination, ConstMemoryView source,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les éléments de \a destination avec la valeur \a source.
+ * \brief Fills elements of \a destination with the value \a source.
  *
- * \a source doit avoir une seule valeur. Elle doit être accessible depuis l'hôte.
+ * \a source must have a single value. It must be accessible from the host.
  *
- * L'opération est équivalente au pseudo-code suivant :
+ * The operation is equivalent to the following pseudo-code:
  *
  * \code
  * Int32 n = nbElement();
@@ -466,7 +483,7 @@ fillIndexed(MutableMultiMemoryView destination, ConstMemoryView source,
  * }
  * \endcode
  *
- * Si \a run_queue n'est pas nul, elle sera utilisée pour la copie.
+ * If \a run_queue is not null, it will be used for the copy.
  *
  * \pre destination.datatypeSize() == source.datatypeSize();
  */

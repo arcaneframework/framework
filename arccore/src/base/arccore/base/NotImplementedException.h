@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NotImplementedException.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Exception lorsqu'une fonction n'est pas implémentée.                      */
+/* Exception when a function is not implemented.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_NOTIMPLEMENTEDEXCEPTION_H
 #define ARCCORE_BASE_NOTIMPLEMENTEDEXCEPTION_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception lorsqu'une fonction n'est pas implémentée.
+ * \brief Exception when a function is not implemented.
  */
 class ARCCORE_BASE_EXPORT NotImplementedException
 : public Exception
@@ -57,5 +58,4 @@ class ARCCORE_BASE_EXPORT NotImplementedException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

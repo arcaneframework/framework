@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Request.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Requête d'un message.                                                     */
+/* Message request.                                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_REQUEST_H
 #define ARCCORE_MESSAGEPASSING_REQUEST_H
@@ -27,9 +27,10 @@
 
 namespace Arcane::MessagePassing
 {
+
 /*!
  * \internal
- * \brief Sous-requête d'une requête
+ * \brief Sub-request of a request
  */
 class ARCCORE_MESSAGEPASSING_EXPORT ISubRequest
 {
@@ -39,14 +40,15 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISubRequest
 
  public:
 
-  //! Callback appelé lorsque la requête associée est terminée
+  //! Callback called when the associated request is finished
   virtual Request executeOnCompletion(const SubRequestCompletionInfo&) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un créateur de requête.
+ * \brief Interface for a request creator.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IRequestCreator
 {
@@ -56,22 +58,23 @@ class ARCCORE_MESSAGEPASSING_EXPORT IRequestCreator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Requête d'un message.
+ * \brief Message request.
  *
- * Ces informations sont utilisées pour les messages non bloquants. Une
- * requête non nulle est associée à un \a IMessagePassingMng.
+ * This information is used for non-blocking messages. A
+ * non-null request is associated with an \a IMessagePassingMng.
  *
- * Cette classe permet de conserver de manière générique une requête sans
- * connaitre son type exact (par exemple MPI_Request avec la norme MPI). On utilise
- * pour cela une union. Pour être certain de créér une instance de cette
- * classe avec avec les bons paramètes, il est préférable d'utiliser une
- * spécialisation (par exemple la classe MpiRequest).
+ * This class allows generically storing a request without
+ * knowing its exact type (for example, MPI_Request with the MPI standard).
+ * For this, a union is used. To ensure that an instance of this
+ * class is created with the correct parameters, it is preferable to use a
+ * specialization (for example, the MpiRequest class).
  *
- * Une requête peut être associée à une sous-requête (ISubRequest) dont
- * la méthode ISubRequest::executeOnCompletion() sera exécutée
- * lorsque la requête sera satisfaite. Cela permet de générer d'autres
- * requêtes automatiquement.
+ * A request can be associated with a sub-request (ISubRequest) whose
+ * method ISubRequest::executeOnCompletion() will be executed
+ * when the request is satisfied. This allows for the automatic generation of other
+ * requests.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT Request
 {
@@ -197,9 +200,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
   {
     if (m_type==T_Null)
       return false;
-    // Si le type de la requête est différent du type
-    // de la requête nulle, alors la requête est considérée
-    // comme valide.
+    // If the request type is different from the null request type,
+    // then the request is considered valid.
     if (m_type!=null_request_type)
       return true;
     if (m_type==T_Int)
@@ -230,7 +232,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
   bool hasSubRequest() const { return !m_sub_request.isNull(); }
   void setSubRequest(Ref<ISubRequest> s) { m_sub_request = s; }
 
-  //! Créateur de la requête
+  //! Request creator
   IRequestCreator* creator() const { return m_creator; }
 
   void print(std::ostream& o) const;
@@ -263,5 +265,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT Request
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

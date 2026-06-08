@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConcurrencyBase.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Classes de base pour la gestion du multi-threading.                       */
+/* Base classes for multi-threading management.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_CONCURRENCYBASE_H
 #define ARCCORE_BASE_CONCURRENCYBASE_H
@@ -24,33 +24,34 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de base pour la gestion du multi-threading.
+ * \brief Basic information for multi-threading management.
  */
 class ARCCORE_BASE_EXPORT ConcurrencyBase
 {
-  // Pour appeler _setMaxAllowedThread.
+  // To call _setMaxAllowedThread.
   friend class TBBTaskImplementation;
 
  public:
 
   /*!
-   * \brief Nombre maximum de threads autorisés pour le multi-threading.
+   * \brief Maximum number of allowed threads for multi-threading.
    *
-   * Cette valeur n'est significative qu'une fois que le service de gestion
-   * du multi-threading a éte créé.
+   * This value is only meaningful once the management service
+   * for multi-threading has been created.
    */
   static Int32 maxAllowedThread() { return m_max_allowed_thread; }
 
  public:
 
-  //! Positionne les valeurs par défaut d'exécution d'une boucle parallèle
+  //! Sets the default execution values for a parallel loop
   static void setDefaultParallelLoopOptions(const ParallelLoopOptions& v)
   {
     m_default_loop_options = v;
   }
 
-  //! Valeurs par défaut d'exécution d'une boucle parallèle
+  //! Default execution values for a parallel loop
   static const ParallelLoopOptions& defaultParallelLoopOptions()
   {
     return m_default_loop_options;
@@ -74,4 +75,4 @@ class ARCCORE_BASE_EXPORT ConcurrencyBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

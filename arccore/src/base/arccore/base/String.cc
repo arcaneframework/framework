@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* String.cc                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Chaîne de caractères unicode.                                             */
+/* Unicode character string.                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,11 +29,13 @@
 #include <vector>
 
 #define A_FASTLOCK(ptr)
+
 /*!
  * \file StringUtils.h
  *
- * \brief Fonctions utilitaires sur les chaînes de caractères.
+ * \brief Utility functions for character strings.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -1067,7 +1069,7 @@ plural(const Integer n, const String & str, const String & str2, const bool with
 bool String::
 contains(const String& arg1) const
 {
-  // Considère que la chaîne nulle est incluse dans toute chaîne
+  // Consider the null string as included in any string
   if (arg1.null())
     return true;
   if (null())
@@ -1125,7 +1127,7 @@ substring(Int64 pos,Int64 len) const
 {
   if (pos<0)
     pos = 0;
-  //TODO: normalement le _checkClone() n'est pas utile
+  //TODO: normally _checkClone() is not useful
   _checkClone();
   String s2(StringImpl::substring(m_p,pos,len));
   return s2;
@@ -1158,7 +1160,7 @@ operator==(const String& a,const String& b)
       return CStringUtils::isEqual(a.m_const_ptr,b.m_const_ptr);
     if (b.m_p)
       return b.m_p->isEqual(a.m_const_ptr);
-    // Si je suis ici, 'b' est la chaine nulle et pas 'a'
+    // If I am here, 'b' is the null string and not 'a'
     return false;
   }
 
@@ -1170,11 +1172,11 @@ operator==(const String& a,const String& b)
   if (a.m_p){
     if (b.m_p)
       return a.m_p->isEqual(b.m_p);
-    // b est la chaine nulle mais pas moi
+    // b is the null string but not me
     return false;
   }
 
-  // Je suis la chaine nulle
+  // I am the null string
   return b.m_p==nullptr;
 }
 
@@ -1221,7 +1223,7 @@ bool global_write_utf8 = false;
 std::ostream&
 operator<<(std::ostream& o,const String& str)
 {
-  // A utiliser plus tard lorsque l'encodage par défaut sera UTF8
+  // To be used later when the default encoding is UTF8
   if (global_write_utf8)
     str.writeBytes(o);
   else
@@ -1266,8 +1268,8 @@ class StringUtilsImpl
     Int32 n = x.size();
     if (n==0)
       return {};
-    // x contient normalement toujours un zéro terminal que l'on ne met
-    // pas dans le vecteur
+    // x normally always contains a terminal zero that is not put into
+    // the vector
     return { x.begin(), x.begin()+(n-1) };
   }
 };
@@ -1321,4 +1323,3 @@ convertToArcaneString([[maybe_unused]] const std::wstring_view& wstr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

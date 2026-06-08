@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Profiling.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Classes pour gérer le profilage.                                          */
+/* Classes to manage profiling.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_PROFILING_H
 #define ARCCORE_BASE_PROFILING_H
@@ -28,9 +28,10 @@ class AcceleratorStatInfoList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe permettant de récupérer le temps passé entre l'appel au
- * constructeur et au destructeur.
+ * \brief Class allowing retrieval of the time spent between the constructor
+ * call and the destructor call.
  */
 class ARCCORE_BASE_EXPORT ScopedStatLoop
 {
@@ -47,8 +48,9 @@ class ARCCORE_BASE_EXPORT ScopedStatLoop
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Statistiques d'exécution des boucles.
+ * \brief Loop execution statistics.
  */
 class ARCCORE_BASE_EXPORT ForLoopStatInfoList
 {
@@ -65,7 +67,7 @@ class ARCCORE_BASE_EXPORT ForLoopStatInfoList
 
   /*!
    * \internal
-   * \brief Type opaque pour l'implémentation interne.
+   * \brief Opaque type for internal implementation.
    */
   ForLoopStatInfoListImpl* _internalImpl() const { return m_p; }
 
@@ -74,7 +76,7 @@ class ARCCORE_BASE_EXPORT ForLoopStatInfoList
   ForLoopStatInfoListImpl* m_p = nullptr;
 };
 
-} // namespace Arcane::impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,34 +86,35 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour gérer le profiling d'une seule exécution d'une boucle.
+ * \brief Class to manage the profiling of a single loop execution.
  */
 class ARCCORE_BASE_EXPORT ForLoopOneExecStat
 {
  public:
 
   /*!
-   * \brief Incrémente le nombre de chunk utilisé.
+   * \brief Increments the number of chunks used.
    *
-   * Cette méthode peut être appelée simultanément par plusieurs threads.
+   * This method can be called simultaneously by multiple threads.
    */
   void incrementNbChunk() { ++m_nb_chunk; }
 
-  //! Positionne le temps de début de la boucle (en nanoseconde)
+  //! Sets the loop start time (in nanoseconds)
   void setBeginTime(Int64 v) { m_begin_time = v; }
 
-  //! Positionne le temps de fin de la boucle en nanoseconde
+  //! Sets the loop end time in nanoseconds
   void setEndTime(Int64 v) { m_end_time = v; }
 
-  //! Nombre de chunks
+  //! Number of chunks
   Int64 nbChunk() const { return m_nb_chunk; }
 
   /*!
-   * \brief Temps d'exécution (en nanoseconde).
+   * \brief Execution time (in nanoseconds).
    *
-   * La valeur retournée n'est valide que si setBeginTime() et setEndTime()
-   * ont été appelés avant.
+   * The returned value is only valid if setBeginTime() and setEndTime()
+   * were called previously.
    */
   Int64 execTime() const { return m_end_time - m_begin_time; }
 
@@ -124,69 +127,70 @@ class ARCCORE_BASE_EXPORT ForLoopOneExecStat
 
  private:
 
-  //! Nombre de chunk de décomposition de la boucle (en multi-thread)
+  //! Number of loop decomposition chunks (in multi-thread)
   std::atomic<Int64> m_nb_chunk = 0;
 
-  // Temps de début d'exécution
+  // Execution start time
   Int64 m_begin_time = 0;
 
-  // Temps de fin d'exécution
+  // Execution end time
   Int64 m_end_time = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire pour le profiling.
+ * \brief Profiling manager.
  *
- * Il est possible d'activer le profilage en appelant setProfilingLevel() avec
- * une valeur supérieur ou égale à 1.
+ * It is possible to enable profiling by calling setProfilingLevel() with
+ * a value greater than or equal to 1.
  *
- * L'ajout de statistiques se fait en récupérant une instance de
- * impl::ForLoopStatInfoList spécifique au thread en cours d'exécution.
+ * Statistics are added by retrieving an instance of
+ * impl::ForLoopStatInfoList specific to the currently executing thread.
  */
 class ARCCORE_BASE_EXPORT ProfilingRegistry
 {
  public:
 
   /*!
-   * TODO: rendre obsolète. Utiliser à la place:
-   * static impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
+   * TODO: Deprecate. Use
+   * static impl::ForLoopStatInfoList* _threadLocalForLoopInstance()
+   * instead.
    */
   ARCCORE_DEPRECATED_REASON("Y2023: Use _threadLocalForLoopInstance() instead")
   static Impl::ForLoopStatInfoList* threadLocalInstance();
 
   /*!
-   * \brief Positionne le niveau de profilage.
+   * \brief Sets the profiling level.
    *
-   * Si 0, alors il n'y a pas de profilage. Le profilage est actif à partir
-   * du niveau 1.
+   * If 0, there is no profiling. Profiling is active starting from level 1.
    */
   static void setProfilingLevel(Int32 level);
 
-  //! Niveau de profilage
+  //! Profiling level
   static Int32 profilingLevel() { return m_profiling_level; }
 
-  //! Indique si le profilage est actif.
+  //! Indicates if profiling is active.
   static bool hasProfiling() { return m_profiling_level > 0; }
 
   /*!
-   * \brief Visite la liste des statistiques des boucles
+   * \brief Visits the loop statistics list
    *
-   * Il y a une instance de impl::ForLoopStatInfoList par thread qui a
-   * exécuté une boucle.
+   * There is an instance of impl::ForLoopStatInfoList per thread that
+   * executed a loop.
    *
-   * Cette méthode ne doit pas être appelée s'il y a des boucles en cours d'exécution.
+   * This method must not be called if loops are currently executing.
    */
   static void visitLoopStat(const std::function<void(const Impl::ForLoopStatInfoList&)>& f);
 
   /*!
-   * \brief Visite la liste des statistiques sur accélérateur
+   * \brief Visits the accelerator statistics list
    *
-   * Il y a une instance de impl::AcceleratorStatInfoList par thread qui a
-   * exécuté une boucle.
+   * There is an instance of impl::AcceleratorStatInfoList per thread
+   * that executed a loop.
    *
-   * Cette méthode ne doit pas être appelée lorsque le profiling est actif.
+   * This method must not be called when profiling is active.
    */
   static void visitAcceleratorStat(const std::function<void(const Impl::AcceleratorStatInfoList&)>& f);
 
@@ -194,17 +198,17 @@ class ARCCORE_BASE_EXPORT ProfilingRegistry
 
  public:
 
-  // API publique mais réservée à Arcane.
+  // Public API but reserved for Arcane.
 
   /*!
    * \internal.
-   * Instance locale par thread du gestionnaire des statistiques de boucle
+   * Thread-local instance of the loop statistics manager
    */
   static Impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
 
   /*!
    * \internal.
-   * Instance locale par thread du gestionnaire des statistiques pour accélérateur
+   * Thread-local instance of the accelerator statistics manager
    */
   static Impl::AcceleratorStatInfoList* _threadLocalAcceleratorInstance();
 

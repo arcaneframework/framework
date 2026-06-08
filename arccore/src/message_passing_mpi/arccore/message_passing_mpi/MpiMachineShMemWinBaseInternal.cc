@@ -7,9 +7,9 @@
 /*---------------------------------------------------------------------------*/
 /* MpiMachineShMemWinBaseInternal.h                            (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
-/* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
-/* être redimensionnées.                                                     */
+/* Class allowing the creation of memory windows for a compute node.         */
+/* The segments of these windows are not contiguous in memory and can        */
+/* be resized.                                                               */
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/internal/MpiMachineShMemWinBaseInternal.h"
@@ -79,9 +79,9 @@ MpiMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, const MP
         ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
 
-      // Attention : L'utilisateur demande un nombre minimum d'éléments réservés.
-      // Mais MPI réserve la taille qu'il veut (effet du alloc_shared_noncontig=true).
-      // On est juste sûr que la taille qu'il a réservée est supérieure ou égale à sizeof_segment.
+      // Note: The user requests a minimum number of reserved elements.
+      // But MPI reserves the size it wants (effect of alloc_shared_noncontig=true).
+      // We are just sure that the size it reserved is greater than or equal to sizeof_segment.
       m_reserved_part_span = Span<std::byte>{ ptr_seg, size_seg };
     }
   }
@@ -301,9 +301,9 @@ add(Span<const std::byte> elem)
   }
   m_sizeof_used_part[m_comm_machine_rank] = future_sizeof_win;
 
-  // Barrière car d'autres peuvent utiliser la taille du segment
-  // (m_sizeof_used_part) que nous possédons (segmentView(Int32 rank) par
-  // exemple).
+  // Barrier because others may use the segment size
+  // (m_sizeof_used_part) that we possess (segmentView(Int32 rank) for
+  // example).
   MPI_Barrier(m_comm_machine);
 }
 
@@ -332,8 +332,8 @@ addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
   m_target_segments[m_comm_machine_rank] = machine_rank;
   MPI_Barrier(m_comm_machine);
 
-  // On doit savoir si quelqu'un va ajouter des éléments dans notre segment
-  // pour pouvoir mettre à jour la vue.
+  // We must know if someone will add elements to our segment
+  // to be able to update the view.
   bool is_my_seg_edited = false;
   {
     bool is_found = false;
@@ -397,13 +397,13 @@ addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
   }
   m_sizeof_used_part[machine_rank] = future_sizeof_win;
 
-  // Barrière car d'autres peuvent utiliser la taille du segment
-  // (m_sizeof_used_part) que nous possédons (segmentView(Int32 machine_rank) par
-  // exemple).
+  // Barrier because others might use the segment size
+  // (m_sizeof_used_part) that we possess (segmentView(Int32 machine_rank) for
+  // example).
   MPI_Barrier(m_comm_machine);
   m_target_segments[m_comm_machine_rank] = -1;
 
-  // On met à jour notre vue.
+  // We update our view.
   if (is_my_seg_edited) {
     MPI_Aint size_seg;
     std::byte* ptr_seg = nullptr;
@@ -423,8 +423,8 @@ addToAnotherSegment(Int32 rank, Span<const std::byte> elem)
 void MpiMachineShMemWinBaseInternal::
 addToAnotherSegment()
 {
-  // Même si on n'ajoute rien, un autre processus pourrait ajouter des
-  // éléments dans notre segment.
+  // Even if we don't add anything, another process might add
+  // elements to our segment.
   MPI_Barrier(m_comm_machine);
 
   bool is_my_seg_edited = false;
@@ -503,9 +503,9 @@ resize(Int64 new_size)
   }
   m_sizeof_used_part[m_comm_machine_rank] = new_size;
 
-  // Barrière car d'autres peuvent utiliser la taille du segment
-  // (m_sizeof_used_part) que nous possédons (segmentView(Int32 rank) par
-  // exemple).
+  // Barrier because others might use the segment size
+  // (m_sizeof_used_part) that we possess (segmentView(Int32 rank) for
+  // example).
   MPI_Barrier(m_comm_machine);
 }
 
@@ -541,21 +541,21 @@ _reallocBarrier(Int64 new_sizeof)
 {
   m_need_resize[m_comm_machine_rank] = new_sizeof;
 
-  // Barrière importante car tout le monde doit savoir que l'on doit
-  // redimensionner le segment que nous possédons.
+  // Important barrier because everyone must know that we must
+  // resize the segment that we possess.
   MPI_Barrier(m_comm_machine);
 
   _reallocCollective();
 
-  // Pas besoin de barrière car MPI_Win_allocate_shared() de
-  // _reallocCollective() est bloquant.
+  // No need for a barrier because MPI_Win_allocate_shared() from
+  // _reallocCollective() is blocking.
   m_need_resize[m_comm_machine_rank] = -1;
 
-  // Barrière importante dans le cas où un MPI_Win_shared_query() de
-  // _reallocCollective() durerait trop longtemps (un autre processus pourrait
-  // rappeler cette méthode et remettre m_need_resize[m_comm_machine_rank] à
-  // true => deadlock dans _reallocCollective() sur MPI_Win_allocate_shared()
-  // à cause du continue).
+  // Important barrier in the case where an MPI_Win_shared_query() from
+  // _reallocCollective() would last too long (another process could
+  // call this method and set m_need_resize[m_comm_machine_rank] to
+  // true => deadlock in _reallocCollective() on MPI_Win_allocate_shared()
+  // because of the continue).
   MPI_Barrier(m_comm_machine);
 }
 
@@ -567,21 +567,21 @@ _reallocBarrier(Int32 machine_rank, Int64 new_sizeof)
 {
   m_need_resize[machine_rank] = new_sizeof;
 
-  // Barrière importante car tout le monde doit savoir que l'on doit
-  // redimensionner le segment que nous possédons.
+  // Important barrier because everyone must know that we must
+  // resize the segment that we possess.
   MPI_Barrier(m_comm_machine);
 
   _reallocCollective();
 
-  // Pas besoin de barrière car MPI_Win_allocate_shared() de
-  // _reallocCollective() est bloquant.
+  // No need for a barrier because MPI_Win_allocate_shared() from
+  // _reallocCollective() is blocking.
   m_need_resize[machine_rank] = -1;
 
-  // Barrière importante dans le cas où un MPI_Win_shared_query() de
-  // _reallocCollective() durerait trop longtemps (un autre processus pourrait
-  // rappeler cette méthode et remettre m_need_resize[machine_rank] à
-  // true => deadlock dans _reallocCollective() sur MPI_Win_allocate_shared()
-  // à cause du continue).
+  // Important barrier in the case where an MPI_Win_shared_query() from
+  // _reallocCollective() would last too long (another process could
+  // call this method and set m_need_resize[machine_rank] to
+  // true => deadlock in _reallocCollective() on MPI_Win_allocate_shared()
+  // because of the continue).
   MPI_Barrier(m_comm_machine);
 }
 
@@ -619,7 +619,7 @@ _reallocCollective()
 
     std::byte* ptr_seg = nullptr;
 
-    // Si size_seg == 0 alors ptr_seg == nullptr.
+    // If size_seg == 0 then ptr_seg == nullptr.
     int error = MPI_Win_allocate_shared(size_seg, m_sizeof_type, win_info, m_comm_machine, &ptr_seg, &m_all_mpi_win[i]);
     if (error != MPI_SUCCESS) {
       MPI_Info_free(&win_info);
@@ -631,8 +631,8 @@ _reallocCollective()
       MPI_Aint mpi_reserved_size_seg;
       int size_type;
 
-      // Ici, ptr_seg n'est jamais == nullptr vu que l'on fait toujours un segment d'une taille d'au moins
-      // m_sizeof_type.
+      // Here, ptr_seg is never == nullptr since we always create a segment of at least
+      // m_sizeof_type size.
       error = MPI_Win_shared_query(m_all_mpi_win[m_comm_machine_rank], m_comm_machine_rank, &mpi_reserved_size_seg, &size_type, &ptr_seg);
       if (error != MPI_SUCCESS || ptr_seg == nullptr) {
         MPI_Win_free(&old_win);

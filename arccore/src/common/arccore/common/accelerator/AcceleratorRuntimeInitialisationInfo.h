@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorRuntimeInitialisationInfo.h                      (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour l'initialisation du runtime des accélérateurs.          */
+/* Information for accelerator runtime initialization.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_ACCELERATORRUNTIMEINITIALISATIONINFO_H
 #define ARCCORE_COMMON_ACCELERATOR_ACCELERATORRUNTIMEINITIALISATIONINFO_H
@@ -24,8 +24,9 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour l'initialisation des accélérateurs.
+ * \brief Information for accelerator initialization.
  */
 class ARCCORE_COMMON_EXPORT AcceleratorRuntimeInitialisationInfo
 {
@@ -42,20 +43,20 @@ class ARCCORE_COMMON_EXPORT AcceleratorRuntimeInitialisationInfo
 
  public:
 
-  //! Indique si on utilise un runtime accélérateur
+  //! Indicates if an accelerator runtime is used
   void setIsUsingAcceleratorRuntime(bool v);
   bool isUsingAcceleratorRuntime() const;
 
-  //! Nom du runtime utilisé (pour l'instant uniquement 'cuda', 'hip' ou 'sycl')
+  //! Name of the runtime used (for now only 'cuda', 'hip' or 'sycl')
   void setAcceleratorRuntime(StringView name);
   String acceleratorRuntime() const;
 
-  //! Positionne le device associé au Runner associé.
+  //! Positions the device associated with the Runner.
   void setDeviceId(DeviceId name);
-  //! Device associé au Runner associé
+  //! Device associated with the Runner
   DeviceId deviceId() const;
 
-  //! Politique d'exécution associée à acceleratorRuntime()
+  //! Execution policy associated with acceleratorRuntime()
   eExecutionPolicy executionPolicy() const;
 
  private:
@@ -71,5 +72,4 @@ class ARCCORE_COMMON_EXPORT AcceleratorRuntimeInitialisationInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

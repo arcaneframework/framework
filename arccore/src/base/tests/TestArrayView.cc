@@ -214,7 +214,7 @@ TEST(Span,Convert)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Vérifie que \a a1 et \a a2 sont identiques
+// Checks that a1 and a2 are identical
 template<typename A1,typename A2>
 void _checkSame(A1& a1,A2& a2,const char* message)
 {
@@ -230,7 +230,7 @@ void _checkSame(A1& a1,A2& a2,const char* message)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Vérifie que \a a1 et \a a2 sont identiques
+// Checks that a1 and a2 are identical
 template<typename A1,typename A2>
 void _checkSame2(A1& a1,A2& a2,const char* message)
 {
@@ -748,8 +748,8 @@ TEST(Span,FixedValue)
   std::cout << "sizeof(Span<Int64,1>) = " << sizeof(Span<Int64,1>) << "\n";
   std::cout << "sizeof(Span<Int64,DynExtent>) = " << sizeof(Span<Int64,DynExtent>) << "\n";
 
-  // Vérifie que [[no_unique_address]] est bien pris en compte
-  // A priori cela n'est pas le cas avec VS2022.
+  // Verifies that [[no_unique_address]] is properly taken into account
+  // As far as I know, this is not the case with VS2022.
   ASSERT_EQ(sizeof(Span<Int32,1>),sizeof(void*));
   ASSERT_EQ(sizeof(Span<Int64, 1>), sizeof(void*));
 

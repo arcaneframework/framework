@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MessageRank.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Rang d'un message.                                                        */
+/* Rank of a message.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGERANK_H
 #define ARCCORE_MESSAGEPASSING_MESSAGERANK_H
@@ -23,17 +23,18 @@
 
 namespace Arcane::MessagePassing
 {
+
 /*!
- * \brief Rang d'un message.
+ * \brief Rank of a message.
  *
- * Le type exact du rang dépend de l'implémentation. Pour être le plus
- * générique possible, on utilise le type 'Int32' qui est aussi celui
- * utilisé par MPI.
+ * The exact type of the rank depends on the implementation. To be as
+ * generic as possible, we use the 'Int32' type, which is also the one
+ * used by MPI.
  *
- * Il existe trois valeurs spéciales pour le rang:
- * - la valeur par défaut
- * - la valeur procNullRank() qui correspond à MPI_PROC_NULL
- * - la valeur anySourceRang() qui correspond à MPI_ANY_SOURCE
+ * There are three special values for the rank:
+ * - the default value
+ * - the procNullRank() value, which corresponds to MPI_PROC_NULL
+ * - the anySourceRank() value, which corresponds to MPI_ANY_SOURCE
  *
  * \sa PointToPointMessageInfo
  */
@@ -42,9 +43,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageRank
  public:
 
   /*!
-   * \brief Rang par défaut.
+   * \brief Default rank.
    *
-   * La signification du rang par défaut dépend du type de message.
+   * The meaning of the default rank depends on the message type.
    * \sa PointToPointMessageInfo.
    */
   MessageRank()
@@ -68,25 +69,25 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageRank
     return a.m_rank < b.m_rank;
   }
 
-  //! Valeur du rang
+  //! Rank value
   Int32 value() const { return m_rank; }
 
-  //! Positionne la valeur du rang
+  //! Sets the rank value
   void setValue(Int32 rank) { m_rank = rank; }
 
-  //! Vrai si rang non initialisé correspondant au rang par défaut
+  //! True if the rank is uninitialized, corresponding to the default rank
   bool isNull() const { return m_rank == A_NULL_RANK; }
 
-  //! Vrai si rang correspondant à anySourceRank()
+  //! True if the rank corresponds to anySourceRank()
   bool isAnySource() const { return m_rank == A_ANY_SOURCE_RANK; }
 
-  //! Vrai si rang correspondant à procNullRank()
+  //! True if the rank corresponds to procNullRank()
   bool isProcNull() const { return m_rank == A_PROC_NULL_RANK; }
 
-  //! Rang correspondant à MPI_ANY_SOURCE
+  //! Rank corresponding to MPI_ANY_SOURCE
   static MessageRank anySourceRank() { return MessageRank(A_ANY_SOURCE_RANK); }
 
-  //! Rang correspondant à MPI_PROC_NULL
+  //! Rank corresponding to MPI_PROC_NULL
   static MessageRank procNullRank() { return MessageRank(A_PROC_NULL_RANK); }
 
   void print(std::ostream& o) const;
@@ -109,5 +110,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageRank
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

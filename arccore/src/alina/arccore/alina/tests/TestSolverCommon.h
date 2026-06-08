@@ -270,7 +270,7 @@ void test_backend(typename Backend::params const& bprm = typename Backend::param
     func(false, 0); \
   }
 
-//! Macro pour définir les tests en fonction de l'accélérateur
+//! Macro to define tests based on the accelerator
 #define ARCCORE_ALINA_TEST_DO_TEST_ACCELERATOR(name1, name2, func) \
   ARCCORE_ALINA_TEST_DO_TEST_TASK(name1, name2, func); \
   ARCCORE_ALINA_TEST_DO_TEST_SEQUENTIAL(name1, name2, func);

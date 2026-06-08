@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Exception.cc                                                (C) 2000-2025 */
 /*                                                                           */
-/* Classes gérant les exceptions.                                            */
+/* Classes managing exceptions.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,7 +31,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Vérifier si la valeur de construction est bien 0
+// TODO: Check if the construction value is indeed 0
 std::atomic<Int32> Exception::m_nb_pending_exception;
 
 /*---------------------------------------------------------------------------*/
@@ -39,13 +39,12 @@ std::atomic<Int32> Exception::m_nb_pending_exception;
 
 namespace
 {
-  // Si vrai, affiche les informations de l'exception dans les appels aux
-  // constructeurs. Cela permet d'avoir le message dans le cas où une exception
-  // lève une autre exception (ce qui appelle directement std::terminate et on
-  // ne peut pas la récupérer).
+  // If true, displays exception information in calls to
+  // constructors. This allows having the message in the case where an exception
+  // throws another exception (which calls std::terminate directly and we
+  // cannot recover it).
   bool global_explain_in_constructor = false;
-  // Si vrai, se met en pause dans le constructeur pour attendre de brancher
-  // un débugger
+  // If true, pauses in the constructor waiting to attach a debugger
   bool global_pause_in_constructor = false;
 } // namespace
 
@@ -251,7 +250,7 @@ write(std::ostream& o) const
 bool Exception::
 hasPendingException()
 {
-  //TODO utiliser test atomic
+  //TODO use atomic test
   return m_nb_pending_exception.load()!=0;
 }
 
@@ -295,8 +294,8 @@ _checkExplainAndPause()
   if (global_pause_in_constructor){
     std::cerr << "** Exception: Debug mode activated. Execution paused.\n";
     std::cerr << "** Exception: To find the location of the exception, start the debugger\n";
-    // Utilise format pour être sur que le message ne sera pas affiché en plusieurs
-    // morceaux
+    // Uses format to ensure the message will not be displayed in several
+    // pieces
     std::cerr << String::format("** Exception: using process number {0} on host '{1}'\n",
                                 Platform::getProcessId(),Platform::getHostName());
 
@@ -313,4 +312,3 @@ _checkExplainAndPause()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

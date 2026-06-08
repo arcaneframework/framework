@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CollectionsGlobal.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Définitions globales de la composante 'Collections' de 'Arccore'.         */
+/* Global definitions for the 'Collections' component of 'Arccore'.          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COLLECTIONS_COLLECTIONSGLOBAL_H
 #define ARCCORE_COLLECTIONS_COLLECTIONSGLOBAL_H
@@ -37,8 +37,8 @@ template <typename DataType> class Array2;
 template <typename DataType> class UniqueArray2;
 template <typename DataType> class SharedArray2;
 
-// Les trois types suivants sont conservés pour compatibilité avec l'existant.
-// Il faudra les rendre optionnels mi-2025 et les supprimer en 2026
+// The following three types are kept for compatibility with existing code.
+// They will need to be made optional mid-2025 and removed in 2026
 using IMemoryAllocator3 = IMemoryAllocator;
 using AlignedMemoryAllocator3 = AlignedMemoryAllocator;
 using DefaultMemoryAllocator3 = DefaultMemoryAllocator;
@@ -49,8 +49,8 @@ using DefaultMemoryAllocator3 = DefaultMemoryAllocator;
 
 namespace Arcane
 {
-//! Typedef pour la version Arcane historique (avec 2's')
-// TODO: A rendre obsolète (juin 2025)
+//! Typedef for the historical Arcane version (with 2's')
+// TODO: To be deprecated (June 2025)
 using eMemoryRessource = Arcane::eMemoryResource;
 } // namespace Arcane
 
@@ -86,8 +86,8 @@ using Arcane::SharedArray2;
 using Arcane::UniqueArray;
 using Arcane::UniqueArray2;
 
-//! Typedef pour la version Arcane historique (avec 2's')
-// TODO: A rendre obsolète (juin 2025)
+//! Typedef for the historical Arcane version (with 2's')
+// TODO: To be deprecated (June 2025)
 using eMemoryRessource = Arcane::eMemoryResource;
 
 /*---------------------------------------------------------------------------*/
@@ -98,5 +98,4 @@ using eMemoryRessource = Arcane::eMemoryResource;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

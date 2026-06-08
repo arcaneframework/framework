@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HipAccelerator.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Backend 'ROCM/HIP' pour les accélérateurs.                                */
+/* 'ROCM/HIP' backend for accelerators.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_HIP_HIPACCELERATOR_H
 #define ARCCORE_HIP_HIPACCELERATOR_H
@@ -39,11 +39,11 @@ arcaneCheckHipErrors(const TraceInfo& ti,hipError_t e);
 extern "C++" ARCCORE_HIP_EXPORT void
 arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e);
 
-//! Vérifie \a result et lance une exception en cas d'erreur
+//! Checks \a result and throws an exception if there is an error
 #define ARCCORE_CHECK_HIP(result) \
   Arcane::Accelerator::Hip::arcaneCheckHipErrors(A_FUNCINFO,result)
 
-//! Verifie \a result et affiche un message d'erreur en cas d'erreur.
+//! Checks \a result and displays an error message if there is an error.
 #define ARCCORE_CHECK_HIP_NOTHROW(result) \
   Arcane::Accelerator::Hip::arcaneCheckHipErrorsNoThrow(A_FUNCINFO,result)
 

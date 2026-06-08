@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TBBTaskImplementation.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des tâches utilisant TBB (Intel Threads Building Blocks).  */
+/* Implementation of tasks using TBB (Intel Threads Building Blocks).        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,16 +34,16 @@
 #include <stack>
 #include <vector>
 
-// Il faut définir cette macro pour que la classe 'blocked_rangeNd' soit disponible
+// This macro must be defined for the class 'blocked_rangeNd' to be available
 
 #define TBB_PREVIEW_BLOCKED_RANGE_ND 1
 
-// la macro 'ARCCORE_USE_ONETBB' est définie dans le CMakeLists.txt
-// si on compile avec la version OneTBB version 2021+
+// The macro 'ARCCORE_USE_ONETBB' is defined in CMakeLists.txt
+// if compiling with the OneTBB version 2021+
 // (https://github.com/oneapi-src/oneTBB.git)
-// A terme ce sera la seule version supportée par Arcane.
+// Eventually, this will be the only version supported by Arcane.
 
-// Nécessaire pour avoir accès à task_scheduler_handle
+// Necessary to access task_scheduler_handle
 #define TBB_PREVIEW_WAITING_FOR_WORKERS 1
 #include <tbb/tbb.h>
 #include <oneapi/tbb/concurrent_set.h>
@@ -60,18 +60,18 @@ namespace Arcane
 
 class TBBTaskImplementation;
 
-// TODO: utiliser un pool mémoire spécifique pour gérer les
-// OneTBBTask pour optimiser les new/delete des instances de cette classe.
-// Auparavant avec les anciennes versions de TBB cela était géré avec
-// la méthode 'tbb::task::allocate_child()'.
+// TODO: use a specific memory pool to manage the
+// OneTBBTask to optimize the new/delete of instances of this class.
+// Previously, with older versions of TBB, this was managed with
+// the method 'tbb::task::allocate_child()'.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #if (TBB_VERSION_MAJOR > 2022) || (TBB_VERSION_MAJOR == 2022 && TBB_VERSION_MINOR > 0) || defined __TBB_blocked_nd_range_H
 
-// La classe "blocked_rangeNd" a été retirée dans la version
-// 2022.0.0 et remplacée par "blocked_nd_range".
+// The class "blocked_rangeNd" was removed in version
+// 2022.0.0 and replaced by "blocked_nd_range".
 template <typename Value, unsigned int N>
 using blocked_nd_range = tbb::blocked_nd_range<Value, N>;
 
@@ -88,15 +88,15 @@ using blocked_nd_range = tbb::blocked_rangeNd<Value, N>;
 namespace
 {
   constexpr Int32 cache_line_size = 64;
-  // Positif si on récupère les statistiques d'exécution
+  // Positive if execution statistics are retrieved
   bool isStatActive()
   {
     return ProfilingRegistry::hasProfiling();
   }
 
   /*!
- * \brief Classe permettant de garantir qu'on enregistre les statistiques
- * d'exécution même en cas d'exception.
+ * \brief Class that ensures execution statistics are recorded
+ * even in case of an exception.
  */
   class ScopedExecInfo
   {
@@ -105,10 +105,10 @@ namespace
     explicit ScopedExecInfo(const ForLoopRunInfo& run_info)
     : m_run_info(run_info)
     {
-      // Si run_info.execInfo() n'est pas nul, on l'utilise.
-      // Cela signifie que c'est l'appelant de qui va gérer les statistiques
-      // d'exécution. Sinon, on utilise \a m_stat_info si les statistiques
-      // d'exécution sont demandées.
+      // If run_info.execInfo() is not null, we use it.
+      // This means that the caller will manage the execution statistics
+      // execution statistics. Otherwise, we use m_stat_info if execution statistics
+      // are requested.
       ForLoopOneExecStat* ptr = run_info.execStat();
       if (ptr) {
         m_stat_info_ptr = ptr;
@@ -146,7 +146,7 @@ namespace
     ForLoopOneExecStat m_stat_info;
     ForLoopOneExecStat* m_stat_info_ptr = nullptr;
     ForLoopRunInfo m_run_info;
-    //! Indique si on utilise m_stat_info
+    //! Indicates if m_stat_info is used
     bool m_use_own_run_info = true;
   };
 
@@ -155,10 +155,10 @@ namespace
 
   inline int _currentTaskTreadIndex()
   {
-    // NOTE: Avec OneTBB 2021, la valeur n'est plus '0' si on appelle cette méthode
-    // depuis un thread en dehors d'un task_arena. Avec la version 2021,
-    // la valeur est 65535.
-    // NOTE: Il semble que cela soit un bug de la 2021.3.
+    // NOTE: With OneTBB 2021, the value is no longer '0' if this method is called
+    // from a thread outside of a task_arena. With version 2021,
+    // the value is 65535.
+    // NOTE: It seems this is a bug in 2021.3.
     return tbb::this_task_arena::current_thread_index();
   }
 
@@ -334,10 +334,11 @@ using TBBTask = OneTBBTask;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Ne pas utiliser l'observer locale au task_arena.
- * Utiliser l'observer global au scheduler.
- * Pour l'id, utiliser tbb::this_task_arena::current_thread_index().
+ * Do not use the local observer on the task_arena.
+ * Use the global observer on the scheduler.
+ * For the ID, use tbb::this_task_arena::current_thread_index().
  */
 class TBBTaskImplementation
 : public ITaskImplementation
@@ -349,8 +350,8 @@ class TBBTaskImplementation
 
  public:
 
-  // Pour des raisons de performance, s'aligne sur une ligne de cache
-  // et utilise un padding.
+  // For performance reasons, aligns to a cache line
+  // and uses padding.
   class ARCCORE_ALIGNAS_PACKED(64) TaskThreadInfo
   {
    public:
@@ -368,12 +369,13 @@ class TBBTaskImplementation
 
     Integer m_task_index;
   };
+
   /*!
-   * \brief Classe pour positionner TaskThreadInfo::taskIndex().
+   * \brief Class for positioning TaskThreadInfo::taskIndex().
    *
-   * Permet de positionner la valeur de TaskThreadInfo::taskIndex()
-   * lors de la construction et de remettre la valeur d'avant
-   * dans le destructeur.
+   * Allows positioning the value of TaskThreadInfo::taskIndex()
+   * during construction and restoring the previous value
+   * in the destructor.
    */
   class TaskInfoLockGuard
   {
@@ -467,10 +469,10 @@ class TBBTaskImplementation
  public:
 
   /*!
-   * \brief Instance de \a TaskThreadInfo associé au thread courant.
+   * \brief Instance of \a TaskThreadInfo associated with the current thread.
    *
-   * Peut-être nul si le thread courant n'est pas associé à un thread TBB
-   * ou si en dehors d'une exécution d'une tâche ou d'une boucle parallèle.
+   * May be null if the current thread is not associated with a TBB thread
+   * or if it is outside the execution of a task or a parallel loop.
    */
   TaskThreadInfo* currentTaskThreadInfo() const;
 
@@ -562,12 +564,11 @@ class TBBTaskImplementation::Impl
   {
     std::thread::id my_thread_id = std::this_thread::get_id();
 
-    // Avec OneTBB, cette méthode est appelée à chaque fois qu'on rentre
-    // dans notre 'task_arena'. Comme il ne faut appeler qu'une seule
-    // fois la méthode de notification on utilise un ensemble pour
-    // conserver la liste des threads déjà créés.
-    // NOTE: On ne peut pas utiliser cette méthode avec la version TBB historique
-    // (2018) car cette méthode 'contains' n'existe pas
+    // With OneTBB, this method is called every time we enter
+    // our 'task_arena'. Since the notification method should only be called once,
+    // we use a set to keep track of the threads already created.
+    // NOTE: This method cannot be used with the historical TBB version
+    // (2018) because this 'contains' method does not exist
     if (m_constructed_thread_map.contains(my_thread_id))
       return;
     m_constructed_thread_map.insert(my_thread_id);
@@ -590,11 +591,10 @@ class TBBTaskImplementation::Impl
 
   void notifyThreadDestroyed([[maybe_unused]] bool is_worker)
   {
-    // Avec OneTBB, cette méthode est appelée à chaque fois qu'on sort
-    // de l'arène principale. Du coup elle ne correspond pas vraiment à une
-    // destruction de thread. On ne fait donc rien pour cette notification
-    // TODO: Regarder comment on peut être notifié de la destruction effective
-    // du thread.
+    // With OneTBB, this method is called every time we exit
+    // the main arena. Therefore, it does not truly correspond to a
+    // thread destruction. So we do nothing for this notification.
+    // TODO: Look into how we can be notified of the actual thread destruction.
   }
 
  private:
@@ -608,7 +608,7 @@ class TBBTaskImplementation::Impl
  public:
 
   tbb::task_arena m_main_arena;
-  //! Tableau dont le i-ème élément contient la tbb::task_arena pour \a i thread.
+  //! Array whose i-th element contains the tbb::task_arena for \a i thread.
   std::vector<tbb::task_arena*> m_sub_arena_list;
 
  private:
@@ -630,8 +630,8 @@ class TBBTaskImplementation::Impl
     m_thread_task_infos.resize(m_nb_allowed_thread);
     m_task_observer.observe(true);
     Integer max_arena_size = m_nb_allowed_thread;
-    // Limite artificiellement le nombre de tbb::task_arena
-    // pour éviter d'avoir trop d'objets alloués.
+    // Artificially limit the number of tbb::task_arena
+    // to avoid having too many allocated objects.
     if (max_arena_size > 512)
       max_arena_size = 512;
     if (max_arena_size < 2)
@@ -645,8 +645,9 @@ class TBBTaskImplementation::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exécuteur pour une boucle 1D.
+ * \brief Executor for a 1D loop.
  */
 class TBBParallelFor
 {
@@ -694,8 +695,9 @@ class TBBParallelFor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exécuteur pour une boucle multi-dimension.
+ * \brief Executor for a multi-dimensional loop.
  */
 template <int RankValue>
 class TBBMDParallelFor
@@ -749,22 +751,24 @@ class TBBMDParallelFor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation déterministe de ParallelFor.
+ * \brief Deterministic implementation of ParallelFor.
  *
- * L'implémentation est déterministe dans le sens où elle ne dépend que
- * de l'intervalle d'itération (m_begin_index et m_size),
- * du nombre de threads spécifié (\a m_nb_thread) et de la taille du grain (\a m_grain_size).
+ * The implementation is deterministic in the sense that it only depends on
+ * the iteration interval (m_begin_index and m_size),
+ * the specified number of threads (\a m_nb_thread), and the grain size
+ * (\a m_grain_size).
  *
- * L'algorithme utilisé se rapproche de celui utilisé par OpenMP pour un
- * parallel for avec l'option statique: on découpe l'intervalle d'itération
- * en plusieurs blocs et chaque bloc est assigné à une tâche en fonction
- * d'un algorithme round-robin.
- * Pour déterminer le nombre de blocs, deux cas sont possibles:
- * - si \a m_grain_size n'est pas spécifié, on découpe l'intervalle
- * d'itération en un nombre de blocs équivalent au nombre de threads utilisés.
- * - si \a m_grain_size est spécifié, le nombre de blocs sera égal
- * à \a m_size divisé par \a m_grain_size.
+ * The algorithm used is similar to the one used by OpenMP for a
+ * parallel for with the static option: the iteration interval
+ * is divided into several blocks and each block is assigned to a task based
+ * on a round-robin algorithm.
+ * To determine the number of blocks, two cases are possible:
+ * - if \a m_grain_size is not specified, the iteration interval
+ * is divided into a number of blocks equal to the number of threads used.
+ * - if \a m_grain_size is specified, the number of blocks will be equal
+ * to \a m_size divided by \a m_grain_size.
  */
 class TBBDeterministicParallelFor
 {
@@ -817,10 +821,10 @@ class TBBDeterministicParallelFor
  public:
 
   /*!
-   * \brief Opérateur pour un thread donné.
+   * \brief Operator for a given thread.
    *
-   * En règle générale, range.size() vaudra un, car un thread ne traitera qu'une itération,
-   * mais ce n'est a priori pas garanti par les TBB.
+   * Generally, range.size() will be one, because a thread will only
+   * process one iteration, but this is not guaranteed by TBB.
    */
   void operator()(tbb::blocked_range<Integer>& range) const
   {
@@ -842,7 +846,7 @@ class TBBDeterministicParallelFor
     Integer iter_begin = block_id * m_block_size;
     Integer iter_size = m_block_size;
     if ((block_id + 1) == m_nb_block) {
-      // Pour le dernier bloc, la taille est le nombre d'éléments restants
+      // For the last block, the size is the number of remaining elements
       iter_size = m_size - iter_begin;
     }
     iter_begin += m_begin_index;
@@ -950,16 +954,15 @@ class TBBTaskImplementation::MDParallelForExecute
   , m_options(options)
   , m_stat_info(stat_info)
   {
-    // On ne peut pas modifier les valeurs d'une instance de tbb::blocked_rangeNd.
-    // Il faut donc en reconstruire une complètement.
+    // We cannot modify the values of a tbb::blocked_rangeNd instance.
+    // We must therefore reconstruct it completely.
     FixedArray<size_t, RankValue> all_grain_sizes;
     Int32 gsize = m_options.grainSize();
     if (gsize > 0) {
-      // Si la taille du grain est différent zéro, il faut la répartir
-      // sur l'ensemble des dimensions. On commence par la dernière.
-      // TODO: regarder pourquoi dans certains cas les performances sont
-      // inférieures à celles qu'on obtient en utilisant un partitionneur
-      // statique.
+      // If the grain size is not zero, it must be distributed
+      // across all dimensions. We start with the last one.
+      // TODO: check why performance is sometimes
+      // lower than what we get using a static partitioner.
       constexpr bool is_verbose = false;
       std::array<Int32, RankValue> range_extents = range.extents().asStdArray();
       double ratio = static_cast<double>(gsize) / static_cast<double>(range.nbElement());
@@ -1006,7 +1009,7 @@ class TBBTaskImplementation::MDParallelForExecute
       tbb::parallel_for(m_tbb_range, pf, tbb::static_partitioner());
     }
     else if (m_options.partitioner() == ParallelLoopOptions::Partitioner::Deterministic) {
-      // TODO: implémenter le mode déterministe
+      // TODO: implement deterministic mode
       ARCCORE_THROW(NotImplementedException, "ParallelLoopOptions::Partitioner::Deterministic for multi-dimensionnal loops");
       //tbb::blocked_range<Integer> range2(0,nb_thread,1);
       //TBBDeterministicParallelFor dpf(m_impl,pf,m_begin,m_size,gsize,nb_thread);
@@ -1101,13 +1104,13 @@ _executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
               << " grain_size=" << options.grainSize()
               << " nb_allowed=" << nb_allowed_thread << '\n';
 
-  // En exécution séquentielle, appelle directement la méthode \a f.
+  // In sequential execution, call the method \a f directly.
   if (max_thread == 1 || max_thread == 0) {
     f->executeFunctor(begin, size);
     return;
   }
 
-  // Remplace les valeurs non initialisées de \a options par celles de \a m_default_loop_options
+  // Replace the uninitialized values of \a options with those of \a m_default_loop_options
   ParallelLoopOptions true_options(options);
   true_options.mergeUnsetValues(TaskFactory::defaultParallelLoopOptions());
   true_options.setMaxThread(max_thread);
@@ -1133,11 +1136,12 @@ executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Exécution d'une boucle N-dimensions.
+ * \brief Execution of an N-dimensional loop.
  *
- * \warning L'implémentation actuelle ne tient pas compte de \a options
- * pour les boucles autres que une dimension.
+ * \warning The current implementation does not take into account \a options
+ * for loops other than one dimension.
  */
 template <int RankValue> void TBBTaskImplementation::
 _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
@@ -1162,13 +1166,13 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   }
 
   Integer max_thread = options.maxThread();
-  // En exécution séquentielle, appelle directement la méthode \a f.
+  // In sequential execution, call the method \a f directly.
   if (max_thread == 1 || max_thread == 0) {
     functor->executeFunctor(loop_ranges);
     return;
   }
 
-  // Remplace les valeurs non initialisées de \a options par celles de \a m_default_loop_options
+  // Replace the uninitialized values of \a options with those of \a m_default_loop_options
   ParallelLoopOptions true_options(options);
   true_options.mergeUnsetValues(TaskFactory::defaultParallelLoopOptions());
 
@@ -1181,7 +1185,7 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   if (!used_arena)
     used_arena = &(m_p->m_main_arena);
 
-  // Pour l'instant pour la dimension 1, utilise le 'ParallelForExecute' historique
+  // For now for dimension 1, use the historical 'ParallelForExecute'
   if constexpr (RankValue == 1) {
     auto range_1d = _toTBBRange(loop_ranges);
     auto x1 = [&](Integer begin, Integer size) {
@@ -1240,8 +1244,8 @@ Int32 TBBTaskImplementation::
 currentTaskIndex() const
 {
   Int32 thread_id = currentTaskThreadIndex();
-  // Ce test avait été ajouté pour coutourner un bug dans une des versions
-  // de OneTBB. Il est surement inutile aujourd'hui (2025)
+  // This test was added to bypass a bug in one of the versions
+  // of OneTBB. It is probably useless today (2025)
   if (thread_id < 0 || thread_id >= m_p->nbAllowedThread())
     return 0;
   TBBTaskImplementation::TaskThreadInfo* tti = currentTaskThreadInfo();

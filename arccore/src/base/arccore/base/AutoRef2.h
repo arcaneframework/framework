@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AutoRef2.h                                                  (C) 2000-2026 */
 /*                                                                           */
-/* Encapsulation d'un pointeur avec compteur de référence.                   */
+/* Encapsulation of a pointer with a reference counter.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_AUTOREF2_H
 #define ARCCORE_BASE_AUTOREF2_H
@@ -24,16 +24,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Encapsulation d'un pointeur avec compteur de référence.
+ * \brief Encapsulation of a pointer with a reference counter.
  *
- * Cette classe renferme un pointeur d'un type qui implémente les méthodes
- * de la classe abstraite ISharedReference (le paramètre template n'a pas
- * besoin de dériver de cette classe) et incrémente (addRef()) ou décrémente
- * (removeRef()) le compteur de référence de l'élément pointé lors des
- * affectations succéssives. Cette classe n'effectue aucune action basée
- * sur la valeur de compteur de référence; la destruction éventuelle de l'objet
- * lorsque le compteur de référence arrive à zéro est gérée par l'objet lui même.
+ * This class encapsulates a pointer of a type that implements the methods
+ * of the abstract class ISharedReference (the template parameter does not
+ * need to derive from this class) and increments (addRef()) or decrements
+ * (removeRef()) the reference counter of the pointed element during
+ * successive assignments. This class performs no action based
+ * on the reference counter value; the eventual destruction of the object
+ * when the reference counter reaches zero is handled by the object itself.
  */
 template <class T>
 class AutoRef2
@@ -44,32 +45,32 @@ class AutoRef2
 
  public:
 
-  //! Construit une instance sans référence
+  //! Constructs an instance without a reference
   AutoRef2() = default;
-  //! Construit une instance référant \a t
+  //! Constructs an instance referencing \a t
   explicit AutoRef2(T* t)
   {
     _changeValue(t);
   }
-  //! Construit une référence référant \a from
+  //! Constructs a reference referencing \a from
   AutoRef2(const ThatClass& from)
   {
     _changeValue(from.m_value);
   }
-  //! Construit une référence référant \a from
+  //! Constructs a reference referencing \a from
   AutoRef2(ThatClass&& from) noexcept
   : m_value(from.m_value)
   {
     from.m_value = nullptr;
   }
 
-  //! Opérateur de copie
+  //! Copy operator
   ThatClass& operator=(const ThatClass& from)
   {
     _changeValue(from.m_value);
     return (*this);
   }
-  //! Opérateur de déplacement
+  //! Move operator
   ThatClass& operator=(ThatClass&& from) noexcept
   {
     _removeRef();
@@ -78,31 +79,31 @@ class AutoRef2
     return (*this);
   }
 
-  //! Affecte à l'instance la value \a new_value
+  //! Assigns the value \a new_value to the instance
   ThatClass& operator=(T* new_value)
   {
     _changeValue(new_value);
     return (*this);
   }
 
-  //! Destructeur. Décrément le compteur de référence de l'objet pointé
+  //! Destructor. Decrements the reference counter of the pointed object
   ~AutoRef2() { _removeRef(); }
 
-  //! Retourne l'objet référé par l'instance
+  //! Returns the object referenced by the instance
   T* operator->() const
   {
     ARCCORE_CHECK_PTR(m_value);
     return m_value;
   }
 
-  //! Retourne l'objet référé par l'instance
+  //! Returns the object referenced by the instance
   inline T& operator*() const
   {
     ARCCORE_CHECK_PTR(m_value);
     return *m_value;
   }
 
-  //! Retourne l'objet référé par l'instance
+  //! Returns the object referenced by the instance
   T* get() const { return m_value; }
 
   bool isNull() const { return !m_value; }
@@ -119,19 +120,19 @@ class AutoRef2
 
  private:
 
-  //! Ajoute une référence à l'objet encapsulé si non nul
+  //! Adds a reference to the encapsulated object if not null
   void _addRef()
   {
     if (m_value)
       m_value->addRef();
   }
-  //! Supprimer une référence à l'objet encapsulé si non nul
+  //! Removes a reference to the encapsulated object if not null
   void _removeRef() noexcept
   {
     if (m_value)
       m_value->removeRef();
   }
-  //! Change l'objet référencé en \a new_value
+  //! Changes the referenced object to \a new_value
   void _changeValue(T* new_value)
   {
     if (m_value == new_value)
@@ -143,7 +144,7 @@ class AutoRef2
 
  private:
 
-  T* m_value = nullptr; //!< Pointeur sur l'objet référencé
+  T* m_value = nullptr; //!< Pointer to the referenced object
 };
 
 /*---------------------------------------------------------------------------*/

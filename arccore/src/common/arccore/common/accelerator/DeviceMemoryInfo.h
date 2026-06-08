@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DeviceInfo.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Information sur la mémoire d'un accélérateur.                             */
+/* Information about an accelerator's memory.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_DEVICEMEMORYINFO_H
 #define ARCCORE_COMMON_ACCELERATOR_DEVICEMEMORYINFO_H
@@ -24,17 +24,18 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Information mémoire d'un accélérateur.
+ * \brief Accelerator memory information.
  */
 class ARCCORE_COMMON_EXPORT DeviceMemoryInfo
 {
  public:
 
-  //! Quantité de mémoire libre (en octet)
+  //! Amount of free memory (in bytes)
   Int64 freeMemory() const { return m_free_memory; }
 
-  //! Quantité de mémoire totale (en octet)
+  //! Total amount of memory (in bytes)
   Int64 totalMemory() const { return m_total_memory; }
 
  public:

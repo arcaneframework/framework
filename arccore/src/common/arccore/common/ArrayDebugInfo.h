@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayDebugInfo.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Informations de debug pour les classes tableaux.                          */
+/* Debug information for array classes.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ARRAYDEBUGINFO_H
 #define ARCCORE_COMMON_ARRAYDEBUGINFO_H
@@ -28,11 +28,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de debug pour les classes tableaux.
+ * \brief Debug information for array classes.
  *
- * Cette classe utilise un compteur de référence. Toutes les instances
- * doivent donc être allouée dynamiquement.
+ * This class uses a reference counter. All instances
+ * must therefore be allocated dynamically.
  */
 class ARCCORE_COMMON_EXPORT ArrayDebugInfo
 {

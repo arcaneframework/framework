@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Span.h                                                      (C) 2000-2025 */
 /*                                                                           */
-/* Vues sur des tableaux C.                                                  */
+/* Views on C arrays.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_SPAN_H
 #define ARCCORE_BASE_SPAN_H
@@ -28,8 +28,8 @@ namespace Arcane::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour indiquer que Span<T>::view() retourne un ArrayView
-// et Span<const T>::view() retourne un ConstArrayView.
+// To indicate that Span<T>::view() returns an ArrayView
+// and Span<const T>::view() returns a ConstArrayView.
 template <typename T>
 class ViewTypeT
 {
@@ -45,7 +45,7 @@ class ViewTypeT<const T>
   using view_type = ConstArrayView<T>;
 };
 
-//! Pour avoir le type (SmallSpan ou Span) en fonction de la taille (Int32 ou Int64)
+//! To have the type (SmallSpan or Span) depending on the size (Int32 or Int64)
 template <typename T, typename SizeType>
 class SpanTypeFromSize;
 
@@ -67,11 +67,12 @@ class SpanTypeFromSize<T, Int64>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour conserver la taille d'un SpanImpl.
+ * \brief Class to store the size of a SpanImpl.
  *
- * Si Extent != DynExtent, alors il n'est pas nécessaire d'avoir
- * de conserver le nombre d'éléments dans un champ de l'instance.
+ * If Extent != DynExtent, it is not necessary to keep
+ * track of the number of elements in a field of the instance.
  */
 template <typename SizeType>
 class DynamicExtentStorage
@@ -101,7 +102,7 @@ class ARCCORE_BASE_EXPORT ExtentStorageBase
   static void _throwBadSize [[noreturn]] (Int64 wanted_size, Int64 expected_size);
 };
 
-//! Spécialisation pour le nombre d'éléments connu à la compilation
+//! Specialization for the compile-time known number of elements
 template <typename SizeType, SizeType FixedExtent>
 class ExtentStorage
 {
@@ -128,7 +129,7 @@ class ExtentStorage
   static constexpr SizeType m_size = FixedExtent;
 };
 
-//! Spécialisation pour le nombre d'éléments dynamique
+//! Specialization for the dynamic number of elements
 template <>
 class ExtentStorage<Int32, DynExtent>
 : public DynamicExtentStorage<Int32>
@@ -142,7 +143,7 @@ class ExtentStorage<Int32, DynExtent>
   {}
 };
 
-//! Spécialisation pour le nombre d'éléments dynamique
+//! Specialization for the dynamic number of elements
 template <>
 class ExtentStorage<Int64, DynExtent>
 : public DynamicExtentStorage<Int64>
@@ -169,21 +170,21 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Vue d'un tableau d'éléments de type \a T.
+ * \brief View of an array of elements of type \a T.
  *
- * Cette classe ne doit pas être utilisée directement. Il faut utiliser
- * Span ou SmallSpan à la place.
+ * This class should not be used directly. Span or SmallSpan must be used instead.
  *
- * La vue est non modifiable si l'argument template est de type 'const T'.
- * Cette classe permet d'accéder et d'utiliser un tableau d'éléments du
- * type \a T de la même manière qu'un tableau C standard. \a SizeType est le
- * type utilisé pour conserver le nombre d'éléments du tableau. Cela peut
- * être 'Int32' ou 'Int64'.
+ * The view is non-modifiable if the template argument is of type 'const T'.
+ * This class allows accessing and using an array of elements of type \a T
+ * in the same way as a standard C array. \a SizeType is the
+ * type used to store the number of elements in the array. This can
+ * be 'Int32' or 'Int64'.
  *
- * Si \a Extent est différent de DynExtent (le défaut), la taille est
- * variable, sinon elle est fixe et a pour valeur \a Extent.
+ * If \a Extent is different from DynExtent (the default), the size is
+ * variable; otherwise, it is fixed and has the value \a Extent.
  */
 template <typename T, typename SizeType, SizeType Extent>
 class SpanImpl
@@ -211,7 +212,7 @@ class SpanImpl
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  //! Indique si on peut convertir un 'X' ou 'const X' en un 'T'
+  //! Indicates if 'X' or 'const X' can be converted to 'T'
   template <typename X>
   using is_same_const_type = std::enable_if_t<std::is_same_v<X, T> || std::is_same_v<std::add_const_t<X>, T>>;
 
@@ -219,14 +220,14 @@ class SpanImpl
 
  public:
 
-  //! Construit une vue vide.
+  //! Constructs an empty view.
   constexpr ARCCORE_HOST_DEVICE SpanImpl() noexcept
   : m_ptr(nullptr)
   , m_size(0)
   {}
 
-  //! Constructeur de recopie depuis une autre vue
-  // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
+  //! Copy constructor from another view
+  // For a Span<const T>, it is allowed to construct from a Span<T>
   template <typename X, SizeType XExtent, typename = std::enable_if_t<std::is_same_v<const X, T>>>
   constexpr ARCCORE_HOST_DEVICE SpanImpl(const SpanImpl<X, SizeType, XExtent>& from) noexcept
   : m_ptr(from.data())
@@ -239,25 +240,26 @@ class SpanImpl
   , m_size(from.size())
   {}
 
-  //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
+  //! Constructs a view on a memory region starting at \a ptr and
+  //! containing \a asize elements.
   constexpr ARCCORE_HOST_DEVICE SpanImpl(pointer ptr, SizeType asize) noexcept
   : m_ptr(ptr)
   , m_size(asize)
   {}
 
-  //! Construit une vue depuis un std::array
+  //! Constructs a view from a std::array
   template <std::size_t N, typename X, typename = is_same_const_type<X>>
   constexpr ARCCORE_HOST_DEVICE SpanImpl(std::array<X, N>& from)
   : m_ptr(from.data())
   , m_size(ArraySizeChecker<SizeType>::check(from.size()))
   {}
 
-  //! Construit une vue depuis un pointeur avec une taille fixe
+  //! Constructs a view from a pointer with a fixed size
   explicit constexpr ARCCORE_HOST_DEVICE SpanImpl(T* ptr) requires(!IsDynamic)
   : m_ptr(ptr)
   {}
 
-  //! Opérateur de recopie
+  //! Copy assignment operator
   template <std::size_t N, typename X, typename = is_same_const_type<X>>
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X, N>& from)
   {
@@ -268,8 +270,8 @@ class SpanImpl
 
  public:
 
-  //! Construit une vue sur une zone mémoire commencant par \a ptr et
-  // contenant \a asize éléments.
+  //! Constructs a view on a memory region starting at \a ptr and
+  // containing \a asize elements.
   static constexpr ThatClass create(pointer ptr, SizeType asize) noexcept
   {
     return ThatClass(ptr, asize);
@@ -278,9 +280,9 @@ class SpanImpl
  public:
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-th element of the array.
    *
-   * En mode \a check, vérifie les débordements.
+   * In \a check mode, bounds checking is performed.
    */
   constexpr ARCCORE_HOST_DEVICE reference operator[](SizeType i) const
   {
@@ -289,9 +291,9 @@ class SpanImpl
   }
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-th element of the array.
    *
-   * En mode \a check, vérifie les débordements.
+   * In \a check mode, bounds checking is performed.
    */
   constexpr ARCCORE_HOST_DEVICE reference operator()(SizeType i) const
   {
@@ -300,9 +302,9 @@ class SpanImpl
   }
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-th element of the array.
    *
-   * En mode \a check, vérifie les débordements.
+   * In \a check mode, bounds checking is performed.
    */
   constexpr ARCCORE_HOST_DEVICE reference item(SizeType i) const
   {
@@ -311,9 +313,9 @@ class SpanImpl
   }
 
   /*!
-   * \brief Positionne le i-ème élément du tableau.
+   * \brief Sets the i-th element of the array.
    *
-   * En mode \a check, vérifie les débordements.
+   * In \a check mode, bounds checking is performed.
    */
   constexpr ARCCORE_HOST_DEVICE void setItem(SizeType i, const_reference v) noexcept
   {
@@ -321,33 +323,33 @@ class SpanImpl
     m_ptr[i] = v;
   }
 
-  //! Retourne la taille du tableau
+  //! Returns the size of the array
   constexpr ARCCORE_HOST_DEVICE SizeType size() const noexcept { return m_size.m_size; }
-  //! Retourne la taille du tableau en octets
+  //! Returns the size of the array in bytes
   constexpr ARCCORE_HOST_DEVICE SizeType sizeBytes() const noexcept
   {
-    // TODO: retourner toujours un Int64
+    // TODO: always return an Int64
     return static_cast<SizeType>(m_size.m_size * sizeof(value_type));
   }
-  //! Nombre d'éléments du tableau
+  //! Number of elements in the array
   constexpr ARCCORE_HOST_DEVICE SizeType length() const noexcept { return m_size.m_size; }
 
   /*!
-   * \brief Itérateur sur le premier élément du tableau.
+   * \brief Iterator for the first element of the array.
    */
   constexpr ARCCORE_HOST_DEVICE iterator begin() const noexcept { return iterator(m_ptr); }
   /*!
-   * \brief Itérateur sur le premier élément après la fin du tableau.
+   * \brief Iterator for the element after the end of the array.
    */
   constexpr ARCCORE_HOST_DEVICE iterator end() const noexcept { return iterator(m_ptr + m_size.m_size); }
-  //! Itérateur inverse sur le premier élément du tableau.
+  //! Reverse iterator for the first element of the array.
   constexpr ARCCORE_HOST_DEVICE reverse_iterator rbegin() const noexcept { return std::make_reverse_iterator(end()); }
-  //! Itérateur inverse sur le premier élément après la fin du tableau.
+  //! Reverse iterator for the element after the end of the array.
   constexpr ARCCORE_HOST_DEVICE reverse_iterator rend() const noexcept { return std::make_reverse_iterator(begin()); }
 
  public:
 
-  //! Intervalle d'itération du premier au dernièr élément.
+  //! Iteration range from the first to the last element.
   ARCCORE_DEPRECATED_REASON("Y2023: Use begin()/end() instead")
   ArrayRange<pointer> range() const
   {
@@ -356,28 +358,28 @@ class SpanImpl
 
  public:
 
-  //! Adresse du index-ème élément
+  //! Address of the index-th element
   constexpr ARCCORE_HOST_DEVICE pointer ptrAt(SizeType index) const
   {
     ARCCORE_CHECK_AT(index, m_size.m_size);
     return m_ptr + index;
   }
 
-  // Elément d'indice \a i. Vérifie toujours les débordements
+  // Element at index \a i. Always checks for bounds.
   constexpr ARCCORE_HOST_DEVICE reference at(SizeType i) const
   {
     arccoreCheckAt(i, m_size.m_size);
     return m_ptr[i];
   }
 
-  // Positionne l'élément d'indice \a i. Vérifie toujours les débordements
+  // Sets the element at index \a i. Always checks for bounds.
   constexpr ARCCORE_HOST_DEVICE void setAt(SizeType i, const_reference value)
   {
     arccoreCheckAt(i, m_size.m_size);
     m_ptr[i] = value;
   }
 
-  //! Remplit le tableau avec la valeur \a o
+  //! Fills the array with the value \a o
   ARCCORE_HOST_DEVICE inline void fill(T o)
   {
     for (SizeType i = 0, n = m_size.m_size; i < n; ++i)
@@ -385,7 +387,7 @@ class SpanImpl
   }
 
   /*!
-   * \brief Vue constante sur cette vue.
+   * \brief Constant view of this view.
    */
   constexpr view_type smallView()
   {
@@ -394,7 +396,7 @@ class SpanImpl
   }
 
   /*!
-   * \brief Vue constante sur cette vue.
+   * \brief Constant view of this view.
    */
   constexpr ConstArrayView<value_type> constSmallView() const
   {
@@ -403,11 +405,11 @@ class SpanImpl
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin
+   * and containing \a asize elements.
    *
-   * Si `(abegin+asize` est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * If `(abegin+asize` is greater than the size of the array,
+   * the view is truncated to this size, potentially returning an empty view.
    */
   constexpr ARCCORE_HOST_DEVICE SubSpanType subSpan(SizeType abegin, SizeType asize) const
   {
@@ -418,7 +420,7 @@ class SpanImpl
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin and containing \a asize elements.
    * \sa subSpan()
    */
   constexpr ARCCORE_HOST_DEVICE SubSpanType subPart(SizeType abegin, SizeType asize) const
@@ -427,11 +429,11 @@ class SpanImpl
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin
+   * and containing \a asize elements.
    *
-   * Si `(abegin+asize)` est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * If `(abegin+asize)` is greater than the size of the array,
+   * the view is truncated to this size, potentially returning an empty view.
    */
   ARCCORE_DEPRECATED_REASON("Y2023: use subSpan() instead")
   constexpr SubSpanType subView(SizeType abegin, SizeType asize) const
@@ -439,38 +441,38 @@ class SpanImpl
     return subSpan(abegin, asize);
   }
 
-  //! Pour compatibilité avec le C++20
+  //! For C++20 compatibility
   constexpr ARCCORE_HOST_DEVICE SubSpanType subspan(SizeType abegin, SizeType asize) const
   {
     return subSpan(abegin, asize);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sub-view corresponding to the interval \a index over \a nb_interval
   ARCCORE_DEPRECATED_REASON("Y2023: use subSpanInterval() instead")
   constexpr SubSpanType subViewInterval(SizeType index, SizeType nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr SubSpanType subSpanInterval(SizeType index, SizeType nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr SubSpanType subPartInterval(SizeType index, SizeType nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   /*!
-   * \brief Recopie le tableau \a copy_array dans l'instance.
+   * \brief Copies the array \a copy_array into the instance.
    *
-   * Comme aucune allocation mémoire n'est effectuée, le
-   * nombre d'éléments de \a copy_array doit être inférieur ou égal au
-   * nombre d'éléments courant. S'il est inférieur, les éléments du
-   * tableau courant situés à la fin du tableau sont inchangés
+   * Since no memory allocation is performed, the
+   * number of elements in \a copy_array must be less than or equal to the
+   * current number of elements. If it is smaller, the elements of the
+   * current array located at the end of the array remain unchanged.
    */
   template <class U> ARCCORE_HOST_DEVICE void copy(const U& copy_array)
   {
@@ -479,16 +481,16 @@ class SpanImpl
     arccoreCheckAt(n, size_as_int64 + 1);
     const_pointer copy_begin = copy_array.data();
     pointer to_ptr = m_ptr;
-    // On est sur que \a n tient sur un 'SizeType' car il est plus petit
-    // que \a m_size
+    // We are sure that \a fits into a 'SizeType' because it is smaller
+    // than \a m_size
     SizeType n_as_sizetype = static_cast<SizeType>(n);
     for (SizeType i = 0; i < n_as_sizetype; ++i)
       to_ptr[i] = copy_begin[i];
   }
 
-  //! Retourne \a true si le tableau est vide (dimension nulle)
+  //! Returns \a true if the array is empty (zero dimension)
   constexpr ARCCORE_HOST_DEVICE bool empty() const noexcept { return m_size.m_size == 0; }
-  //! \a true si le tableau contient l'élément de valeur \a v
+  //! Returns \a true if the array contains the element with value \a v
   ARCCORE_HOST_DEVICE bool contains(const_reference v) const
   {
     for (SizeType i = 0; i < m_size.m_size; ++i) {
@@ -499,10 +501,10 @@ class SpanImpl
   }
 
   /*!
-   * /brief Position du premier élément de valeur \a v
+   * /brief Position of the first element with value \a v
    *
-   * /param v La valeur à trouver.
-   * /return La position du premier élément de valeur \a v si présent, std::nullopt sinon.
+   * /param v The value to find.
+   * /return The position of the first element with value \a v if present, std::nullopt otherwise.
    */
   std::optional<SizeType> findFirst(const_reference v) const
   {
@@ -527,37 +529,37 @@ class SpanImpl
   }
 
   /*!
-   * \brief Pointeur sur le début de la vue.
+   * \brief Pointer to the start of the view.
    *
-   * \warning Les accès via le pointeur retourné ne pourront pas être
-   * pas vérifiés par Arcane à la différence des accès via
-   * operator[](): aucune vérification de dépassement n'est possible,
-   * même en mode vérification.
+   * \warning Accesses via the returned pointer cannot be
+   * checked by Arcane, unlike accesses via
+   * operator[](): no overflow checking is possible,
+   * even in check mode.
    */
   constexpr ARCCORE_HOST_DEVICE pointer data() const noexcept { return m_ptr; }
 
-  //! Opérateur d'égalité (valide si T est const mais pas X)
+  //! Equality operator (valid if T is const but not X)
   template <typename X, SizeType Extent2, typename = std::enable_if_t<std::is_same_v<X, value_type>>> friend bool
   operator==(const SpanImpl<T, SizeType, Extent>& rhs, const SpanImpl<X, SizeType, Extent2>& lhs)
   {
     return impl::areEqual(SpanImpl<T, SizeType>(rhs), SpanImpl<T, SizeType>(lhs));
   }
 
-  //! Opérateur d'inégalité (valide si T est const mais pas X)
+  //! Inequality operator (valid if T is const but not X)
   template <typename X, SizeType Extent2, typename = std::enable_if_t<std::is_same_v<X, value_type>>> friend bool
   operator!=(const SpanImpl<T, SizeType, Extent>& rhs, const SpanImpl<X, SizeType, Extent2>& lhs)
   {
     return !operator==(rhs, lhs);
   }
 
-  //! Opérateur d'égalité
+  //! Equality operator
   template <SizeType Extent2> friend bool
   operator==(const SpanImpl<T, SizeType, Extent>& rhs, const SpanImpl<T, SizeType, Extent2>& lhs)
   {
     return impl::areEqual(SpanImpl<T, SizeType>(rhs), SpanImpl<T, SizeType>(lhs));
   }
 
-  //! Opérateur d'inégalité
+  //! Inequality operator
   template <SizeType Extent2> friend bool
   operator!=(const SpanImpl<T, SizeType, Extent>& rhs, const SpanImpl<T, SizeType, Extent2>& lhs)
   {
@@ -573,10 +575,10 @@ class SpanImpl
  protected:
 
   /*!
-   * \brief Modifie le pointeur et la taille du tableau.
+   * \brief Modifies the array pointer and size.
    *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
+   * It is up to the derived class to verify the consistency between the allocated pointer
+   * and the given dimension.
    */
   constexpr void _setArray(pointer v, SizeType s) noexcept
   {
@@ -585,25 +587,25 @@ class SpanImpl
   }
 
   /*!
-   * \brief Modifie le pointeur du début du tableau.
+   * \brief Modifies the array start pointer.
    *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
+   * It is up to the derived class to verify the consistency between the allocated pointer
+   * and the given dimension.
    */
   constexpr void _setPtr(pointer v) noexcept { m_ptr = v; }
 
   /*!
-   * \brief Modifie la taille du tableau.
+   * \brief Modifies the array size.
    *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
+   * It is up to the derived class to verify the consistency between the allocated pointer
+   * and the given dimension.
    */
   constexpr void _setSize(SizeType s) noexcept { m_size = ExtentStorageType(s); }
 
  private:
 
-  pointer m_ptr; //!< Pointeur sur le tableau
-  //! Nombre d'éléments du tableau
+  pointer m_ptr; //!< Pointer to the array
+  //! Number of elements in the array
   ARCCORE_NO_UNIQUE_ADDRESS ExtentStorageType m_size;
 
  private:
@@ -616,16 +618,16 @@ class SpanImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Vue d'un tableau d'éléments de type \a T.
+ * \brief View of an array of elements of type \a T.
  *
- * La vue est non modifiable si l'argument template est de type 'const T'.
- Cette classe permet d'accéder et d'utiliser un tableau d'éléments du
- type \a T de la même manière qu'un tableau C standard. Elle est similaire à
- ArrayView à ceci près que le nombre d'éléments est stocké sur un 'Int64' et
- peut donc dépasser 2Go. Elle est concue pour être similaire à la classe
- std::span du C++20.
+ * The view is non-modifiable if the template argument is of type 'const T'.
+ Cette class allows accessing and using an array of elements of type \a T in
+ the same way as a standard C array. It is similar to ArrayView, except that
+ the number of elements is stored as an 'Int64' and can therefore exceed 2GB.
+ It is designed to be similar to the C++20 std::span class.
 */
 template <typename T, Int64 Extent>
 class Span
@@ -644,24 +646,24 @@ class Span
 
  public:
 
-  //! Construit une vue vide.
+  //! Constructs an empty view.
   Span() = default;
-  //! Constructeur de recopie depuis une autre vue
+  //! Copy constructor from another view
   constexpr ARCCORE_HOST_DEVICE Span(const ArrayView<value_type>& from) noexcept
   : BaseClass(from.m_ptr, from.m_size)
   {}
-  // Constructeur à partir d'un ConstArrayView. Cela n'est autorisé que
-  // si T est const.
+  // Constructor from a ConstArrayView. This is only allowed
+  // if T is const.
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, value_type>>>
   constexpr ARCCORE_HOST_DEVICE Span(const ConstArrayView<X>& from) noexcept
   : BaseClass(from.m_ptr, from.m_size)
   {}
-  // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
+  // For a Span<const T>, we are allowed to construct from a Span<T>
   template <typename X, Int64 XExtent, typename = std::enable_if_t<std::is_same_v<const X, T>>>
   constexpr ARCCORE_HOST_DEVICE Span(const Span<X, XExtent>& from) noexcept
   : BaseClass(from)
   {}
-  // Pour un Span<const T>, on a le droit de construire depuis un SmallSpan<T>
+  // For a Span<const T>, we are allowed to construct from a SmallSpan<T>
   template <typename X, Int32 XExtent, typename = std::enable_if_t<std::is_same_v<const X, T>>>
   constexpr ARCCORE_HOST_DEVICE Span(const SmallSpan<X, XExtent>& from) noexcept
   : BaseClass(from.data(), from.size())
@@ -675,23 +677,24 @@ class Span
   : BaseClass(from.data(), from.size())
   {}
 
-  //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
+  //! Constructs a view on a memory area starting at \a ptr and containing
+  //! \a asize elements.
   constexpr ARCCORE_HOST_DEVICE Span(pointer ptr, Int64 asize) noexcept
   : BaseClass(ptr, asize)
   {}
 
-  //! Construit une vue à partir d'un std::array.
+  //! Constructs a view from a std::array.
   template <std::size_t N, typename X, typename = is_same_const_type<X>>
   constexpr ARCCORE_HOST_DEVICE Span(std::array<X, N>& from) noexcept
   : BaseClass(from.data(), from.size())
   {}
 
-  //! Construit une vue depuis un pointeur avec une taille fixe
+  //! Constructs a view from a pointer with a fixed size
   explicit constexpr ARCCORE_HOST_DEVICE Span(T* ptr) requires(!IsDynamic)
   : BaseClass(ptr)
   {}
 
-  //! Opérateur de recopie
+  //! Copy assignment operator
   template <std::size_t N, typename X, typename = is_same_const_type<X>>
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X, N>& from) noexcept
   {
@@ -702,8 +705,8 @@ class Span
 
  public:
 
-  //! Construit une vue sur une zone mémoire commencant par \a ptr et
-  // contenant \a asize éléments.
+  //! Constructs a view on a memory area starting at \a ptr and
+  // containing \a asize elements.
   static constexpr ThatClass create(pointer ptr, size_type asize) noexcept
   {
     return ThatClass(ptr, asize);
@@ -712,11 +715,11 @@ class Span
  public:
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin
+   * and containing \a asize elements.
    *
-   * Si `(abegin+asize` est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * If `(abegin+asize` is greater than the size of the array,
+   * the view is truncated to this size, potentially returning an empty view.
    */
   constexpr ARCCORE_HOST_DEVICE Span<T, DynExtent> subspan(Int64 abegin, Int64 asize) const
   {
@@ -724,11 +727,11 @@ class Span
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin
+   * and containing \a asize elements.
    *
-   * Si `(abegin+asize)` est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * If `(abegin+asize)` is greater than the size of the array,
+   * the view is truncated to this size, potentially returning an empty view.
    */
   constexpr ARCCORE_HOST_DEVICE Span<T, DynExtent> subSpan(Int64 abegin, Int64 asize) const
   {
@@ -736,35 +739,35 @@ class Span
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin
+   * and containing \a asize elements.
    *
-   * Si `(abegin+asize)` est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * If `(abegin+asize)` is greater than the size of the array,
+   * the view is truncated to this size, potentially returning an empty view.
    */
   constexpr ARCCORE_HOST_DEVICE Span<T, DynExtent> subPart(Int64 abegin, Int64 asize) const
   {
     return BaseClass::subPart(abegin, asize);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ARCCORE_HOST_DEVICE Span<T, DynExtent> subSpanInterval(Int64 index, Int64 nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ARCCORE_HOST_DEVICE Span<T, DynExtent> subPartInterval(Int64 index, Int64 nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin
+   * and containing \a asize elements.
    *
-   * Si `(abegin+asize)` est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * If `(abegin+asize)` is greater than the size of the array,
+   * the view is truncated to this size, potentially returning an empty view.
    */
   ARCCORE_DEPRECATED_REASON("Y2023: use subSpan() instead")
   constexpr ARCCORE_HOST_DEVICE Span<T> subView(Int64 abegin, Int64 asize) const
@@ -772,7 +775,7 @@ class Span
     return subspan(abegin, asize);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sub-view corresponding to the interval \a index over \a nb_interval
   ARCCORE_DEPRECATED_REASON("Y2023: use subSpanInterval() instead")
   constexpr ARCCORE_HOST_DEVICE Span<T> subViewInterval(Int64 index, Int64 nb_interval) const
   {
@@ -782,18 +785,19 @@ class Span
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Vue d'un tableau d'éléments de type \a T.
+ * \brief View of an array of elements of type \a T.
  *
- * La vue est non modifiable si l'argument template est de type 'const T'.
+ * The view is non-modifiable if the template argument is of type 'const T'.
  *
- * Cette classe permet d'accéder et d'utiliser un tableau d'éléments du
- * type \a T de la même manière qu'un tableau C standard. Elle est similaire à
- * Span à ceci près que le nombre d'éléments est stocké sur un 'Int32'.
+ * This class allows accessing and using an array of elements of type \a T
+ * in the same way as a standard C array. It is similar to Span, except
+ * that the number of elements is stored as an 'Int32'.
  *
- * \note Pour être valide, il faut aussi que le nombre d'octets associés à la vue
- * (sizeBytes()) puisse tenir dans un \a Int32.
+ * \note To be valid, the number of bytes associated with the view
+ * (sizeBytes()) must also fit within an \a Int32.
  */
 template <typename T, Int32 Extent>
 class SmallSpan
@@ -812,22 +816,22 @@ class SmallSpan
 
  public:
 
-  //! Construit une vue vide.
+  //! Constructs an empty view.
   SmallSpan() = default;
 
-  //! Constructeur de recopie depuis une autre vue
+  //! Copy constructor from another view
   constexpr ARCCORE_HOST_DEVICE SmallSpan(const ArrayView<value_type>& from) noexcept
   : BaseClass(from.m_ptr, from.m_size)
   {}
 
-  // Constructeur à partir d'un ConstArrayView. Cela n'est autorisé que
-  // si T est const.
+  // Constructor from a ConstArrayView. This is only allowed
+  // if T is const.
   template <typename X, typename = std::enable_if_t<std::is_same<X, value_type>::value>>
   constexpr ARCCORE_HOST_DEVICE SmallSpan(const ConstArrayView<X>& from) noexcept
   : BaseClass(from.m_ptr, from.m_size)
   {}
 
-  // Pour un Span<const T>, on a le droit de construire depuis un Span<T>
+  // For a Span<const T>, we are allowed to construct from a Span<T>
   template <typename X, typename = std::enable_if_t<std::is_same<X, value_type>::value>>
   constexpr ARCCORE_HOST_DEVICE SmallSpan(const SmallSpan<X>& from) noexcept
   : BaseClass(from)
@@ -838,7 +842,8 @@ class SmallSpan
   : BaseClass(from)
   {}
 
-  //! Construit une vue sur une zone mémoire commencant par \a ptr et contenant \a asize éléments.
+  //! Constructs a view over a memory region starting at \a ptr and
+  //! containing \a asize elements.
   constexpr ARCCORE_HOST_DEVICE SmallSpan(pointer ptr, Int32 asize) noexcept
   : BaseClass(ptr, asize)
   {}
@@ -848,12 +853,12 @@ class SmallSpan
   : BaseClass(from)
   {}
 
-  //! Construit une vue depuis un pointeur avec une taille fixe
+  //! Constructs a view from a pointer with a fixed size
   explicit constexpr ARCCORE_HOST_DEVICE SmallSpan(T* ptr) requires(!IsDynamic)
   : BaseClass(ptr)
   {}
 
-  //! Opérateur de recopie
+  //! Copy assignment operator
   template <std::size_t N, typename X, typename = is_same_const_type<X>>
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X, N>& from)
   {
@@ -863,8 +868,8 @@ class SmallSpan
 
  public:
 
-  //! Construit une vue sur une zone mémoire commencant par \a ptr et
-  // contenant \a asize éléments.
+  //! Constructs a view over a memory region starting at \a ptr and
+  // containing \a asize elements.
   static constexpr ThatClass create(pointer ptr, size_type asize) noexcept
   {
     return ThatClass(ptr, asize);
@@ -873,11 +878,11 @@ class SmallSpan
  public:
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin
+   * and containing \a asize elements.
    *
-   * Si `(abegin+asize` est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * If `(abegin+asize` is greater than the array size,
+   * the view is truncated to that size, possibly returning an empty view.
    */
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T, DynExtent> subspan(Int32 abegin, Int32 asize) const
   {
@@ -885,11 +890,11 @@ class SmallSpan
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin
+   * and containing \a asize elements.
    *
-   * Si `(abegin+asize)` est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * If `(abegin+asize)` is greater than the array size,
+   * the view is truncated to that size, possibly returning an empty view.
    */
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T, DynExtent> subSpan(Int32 abegin, Int32 asize) const
   {
@@ -897,35 +902,35 @@ class SmallSpan
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin
+   * and containing \a asize elements.
    *
-   * Si `(abegin+asize)` est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * If `(abegin+asize)` is greater than the array size,
+   * the view is truncated to that size, possibly returning an empty view.
    */
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T, DynExtent> subPart(Int32 abegin, Int32 asize) const
   {
     return BaseClass::subSpan(abegin, asize);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T, DynExtent> subSpanInterval(Int32 index, Int32 nb_interval) const
   {
     return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ARCCORE_HOST_DEVICE ThatClass subPartInterval(Int32 index, Int32 nb_interval) const
   {
     return subSpanInterval(index, nb_interval);
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a abegin
-   * et contenant \a asize éléments.
+   * \brief Sub-view starting from element \a abegin
+   * and containing \a asize elements.
    *
-   * Si `(abegin+asize)` est supérieur à la taille du tableau,
-   * la vue est tronquée à cette taille, retournant éventuellement une vue vide.
+   * If `(abegin+asize)` is greater than the array size,
+   * the view is truncated to that size, possibly returning an empty view.
    */
   ARCCORE_DEPRECATED_REASON("Y2023: use subPart() instead")
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subView(Int32 abegin, Int32 asize) const
@@ -933,7 +938,7 @@ class SmallSpan
     return subspan(abegin, asize);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sub-view corresponding to the interval \a index over \a nb_interval
   ARCCORE_DEPRECATED_REASON("Y2023: use subPartInterval() instead")
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subViewInterval(Int32 index, Int32 nb_interval) const
   {
@@ -943,13 +948,14 @@ class SmallSpan
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Affiche sur le flot \a o les valeurs du tableau \a val.
+ * \brief Prints the values of the array \a val to the stream \a o.
  *
- * Si \a max_print est positif, alors au plus \a max_print valeurs
- * sont affichées. Si la taille du tableau est supérieure à
- * \a max_print, alors les (max_print/2) premiers et derniers
- * éléments sont affichés.
+ * If \a max_print is positive, at most \a max_print values
+ * are printed. If the array size is greater than
+ * \a max_print, then the first (max_print/2) and last
+ * elements are printed.
  */
 template <typename T, typename SizeType> inline void
 dumpArray(std::ostream& o, SpanImpl<const T, SizeType> val, int max_print)
@@ -959,11 +965,12 @@ dumpArray(std::ostream& o, SpanImpl<const T, SizeType> val, int max_print)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extrait un sous-tableau à à partir d'une liste d'index.
+ * \brief Extracts a sub-array from a list of indices.
  *
- * Remplit \a result avec les valeurs du tableau \a values correspondantes
- * aux indices \a indexes.
+ * Fills \a result with the values from the array \a values
+ * corresponding to the indices \a indexes.
  *
  * \pre results.size() >= indexes.size();
  */
@@ -984,11 +991,12 @@ _sampleSpan(SpanImpl<const DataType, SizeType> values,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extrait un sous-tableau à à partir d'une liste d'index.
+ * \brief Extracts a sub-array from a list of indices.
  *
- * Remplit \a result avec les valeurs du tableau \a values correspondantes
- * aux indices \a indexes.
+ * Fills \a result with the values from the array \a values
+ * corresponding to the indices \a indexes.
  *
  * \pre results.size() >= indexes.size();
  */
@@ -1000,11 +1008,12 @@ sampleSpan(Span<const DataType> values, Span<const Int64> indexes, Span<DataType
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extrait un sous-tableau à à partir d'une liste d'index.
+ * \brief Extracts a sub-array from a list of indices.
  *
- * Le résultat est stocké dans \a result dont la taille doit être au moins
- * égale à celle de \a indexes.
+ * The result is stored in \a result, whose size must be at least
+ * equal to that of \a indexes.
  */
 template <typename DataType> inline void
 sampleSpan(Span<const DataType> values, Span<const Int32> indexes, Span<DataType> result)
@@ -1014,8 +1023,9 @@ sampleSpan(Span<const DataType> values, Span<const Int32> indexes, Span<DataType
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti la vue en un tableau d'octets non modifiables.
+ * \brief Converts the view into an array of non-modifiable bytes.
  */
 template <typename DataType, typename SizeType, SizeType Extent>
 inline typename Impl::SpanTypeFromSize<const std::byte, SizeType>::SpanType
@@ -1025,7 +1035,7 @@ asBytes(const SpanImpl<DataType, SizeType, Extent>& s)
 }
 
 /*!
- * \brief Converti la vue en un tableau d'octets non modifiables.
+ * \brief Converts the view into an array of non-modifiable bytes.
  */
 template <typename DataType>
 inline SmallSpan<const std::byte>
@@ -1035,7 +1045,7 @@ asBytes(const ArrayView<DataType>& s)
 }
 
 /*!
- * \brief Converti la vue en un tableau d'octets non modifiables.
+ * \brief Converts the view into an array of non-modifiable bytes.
  */
 template <typename DataType>
 inline SmallSpan<const std::byte>
@@ -1046,10 +1056,11 @@ asBytes(const ConstArrayView<DataType>& s)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti la vue en un tableau d'octets modifiables.
+ * \brief Converts the view into an array of modifiable bytes.
  *
- * Cette méthode n'est accessible que si \a DataType n'est pas `const`.
+ * This method is only accessible if \a DataType is not `const`.
  */
 template <typename DataType, typename SizeType, SizeType Extent,
           typename std::enable_if_t<!std::is_const<DataType>::value, int> = 0>
@@ -1060,9 +1071,9 @@ asWritableBytes(const SpanImpl<DataType, SizeType, Extent>& s)
 }
 
 /*!
- * \brief Converti la vue en un tableau d'octets modifiables.
+ * \brief Converts the view into an array of modifiable bytes.
  *
- * Cette méthode n'est accessible que si \a DataType n'est pas `const`.
+ * This method is only accessible if \a DataType is not `const`.
  */
 template <typename DataType> inline SmallSpan<std::byte>
 asWritableBytes(const ArrayView<DataType>& s)
@@ -1106,8 +1117,9 @@ namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti un Span<std::byte> en un Span<DataType>.
+ * \brief Converts a Span<std::byte> into a Span<DataType>.
  * \pre bytes.size() % sizeof(DataType) == 0;
  */
 template <typename DataType, Int64 Extent> inline Span<DataType>
@@ -1115,8 +1127,9 @@ asSpan(Span<std::byte, Extent> bytes)
 {
   return impl::asSpanInternal<std::byte, DataType, Extent>(bytes);
 }
+
 /*!
- * \brief Converti un Span<std::byte> en un Span<DataType>.
+ * \brief Converts a Span<std::byte> into a Span<const DataType>.
  * \pre bytes.size() % sizeof(DataType) == 0;
  */
 template <typename DataType, Int64 Extent> inline Span<const DataType>
@@ -1124,8 +1137,9 @@ asSpan(Span<const std::byte, Extent> bytes)
 {
   return impl::asSpanInternal<const std::byte, const DataType, Extent>(bytes);
 }
+
 /*!
- * \brief Converti un SmallSpan<std::byte> en un SmallSpan<DataType>.
+ * \brief Converts a SmallSpan<std::byte> into a SmallSpan<DataType>.
  * \pre bytes.size() % sizeof(DataType) == 0;
  */
 template <typename DataType, Int32 Extent> inline SmallSpan<DataType>
@@ -1133,8 +1147,9 @@ asSmallSpan(SmallSpan<std::byte, Extent> bytes)
 {
   return impl::asSmallSpanInternal<std::byte, DataType, Extent>(bytes);
 }
+
 /*!
- * \brief Converti un SmallSpan<const std::byte> en un SmallSpan<const DataType>.
+ * \brief Converts a SmallSpan<const std::byte> into a SmallSpan<const DataType>.
  * \pre bytes.size() % sizeof(DataType) == 0;
  */
 template <typename DataType, Int32 Extent> inline SmallSpan<const DataType>
@@ -1145,8 +1160,9 @@ asSmallSpan(SmallSpan<const std::byte, Extent> bytes)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne un Span associé au std::array.
+ * \brief Returns a Span associated with std::array.
  */
 template <typename DataType, size_t SizeType> inline Span<DataType, SizeType>
 asSpan(std::array<DataType, SizeType>& s)
@@ -1154,8 +1170,9 @@ asSpan(std::array<DataType, SizeType>& s)
   Int64 size = static_cast<Int64>(s.size());
   return { s.data(), size };
 }
+
 /*!
- * \brief Retourne un Span associé au std::array.
+ * \brief Returns a SmallSpan associated with std::array.
  */
 template <typename DataType, size_t SizeType> inline SmallSpan<DataType, SizeType>
 asSmallSpan(std::array<DataType, SizeType>& s)
@@ -1166,18 +1183,19 @@ asSmallSpan(std::array<DataType, SizeType>& s)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ecrit en binaire le contenu de \a bytes sur le flot \a ostr.
+ * \brief Writes the content of \a bytes to the stream \a ostr in binary format.
  *
- * Cela revient à faire ostr.write(bytes.data(),bytes.size());
+ * This is equivalent to calling ostr.write(bytes.data(),bytes.size());
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 binaryWrite(std::ostream& ostr, const Span<const std::byte>& bytes);
 
 /*!
- * \brief Lit en binaire le contenu de \a bytes depuis le flot \a istr.
+ * \brief Reads the content of \a bytes from the stream \a istr in binary format.
  *
- * Cela revient à faire ostr.read(bytes.data(),bytes.size());
+ * This is equivalent to calling istr.read(bytes.data(),bytes.size());
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 binaryRead(std::istream& istr, const Span<std::byte>& bytes);

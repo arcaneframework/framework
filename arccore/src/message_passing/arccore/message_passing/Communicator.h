@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Communicator.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Communicateur pour l'échange de message.                                  */
+/* Communicator for message exchange.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_COMMUNICATOR_H
 #define ARCCORE_MESSAGEPASSING_COMMUNICATOR_H
@@ -27,19 +27,20 @@ namespace Arcane::MessagePassing
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Communicateur pour l'échange de message.
+ * \brief Communicator for message exchange.
  *
- * Cette classe est une abstraction du communicateur qu'on trouve
- * dans la norme MPI sous le type 'MPI_Comm'.
+ * This class is an abstraction of the communicator found
+ * in the MPI standard under the type 'MPI_Comm'.
  *
- * Cette classe permet de conserver de manière générique un communicateur sans
- * connaitre son type exact (par exemple MPI_Commu avec la norme MPI). On utilise
- * pour cela une union.
+ * This class allows generically storing a communicator without
+ * knowing its exact type (for example MPI_Comm with the MPI standard). We use
+ * a union for this purpose.
  *
- * Avant d'utiliser une instance de cette classe, il faut positionner le
- * communicateur nul en appelant la méthode statique setNullCommunicator()
- * avec la valeur du communicateur nul pour l'implémentation utilisée.
+ * Before using an instance of this class, the null communicator must be set
+ * by calling the static method setNullCommunicator() with the null communicator
+ * value for the implementation used.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT Communicator
 {
@@ -116,17 +117,16 @@ class ARCCORE_MESSAGEPASSING_EXPORT Communicator
  public:
 
   /*!
-   * \brief Indique si le communicateur est valide.
+   * \brief Indicates if the communicator is valid.
    *
-   * Un communicateur est valide s'il est différent du communicateur nul.
+   * A communicator is valid if it is different from the null communicator.
    */
   bool isValid() const
   {
     if (m_type==T_Null)
       return false;
-    // Si le type de la requête est différent du type
-    // de la requête nulle, alors la requête est considérée
-    // comme valide.
+    // If the request type is different from the null request type,
+    // then the request is considered valid.
     if (m_type!=null_communicator_type)
       return true;
     if (m_type==T_Int)
@@ -179,5 +179,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT Communicator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

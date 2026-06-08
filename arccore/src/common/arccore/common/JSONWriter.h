@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* JSONWriter.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Ecrivain au format JSON.                                                  */
+/* JSON format writer.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_JSONWRITER_H
 #define ARCCORE_COMMON_JSONWRITER_H
@@ -25,10 +25,11 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ecrivain au format JSON.
+ * \brief JSON format writer.
  *
- * \warning API Interne. Ne pas utiliser en dehors de Arcane.
+ * \warning Internal API. Do not use outside of Arcane.
  */
 class ARCCORE_COMMON_EXPORT JSONWriter
 {
@@ -85,7 +86,7 @@ class ARCCORE_COMMON_EXPORT JSONWriter
   enum class FormatFlags
   {
     None = 0,
-    // Indique qu'on sérialise les réels au format hexadécimal
+    // Indicates that real numbers are serialized in hexadecimal format
     HexFloat = 1,
 
     Default = HexFloat

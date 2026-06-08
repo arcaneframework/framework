@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISymbolizerService.h                                        (C) 2000-2026 */
 /*                                                                           */
-/* Interface d'un service de récupération des symboles du code source.       */
+/* Interface of a source code symbol retrieval service.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ISYMBOLIZERSERVICE_H
 #define ARCCORE_BASE_ISYMBOLIZERSERVICE_H
@@ -24,12 +24,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service de récupération des symboles du code source.
+ * \brief Interface of a source code symbol retrieval service.
  *
- * Ce service permet de récupérer certaines informations du code source
- * à partir d'une adresse mémoire. Parmi les informations récupérables
- * il y a le nom du fichier, le nom de la méthode et les numéros de ligne.
+ * This service allows retrieving certain information from the source code
+ * from a memory address. Among the recoverable information
+ * are the file name, the method name, and the line numbers.
  *
  * \warning UNSTABLE API
  */
@@ -37,12 +38,12 @@ class ARCCORE_BASE_EXPORT ISymbolizerService
 {
  public:
 
-  virtual ~ISymbolizerService() {} //<! Libère les ressources
+  virtual ~ISymbolizerService() {} //<! Releases resources
 
  public:
 
-  //! Informations pour la pile d'appel \a frames.
-  // TODO TODO RENOMMER CETTE METHODE
+  //! Information for the call stack \a frames.
+  // TODO TODO RENAME THIS METHOD
   virtual String stackTrace(ConstArrayView<StackFrame> frames) = 0;
 };
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ITaskImplementation.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Interface de gestion des tâches.                                          */
+/* Task management interface.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ITASKIMPLEMENTATION_H
 #define ARCCORE_BASE_ITASKIMPLEMENTATION_H
@@ -24,14 +24,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation d'une fabrique de tâches.
+ * \brief Implementation of a task factory.
  *
  * \ingroup Concurrency
  *
- * Cette classe est interne à Arcane. Pour gérer les tâches, il
- * faut utiliser la classe TaskFactory.
+ * This class is internal to Arcane. To manage tasks, you
+ * must use the TaskFactory class.
  */
 class ARCCORE_CONCURRENCY_EXPORT ITaskImplementation
 {
@@ -43,69 +44,69 @@ class ARCCORE_CONCURRENCY_EXPORT ITaskImplementation
 
   /*!
    * \internal.
-   * Initialise l'implémentation avec au maximum \a nb_thread.
-   * Si \a nb_thread vaut 0, l'implémentation peut choisir
-   * le nombre de thread automatiquement.
-   * Cette méthode est interne à Arcane et ne doit être appelée
-   * que lors de l'initialisation de l'exécution.
+   * Initializes the implementation with a maximum of \a nb_thread.
+   * If \a nb_thread is 0, the implementation can choose
+   * the number of threads automatically.
+   * This method is internal to Arcane and should only be called
+   * during the execution initialization.
    */
   virtual void initialize(Int32 nb_thread) = 0;
   /*!
    * \internal.
-   * Termine l'utilisation de l'implémentation.
-   * Cette méthode doit être appelée en fin de calcul uniquement.
+   * Terminates the use of the implementation.
+   * This method must be called only at the end of the calculation.
    */
   virtual void terminate() = 0;
   /*!
-   * \brief Créé une tâche racine.
-   * L'implémentation doit recopier la valeur de \a f qui est soit
-   * un TaskFunctor, soit un TaskFunctorWithContext.
+   * \brief Creates a root task.
+   * The implementation must copy the value of \a f, which is either
+   * a TaskFunctor or a TaskFunctorWithContext.
    */
   virtual ITask* createRootTask(ITaskFunctor* f) = 0;
 
-  //! Exécute le fonctor \a f en concurrence.
+  //! Executes the functor \a f in parallel.
   virtual void executeParallelFor(Integer begin, Integer size, const ParallelLoopOptions& options, IRangeFunctor* f) = 0;
 
-  //! Exécute le fonctor \a f en concurrence.
+  //! Executes the functor \a f in parallel.
   virtual void executeParallelFor(Integer begin, Integer size, Integer block_size, IRangeFunctor* f) = 0;
 
-  //! Exécute le fonctor \a f en concurrence.
+  //! Executes the functor \a f in parallel.
   virtual void executeParallelFor(Integer begin, Integer size, IRangeFunctor* f) = 0;
 
-  //! Exécute la boucle \a loop_info en concurrence.
+  //! Executes the loop \a loop_info in parallel.
   virtual void executeParallelFor(const ParallelFor1DLoopInfo& loop_info) = 0;
 
-  //! Exécute une boucle 1D en concurrence
+  //! Executes a 1D loop in parallel
   virtual void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
                                   const ForLoopRunInfo& run_info,
                                   IMDRangeFunctor<1>* functor) = 0;
-  //! Exécute une boucle 2D en concurrence
+  //! Executes a 2D loop in parallel
   virtual void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
                                   const ForLoopRunInfo& run_info,
                                   IMDRangeFunctor<2>* functor) = 0;
-  //! Exécute une boucle 3D en concurrence
+  //! Executes a 3D loop in parallel
   virtual void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
                                   const ForLoopRunInfo& run_info,
                                   IMDRangeFunctor<3>* functor) = 0;
-  //! Exécute une boucle 4D en concurrence
+  //! Executes a 4D loop in parallel
   virtual void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
                                   const ForLoopRunInfo& run_info,
                                   IMDRangeFunctor<4>* functor) = 0;
 
-  //! Indique si l'implémentation est active.
+  //! Indicates if the implementation is active.
   virtual bool isActive() const = 0;
 
-  //! Nombre de threads utilisés au maximum pour gérer les tâches
+  //! Maximum number of threads used to manage tasks
   ARCCORE_DEPRECATED_REASON("Y2025: use ConcurrencyBase::maxAllowedThread() instead")
   Int32 nbAllowedThread() const;
 
-  //! Implémentation de TaskFactory::currentTaskThreadIndex()
+  //! Implementation of TaskFactory::currentTaskThreadIndex()
   virtual Int32 currentTaskThreadIndex() const = 0;
 
-  //! Implémentation de TaskFactory::currentTaskIndex()
+  //! Implementation of TaskFactory::currentTaskIndex()
   virtual Int32 currentTaskIndex() const = 0;
 
-  //! Affiche les informations sur le runtime utilisé
+  //! Prints information about the runtime used
   virtual void printInfos(std::ostream& o) const = 0;
 };
 
@@ -117,4 +118,4 @@ class ARCCORE_CONCURRENCY_EXPORT ITaskImplementation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CommonUtils.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions/Classes utilitaires communes à tout les runtimes.               */
+/* Utility functions/classes common to all runtimes.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,7 +24,7 @@
 /*!
  * \namespace Arcane::Accelerator::AcceleratorUtils
  *
- * \brief Espace de nom pour les méthodes utilitaires des accélérateurs.
+ * \brief Namespace for accelerator utility methods.
  */
 
 /*---------------------------------------------------------------------------*/

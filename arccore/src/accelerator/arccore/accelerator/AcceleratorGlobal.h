@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorGlobal.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* General declarations for accelerator support.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_ACCELERATORGLOBAL_H
 #define ARCCORE_ACCELERATOR_ACCELERATORGLOBAL_H
@@ -38,11 +38,11 @@ namespace Impl
   class CudaHipKernelRemainingArgsHelper;
   class SyclKernelRemainingArgsHelper;
   /*!
- * \brief Template pour savoir si un type utilisé comme boucle dans les
- * kernels nécessite toujours sycl::nb_item comme argument.
+ * \brief Template to determine if a type used as a loop in kernels always
+ * requires sycl::nb_item as an argument.
  *
- * Si c'est le cas, il faut spécialiser cette template en la faisant
- * dériver de std::true_type. C'est le cas par exemple pour WorkGroupLoopRange.
+ * If so, this template must be specialized by deriving it from
+ * std::true_type. This is the case, for example, for WorkGroupLoopRange.
  */
   template <typename T>
   class IsAlwaysUseSyclNdItem
@@ -59,10 +59,10 @@ template <typename T, Int32 Extent = DynExtent> class LocalMemory;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Type d'opération atomique supportée
+//! Supported atomic operation type
 enum class eAtomicOperation
 {
-  //! Ajout
+  //! Add
   Add,
   //! Minimum
   Min,
@@ -95,15 +95,15 @@ getBadPolicyMessage(eExecutionPolicy policy);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Macro pour indiquer qu'un noyau n'a pas été compilé avec HIP
+//! Macro to indicate that a kernel was not compiled with HIP
 #define ARCCORE_FATAL_NO_HIP_COMPILATION() \
   ARCCORE_FATAL(Arcane::Accelerator::Impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::HIP));
 
-//! Macro pour indiquer qu'un noyau n'a pas été compilé avec CUDA
+//! Macro to indicate that a kernel was not compiled with CUDA
 #define ARCCORE_FATAL_NO_CUDA_COMPILATION() \
   ARCCORE_FATAL(Arcane::Accelerator::Impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::CUDA));
 
-//! Macro pour indiquer qu'un noyau n'a pas été compilé avec SYCL
+//! Macro to indicate that a kernel was not compiled with SYCL
 #define ARCCORE_FATAL_NO_SYCL_COMPILATION() \
   ARCCORE_FATAL(Arcane::Accelerator::Impl::getBadPolicyMessage(Arcane::Accelerator::eExecutionPolicy::SYCL));
 

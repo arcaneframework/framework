@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PropertyDeclarations.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Déclaration des types et macros pour la gestion des propriétés.           */
+/* Declaration of types and macros for property management.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_PROPERTYDECLARATIONS_H
 #define ARCCORE_COMMON_INTERNAL_PROPERTYDECLARATIONS_H
@@ -38,11 +38,12 @@ class PropertyDeclaration
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro pour déclarer les informations de propriété dans une classe
+ * \brief Macro to declare property information in a class
  *
- * Cette macro doit s'utiliser dans la définition d'une classe. L'argument
- * de la macro doit être le nom de la classe. Par exemple:
+ * This macro must be used in the definition of a class. The argument
+ * of the macro must be the class name. For example:
  *
  * \code
  * class MyClass
@@ -62,13 +63,14 @@ class PropertyDeclaration
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro pour enregistrer une classe contenant des propriétés.
+ * \brief Macro to register a class containing properties.
  *
- * La classe spécifiée doit contenir la macro ARCANE_PROPERTY_CLASS_DECLARE.
- * La classe doit aussi définir une méthode template _applyPropertyVisitor().
+ * The specified class must contain the ARCANE_PROPERTY_CLASS_DECLARE macro.
+ * The class must also define a template method _applyPropertyVisitor().
  *
- * Par exemple:
+ * For example:
  * \code
  * // Header
  * class MyClass
@@ -125,5 +127,4 @@ Arcane::properties::PropertySettingsRegisterer ARCANE_EXPORT \
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

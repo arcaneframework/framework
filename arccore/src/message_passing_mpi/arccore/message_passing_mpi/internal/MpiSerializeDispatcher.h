@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiSerializeDispatcher.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des messages de sérialisation avec MPI.                           */
+/* Serialization message handling with MPI.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPISERIALIZEDISPATCHER_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPISERIALIZEDISPATCHER_H
@@ -57,7 +57,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
 
  public:
 
-  // Ces méthodes sont spécifiques à la version MPI.
+  // These methods are specific to the MPI version.
   //!@{
   Int64 serializeBufferSize() const { return m_serialize_buffer_size; }
   Request legacySendSerializer(ISerializer* values,const PointToPointMessageInfo& message);
@@ -73,7 +73,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiSerializeDispatcher
 
  protected:
 
-  // Ceux deux méthodes sont utilisés aussi par 'MpiSerializeMessageList'
+  // These two methods are also used by 'MpiSerializeMessageList'
   Request _recvSerializerBytes(Span<Byte> bytes,MessageRank rank,MessageTag tag,bool is_blocking);
   Request _recvSerializerBytes(Span<Byte> bytes,MessageId message_id,bool is_blocking);
 

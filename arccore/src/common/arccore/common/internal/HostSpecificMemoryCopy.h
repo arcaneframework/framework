@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HostSpecificMemoryCopy.h                                    (C) 2000-2026 */
 /*                                                                           */
-/* Classe template pour gérer des fonctions spécialisées de copie mémoire.   */
+/* Template class to manage specialized memory copy functions.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_HOSTSPECIFICMEMORYCOPYLIST_H
 #define ARCCORE_COMMON_INTERNAL_HOSTSPECIFICMEMORYCOPYLIST_H
@@ -24,8 +24,9 @@ namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation des copies et du remplissage sur hôte.
+ * \brief Implementation of copies and filling on host.
  */
 template <typename DataType, typename Extent>
 class HostSpecificMemoryCopy
@@ -95,8 +96,8 @@ class HostSpecificMemoryCopy
       Int32 index1 = indexes[(i * 2) + 1];
       Span<std::byte> orig_view_bytes = multi_views[index0];
       auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
-      // Utilise un span pour tester les débordements de tableau mais on
-      // pourrait directement utiliser 'orig_view_data' pour plus de performances
+      // Uses a span to test array overflows but // could directly use
+      // 'orig_view_data' for better performance
       Span<DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
       Int64 zci = ((Int64)(index1)) * m_extent.v;
       Int64 z_index = (Int64)i * m_extent.v;
@@ -106,9 +107,9 @@ class HostSpecificMemoryCopy
   }
 
   /*!
-   * \brief Remplit les valeurs d'indices spécifiés par \a indexes.
+   * \brief Fills the values at indices specified by \a indexes.
    *
-   * Si \a indexes est vide, remplit toutes les valeurs.
+   * If \a indexes is empty, fills all values.
    */
   void _fill(SmallSpan<const Int32> indexes, Span<const DataType> source,
              Span<DataType> destination)
@@ -116,7 +117,7 @@ class HostSpecificMemoryCopy
     ARCCORE_CHECK_POINTER(source.data());
     ARCCORE_CHECK_POINTER(destination.data());
 
-    // Si \a indexes est vide, cela signifie qu'on copie toutes les valeurs
+    // If \a indexes is empty, it means all values are copied
     Int32 nb_index = indexes.size();
     if (nb_index == 0) {
       Int64 nb_value = destination.size() / m_extent.v;
@@ -144,7 +145,7 @@ class HostSpecificMemoryCopy
 
     const Int32 nb_index = indexes.size() / 2;
     if (nb_index == 0) {
-      // Remplit toutes les valeurs du tableau avec la source.
+      // Fills all values of the array with the source.
       const Int32 nb_dim1 = multi_views.size();
       for (Int32 zz = 0; zz < nb_dim1; ++zz) {
         Span<std::byte> orig_view_bytes = multi_views[zz];
@@ -152,8 +153,8 @@ class HostSpecificMemoryCopy
         auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
         Span<DataType> orig_view = { orig_view_data, nb_value };
         for (Int64 i = 0; i < nb_value; i += m_extent.v) {
-          // Utilise un span pour tester les débordements de tableau mais on
-          // pourrait directement utiliser 'orig_view_data' pour plus de performances
+          // Uses a span to test array overflows but // could directly
+          // use 'orig_view_data' for better performance
           for (Int32 z = 0, n = m_extent.v; z < n; ++z) {
             orig_view[i + z] = source[z];
           }
@@ -167,8 +168,8 @@ class HostSpecificMemoryCopy
         Int32 index1 = indexes[(i * 2) + 1];
         Span<std::byte> orig_view_bytes = multi_views[index0];
         auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
-        // Utilise un span pour tester les débordements de tableau mais on
-        // pourrait directement utiliser 'orig_view_data' pour plus de performances
+        // Uses a span to test array overflows but // could directly
+        // use 'orig_view_data' for better performance
         Span<DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
         Int64 zci = ((Int64)(index1)) * m_extent.v;
         for (Int32 z = 0, n = m_extent.v; z < n; ++z)
@@ -207,8 +208,8 @@ class HostSpecificMemoryCopy
       Int32 index1 = indexes[(i * 2) + 1];
       Span<const std::byte> orig_view_bytes = multi_views[index0];
       auto* orig_view_data = reinterpret_cast<const DataType*>(orig_view_bytes.data());
-      // Utilise un span pour tester les débordements de tableau mais on
-      // pourrait directement utiliser 'orig_view_data' pour plus de performances
+      // Uses a span to test array overflows but // could directly
+      // use 'orig_view_data' for better performance
       Span<const DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
       Int64 zci = ((Int64)(index1)) * m_extent.v;
       Int64 z_index = (Int64)i * m_extent.v;

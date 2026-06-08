@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IRunQueueEventImpl.h                                        (C) 2000-2026 */
 /*                                                                           */
-/* Interface de l'implémentation d'un évènement.                             */
+/* Interface for event implementation.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_IRUNQUEUEEVENTIMPL_H
 #define ARCCORE_COMMON_ACCELERATOR_IRUNQUEUEEVENTIMPL_H
@@ -24,9 +24,10 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface de l'implémentation d'un évènement.
+ * \brief Interface for event implementation.
  */
 class ARCCORE_COMMON_EXPORT IRunQueueEventImpl
 {
@@ -40,7 +41,7 @@ class ARCCORE_COMMON_EXPORT IRunQueueEventImpl
   virtual void wait() = 0;
   virtual void waitForEvent(IRunQueueStream* stream) = 0;
 
-  //! Temps écoulé (en nanoseconde) entre l'évènement \a from_event et cet évènement.
+  //! Elapsed time (in nanoseconds) between the event \a from_event and this event.
   virtual Int64 elapsedTime(IRunQueueEventImpl* from_event) = 0;
 
   virtual bool hasPendingWork() = 0;

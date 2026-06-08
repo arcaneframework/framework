@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Array2View.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Vue d'un tableau 2D.                                                      */
+/* View of a 2D array.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARRAY2VIEW_H
 #define ARCCORE_BASE_ARRAY2VIEW_H
@@ -25,13 +25,14 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
  *
- * \brief Vue modifiable pour un tableau 2D.
+ * \brief Mutable view for a 2D array.
  *
- * Comme toute vue, une instance de cette classe n'est valide que tant
- * que le conteneur dont elle est issue ne change pas de nombre d'éléments.
+ * Like any view, an instance of this class is only valid as long as
+ * the container it originates from does not change its number of elements.
  */
 template<class DataType>
 class Array2View
@@ -43,17 +44,17 @@ class Array2View
  public:
   friend class ConstArray2View<DataType>;
  public:
-  //! Créé une vue 2D de dimension [\a dim1_size][\a dim2_size]
+  //! Creates a 2D view of dimension [\a dim1_size][\a dim2_size]
   constexpr Array2View(DataType* ptr,Integer dim1_size,Integer dim2_size)
   : m_ptr(ptr), m_dim1_size(dim1_size), m_dim2_size(dim2_size) {}
-  //! Créé une vue 2D vide.
+  //! Creates an empty 2D view.
   constexpr Array2View() : m_ptr(nullptr), m_dim1_size(0), m_dim2_size(0) {}
  public:
-  //! Nombre d'éléments de la première dimension
+  //! Number of elements in the first dimension
   constexpr Integer dim1Size() const { return m_dim1_size; }
-  //! Nombre d'éléments de la deuxième dimension
+  //! Number of elements in the second dimension
   constexpr Integer dim2Size() const { return m_dim2_size; }
-  //! Nombre total d'éléments.
+  //! Total number of elements.
   constexpr Integer totalNbElement() const { return m_dim1_size*m_dim2_size; }
  public:
   constexpr ArrayView<DataType> operator[](Integer i)
@@ -66,38 +67,38 @@ class Array2View
     ARCCORE_CHECK_AT(i,m_dim1_size);
     return ConstArrayView<DataType>(m_dim2_size,m_ptr + (m_dim2_size*i));
   }
-  //! Valeur de l'élément [\a i][\a j]
+  //! Value of element [\a i][\a j]
   constexpr DataType item(Integer i,Integer j) const
   {
     ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
-  //! Positionne l'élément [\a i][\a j] à \a value
+  //! Positions element [\a i][\a j] to \a value
   constexpr DataType setItem(Integer i,Integer j,const DataType& value)
   {
     ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     m_ptr[(m_dim2_size*i) + j] = value;
   }
-  //! Valeur de l'élément [\a i][\a j]
+  //! Value of element [\a i][\a j]
   constexpr const DataType operator()(Integer i,Integer j) const
   {
     ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
-  //! Valeur de l'élément [\a i][\a j]
+  //! Value of element [\a i][\a j]
   constexpr DataType& operator()(Integer i,Integer j)
   {
     ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
-  //! Valeur de l'élément [\a i][\a j]
+  //! Value of element [\a i][\a j]
   constexpr const DataType operator[](Integer i,Integer j) const
   {
     ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
-  //! Valeur de l'élément [\a i][\a j]
+  //! Value of element [\a i][\a j]
   constexpr DataType& operator[](Integer i,Integer j)
   {
     ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
@@ -106,13 +107,15 @@ class Array2View
 #endif
 
  public:
+
   /*!
-   * \brief Pointeur sur la mémoire allouée.
+   * \brief Pointer to the allocated memory.
    */
   constexpr inline DataType* unguardedBasePointer()
   { return m_ptr; }
+
   /*!
-   * \brief Pointeur sur la mémoire allouée.
+   * \brief Pointer to the allocated memory.
    */
   constexpr inline DataType* data() { return m_ptr; }
  private:
@@ -123,9 +126,10 @@ class Array2View
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Vue pour un tableau 2D constant.
+ * \brief View for a constant 2D array.
  */
 template<class DataType>
 class ConstArray2View
@@ -159,14 +163,14 @@ class ConstArray2View
     ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   } 
-  //! Valeur de l'élément [\a i][\a j]
+  //! Value of element [\a i][\a j]
   constexpr const DataType operator()(Integer i,Integer j) const
   {
     ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
-  //! Valeur de l'élément [\a i][\a j]
+  //! Value of element [\a i][\a j]
   constexpr const DataType operator[](Integer i,Integer j) const
   {
     ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
@@ -176,10 +180,10 @@ class ConstArray2View
 
  public:
 
-  //! Pointeur sur la mémoire allouée.
+  //! Pointer to the allocated memory.
   constexpr const DataType* unguardedBasePointer() const { return m_ptr; }
 
-  //! Pointeur sur la mémoire allouée.
+  //! Pointer to the allocated memory.
   constexpr const DataType* data() const { return m_ptr; }
 
  private:
@@ -197,4 +201,4 @@ class ConstArray2View
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

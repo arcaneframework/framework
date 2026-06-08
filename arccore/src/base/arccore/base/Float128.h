@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Float128.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Type flottant 128bit.                                                     */
+/* 128-bit floating-point type.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_FLOAT128_H
 #define ARCCORE_BASE_FLOAT128_H
@@ -16,13 +16,13 @@
 
 #include "arccore/base/ArccoreGlobal.h"
 
-// Tous les compilateurs Linux supportés par Arccore ont le type '__float128',
+// All Linux compilers supported by Arccore have the '__float128' type,
 #if defined(ARCCORE_OS_LINUX)
-// Il semble que AdaptiveCPP 2510 ne supporte pas le '__float128'.
+// It seems that AdaptiveCPP 2510 does not support '__float128'.
 #  if defined(__x86_64__) && (!defined(__ACPP__))
 #    define ARCCORE_HAS_NATIVE_FLOAT128
-// Sur certaines plateformes (par exemple ARM64 Grace), le type 'float128'
-// correspond à un type pré-défini (en général 'long double')
+// On certain platforms (for example ARM64 Grace), the 'float128' type
+// corresponds to a predefined type (generally 'long double')
 #  elif !defined(__HAVE_DISTINCT_FLOAT128)
 #    define ARCCORE_HAS_NATIVE_FLOAT128
 #  endif
@@ -44,11 +44,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type flottant sur 128 bits.
+ * \brief 128-bit floating-point type.
  *
- * \warning Cette classe est en cours de définition et ne doit pas être
- * utilisée.
+ * \warning This class is currently under definition and should not be
+ * used.
  */
 class alignas(16) Float128
 {

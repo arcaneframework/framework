@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumArrayViews.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des vues pour les 'NumArray' pour les accélérateurs.              */
+/* Management of views for 'NumArray' for accelerators.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_NUMARRAYVIEWS_H
 #define ARCCORE_ACCELERATOR_NUMARRAYVIEWS_H
@@ -36,24 +36,26 @@ class NumArrayView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des vues sur les 'NumArray'.
+ * \brief Base class for views on 'NumArray'.
  */
 class ARCCORE_ACCELERATOR_EXPORT NumArrayViewBase
 {
  protected:
 
-  // Pour l'instant n'utilise pas encore \a command
-  // mais il ne faut pas le supprimer
+  // Does not use \a command yet
+  // but it should not be deleted
   explicit NumArrayViewBase(const ViewBuildInfo&,Span<const std::byte> bytes);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray'.
+ * \brief Read, write, or read/write view on a 'NumArray'.
  *
- * Les vues fonctionnent jusqu'à des tableaux de rang 4.
+ * Views work up to rank 4 arrays.
  */
 template <typename Accessor, typename Extents, typename LayoutType>
 class NumArrayView
@@ -72,71 +74,71 @@ class NumArrayView
   , m_values(v)
   {}
 
-  //! Accesseur pour un tableau de rang 1
+  //! Accessor for a rank 1 array
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i) const
   {
     return Accessor::build(m_values.ptrAt(i));
   }
-  //! Accesseur pour un tableau de rang 1
+  //! Accessor for a rank 1 array
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayIndex<1> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
-  //! Accesseur pour un tableau de rang 1
+  //! Accessor for a rank 1 array
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator[](Int32 i) const
   {
     return Accessor::build(m_values.ptrAt(i));
   }
-  //! Accesseur pour un tableau de rang 1
+  //! Accessor for a rank 1 array
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator[](ArrayIndex<1> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
 
-  //! Accesseur pour un tableau de rang 2
+  //! Accessor for a rank 2 array
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
   constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i, Int32 j) const
   {
     return Accessor::build(m_values.ptrAt(i, j));
   }
-  //! Accesseur pour un tableau de rang 2
+  //! Accessor for a rank 2 array
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
   constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayIndex<2> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
 
-  //! Accesseur pour un tableau de rang 3
+  //! Accessor for a rank 3 array
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 3, void>>
   constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i, Int32 j, Int32 k) const
   {
     return Accessor::build(m_values.ptrAt(i, j, k));
   }
-  //! Accesseur pour un tableau de rang 3
+  //! Accessor for a rank 3 array
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 3, void>>
   constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayIndex<3> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
 
-  //! Accesseur pour un tableau de rang 4
+  //! Accessor for a rank 4 array
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 4, void>>
   constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i, Int32 j, Int32 k, Int32 l) const
   {
     return Accessor::build(m_values.ptrAt(i, j, k, l));
   }
-  //! Accesseur pour un tableau de rang 4
+  //! Accessor for a rank 4 array
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 4, void>>
   constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayIndex<4> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
 
-  //! Converti en une vue 1D.
+  //! Converted to a 1D view.
   constexpr ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
   {
     return m_values.to1DSpan();
@@ -149,8 +151,9 @@ class NumArrayView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename DataType, typename Extents, typename LayoutPolicy> auto
 viewOut(const ViewBuildInfo& command, NumArray<DataType, Extents, LayoutPolicy>& var)
@@ -163,7 +166,7 @@ viewOut(const ViewBuildInfo& command, NumArray<DataType, Extents, LayoutPolicy>&
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename DataType, typename Extents, typename LayoutPolicy> auto
 viewInOut(const ViewBuildInfo& command, NumArray<DataType, Extents, LayoutPolicy>& v)
@@ -174,8 +177,9 @@ viewInOut(const ViewBuildInfo& command, NumArray<DataType, Extents, LayoutPolicy
 
 /*----------------------------------------------1-----------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template <typename DataType, typename Extents, typename LayoutType> auto
 viewIn(const ViewBuildInfo& command, const NumArray<DataType, Extents, LayoutType>& v)
@@ -187,15 +191,15 @@ viewIn(const ViewBuildInfo& command, const NumArray<DataType, Extents, LayoutTyp
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Vue en entrée sur un NumArray
+//! Input view on a NumArray
 template <typename DataType, typename Extents, typename LayoutType = DefaultLayout>
 using NumArrayInView = NumArrayView<DataViewGetter<DataType>, Extents, LayoutType>;
 
-//! Vue en sortie sur un NumArray
+//! Output view on a NumArray
 template <typename DataType, typename Extents, typename LayoutType = DefaultLayout>
 using NumArrayOutView = NumArrayView<DataViewSetter<DataType>, Extents, LayoutType>;
 
-//! Vue en entrée/sortie sur un NumArray
+//! Input/output view on a NumArray
 template <typename DataType, typename Extents, typename LayoutType = DefaultLayout>
 using NumArrayInOutView = NumArrayView<DataViewGetterSetter<DataType>, Extents, LayoutType>;
 

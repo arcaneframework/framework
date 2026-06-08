@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TraceMng.cc                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire des traces.                                                  */
+/* Trace manager.                                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,7 +42,7 @@
 namespace Arcane
 {
 
-// TODO réimplémenter cette classe
+// TODO re-implement this class
 class TraceTimer
 {
  public:
@@ -51,8 +51,9 @@ class TraceTimer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fichier ou flux de traces.
+ * \brief Trace file or stream.
  */
 class FileTraceStream
 : public ITraceStream
@@ -76,9 +77,9 @@ class FileTraceStream
   void addReference() override { ++m_nb_ref; }
   void removeReference() override
   {
-    // Décrémente et retourne la valeur d'avant.
-    // Si elle vaut 1, cela signifie qu'on n'a plus de références
-    // sur l'objet et qu'il faut le détruire.
+    // Decrements and returns the previous value.
+    // If it equals 1, it means there are no more references
+    // to the object and it must be destroyed.
     Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
     if (v==1)
       delete this;
@@ -110,13 +111,13 @@ createStream(std::ostream* stream,bool need_destroy)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère une liste de flux par thread.
+ * \brief Manages a list of streams per thread.
  *
- * Il ne doit y avoir qu'une seule instance de cette classe par thread.
+ * There should only be one instance of this class per thread.
  *
- * Cette classe permet de garantir que les affichages listing par thread
- * se font correctement.
+ * This class ensures that thread listing displays are handled correctly.
  */
 class TraceMngStreamList
 {
@@ -157,8 +158,9 @@ class TraceMngStreamList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conteneur pour gérer les instances de TraceMngStreamList.
+ * \brief Container for managing TraceMngStreamList instances.
  */
 class TraceMngStreamListStorage
 {
@@ -186,9 +188,10 @@ thread_local TraceMngStreamListStorage global_stream_list_storage;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation du gestionnaire de traces.
+ * \brief Implementation of the trace manager.
  */
 class TraceMng
 : public ReferenceCounterImpl
@@ -409,7 +412,7 @@ class TraceMng
  private:
 
   /*!
-   * \brief Information sur une classe de messages.
+   * \brief Information about a message class.
    */
   class TraceClass
   {
@@ -418,7 +421,7 @@ class TraceMng
     : m_name(name), m_info(mci) {}
    public:
     String m_name;
-    const TraceClassConfig* m_info; //!< Configuration de sortie des informations
+    const TraceClassConfig* m_info; //!< Information output configuration
   };
 
  private:
@@ -469,7 +472,7 @@ class TraceMng
   }
   bool _sendToProxy2(const TraceMessage* msg,Span<const Byte> str);
 
-  //NOTE: cette méthode doit être appelée avec le verrou \a m_trace_mutex positionné.
+  //NOTE: this method must be called with the m_trace_mutex lock held.
   const TraceClassConfig* _msgClassConfig(const String& s) const
   {
     auto ci = m_trace_class_config_map.find(s);
@@ -544,7 +547,7 @@ bool TraceMng::
 _sendToProxy2(const TraceMessage* msg,Span<const Byte> buf)
 {
   if (m_listeners){
-    // TODO: changer le prototype pour utiliser Span
+    // TODO: change the prototype to use Span
     const char* buf_data = reinterpret_cast<const char*>(buf.data());
     ConstArrayView<char> cbuf(arccoreCheckArraySize(buf.size()),buf_data);
     TraceMessageListenerArgs args(msg,cbuf);
@@ -603,8 +606,8 @@ _createFileStream(Arccore::StringView file_name)
   auto x = new FileTraceStream(file_name);
   std::ostream* ostr = x->stream();
   if (!ostr || ostr->bad()) {
-    // Ne pas utiliser 'warning()' ou 'error()' car cette méthode peut être
-    // appelée lors du positionnement des logs ou des erreurs.
+    // Do not use 'warning()' or 'error()' because this method can be
+    // called when positioning logs or errors.
     info() << "WARNING: Can not open file '" << file_name << "' for writing";
   }
   return x;
@@ -737,7 +740,7 @@ _writeTimeString(std::ostream& out)
   unsigned long t = static_cast<unsigned long>(m_trace_timer.getTime());
   const unsigned long hour = t/3600; t -= hour*3600;
   const unsigned long min  = t/60;   t -= min*60;
-  // TODO utiliser une méthode portable.
+  // TODO use a portable method.
 #ifdef ARCCORE_OS_WIN32
   _snprintf(trace_timer_buffer,256,"%04lu:%02lu:%02lu",hour,min,t);
 #else
@@ -826,7 +829,8 @@ _putTraceMessage(std::ostream& out,Trace::eMessageType id,Span<const Byte> msg_s
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// A mettre en correspondance avec Trace::Color
+
+// To be mapped to Trace::Color
 const char* color_fmt[] =
   {
     "30",
@@ -839,14 +843,14 @@ _writeColor(std::ostream& output,Span<const Byte> input,int color, bool do_flush
 {
   if (color>Trace::Color::LAST_COLOR || color<0)
     color = 0;
-  // Pour être sur que les message sont écrits en une seule fois,
-  // il ne faut faire qu'un seul write.
+  // To ensure that the messages are written in a single go,
+  // only one write should be performed.
   if (color!=0){
     std::scoped_lock sl(m_trace_mutex);
     output << "\33[" << color_fmt[color] << "m";
     Int64 len = input.size();
-    // Le message se termine toujours par un '\n'. On écrit la fin de la couleur
-    // avant de '\n'
+    // The message always ends with a '\n'. We write the end of the color
+    // before the '\n'
     if (len>0)
       --len;
     _writeSpan(output,input.subspan(0,len));
@@ -861,12 +865,13 @@ _writeColor(std::ostream& output,Span<const Byte> input,int color, bool do_flush
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Écrit le listing.
+ * \brief Writes the listing.
  *
- * Le listing peut sortir à la fois sur std::cout et dans un
- * ITraceStream si *m_listing_stream* est non nul. Le niveau de verbosité
- * peut être différent dans les deux cas.
+ * The listing can output both to std::cout and to an
+ * ITraceStream if *m_listing_stream* is not null. The verbosity level
+ * can be different in both cases.
  */
 void TraceMng::
 _writeListing(Span<const Byte> input,Int32 level,int color,bool do_flush)
@@ -875,23 +880,23 @@ _writeListing(Span<const Byte> input,Int32 level,int color,bool do_flush)
   if (!m_has_color)
     color = 0;
 
-  // Regarde si le niveau de verbosité souhaité est suffisant pour afficher
-  // le message.
+  // Checks if the desired verbosity level is sufficient to display
+  // the message.
   Int32 message_level = level;
 
-  // Sortie ITraceStream.
+  // ITraceStream output.
   if (listing_stream){
     Int32 verbosity_level = m_current_class_verbosity_level;
     if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
       verbosity_level = m_verbosity_level;
-    // Pas de couleur si on redirige les sorties
+    // No color if outputs are redirected
     int listing_color = 0;
     bool is_printed = (message_level <= verbosity_level);
     if (is_printed)
       _writeColor(*listing_stream,input,listing_color,do_flush);
   }
 
-  // Sortie std::cout
+  // std::cout output
   if (m_is_master || !listing_stream){
     Int32 verbosity_level = m_current_class_verbosity_level;
     if (verbosity_level==Trace::UNSPECIFIED_VERBOSITY_LEVEL)
@@ -1032,7 +1037,7 @@ _writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
   Int32 print_level = -1;
   Trace::eMessageType id = msg->type();
   int color = msg->color();
-  // TODO Rendre paramétrable.
+  // TODO Make configurable.
   const bool write_stack_trace_for_error = false;
   switch(id){
   case Trace::Normal:
@@ -1165,8 +1170,9 @@ popTraceClass()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Termine l'initialisation du gestionnaire de traces.
+ * \brief Finishes the initialization of the trace manager.
  */
 void TraceMng::
 finishInitialize()
@@ -1201,8 +1207,7 @@ setClassConfig(const String& name,const TraceClassConfig& config)
       *tcc = config;
     }
   }
-  // Si la config qui est modifiée correspond à celle en cours il faut la
-  // mettre à jour.
+  // If the modified config corresponds to the current one, it must be updated.
   _updateCurrentClassConfig();
 }
 
@@ -1223,8 +1228,8 @@ void TraceMng::
 removeAllClassConfig()
 {
   std::scoped_lock sl(m_trace_mutex);
-  // Comme tous les TraceClassConfig vont être détruit, il ne faut plus les
-  // référencer dans les TraceClass.
+  // Since all TraceClassConfig will be destroyed, they should no longer
+  // be referenced in TraceClass.
   for( auto& i : m_trace_class_stack )
     i.m_info = &m_default_trace_class_config;
   m_current_msg_class.m_info = &m_default_trace_class_config;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiDatatype.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Encapsulation d'un MPI_Datatype.                                          */
+/* Encapsulation of an MPI_Datatype.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_MPIDATATYPE_H
 #define ARCCORE_MESSAGEPASSINGMPI_MPIDATATYPE_H
@@ -16,7 +16,7 @@
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
-// TODO: a supprimer
+// TODO: to be removed
 #include "arccore/base/FatalErrorException.h"
 
 #include <algorithm>
@@ -30,7 +30,7 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateurs de réduction pour les types complexes (Real2, Real3, Real2x2 et Real3x3)
+//! Reduction operators for complex types (Real2, Real3, Real2x2 and Real3x3)
 class IMpiReduceOperator
 {
  public:
@@ -40,7 +40,7 @@ class IMpiReduceOperator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Opérateur de réduction interne MPI (MPI_MAX, MPI_MIN, MPI_SUM)
+//! Internal MPI reduction operator (MPI_MAX, MPI_MIN, MPI_SUM)
 class BuiltInMpiReduceOperator
 : public IMpiReduceOperator
 {
@@ -51,7 +51,7 @@ class BuiltInMpiReduceOperator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateurs de réduction pour les types classiques
+//! Reduction operators for standard types
 template<typename RealType>
 class StdMpiReduceOperator
 : public IMpiReduceOperator
@@ -175,9 +175,10 @@ reduceOperator(eReduceType rt)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Encapsulation d'un MPI_Datatype.
+ * \brief Encapsulation of an MPI_Datatype.
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDatatype
 {
@@ -216,4 +217,4 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiDatatype
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

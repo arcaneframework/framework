@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDeviceInfoList.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'une liste de devices.                                         */
+/* Interface of a list of devices.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_IDEVICEINFOLIST_H
 #define ARCCORE_COMMON_ACCELERATOR_IDEVICEINFOLIST_H
@@ -24,8 +24,9 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une liste de devices.
+ * \brief Interface of a list of devices.
  */
 class ARCCORE_COMMON_EXPORT IDeviceInfoList
 {
@@ -35,10 +36,10 @@ class ARCCORE_COMMON_EXPORT IDeviceInfoList
 
  public:
 
-  //! Nombre de device de la liste
+  //! Number of devices in the list
   virtual Int32 nbDevice() const = 0;
 
-  //! Informations du i-ème device.
+  //! Information about the i-th device.
   virtual const DeviceInfo& deviceInfo(Int32 i) const = 0;
 };
 

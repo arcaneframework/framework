@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IFunctor.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un fonctor.                                                   */
+/* Interface of a functor.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_IFUNCTOR_H
 #define ARCCORE_BASE_IFUNCTOR_H
@@ -24,34 +24,36 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un fonctor.
+ * \brief Interface of a functor.
  * \ingroup Core
  */
 class ARCCORE_BASE_EXPORT IFunctor
 {
  public:
 	
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IFunctor(){}
 
  public:
 
-  //! Exécute la méthode associé
+  //! Executes the associated method
   virtual void executeFunctor() =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un fonctor avec argument mais sans valeur de retour
+ * \brief Interface of a functor with an argument but without a return value
  */
 template<typename ArgType>
 class IFunctorWithArgumentT
 {
  public:
 	
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IFunctorWithArgumentT() {}
 
  protected:
@@ -62,14 +64,15 @@ class IFunctorWithArgumentT
 
  public:
 
-  //! Exécute la méthode associé
+  //! Executes the associated method
   virtual void executeFunctor(ArgType arg) =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un fonctor avec 2 arguments et une valeur de retour.
+ * \brief Interface of a functor with 2 arguments and a return value.
  */
 template<typename ReturnType,typename Arg1,typename Arg2>
 class IFunctorWithArgAndReturn2
@@ -91,5 +94,4 @@ class IFunctorWithArgAndReturn2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

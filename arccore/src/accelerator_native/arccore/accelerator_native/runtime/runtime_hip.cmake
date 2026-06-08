@@ -1,6 +1,6 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Runtime Arccore pour HIP
+# Arccore Runtime for HIP
 
 message(STATUS "Adding Arccore Runtime for Hip")
 
@@ -22,9 +22,9 @@ target_link_libraries(arccore_accelerator_hip_runtime PRIVATE
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-# Recherche 'roctx' (qui est dans roctracer)
-# il n'y a pas l'air d'avoir de fichier de configuration associé
-# Normalement c'est dans un sous-répertoire 'roctracer' de 'rocm'
+# Searching for 'roctx' (which is in roctracer)
+# It doesn't seem to have an associated configuration file
+# Normally it is in a 'roctracer' subdirectory of 'rocm'
 find_path(ROCTX_INCLUDE NAMES roctx.h PATH_SUFFIXED roctracer)
 find_library(ROCTX_LIBRARIES NAMES roctx64)
 find_library(ROCTRACER_LIBRARIES NAMES roctracer64)

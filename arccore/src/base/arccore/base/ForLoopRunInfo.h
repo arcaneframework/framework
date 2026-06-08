@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ForLoopRunInfo.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Informations d'exécution d'une boucle.                                    */
+/* Loop execution information.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_FORLOOPRUNINFO_H
 #define ARCCORE_BASE_FORLOOPRUNINFO_H
@@ -27,11 +27,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations d'exécution d'une boucle.
+ * \brief Loop execution information.
  *
- * Cette classe permet de gérer les informations d'exécutions communes à toutes
- * les boucles.
+ * This class allows managing execution information common to all
+ * loops.
  */
 class ARCCORE_BASE_EXPORT ForLoopRunInfo
 {
@@ -69,13 +70,13 @@ class ARCCORE_BASE_EXPORT ForLoopRunInfo
   }
 
   /*!
-   * \brief Positionne le pointeur conservant les statistiques d'exécution.
+   * \brief Sets the pointer holding the execution statistics.
    *
-   * Ce pointeur \a v doit rester valide durant toute l'exécution de la boucle.
+   * This pointer \a v must remain valid throughout the loop execution.
    */
   void setExecStat(ForLoopOneExecStat* v) { m_exec_stat = v; }
 
-  //! Pointeur contenant les statistiques d'exécution.
+  //! Pointer containing execution statistics.
   ForLoopOneExecStat* execStat() const { return m_exec_stat; }
 
  protected:
@@ -93,4 +94,4 @@ class ARCCORE_BASE_EXPORT ForLoopRunInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

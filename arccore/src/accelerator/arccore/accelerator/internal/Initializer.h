@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Initializer.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Classe pour initialiser le runtime accélérateur.                          */
+/* Class to initialize the accelerator runtime.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_INTERNAL_INITIALIZER_H
 #define ARCCORE_ACCELERATOR_INTERNAL_INITIALIZER_H
@@ -29,9 +29,10 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe interne pour initialiser le runtime accélérateur.
+ * \brief Internal class to initialize the accelerator runtime.
  */
 class ARCCORE_ACCELERATOR_EXPORT Initializer
 {

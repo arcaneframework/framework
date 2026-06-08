@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DeviceId.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Identifiant d'un composant du système.                                    */
+/* Identifier of a system component.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_DEVICEID_H
 #define ARCCORE_COMMON_ACCELERATOR_DEVICEID_H
@@ -24,10 +24,11 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Identifiant d'un composant du système.
+ * \brief Identifier of a system component.
  *
- * Le composant peut être un accélérateur ou l'hôte.
+ * The component can be an accelerator or the host.
  */
 class ARCCORE_COMMON_EXPORT DeviceId
 {
@@ -38,7 +39,7 @@ class ARCCORE_COMMON_EXPORT DeviceId
 
  public:
 
-  //! Accélérateur par défaut (Device de numéro 0)
+  //! Default accelerator (Device number 0)
   DeviceId() = default;
 
   explicit DeviceId(Int32 id)
@@ -48,24 +49,24 @@ class ARCCORE_COMMON_EXPORT DeviceId
 
  public:
 
-  //! Device représentant l'hôte.
+  //! Device representing the host.
   static DeviceId hostDevice() { return DeviceId(HOST_ID); }
 
-  //! Device nulle ou invalide.
+  //! Null or invalid device.
   static DeviceId nullDevice() { return DeviceId(NULL_ID); }
 
  public:
 
-  //! Indique si l'instance est associée à l'hôte.
+  //! Indicates if the instance is associated with the host.
   bool isHost() const { return m_device_id == HOST_ID; }
 
-  //! Indique si l'instance n'est associée à aucune device
+  //! Indicates if the instance is not associated with any device
   bool isNull() const { return m_device_id == NULL_ID; }
 
-  //! Indique si l'instance est associée à un accélérateur
+  //! Indicates if the instance is associated with an accelerator
   bool isAccelerator() const { return m_device_id >= 0; }
 
-  //! Valeur numérique du device.
+  //! Numerical value of the device.
   Int32 asInt32() const { return m_device_id; }
 
  public:

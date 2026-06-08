@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunnerImpl.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'un 'Runner'.                                             */
+/* Implementation of a 'Runner'.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_RUNNERIMPL_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_RUNNERIMPL_H
@@ -63,7 +63,7 @@ class RunnerImpl
 
  public:
 
-  //! Verrou pour le pool de RunQueue en multi-thread.
+  //! Lock for the RunQueue pool in multi-thread.
   class Lock
   {
    public:
@@ -106,7 +106,7 @@ class RunnerImpl
   RunQueueImplStack* getPool();
   void addTime(double v)
   {
-    // 'v' est en seconde. On le convertit en nanosecond.
+    // 'v' is in seconds. We convert it to nanoseconds.
     Int64 x = static_cast<Int64>(v * 1.0e9);
     m_cumulative_command_time += x;
   }
@@ -145,12 +145,12 @@ class RunnerImpl
   RunQueueImplStack m_run_queue_pool;
   std::mutex m_pool_mutex;
   /*!
-   * \brief Temps passé dans le noyau en nano-seconde. On utilise un 'Int64'
-   * car les atomiques sur les flottants ne sont pas supportés partout.
+   * \brief Time spent in the kernel in nanoseconds. We use an 'Int64'
+   * because atomics on floats are not supported everywhere.
    */
   std::atomic<Int64> m_cumulative_command_time = 0;
 
-  //! Indique si on pré-copie les données avant une commande de cette RunQueue
+  //! Indicates whether data is pre-copied before a command in this RunQueue
   bool m_is_auto_prefetch_command = false;
 
   RunnerInternal m_internal_api;

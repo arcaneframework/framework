@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NotSupportedException.cc                                    (C) 2000-2025 */
 /*                                                                           */
-/* Exception lorsqu'une opération n'est pas supportée.                       */
+/* Exception when an operation is not supported.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -74,7 +74,7 @@ NotSupportedException(const NotSupportedException& ex) ARCCORE_NOEXCEPT
 void NotSupportedException::
 explain(std::ostream& m) const
 {
-  m << "L'opération demandée n'est pas supportée.\n";
+  m << "The requested operation is not supported.\n";
 
   if (!m_message.null())
     m << "Message: " << m_message << '\n';
@@ -87,4 +87,3 @@ explain(std::ostream& m) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

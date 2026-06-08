@@ -17,7 +17,7 @@ endif()
 
 target_compile_features(arccore_base PUBLIC cxx_std_${ARCCORE_CXX_STANDARD})
 
-# Nécessaire pour pouvoir inclure 'arccore_config.h'
+# Necessary to include 'arccore_config.h'
 target_include_directories(arccore_base PUBLIC $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>)
 
 # ----------------------------------------------------------------------------

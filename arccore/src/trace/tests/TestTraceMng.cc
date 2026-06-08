@@ -22,7 +22,7 @@ TEST(TraceMng, FatalMessage)
 {
   ReferenceCounter<ITraceMng> tm(arccoreCreateDefaultTraceMng());
   TraceAccessor tr(tm.get());
-  // Vérfie que FatalErrorException a bien le bon message.
+  // Checks that FatalErrorException has the correct message.
   String message = "TestFatalError in utils";
   String new_message;
   bool is_ok = false;

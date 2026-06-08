@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConvertInternal.h                                           (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions pour convertir une chaîne de caractère en un type donné.        */
+/* Functions to convert a character string into a given type.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_INTERNAL_CONVERTINTERNAL_H
 #define ARCCORE_BASE_INTERNAL_CONVERTINTERNAL_H
@@ -25,33 +25,33 @@ namespace Arcane::Convert::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Informations sur le comportement des méthodes de conversion
+//! Information on the behavior of conversion methods
 class ARCCORE_BASE_EXPORT ConvertPolicy
 {
  public:
 
   /*!
-   * \brief Indique si on utilise 'std::from_chars' pour convertir
-   * les chaînes de caractères en un type numérique.
+   * \brief Indicates whether 'std::from_chars' is used to convert
+   * character strings into a numeric type.
    *
-   * Si on n'utilise pas 'std::from_chars', alors on utilise les fonctions
-   * telles que strtod(), strtol(), ...
+   * If 'std::from_chars' is not used, functions such as strtod(),
+   * strtol(), ... are used.
    *
-   * Le défaut en C++20 est d'utiliser std::from_chars().
+   * The default in C++20 is to use std::from_chars().
    */
   static void setUseFromChars(bool v) { m_use_from_chars = v; }
   static bool isUseFromChars() { return m_use_from_chars; }
 
-  //! Positionne le niveau de verbosité pour les fonctions de conversion.
+  //! Sets the verbosity level for conversion functions.
   static void setVerbosity(Int32 v) { m_verbosity = v; }
   static bool verbosity() { return m_verbosity; }
 
   /*!
-   * Si vrai, utilise le même mécanisme pour lire les 'RealN' que pour lire les 'Real'.
+   * If true, the same mechanism is used to read 'RealN' as to read 'Real'.
    *
-   * Avant la version 3.15 de Arcane, la lecture des 'Real' se fait via std::strtod()
-   * et celle des 'RealN' via std::istream. Si \a v est vrai, on utilise
-   * std::strtod() pour tout le monde (ou std::from_chars()) si disponible.
+   * Before version 3.15 of Arcane, reading 'Real' was done via std::strtod()
+   * and reading 'RealN' via std::istream. If \a v is true, std::strtod() is used
+   * for everyone (or std::from_chars()) if available.
    */
   static void setUseSameConvertForAllReal(bool v)
   {
@@ -71,8 +71,9 @@ class ARCCORE_BASE_EXPORT ConvertPolicy
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour convertir une 'StringView' en 'double'.
+ * \brief Class for converting a 'StringView' to 'double'.
  */
 class ARCCORE_BASE_EXPORT StringViewToDoubleConverter
 {
@@ -84,12 +85,13 @@ class ARCCORE_BASE_EXPORT StringViewToDoubleConverter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour convertir une 'StringView' en un type intégral.
+ * \brief Class for converting a 'StringView' to an integral type.
  *
- * Les méthode getValue() sont similaires dans leur sémantique aux
- * functions builtInGetValue() de Arcane à une exception près: elles
- * initialisent l'argument avec la valeur 0 ou false même en cas d'erreur.
+ * The getValue() methods are similar in semantics to the
+ * builtInGetValue() functions of Arcane with one exception: they
+ * initialize the argument with the value 0 or false even in case of an error.
  */
 class ARCCORE_BASE_EXPORT StringViewToIntegral
 {
@@ -116,5 +118,4 @@ _removeLeadingSpaces(StringView s, Int64 pos = 0);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

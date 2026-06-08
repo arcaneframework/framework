@@ -51,7 +51,7 @@ TEST(StringVector, Misc1)
   v3 = v2;
   ASSERT_EQ(v3.size(), 0);
 
-  // Test conversion vers/depuis StringList.
+  // Test conversion to/from StringList.
   {
     StringList sl3 = v3.toStringList();
     ASSERT_EQ(sl3.count(), 0);

@@ -7,13 +7,13 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorGlobal.cc                                        (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* General declarations for accelerator support.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/accelerator/AcceleratorGlobal.h"
 
-// Les fichiers suivants servent à tester que tout compile bien
+// The following files are used to test that everything compiles correctly
 #include "arccore/accelerator/Atomic.h"
 #include "arccore/accelerator/LocalMemory.h"
 #include "arccore/accelerator/Reduce.h"
@@ -26,16 +26,17 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file RunCommandLoop.h
  *
- * \brief Types et macros pour gérer les boucles sur les accélérateurs
+ * \brief Types and macros for managing loops on accelerators
  */
 
 /*!
  * \file Reduce.h
  *
- * \brief Types et fonctions pour gérer les synchronisations sur les accélérateurs
+ * \brief Types and functions for managing synchronizations on accelerators
  */
 
 /*---------------------------------------------------------------------------*/

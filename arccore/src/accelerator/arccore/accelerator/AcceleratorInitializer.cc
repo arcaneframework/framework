@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorInitializer.cc                                 (C) 2000-2026 */
+/* AcceleratorInitializer.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Initialiseur pour un runtime-accélérator.                                 */
+/* Initializer for a runtime accelerator.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -45,14 +45,14 @@ AcceleratorInitializer(bool use_accelerator, Int32 nb_thread)
 AcceleratorInitializer::
 ~AcceleratorInitializer()
 {
-  // Le destructeur doit être ici car la classe 'm_initializer' est opaque
-  // et n'est pas connu dans le fichier d'en-tête
+  // The destructor must be here because the class 'm_initializer' is opaque
+  // and is not known in the header file
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Politique d'exécution initialisée par défaut
+//! Default initialized execution policy
 eExecutionPolicy AcceleratorInitializer::
 executionPolicy() const
 {

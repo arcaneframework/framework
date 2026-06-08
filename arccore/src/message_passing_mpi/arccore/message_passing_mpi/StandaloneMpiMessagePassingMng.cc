@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation MPI du gestionnaire des échanges de messages.              */
+/* MPI implementation of the message exchange manager.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

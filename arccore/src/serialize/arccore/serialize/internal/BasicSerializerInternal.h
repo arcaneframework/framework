@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicSerializerInternal.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne de 'BasicSerializer'.                                      */
+/* Internal part of 'BasicSerializer'.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_SERIALIZE_BASICSERIALIZERINTERNAL_H
 #define ARCCORE_SERIALIZE_BASICSERIALIZERINTERNAL_H

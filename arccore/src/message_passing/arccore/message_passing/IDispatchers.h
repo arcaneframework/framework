@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDispatchers.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface du conteneur des dispatchers.                                   */
+/* Interface of the dispatcher container.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_IDISPATCHERS_H
 #define ARCCORE_MESSAGEPASSING_IDISPATCHERS_H
@@ -25,8 +25,9 @@ class IControlDispatcher;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du conteneur des dispatchers.
+ * \brief Interface of the dispatcher container.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IDispatchers
 {

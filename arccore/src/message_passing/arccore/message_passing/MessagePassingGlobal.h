@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MessagePassingGlobal.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Définitions globales de la composante 'MessagePassing' de 'Arccore'.      */
+/* Global definitions for the 'MessagePassing' component of 'Arccore'.       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGEPASSINGGLOBAL_H
 #define ARCCORE_MESSAGEPASSING_MESSAGEPASSINGGLOBAL_H
@@ -43,22 +43,23 @@ using Arcane::ITimeMetricCollector;
 
 namespace Arcane::MessagePassing
 {
+
 /*!
- * \brief Numéro correspondant à un rang nul.
+ * \brief Number corresponding to a null rank.
  *
- * La signification du rang nul dépend de la situation.
+ * The meaning of the null rank depends on the situation.
  *
  * \sa MessageRank.
  */
 static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
 
-//! Numéro correspondant à un rang nul
+//! Number corresponding to a null rank
 static const Int32 A_NULL_TAG_VALUE = static_cast<Int32>(-1);
 
-//! Numéro correspondant à MPI_ANY_SOURCE
+//! Number corresponding to MPI_ANY_SOURCE
 static const Int32 A_ANY_SOURCE_RANK = static_cast<Int32>(-2);
 
-//! Numéro correspondant à MPI_PROC_NULL
+//! Number corresponding to MPI_PROC_NULL
 static const Int32 A_PROC_NULL_RANK = static_cast<Int32>(-3);
 
 class Communicator;
@@ -94,28 +95,29 @@ class ISerializeMessageList;
 class IContigMachineShMemWinBaseInternal;
 
 /*!
- * \brief Types des réductions supportées.
+ * \brief Supported reduction types.
  */
 enum eReduceType
 {
-  ReduceMin, //!< Minimum des valeurs
-  ReduceMax, //!< Maximum des valeurs
-  ReduceSum  //!< Somme des valeurs
+  ReduceMin, //!< Minimum of values
+  ReduceMax, //!< Maximum of values
+  ReduceSum  //!< Sum of values
 };
 
 /*!
- * \brief Type d'attente.
+ * \brief Wait type.
  */
 enum eWaitType
 {
-  WaitAll = 0, //! Attend que tous les messages de la liste soient traités
-  WaitSome = 1, //! Attend que au moins un message de la liste soit traité
-  TestSome = 2, //! Traite uniquement les messages qui peuvent l'être sans attendre.
-  //! \deprecated Utiliser TestSome à la place
+  WaitAll = 0, //! Wait until all messages in the list are processed
+  WaitSome = 1, //! Wait until at least one message in the list is processed
+  TestSome = 2, //! Process only messages that can be processed without waiting.
+  //! \deprecated Use TestSome instead
   WaitSomeNonBlocking = 2
 };
+
 /*!
- * \brief Type indiquant si un message est bloquant ou non.
+ * \brief Type indicating whether a message is blocking or not.
  */
 enum eBlockingType
 {
@@ -125,8 +127,9 @@ enum eBlockingType
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type de message point à point.
+ * \brief Point-to-point message type.
  */
 enum ePointToPointMessageType
 {
@@ -235,7 +238,7 @@ using Arcane::MessagePassing::ISerializeMessageList;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: rendre obsolète et utiliser Arcane::MessagePassing à la place
+// TODO: deprecate and use Arcane::MessagePassing instead
 namespace Arcane::Parallel
 {
 using Arcane::MessagePassing::eReduceType;
@@ -273,5 +276,4 @@ using Arcane::MessagePassing::Communicator;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

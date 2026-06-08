@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArgumentException.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Exception lorsqu'un argument est invalide.                                */
+/* Exception when an argument is invalid.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARGUMENTEXCEPTION_H
 #define ARCCORE_BASE_ARGUMENTEXCEPTION_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Exception lorsqu'un argument est invalide.
+ * \brief Exception when an argument is invalid.
  */
 class ARCCORE_BASE_EXPORT ArgumentException
 : public Exception
@@ -51,5 +52,4 @@ class ARCCORE_BASE_EXPORT ArgumentException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

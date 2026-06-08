@@ -7,15 +7,16 @@
 /*---------------------------------------------------------------------------*/
 /* JSONPropertyReader.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Lecture de propriétés au format JSON.                                     */
+/* Reading properties in JSON format.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INTERNAL_JSONPROPERTYREADER_H
 #define ARCANE_UTILS_INTERNAL_JSONPROPERTYREADER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * NOTE: Les classes de ce fichier sont en cours de mise au point.
- * NOTE: L'API peut changer à tout moment. Ne pas utiliser en dehors de Arcane.
+ * NOTE: The classes in this file are under development.
+ * NOTE: The API may change at any time. Do not use outside of Arcane.
  */
 
 #include "arccore/common/JSONReader.h"
@@ -53,11 +54,12 @@ class JSONPropertyReader
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs de \a instance à partir de l'élément JSON \a jv.
+ * \brief Fills the values of \a instance from the JSON element \a jv.
  *
- * Les valeurs de la propriété doivent être dans un élément fils de \a jv
- * dont le nom est celui de la classe \a T.
+ * The property values must be in a child element of \a jv
+ * whose name is that of the class \a T.
  */
 template<typename T, typename PropertyType = T> inline void
 readFromJSON(JSONValue jv,T& instance)
@@ -78,4 +80,4 @@ readFromJSON(JSONValue jv,T& instance)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StackTrace.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Informations d'une pile d'appel.                                          */
+/* Information about a call stack.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_STACKTRACE_H
 #define ARCCORE_BASE_STACKTRACE_H
@@ -25,11 +25,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Conserve les adresses correspondantes à une pile d'appel.
- * Cette classe est interne et ne dois pas être utilisée en dehors d'Arccore.
- * \todo ajouter support pour windows.
+ * \brief Stores the addresses corresponding to a call stack.
+ * This class is internal and should not be used outside of Arccore.
+ * \todo add support for windows.
  */
 class StackFrame
 {
@@ -44,9 +45,10 @@ class StackFrame
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Conserve une liste de taille fixe maximale de StackFrame.
+ * \brief Stores a fixed maximum size list of StackFrame.
  */
 class FixedStackFrameArray
 {
@@ -58,9 +60,10 @@ class FixedStackFrameArray
   {
     return ConstArrayView<StackFrame>(m_nb_frame,m_addresses);
   }
+
   /*!
-   * \brief Ajoute \a frame à la liste des frames. Si nbFrame() est supérieur
-   * ou égal à MAX_FRAME, aucune opération n'est effectuée.
+   * \brief Adds a frame to the list of frames. If nbFrame() is greater
+   * than or equal to MAX_FRAME, no operation is performed.
    */
   void addFrame(const StackFrame& frame)
   {
@@ -71,16 +74,17 @@ class FixedStackFrameArray
   }
   Integer nbFrame() const { return m_nb_frame; }
  private:
-  //! Liste des adresses de la pile d'appel. Stocke au plus 32 appels.
+  //! List of call stack addresses. Stores up to 32 calls.
   StackFrame m_addresses[MAX_FRAME];
   Integer m_nb_frame;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations sur la pile d'appel des fonctions.
+ * \brief Information about function call stacks.
  */
 class ARCCORE_BASE_EXPORT StackTrace
 {
@@ -94,10 +98,10 @@ class ARCCORE_BASE_EXPORT StackTrace
 
  public:
 
-  //! Chaîne de caractères indiquant la pile d'appel.
+  //! String indicating the call stack.
   const String& toString() const { return m_stack_trace_string; }
 
-  //! Pile d'appel sous forme d'adresses.
+  //! Call stack in the form of addresses.
   ConstArrayView<StackFrame> stackFrames() const { return m_stack_frames.view(); }
 
  private:
@@ -109,7 +113,7 @@ class ARCCORE_BASE_EXPORT StackTrace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateur d'écriture d'une StackTrace
+//! Stream insertion operator for a StackTrace
 ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const StackTrace&);
 
 /*---------------------------------------------------------------------------*/
@@ -120,5 +124,4 @@ ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const StackTrace&);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

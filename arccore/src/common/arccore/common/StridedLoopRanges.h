@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StridedLoopRanges.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Gestion du lancement des noyaux de calcul sur accélérateur.               */
+/* Management of kernel launch on accelerator.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_STRIDEDLOOPRANGES_H
 #define ARCCORE_COMMON_STRIDEDLOOPRANGES_H
@@ -27,8 +27,9 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour gérer la décomposition d'une boucle en plusieurs parties.
+ * \brief Class to manage the decomposition of a loop into multiple parts.
  */
 class ARCCORE_COMMON_EXPORT StridedLoopRangesBase
 {
@@ -57,11 +58,11 @@ class ARCCORE_COMMON_EXPORT StridedLoopRangesBase
 
  private:
 
-  //! Valeur du pas
+  //! Stride value
   Int64 m_stride_value = 0;
-  //! Nombre d'éléments dans la boucle d'origine
+  //! Number of elements in the original loop
   Int64 m_nb_original_element = 0;
-  //! Nombre de pas
+  //! Number of strides
   Int32 m_nb_stride = 0;
 
  private:
@@ -75,8 +76,9 @@ class ARCCORE_COMMON_EXPORT StridedLoopRangesBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour gérer la décomposition d'une boucle en plusieurs parties.
+ * \brief Class to manage the decomposition of a loop into multiple parts.
  */
 template <typename LoopBoundType_>
 class StridedLoopRanges

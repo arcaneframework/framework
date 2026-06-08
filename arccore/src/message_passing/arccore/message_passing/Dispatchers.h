@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Dispatchers.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Conteneur des dispatchers.                                                */
+/* Dispatcher container.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_DISPATCHERS_H
 #define ARCCORE_MESSAGEPASSING_DISPATCHERS_H
@@ -26,8 +26,9 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du conteneur des dispatchers.
+ * \brief Interface of the dispatcher container.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
 : public IDispatchers
@@ -80,7 +81,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
   void setDispatcher(IControlDispatcher* x) { m_control = x; }
   void setDispatcher(ISerializeDispatcher* x) { m_serialize = x; }
 
-  //! Indique si lors de la destruction on appelle l'opérateur delete sur les instances (faux par défaut)
+  //! Indicates whether the delete operator is called on instances during
+  //! destruction (false by default)
   void setDeleteDispatchers(bool v) { m_is_delete_dispatchers = v; }
 
  private:
@@ -98,9 +100,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT Dispatchers
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // End namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

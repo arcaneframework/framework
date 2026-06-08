@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MessageSourceInfo.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur la source d'un message.                                  */
+/* Information about the source of a message.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGESOURCEINFO_H
 #define ARCCORE_MESSAGEPASSING_MESSAGESOURCEINFO_H
@@ -25,24 +25,25 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur la source d'un message.
+ * \brief Information about the source of a message.
  *
- * Ces informations sont utilisées pour récupérer les informations d'un
- * message suite à un appel à mpProbe() ou mpLegacyProbe().
- * L'instance retournée peut-être utilisée pour faire une réception via mpReceive().
+ * This information is used to retrieve message information following a call
+ * to mpProbe() or mpLegacyProbe().
+ * The returned instance can be used to perform a reception via mpReceive().
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessageSourceInfo
 {
  public:
 
-  //! Créé une source correspondant à aucun message (isValid()==false)
+  //! Creates a source corresponding to no message (isValid()==false)
   MessageSourceInfo() = default;
 
   /*!
-   * \brief Créé une source correspondant au rang \a rank et au tag \a tag.
+   * \brief Creates a source corresponding to rank \a rank and tag \a tag.
    *
-   * Si \a rank.isNull() ou tag.isNull(), alors isValid() vaudra \a false.
+   * If \a rank.isNull() or tag.isNull(), then isValid() will be \a false.
    */
   MessageSourceInfo(MessageRank rank, MessageTag tag, Int64 size)
   : m_rank(rank)
@@ -52,25 +53,25 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageSourceInfo
 
  public:
 
-  //! Rang de la source
+  //! Source rank
   MessageRank rank() const { return m_rank; }
 
-  //! Positionne le rang de la source
+  //! Sets the source rank
   void setRank(MessageRank rank) { m_rank = rank; }
 
-  //! Tag du message
+  //! Message tag
   MessageTag tag() const { return m_tag; }
 
-  //! Positionne le tag du message
+  //! Sets the message tag
   void setTag(MessageTag tag) { m_tag = tag; }
 
-  //! Taille du message
+  //! Message size
   Int64 size() const { return m_size; }
 
-  //! Positionne la taille du message
+  //! Sets the message size
   void setSize(Int64 size) { m_size = size; }
 
-  //! Indique si la source est valide
+  //! Indicates if the source is valid
   bool isValid() const { return !m_rank.isNull() && !m_tag.isNull(); }
 
  private:
@@ -88,5 +89,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageSourceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

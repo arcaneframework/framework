@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Cupti.h                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Intégration de CUPTI.                                                     */
+/* CUPTI Integration.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_NATIVE_RUNTIME_CUPTI_H
 #define ARCCORE_ACCELERATOR_NATIVE_RUNTIME_CUPTI_H
@@ -31,8 +31,9 @@ namespace Arcane::Accelerator::Cuda
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe singleton pour gérer CUPTI.
+ * \brief Singleton class to manage CUPTI.
  */
 class CuptiInfo
 {

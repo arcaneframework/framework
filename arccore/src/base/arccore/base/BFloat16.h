@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BFloat16.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Type flottant 'Brain Float16'.                                            */
+/* 'Brain Float16' floating-point type.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_BFLOAT16_H
 #define ARCCORE_BASE_BFLOAT16_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type 'Brain Float16'
+ * \brief 'Brain Float16' type
  */
 class ARCCORE_BASE_EXPORT BFloat16
 {
@@ -46,7 +47,7 @@ class ARCCORE_BASE_EXPORT BFloat16
   operator float() const { return _toFloat(); }
   friend bool operator==(const BFloat16& a, const BFloat16& b)
   {
-    // NOTE: Ne gère pas NaN.
+    // NOTE: Does not handle NaN.
     return a.m_v == b.m_v;
   }
   friend bool operator!=(const BFloat16& a, const BFloat16& b)

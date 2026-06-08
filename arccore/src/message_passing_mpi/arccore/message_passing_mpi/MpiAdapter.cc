@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiAdapter.cc                                               (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant MPI.                               */
+/* Parallelism manager using MPI.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -112,7 +112,7 @@ class MpiAdapter::RequestSet
       info() << "MpiAdapter: RemoveRequestIter r=" << request_iter->first;
     m_allocated_requests.erase(request_iter);
   }
-  //! Vérifie que la requête est dans la liste
+  //! Checks that the request is in the list
   Iterator findRequest(MPI_Request request)
   {
     if (m_no_check_request)
@@ -132,7 +132,7 @@ class MpiAdapter::RequestSet
   }
  private:
   /*!
-   * \warning Cette fonction doit etre appelee avec le verrou mpi_lock actif.
+   * \warning This function must be called with the mpi_lock lock active.
    */
   void _addRequest(MPI_Request request,const TraceInfo& trace_info)
   {
@@ -164,7 +164,7 @@ class MpiAdapter::RequestSet
   }
 
   /*!
-   * \warning Cette fonction doit être appelé avec le verrou mpi_lock actif.
+   * \warning This function must be called with the mpi_lock lock active.
    */
   void _removeRequest(MPI_Request request)
   {
@@ -214,7 +214,7 @@ class MpiAdapter::RequestSet
   bool m_request_error_is_fatal = false;
   bool m_is_report_error_in_request = true;
   bool m_trace_mpirequest = false;
-  //! Vrai si on vérifie pas les requêtes
+  //! True if requests are not checked
   bool m_no_check_request = true;
  private:
   std::map<MPI_Request,RequestInfo> m_allocated_requests;
@@ -277,30 +277,30 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
   ::MPI_Comm_rank(m_communicator,&m_comm_rank);
   ::MPI_Comm_size(m_communicator,&m_comm_size);
 
-  // Par defaut, on ne fait pas de profiling MPI, on utilisera la methode set idoine pour changer
+  // By default, we do not do MPI profiling; we will use the appropriate set
+  // method to change it
   if (!m_mpi_prof)
     m_mpi_prof = new NoMpiProfiling();
 
   /*!
-   * Ce type de requête est utilisé par openmpi à partir de
-   * la version 1.8 (il faut voir pour la 1.6, sachant que la 1.4 et 1.5
-   * ne l'ont pas). Cette requête fonctionne un peu comme MPI_REQUEST_NULL
-   * et il est possible qu'elle soit retournée plusieurs fois. Il ne faut
-   * donc pas mettre cette requête dans m_allocated_requests.
-   * On ne peut pas accéder directement à l'adresse de cette requête vide
-   * mais l'implémentation 1.8 de openmpi retourne cette requête lorsqu'on
-   * appelle un IRecv avec une source MPI_PROC_NULL. On récupère donc la valeur
-   * comme cela.
+   * This type of request is used by openmpi starting from version 1.8 (it needs
+   * to be checked for 1.6, knowing that 1.4 and 1.5 do not have it).
+   * This request works somewhat like MPI_REQUEST_NULL and it is possible that
+   * it is returned multiple times. Therefore, this request should not be put
+   * into m_allocated_requests. We cannot directly access the address of this
+   * empty request, but the 1.8 implementation of openmpi returns this request
+   * when calling an IRecv with an MPI_PROC_NULL source. We therefore retrieve
+   * the value like this.
    */
   MPI_Irecv(m_recv_buffer_for_empty_request, 1, MPI_CHAR, MPI_PROC_NULL,
             50505, m_communicator, &m_empty_request1);
 
   /*
-   * A partir de la version 4 de openmpi, il semble aussi que les send avec
-   * de petits buffers génèrent toujours la même requête. Il faut donc aussi
-   * la supprimer des requêtes à tester. On poste aussi le MPI_Recv correspondant
-   * pour éviter que le MPI_ISend puisse involontairement être utilisé dans un
-   * MPI_Recv de l'utilisateur (via par exemple un MPI_Recv(MPI_ANY_TAG).
+   * Starting from version 4 of openmpi, it also seems that sends with small
+   * buffers always generate the same request. Therefore, it must also be
+   * removed from the requests to test. We also post the corresponding
+   * MPI_Recv to prevent MPI_ISend from being unintentionally used in a
+   * user MPI_Recv (e.g., via MPI_Recv(MPI_ANY_TAG)).
    */
   m_send_buffer_for_empty_request2[0] = 0;
   MPI_Isend(m_send_buffer_for_empty_request2, 1, MPI_CHAR, m_comm_rank,
@@ -343,9 +343,8 @@ void MpiAdapter::
 _checkHasNoRequests()
 {
   Int64 nb_request = m_request_set->nbRequest();
-  // On ne peut pas faire ce test dans le destructeur car il peut
-  // potentiellement lancé une exception et cela ne doit pas être fait
-  // dans un destructeur.
+  // We cannot perform this test in the destructor because it could
+  // potentially throw an exception, and this should not be done in a destructor.
   if (nb_request!=0){
     warning() << " Pending mpi requests size=" << nb_request;
     m_request_set->printRequests();
@@ -443,7 +442,7 @@ broadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
   m_mpi_prof->broadcast(buf, _nb_elem, datatype, root, m_communicator);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add(MpiInfo(eMpiName::Bcast).name(),sr_time,0);
 }
 
@@ -461,7 +460,7 @@ nonBlockingBroadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
   ret = MPI_Ibcast(buf,_nb_elem,datatype,root,m_communicator,&mpi_request);
   double end_time = MPI_Wtime();
   double sr_time = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add("IBroadcast",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
   return buildRequest(ret,mpi_request);
@@ -481,7 +480,7 @@ gather(const void* send_buf,void* recv_buf,Int64 nb_elem,Int32 root,MPI_Datatype
   m_mpi_prof->gather(_sbuf, _nb_elem, datatype, recv_buf, _nb_elem, datatype, _root, m_communicator);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add(MpiInfo(eMpiName::Gather).name(),sr_time,0);
 }
 
@@ -503,7 +502,7 @@ nonBlockingGather(const void* send_buf,void* recv_buf,
                     m_communicator,&mpi_request);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add("IGather",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
   return buildRequest(ret,mpi_request);
@@ -523,7 +522,7 @@ allGather(const void* send_buf,void* recv_buf,
   m_mpi_prof->allGather(_sbuf, _nb_elem, datatype, recv_buf, _nb_elem, datatype, m_communicator);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add(MpiInfo(eMpiName::Allgather).name(),sr_time,0);
 }
 
@@ -544,7 +543,7 @@ nonBlockingAllGather(const void* send_buf,void* recv_buf,
                        m_communicator,&mpi_request);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add("IAllGather",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
   return buildRequest(ret,mpi_request);
@@ -565,7 +564,7 @@ gatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
   m_mpi_prof->gatherVariable(_sbuf, _nb_elem, datatype, recv_buf, recv_counts, recv_indexes, datatype, _root, m_communicator);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add(MpiInfo(eMpiName::Gatherv).name().localstr(),sr_time,0);
 }
 
@@ -587,7 +586,7 @@ allGatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
   m_mpi_prof->allGatherVariable(_sbuf, _nb_elem, datatype, recv_buf, recv_counts, recv_indexes, datatype, m_communicator);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add(MpiInfo(eMpiName::Allgatherv).name().localstr(),sr_time,0);
 }
 
@@ -615,7 +614,7 @@ scatterVariable(const void* send_buf,const int* send_count,const int* send_index
                          m_communicator);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add(MpiInfo(eMpiName::Scatterv).name(),sr_time,0);
 }
 
@@ -632,7 +631,7 @@ allToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Datatype datatype
   m_mpi_prof->allToAll(_sbuf, icount, datatype, recv_buf, icount, datatype, m_communicator);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add(MpiInfo(eMpiName::Alltoall).name().localstr(),sr_time,0);
 }
 
@@ -651,7 +650,7 @@ nonBlockingAllToAll(const void* send_buf,void* recv_buf,Integer count,MPI_Dataty
   ret = MPI_Ialltoall(_sbuf,icount,datatype,recv_buf,icount,datatype,m_communicator,&mpi_request);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add("IAllToAll",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
   return buildRequest(ret,mpi_request);
@@ -677,7 +676,7 @@ allToAllVariable(const void* send_buf,const int* send_counts,
                           recv_buf, _recv_counts, _recv_indexes, datatype, m_communicator);
   double end_time = MPI_Wtime();
   double sr_time   = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add(MpiInfo(eMpiName::Alltoallv).name(),sr_time,0);
 }
 
@@ -704,7 +703,7 @@ nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
                        m_communicator,&mpi_request);
   double end_time = MPI_Wtime();
   double sr_time = (end_time-begin_time);
-  //TODO determiner la taille des messages
+  //TODO determine the message size
   m_stat->add("IAllToAll",sr_time,0);
   ARCCORE_ADD_REQUEST(mpi_request);
   return buildRequest(ret,mpi_request);
@@ -716,10 +715,10 @@ nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
 void MpiAdapter::
 barrier()
 {
-  // TODO: a priori on ne devrait pas avoir de requêtes en vol possible
-  // entre deux barrières pour éviter tout problème.
+  // TODO: theoretically there should not be any pending requests
+  // between two barriers to avoid any issues.
   // _checkHasNoRequests();
-  // TODO ajouter trace correspondante pour le profiling.
+  // TODO add corresponding trace for profiling.
   MPI_Barrier(m_communicator);
 }
 
@@ -904,10 +903,10 @@ directSend(const void* send_buffer,Int64 send_buffer_size,
            << " datatype=" << data_type
            << " blocking " << is_blocked;
   if (is_blocked){
-    // si m_mpi_lock n'est pas nul, il faut
-    // utiliser un MPI_ISend suivi d'une boucle
-    // active de MPI_Test pour eviter tout probleme
-    // de dead lock.
+    // if m_mpi_lock is not null, we must
+    // use an MPI_ISend followed by an
+    // active MPI_Test loop to avoid any
+    // dead lock issues.
     if (m_mpi_lock){
       {
         MpiLock::Section mls(m_mpi_lock);
@@ -955,7 +954,7 @@ directSend(const void* send_buffer,Int64 send_buffer_size,
   
   debug(Trace::High) << "MPI Send: send " << send_size
                      << " time " << sr_time << " blocking " << is_blocked;
-  // TODO(FL): regarder comment faire pour profiler le Isend
+  // TODO(FL): look into how to profile Isend
   m_stat->add(MpiInfo(eMpiName::Send).name(),end_time-begin_time,send_size);
   return buildRequest(ret,mpi_request);
 }
@@ -1035,10 +1034,10 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
            << " blocking=" << is_blocked;
   }
   if (is_blocked){
-    // si m_mpi_lock n'est pas nul, il faut
-    // utiliser un MPI_IRecv suivi d'une boucle
-    // active de MPI_Test pour eviter tout probleme
-    // de dead lock.
+    // if m_mpi_lock is not null, we must
+    // use an MPI_IRecv followed by an
+    // active MPI_Test loop to avoid any
+    // dead lock issues.
     if (m_mpi_lock){
       {
         MpiLock::Section mls(m_mpi_lock);
@@ -1118,7 +1117,7 @@ probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc)
 MessageSourceInfo MpiAdapter::
 _buildSourceInfoFromStatus(const MPI_Status& mpi_status)
 {
-  // Récupère la taille en octet du message.
+  // Retrieves the message size in bytes.
   MPI_Count message_size = 0;
   MPI_Get_elements_x(&mpi_status,MPI_BYTE,&message_size);
   MessageTag tag(mpi_status.MPI_TAG);
@@ -1172,7 +1171,7 @@ probeMessage(PointToPointMessageInfo message)
   if (!message.isValid())
     return MessageId();
 
-  // Il faut avoir initialisé le message avec un couple (rang/tag).
+  // The message must be initialized with a (rank/tag) pair.
   if (!message.isRankTag())
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
@@ -1220,7 +1219,7 @@ legacyProbeMessage(PointToPointMessageInfo message)
   if (!message.isValid())
     return {};
 
-  // Il faut avoir initialisé le message avec un couple (rang/tag).
+  // The message must be initialized with a (rank/tag) pair.
   if (!message.isRankTag())
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
@@ -1229,7 +1228,8 @@ legacyProbeMessage(PointToPointMessageInfo message)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Réception via MPI_Mrecv() ou MPI_Imrecv()
+
+//! Reception via MPI_Mrecv() or MPI_Imrecv()
 Request MpiAdapter::
 directRecv(void* recv_buffer,Int64 recv_buffer_size,
            MessageId message,Int64 elem_size,MPI_Datatype data_type,
@@ -1251,10 +1251,10 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
            << " blocking=" << is_blocked;
   }
   if (is_blocked){
-    // si m_mpi_lock n'est pas nul, il faut
-    // utiliser un MPI_IRecv suivi d'une boucle
-    // active de MPI_Test pour eviter tout probleme
-    // de dead lock.
+    // if m_mpi_lock is not null, we must
+    // use an MPI_IRecv followed by an
+    // active MPI_Test loop to avoid any
+    // dead lock issues.
     if (m_mpi_lock){
       {
         MpiLock::Section mls(m_mpi_lock);
@@ -1328,7 +1328,7 @@ waitAllRequests(ArrayView<Request> requests)
   UniqueArray<bool> indexes(requests.size());
   UniqueArray<MPI_Status> mpi_status(requests.size());
   while (_waitAllRequestsMPI(requests, indexes, mpi_status)){
-    ; // Continue tant qu'il y a des requêtes.
+    ; // Continue as long as there are requests.
   }
 }
 
@@ -1376,11 +1376,11 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
     MpiLock::Section mls(m_mpi_lock);
     for( Integer i=0; i<size; ++i ) {
       if (done_indexes[i]){
-        // Attention à bien utiliser une référence sinon le reset ne
-        // s'applique pas à la bonne variable
+        // Be careful to use a reference, otherwise the reset won't
+        // apply to the correct variable
         Request& r = requests[i];
-        // Note: la requête peut ne pas être valide (par exemple s'il s'agit)
-        // d'une requête bloquante mais avoir tout de même une sous-requête.
+        // Note: the request might not be valid (for example, if it is)
+        // a blocking request but still have a sub-request.
         if (r.hasSubRequest()){
           if (m_is_trace)
             info() << "Done request with sub-request r=" << r << " mpi_r=" << r << " i=" << i
@@ -1396,12 +1396,11 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
     }
   }
 
-  // NOTE: les appels aux sous-requêtes peuvent générer d'autres requêtes.
-  // Il faut faire attention à ne pas utiliser les sous-requêtes avec
-  // le verrou actif.
+  // NOTE: calls to sub-requests can generate other requests.
+  // Care must be taken not to use sub-requests while the lock is active.
   bool has_new_request = false;
   if (!new_requests.empty()){
-    // Contient le status de la \a ième requête
+    // Contains the status of the i-th request
     UniqueArray<MPI_Status> old_status(size);
     {
       Integer index = 0;
@@ -1412,7 +1411,7 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
         }
       }
     }
-    // S'il y a des nouvelles requêtes, il faut décaler les valeurs de 'status'
+    // If there are new requests, the values in 'status' must be shifted
     for( SubRequestInfo& sri : new_requests ){
       Integer index = sri.index;
       if (m_is_trace)
@@ -1423,9 +1422,9 @@ _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
       Request r = sri.sub_request->executeOnCompletion(completion_info);
       if (m_is_trace)
         info() << "Handle new request index=" << index << " old_r=" << requests[index] << " new_r=" << r;
-      // S'il y a une nouvelle requête, alors elle remplace
-      // l'ancienne et donc il faut faire comme si
-      // la requête d'origine n'est pas terminée.
+      // If there is a new request, it replaces
+      // the old one, so we must act as if
+      // the original request is not finished.
       if (r.isValid()){
         has_new_request = true;
         requests[index] = r;
@@ -1457,7 +1456,7 @@ _waitAllRequestsMPI(ArrayView<Request> requests,
   Integer size = requests.size();
   if (size==0)
     return false;
-  //ATTENTION: Mpi modifie en retour de MPI_Waitall ce tableau
+  //ATTENTION: Mpi modifies this array upon return from MPI_Waitall
   UniqueArray<MPI_Request> mpi_request(size);
   for( Integer i=0; i<size; ++i ){
     mpi_request[i] = (MPI_Request)(requests[i]);
@@ -1479,7 +1478,7 @@ _waitAllRequestsMPI(ArrayView<Request> requests,
     diff_time = end_time - begin_time;
   }
   else{
-    //TODO: transformer en boucle while et MPI_Testall si m_mpi_lock est non nul
+    //TODO: transform into a while loop and MPI_Testall if m_mpi_lock is non-null
     MpiLock::Section mls(m_mpi_lock);
     double begin_time = MPI_Wtime();
     m_mpi_prof->waitAll(size, mpi_request.data(), mpi_status.data());
@@ -1487,7 +1486,7 @@ _waitAllRequestsMPI(ArrayView<Request> requests,
     diff_time = end_time - begin_time;
   }
 
-  // Indique que chaque requête est traitée car on a fait un waitall.
+  // Indicates that each request has been processed because we performed a waitall.
   for( Integer i=0; i<size; ++i ){
     indexes[i] = true;
   }
@@ -1509,18 +1508,18 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
   Integer size = requests.size();
   if (size==0)
     return;
-  //TODO: utiliser des StackArray (quand ils seront disponibles...)
+  //TODO: use StackArray (when they become available...)
   UniqueArray<MPI_Request> mpi_request(size);
   UniqueArray<MPI_Request> saved_mpi_request(size);
   UniqueArray<int> completed_requests(size);
   int nb_completed_request = 0;
 
-  // Sauve la requete pour la desallouer dans m_allocated_requests,
-  // car sa valeur ne sera plus valide après appel à MPI_Wait*
+  // Save the request to deallocate it in m_allocated_requests,
+  // because its value will no longer be valid after calling MPI_Wait*
   for (Integer i = 0; i < size; ++i) {
-    // Dans le cas où l'on appelle cette méthode plusieurs fois
-    // avec le même tableau de requests, il se peut qu'il y ai des
-    // requests invalides qui feront planter l'appel à MPI.
+    // In the case where this method is called multiple times
+    // with the same requests array, there may be invalid
+    // requests that will crash the MPI call.
     if (!requests[i].isValid()) {
       saved_mpi_request[i] = MPI_REQUEST_NULL;
     }
@@ -1529,8 +1528,8 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
     }
   }
 
-  // N'affiche le debug que en mode bloquant ou si explicitement demandé pour
-  // éviter trop de messages
+  // Only display debug in blocking mode or if explicitly requested to
+  // avoid too many messages
   bool is_print_debug = m_is_trace || (!is_non_blocking);
   if (is_print_debug)
     debug() << "WaitRequestBegin is_non_blocking=" << is_non_blocking << " n=" << size;
@@ -1546,7 +1545,7 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
                              completed_requests.data(), mpi_status.data());
       }
       //If there is no active handle in the list, it returns outcount = MPI_UNDEFINED.
-      if (nb_completed_request == MPI_UNDEFINED) // Si aucune requete n'etait valide.
+      if (nb_completed_request == MPI_UNDEFINED) // If no requests were valid.
       	nb_completed_request = 0;
       if (is_print_debug)
         debug() << "WaitSomeRequestMPI: TestSome nb_completed=" << nb_completed_request;
@@ -1554,15 +1553,15 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
     else{
       _trace(MpiInfo(eMpiName::Waitsome).name().localstr());
       {
-        // TODO: si le verrou existe, il faut faire une boucle de testSome() pour ne
-        // pas bloquer.
+        // TODO: if the lock exists, a testSome() loop must be performed
+        // so as not to block.
         MpiLock::Section mls(m_mpi_lock);
         m_mpi_prof->waitSome(size, saved_mpi_request.data(), &nb_completed_request,
                              completed_requests.data(), mpi_status.data());
       }
-      // Il ne faut pas utiliser mpi_request[i] car il est modifié par Mpi
+      // One must not use mpi_request[i] because it is modified by Mpi
       // mpi_request[i] == MPI_REQUEST_NULL
-      if (nb_completed_request == MPI_UNDEFINED) // Si aucune requete n'etait valide.
+      if (nb_completed_request == MPI_UNDEFINED) // If no requests were valid.
       	nb_completed_request = 0;
       if (is_print_debug)
         debug() << "WaitSomeRequest nb_completed=" << nb_completed_request;
@@ -1594,9 +1593,9 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
 
   bool has_new_request = _handleEndRequests(requests,indexes,mpi_status);
   if (has_new_request){
-    // Si on a de nouvelles requêtes, alors il est possible qu'aucune
-    // requête n'aie aboutie. En cas de testSome, cela n'est pas grave.
-    // En cas de waitSome, cela signifie qu'il faut attendre à nouveau.
+    // If there are new requests, it is possible that no
+    // request has completed. In the case of testSome, this is not serious.
+    // In the case of waitSome, this means that we must wait again.
   }
   double end_time = MPI_Wtime();
   m_stat->add(MpiInfo(eMpiName::Waitsome).name(),end_time-begin_time,size);
@@ -1629,7 +1628,7 @@ freeRequest(Request& request)
 bool MpiAdapter::
 testRequest(Request& request)
 {
-  // Il est autorisé par MPI de faire un test avec une requête nulle.
+  // It is allowed by MPI to perform a test with a null request.
   if (!request.isValid())
     return true;
 
@@ -1639,9 +1638,9 @@ testRequest(Request& request)
   {
     MpiLock::Section mls(m_mpi_lock);
 
-    // Il faut d'abord recuperer l'emplacement de la requete car si elle
-    // est finie, elle sera automatiquement libérée par MPI lors du test
-    // et du coup on ne pourra plus la supprimer
+    // First, we must retrieve the request location because if it
+    // is finished, it will be automatically freed by MPI during the test
+    // and thus we will no longer be able to remove it
     RequestSet::Iterator request_iter = m_request_set->findRequest(mr);
 
     m_mpi_prof->test(&mr, &is_finished, (MPI_Status *) MPI_STATUS_IGNORE);
@@ -1660,8 +1659,9 @@ testRequest(Request& request)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \warning Cette fonction doit etre appelee avec le verrou mpi_lock actif.
+ * \warning This function must be called with the mpi_lock lock active.
  */
 void MpiAdapter::
 _addRequest(MPI_Request request)
@@ -1671,8 +1671,9 @@ _addRequest(MPI_Request request)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \warning Cette fonction doit etre appelee avec le verrou mpi_lock actif.
+ * \warning This function must be called with the mpi_lock lock active.
  */
 void MpiAdapter::
 _removeRequest(MPI_Request request)

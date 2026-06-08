@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiLock.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Verrou pour les appels MPI.                                               */
+/* Lock for MPI calls.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPILOCK_H
 #define ARCANE_PARALLEL_MPI_MPILOCK_H
@@ -27,18 +27,18 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Verrou pour les appels MPI.
+ * \brief Lock for MPI calls.
  *
- * Ce verrou sert en multi-threading pour sérialiser les appels
- * MPI en mode MPI_THREAD_SERIALIZED de MPI_Init_thread.
+ * This lock is used in multi-threading to serialize MPI calls in
+ * MPI_THREAD_SERIALIZED mode of MPI_Init_thread.
  */
 class MpiLock
 {
  public:
 
-  // Le spin lock est plus performant mais ne permet pas d'utiliser
-  // valgrind.
+  // The spin lock is more performant but does not allow using valgrind.
 
   //typedef SpinLock LockType;
 
@@ -79,5 +79,4 @@ class MpiLock
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

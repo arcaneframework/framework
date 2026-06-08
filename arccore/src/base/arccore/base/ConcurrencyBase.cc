@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConcurrencyBase.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Classes de base pour la gestion du multi-threading.                       */
+/* Base classes for multi-threading management.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,11 +27,12 @@ ParallelLoopOptions ConcurrencyBase::m_default_loop_options;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne le nombre maximum de thread à utiliser.
+ * \brief Sets the maximum number of threads to use.
  *
- * Cette méthode doit être appelée par l'implémentation de ITaskImplementation
- * lors de l'initialisation. Il ne faut plus la modifier ensuite.
+ * This method must be called by the ITaskImplementation implementation
+ * during initialization. It should not be modified afterward.
  */
 void ConcurrencyBase::
 _setMaxAllowedThread(Int32 v)

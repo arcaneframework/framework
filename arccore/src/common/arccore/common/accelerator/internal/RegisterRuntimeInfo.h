@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RegisterRuntimeInfo.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour initialiser le runtime accélérateur.                    */
+/* Information to initialize the accelerator runtime.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_REGISTERRUNTIMEINFO_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_REGISTERRUNTIMEINFO_H
@@ -24,8 +24,9 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour initialiser le runtime accélérateur.
+ * \brief Information to initialize the accelerator runtime.
  */
 class RegisterRuntimeInfo
 {

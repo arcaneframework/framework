@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ReferenceCounter.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Encapsulation d'un pointeur avec compteur de référence.                   */
+/* Encapsulation of a pointer with a reference counter.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_REFERENCECOUNTER_H
 #define ARCCORE_BASE_REFERENCECOUNTER_H
@@ -25,19 +25,20 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Encapsulation d'un pointeur avec compteur de référence.
+ * \brief Encapsulation of a pointer with a reference counter.
  *
- * Cette classe renferme un pointeur d'un type qui doit implémenter
- * les méthodes suivantes:
- * - addReference() pour ajouter une référence
- * - removeReference() pour supprimer une référence.
+ * This class holds a pointer of a type that must implement
+ * the following methods:
+ * - addReference() to add a reference
+ * - removeReference() to remove a reference.
  *
- * A la différence de std::shared_ptr, le compteur de référence est donc géré
- * en interne par le type *T*.
- * Cette classe n'effectue aucune action basée sur la valeur de compteur de référence.
- *  la destruction éventuelle de l'objet lorsque le compteur de référence arrive
- * à zéro est gérée par l'objet lui même.
+ * Unlike std::shared_ptr, the reference counter is managed
+ * internally by the type *T*.
+ * This class performs no action based on the reference counter value.
+ * the eventual destruction of the object when the reference counter reaches
+ * zero is handled by the object itself.
  */
 template<class T>
 class ReferenceCounter
@@ -45,53 +46,53 @@ class ReferenceCounter
 {
  public:
 
-  //! Type de la classe de base
+  //! Type of the base class
   typedef CheckedPointer<T> BaseClass;
 
   using BaseClass::m_value;
 
  public:
 
-  //! Construit une instance sans référence
+  //! Constructs an instance without a reference
   ReferenceCounter() : BaseClass(nullptr) {}
-  //! Construit une instance référant \a t
+  //! Constructs an instance referencing \a t
   explicit ReferenceCounter(T* t) : BaseClass(nullptr) { _changeValue(t); }
-  //! Construit une référence référant \a from
+  //! Constructs a reference referencing \a from
   ReferenceCounter(const ReferenceCounter<T>& from)
   : BaseClass(nullptr) { _changeValue(from.m_value); }
 
-  //! Opérateur de copie
+  //! Copy operator
   ReferenceCounter<T>& operator=(const ReferenceCounter<T>& from)
   {
     _changeValue(from.m_value);
     return (*this);
   }
 
-  //! Affecte à l'instance la value \a new_value
+  //! Assigns the value \a new_value to the instance
   ReferenceCounter<T>& operator=(T* new_value)
   {
     _changeValue(new_value);
     return (*this);
   }
 
-  //! Destructeur. Décrément le compteur de référence de l'objet pointé
+  //! Destructor. Decrements the reference counter of the pointed object
   ~ReferenceCounter() { _removeRef(); }
 
  private:
 	
-  //! Supprimer une référence à l'objet encapsulé si non nul
+  //! Removes a reference to the encapsulated object if not null
   void _removeRef()
   {
     if (m_value)
       ReferenceCounterAccessor<T>::removeReference(m_value);
   }
-  //! Change l'objet référencé en \a new_value
+  //! Changes the referenced object to \a new_value
   void _changeValue(T* new_value)
   {
     if (m_value==new_value)
       return;
-    // Toujours ajouter avant pour le cas où la nouvelle valeur
-    // et l'ancienne seraient issues de la même instance.
+    // Always add first in case the new value
+    // and the old value are from the same instance.
     if (new_value)
       ReferenceCounterAccessor<T>::addReference(new_value);
     _removeRef();
@@ -107,5 +108,4 @@ class ReferenceCounter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

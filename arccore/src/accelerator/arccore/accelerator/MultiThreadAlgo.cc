@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MultiThreadAlgo.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation des algorithmes accélérateurs en mode multi-thread.        */
+/* Implementation of accelerator algorithms in multi-thread mode.            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

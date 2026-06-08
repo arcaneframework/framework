@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArccoreApplicationBuildInfo.cc                              (C) 2000-2026 */
 /*                                                                           */
-/* Informations pour construire une instance de IApplication.                */
+/* Information to build an instance of IApplication.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -39,7 +39,7 @@ namespace
 ArccoreApplicationBuildInfoImpl::ArccoreApplicationBuildInfoImpl()
 : m_nb_task_thread(-1)
 {
-  // Fixe une limite pour le nombre de tâches
+  // Sets a limit for the number of tasks
   m_nb_task_thread.setValidator([](Int32& x) { _clamp(x, -1, 512); });
 }
 
@@ -197,7 +197,7 @@ addParameter(const String& name, const String& value)
 void ArccoreApplicationBuildInfo::
 parseArgumentsAndSetDefaultsValues(const CommandLineArguments& command_line_args)
 {
-  // On ne récupère que les arguments du style:
+  // Only retrieve arguments of the style:
   //   -A,x=b,y=c
   StringList names;
   StringList values;

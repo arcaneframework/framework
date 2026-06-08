@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorMemoryAllocatorBase.h                            (C) 2000-2026 */
 /*                                                                           */
-/* Classe de base d'un allocateur spécifique pour accélérateur.              */
+/* Base class of a specific allocator for accelerator.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_ACCELERATORMEMORYALLOCATORBASE_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_ACCELERATORMEMORYALLOCATORBASE_H
@@ -35,16 +35,15 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe commune pour gérer l'allocation par bloc.
+ * \brief Common class for managing block allocation.
  *
- * Cette classe permet de garantir qu'on alloue la mémoire sur des
- * multiples de la taille d'un bloc.
- * Cela est notamment utilisé pour la mémoire unifiée ce qui permet d'éviter
- * des effets de bord entre les allocations pour les transferts
- * entre l'accélérateur CPU et l'hôte.
+ * This class ensures that memory is allocated in multiples of a block size.
+ * This is particularly used for unified memory, which helps avoid side effects
+ * between allocations for transfers between the CPU accelerator and the host.
  *
- * Par défaut on alloue un multiple de 128 octets.
+ * By default, it allocates a multiple of 128 bytes.
  */
 class ARCCORE_COMMON_EXPORT BlockAllocatorWrapper
 {
@@ -65,14 +64,13 @@ class ARCCORE_COMMON_EXPORT BlockAllocatorWrapper
     const bool do_page = m_do_block_allocate;
     if (!do_page)
       return wanted_capacity;
-    // Alloue un multiple de la taille d'un bloc
-    // Pour la mémoire unifiée, la taille de bloc est une page mémoire.
-    // Comme les transfers de la mémoire unifiée se font par page,
-    // cela permet de détecter quelles allocations provoquent le transfert.
-    // On se débrouille aussi pour limiter les différentes taille
-    // de bloc alloué pour éviter d'avoir trop de blocs de taille
-    // différente pour que l'éventuel MemoryPool ne contienne trop
-    // de valeurs.
+    // Allocates a multiple of the block size
+    // For unified memory, the block size is a memory page.
+    // Since unified memory transfers happen page by page,
+    // this allows detecting which allocations trigger a transfer.
+    // We also handle limiting the different block sizes
+    // allocated to prevent the eventual MemoryPool from containing too
+    // many values.
     Int64 orig_capacity = wanted_capacity;
     Int64 new_size = orig_capacity * element_size;
     Int64 block_size = m_block_size;
@@ -103,18 +101,18 @@ class ARCCORE_COMMON_EXPORT BlockAllocatorWrapper
 
  private:
 
-  //! Taille d'un bloc. L'allocation sera un multiple de cette taille
+  //! Block size. Allocation will be a multiple of this size
   Int64 m_block_size = 128;
-  //! Indique si l'allocation en utilisant \a m_block_size
+  //! Indicates whether allocation using \a m_block_size
   bool m_do_block_allocate = true;
-  //! Nombre d'allocations
+  //! Number of allocations
   std::atomic<Int32> m_nb_allocate = 0;
-  //! Nombre d'allocations non alignées
+  //! Number of unaligned allocations
   std::atomic<Int32> m_nb_unaligned_allocate = 0;
 
  private:
 
-  // Calcule la plus petite valeur de \a multiple de \a multiple
+  // Calculates the smallest value of \a n multiple of \a multiple
   static Int64 _computeNextMultiple(Int64 n, Int64 multiple)
   {
     Int64 new_n = n / multiple;
@@ -126,8 +124,9 @@ class ARCCORE_COMMON_EXPORT BlockAllocatorWrapper
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'un allocateur spécifique pour accélérateur.
+ * \brief Base class of a specific allocator for accelerator.
  */
 class ARCCORE_COMMON_EXPORT AcceleratorMemoryAllocatorBase
 : public AlignedMemoryAllocator
@@ -139,7 +138,7 @@ class ARCCORE_COMMON_EXPORT AcceleratorMemoryAllocatorBase
 
  public:
 
-  //! Liste des flags pour le pool mémoire à activer
+  //! List of flags for the memory pool to activate
   enum class MemoryPoolFlags
   {
     UVM = 1,
@@ -187,9 +186,9 @@ class ARCCORE_COMMON_EXPORT AcceleratorMemoryAllocatorBase
     size_t mem_size = mem_info.capacity();
     if (m_use_memory_pool)
       _removeHint(ptr, mem_size, args);
-    // Ne lève pas d'exception en cas d'erreurs lors de la désallocation
-    // car elles ont souvent lieu dans les destructeurs et cela provoque
-    // un arrêt du code par std::terminate().
+    // Do not throw an exception in case of deallocation errors
+    // because they often happen in destructors and cause
+    // the code to terminate via std::terminate().
     m_tracer.traceDeallocate(mem_info, args);
     m_sub_allocator->freeMemory(ptr, mem_size);
   }
@@ -229,11 +228,11 @@ class ARCCORE_COMMON_EXPORT AcceleratorMemoryAllocatorBase
 
  protected:
 
-  //! Initialisation pour la mémoire UVM
+  //! Initialization for UVM memory
   void _doInitializeUVM(bool default_use_memory_pool = false);
-  //! Initialisation pour la mémoire HostPinned
+  //! Initialization for HostPinned memory
   void _doInitializeHostPinned(bool default_use_memory_pool = false);
-  //! Initialisation pour la mémoire Device
+  //! Initialization for Device memory
   void _doInitializeDevice(bool default_use_memory_pool = false);
 
  protected:
@@ -242,7 +241,7 @@ class ARCCORE_COMMON_EXPORT AcceleratorMemoryAllocatorBase
 
  private:
 
-  // IMPORTANT: doit être appelé avant toute allocation et ne plus être modifié ensuite.
+  // IMPORTANT: must be called before any allocation and must not be modified afterwards.
   void _setUseMemoryPool(bool is_used);
 };
 

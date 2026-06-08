@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumericTraits.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Vue sur un tableaux multi-dimensionnel pour les types numériques.         */
+/* View of a multi-dimensional array for numeric types.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_NUMERICTRAITS_H
 #define ARCCORE_BASE_NUMERICTRAITS_H
@@ -24,25 +24,26 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour les types numériques.
+ * \brief Information for numeric types.
  *
- * Permet d'indiquer si un type numérique à un ou plusieurs opérateurs
- * 'operator[]' ainsi que leur type de retour.
+ * Allows indicating if a numeric type has one or more operators
+ * 'operator[]' as well as their return type.
  */
 template<typename DataType>
 class NumericTraitsT
 {
-  //! Type de retour de operator[]
+  //! Return type of operator[]
   // using SubscriptType = Real2;
 
-  //! Type de retour de operator[] const
+  //! Return type of operator[] const
   // using SubscriptConstType = Real2;
 
-  //! Type de retour de operator[][]
+  //! Return type of operator[][]
   // using Subscript2Type = Real;
 
-  //! Type de retour de operator[][] const
+  //! Return type of operator[][] const
   // using Subscript2ConstType = Real;
 };
 

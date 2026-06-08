@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunQueueImpl.h                                              (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation d'une 'RunQueue'.                                          */
+/* Implementation of a 'RunQueue'.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_RUNQUEUEIMPL_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_RUNQUEUEIMPL_H
@@ -30,12 +30,13 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief File d'exécution pour accélérateur.
+ * \brief Execution queue for accelerator.
  *
- * Cette classe gère l'implémentation d'une RunQueue.
- * La description des méthodes se trouve dans RunQueue.
+ * This class manages the implementation of a RunQueue.
+ * The method descriptions are in RunQueue.
  */
 class ARCCORE_COMMON_EXPORT RunQueueImpl
 {
@@ -53,7 +54,7 @@ class ARCCORE_COMMON_EXPORT RunQueueImpl
 
  private:
 
-  // Il faut utiliser _destroy() pour détruire l'instance.
+  // You must use _destroy() to destroy the instance.
   ~RunQueueImpl();
 
  public:
@@ -124,22 +125,22 @@ class ARCCORE_COMMON_EXPORT RunQueueImpl
   eExecutionPolicy m_execution_policy = eExecutionPolicy::None;
   IRunnerRuntime* m_runtime = nullptr;
   IRunQueueStream* m_queue_stream = nullptr;
-  //! Pool de commandes
+  //! Command pool
   std::stack<RunCommandImpl*> m_run_command_pool;
-  //! Liste des commandes en cours d'exécution
+  //! List of running commands
   UniqueArray<RunCommandImpl*> m_active_run_command_list;
-  //! Identifiant de la file
+  //! Queue ID
   Int32 m_id = 0;
-  //! Indique si l'instance est dans un pool d'instance.
+  //! Indicates if the instance is in an instance pool.
   bool m_is_in_pool = false;
-  //! Nombre de références sur l'instance.
+  //! Number of references on the instance.
   std::atomic<Int32> m_nb_ref = 0;
-  //! Indique si la file est asynchrone
+  //! Indicates if the queue is asynchronous
   bool m_is_async = false;
-  //! Ressource mémoire par défaut
+  //! Default memory resource
   eMemoryResource m_memory_ressource = eMemoryResource::Unknown;
 
-  // Mutex pour les commandes (actif si \a m_use_pool_mutex est vrai)
+  // Mutex for commands (active if \a m_use_pool_mutex is true)
   std::unique_ptr<std::mutex> m_pool_mutex;
   bool m_use_pool_mutex = false;
 };

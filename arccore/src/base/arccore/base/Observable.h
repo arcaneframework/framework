@@ -26,18 +26,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Classe de base d'un observable.
+ * \brief Base class of an observable.
  *
- * Un observable ne peut pas être copié.
+ * An observable cannot be copied.
  */
 class ARCCORE_BASE_EXPORT Observable
 : public IObservable
 {
  public:
 
-  ~Observable() override; //!< Libère les ressources
+  ~Observable() override; //!< Releases resources
 
  public:
 
@@ -70,9 +71,10 @@ class ARCCORE_BASE_EXPORT Observable
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Observable qui appelle automatiquement
- * IObservable::detachAllObservers() dans le destructeur.
+ * \brief Observable that automatically calls
+ * IObservable::detachAllObservers() in the destructor.
  */
 class ARCCORE_BASE_EXPORT AutoDetachObservable
 : public Observable
@@ -93,5 +95,4 @@ class ARCCORE_BASE_EXPORT AutoDetachObservable
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

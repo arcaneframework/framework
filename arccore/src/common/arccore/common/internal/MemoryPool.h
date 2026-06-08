@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryPool.h                                                (C) 2000-2026 */
 /*                                                                           */
-/* Classe pour gérer une liste de zone allouées.                             */
+/* Class to manage a list of allocated zones.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_MEMORYPOOL_H
 #define ARCCORE_COMMON_INTERNAL_MEMORYPOOL_H
@@ -26,13 +26,14 @@ namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un allocateur pour un MemoryPool.
+ * \brief Interface for an allocator for a MemoryPool.
  *
- * Cette interface fonctionne à la manière d'un malloc/free à ceci prêt qu'il
- * faut fournir la taille allouée pour un bloc pour la libération de ce dernier.
- * L'utilisateur de cette interface doit donc gérer la conservation de cette
+ * This interface works like a malloc/free, except that you
+ * must provide the allocated size for a block when freeing it.
+ * The user of this interface must therefore manage the preservation of this
  * information.
  */
 class ARCCORE_COMMON_EXPORT IMemoryPoolAllocator
@@ -43,22 +44,23 @@ class ARCCORE_COMMON_EXPORT IMemoryPoolAllocator
 
  public:
 
-  //! Alloue un bloc pour \a size octets
+  //! Allocates a block for \a size bytes
   virtual void* allocateMemory(Int64 size) = 0;
-  //! Libère le bloc situé à l'adresse \a address contenant \a size octets
+  //! Frees the block located at address \a address containing \a size bytes
   virtual void freeMemory(void* address, Int64 size) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe pour gérer une liste de zones allouées.
+ * \brief Class to manage a list of allocated zones.
  *
- * Cette classe utilise une sémantique par référence.
+ * This class uses a reference semantics.
  *
- * L'allocateur passé en argument du constructeur doit rester valide
- * durant toute la vie de l'instance.
+ * The allocator passed as an argument to the constructor must remain valid
+ * throughout the life of the instance.
  */
 class ARCCORE_COMMON_EXPORT MemoryPool
 : public IMemoryPool
@@ -86,7 +88,7 @@ class ARCCORE_COMMON_EXPORT MemoryPool
   void dumpFreeMap(std::ostream& ostr);
   String name() const;
 
-  //! Implémentation de IMemoryPool
+  //! Implementation of IMemoryPool
   //@{
   void setMaxCachedBlockSize(Int32 v) override;
   void freeCachedMemory() override;

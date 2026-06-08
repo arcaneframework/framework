@@ -123,7 +123,7 @@ void solve_scalar(Alina::mpi_communicator comm,
 
   using CoarseningType = Alina::DistributedSmoothedAggregationCoarsening<Backend>;
   using RelaxationType = Alina::DistributedSPAI0Relaxation<Backend>;
-  // Si on veut tester les backend dynamiques:
+  // If we want to test dynamic backends:
   //using CoarseningType = Alina::DistributedCoarseningRuntime<Backend>;
   //using RelaxationType = Alina::DistributedRelaxationRuntime<Backend>,
 

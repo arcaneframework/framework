@@ -49,7 +49,7 @@ void _doTestAllocation(bool use_accelerator, Int32 max_allowed_thread)
   NumArray<Int64, MDDim1> host_a(eMemoryResource::Host);
   host_a.resize(nb_value);
 
-  // Test copie host -> device
+  // Test copy host -> device
   NumArray<Int64, MDDim1> device_a(mem);
   device_a.resize(nb_value / 2);
   device_a.fill(5, queue);
@@ -58,7 +58,7 @@ void _doTestAllocation(bool use_accelerator, Int32 max_allowed_thread)
   device_a.copy(host_a);
   ASSERT_EQ(device_a.extent0(), host_a.extent0());
 
-  // Test copie device -> UVM
+  // Test copy device -> UVM
   NumArray<Int64, MDDim1> device_b(device_a.to1DSpan());
   ASSERT_EQ(device_b.extent0(), device_a.extent0());
 }

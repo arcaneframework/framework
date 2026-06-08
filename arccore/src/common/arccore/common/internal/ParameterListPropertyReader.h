@@ -7,15 +7,16 @@
 /*---------------------------------------------------------------------------*/
 /* ParameterListPropertyReader.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Lecture de propriétés au format JSON.                                     */
+/* Reading properties in JSON format.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_INTERNAL_PARAMETERLISTPROPERTYREADER_H
 #define ARCANE_UTILS_INTERNAL_PARAMETERLISTPROPERTYREADER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * NOTE: Les classes de ce fichier sont en cours de mise au point.
- * NOTE: L'API peut changer à tout moment. Ne pas utiliser en dehors de Arcane.
+ * NOTE: The classes in this file are under development.
+ * NOTE: The API may change at any time. Do not use outside of Arcane.
  */
 
 #include "arccore/common/ParameterList.h"
@@ -58,8 +59,9 @@ class ParameterListPropertyVisitor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remplit les valeurs de \a instance à partir des paramètres \a args.
+ * \brief Fills the values of \a instance from the parameters \a args.
  */
 template<typename T, typename PropertyType = T> inline void
 readFromParameterList(const ParameterList& args,T& instance)

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NoMpiProfiling.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implementation de l'interface IMpiProfiling.                              */
+/* Implementation of the IMpiProfiling interface.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_NOMPIPROFILING_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_NOMPIPROFILING_H
@@ -28,10 +28,11 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implementation de l'interface des operations MPI.
- * Correspond a un simple appel aux fonctions MPI du meme nom
+ * \brief Implementation of the MPI operations interface.
+ * Corresponds to a simple call to MPI functions of the same name
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT NoMpiProfiling
 : public IMpiProfiling
@@ -194,4 +195,4 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT NoMpiProfiling
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

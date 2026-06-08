@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Collection.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'une collection.                                          */
+/* Base class of a collection.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,8 +16,8 @@
 #include "arccore/base/ArgumentException.h"
 #include "arccore/base/TraceInfo.h"
 
-// Ces fichiers ne sont pas directement utilisés ici mais permettent
-// d'exporter les symboles.
+// These files are not directly used here but allow
+// exporting the symbols.
 #include "arccore/common/List.h"
 
 /*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* JSONReader.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Lecteur au format JSON.                                                   */
+/* JSON format reader.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_JSONREADER_H
 #define ARCCORE_COMMON_JSONREADER_H
@@ -27,14 +27,15 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Représente une valeur JSON.
+ * \brief Represents a JSON value.
  *
- * Les instances de cette classe ne sont valides que tant que le document
- * associé existe.
+ * Instances of this class are only valid as long as the associated document
+ * exists.
  *
- * \warning API Interne. Ne pas utiliser en dehors de Arcane.
+ * \warning Internal API. Do not use outside of Arcane.
  */
 class ARCCORE_COMMON_EXPORT JSONValue
 {
@@ -56,7 +57,7 @@ class ARCCORE_COMMON_EXPORT JSONValue
 
  public:
 
-  //! Vrai si le noeud est nul
+  //! True if the node is null
   bool null() const { return !m_p; }
   bool operator!() const { return null(); }
 
@@ -65,33 +66,33 @@ class ARCCORE_COMMON_EXPORT JSONValue
   ARCCORE_DEPRECATED_REASON("Y2023: Use valueAsStringView() or value() instead")
   StringView valueAsString() const;
 
-  //! Valeur sous forme de String. La chaîne retournée est nulle si 'null()' est vrai.
+  //! Value in String format. The returned string is null if 'null()' is true.
   String value() const;
   /*!
-   * \brief Valeur sous forme de StringView.
-   * La chaîne est vide si 'null()' est vrai.
-   * \note Si on veut faire la distinction entre la valeur nulle et une chaîne
-   * de caractères vide, il faut utiliser value().
+   * \brief Value in StringView format.
+   * The string is empty if 'null()' is true.
+   * \note If you want to distinguish between a null value and an empty string,
+   * you must use value().
    */
   StringView valueAsStringView() const;
-  //! Valeur sous forme de Real. Retourn 0.0 si 'null()' est vrai.
+  //! Value in Real format. Returns 0.0 if 'null()' is true.
   Real valueAsReal() const;
-  //! Valeur sous forme de Int64. Retourn 0 si 'null()' est vrai.
+  //! Value in Int64 format. Returns 0 if 'null()' is true.
   Int64 valueAsInt64() const;
-  //! Valeur sous forme de Int64. Retourn 0 si 'null()' est vrai.
+  //! Value in Int64 format. Returns 0 if 'null()' is true.
   Int32 valueAsInt32() const;
-  //! Valeur sous forme de booléen. Retourn false si 'null()' est vrai.
+  //! Value in boolean format. Returns false if 'null()' is true.
   bool valueAsBool() const;
   JSONValueList valueAsArray() const;
 
  public:
 
   JSONKeyValue keyValueChild(StringView name) const;
-  //! Valeur fille de nom \a name. Retourne une valeur nulle si non trouvé.
+  //! Child value with name \a name. Returns a null value if not found.
   JSONValue child(StringView name) const;
-  //! Valeur fille de nom \a name. Lance une exception si non trouvé.
+  //! Child value with name \a name. Throws an exception if not found.
   JSONValue expectedChild(StringView name) const;
-  // Liste des objects fils de cet objet. L'instance doit être un objet
+  // List of child objects of this object. The instance must be an object
   JSONValueList children() const;
   JSONKeyValueList keyValueChildren() const;
 
@@ -107,14 +108,15 @@ class ARCCORE_COMMON_EXPORT JSONValue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Représente une paire (clé,valeur) de JSON.
+ * \brief Represents a (key,value) pair of JSON.
  *
- * Les instances de cette classe ne sont valides que tant que le document
- * associé existe.
+ * Instances of this class are only valid as long as the associated document
+ * exists.
  *
- * \warning API Interne. Ne pas utiliser en dehors de Arcane.
+ * \warning Internal API. Do not use outside of Arcane.
  */
 class ARCCORE_COMMON_EXPORT JSONKeyValue
 {
@@ -135,7 +137,7 @@ class ARCCORE_COMMON_EXPORT JSONKeyValue
 
  public:
 
-  //! Vrai si le noeud est nul
+  //! True if the node is null
   bool null() const { return !m_p; }
   bool operator!() const { return null(); }
 
@@ -151,13 +153,14 @@ class ARCCORE_COMMON_EXPORT JSONKeyValue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste de (clé,valeur) d'un document JSON.
+ * \brief List of (key,value) pairs of a JSON document.
  *
- * Les instances de cette classe ne sont valides que tant que le document
- * associé existe.
+ * Instances of this class are only valid as long as the associated document
+ * exists.
  *
- * \warning API Interne. Ne pas utiliser en dehors de Arcane.
+ * \warning Internal API. Do not use outside of Arcane.
  */
 class ARCCORE_COMMON_EXPORT JSONKeyValueList
 {
@@ -184,13 +187,14 @@ class ARCCORE_COMMON_EXPORT JSONKeyValueList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste de valeurs d'un document JSON.
+ * \brief List of values of a JSON document.
  *
- * Les instances de cette classe ne sont valides que tant que le document
- * associé existe.
+ * Instances of this class are only valid as long as the associated document
+ * exists.
  *
- * \warning API Interne. Ne pas utiliser en dehors de Arcane.
+ * \warning Internal API. Do not use outside of Arcane.
  */
 class ARCCORE_COMMON_EXPORT JSONValueList
 {
@@ -217,11 +221,12 @@ class ARCCORE_COMMON_EXPORT JSONValueList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestion d'un document JSON.
+ * \brief Management of a JSON document.
  *
- * \warning API Interne. Ne pas utiliser en dehors de Arcane.
+ * \warning Internal API. Do not use outside of Arcane.
  */
 class ARCCORE_COMMON_EXPORT JSONDocument
 {
@@ -234,15 +239,15 @@ class ARCCORE_COMMON_EXPORT JSONDocument
 
  public:
 
-  //! Lit le fichier au format UTF-8.
+  //! Reads the file in UTF-8 format.
   void parse(Span<const Byte> bytes);
-  //! Lit le fichier au format UTF-8.
+  //! Reads the file in UTF-8 format.
   void parse(Span<const std::byte> bytes);
-  //! Lit le fichier au format UTF-8.
+  //! Reads the file in UTF-8 format.
   void parse(Span<const Byte> bytes, StringView file_name);
-  //! Lit le fichier au format UTF-8.
+  //! Reads the file in UTF-8 format.
   void parse(Span<const std::byte> bytes, StringView file_name);
-  //! Elément racine
+  //! Root element
   JSONValue root() const;
 
  private:

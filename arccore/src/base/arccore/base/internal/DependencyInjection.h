@@ -7,33 +7,34 @@
 /*---------------------------------------------------------------------------*/
 /* DependencyInjection.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Types et fonctions pour gérer le pattern 'DependencyInjection'.           */
+/* Types and functions to manage the 'DependencyInjection' pattern.          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_INTERNAL_DEPENDENCYINJECTION_H
 #define ARCCORE_BASE_INTERNAL_DEPENDENCYINJECTION_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * NOTE: API en cours de définition.
- * Ne pas utiliser en dehors de Arccore/Arcane
+ * NOTE: API is currently being defined.
+ * Do not use outside of Arccore/Arcane
  */
 #include "arccore/base/Ref.h"
 #include "arccore/base/ExternalRef.h"
 #include "arccore/base/GenericRegisterer.h"
 #include "arccore/base/ReferenceCounterImpl.h"
 
-//TODO Mettre le lancement des exceptions dans le '.cc'
+//TODO Put the exception throwing in the '.cc'
 #include "arccore/base/NotImplementedException.h"
 
 #include <tuple>
 #include <typeinfo>
 
-// TODO: Améliorer les messages d'erreurs en cas d'échec de l'injection
-// TODO: Ajouter méthodes pour afficher le type en cas d'erreur (utiliser A_FUNC_INFO)
-// TODO: Ajouter mode verbose
-// TODO: Supporter plusieurs constructeurs et ne pas échouer si le premier
-// ne fonctionne pas
-// TODO: Supporter des instances externes (comme par exemple celles créées en C#).
+// TODO: Improve error messages in case of injection failure
+// TODO: Add methods to display the type in case of error (use A_FUNC_INFO)
+// TODO: Add verbose mode
+// TODO: Support multiple constructors and do not fail if the first
+// does not work
+// TODO: Support external instances (such as those created in C#).
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -74,11 +75,11 @@ class ARCCORE_BASE_EXPORT IInjectedInstance
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \warning Cette classe est utilisées dans des constructeurs/destructeurs
- * globaux et ne doit pas faire d'allocation/désallocation ni utiliser de
- * types qui en font.
+ * \warning This class is used in global constructors/destructors
+ * and must not perform allocation/deallocation or use types that do.
  */
 class ARCCORE_BASE_EXPORT ProviderProperty
 {
@@ -137,12 +138,13 @@ class TypeInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur les types d'une fabrique.
+ * \brief Information about the types of a factory.
  *
- * Cela permet d'afficher par exemple en cas d'erreur les informations sur
- * l'interface concernée, le type concret qu'on souhaité créer et les
- * paramètres du constructeur.
+ * This allows displaying, for example, in case of an error, information about
+ * the interface concerned, the concrete type that we wanted to create, and the
+ * constructor parameters.
  */
 class ARCCORE_BASE_EXPORT ConcreteFactoryTypeInfo
 {
@@ -176,9 +178,10 @@ class ARCCORE_BASE_EXPORT ConcreteFactoryTypeInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface typée gérant l'instance d'un service.
+ * \brief Typed interface managing the instance of a service.
  */
 template <typename InterfaceType>
 class IInjectedRefInstanceT
@@ -193,9 +196,10 @@ class IInjectedRefInstanceT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface typée gérant l'instance d'un service.
+ * \brief Typed interface managing the instance of a service.
  */
 template <typename InterfaceType>
 class InjectedRefInstance
@@ -226,9 +230,10 @@ class InjectedRefInstance
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface typée gérant une instance
+ * \brief Typed interface managing an instance
  */
 template <typename Type>
 class IInjectedValueInstance
@@ -241,9 +246,10 @@ class IInjectedValueInstance
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface typée gérant l'instance d'un service.
+ * \brief Typed interface managing the instance of a service.
  */
 template <typename Type>
 class InjectedValueInstance
@@ -274,11 +280,12 @@ class InjectedValueInstance
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Référence sur une instance injectée.
+ * \brief Reference to an injected instance.
  *
- * Cette classe est gérée via un compteur de référence à la manière
- * de la classe std::shared_ptr.
+ * This class is managed via a reference counter in the manner
+ * of the std::shared_ptr class.
  */
 class ARCCORE_BASE_EXPORT InjectedInstanceRef
 {
@@ -321,9 +328,10 @@ class ARCCORE_BASE_EXPORT InjectedInstanceRef
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fabrique pour une instance encapsulée par une référence (i.e Ref<T>).
+ * \brief Factory for an instance encapsulated by a reference (i.e Ref<T>).
  */
 class ARCCORE_BASE_EXPORT IInstanceFactory
 {
@@ -343,9 +351,10 @@ class ARCCORE_BASE_EXPORT IInstanceFactory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations pour une fabrique.
+ * \brief Information for a factory.
  */
 class ARCCORE_BASE_EXPORT FactoryInfo
 {
@@ -374,11 +383,12 @@ class ARCCORE_BASE_EXPORT FactoryInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief internal.
- * \brief Classe de base pour une fabrique.
+ * \brief Base class for a factory.
  *
- * Cette classe s'utiliser via un ReferenceCounter pour gérer sa destruction.
+ * This class uses a ReferenceCounter to manage its destruction.
  */
 class ARCCORE_BASE_EXPORT AbstractInstanceFactory
 : public ReferenceCounterImpl
@@ -394,9 +404,9 @@ template <typename InterfaceType>
 class InstanceFactory
 : public AbstractInstanceFactory
 {
-  // NOTE: On ne conserve pas une instance de 'FactoryInfo'
-  // mais uniquement son implémentation pour éviter des références croisées
-  // avec le std::shared_ptr.
+  // NOTE: We do not keep an instance of 'FactoryInfo'
+  // but only its implementation to avoid cross-references
+  // with std::shared_ptr.
 
  public:
 
@@ -472,10 +482,11 @@ class ARCCORE_BASE_EXPORT IConcreteFactoryBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un fonctor de création d'une instance de service
- * correspondant à l'interface \a InterfaceType.
+ * \brief Interface of a functor for creating a service instance
+ * corresponding to the interface \a InterfaceType.
  */
 template <typename InterfaceType>
 class IConcreteFactory
@@ -487,7 +498,7 @@ class IConcreteFactory
 
  public:
 
-  //! Créé une instance du service .
+  //! Creates an instance of the service.
   virtual Ref<InterfaceType> createReference(Injector&) = 0;
 };
 
@@ -514,9 +525,9 @@ class ARCCORE_BASE_EXPORT GlobalRegisterer
  public:
 
   /*!
-   * \brief Crée en enregistreur pour le service \a name et la fonction \a func.
+   * \brief Registers the service \a name using the function \a func.
    *
-   * Ce constructeur est utilisé pour enregistrer un service.
+   * This constructor is used to register a service.
    */
   GlobalRegisterer(FactoryCreateFunc func, const ProviderProperty& property) noexcept;
 
@@ -524,7 +535,7 @@ class ARCCORE_BASE_EXPORT GlobalRegisterer
 
   FactoryCreateFunc infoCreatorWithPropertyFunction() { return m_factory_create_func; }
 
-  //! Nom du service
+  //! Service name
   const char* name() { return m_name; }
 
   const ProviderProperty& property() const { return m_factory_property; }
@@ -548,8 +559,9 @@ namespace Arcane::DependencyInjection
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Injecteur
+ * \brief Injector
  */
 class ARCCORE_BASE_EXPORT Injector
 {
@@ -571,7 +583,7 @@ class ARCCORE_BASE_EXPORT Injector
     }
   };
 
-  //! Spécialisation pour les 'Ref'.
+  //! Specialization for 'Ref'.
   template <class PointerType>
   class InjectorHelper<Ref<PointerType>>
   {
@@ -590,8 +602,9 @@ class ARCCORE_BASE_EXPORT Injector
       return i._getRef<PointerType>(name);
     }
   };
+
   /*!
-   * \brief Interface d'un fonctor pour appliqué à chaque fabrique.
+   * \brief Interface of a functor to apply to each factory.
    */
   class IFactoryVisitorFunctor
   {
@@ -620,7 +633,7 @@ class ARCCORE_BASE_EXPORT Injector
   };
 
   /*!
-   * \brief Interface d'un fonctor pour appliqué à chaque fabrique.
+   * \brief Interface of a functor to apply to each factory.
    */
   class IInstanceVisitorFunctor
   {
@@ -670,16 +683,16 @@ class ARCCORE_BASE_EXPORT Injector
   }
 
   /*!
-   * \brief Créé une instance implémentant une interface.
+   * \brief Creates an instance implementing an interface.
    *
-   * Créé et retourne une instance dont l'implémentation est
-   * \a implementation_name et qui implémente l'interface \a InterfaceType.
+   * Creates and returns an instance whose implementation is
+   * \a implementation_name and which implements the interface \a InterfaceType.
    *
-   * Si l'implémentation \a implementation_name n'est pas trouvé ou si
-   * elle n'implémente pas l'interface \a InterfaceType, le comportement
-   * est le suivant:
-   * - si \a allow_null vaut \a true, retourne une référence nulle,
-   * - si \a allow_null vaut \a false, lève une exception de type
+   * If the implementation \a implementation_name is not found or if
+   * it does not implement the interface \a InterfaceType, the behavior
+   * is as follows:
+   * - if \a allow_null equals \a true, returns a null reference,
+   * - if \a allow_null equals \a false, throws an exception of type
    * FatalErrorException.
    */
   template <typename InterfaceType> Ref<InterfaceType>
@@ -704,9 +717,9 @@ class ARCCORE_BASE_EXPORT Injector
     if (instance.get() || allow_null)
       return instance;
 
-    // Pas d'implémentation correspondante trouvée.
-    // Dans ce cas on récupère la liste des implémentations valides et on les affiche dans
-    // le message d'erreur.
+    // No corresponding implementation found.
+    // In this case, we retrieve the list of valid implementations
+    // and display them in the error message.
     auto filter_func = [](impl::IInstanceFactory* v) -> bool {
       return dynamic_cast<FactoryType*>(v) != nullptr;
     };
@@ -725,25 +738,25 @@ class ARCCORE_BASE_EXPORT Injector
 
   void _add(IInjectedInstance* instance);
 
-  // Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
+  // Iterates over the lambda and stops as soon as it returns \a true
   void _iterateInstances(const std::type_info& t_info, const String& instance_name,
                          IInstanceVisitorFunctor* lambda);
   size_t _nbValue() const;
   IInjectedInstance* _value(size_t i) const;
 
   /*!
-   * \brief Itère sur les fabriques et applique le fonctor \a functor.
+   * \brief Iterates over the factories and applies the functor \a functor.
    *
-   * On s'arrête dès qu'un appel à functor retourne \a true.
+   * It stops as soon as a call to functor returns \a true.
    *
-   * Si \a factory_name n'est pas nul, seules les fabriques pour lequelles
-   * FactoryInfo::hasName(factory_name) est vrai sont utilisées.
+   * If \a factory_name is not null, only factories for which
+   * FactoryInfo::hasName(factory_name) is true are used.
    */
   void _iterateFactories(const String& factory_name, IFactoryVisitorFunctor* functor) const;
   size_t _nbFactory() const;
   impl::IInstanceFactory* _factory(size_t i) const;
 
-  // Spécialisation pour les références
+  // Specialization for references
   template <typename InterfaceType> Ref<InterfaceType>
   _getRef(const String& instance_name)
   {
@@ -757,7 +770,7 @@ class ARCCORE_BASE_EXPORT Injector
     _iterateInstances(typeid(Ref<InterfaceType>), instance_name, &ff);
     if (t)
       return t->instance();
-    // TODO: faire un fatal ou créer l'instance
+    // TODO: throw fatal or create the instance
     ARCCORE_THROW(NotImplementedException, "Create Ref<InterfaceType> from factory");
   }
 
@@ -802,9 +815,9 @@ class ARCCORE_BASE_EXPORT ConstructorRegistererBase
 
 /*!
  * \internal
- * \brief Classe permettant d'enregistrer un constructeur pour créer un objet
- * via un Injector.
- * \a ConstructorArgsType est un `std::tuple` des arguments du constructeur
+ * \brief Class allowing registration of a constructor to create an object
+ * via an Injector.
+ * \a ConstructorArgsType is a `std::tuple` of the constructor arguments
  */
 template <typename... Args>
 class ConstructorRegisterer
@@ -816,7 +829,7 @@ class ConstructorRegisterer
 
   ConstructorRegisterer() {}
 
-  // Permet de récupérer via l'injecteur \a i le I-ème argument du tuple.
+  // Allows retrieving the I-th argument of the tuple via the injector \a i.
   template <std::size_t I>
   static auto _get(Injector& i) -> std::tuple_element_t<I, ArgsType>
   {
@@ -827,7 +840,7 @@ class ConstructorRegisterer
 
   ArgsType createTuple(Injector& i)
   {
-    // TODO: supporter plus d'arguments ou passer à des 'variadic templates'
+    // TODO: support more arguments or switch to 'variadic templates'
     constexpr int tuple_size = std::tuple_size<ArgsType>();
     static_assert(tuple_size < 3, "Too many arguments for createTuple (max=2)");
     if constexpr (tuple_size == 0) {
@@ -839,17 +852,18 @@ class ConstructorRegisterer
     else if constexpr (tuple_size == 2) {
       return ArgsType(_get<0>(i), _get<1>(i));
     }
-    // Ne devrait pas arriver mais on ne sais jamais.
+    // Should not happen but you never know.
     _doError1("Too many arguments for createTuple n={0} max=2", tuple_size);
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fabrique pour le type \a ConcreteType pour l'interface \a InterfaceType
- * via le constructeur \a ConstructorType.
+ * \brief Factory for the type \a ConcreteType for the interface \a InterfaceType
+ * via the constructor \a ConstructorType.
  */
 template <typename InterfaceType, typename ConcreteType, typename ConstructorType>
 class ConcreteFactory
@@ -877,9 +891,9 @@ class ConcreteFactory
  private:
 
   /*!
-   * Créé une instance du service à partir des arguments sous forme d'un std::tuple.
+   * Creates an instance of the service from arguments in the form of a std::tuple.
    *
-   * \todo Regarder si on ne peut pas utiliser std::make_from_tuple()
+   * \todo See if we can use std::make_from_tuple()
    */
   ConcreteType* _create(const Args&& tuple_args)
   {
@@ -890,10 +904,11 @@ class ConcreteFactory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe permettant d'enregistrer la liste des interfaces d'un service.
- * \a Interfaces contient la liste des interfaces implémentées par le service
+ * \brief Class allowing registration of the list of interfaces of a service.
+ * \a Interfaces contains the list of interfaces implemented by the service
  */
 template <typename... Interfaces>
 class InterfaceListRegisterer
@@ -901,10 +916,10 @@ class InterfaceListRegisterer
  public:
 
   /*!
-   * \brief Enregistre une fabrique.
+   * \brief Registers a factory.
    *
-   * Enregistre pour chaque interface de \a Interfaces une fabrique pour
-   * créer une instance de \a ConcreteType via le constructeur \a ConstructorType
+   * Registers a factory for each interface in \a Interfaces to
+   * create an instance of \a ConcreteType via the constructor \a ConstructorType
    */
   template <typename ConcreteType, typename ConstructorType> void
   registerFactory(FactoryInfo& si)
@@ -921,7 +936,7 @@ class InterfaceListRegisterer
   {
     auto* factory = new ConcreteFactory<InterfaceType, ConcreteType, ConstructorType>();
     fi.addFactory(createRef<InstanceFactory<InterfaceType>>(fi._impl(), factory));
-    // Applique récursivement pour les autres interfaces si nécessaire
+    // Recursively applies for other interfaces if necessary
     if constexpr (sizeof...(OtherInterfaces) > 0)
       _registerFactory<ConcreteType, ConstructorType, OtherInterfaces...>(fi);
   }
@@ -929,18 +944,19 @@ class InterfaceListRegisterer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe permettant d'enregistrer des constructeurs pour créer un
- * type \a ConcreteType implémentant les interfaces de \a InterfaceList (qui
- * doit être du type InterfaceListRegisterer).
+ * \brief Class allowing registration of constructors to create a
+ * type \a ConcreteType implementing the interfaces of \a InterfaceList (which
+ * must be of type InterfaceListRegisterer).
  */
 template <typename ConcreteType, typename InterfaceList>
 class InjectionRegisterer
 {
  public:
 
-  //! Enregistre dans \a si les fabriques correspondentes aux constructeurs \a Constructors
+  //! Registers in \a si the factories corresponding to the constructors \a Constructors
   template <typename... Constructors> void
   registerProviderInfo(FactoryInfo& si, const Constructors&... args)
   {
@@ -949,24 +965,24 @@ class InjectionRegisterer
 
  private:
 
-  // TODO: Créér l'instance de 'FactoryInfo' dans le constructeur
+  // TODO: Create the 'FactoryInfo' instance in the constructor
   InterfaceList m_interface_list;
 
  private:
 
-  //! Surcharge pour 1 constructeur
+  //! Overload for 1 constructor
   template <typename ConstructorType> void
   _create(FactoryInfo& si, const ConstructorType&)
   {
     m_interface_list.template registerFactory<ConcreteType, ConstructorType>(si);
   }
 
-  //! Surcharge pour 2 constructeurs ou plus
+  //! Overload for 2 or more constructors
   template <typename C1, typename C2, typename... OtherConstructors>
   void _create(FactoryInfo& si, const C1& c1, const C2& c2, const OtherConstructors&... args)
   {
     _create<C1>(si, c1);
-    // Applique la récursivité sur les types restants
+    // Applies recursion on the remaining types
     _create<C2, OtherConstructors...>(si, c2, args...);
   }
 };
@@ -985,7 +1001,7 @@ class InjectionRegisterer
 #define ARCANE_DI_EMPTY_CONSTRUCTOR(...) \
   ::Arcane::DependencyInjection::impl::ConstructorRegisterer<>()
 
-// TODO: garantir au moins une interface
+// TODO: guarantee at least one interface
 
 #define ARCANE_DI_INTERFACES(...) \
   ::Arcane::DependencyInjection::impl::InterfaceListRegisterer<__VA_ARGS__>

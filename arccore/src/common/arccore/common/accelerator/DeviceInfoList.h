@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DeviceInfoList.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Liste de devices.                                                         */
+/* List of devices.                                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_DEVICEINFOLIST_H
 #define ARCCORE_COMMON_ACCELERATOR_DEVICEINFOLIST_H
@@ -27,18 +27,19 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une liste de devices.
+ * \brief Interface for a list of devices.
  */
 class ARCCORE_COMMON_EXPORT DeviceInfoList
 : public IDeviceInfoList
 {
  public:
 
-  //! Nombre de device de la liste
+  //! Number of devices in the list
   Int32 nbDevice() const override { return m_devices.size(); }
 
-  //! Informations du i-ème device.
+  //! Information about the i-th device.
   const DeviceInfo& deviceInfo(Int32 i) const override { return m_devices[i]; }
 
  public:

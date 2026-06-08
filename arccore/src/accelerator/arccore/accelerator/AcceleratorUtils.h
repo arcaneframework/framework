@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorUtils.h                                          (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires communes à tous les runtimes.                       */
+/* Utility functions common to all runtimes.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_ACCELERATORUTILS_H
 #define ARCCORE_ACCELERATOR_ACCELERATORUTILS_H
@@ -89,10 +89,11 @@ namespace Arcane::Accelerator::AcceleratorUtils
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCCORE_HAS_CUDA)
+
 /*!
- * \brief Retourne l'instance de cudaStream_t associée à \q queue.
+ * \brief Returns the cudaStream_t instance associated with \q queue.
  *
- * Une exception est levée si queue.executionPolicy() != eExecutionPolicy::CUDA.
+ * An exception is raised if queue.executionPolicy() != eExecutionPolicy::CUDA.
  */
 inline cudaStream_t
 toCudaNativeStream(const RunQueue& queue)
@@ -102,10 +103,11 @@ toCudaNativeStream(const RunQueue& queue)
 #endif
 
 #if defined(ARCCORE_HAS_HIP)
+
 /*!
- * \brief Retourne l'instance de hipStream_t associée à \q queue.
+ * \brief Returns the hipStream_t instance associated with \q queue.
  *
- * Une exception est levée si queue.executionPolicy() != eExecutionPolicy::HIP.
+ * An exception is raised if queue.executionPolicy() != eExecutionPolicy::HIP.
  */
 inline hipStream_t
 toHipNativeStream(const RunQueue& queue)
@@ -115,10 +117,11 @@ toHipNativeStream(const RunQueue& queue)
 #endif
 
 #if defined(ARCCORE_COMPILING_SYCL)
+
 /*!
- * \brief Retourne l'instance de hipStream_t associée à \q queue.
+ * \brief Returns the hipStream_t instance associated with \q queue.
  *
- * Une exception est levée si queue.executionPolicy() != eExecutionPolicy::SYCL.
+ * An exception is raised if queue.executionPolicy() != eExecutionPolicy::SYCL.
  */
 inline sycl::queue
 toSyclNativeStream(const RunQueue& queue)

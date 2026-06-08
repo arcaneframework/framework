@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArccoreGlobal.cc                                            (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations générales de Arccore.                                        */
+/* General declarations for Arccore.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/Ref.h"
 
-// Nécessaire pour les exports de symboles
+// Necessary for symbol exports
 #include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/Float16.h"
 #include "arccore/base/BFloat16.h"
@@ -44,19 +44,21 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ArccoreGlobal.h
  *
- * \brief Définitions et globaux de %Arccore
+ * \brief Definitions and globals of %Arccore
  */
+
 /*!
  * \namespace Arccore
  *
- * \brief Espace de nom de %Arccore
+ * \brief Namespace of %Arccore
  *
- * Toutes les classes et types utilisés dans \b Arccore sont dans ce
- * namespace.
+ * All classes and types used in \b Arccore are in this namespace.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -182,9 +184,9 @@ arccoreThrowNullPointerError(const char* ptr_name,const char* text)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Cette fonction peut être appelée souvent et certaines fois
-// dans des conditions d'exceptions. Pour cette raison, il ne
-// faut pas qu'elle fasse d'allocations.
+// This function can be called often and sometimes
+// in exception conditions. For this reason, it must not
+// perform allocations.
 namespace
 {
 void _printFuncName(std::ostream& o,const char* name)
@@ -195,8 +197,8 @@ void _printFuncName(std::ostream& o,const char* name)
     return;
   }
 
-  // Recherche quelque chose du type namespace::class_name::func_name
-  // et essaye de ne conserver que class_name::func_name
+  // Search for something like namespace::class_name::func_name
+  // and try to keep only class_name::func_name
   ptrdiff_t len = par_pos - name;
   ptrdiff_t last_scope = 0;
   ptrdiff_t last_scope2 = 0;
@@ -237,9 +239,9 @@ operator<<(std::ostream& o,const TraceInfo& t)
 
 namespace
 {
-/// Fonction appelée lorsqu'une assertion échoue.
+/// Function called when an assertion fails.
 typedef void (*fDoAssert)(const char*,const char*,const char*,size_t);
-/// Fonction appelée pour indiquer s'il faut afficher l'information de débug
+/// Function called to indicate if debug information should be displayed
 typedef bool (*fCheckDebug)(unsigned int);
 
 fDoAssert g_do_assert_func = 0;
@@ -247,8 +249,9 @@ fDoAssert g_do_assert_func = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * Affichage d'une assertion ayant échouée.
+ * Displaying a failed assertion.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 _doAssert(const char* text,const char* file,const char* func,int line)
@@ -268,7 +271,7 @@ _doAssert(const char* text,const char* file,const char* func,int line)
 extern "C++" ARCCORE_BASE_EXPORT void
 arccorePrintf(const char* format,...)
 {
-  // \n écrit en meme temps pour éviter des écritures intermédiares parasites
+  // \n written at the same time to avoid parasitic intermediate writes
   char buffer[4096];
   va_list ap;
   va_start(ap,format);

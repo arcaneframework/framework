@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiTypeDispatcherImpl.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation de 'MpiTypeDispatcher'.                                    */
+/* Implementation of 'MpiTypeDispatcher'.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPITYPEDISPATCHERIMPL_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPITYPEDISPATCHERIMPL_H
@@ -118,13 +118,13 @@ _gatherVariable2(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
   int my_buf_count = (int)nb_elem;
   Span<const int> count_r(&my_buf_count,1);
 
-  // Récupère le nombre d'éléments de chaque processeur
+  // Retrieves the number of elements from each processor
   if (rank!=A_NULL_RANK)
     mpGather(m_parallel_mng,count_r,send_counts,rank);
   else
     mpAllGather(m_parallel_mng,count_r,send_counts);
 
-  // Remplit le tableau des index
+  // Fills the index array
   if (rank==A_NULL_RANK || rank==m_adapter->commRank()){
     Int64 index = 0;
     for( Integer i=0, is=comm_size; i<is; ++i ){
@@ -178,10 +178,10 @@ scatterVariable(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root)
   int my_buf_count = m_adapter->toMPISize(nb_elem);
   Span<const int> count_r(&my_buf_count,1);
 
-  // Récupère le nombre d'éléments de chaque processeur
+  // Retrieves the number of elements from each processor
   mpAllGather(m_parallel_mng,count_r,recv_counts);
 
-  // Remplit le tableau des index
+  // Fills the index array
   int index = 0;
   for( Integer i=0, is=comm_size; i<is; ++i ){
     recv_indexes[i] = index;
@@ -261,7 +261,7 @@ send(Span<const Type> send_buffer,const PointToPointMessageInfo& message)
                                  sizeof_type,type,message.tag().value(),is_blocking);
   }
   if (message.isMessageId()){
-    // Le send avec un MessageId n'existe pas.
+    // Send with a MessageId does not exist.
     ARCCORE_THROW(NotSupportedException,"Invalid generic send with MessageId");
   }
   ARCCORE_THROW(NotSupportedException,"Invalid message_info");
@@ -414,8 +414,8 @@ gather(GatherMessageInfo<Type>& gather_info)
 
   auto send_buf = gather_info.sendBuffer();
 
-  // GatherVariable avec envoi gather préliminaire pour connaitre la taille
-  // que doit envoyer chaque rang.
+  // GatherVariable with preliminary gather send to know the size
+  // that each rank must send.
   if (gather_info.mode()==GatherMessageInfoBase::Mode::GatherVariableNeedComputeInfo) {
     if (!is_blocking)
       ARCCORE_THROW(NotSupportedException,"non blocking version of AllGatherVariable or GatherVariable with compute info");
@@ -435,7 +435,7 @@ gather(GatherMessageInfo<Type>& gather_info)
     return {};
   }
 
-  // GatherVariable classique avec connaissance du déplacement et des tailles
+  // Classic GatherVariable with knowledge of displacement and sizes
   if (gather_info.mode() == GatherMessageInfoBase::Mode::GatherVariable) {
     if (!is_blocking)
       ARCCORE_THROW(NotImplementedException, "non blocking version of AllGatherVariable or GatherVariable");
@@ -446,7 +446,7 @@ gather(GatherMessageInfo<Type>& gather_info)
     return {};
   }
 
-  // Gather classique
+  // Classic Gather
   if (gather_info.mode() == GatherMessageInfoBase::Mode::Gather) {
     auto receive_buf = gather_info.receiveBuffer();
     if (is_blocking) {

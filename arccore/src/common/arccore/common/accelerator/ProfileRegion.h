@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ProfileRegion.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Région pour le profiling.                                                 */
+/* Region for profiling.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_PROFILEREGION_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_PROFILEREGION_H
@@ -24,25 +24,26 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Région pour le profiling.
+ * \brief Region for profiling.
  *
- * Cette classe permet d'associer des informations de profiling à tous les
- * noyaux de calcul exécutés entre le constructeur et le destructeur d'une
- * instance de cette classe.
+ * This class allows associating profiling information with all
+ * calculation kernels executed between the constructor and the destructor of a
+ * instance of this class.
  */
 class ARCCORE_COMMON_EXPORT ProfileRegion
 {
  public:
 
-  //! Début une région de nom \a name
+  //! Start a region with name \a name
   ProfileRegion(const RunQueue& queue, const String& name);
 
   /*!
-   * \brief Début une région de nom \a name avec la couleur \a color_rgb.
+   * \brief Start a region with name \a name and color \a color_rgb.
    *
-   * La couleur est donné au format RGB hexadécimal. Par exemple 0xFF0000
-   * indique la couleur rouge et 0x7F00FF indique la couleur violette.
+   * The color is given in hexadecimal RGB format. For example 0xFF0000
+   * indicates the color red and 0x7F00FF indicates the color purple.
    */
   ProfileRegion(const RunQueue& queue, const String& name, Int32 color_rgb);
 

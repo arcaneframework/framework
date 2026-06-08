@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryUtilsInternal.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires de gestion mémoire internes à Arcane.               */
+/* Internal memory management utility functions for Arcane.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_MEMORYUTILSINTERNAL_H
 #define ARCCORE_COMMON_INTERNAL_MEMORYUTILSINTERNAL_H
@@ -24,22 +24,24 @@ namespace Arcane::MemoryUtils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne le gestionnaire de ressource mémoire pour les données.
+ * \brief Sets the memory resource manager for data.
  *
- * Le gestionnaire doit rester valide durant toute l'exécution du programme.
+ * The manager must remain valid throughout the program execution.
  *
- * Retourne l'ancien gestionnaire.
+ * Returns the old manager.
  */
 extern "C++" ARCCORE_COMMON_EXPORT IMemoryRessourceMng*
 setDataMemoryResourceMng(IMemoryRessourceMng* mng);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire de ressource mémoire pour les données.
+ * \brief Memory resource manager for data.
  *
- * Il est garanti que l'alignement est au moins celui retourné par
+ * It is guaranteed that the alignment is at least that returned by
  * AlignedMemoryAllocator::Simd().
  */
 extern "C++" ARCCORE_COMMON_EXPORT IMemoryRessourceMng*
@@ -47,20 +49,21 @@ getDataMemoryResourceMng();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne l'allocateur spécifique pour les accélérateurs.
+ * \brief Sets the specific allocator for accelerators.
  *
- * Retourne l'ancien allocateur utilisé. L'allocateur spécifié doit rester
- * valide durant toute la durée de vie de l'application.
+ * Returns the previously used allocator. The specified allocator must remain
+ * valid throughout the application's lifetime.
  */
 extern "C++" ARCCORE_COMMON_EXPORT IMemoryAllocator*
 setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Positionne la ressource mémoire utilisée pour l'allocateur
- * mémoire des données.
+ * \brief Sets the memory resource used for the data memory allocator.
  *
  * \sa getDefaultDataMemoryResource();
  */

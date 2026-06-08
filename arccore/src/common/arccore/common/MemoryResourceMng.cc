@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryResourceMng.cc                                       (C) 2000-2025 */
+/* MemoryResourceMng.cc                                        (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
+/* Memory resource management for CPUs and accelerators.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,7 +33,7 @@ namespace
 {
   bool _isHost(eMemoryResource r)
   {
-    // Si on ne sait pas, considère qu'on est accessible depuis l'hôte.
+    // If unknown, assume it is accessible from the host.
     if (r == eMemoryResource::Unknown)
       return true;
     if (r == eMemoryResource::Host || r == eMemoryResource::UnifiedMemory || r == eMemoryResource::HostPinned)
@@ -55,8 +55,8 @@ class DefaultHostMemoryCopier
             MutableMemoryView to, eMemoryResource to_mem,
             [[maybe_unused]] const RunQueue* queue) override
   {
-    // Sans support accélérateur, on peut juste faire un 'memcpy' si la mémoire
-    // est accessible depuis le CPU
+    // Without accelerator support, we can just perform a 'memcpy' if the memory
+    // is accessible from the CPU
 
     if (!_isHost(from_mem))
       ARCCORE_FATAL("Source buffer is not accessible from host and no copier provided (location={0})",
@@ -78,9 +78,8 @@ MemoryResourceMng()
 : m_default_memory_copier(new DefaultHostMemoryCopier())
 , m_copier(m_default_memory_copier.get())
 {
-  // Par défaut, on utilise l'allocateur CPU. Les allocateurs spécifiques pour
-  // les accélérateurs seront positionnés lorsqu'on aura choisi le runtime
-  // accélérateur
+  // By default, we use the CPU allocator. Specific allocators for
+  // accelerators will be set when the accelerator runtime is chosen
   IMemoryAllocator* a = AlignedMemoryAllocator::Simd();
   setAllocator(eMemoryResource::Host, a);
 }
@@ -106,8 +105,8 @@ getAllocator(eMemoryResource r, bool throw_if_not_found)
   int x = _checkValidResource(r);
   IMemoryAllocator* a = m_allocators[x];
 
-  // Si pas d'allocateur spécifique et qu'on n'est pas sur accélérateur,
-  // utilise Platform::getAcceleratorHostMemoryAllocator().
+  // If no specific allocator is found and we are not on an accelerator,
+  // use Platform::getAcceleratorHostMemoryAllocator().
   if (!a && !m_is_accelerator) {
     if (r == eMemoryResource::UnifiedMemory || r == eMemoryResource::HostPinned) {
       eMemoryResource mem = MemoryUtils::getDefaultDataMemoryResource();

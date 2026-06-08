@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IndexOutOfRangeException.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Exception lorsqu'une valeur n'est pas dans un intervalle donné.           */
+/* Exception when a value is not within a given range.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_INDEXOUTOFRANGEEXCEPTION_H
 #define ARCCORE_BASE_INDEXOUTOFRANGEEXCEPTION_H
@@ -24,11 +24,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Exception lorsqu'une valeur n'est pas dans un intervalle donné.
+ * \brief Exception when a value is not within a given range.
  *
- * Indique que minValue() <= index() < maxValue() n'est pas respecté.
+ * Indicates that minValue() <= index() < maxValue() is not respected.
  */
 class ARCCORE_BASE_EXPORT IndexOutOfRangeException
 : public Exception
@@ -45,9 +46,9 @@ class ARCCORE_BASE_EXPORT IndexOutOfRangeException
   
   //! Index
   Int64 index() const { return m_index; }
-  //! Valeur minimale (inclusive) valide
+  //! Valid minimum value (inclusive)
   Int64 minValue() const { return m_min_value_inclusive; }
-  //! Valeur maximale (exclusive) valide
+  //! Valid maximum value (exclusive)
   Int64 maxValue() const { return m_max_value_exclusive; }
 
  private:
@@ -65,5 +66,4 @@ class ARCCORE_BASE_EXPORT IndexOutOfRangeException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

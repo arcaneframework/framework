@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArraySimdPadder.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Classe pour ajouter du 'padding' pour la vectorisation.                   */
+/* Class for adding 'padding' for vectorization.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ARRAYSIMDPADDER_H
 #define ARCCORE_COMMON_ARRAYSIMDPADDER_H
@@ -32,9 +32,9 @@ class ArraySimdPadder
  public:
 
   /*!
-   * \brief Calcule la taille nécessaire pour être un multiple de \a PaddingSize.
+   * \brief Calculates the size needed to be a multiple of \a PaddingSize.
    *
-   * \a SizeType peut être un Int32 ou un Int64
+   * \a SizeType can be an Int32 or an Int64
    */
   template <int PaddingSize, typename SizeType> ARCCORE_HOST_DEVICE inline static SizeType
   getSizeWithSpecificPadding(SizeType size)
@@ -44,15 +44,15 @@ class ArraySimdPadder
     SizeType modulo = size % PaddingSize;
     if (modulo == 0)
       return size;
-    // TODO: vérifier débordement.
+    // TODO: check overflow.
     SizeType padding_size = ((size / PaddingSize) + 1) * PaddingSize;
     return padding_size;
   }
 
   /*!
-   * \brief Calcule la taille nécessaire pour être un multiple de SIMD_PADDING_SIZE.
+   * \brief Calculates the size needed to be a multiple of SIMD_PADDING_SIZE.
    *
-   * \a SizeType peut être un Int32 ou un Int64
+   * \a SizeType can be an Int32 or an Int64
    */
   template <typename SizeType> ARCCORE_HOST_DEVICE inline static SizeType
   getSizeWithPadding(SizeType size)
@@ -77,8 +77,8 @@ class ArraySimdPadder
     if (padding_size <= size)
       return;
 
-    // Construit une vue avec la taille du padding
-    // pour éviter les débordement de tableau lors des tests
+    // Constructs a view with the padding size
+    // to avoid array overflows during tests
     Span<DataType> padded_ids(ids.data(), padding_size);
 
     DataType last_value = ids[size - 1];
@@ -112,11 +112,11 @@ class ArraySimdPadder
     if (padding_size <= size)
       return;
 
-    // Construit une vue avec la taille du padding
-    // pour éviter les débordements de tableau lors des tests
+    // Constructs a view with the padding size
+    // to avoid array overflows during tests
     Span<const DataType> padded_ids(ids.data(), padding_size);
 
-    // Vérifie que le padding est fait avec la dernière valeur valide.
+    // Checks that the padding is done with the last valid value.
     SizeType last_id = ids[size - 1];
     for (SizeType k = size; k < padding_size; ++k)
       if (padded_ids[k] != last_id)

@@ -222,7 +222,7 @@ struct mpi_communicator
   template <typename T>
   std::vector<T> exclusive_sum(T n) const
   {
-    // TODO: Utiliser scan.
+    // TODO: Use scan.
     std::vector<T> v(size + 1);
     v[0] = 0;
     MPI_Allgather(&n, 1, mpi_datatype<T>(), &v[1], 1, mpi_datatype<T>(), comm);

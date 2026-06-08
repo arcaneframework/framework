@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ReduceMemoryImpl.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Gestion de la mémoire pour les réductions.                                */
+/* Memory management for reductions.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_REDUCEMEMORYIMPL_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_REDUCEMEMORYIMPL_H
@@ -54,29 +54,29 @@ class ReduceMemoryImpl
 
   RunCommandImpl* m_command = nullptr;
 
-  //! Allocation pour la donnée réduite en mémoire hôte
+  //! Allocation for the reduced data in host memory
   UniqueArray<std::byte> m_host_memory_bytes;
 
-  //! Taille allouée pour \a m_device_memory
+  //! Size allocated for \a m_device_memory
   Int64 m_size = 0;
 
-  //! Taille courante de la grille (nombre de blocs)
+  //! Current grid size (number of blocks)
   Int32 m_grid_size = 0;
 
-  //! Taille de la donnée actuelle
+  //! Current data size
   Int64 m_data_type_size = 0;
 
   GridMemoryInfo m_grid_memory_info;
 
-  //! Tableau contenant la valeur de la réduction pour chaque bloc d'une grille
+  //! Array containing the reduction value for each block of a grid
   UniqueArray<Byte> m_grid_buffer;
 
-  //! Buffer pour conserver la valeur de l'identité
+  //! Buffer to store the identity value
   UniqueArray<std::byte> m_identity_buffer;
 
   /*!
-   * \brief Tableau de 1 entier non signé contenant le nombre de grilles ayant déja
-   * effectuée la réduction.
+   * \brief Array of 1 unsigned integer containing the number of grids that have already
+   * performed the reduction.
    */
   UniqueArray<unsigned int> m_grid_device_count;
 

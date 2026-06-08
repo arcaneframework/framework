@@ -4,9 +4,9 @@ endif()
 if (ARCCORE_ENABLE_TBB)
   find_package(TBB)
   if(TBB_VERSION)
-    # Si TBB_VERSION est définie, on est sur que TBB est présent.
-    # Normalement cette variable est définie si on utilise une version de TBB
-    # qui possède un fichier de configuration CMake
+    # If TBB_VERSION is defined, we are sure that TBB is present.
+    # Normally this variable is defined if we use a version of TBB
+    # that has a CMake configuration file
     message(STATUS "[arccore_concurrency] TBB_VERSION=${TBB_VERSION}")
     if (TBB_VERSION VERSION_GREATER_EQUAL "2021")
       message(STATUS "[arcane_thread] Using OneTBB 2021+ implementation")

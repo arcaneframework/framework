@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunnerInternal.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* API interne à Arcane de 'Runner'.                                         */
+/* Internal API of 'Runner' in Arcane.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_RUNNERINTERNAL_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_RUNNERINTERNAL_H
@@ -38,34 +38,34 @@ class ARCCORE_COMMON_EXPORT RunnerInternal
 
  public:
 
-  //! Stoppe toutes les activités de profiling.
+  //! Stops all profiling activities.
   static void stopAllProfiling();
 
   /*!
-   * \brief Finalise l'exécution.
+   * \brief Finalizes execution.
    *
-   * Cela sert à afficher certaines statistiques et libérer les ressources.
+   * This is used to display certain statistics and release resources.
    */
   static void finalize(ITraceMng* tm);
 
  public:
 
-  // Les méthodes suivantes qui gèrent le profiling agissent sur
-  // le runtime  (CUDA, ROCM, ...) associé au runner. Par exemple si on
-  // a deux runners associés à CUDA, si on appelle startProfiling() pour l'un
-  // alors isProfilingActive() sera vrai pour le second runner.
+  // The following methods that manage profiling act on
+  // the runtime (CUDA, ROCM, ...) associated with the runner. For example, if we
+  // have two runners associated with CUDA, if we call startProfiling() for one
+  // then isProfilingActive() will be true for the second runner.
 
-  //! Indique si le profiling est actif pour le runtime associé
+  //! Indicates whether profiling is active for the associated runtime
   bool isProfilingActive();
-  //! Démarre le profiling pour le runtime associé
+  //! Starts profiling for the associated runtime
   void startProfiling();
-  //! Stoppe le profiling pour le runtime associé
+  //! Stops profiling for the associated runtime
   void stopProfiling();
 
   /*!
-   * \brief Affiche les informations de profiling.
+   * \brief Displays profiling information.
    *
-   * S'il est actif, le profiling est temporairement arrêté et redémaré.
+   * If it is active, profiling is temporarily stopped and restarted.
    */
   void printProfilingInfos(std::ostream& o);
 

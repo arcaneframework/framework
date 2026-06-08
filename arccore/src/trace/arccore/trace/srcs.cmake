@@ -1,4 +1,4 @@
-set(SOURCES
+﻿set(SOURCES
   TraceGlobal.h
   TraceGlobal.cc
   Trace.h

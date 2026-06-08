@@ -25,9 +25,9 @@ function(add_arccore_alina_example_no_test EXAMPLE SOURCES)
 endfunction()
 
 # NOTE:
-# Certains tests utilisent OpenMP
-# On fixe en dur le nombre de threads sinon on utilise tous
-# les coeurs disponibles par défaut.
+# Some tests use OpenMP
+# We hardcode the number of threads, otherwise we use all
+# available cores by default.
 function(add_arccore_alina_example EXAMPLE SOURCES)
   add_arccore_alina_example_no_test(${EXAMPLE} ${SOURCES})
   set(TEST_NAME "alina_sample_seq_${EXAMPLE}")
@@ -136,9 +136,9 @@ function(add_mpi_example_no_test example sources)
   target_link_libraries(${example} PUBLIC arccore_alina_mpi_example)
 endfunction()
 
-# Il faut mettre 1 seul coeur pour certains tests
-# car ils utilisent openmp et sinon on se retrouve avec trop
-# de processus
+# We must use only 1 core for some tests
+# because they use openmp and otherwise we end up with too
+# many processes
 
 add_mpi_example(check_direct DistributedCheckDirect.cc 4)
 add_mpi_example(runtime_sdd DistributedRuntimeSDD.cc 2)
@@ -155,13 +155,13 @@ add_mpi_example(mpi_complex DistributedComplex.cc 2)
 add_mpi_example_test(mpi_basic_solver mpi_basic_solver_spectral_radius1 2 -p precond.coarsening.estimate_spectral_radius=1)
 add_mpi_example_test(mpi_basic_solver mpi_basic_solver_spectral_radius2 2 -p precond.coarsening.estimate_spectral_radius=1 -p precond.coarsening.power_iters=4)
 
-# Il faut un argument 'matrix' pour le test
+# We need a 'matrix' argument for the test
 add_mpi_example_no_test(schur_pc_mpi DistributedSCHUR.cc)
 
-# Il faut un fichir de partition pour le test
+# We need a partition file for the test
 add_mpi_example_no_test(solve_mm_mpi DistributedMatrixMarketSolver.cc)
 
-# Exception dans boost lors du test
+# Exception in boost during the test
 add_mpi_example_no_test(cpr_mpi DistributedCPR.cc)
 
 if (TARGET arccon::Parmetis)

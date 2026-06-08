@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ParameterList.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Liste de paramêtres.                                                      */
+/* List of parameters.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -74,8 +74,8 @@ class ParameterList::Impl
     }
 
     m_parameters_dictionary.add(name,value);
-    // Supprime de la liste toutes les occurences ayant
-    // pour paramètre \a name
+    // Remove all occurrences from the list having
+    // parameter \a name
     auto comparer = [=](const NameValuePair& nv){ return nv.name==name; };
     auto new_end = std::remove_if(m_parameters_list.begin(),m_parameters_list.end(),comparer);
     m_parameters_list.resize(new_end-m_parameters_list.begin());
@@ -88,18 +88,18 @@ class ParameterList::Impl
     if (name.startsWith("//")) {
       ARCCORE_FATAL("Remove parameter not supported for ParameterOptions.");
     }
-    // Si le paramètre \a name avec la valeur \a value est trouvé, le supprime.
-    // Dans ce cas, il faudra regarder s'il y a toujours
-    // dans \a m_parameters_list un paramètre \a name et si c'est le
-    // cas c'est la valeur de celui-là qu'on prendra
+    // If the parameter \a name with the value \a value is found, it is removed.
+    // In this case, we must check if there is still
+    // in \a m_parameters_list a parameter \a name and if so
+    // we will take the value of that one
     String x = m_parameters_dictionary.find(name);
     bool need_fill = false;
     if (x==value){
       m_parameters_dictionary.remove(name);
       need_fill = true;
     }
-    // Supprime de la liste toutes les occurences 
-    // du paramètre avec la valeur souhaitée
+    // Remove all occurrences from the list 
+    // of the parameter with the desired value
     NameValuePair ref_value{name,value};
     auto new_end = std::remove(m_parameters_list.begin(),m_parameters_list.end(),ref_value);
     m_parameters_list.resize(new_end-m_parameters_list.begin());

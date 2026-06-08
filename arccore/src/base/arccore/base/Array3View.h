@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Array3View.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Vue d'un tableau 3D.                                                      */
+/* View of a 3D array.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARRAY3VIEW_H
 #define ARCCORE_BASE_ARRAY3VIEW_H
@@ -24,19 +24,20 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Vue pour un tableau 3D.
+ * \brief View for a 3D array.
  *
- * Une vue 3D peut être créée à partir d'un tableau classique (Array)
- * comme suit:
+ * A 3D view can be created from a classic array (Array)
+ * as follows:
  \code
  UniqueArray<Int32> a(5*7*9);
  Array3View<Int32> view(a.unguardedBasePointer(),5,7,9);
  view[3][4][5] = 2;
- view.setItem(4,5,6, 1); // Met la valeur 1 a l'élément view[4][5][6].
+ view.setItem(4,5,6, 1); // Sets the value 1 to the element view[4][5][6].
  \endcode
- Pour des raisons de performance, il est préférable d'accéder aux éléments
+ For performance reasons, it is preferable to access elements
  via operator()()
  */
 template<class DataType>
@@ -101,24 +102,26 @@ class Array3View
     m_ptr[(m_dim23_size*i) + m_dim3_size*j + k] = value;
   }
  public:
+
   /*!
-   * \brief Pointeur sur la mémoire allouée.
+   * \brief Pointer to the allocated memory.
    */
   inline DataType* unguardedBasePointer()
   { return m_ptr; }
  private:
   DataType* m_ptr;
-  Integer m_dim1_size; //!< Taille de la 1ere dimension
-  Integer m_dim2_size; //!< Taille de la 2eme dimension
-  Integer m_dim3_size; //!< Taille de la 3eme dimension
+  Integer m_dim1_size; //!< Size of the 1st dimension
+  Integer m_dim2_size; //!< Size of the 2nd dimension
+  Integer m_dim3_size; //!< Size of the 3rd dimension
   Integer m_dim23_size; //!< dim2 * dim3
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Vue pour un tableau 3D constant.
+ * \brief View for a constant 3D array.
  */
 template<class DataType>
 class ConstArray3View
@@ -164,18 +167,18 @@ class ConstArray3View
 
  public:
 
-  //! Pointeur sur la mémoire allouée.
+  //! Pointer to the allocated memory.
   constexpr inline const DataType* unguardedBasePointer() const { return m_ptr; }
 
-  //! Pointeur sur la mémoire allouée.
+  //! Pointer to the allocated memory.
   constexpr const DataType* data() const { return m_ptr; }
 
  private:
 
   const DataType* m_ptr;
-  Integer m_dim1_size; //!< Taille de la 1ere dimension
-  Integer m_dim2_size; //!< Taille de la 2eme dimension
-  Integer m_dim3_size; //!< Taille de la 3eme dimension
+  Integer m_dim1_size; //!< Size of the 1st dimension
+  Integer m_dim2_size; //!< Size of the 2nd dimension
+  Integer m_dim3_size; //!< Size of the 3rd dimension
   Integer m_dim23_size; //!< dim2 * dim3
 };
 
@@ -187,4 +190,4 @@ class ConstArray3View
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

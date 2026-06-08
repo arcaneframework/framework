@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NativeStream.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Type opaque pour encapsuler une 'stream' native.                          */
+/* Opaque type to encapsulate a native 'stream'.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_PLATFORMSTREAM_H
 #define ARCCORE_COMMON_ACCELERATOR_PLATFORMSTREAM_H
@@ -42,13 +42,14 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type opaque pour encapsuler une 'stream' native.
+ * \brief Opaque type to encapsulate a native 'stream'.
  *
- * Cette classe permet de conserver *temporairement* une stream native.
- * Le type exact dépend du runtime: cudaStream_t, hipStream_to ou sycl::queue.
+ * This class allows for the *temporary* retention of a native stream.
+ * The exact type depends on the runtime: cudaStream_t, hipStream_to, or sycl::queue.
  *
- * Les instances de cette classe ne doivent pas être conservées.
+ * Instances of this class must not be retained.
  */
 class ARCCORE_COMMON_EXPORT NativeStream
 {

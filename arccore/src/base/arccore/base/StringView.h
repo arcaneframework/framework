@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StringView.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Vue sur une chaîne de caractères UTF-8.                                   */
+/* View of a UTF-8 character string.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_STRINGVIEW_H
 #define ARCCORE_BASE_STRINGVIEW_H
@@ -30,104 +30,104 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue sur une chaîne de caractères UTF-8.
+ * \brief View of a UTF-8 character string.
  *
- * Cette classe est similaire à std::string_view du C++17 dans le sens où elle ne
- * conserve qu'un pointeur sur une donnée mémoire gérée par une autre classe.
- * Les instances de cette classe ne doivent donc pas être conservées. La
- * différence principale se situe au niveau de l'encodage qui est obligatoirement
- * UTF-8 avec cette classe.
+ * This class is similar to std::string_view in C++17 in that it only holds
+ * a pointer to memory managed by another class.
+ * Therefore, instances of this class should not be kept. The
+ * main difference lies in the encoding, which must be UTF-8 with this class.
  *
- * \note Comme la classe std::string_view, le tableau \a bytes() ne contient
- * pas nécessairement de zéro terminal. Cela signifie entre autre qu'il ne faut
- * donc pas utiliser cette classe pour passer des paramètres à des fonctions C.
+ * \note Like the std::string_view class, the \a bytes() array does not
+ * necessarily contain a null terminator. This means, among other things,
+ * that this class should not be used to pass parameters to C functions.
  */
 class ARCCORE_BASE_EXPORT StringView
 {
  public:
 
-  //! Crée une vue sur une chaîne vide
+  //! Creates a view of an empty string
   StringView() = default;
-  //! Créé une vue à partir de \a str codé en UTF-8. \a str peut être nul.
+  //! Creates a view from \a str encoded in UTF-8. \a str may be null.
   StringView(const char* str) ARCCORE_NOEXCEPT
   : StringView(str ? std::string_view(str) : std::string_view()){}
-  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
+  //! Creates a string from \a str in UTF-8 encoding
   StringView(std::string_view str) ARCCORE_NOEXCEPT
   : m_v(reinterpret_cast<const Byte*>(str.data()),str.size()){}
-  //! Créé une chaîne à partir de \a str dans l'encodage UTF-8
+  //! Creates a string from \a str in UTF-8 encoding
   constexpr StringView(Span<const Byte> str) ARCCORE_NOEXCEPT
   : m_v(str){}
-  //! Opérateur de recopie
+  //! Copy constructor
   constexpr StringView(const StringView& str) = default;
-  //! Copie la vue \a str dans cette instance.
+  //! Copies the view \a str into this instance.
   constexpr StringView& operator=(const StringView& str) = default;
-  //! Créé une vue à partir de \a str codé en UTF-8
+  //! Creates a view from \a str encoded in UTF-8
   StringView& operator=(const char* str) ARCCORE_NOEXCEPT
   {
     operator=(str ? std::string_view(str) : std::string_view());
     return (*this);
   }
-  //! Créé une vue à partir de \a str codé en UTF-8
+  //! Creates a view from \a str encoded in UTF-8
   StringView& operator=(std::string_view str) ARCCORE_NOEXCEPT
   {
     m_v = Span<const Byte>(reinterpret_cast<const Byte*>(str.data()),str.size());
     return (*this);
   }
-  //! Créé une vue à partir de \a str codé en UTF-8
+  //! Creates a view from \a str encoded in UTF-8
   constexpr StringView& operator=(Span<const Byte> str) ARCCORE_NOEXCEPT
   {
     m_v = str;
     return (*this);
   }
 
-  ~StringView() = default; //!< Libère les ressources.
+  ~StringView() = default; //!< Frees resources.
 
  public:
 
   /*!
-   * \brief Retourne la conversion de l'instance dans l'encodage UTF-8.
+   * \brief Returns the conversion of the instance in UTF-8 encoding.
    *
-   * \warning L'instance retournée ne contient pas de zéro terminal.
+   * \warning The returned instance does not contain a null terminator.
    *
-   * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
-   * est invalidée par toute modification de cette instance.
+   * \warning The instance remains the owner of the returned value, and this value
+   * is invalidated by any modification of this instance.
    */
   constexpr Span<const Byte> bytes() const ARCCORE_NOEXCEPT { return m_v; }
 
-  //! Longueur en octet de la chaîne de caractères.
+  //! Length in bytes of the character string.
   constexpr Int64 length() const ARCCORE_NOEXCEPT { return m_v.size(); }
 
-  //! Longueur en octet de la chaîne de caractères.
+  //! Length in bytes of the character string.
   constexpr Int64 size() const ARCCORE_NOEXCEPT { return m_v.size(); }
 
-  //! Vrai si la chaîne est nulle ou vide.
+  //! True if the string is null or empty.
   constexpr bool empty() const ARCCORE_NOEXCEPT { return size()==0; }
 
  public:
 
   /*!
-   * \brief Retourne une vue de la STL de la vue actuelle.
+   * \brief Returns an STL view of the current view.
    */
   std::string_view toStdStringView() const ARCCORE_NOEXCEPT
   {
     return std::string_view(reinterpret_cast<const char*>(m_v.data()),m_v.size());
   }
 
-  //! Opérateur d'écriture d'une StringView
+  //! StringView output operator
   friend ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const StringView&);
 
   /*!
-   * \brief Compare deux vues.
-   * \retval true si elles sont égales,
-   * \retval false sinon.
+   * \brief Compares two views.
+   * \retval true if they are equal,
+   * \retval false otherwise.
    */
   friend ARCCORE_BASE_EXPORT bool operator==(const StringView& a,const StringView& b);
 
   /*!
-   * \brief Compare deux chaînes unicode.
-   * \retval true si elles sont différentes,
-   * \retval false si elles sont égales.
+   * \brief Compares two Unicode strings.
+   * \retval true if they are different,
+   * \retval false if they are equal.
    * \relate String
    */
   friend inline bool operator!=(const StringView& a,const StringView& b)
@@ -136,33 +136,33 @@ class ARCCORE_BASE_EXPORT StringView
   }
 
   /*!
-   * \brief Compare deux chaînes unicode.
-   * \retval true si elles sont égales,
-   * \retval false sinon.
+   * \brief Compares two Unicode strings.
+   * \retval true if they are equal,
+   * \retval false otherwise.
    * \relate String
    */
   friend ARCCORE_BASE_EXPORT bool operator==(const char* a,const StringView& b);
 
   /*!
-   * \brief Compare deux chaînes unicode.
-   * \retval true si elles sont différentes,
-   * \retval false si elles sont égales.
+   * \brief Compares two Unicode strings.
+   * \retval true if they are different,
+   * \retval false if they are equal.
    * \relate String
    */
   friend bool operator!=(const char* a,const StringView& b){ return !operator==(a,b); }
 
   /*!
-   * \brief Compare deux chaînes unicode.
-   * \retval true si elles sont égales,
-   * \retval false sinon.
+   * \brief Compares two Unicode strings.
+   * \retval true if they are equal,
+   * \retval false otherwise.
    * \relate String
    */
   friend ARCCORE_BASE_EXPORT bool operator==(const StringView& a,const char* b);
 
   /*!
-   * \brief Compare deux chaînes unicode.
-   * \retval true si elles sont différentes,
-   * \retval false si elles sont égales.
+   * \brief Compares two Unicode strings.
+   * \retval true if they are different,
+   * \retval false if they are equal.
    * \relate String
    */
   friend inline bool operator!=(const StringView& a,const char* b)
@@ -171,22 +171,22 @@ class ARCCORE_BASE_EXPORT StringView
   }
 
   /*!
-   * \brief Compare deux chaînes unicode.
-   * \retval true si a<b
-   * \retval false sinon.
+   * \brief Compares two Unicode strings.
+   * \retval true if a<b
+   * \retval false otherwise.
    * \relate String
    */
   friend ARCCORE_BASE_EXPORT bool operator<(const StringView& a,const StringView& b);
 
  public:
 
-  //! Écrit la chaîne au format UTF-8 sur le flot \a o
+  //! Writes the string in UTF-8 format to the stream \a o
   void writeBytes(std::ostream& o) const;
 
-  //! Sous-chaîne commençant à la position \a pos
+  //! Substring starting at position \a pos
   StringView subView(Int64 pos) const;
 
-  //! Sous-chaîne commençant à la position \a pos et de longueur \a len
+  //! Substring starting at position \a pos and of length \a len
   StringView subView(Int64 pos,Int64 len) const;
 
  private:

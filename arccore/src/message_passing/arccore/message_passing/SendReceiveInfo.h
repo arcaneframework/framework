@@ -27,9 +27,8 @@ namespace Arccore::MessagePassing
 /*!
  * \brief MessageId.
  *
- * Ces informations sont utilisées pour récupérer les informations suite à un
- * appel à mpMessageProbe(). Avec MPI, cette classe encapsule le type
- * MPI_Message.
+ * These information is used to retrieve information after an call to
+ * mpMessageProbe(). With MPI, this class encapsulates the MPI_Message type.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 {
@@ -171,5 +170,4 @@ operator<<(std::ostream& o,const MessageId& pmessage)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

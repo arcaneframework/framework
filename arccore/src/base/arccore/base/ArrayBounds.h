@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayBounds.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des itérations sur les tableaux N-dimensions                      */
+/* Handling of iterations on N-dimensional arrays                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARRAYBOUNDS_H
 #define ARCCORE_BASE_ARRAYBOUNDS_H
@@ -117,4 +117,4 @@ class ArrayBounds
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

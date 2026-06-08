@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicTranscoder.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Conversions entre utf8 et utf16.                                          */
+/* Conversions between utf8 and utf16.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -70,16 +70,17 @@ int _notEnoughChar(Int32& wc)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti un caractère unicode (UCS4) en utf8.
+ * \brief Convert a Unicode character (UCS4) to utf8.
  *
- * Routine récupérée dans libiconv.
+ * Routine retrieved from libiconv.
  *
- * Un caractère ucs4 génère entre 1 et 6 caractères utf8.
- * Les caractères convertis sont ajoutés au tableau \a utf8.
+ * One ucs4 character generates between 1 and 6 utf8 characters.
+ * The converted characters are added to the utf8 array.
  *
- * \param wc valeur ucs4 du caractère à convertir
- * \param utf8[out] Tableau contenant les caractères utf8 convertis
+ * \param wc ucs4 value of the character to convert
+ * \param utf8[out] Array containing the converted utf8 characters
  */
 void ucs4_to_utf8(Int32 wc, Impl::CoreArray<Byte>& utf8)
 {
@@ -131,17 +132,18 @@ void ucs4_to_utf8(Int32 wc, Impl::CoreArray<Byte>& utf8)
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti un caractère utf8 en unicode (UCS4).
+ * \brief Convert a utf8 character to unicode (UCS4).
  *
- * Routine récupérée dans libiconv.
+ * Routine retrieved from libiconv.
  *
- * Un caractère ucs4 est créé à partir de 1 à 6 caractères utf8.
+ * One ucs4 character is created from 1 to 6 utf8 characters.
  *
- * \param uchar Tableau contenant les caractères utf8 à convertir
- * \param index indice du premier élément du tableau à convertir
- * \param wc [out] valeur ucs4 du caractère.
- * \return le nombre de caractères utf8 lus.
+ * \param uchar Array containing the utf8 characters to convert
+ * \param index index of the first element of the array to convert
+ * \param wc [out] ucs4 value of the character.
+ * \return the number of utf8 characters read.
  */
 Int64 utf8_to_ucs4(Span<const Byte> uchar, Int64 index, Int32& wc)
 {
@@ -183,9 +185,9 @@ Int64 utf8_to_ucs4(Span<const Byte> uchar, Int64 index, Int32& wc)
     return 4;
   }
 
-  // On ne devrait jamais arriver ici
-  // car il n'y a plus (depuis la norme 2003) de caractères UTF-8
-  // encodés sur 5 ou 6 octets.
+  // We should never reach here
+  // because there are no longer (since the 2003 standard)
+  // UTF-8 characters encoded in 5 or 6 bytes.
 
   if (c < 0xfc) {
     if (n < 5)
@@ -208,17 +210,18 @@ Int64 utf8_to_ucs4(Span<const Byte> uchar, Int64 index, Int32& wc)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti un caractère utf16 en unicode (UCS4).
+ * \brief Convert a utf16 character to unicode (UCS4).
  *
- * Routine récupérée dans libiconv.
+ * Routine retrieved from libiconv.
  *
- * Un caractère ucs4 est créé à partir de 1 ou 2 caractères utf16.
+ * One ucs4 character is created from 1 or 2 utf16 characters.
  *
- * \param uchar Tableau contenant les caractères utf16 à convertir
- * \param index indice du premier élément du tableau à convertir
- * \param wc [out] valeur ucs4 du caractère.
- * \return le nombre de caractères utf16 lus.
+ * \param uchar Array containing the utf16 characters to convert
+ * \param index index of the first element of the array to convert
+ * \param wc [out] ucs4 value of the character.
+ * \return the number of utf16 characters read.
  */
 Int64 utf16_to_ucs4(Span<const UChar> uchar, Int64 index, Int32& wc)
 {
@@ -253,16 +256,17 @@ Int64 utf16_to_ucs4(Span<const UChar> uchar, Int64 index, Int32& wc)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti un caractère (UCS4) en utf16 big-endian.
+ * \brief Convert a character (UCS4) to utf16 big-endian.
  *
- * Routine récupérée dans libiconv.
+ * Routine retrieved from libiconv.
  *
- * Un caractère ucs4 est génère 1 ou 2 caractères utf16. Les
- * caractères convertis sont ajoutés au tableau \a uchar
+ * One ucs4 character generates 1 or 2 utf16 characters. The
+ * converted characters are added to the uchar array
  *
- * \param wc valeur ucs4 du caractère à convertir
- * \param uchar[out] Tableau contenant les caractères utf16 convertis
+ * \param wc ucs4 value of the character to convert
+ * \param uchar[out] Array containing the converted utf16 characters
  */
 void
 ucs4_to_utf16(Int32 wc,Impl::CoreArray<UChar>& uchar)
@@ -312,7 +316,7 @@ stringLen(const UChar* ustr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Traduit depuis UTF16 vers UTF8
+//! Translates from UTF16 to UTF8
 void BasicTranscoder::
 transcodeFromUtf16ToUtf8(Span<const UChar> utf16, CoreArray<Byte>& utf8)
 {
@@ -366,7 +370,7 @@ collapseWS(CoreArray<Byte>& out_utf8)
   out_utf8.clear();
   Int64 i = 0;
   Int64 n = utf8.size();
-  // Si la chaîne est vide, retourne une chaîne vide.
+  // If the string is empty, return an empty string.
   if (n == 1) {
     out_utf8.add('\0');
     return;
@@ -440,19 +444,19 @@ lowerCase(CoreArray<Byte>& out_utf8)
 void BasicTranscoder::
 substring(CoreArray<Byte>& out_utf8, Span<const Byte> utf8, Int64 pos, Int64 len)
 {
-  // Copie les \a len caractères unicodes de \a utf8 à partir de la position \a pos
+  // Copy the 'len' Unicode characters from the 'pos' position of the utf8 array
   Int64 current_pos = 0;
   for (Int64 i = 0, n = utf8.size(); i < n;) {
     Int32 wc;
     i += utf8_to_ucs4(utf8, i, wc);
     if (current_pos >= pos && current_pos < (pos + len)) {
-      // Pour être sur de ne pas ajouter le 0 terminal
+      // To ensure the terminal null character is not added
       if (wc != 0)
         ucs4_to_utf8(wc, out_utf8);
     }
     ++current_pos;
   }
-  // Ajoute le 0 terminal
+  // Add the terminal null character
   ucs4_to_utf8(0, out_utf8);
 }
 

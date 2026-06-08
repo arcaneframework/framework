@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CoreArray.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Tableau simple pour Arccore.                                              */
+/* Simple array for Arccore.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_COREARRAY_H
 #define ARCCORE_BASE_COREARRAY_H
@@ -26,11 +26,12 @@ namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Tableau interne pour Arccore.
+ * \brief Internal array for Arccore.
  *
- * Cette classe est privée et ne doit être utilisé que par les classes de Arccore.
+ * This class is private and should only be used by Arccore classes.
  */
 template <class DataType>
 class CoreArray
@@ -41,30 +42,30 @@ class CoreArray
 
  public:
 
-  //! Type des éléments du tableau
+  //! Type of the array elements
   typedef DataType value_type;
-  //! Type de l'itérateur sur un élément du tableau
+  //! Type of the iterator over an array element
   typedef typename ContainerType::iterator iterator;
-  //! Type de l'itérateur constant sur un élément du tableau
+  //! Type of the constant iterator over an array element
   typedef typename ContainerType::const_iterator const_iterator;
-  //! Type pointeur d'un élément du tableau
+  //! Type pointer of an array element
   typedef typename ContainerType::pointer pointer;
-  //! Type pointeur constant d'un élément du tableau
+  //! Type constant pointer of an array element
   typedef const value_type* const_pointer;
-  //! Type référence d'un élément du tableau
+  //! Type reference of an array element
   typedef value_type& reference;
-  //! Type référence constante d'un élément du tableau
+  //! Type constant reference of an array element
   typedef const value_type& const_reference;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Int64 size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type of a distance between array element iterators
   typedef ptrdiff_t difference_type;
 
  public:
 
-  //! Construit un tableau vide.
+  //! Constructs an empty array.
   CoreArray() {}
-  //! Construit un tableau vide.
+  //! Constructs an empty array.
   CoreArray(ConstArrayView<DataType> v)
   : m_p(v.begin(),v.end()) {}
   CoreArray(Span<const DataType> v)
@@ -73,12 +74,12 @@ class CoreArray
 
  public:
 
-  //! Conversion vers un Span<const DataType>
+  //! Conversion to a Span<const DataType>
   operator Span<const DataType>() const
   {
     return CoreArray::_constSpan(m_p);
   }
-  //! Conversion vers un Span<DataType>
+  //! Conversion to a Span<DataType>
   operator Span<DataType>()
   {
     return CoreArray::_span(m_p);
@@ -86,57 +87,57 @@ class CoreArray
 
  public:
 
-  //! i-ème élément du tableau.
+  //! i-th element of the array.
   inline DataType& operator[](Int64 i)
   {
     ARCCORE_CHECK_AT(i, m_p.size());
     return m_p[i];
   }
 
-  //! i-ème élément du tableau.
+  //! i-th element of the array.
   inline const DataType& operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i, m_p.size());
     return m_p[i];
   }
 
-  //! Retourne la taille du tableau
+  //! Returns the size of the array
   inline Int64 size() const { return static_cast<Int64>(m_p.size()); }
 
-  //! Retourne un iterateur sur le premier élément du tableau
+  //! Returns an iterator to the first element of the array
   inline iterator begin() { return m_p.begin(); }
-  //! Retourne un iterateur sur le premier élément après la fin du tableau
+  //! Returns an iterator to the first element after the end of the array
   inline iterator end() { return m_p.end(); }
-  //! Retourne un iterateur constant sur le premier élément du tableau
+  //! Returns a constant iterator to the first element of the array
   inline const_iterator begin() const { return m_p.begin(); }
-  //! Retourne un iterateur constant sur le premier élément après la fin du tableau
+  //! Returns a constant iterator to the first element after the end of the array
   inline const_iterator end() const { return m_p.end(); }
 
-  //! Vue constante
+  //! Constant view
   ConstArrayView<DataType> constView() const
   {
     return CoreArray::_constView(m_p);
   }
 
-  //! Vue modifiable
+  //! Modifiable view
   ArrayView<DataType> view()
   {
     return CoreArray::_view(m_p);
   }
 
-  //! Vue constante
+  //! Constant view
   Span<const DataType> constSpan() const
   {
     return CoreArray::_constSpan(m_p);
   }
 
-  //! Vue modifiable
+  //! Modifiable view
   Span<DataType> span()
   {
     return CoreArray::_span(m_p);
   }
 
-  //! Retourne \a true si le tableau est vide
+  //! Returns true if the array is empty
   bool empty() const
   {
     return m_p.empty();
@@ -181,12 +182,13 @@ class CoreArray
         return true;
     return false;
   }
+
   /*!
-   * \brief Supprime de la liste l'élément ayant la valeur \a v.
+   * \brief Removes the element with value \a v from the list.
    *
-   * Seul la première instance de l'élément ayant la valeur \a v
-   * est supprimée. Si la valeur n'est pas trouvée, aucune opération
-   * n'est effectuée.
+   * Only the first instance of the element with value \a v
+   * is removed. If the value is not found, no operation
+   * is performed.
    */
   void removeValue(const_reference v)
   {

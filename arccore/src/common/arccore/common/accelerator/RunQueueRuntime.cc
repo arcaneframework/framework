@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunQueueRuntime.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'un RunQueue pour une cible donnée.                       */
+/* Implementation of a RunQueue for a given target.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -135,7 +135,7 @@ class ARCCORE_COMMON_EXPORT CommonRunnerRuntime
   }
   DeviceMemoryInfo getDeviceMemoryInfo(DeviceId) override
   {
-    // TODO: à implémenter
+    // TODO: to be implemented
     return {};
   }
 
@@ -173,14 +173,14 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Récupère l'implémentation séquentielle de RunQueue
+//! Retrieves the sequential RunQueue implementation
 extern "C++" ARCCORE_COMMON_EXPORT IRunnerRuntime*
 getSequentialRunQueueRuntime()
 {
   return &global_sequential_runqueue_runtime;
 }
 
-//! Récupère l'implémentation séquentielle de RunQueue
+//! Retrieves the sequential RunQueue implementation
 extern "C++" ARCCORE_COMMON_EXPORT IRunnerRuntime*
 getThreadRunQueueRuntime()
 {

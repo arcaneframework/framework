@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayTraits.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Caractéristiques d'un tableau 1D.                                         */
+/* Characteristics of a 1D array.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ARRAYTRAITS_H
 #define ARCCORE_COMMON_ARRAYTRAITS_H
@@ -16,7 +16,7 @@
 
 #include "arccore/common/CommonGlobal.h"
 
-// Pour std::byte
+// For std::byte
 #include <cstddef>
 
 /*---------------------------------------------------------------------------*/
@@ -27,18 +27,19 @@ namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Caractéristiques pour un tableau.
+ * \brief Characteristics for an array.
  *
- * Cette classe template peut être spécialisée pour indiquer qu'un type doit
- * être considéré comme un type POD pour les classes tableaux (Array, Array2, ...).
+ * This template class can be specialized to indicate that a type must
+ * be considered a POD type for array classes (Array, Array2, ...).
  *
- * Pour ces classes, si un type est un type POD, alors les constructeurs, destructeurs
- * et opérateurs de recopies ne sont pas appelés pour gérer les instances de ce
- * type dans les tableaux.
+ * For these classes, if a type is a POD type, then constructors, destructors
+ * and copy operators are not called to manage instances of this
+ * type in arrays.
  *
- * Pour indiquer qu'un type doit être considéré comme un type POD, il faut
- * utiliser la macro ARCCORE_DEFINE_ARRAY_PODTYPE.
+ * To indicate that a type must be considered a POD type, you must
+ * use the ARCCORE_DEFINE_ARRAY_PODTYPE macro.
  */
 template <typename T>
 class ArrayTraits
@@ -53,11 +54,11 @@ class ArrayTraits
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Macro pour indiquer que le type \a datatype est un type POD pour les tableaux.
+ * \brief Macro to indicate that the type \a datatype is a POD type for arrays.
  *
- * Cette macro spécialise \a Arccore::ArrayTraits pour le type \a datatype. Elle
- * donc être utilisé dans le namespace \a Arccore et avant l'utilisation du
- * type \a datatype.
+ * This macro specializes \a Arccore::ArrayTraits for the type \a datatype. It
+ * must therefore be used in the \a Arccore namespace and before the use of
+ * the \a datatype type.
  */
 #define ARCCORE_DEFINE_ARRAY_PODTYPE(datatype) \
   template <> \
@@ -71,7 +72,8 @@ class ArrayTraits
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Implémentation par défaut indiquant qu'un type n'est pas POD
+
+//! Default implementation indicating that a type is not POD
 template <typename T>
 class ArrayTraits<T*>
 {
@@ -82,7 +84,7 @@ class ArrayTraits<T*>
   typedef FalseType IsPODType;
 };
 
-//! Implémentation par défaut indiquant qu'un type n'est pas POD
+//! Default implementation indicating that a type is not POD
 template <typename T>
 class ArrayTraits<const T*>
 {

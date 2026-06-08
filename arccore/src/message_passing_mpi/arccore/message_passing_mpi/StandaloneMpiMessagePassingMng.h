@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StandaloneMpiMessagePassingMng.h                            (C) 2000-2025 */
 /*                                                                           */
-/* Version autonome de MpiMessagePassingMng.                                 */
+/* Standalone version of MpiMessagePassingMng.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_STANDALONEMPIMESSAGEPASSINGMNG_H
 #define ARCCORE_MESSAGEPASSINGMPI_STANDALONEMPIMESSAGEPASSINGMNG_H
@@ -26,10 +26,11 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Version autonome de MpiMessagePassingMng.
+ * \brief Standalone version of MpiMessagePassingMng.
  *
- * La création se fait via la méthode statique create() ou createRef().
+ * Creation is done via the static method create() or createRef().
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng
 : public MpiMessagePassingMng
@@ -46,14 +47,14 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng
 
  public:
 
-  //! Créé un gestionnaire associé au communicateur \a comm.
+  //! Creates a manager associated with the communicator \a comm.
   static MpiMessagePassingMng* create(MPI_Comm comm, bool clean_comm=false);
 
   /*!
-   * \brief Créé un gestionnaire associé au communicateur \a comm.
+   * \brief Creates a manager associated with the communicator \a comm.
    *
-   * Si \a clean_comm est vrai, on appelle MPI_Comm_free() sur \a comm
-   * lors de la destruction de l'instance.
+   * If \a clean_comm is true, MPI_Comm_free() is called on \a comm
+   * when the instance is destroyed.
    */
   static Ref<IMessagePassingMng> createRef(MPI_Comm comm, bool clean_comm=false);
 
@@ -70,4 +71,4 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

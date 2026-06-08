@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ForLoopTraceInfo.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Informations de trace pour une boucle for.                                */
+/* Trace information for a for loop.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_FORLOOPTRACEINFO_H
 #define ARCCORE_BASE_FORLOOPTRACEINFO_H
@@ -25,8 +25,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de trace pour une boucle 'for'.
+ * \brief Trace information for a 'for' loop.
  */
 class ARCCORE_BASE_EXPORT ForLoopTraceInfo
 {
@@ -66,5 +67,4 @@ class ARCCORE_BASE_EXPORT ForLoopTraceInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

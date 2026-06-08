@@ -16,7 +16,7 @@ using namespace Arccore;
 namespace MyTest
 {
 
-//! Classe de test utilisant le compteur de référence interne
+//! Test class using the internal reference counter
 class TestRefOwn;
 class TestBaseType;
 }
@@ -112,7 +112,7 @@ class TestRefOwn
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Classe de test utilisant un shared_ptr
+//! Test class using a shared_ptr
 class TestRefSharedPtr
 : public TestBaseTypeNoRef
 {
@@ -248,7 +248,7 @@ ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS(MyTest::TestBaseType);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Teste si le compteur de référence détruit bien l'instance.
+// Tests if the reference counter properly destroys the instance.
 TEST(Ref, Misc)
 {
   _doTest1<TestRefOwn,1>();

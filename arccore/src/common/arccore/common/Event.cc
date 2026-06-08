@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Event.cc                                                    (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaires d'évènements.                                               */
+/* Event managers.                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,11 +22,13 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file utils/Event.h
  *
- * \brief Fichier contenant les mécanismes de gestion des évènements.
+ * \brief File containing event management mechanisms.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -90,7 +92,7 @@ _rebuildObserversArray()
 void EventObservableBase::
 _attachObserver(EventObserverBase* obs, bool is_auto_destroy)
 {
-  // Vérifie que l'observeur n'est pas dans la liste.
+  // Checks that the observer is not in the list.
   if (m_p->m_observers.find(obs) != m_p->m_observers.end())
     ARCCORE_FATAL("Observer is already attached to this observable");
   obs->_notifyAttach(this);
@@ -106,8 +108,8 @@ _attachObserver(EventObserverBase* obs, bool is_auto_destroy)
 void EventObservableBase::
 _detachObserver(EventObserverBase* obs)
 {
-  // NOTE: il est impossible de détacher un observeur qui a été alloué
-  // dynamiquement. Il n'y a donc pas besoin de mettre à jour
+  // NOTE: it is impossible to detach an observer that was
+  // dynamically allocated. There is therefore no need to update
   // m_p->m_auto_destroy_observers.
   bool is_ok = false;
   for (auto o : m_p->m_observers)
@@ -117,7 +119,7 @@ _detachObserver(EventObserverBase* obs)
       break;
     }
 
-  // Lance une exception si pas trouvé
+  // Throws an exception if not found
   if (!is_ok)
     ARCCORE_FATAL("observer is not registered to this observable");
   obs->_notifyDetach();
@@ -211,4 +213,3 @@ add(EventObserverBase* obs)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

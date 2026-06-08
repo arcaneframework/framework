@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CommonGlobal.cc                                             (C) 2000-2026 */
 /*                                                                           */
-/* Définitions globales de la composante 'Common' de 'Arccore'.              */
+/* Global definitions for the 'Common' component of 'Arccore'.               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -16,8 +16,8 @@
 #include "arccore/common/internal/IMemoryResourceMngInternal.h"
 #include "arccore/common/IMemoryResourceMng.h"
 
-// Ces fichiers ne sont pas utilisés dans 'CommonGlobal.cc'
-// mais cela permet de vérifier qu'ils compilent
+// These files are not used in 'CommonGlobal.cc'
+// but this allows checking that they compile
 #include "arccore/common/HostKernelRemainingArgsHelper.h"
 #include "arccore/common/SequentialFor.h"
 #include "arccore/common/DataView.h"

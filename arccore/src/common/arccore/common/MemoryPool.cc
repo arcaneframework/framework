@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryPool.cc                                               (C) 2000-2026 */
 /*                                                                           */
-/* Classe pour gérer une liste de zone allouées.                             */
+/* Class to manage a list of allocated zones.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,7 +35,7 @@ namespace Arcane::Impl
 
 class MemoryPool::Impl
 {
-  //! Tableau associatif des pointeurs alloués et la taille associée
+  //! Associative array of allocated pointers and associated size
   class AllocatedMap
   {
    public:
@@ -107,7 +107,7 @@ class MemoryPool::Impl
 
  public:
 
-  //! Tableau associatif des emplacements mémoire libres par taille
+  //! Associative array of free memory locations by size
   class FreedMap
   {
    public:
@@ -123,10 +123,10 @@ class MemoryPool::Impl
    public:
 
     /*!
-     * \brief Récupère un pointeur pour une taille \a size.
+     * \brief Retrieves a pointer for a size \a size.
      *
-     * Retourne nullptr s'il n'y a aucune valeur dans le cache
-     * pour cette taille. Sinon, le pointeur retourné est supprimé du cache.
+     * Returns nullptr if there is no value in the cache
+     * for this size. Otherwise, the returned pointer is removed from the cache.
      */
     void* getPointer(size_t size)
     {
@@ -170,7 +170,7 @@ class MemoryPool::Impl
         ostr << "Map size=" << key << " nb_allocated=" << value << " page_modulo=" << (key % 4096) << "\n";
     }
 
-    //! Remplit \a values avec les valeurs de \a m_free_memory_map et vide cette dernière
+    //! Fills \a values with the values from \a m_free_memory_map and clears the latter
     void fillFreeMapAndClear(Array<std::pair<void*, size_t>>& values)
     {
       std::unique_lock<std::mutex> lg(m_mutex);
@@ -202,10 +202,10 @@ class MemoryPool::Impl
   }
   ~Impl()
   {
-    // Ne libère pas la mémoire dans m_free_map
-    // car ce destructeur peut être appelé en fin d'exécution
-    // et sur accélérateur on ne peut plus à ce moment la
-    // appeler des fonctions du runtime.
+    // Does not free memory in m_free_map
+    // because this destructor can be called at the end of execution
+    // and on an accelerator, functions of the runtime cannot be called
+    // at that moment.
   }
 
  public:
@@ -220,9 +220,9 @@ class MemoryPool::Impl
  public:
 
   IMemoryPoolAllocator* m_allocator = nullptr;
-  // Contient une liste de couples (taille_mémoire,pointeur) de mémoire allouée.
+  // Contains a list of pairs (memory_size, pointer) of allocated memory.
   AllocatedMap m_allocated_map;
-  //! Liste des allocations libres dans le cache
+  //! List of free allocations in the cache
   FreedMap m_free_map;
   std::atomic<Int64> m_total_allocated = 0;
   std::atomic<Int64> m_total_free = 0;

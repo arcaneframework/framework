@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BadCastException.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Exception lorsqu'une conversion est invalide.                             */
+/* Exception when a conversion is invalid.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_BADCASTEXCEPTION_H
 #define ARCCORE_BASE_BADCASTEXCEPTION_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Exception lorsqu'une conversion d'un type vers un autre est invalide.
+ * \brief Exception when a conversion from one type to another is invalid.
  */
 class ARCCORE_BASE_EXPORT BadCastException
 : public Exception

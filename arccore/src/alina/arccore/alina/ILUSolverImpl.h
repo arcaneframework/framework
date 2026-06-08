@@ -137,7 +137,7 @@ class ILUSolver
  * \brief  Solver for sparse triangular systems obtained as a result of an
  *         incomplete LU factorization.
  *
- * Spécialisation for BuiltinBackend.
+ * Specialization for BuiltinBackend.
  */
 template <class value_type, class col_type, class ptr_type>
 class ILUSolver<BuiltinBackend<value_type, col_type, ptr_type>>

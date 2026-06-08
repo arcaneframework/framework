@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiRequest.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Spécialisation de 'Request' pour MPI.                                     */
+/* Specialization of 'Request' for MPI.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIREQUEST_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIREQUEST_H
@@ -24,11 +24,12 @@
 namespace Arcane::MessagePassing::Mpi
 {
 class MpiAdapter;
+
 /*!
- * \brief Spécialisation MPI d'une 'Request'.
+ * \brief MPI specialization of a 'Request'.
  *
- * Cette classe permet de garantir qu'une requête MPI est bien construite
- * à partir d'une MPI_Request.
+ * This class ensures that an MPI request is properly constructed
+ * from an MPI_Request.
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequest
 : public Request
@@ -48,5 +49,4 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

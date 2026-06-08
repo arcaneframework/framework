@@ -7,10 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* IMachineShMemWinBaseInternal.h                              (C) 2000-2026 */
 /*                                                                           */
-/* Interface de classe permettant de créer des fenêtres mémoires pour un     */
-/* noeud de calcul.                                                          */
-/* Les segments de ces fenêtres ne sont pas contigüs en mémoire et peuvent   */
-/* être redimensionnés.                                                      */
+/* Class interface allowing the creation of memory windows for a computing   */
+/* node.                                                                     */
+/* The segments of these windows are not contiguous in memory and can be     */
+/* resized.                                                                  */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCCORE_MESSAGEPASSING_INTERNAL_IMACHINESHMEMWINBASEINTERNAL_H
@@ -32,23 +32,21 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant de créer des fenêtres mémoires pour un noeud de
- * calcul.
+ * \brief Class allowing the creation of memory windows for a computing node.
  *
- * Les segments de ces fenêtres ne seront pas contigüs en mémoire et pourront
- * être redimensionnés (une fenêtre par processus et un segment par fenêtre).
+ * The segments of these windows will not be contiguous in memory and can be
+ * resized (one window per process and one segment per window).
  *
- * La méthode add() pouvant vouloir redimensionner un segment, et ce
- * redimensionnement étant une opération collective, l'appel à add() est donc
- * une opération collective
+ * Since the add() method may want to resize a segment, and this resizing is
+ * a collective operation, calling add() is therefore a collective operation
  *
- * Afin d'avoir des add() non concurrents, cette opération est possible
- * uniquement sur notre segment.
- * Pour ajouter des éléments dans le segment d'un autre sous-domaine,
- * les méthodes addToAnotherSegment() sont disponibles.
+ * To have non-concurrent add() calls, this operation is only possible on our
+ * segment.
+ * To add elements to the segment of another subdomain, the
+ * addToAnotherSegment() methods are available.
  *
- * Toutes les tailles utilisées sont en octet. \a sizeof_type est utilisé
- * seulement par MPI (si utilisé) et à des fins de vérification.
+ * All sizes used are in bytes. \a sizeof_type is used only by MPI (if used)
+ * and for verification purposes.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IMachineShMemWinBaseInternal
 {
@@ -59,176 +57,166 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMachineShMemWinBaseInternal
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir la taille d'un élement de la fenêtre.
+   * \brief Method to get the size of an element in the window.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return La taille d'un élement.
+   * \return The size of an element.
    */
   virtual Int32 sizeofOneElem() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
+   * \brief Method to get the ranks that possess a segment in the window.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue contenant les ids des rangs.
+   * \return A view containing the rank IDs.
    */
   virtual ConstArrayView<Int32> machineRanks() const = 0;
 
   /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
+   * \brief Method to wait until all processes/threads of the node call
+   * this method to continue execution.
    */
   virtual void barrier() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur notre segment.
+   * \brief Method to get a view of our segment.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue.
+   * \return A view.
    */
   virtual Span<std::byte> segmentView() = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment d'un
-   * autre sous-domaine du noeud.
+   * \brief Method to get a view of the segment of another subdomain
+   * of the node.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the subdomain.
+   * \return A view.
    */
   virtual Span<std::byte> segmentView(Int32 rank) = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur notre segment
+   * \brief Method to get a view of our segment
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \return Une vue.
+   * \return A view.
    */
   virtual Span<const std::byte> segmentConstView() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment d'un
-   * autre sous-domaine du noeud.
+   * \brief Method to get a view of the segment of another subdomain of the node.
    *
-   * Appel non collectif.
+   * Non-collective call.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the subdomain.
+   * \return A view.
    */
   virtual Span<const std::byte> segmentConstView(Int32 rank) const = 0;
 
   /*!
-   * \brief Méthode permettant d'ajouter des élements dans notre segment.
+   * \brief Method to add elements into our segment.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * \note Ne pas mélanger les appels de cette méthode avec les appels à
-   * addToAnotherSegment().
+   * \note Do not mix calls to this method with calls to addToAnotherSegment().
    *
-   * Si le segment est trop petit, il sera redimensionné.
+   * If the segment is too small, it will be resized.
    *
-   * Les sous-domaines ne souhaitant pas ajouter d'éléments peuvent appeler la
-   * méthode \a add() sans paramètres ou cette méthode avec une vue vide.
+   * Subdomains that do not wish to add elements can call the \a add() method
+   * without parameters or this method with an empty view.
    *
-   * \param elem Les éléments à ajouter.
+   * \param elem The elements to add.
    */
   virtual void add(Span<const std::byte> elem) = 0;
 
   /*!
-   * Voir \a add(Span<const std::byte> elem).
+   * See \a add(Span<const std::byte> elem).
    */
   virtual void add() = 0;
 
   /*!
-   * \brief Méthode permettant d'ajouter des éléments dans le segment d'un
-   * autre sous-domaine.
+   * \brief Method to add elements into the segment of another subdomain.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * \note Ne pas mélanger les appels de cette méthode avec les appels à
-   * add().
+   * \note Do not mix calls to this method with calls to add().
    *
-   * Deux sous-domaines ne doivent pas ajouter d'éléments dans un même
-   * segment de sous-domaine.
+   * Two subdomains must not add elements to the same subdomain segment.
    *
-   * Si le segment ciblé est trop petit, il sera redimensionné.
+   * If the targeted segment is too small, it will be resized.
    *
-   * Les sous-domaines ne souhaitant pas ajouter d'éléments peuvent appeler la
-   * méthode \a addToAnotherSegment() sans paramètres.
+   * Subdomains that do not wish to add elements can call the
+   * \a addToAnotherSegment() method without parameters.
    *
-   * \param rank Le sous-domaine dans lequel ajouter des éléments.
-   * \param elem Les éléments à ajouter.
+   * \param rank The subdomain into which to add elements.
+   * \param elem The elements to add.
    */
   virtual void addToAnotherSegment(Int32 rank, Span<const std::byte> elem) = 0;
 
   /*!
-   * Voir \a addToAnotherSegment(Int32 rank, Span<const std::byte> elem).
+   * See \a addToAnotherSegment(Int32 rank, Span<const std::byte> elem).
    */
   virtual void addToAnotherSegment() = 0;
 
   /*!
-   * \brief Méthode permettant de réserver de l'espace mémoire dans notre
-   * segment.
+   * \brief Method to reserve memory space in our segment.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * Cette méthode ne fait rien si \a new_capacity est inférieur à l'espace
-   * mémoire déjà alloué pour le segment.
-   * Pour les processus ne souhaitant pas augmenter l'espace mémoire
-   * disponible pour leur segment, il est possible de mettre le paramètre
-   * \a new_capacity à 0 ou d'utiliser la méthode \a reserve() (sans
-   * arguments).
+   * This method does nothing if \a new_capacity is less than the memory space
+   * already allocated for the segment.
+   * For processes that do not wish to increase the available memory space for
+   * their segment, it is possible to set the \a new_capacity parameter to 0 or
+   * use the \a reserve() method (without arguments).
    *
-   * MPI réservera un espace avec une taille supérieur ou égale à
-   * \a new_capacity.
+   * MPI will reserve a space with a size greater than or equal to \a new_capacity.
    *
-   * Cette méthode ne redimensionne pas le segment, il faudra toujours passer
-   * par la méthode add() pour ajouter des éléments.
+   * This method does not resize the segment; you must always use the add() method
+   * to add elements.
    *
-   * Pour redimensionner le segment, la méthode \a resize(Int64 new_size) est
-   * disponible.
+   * To resize the segment, the \a resize(Int64 new_size) method is available.
    *
-   * \param new_capacity La nouvelle capacité demandée.
+   * \param new_capacity The requested new capacity.
    */
   virtual void reserve(Int64 new_capacity) = 0;
 
   /*!
-   * Voir \a reserve(Int64 new_capacity)
+   * See \a reserve(Int64 new_capacity)
    */
   virtual void reserve() = 0;
 
   /*!
-   * \brief Méthode permettant de redimensionner notre segment.
+   * \brief Method to resize our segment.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * Si la taille fournie est inférieure à la taille actuelle du segment, les
-   * éléments situés après la taille fournie seront supprimés.
+   * If the provided size is less than the current size of the segment,
+   * elements located after the provided size will be deleted.
    *
-   * Pour les processus ne souhaitant pas redimensionner leur segment, il est
-   * possible de mettre l'argument \a new_size à -1 ou d'appeler la méthode
-   * \a resize() (sans arguments).
+   * For processes that do not wish to resize their segment, it is possible
+   * to set the \a new_size argument to -1 or call the \a resize() method
+   * (without arguments).
    *
-   * \param new_size La nouvelle taille.
+   * \param new_size The new size.
    */
   virtual void resize(Int64 new_size) = 0;
 
   /*!
-   * Voir \a resize(Int64 new_size)
+   * See \a resize(Int64 new_size)
    */
   virtual void resize() = 0;
 
   /*!
-   * \brief Méthode permettant de réduire l'espace mémoire réservé pour les
-   * segments au minimum nécessaire.
+   * \brief Method to reduce the reserved memory space for the segments
+   * to the minimum necessary.
    *
-   * Appel collectif.
+   * Collective call.
    */
   virtual void shrink() = 0;
 };

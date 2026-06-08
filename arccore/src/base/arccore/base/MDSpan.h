@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MDSpan.h                                                    (C) 2000-2025 */
 /*                                                                           */
-/* Vue sur un tableaux multi-dimensionnel pour les types numériques.         */
+/* View on a multi-dimensional array for numeric types.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_MDSPAN_H
 #define ARCCORE_BASE_MDSPAN_H
@@ -27,23 +27,24 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des vues multi-dimensionnelles.
+ * \brief Base class for multi-dimensional views.
  *
- * Cette classe s'inspire la classe std::mdspan en cours de définition
- * (voir http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0009r12.html)
+ * This class is inspired by the std::mdspan class currently being defined
+ * (see http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0009r12.html)
  *
- * Cette classe est utilisée pour gérer les vues sur les tableaux tels que
- * NumArray. Les méthodes de cette classe sont accessibles sur accélérateur.
+ * This class is used to manage views on arrays such as
+ * NumArray. The methods of this class are accessible on the accelerator.
  *
- * Pour plus d'informations, se reporter à la page \ref arcanedoc_core_types_numarray.
+ * For more information, refer to the page \ref arcanedoc_core_types_numarray.
  */
 template <typename DataType, typename Extents, typename LayoutPolicy>
 class MDSpan
 {
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
   friend class NumArray<UnqualifiedValueType, Extents, LayoutPolicy>;
-  // Pour que MDSpan<const T> ait accès à MDSpan<T>
+  // For MDSpan<const T> to access MDSpan<T>
   friend class MDSpan<const UnqualifiedValueType, Extents, LayoutPolicy>;
   using ThatClass = MDSpan<DataType, Extents, LayoutPolicy>;
   static constexpr bool IsConst = std::is_const_v<DataType>;
@@ -59,7 +60,7 @@ class MDSpan
   using DynamicDimsType = typename Extents::DynamicDimsType;
   using RemovedFirstExtentsType = typename Extents::RemovedFirstExtentsType;
 
-  // Pour compatibilité. A supprimer pour cohérence avec les autres 'using'
+  // For compatibility. To be removed for consistency with other 'using'
   using ArrayBoundsIndexType = typename Extents::MDIndexType;
   using IndexType = typename Extents::MDIndexType;
 
@@ -75,7 +76,7 @@ class MDSpan
   : m_ptr(ptr)
   , m_extents(dims)
   {}
-  // Constructeur MDSpan<const T> à partir d'un MDSpan<T>
+  // Constructor MDSpan<const T> from an MDSpan<T>
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
   constexpr ARCCORE_HOST_DEVICE MDSpan(const MDSpan<X, Extents>& rhs)
   : m_ptr(rhs.m_ptr)
@@ -120,36 +121,36 @@ class MDSpan
 
  public:
 
-  //! Valeur de la première dimension
+  //! Value of the first dimension
   constexpr ARCCORE_HOST_DEVICE Int32 extent0() const requires(Extents::rank() >= 1) { return m_extents.extent0(); }
-  //! Valeur de la deuxième dimension
+  //! Value of the second dimension
   constexpr ARCCORE_HOST_DEVICE Int32 extent1() const requires(Extents::rank() >= 2) { return m_extents.extent1(); }
-  //! Valeur de la troisième dimension
+  //! Value of the third dimension
   constexpr ARCCORE_HOST_DEVICE Int32 extent2() const requires(Extents::rank() >= 3) { return m_extents.extent2(); }
-  //! Valeur de la quatrième dimension
+  //! Value of the fourth dimension
   constexpr ARCCORE_HOST_DEVICE Int32 extent3() const requires(Extents::rank() >= 4) { return m_extents.extent3(); }
 
  public:
 
-  //! Valeur pour l'élément \a i,j,k,l
+  //! Value for element \a i,j,k,l
   constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i, Int32 j, Int32 k, Int32 l) const requires(Extents::rank() == 4)
   {
     return m_extents.offset(i, j, k, l);
   }
-  //! Valeur pour l'élément \a i,j,k
+  //! Value for element \a i,j,k
   constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i, Int32 j, Int32 k) const requires(Extents::rank() == 3)
   {
     return m_extents.offset(i, j, k);
   }
-  //! Valeur pour l'élément \a i,j
+  //! Value for element \a i,j
   constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i, Int32 j) const requires(Extents::rank() == 2)
   {
     return m_extents.offset(i, j);
   }
-  //! Valeur pour l'élément \a i
+  //! Value for element \a i
   constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i) const requires(Extents::rank() == 1) { return m_extents.offset(i); }
 
-  //! Valeur pour l'élément \a idx
+  //! Value for element \a idx
   constexpr ARCCORE_HOST_DEVICE Int64 offset(MDIndexType idx) const
   {
     return m_extents.offset(idx);
@@ -157,27 +158,27 @@ class MDSpan
 
  public:
 
-  //! Valeur pour l'élément \a i,j,k,l
+  //! Value for element \a i,j,k,l
   constexpr ARCCORE_HOST_DEVICE DataType& operator()(Int32 i, Int32 j, Int32 k, Int32 l) const requires(Extents::rank() == 4)
   {
     return m_ptr[offset(i, j, k, l)];
   }
-  //! Valeur pour l'élément \a i,j,k
+  //! Value for element \a i,j,k
   ARCCORE_HOST_DEVICE DataType& operator()(Int32 i, Int32 j, Int32 k) const requires(Extents::rank() == 3)
   {
     return m_ptr[offset(i, j, k)];
   }
-  //! Valeur pour l'élément \a i,j
+  //! Value for element \a i,j
   constexpr ARCCORE_HOST_DEVICE DataType& operator()(Int32 i, Int32 j) const requires(Extents::rank() == 2)
   {
     return m_ptr[offset(i, j)];
   }
-  //! Valeur pour l'élément \a i
+  //! Value for element \a i
   constexpr ARCCORE_HOST_DEVICE DataType& operator()(Int32 i) const requires(Extents::rank() == 1) { return m_ptr[offset(i)]; }
-  //! Valeur pour l'élément \a i
+  //! Value for element \a i
   constexpr ARCCORE_HOST_DEVICE DataType operator[](Int32 i) const requires(Extents::rank() == 1) { return m_ptr[offset(i)]; }
 
-  //! Valeur pour l'élément \a idx
+  //! Value for element \a idx
   constexpr ARCCORE_HOST_DEVICE DataType& operator()(MDIndexType idx) const
   {
     return m_ptr[offset(idx)];
@@ -185,25 +186,25 @@ class MDSpan
 
  public:
 
-  //! Pointeur sur la valeur pour l'élément \a i,j,k
+  //! Pointer to the value for element \a i,j,k,l
   constexpr ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i, Int32 j, Int32 k, Int32 l) const requires(Extents::rank() == 4)
   {
     return m_ptr + offset(i, j, k, l);
   }
-  //! Pointeur sur la valeur pour l'élément \a i,j,k
+  //! Pointer to the value for element \a i,j,k
   ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i, Int32 j, Int32 k) const requires(Extents::rank() == 3)
   {
     return m_ptr + offset(i, j, k);
   }
-  //! Pointeur sur la valeur pour l'élément \a i,j
+  //! Pointer to the value for element \a i,j
   constexpr ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i, Int32 j) const requires(Extents::rank() == 2)
   {
     return m_ptr + offset(i, j);
   }
-  //! Pointeur sur la valeur pour l'élément \a i
+  //! Pointer to the value for element \a i
   constexpr ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i) const requires(Extents::rank() == 1) { return m_ptr + offset(i); }
 
-  //! Pointeur sur la valeur pour l'élément \a i
+  //! Pointer to the value for element \a i
   constexpr ARCCORE_HOST_DEVICE DataType* ptrAt(MDIndexType idx) const
   {
     return m_ptr + offset(idx);
@@ -212,16 +213,16 @@ class MDSpan
  public:
 
   /*!
-   * \brief Retourne une vue de dimension (N-1) à partir de l'élément d'indice \a i.
+   * \brief Returns a dimension (N-1) view starting from index element \a i.
    *
-   * Par exemple:
+   * For example:
    * \code
    *   MDSpan<Real, MDDim3> span3 = ...;
    *   MDSpan<Real, MDDim2> sliced_span = span3.slice(5);
    *   // sliced_span(i,i) <=> span3(5,i,j);
    * \endcode
    *
-   * \warning Cela n'est valide que si \a LayoutPolicy est \a RightLayout.
+   * \warning This is only valid if \a LayoutPolicy is \a RightLayout.
    */
   ARCCORE_HOST_DEVICE MDSpan<DataType, RemovedFirstExtentsType, LayoutPolicy>
   slice(Int32 i) const requires(Extents::rank() >= 2 && std::is_base_of_v<RightLayout, LayoutPolicy>)
@@ -277,4 +278,4 @@ class MDSpan
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

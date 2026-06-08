@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IDynamicLibraryLoader.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un chargeur dynamique de bibliothèque.                        */
+/* Interface of a dynamic library loader.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_INTERNAL_IDYNAMICLIBRARYLOADER_H
 #define ARCCORE_BASE_INTERNAL_IDYNAMICLIBRARYLOADER_H
@@ -24,45 +24,47 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une bibliothèque dynamique.
+ * \brief Interface of a dynamic library.
  */
 class ARCCORE_BASE_EXPORT IDynamicLibrary
 {
  public:
 
-  virtual ~IDynamicLibrary() = default; //!< Libère les ressources
+  virtual ~IDynamicLibrary() = default; //!< Releases resources
  public:
 
   /*!
-   * \brief Ferme la bibliothèque dynamique.
+   * \brief Closes the dynamic library.
    *
-   * Elle ne doit plus être utilisée après fermeture et l'instance peut
-   * être détruite via l'opérateur delete.
+   * It should no longer be used after closing and the instance can
+   * be destroyed via the delete operator.
    */
   virtual void close() = 0;
 
   /*!
-   * \brief Retourne l'adresse du symbol de nom \a symbol_name.
+   * \brief Returns the address of the symbol named \a symbol_name.
    *
-   * Si \a is_found n'est pas nul, contient en retour le booléen indiquant
-   * si le symbol a été trouvé.
+   * If \a is_found is not null, it returns the boolean indicating
+   * whether the symbol was found.
    */
   virtual void* getSymbolAddress(const String& symbol_name, bool* is_found) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal.
  *
- * \brief Interface d'un chargeur dynamique de bibliothèque.
+ * \brief Interface of a dynamic library loader.
  */
 class ARCCORE_BASE_EXPORT IDynamicLibraryLoader
 {
  public:
 
-  virtual ~IDynamicLibraryLoader() = default; //!< Libère les ressources
+  virtual ~IDynamicLibraryLoader() = default; //!< Releases resources
 
  public:
 
@@ -71,23 +73,23 @@ class ARCCORE_BASE_EXPORT IDynamicLibraryLoader
  public:
 
   /*!
-   * \brief Charge une bibliothèque dynamique.
+   * \brief Loads a dynamic library.
    *
-   * Charge la bibliothèque de nom \a name qui se trouve dans le répertoire
-   * \a directory. Retourne un pointeur nul si la bibliothèque ne peut
-   * pas être chargée. \a name doit être un nom sans préfixe et sans extension
-   * dépendant machine. Par exemple sous linux, si la bibliothèque est
-   * libtoto.so, \a name doit valoir \a toto.
+   * Loads the library named \a name which is located in the directory
+   * \a directory. Returns a null pointer if the library cannot
+   * be loaded. \a name must be a name without prefix and without machine-dependent extension.
+   * For example, on linux, if the library is
+   * libtoto.so, \a name must be \a toto.
    */
   virtual IDynamicLibrary* open(const String& directory, const String& name) = 0;
 
-  //! Ferme toutes les bibliothèques ouvertes via \a open()
+  //! Closes all libraries opened via \a open()
   virtual void closeLibraries() = 0;
 
  public:
 
   /*!
-   * \brief Service utilisé pour charger dynamiquement des bibliothèques.
+   * \brief Service used for dynamically loading libraries.
    */
   static IDynamicLibraryLoader* getDefault();
 };

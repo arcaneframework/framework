@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StringVector.h                                              (C) 2000-2026 */
 /*                                                                           */
-/* Liste de 'String'.                                                        */
+/* List of 'String'.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_STRINGVECTOR_H
 #define ARCCORE_COMMON_STRINGVECTOR_H
@@ -24,11 +24,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vecteur de 'String'.
+ * \brief Vector of 'String'.
  *
- * Cette classe à une sémantique par valeur et a le même comportement
- * qu'un UniqueArray<String>.
+ * This class has a value semantics and behaves the same as
+ * a UniqueArray<String>.
  */
 class ARCCORE_COMMON_EXPORT StringVector
 {
@@ -45,14 +46,14 @@ class ARCCORE_COMMON_EXPORT StringVector
 
  public:
 
-  //! Nombre d'éléments
+  //! Number of elements
   Int32 size() const;
-  //! Ajoute \a str à la liste des chaînes de caractères
+  //! Adds str to the list of strings
   void add(const String& str);
-  //! Retourne la i-ème chaîne de caractères
+  //! Returns the i-th string
   String operator[](Int32 index) const;
 
-  //! Converti l'instance en 'StringList'
+  //! Converts the instance to 'StringList'
   StringList toStringList() const;
 
  private:

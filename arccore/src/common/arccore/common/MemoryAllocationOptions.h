@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryAllocationOptions.h                                   (C) 2000-2026 */
 /*                                                                           */
-/* Options pour configurer les allocations.                                  */
+/* Options to configure allocations.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_MEMORYALLOCATIONOPTIONS_H
 #define ARCCORE_COMMON_MEMORYALLOCATIONOPTIONS_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Options pour configurer les allocations.
+ * \brief Options to configure allocations.
  */
 class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
 {
@@ -99,7 +100,7 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationOptions
   void setArrayName(const String& name);
   String arrayName() const;
 
-  //! Arguments pour 'IMemoryAllocator' associés à ces options et à la file \a queue
+  //! Arguments for 'IMemoryAllocator' associated with these options and the queue
   MemoryAllocationArgs allocationArgs(RunQueue* queue = nullptr) const;
 
  public:

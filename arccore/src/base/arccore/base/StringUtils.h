@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StringUtils.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions utilitaires sur les chaînes de caractères.                      */
+/* Utility functions for strings.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_STRINGUTILS_H
 #define ARCCORE_BASE_STRINGUTILS_H
@@ -28,25 +28,25 @@ namespace Arcane::StringUtils
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Retourne la conversion de l'instance dans l'encodage UTF-16BE.
+ * \brief Returns the conversion of the instance into UTF-16BE encoding.
  *
- * Le vecteur retourné ne contient pas de zéro terminal.
+ * The returned vector does not contain a null terminator.
  */
 extern "C++" ARCCORE_BASE_EXPORT std::vector<UChar>
 asUtf16BE(const String& str);
 
 /*!
- * \brief Retourne la conversion de \a str en std::wstring.
+ * \brief Returns the conversion of \a str to std::wstring.
  *
- * Cette fonction n'est supportée que pour la plateforme Win32.
+ * This function is only supported for the Win32 platform.
  */
 extern "C++" ARCCORE_BASE_EXPORT std::wstring
 convertToStdWString(const String& str);
 
 /*!
- * \brief Convertie \a wstr en une String.
+ * \brief Converts \a wstr into a String.
  *
- * Cette fonction n'est supportée que pour la plateforme Win32.
+ * This function is only supported for the Win32 platform.
  */
 extern "C++" ARCCORE_BASE_EXPORT String
 convertToArcaneString(const std::wstring_view& wstr);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NotSupportedException.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Exception lorsqu'une opération n'est pas supportée.                       */
+/* Exception when an operation is not supported.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_NOTSUPPORTEDEXCEPTION_H
 #define ARCCORE_BASE_NOTSUPPORTEDEXCEPTION_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception lorsqu'une opération n'est pas supportée.
+ * \brief Exception when an operation is not supported.
  */
 class ARCCORE_BASE_EXPORT NotSupportedException
 : public Exception
@@ -57,5 +58,4 @@ class ARCCORE_BASE_EXPORT NotSupportedException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

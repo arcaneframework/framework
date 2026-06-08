@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiAdapter.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant MPI.                               */
+/* Parallelism manager using MPI.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -65,7 +65,7 @@ MpiDatatype::
 MPI_Op BuiltInMpiReduceOperator::
 reduceOperator(eReduceType rt)
 {
-  // TODO: a fusionner avec reduceOperator de StdMpiReduceOperator.
+  // TODO: merge with StdMpiReduceOperator::reduceOperator.
   MPI_Op op = MPI_OP_NULL;
   switch(rt){
   case ReduceMax: op = MPI_MAX; break;

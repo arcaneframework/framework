@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Iterator.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Iterateurs (obsolète).                                                    */
+/* Iterators (obsolete).                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ITERATOR_H
 #define ARCCORE_BASE_ITERATOR_H
@@ -26,13 +26,14 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interval d'itération.
+ * \brief Iteration interval.
  * \ingroup Collection
- Cette classe gère un interval d'itération avec un début et une fin. Il
- permet de construire simplement un couple d'itérateur pour itérer
- sur tout le container.
+ This class manages an iteration interval with a beginning and an end. It
+ allows for the simple construction of an iterator pair to iterate
+ over the entire container.
 */
 template<class IT,class R,class P,class V>
 class IteratorBase
@@ -53,18 +54,19 @@ class IteratorBase
 	
  private:
 
-  IT m_begin; //!< Itérateur sur l'élément courant
-  IT m_end;   //!< Itérateur sur la fin du container.
+  IT m_begin; //!< Iterator over the current element
+  IT m_end;   //!< Iterator over the end of the container.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief interval d'itérateurs
+ * \brief Iterator interval
  * \ingroup Collection
- Cette classe gère un couple d'itérateurs autorisant la modification des
- éléments du container.
+ This class manages an iterator pair allowing modification of the
+ elements of the container.
  */
 template<class T>
 class IterT
@@ -85,13 +87,14 @@ class IterT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief interval d'itérateurs constant
+ * \brief Constant iterator interval
  * \ingroup Collection
  *
- Cette classe gère un couple d'itérateurs qui n'autorisent pas la
- modification des éléments du container.
+ This class manages an iterator pair that does not allow
+ modification of the elements of the container.
  */
 template<class T>
 class ConstIterT
@@ -119,4 +122,3 @@ class ConstIterT
 /*---------------------------------------------------------------------------*/
 
 #endif
-

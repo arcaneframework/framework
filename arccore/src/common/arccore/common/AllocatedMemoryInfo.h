@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AllocatedMemoryInfo.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur une zone mémoire allouée.                                */
+/* Information about an allocated memory region.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ALLOCATEDMEMORYINFO_H
 #define ARCCORE_COMMON_ALLOCATEDMEMORYINFO_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur une zone mémoire allouée.
+ * \brief Information about an allocated memory region.
  */
 class AllocatedMemoryInfo
 {
@@ -46,11 +47,11 @@ class AllocatedMemoryInfo
   , m_capacity(capacity)
   {}
 
-  //! Adresse du début de la zone allouée.
+  //! Address of the start of the allocated region.
   void* baseAddress() const { return m_base_address; }
-  //! Taille en octets de la zone mémoire utilisée. (-1) si inconnue
+  //! Size in bytes of the used memory region. (-1) if unknown
   Int64 size() const { return m_size; }
-  //! Taille en octets de la zone mémoire allouée. (-1) si inconnue
+  //! Size in bytes of the allocated memory region. (-1) if unknown
   Int64 capacity() const { return m_capacity; }
 
  public:
@@ -68,5 +69,4 @@ class AllocatedMemoryInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

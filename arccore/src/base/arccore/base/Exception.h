@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Exception.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'une exception.                                           */
+/* Base class for an exception.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_EXCEPTION_H
 #define ARCCORE_BASE_EXCEPTION_H
@@ -16,8 +16,8 @@
 
 #include "arccore/base/String.h"
 #include "arccore/base/StackTrace.h"
-// On n'a pas explicitement besoin de ce .h mais il est plus simple
-// de l'avoir pour pouvoir facilement lancer des exceptions avec les traces
+// We don't explicitly need this .h but it is simpler
+// to have it to easily throw exceptions with traces
 #include "arccore/base/TraceInfo.h"
 
 #include <exception>
@@ -31,17 +31,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Classe de base d'une exception.
+ * \brief Base class for an exception.
  *
- * Les exceptions sont gérées par le mécanisme <tt>try</tt> et <tt>catch</tt>
- * du C++. Toutes les exceptions lancées dans le code <strong>doivent</strong>
- * dériver de cette classe.
+ * Exceptions are managed by the C++ <tt>try</tt> and <tt>catch</tt>
+ * code. All exceptions thrown in the code <strong>must</strong>
+ * derive from this class.
  *
- * Une exception peut être collective. Cela signifie qu'elle sera lancée
- * par tous les processeurs. Il est possible dans ce cas de n'afficher qu'une
- * seule fois le message et éventuellement d'arrêter proprement l'exécution.
+ * An exception can be collective. This means it will be thrown
+ * by all processors. In this case, it is possible to display only a
+ * single message and possibly stop the execution cleanly.
  */
 class ARCCORE_BASE_EXPORT Exception
 : public std::exception
@@ -53,88 +54,88 @@ class ARCCORE_BASE_EXPORT Exception
  public:
 
   /*!
-   * Construit une exception de nom \a name et
-   * envoyée depuis la fonction \a where.
+   * Constructs an exception of name \a name and
+   * sent from the function \a where.
    */
   Exception(const String& name,const String& where);
   /*!
-   * Construit une exception de nom \a name et
-   * envoyée depuis la fonction \a awhere.
+   * Constructs an exception of name \a name and
+   * sent from the function \a awhere.
    */
   Exception(const String& name, const TraceInfo& where);
   /*!
-   * Construit une exception de nom \a name,
-   * envoyée depuis la fonction \a awhere et avec le message \a message.
+   * Constructs an exception of name \a name,
+   * sent from the function \a awhere and with the message \a message.
    */
   Exception(const String& name, const String& awhere, const String& message);
   /*!
-   * Construit une exception de nom \a name,
-   * envoyée depuis la fonction \a where et avec le message \a message.
+   * Constructs an exception of name \a name,
+   * sent from the function \a where and with the message \a message.
    */
   Exception(const String& name, const TraceInfo& trace, const String& message);
   /*!
-   * Construit une exception de nom \a name et
-   * envoyée depuis la fonction \a where.
+   * Constructs an exception of name \a name and
+   * sent from the function \a where.
    */
   Exception(const String& name,const String& where,const StackTrace& stack_trace);
   /*!
-   * Construit une exception de nom \a name et
-   * envoyée depuis la fonction \a where.
+   * Constructs an exception of name \a name and
+   * sent from the function \a where.
    */
   Exception(const String& name,const TraceInfo& where,const StackTrace& stack_trace);
   /*!
-   * Construit une exception de nom \a name,
-   * envoyée depuis la fonction \a where et avec le message \a message.
+   * Constructs an exception of name \a name,
+   * sent from the function \a where and with the message \a message.
    */
   Exception(const String& name,const String& where,
             const String& message,const StackTrace& stack_trace);
   /*!
-   * Construit une exception de nom \a name,
-   * envoyée depuis la fonction \a where et avec le message \a message.
+   * Constructs an exception of name \a name,
+   * sent from the function \a where and with the message \a message.
    */
   Exception(const String& name,const TraceInfo& trace,
             const String& message,const StackTrace& stack_trace);
-  //! Constructeur par copie.
+  //! Copy constructor.
   Exception(const Exception&);
 
-  //! Libère les ressources
+  //! Releases resources
   ~Exception() ARCCORE_NOEXCEPT override;
 
  public:
  
   virtual void write(std::ostream& o) const;
 
-  //! Vrai s'il s'agit d'une erreur collective (concerne tous les processeurs)
+  //! True if it is a collective error (concerns all processors)
   bool isCollective() const { return m_is_collective; }
 
-  //! Positionne l'état collectif de l'expression
+  //! Sets the collective state of the expression
   void setCollective(bool v) { m_is_collective = v; }
 
-  //! Positionne les infos supplémentaires
+  //! Sets the additional information
   void setAdditionalInfo(const String& v) { m_additional_info = v; }
 
-  //! Retourne les infos supplémentaires
+  //! Returns the additional information
   const String& additionalInfo() const { return m_additional_info; }
 
-  //! Pile d'appel au moment de l'exception (nécessite un service de stacktrace)
+  //! Call stack at the moment of the exception (requires a stacktrace service)
   const StackTrace& stackTrace() const { return m_stack_trace; }
 
-  //! Pile d'appel au moment de l'exception (nécessite un service de stacktrace)
+  //! Call stack at the moment of the exception (requires a stacktrace service)
   const String& stackTraceString() const { return m_stack_trace.toString(); }
 
-  //! Indique si des exceptions sont en cours
+  //! Indicates if there are pending exceptions
   static bool hasPendingException();
 
-  //! Message de l'exception
+  //! Exception message
   const String& message() const { return m_message; }
 
-  //! Localisation de l'exception
+  //! Location of the exception
   const String& where() const { return m_where; }
 
-  //! Nom de l'exception
+  //! Name of the exception
   const String& name() const { return m_name; }
 
-  //! Opérateur d'écriture
+  //! Output operator
   friend ARCCORE_BASE_EXPORT std::ostream&
   operator<<(std::ostream& o, const Exception& ex);
 
@@ -146,14 +147,14 @@ class ARCCORE_BASE_EXPORT Exception
  protected:
 
   /*!
-   * \brief Explique la cause de l'exception dans le flot \a o.
+   * \brief Explains the cause of the exception in the stream \a o.
    *
-   * Cette méthode permet d'ajouter des informations supplémentaires
-   * au message d'exception.
+   * This method allows adding additional information
+   * to the exception message.
    */
   virtual void explain(std::ostream& o) const;
 
-  //! Positionne le message de l'exception
+  //! Sets the exception message
   void setMessage(const String& msg)
   {
     m_message = msg;
@@ -185,5 +186,4 @@ class ARCCORE_BASE_EXPORT Exception
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

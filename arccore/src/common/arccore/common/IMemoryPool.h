@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMemoryPool.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Interface d'un pool mémoire.                                              */
+/* Interface of a memory pool.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_IMEMORYPOOL_H
 #define ARCCORE_COMMON_IMEMORYPOOL_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un pool mémoire.
+ * \brief Interface of a memory pool.
  */
 class ARCCORE_COMMON_EXPORT IMemoryPool
 {
@@ -36,21 +37,19 @@ class ARCCORE_COMMON_EXPORT IMemoryPool
  public:
 
   /*!
-   * \brief Positionne la taille en octet à partir de laquelle
-   * on ne conserve pas un bloc dans le cache.
+   * \brief Sets the byte size from which a block is not kept in the cache.
    *
-   * Cette méthode ne peut être appelée que s'il n'y a aucun bloc dans le
-   * cache.
+   * This method can only be called if there are no blocks in the cache.
    */
   virtual void setMaxCachedBlockSize(Int32 v) = 0;
 
-  //! Libère la mémoire dans le cache
+  //! Frees the memory in the cache
   virtual void freeCachedMemory() = 0;
 
-  //! Taille totale (en octet) allouée dans le pool mémoire
+  //! Total size (in bytes) allocated in the memory pool
   virtual Int64 totalAllocated() const = 0;
 
-  //! Taille totale (en octet) dans le cache
+  //! Total size (in bytes) in the cache
   virtual Int64 totalCached() const = 0;
 };
 

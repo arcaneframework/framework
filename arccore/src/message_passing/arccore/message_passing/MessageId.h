@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MessageId.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Identifiant d'un message point à point.                                   */
+/* Identifier of a point-to-point message.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGEID_H
 #define ARCCORE_MESSAGEPASSING_MESSAGEID_H
@@ -29,14 +29,14 @@ namespace Arcane::MessagePassing
 /*!
  * \brief MessageId.
  *
- * Ces informations sont utilisées pour récupérer les informations d'un
- * message suite à un appel à mpProbe(). L'instance retournée peut-être
- * utilisée pour faire une réception via mpReceive().
+ * This information is used to retrieve the information of a
+ * message following a call to mpProbe(). The returned instance can be
+ * used to perform a reception via mpReceive().
  *
- * Une fois l'appel à mpProbe() effectué, il est possible de récupérer les
- * informations sur la source du message via sourceInfo().
+ * Once the call to mpProbe() is made, it is possible to retrieve the
+ * information about the message source via sourceInfo().
  *
- * Avec MPI, cette classe encapsule le type MPI_Message.
+ * With MPI, this class encapsulates the MPI_Message type.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 {
@@ -149,10 +149,10 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 
   void print(std::ostream& o) const;
 
-  //! Informations sur la source du message;
+  //! Information about the message source;
   MessageSourceInfo sourceInfo() const { return m_source_info; }
 
-  //! Positionne les informations sur la source du message;
+  //! Sets the message source information;
   void setSourceInfo(MessageSourceInfo si) { m_source_info = si; }
 
  private:
@@ -181,5 +181,4 @@ operator<<(std::ostream& o,const MessageId& pmessage)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

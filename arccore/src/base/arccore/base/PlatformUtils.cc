@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PlatformUtils.cc                                            (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires dépendant de la plateforme.                         */
+/* Platform-dependent utility functions.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -63,11 +63,11 @@
 #include <unistd.h>
 #endif
 
-// Support pour gérer les exceptions flottantes:
-// - sous Linux avec la GlibC, cela se fait via les méthodes
-// feenableexcept(), fedisableexcept() et fegetexcept()
-// - sous Win32, cela se fait via la méthode _controlfp() mais pour
-// l'instant ce n'est pas utilisé dans Arccore.
+// Support for handling floating-point exceptions:
+// - under Linux with GlibC, this is done via the methods
+// feenableexcept(), fedisableexcept() and fegetexcept()
+// - under Win32, this is done via the _controlfp() method but for
+// the moment it is not used in Arccore.
 #if defined(ARCCORE_OS_LINUX) && defined(__USE_GNU)
 #  include <fenv.h>
 #  define ARCCORE_GLIBC_FENV
@@ -79,7 +79,7 @@
 namespace Arcane
 {
 
-// Ces deux fonctions sont définies dans 'Exception.cc'
+// These two functions are defined in 'Exception.cc'
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreSetPauseOnException(bool v);
 extern "C++" ARCCORE_BASE_EXPORT void
@@ -136,7 +136,7 @@ getCurrentDateTime()
   ::time(&now_time);
   now_tm = ::localtime(&now_time);
 
-  // Formattage ISO 8601
+  // ISO 8601 formatting
   ::strftime(str,max_len,"%Y-%m-%dT%H:%M:%S",now_tm);
   return std::string_view(str);
 }
@@ -167,7 +167,7 @@ getHostName()
 extern "C++" ARCCORE_BASE_EXPORT String Platform::
 getUserName()
 {
-  // Récupère le nom de l'utilisateur
+  // Retrieves the username
   String user_name = "noname";
 #ifdef ARCCORE_OS_WIN32
   char buf[1024];
@@ -278,7 +278,7 @@ isDirectoryExist(const String& dir_name,bool& can_create)
   if (stat_val==0){
     if (dirstat.st_mode & S_IFDIR)
       return true;
-    // Le fichier existe mais n'est pas un répertoire
+    // The file exists but is not a directory
     can_create = false;
     return false;
   }
@@ -334,7 +334,7 @@ createDirectory(const String& dir_name)
   if (stat_val==0){
     if (dirstat.st_mode & S_IFDIR)
       return false;
-    // Le fichier existe mais n'est pas un répertoire
+    // The file exists but is not a directory
     return true;
   }
 #ifdef ARCCORE_OS_WIN32
@@ -353,8 +353,8 @@ createDirectory(const String& dir_name)
 extern "C++" ARCCORE_BASE_EXPORT String Platform::
 getFileDirName(const String& file_name)
 {
-  // Sous windows, regarde s'il y a des '/'. Dans ce cas on prend ce caractère comme
-  // séparateur. Sinon, on prend '\\'.
+  // On Windows, checks if there are '/'. In this case, this character is taken as
+  // separator. Otherwise, '\\' is taken.
   char separator = '/';
   const char* file_name_str = file_name.localstr();
 #if defined(ARCCORE_OS_WIN32)
@@ -420,7 +420,7 @@ stdMemcpy(void* to,const void* from,::size_t len)
 extern "C++" ARCCORE_BASE_EXPORT bool Platform::
 isDenormalized(Real /*v*/)
 {
-  //TODO: à implémenter
+  //TODO: to be implemented
   return false;
 }
 
@@ -484,7 +484,7 @@ setSymbolizerService(ISymbolizerService* service)
 extern "C++" ARCCORE_BASE_EXPORT void Platform::
 safeStringCopy(char* output,Integer /*output_len*/,const char* input)
 {
-  //TODO utiliser correctement 'output_len'
+  //TODO use 'output_len' correctly
   ::strcpy(output,input);
 }
 
@@ -569,7 +569,7 @@ getCPUTime()
   }
   return 1;
 #else
-  // TODO Supprimer l'usage de clock() pour Win32 et MacOS.
+  // TODO Remove the use of clock() for Win32 and MacOS.
   static Int64 orig_clock = 0;
   static clock_t call_clock = 0;
   clock_t current_clock = ::clock();
@@ -578,8 +578,8 @@ getCPUTime()
   }
   else{
     if (current_clock<call_clock){
-      // On a depasse la valeur max de clock
-      //cout << " WARNING: CLOCK depasse INT_MAX: " << call_clock
+      // We have exceeded the max value of clock
+      //cout << " WARNING: CLOCK exceeds INT_MAX: " << call_clock
       //     << " current=" << current_clock << '\n';
       Int64 v = ARCCORE_INT64_MAX;
       v *= 2;
@@ -600,9 +600,9 @@ extern "C++" ARCCORE_BASE_EXPORT Real Platform::
 getRealTime()
 {
   auto x = std::chrono::high_resolution_clock::now();
-  // Converti la valeur en nanosecondes.
+  // Convert the value to nanoseconds.
   auto y = std::chrono::time_point_cast<std::chrono::nanoseconds>(x);
-  // Retourne le temps en secondes.
+  // Returns the time in seconds.
   return (Real)y.time_since_epoch().count() / 1.0e9;
 }
 
@@ -633,7 +633,7 @@ timeToHourMinuteSecond(Real t)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Met le process en sommeil pendant \a nb_second secondes.
+ * \brief Puts the process to sleep for \a nb_second seconds.
  */
 extern "C++" ARCCORE_BASE_EXPORT void Platform::
 sleep(Integer nb_second)
@@ -713,8 +713,8 @@ extern "C++" ARCCORE_BASE_EXPORT void Platform::
 raiseFloatingException()
 {
 #ifdef ARCCORE_GLIBC_FENV
-  // Note: cette méthode n'a besoin que de fenv.h et devrait être portable
-  // même sans la GLIBC.
+  // Note: this method only needs fenv.h and should be portable
+  // even without GLIBC.
   ::feraiseexcept(FloatExceptFlags);
 #endif
 }
@@ -726,9 +726,9 @@ extern "C++" ARCCORE_BASE_EXPORT Int64 Platform::
 getRealTimeNS()
 {
   auto x = std::chrono::high_resolution_clock::now();
-  // Converti la valeur en nanosecondes.
+  // Convert the value to nanoseconds.
   auto y = std::chrono::time_point_cast<std::chrono::nanoseconds>(x);
-  // Retourne le temps en nano-secondes.
+  // Returns the time in nano-seconds.
   return static_cast<Int64>(y.time_since_epoch().count());
 }
 
@@ -787,10 +787,10 @@ bool _getHasColorTerminal()
 void Platform::
 platformInitialize(bool enable_fpe)
 {
-  // Pour l'instant, la seule initialisation spécifique dépend
-  // des processeurs i386. Elle consiste à changer la valeur par
-  // défaut des flags de la FPU pour générer une exception
-  // lors d'une erreur arithmétique (comme les divisions par zéro).
+  // For now, the only specific initialization depends
+  // on i386 processors. It consists of changing the default value of
+  // the FPU flags to generate an exception
+  // during an arithmetic error (such as division by zero).
   if (enable_fpe)
     enableFloatingException(true);
 
@@ -889,7 +889,7 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//TODO: faire pour windows.
+//TODO: implement for windows.
 extern "C++" String Platform::
 getCompilerId()
 {

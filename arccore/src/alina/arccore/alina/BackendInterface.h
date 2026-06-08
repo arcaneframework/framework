@@ -55,7 +55,7 @@ namespace Arcane::Alina::backend
  * \defgroup backend_interface Backend interface
  * \brief Backend interface specification.
  *
- * One has to specify these templates in order to define a new backend.
+ * These templates must be specified in order to define a new backend.
  */
 
 /*!
@@ -320,7 +320,7 @@ struct axpbypcz_impl
 };
 
 /*!
- * \brief Implementation for element-wize vector product.
+ * \brief Implementation for element-wise vector product.
  *
  * \note Used in vmul().
  */
@@ -520,8 +520,9 @@ void axpbypcz(A a, Vector1 const& x, B b, Vector2 const& y, C c, Vector3& z)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Computes element-wize vector product.
+ * \brief Computes element-wise vector product.
  *
  * \f[z = \alpha xy + \beta z.\f]
  */

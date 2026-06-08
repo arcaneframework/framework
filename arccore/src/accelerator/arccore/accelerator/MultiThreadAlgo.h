@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MultiThreadAlgo.h                                           (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation des algorithmes accélérateurs en mode multi-thread.        */
+/* Implementation of accelerator algorithms in multi-thread mode.            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_MULTITHREADALGO_H
 #define ARCCORE_ACCELERATOR_MULTITHREADALGO_H
@@ -29,32 +29,33 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Algorithmes avancée en mode multi-thread.
+ * \brief Advanced algorithms in multi-thread mode.
  *
- * Pour l'instant seule l'opération de Scan est implémentée.
+ * Currently, only the Scan operation is implemented.
  */
 class MultiThreadAlgo
 {
  public:
 
   /*!
-   * \brief Algorithme de scan multi-thread.
+   * \brief Multi-thread scan algorithm.
    *
-   * \note Cette classe est interne à Arcane. La version de l'API publique
-   * est accessible via la classe GenericScanner.
+   * \note This class is internal to Arcane. The public API version
+   * is accessible via the GenericScanner class.
    *
-   * Cet algorithme basique utilise deux passes pour le calcul.
-   * L'interval d'itération est divisé en N blocs. On prend N = 2*nb_thread.
-   * - la première passe calcule en parallèle le résultat du scan pour tous
-   * les éléments d'un bloc.
-   * - la deuxième passe calcule la valeurs finale.
+   * This basic algorithm uses two passes for calculation.
+   * The iteration interval is divided into N blocks. We take N = 2*nb_thread.
+   * - the first pass calculates the scan result in parallel for all
+   * elements of a block.
+   * - the second pass calculates the final value.
    *
-   * Le calcul donne toujours la même valeur pour un nombre de bloc donné.
+   * The calculation always yields the same value for a given number of blocks.
    *
-   * TODO: Utilise du padding pour conserver les valeurs partielles par bloc.
-   * TODO: Faire des versions spécialisées si DataType est un type
-   * de base tel que 'Int32', 'Int64', 'float' ou 'double'.
+   * TODO: Use padding to maintain partial values per block.
+   * TODO: Create specialized versions if DataType is a base type
+   * such as 'Int32', 'Int64', 'float', or 'double'.
    */
   template <bool IsExclusive, typename DataType, typename Operator,
             typename InputIterator, typename OutputIterator>
@@ -82,11 +83,11 @@ class MultiThreadAlgo
         }
       }
     };
-    // TODO: calculer automatiquement cette valeur.
+    // TODO: automatically calculate this value.
     const Int32 nb_block = 10;
 
-    // Tableau pour conserver les valeurs partielles des blocs.
-    // TODO: Utiliser un padding pour éviter des conflits de cache entre les threads.
+    // Array to store partial values of the blocks.
+    // TODO: Use padding to avoid cache conflicts between threads.
     SmallArray<DataType> partial_values(nb_block);
     Span<DataType> out_partial_values = partial_values;
 
@@ -108,7 +109,7 @@ class MultiThreadAlgo
     loop_options.setGrainSize(1);
     run_info.addOptions(loop_options);
 
-    // Calcule les sommes partielles pour nb_block
+    // Calculates partial sums for nb_block
     Arcane::arccoreParallelFor(0, nb_block, run_info, partial_value_func);
 
     auto final_sum_func = [=](Int32 a, Int32 n) {
@@ -127,7 +128,7 @@ class MultiThreadAlgo
       }
     };
 
-    // Calcule les valeurs finales
+    // Calculates the final values
     Arcane::arccoreParallelFor(0, nb_block, run_info, final_sum_func);
   }
 
@@ -136,7 +137,7 @@ class MultiThreadAlgo
                  InputIterator input, OutputIterator output,
                  SelectLambda select_lambda)
   {
-    // Type de l'index
+    // Index type.
     using IndexType = Int32;
 
     UniqueArray<bool> select_flags(nb_value);
@@ -164,11 +165,11 @@ class MultiThreadAlgo
       }
     };
 
-    // TODO: calculer automatiquement cette valeur.
+    // TODO: automatically calculate this value.
     const Int32 nb_block = 10;
 
-    // Tableau pour conserver les valeurs partielles des blocs.
-    // TODO: Utiliser un padding pour éviter des conflits de cache entre les threads.
+    // Array to store partial values of the blocks.
+    // TODO: Use padding to avoid cache conflicts between threads.
     SmallArray<Int32> partial_values(nb_block, 0);
     Span<Int32> out_partial_values = partial_values;
 
@@ -188,11 +189,11 @@ class MultiThreadAlgo
     loop_options.setGrainSize(1);
     run_info.addOptions(loop_options);
 
-    // Calcule les sommes partielles pour nb_block
+    // Calculates partial sums for nb_block
     Arcane::arccoreParallelFor(0, nb_block, run_info, partial_value_func);
 
-    // Calcule le nombre de valeurs filtrées
-    // Calcule aussi la valeur accumulée de partial_values
+    // Calculates the number of filtered values
+    // Also calculates the accumulated value of partial_values
     Int32 nb_filter = 0;
     for (Int32 i = 0; i < nb_block; ++i) {
       Int32 x = partial_values[i];
@@ -216,8 +217,8 @@ class MultiThreadAlgo
       }
     };
 
-    // Si l'entrée et la sortie sont les mêmes, on fait le remplissage en séquentiel.
-    // TODO: faire en parallèle.
+    // If the input and output are the same, the filling is done sequentially.
+    // TODO: do it in parallel.
     if (InPlace)
       filter_func(0, nb_block);
     else
@@ -240,7 +241,7 @@ class MultiThreadAlgo
       return;
     SizeType isize = size / nb_interval;
     SizeType ibegin = interval_index * isize;
-    // Pour le dernier interval, prend les elements restants
+    // For the last interval, take the remaining elements
     if ((interval_index + 1) == nb_interval)
       isize = size - ibegin;
     *out_begin_index = ibegin;

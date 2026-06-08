@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISerializeDispatcher.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Interface des messages de sérialisation.                                  */
+/* Interface for serialization messages.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_ISERIALIZEDISPATCHER_H
 #define ARCCORE_MESSAGEPASSING_ISERIALIZEDISPATCHER_H
@@ -24,8 +24,9 @@ namespace Arcane::MessagePassing
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface des messages de sérialisation
+ * \brief Interface for serialization messages
  */
 class ARCCORE_MESSAGEPASSING_EXPORT ISerializeDispatcher
 {
@@ -35,14 +36,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeDispatcher
 
  public:
 
-  //! Créé une liste de messages de sérialisation
+  //! Create a list of serialization messages
   virtual Ref<ISerializeMessageList> createSerializeMessageListRef() =0;
 
-  //! Message d'envoi
+  //! Sending message
   virtual Request
   sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message) =0;
 
-  //! Message de réception
+  //! Receiving message
   virtual Request
   receiveSerializer(ISerializer* s,const PointToPointMessageInfo& message) =0;
 };

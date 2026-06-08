@@ -1,4 +1,4 @@
-// TODO: ne pas inclure car cela induit des dépendances circulaires
+﻿// TODO: do not include because it introduces circular dependencies
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/CommonCudaHipReduceImpl.h"
 

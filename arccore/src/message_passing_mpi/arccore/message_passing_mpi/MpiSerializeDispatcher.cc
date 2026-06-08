@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiSerializeDispatcher.cc                                   (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des messages de sérialisation avec MPI.                           */
+/* Serialization message handling with MPI.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,24 +38,24 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Wrappeur pour envoyer un tableau d'octets d'un sérialiseur.
+ * \brief Wrapper for sending a byte array from a serializer.
  *
- * \a SpanType doit être un 'Byte' ou un 'const Byte'.
+ * \a SpanType must be a 'Byte' or a 'const Byte'.
  *
- * Comme MPI utilise un 'int' pour le nombre d'éléments d'un message, on ne
- * peut pas dépasser 2^31 octets pas message. Par contre, les versions 3.0+
- * de MPI supportent des messages dont la longueur dépasse 2^31.
- * On utilise donc un type dérivé MPI contenant N octets (avec N donné
- * par SerializeBuffer::paddingSize()) et on indique à MPI que c'est ce type
- * qu'on envoie. Le nombre d'éléments est donc divisé par N ce qui permet
- * de tenir sur 'int' si la taille du message est inférieure à 2^31 * N octets
- * (en février 2019, N=128 soit des messages de 256Go maximum).
+ * Since MPI uses an 'int' for the number of elements in a message, we cannot
+ * exceed 2^31 bytes per message. However, MPI versions 3.0+ support messages
+ * whose length exceeds 2^31. We therefore use an MPI derived type containing N
+ * bytes (with N given by SerializeBuffer::paddingSize()) and indicate to MPI
+ * that this is the type being sent. The number of elements is thus divided
+ * by N, which allows it to fit in an 'int' if the message size is less than
+ * 2^31 * N bytes (in February 2019, N=128, meaning maximum messages of 256GB).
  *
- * \note Pour que cela fonctionne, le tableau \a buffer doit avoir une
- * mémoire allouée arrondie au multiple de N supérieur au nombre d'éléments
- * mais normalement cela est garanti par le SerializeBuffer.
+ * \note For this to work, the \a buffer array must have memory allocated rounded
+ * up to a multiple of N greater than the number of elements, but this is
+ * normally guaranteed by SerializeBuffer.
  */
 template<typename SpanType>
 class SerializeByteConverter
@@ -83,14 +83,14 @@ class SerializeByteConverter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Sous-requête d'envoi.
+ * \brief Send sub-request.
  *
- * Cette classe est utilisée lorsqu'un message de sérialisation est trop
- * gros pour être envoyé en une seule fois. Dans ce cas, un deuxième message
- * est envoyé. Ce deuxième message contient le message complet de sérialisation
- * car le destinataire connait la taille complète du message et peut donc
- * allouer la mémoire nécessaire.
+ * This class is used when a serialization message is too large to be sent
+ * in a single go. In this case, a second message is sent. This second
+ * message contains the complete serialization message because the recipient
+ * knows the complete message size and can therefore allocate the necessary memory.
  */
 class MpiSerializeDispatcher::SendSerializerSubRequest
 : public ISubRequest
@@ -168,7 +168,7 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
         tm->info() << " ReceiveSerializerSubRequest::executeOnCompletion() total_size=" << total_recv_size
                    << BasicSerializer::SizesPrinter(*m_serialize_buffer);
       }
-      // Si le message est plus petit que le buffer, le désérialise simplement
+      // If the message is smaller than the buffer, deserialize it simply
       if (total_recv_size<=m_dispatcher->m_serialize_buffer_size){
         sbuf->setFromSizes();
         return {};
@@ -177,8 +177,8 @@ class MpiSerializeDispatcher::ReceiveSerializerSubRequest
       sbuf->preallocate(total_recv_size);
       auto bytes = sbuf->globalBuffer();
 
-      // La nouvelle requête doit utiliser le même rang source que celui de cette requête
-      // pour être certain qu'il n'y a pas d'incohérence.
+      // The new request must use the same source rank as this request
+      // to ensure there is no inconsistency.
       Request r2 = m_dispatcher->_recvSerializerBytes(bytes, rank, m_mpi_tag, false);
       ISubRequest* sr = new ReceiveSerializerSubRequest(m_dispatcher, m_serialize_buffer, m_mpi_tag, 2);
       r2.setSubRequest(makeRef(sr));
@@ -242,7 +242,7 @@ nextSerializeTag(MessageTag tag)
 void MpiSerializeDispatcher::
 _init()
 {
-  // Type pour la sérialisation en octet.
+  // Type for byte serialization.
   MPI_Datatype mpi_datatype;
   MPI_Type_contiguous(BasicSerializer::paddingSize(),MPI_CHAR,&mpi_datatype);
   MPI_Type_commit(&mpi_datatype);
@@ -279,8 +279,8 @@ legacySendSerializer(ISerializer* values,const PointToPointMessageInfo& message)
                << BasicSerializer::SizesPrinter(*sbuf)
                << " tag=" << mpi_tag << " is_blocking=" << is_blocking;
 
-  // Si le message est plus petit que le buffer par défaut de sérialisation,
-  // envoie tout le message
+  // If the message is smaller than the default serialization buffer,
+  // send the entire message
   if (total_size<=m_serialize_buffer_size){
     if (m_is_trace_serializer)
       tm->info() << "Small message size=" << bytes.size();
@@ -288,8 +288,8 @@ legacySendSerializer(ISerializer* values,const PointToPointMessageInfo& message)
   }
 
   {
-    // le message est trop grand pour tenir dans le buffer, envoie d'abord les tailles,
-    // puis le message sérialisé.
+    // the message is too large to fit in the buffer, first send the sizes,
+    // then the serialized message.
     auto x = sbuf->copyAndGetSizesBuffer();
     if (m_is_trace_serializer)
       tm->info() << "Big message first size=" << x.size();
@@ -387,7 +387,7 @@ legacyReceiveSerializer(ISerializer* values,MessageRank rank,MessageTag mpi_tag)
                << BasicSerializer::SizesPrinter(*sbuf);
 
 
-  // Si le message est plus petit que le buffer, le désérialise simplement
+  // If the message is smaller than the buffer, it simply deserializes it
   if (total_recv_size<=m_serialize_buffer_size){
     sbuf->setFromSizes();
     return;
@@ -409,9 +409,9 @@ legacyReceiveSerializer(ISerializer* values,MessageRank rank,MessageTag mpi_tag)
 void MpiSerializeDispatcher::
 checkFinishedSubRequests()
 {
-  // Regarde si les sous-requêtes sont terminées pour les libérer
-  // Cela est uniquement utilisé avec le mode historique où on utilise
-  // la classe 'MpiSerializeMessageList'.
+  // Checks if the sub-requests are finished to free them
+  // This is only used with the historical mode where we use
+  // the 'MpiSerializeMessageList' class.
   UniqueArray<SerializeSubRequest*> new_sub_requests;
   for( Integer i=0, n=m_sub_requests.size(); i<n; ++i ){
     SerializeSubRequest* ssr = m_sub_requests[i];
@@ -475,20 +475,20 @@ sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message,
                << " total_size=" << total_size;
 
   
-  // Si le message est plus petit que le buffer par défaut de sérialisation
-  // ou qu'on choisit de n'envoyer qu'un seul message, envoie tout le message
+  // If the message is smaller than the default serialization buffer
+  // or if we choose to send only one message, send the entire message
   if (total_size<=m_serialize_buffer_size || force_one_message){
     if (m_is_trace_serializer)
       tm->info() << "Small message size=" << bytes.size();
     return _sendSerializerBytes(bytes,rank,mpi_tag,is_blocking);
   }
 
-  // Sinon, envoie d'abord les tailles puis une autre requête qui
-  // va envoyer tout le message.
+  // Otherwise, first send the sizes and then another request that
+  // will send the entire message.
   auto x = sbuf->copyAndGetSizesBuffer();
   Request r1 = _sendSerializerBytes(x,rank,mpi_tag,is_blocking);
   auto* x2 = new SendSerializerSubRequest(this,sbuf,rank,nextSerializeTag(mpi_tag));
-  // Envoi directement le message pour des raisons de performance.
+  // Send the message directly for performance reasons.
   x2->sendMessage();
   r1.setSubRequest(makeRef<ISubRequest>(x2));
   return r1;
@@ -532,10 +532,10 @@ broadcastSerializer(ISerializer* values,MessageRank rank)
   bool is_broadcaster = (rank==my_rank);
 
   MPI_Datatype int64_datatype = MpiBuiltIn::datatype(Int64());
-  // Effectue l'envoie en deux phases. Envoie d'abord le nombre d'éléments
-  // puis envoie les éléments.
-  // TODO: il serait possible de le faire en une fois pour les messages
-  // ne dépassant pas une certaine taille.
+  // Performs the sending in two phases. First sends the number of elements
+  // then sends the elements.
+  // TODO: it would be possible to do it in one go for messages
+  // not exceeding a certain size.
   if (is_broadcaster){
     Int64 total_size = sbuf->totalSize();
     Span<Byte> bytes = sbuf->globalBuffer();

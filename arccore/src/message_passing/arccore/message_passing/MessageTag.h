@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MessageTag.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Tag d'un message.                                                         */
+/* Message tag.                                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGETAG_H
 #define ARCCORE_MESSAGEPASSING_MESSAGETAG_H
@@ -23,20 +23,21 @@
 
 namespace Arcane::MessagePassing
 {
+
 /*!
- * \brief Tag d'un message.
+ * \brief Message tag.
  *
- * Le type exact du tag dépend de l'implémentation. Pour être le plus
- * générique possible, on utilise le type 'Int32' qui est aussi le type
- * utilisé couramment avec MPI.
+ * The exact type of the tag depends on the implementation. To be as
+ * generic as possible, we use the 'Int32' type, which is also the type
+ * commonly used with MPI.
  *
- * Avec l'implémentation MPI, ce type est utilisé pour le tag MPI et
- * les valeurs maximales autorisées dépendent de l'implémentation. La norme
- * MPI indique seulement qu'il faut au moins autoriser 2^30 (32767) valeurs.
+ * With the MPI implementation, this type is used for the MPI tag, and
+ * the maximum allowed values depend on the implementation. The MPI standard
+ * only indicates that at least 2^30 (32767) values must be allowed.
  *
- * En mode échange de message hybride (MPI + mémoire partagée), la valeur
- * maximale du tag peut être plus faible. Pour toutes ces raisons, il
- * est conseillé de ne pas dépasser la valeur 4096.
+ * In hybrid message exchange mode (MPI + shared memory), the maximum
+ * tag value may be lower. For all these reasons, it
+ * is recommended not to exceed the value 4096.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessageTag
 {
@@ -65,9 +66,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageTag
     return o;
   }
  public:
-  //! Valeur par défaut du tag.
+  //! Default tag value.
   static constexpr Int32 DEFAULT_TAG_VALUE = 100;
-  //! Tag par défaut pour les send/receive sans argument tag.
+  //! Default tag for send/receive without tag argument.
   static MessageTag defaultTag() { return MessageTag(DEFAULT_TAG_VALUE); }
  private:
   Int32 m_tag;
@@ -81,5 +82,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageTag
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

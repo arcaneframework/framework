@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumArrayViews.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des vues sur les 'NumArray' pour les accélérateurs.               */
+/* Managing views on 'NumArray' for accelerators.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,12 +22,14 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file NumArrayViews.h
  *
- * Ce fichier contient les déclarations des types pour gérer
- * les vues pour les accélérateurs de la classe 'NumArray'.
+ * This file contains the type declarations for managing
+ * views for 'NumArray' class accelerators.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

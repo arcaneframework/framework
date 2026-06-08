@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommand.cc                                               (C) 2000-2026 */
 /*                                                                           */
-/* Gestion d'une commande sur accélérateur.                                  */
+/* Management of a command on accelerator.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -54,7 +54,7 @@ RunCommand::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Politique d'exécution de la commande
+//! Execution policy of the command
 eExecutionPolicy RunCommand::
 executionPolicy() const
 {
@@ -128,7 +128,7 @@ addNbThreadPerBlock(Int32 v)
 RunCommand& RunCommand::
 addNbStride(Int32 v)
 {
-  // On ne gère le pas de grille que sur accélérateur.
+  // Grid stride is only managed on accelerator.
   if (m_p->m_use_accelerator){
     if (v < 0)
       v = 1;

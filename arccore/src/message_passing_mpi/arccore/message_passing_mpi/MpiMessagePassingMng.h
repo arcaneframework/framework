@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiMessagePassingMng.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation MPI du gestionnaire des échanges de messages.              */
+/* MPI implementation of the message exchange manager.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_MPIMESSAGEPASSINGMNG_H
 #define ARCCORE_MESSAGEPASSINGMPI_MPIMESSAGEPASSINGMNG_H
@@ -25,8 +25,9 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation MPI du gestionnaire des échanges de messages.
+ * \brief MPI implementation of the message exchange manager.
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMessagePassingMng
 : public MessagePassingMng

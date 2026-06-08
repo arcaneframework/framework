@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PointToPointMessageInfo.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour les messages point à point.                             */
+/* Information for point-to-point messages.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_POINTTOPOINTINFO_H
 #define ARCCORE_MESSAGEPASSING_POINTTOPOINTINFO_H
@@ -23,30 +23,31 @@
 
 namespace Arcane::MessagePassing
 {
+
 /*!
- * \brief Informations pour envoyer/recevoir un message point à point.
+ * \brief Information for sending/receiving a point-to-point message.
  *
- * Il existe deux manières de construire une instance de cette classe:
+ * There are two ways to construct an instance of this class:
  *
- * 1. en donnant un couple (rang destinataire,tag). Le tag est optionnel
- *    et s'il n'est pas spécifié, sa valeur sera celle de MessageTag::defaultTag().
- * 2. via un MessageId obtenu lors d'un appel à mpProbe(). Dans ce dernier
- *    cas, l'instance ne peut alors être utilisée qu'en réception via mpReceive().
+ * 1. By providing a pair (destination rank, tag). The tag is optional
+ *    and if not specified, its value will be that of MessageTag::defaultTag().
+ * 2. Via a MessageId obtained during a call to mpProbe(). In this latter
+ *    case, the instance can only be used for reception via mpReceive().
  *
- * Il est possible de spécifier si le message sera bloquant lors de la
- * construction ou via l'appel à setBlocking(). Par défaut un message
- * est créé en mode bloquant.
+ * It is possible to specify whether the message will be blocking during
+ * construction or via the call to setBlocking(). By default, a message
+ * is created in blocking mode.
  *
- * L'émetteur (emiterRank()) du message est l'émetteur et la
- * destination (destinationRank() le récepteur. Pour un message d'envoi (mpSend()),
- * destinationRank() est donc le rang de celui qui va recevoir le message. Pour un
- * message de réception (mpReceive()), destinationRank() est le rang de celui dont
- * on souhaite recevoir le message ou A_NULL_RANK si on souhaite recevoir de
- * n'importe qui.
+ * The sender (emiterRank()) of the message is the sender and the
+ * destination (destinationRank()) is the receiver. For a send message (mpSend()),
+ * destinationRank() is therefore the rank of the one who will receive the message. For a
+ * receive message (mpReceive()), destinationRank() is the rank of the one from whom
+ * we wish to receive the message or A_NULL_RANK if we wish to receive from
+ * anyone.
  *
- * \note L'émetteur est en général positionnée par l'implémentation de
- * IMessagePassingMng car il correspond au rang de celui qui poste le message.
- * L'utilisateur n'a donc jamais besoin de le spécifier.
+ * \note The sender is generally positioned by the IMessagePassingMng implementation
+ * because it corresponds to the rank of the one posting the message.
+ * The user never needs to specify it.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
 {
@@ -61,30 +62,32 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
 
  public:
 
-  //! Message nul.
+  //! Null message.
   PointToPointMessageInfo() {}
 
-  //! Message bloquant avec tag par défaut et ayant pour destination \a rank
+  //! Blocking message with default tag and destination rank \a rank
   explicit PointToPointMessageInfo(MessageRank dest_rank)
   : m_destination_rank(dest_rank)
   , m_type(Type::T_RankTag)
   {}
 
-  //! Message avec tag par défaut, ayant destination \a dest_rank et mode bloquant \a blocking_type
+  //! Message with default tag, destination \a dest_rank, and blocking
+  //mode \a blocking_type
   PointToPointMessageInfo(MessageRank dest_rank, eBlockingType blocking_type)
   : m_destination_rank(dest_rank)
   , m_is_blocking(blocking_type == Blocking)
   , m_type(Type::T_RankTag)
   {}
 
-  //! Message bloquant avec tag \a tag et ayant pour destination \a rank
+  //! Blocking message with tag \a tag and destination \a rank
   PointToPointMessageInfo(MessageRank dest_rank, MessageTag tag)
   : m_destination_rank(dest_rank)
   , m_tag(tag)
   , m_type(Type::T_RankTag)
   {}
 
-  //! Message avec tag \a tag, ayant pour destination \a dest_rank et mode bloquant \a blocking_type
+  //! Message with tag \a tag, destination \a dest_rank, and blocking
+  //mode \a blocking_type
   PointToPointMessageInfo(MessageRank dest_rank, MessageTag tag, eBlockingType blocking_type)
   : m_destination_rank(dest_rank)
   , m_tag(tag)
@@ -92,7 +95,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   , m_type(Type::T_RankTag)
   {}
 
-  //! Message bloquant associé à \a message_id
+  //! Blocking message associated with \a message_id
   explicit PointToPointMessageInfo(MessageId message_id)
   : m_message_id(message_id)
   , m_type(Type::T_MessageId)
@@ -100,7 +103,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
     _setInfosFromMessageId();
   }
 
-  //! Message associé à \a message_id avec le mode bloquant \a blocking_type
+  //! Message associated with \a message_id with blocking mode \a blocking_type
   PointToPointMessageInfo(MessageId message_id, eBlockingType blocking_type)
   : m_message_id(message_id)
   , m_is_blocking(blocking_type == Blocking)
@@ -112,8 +115,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
  public:
 
   /*!
-   * \brief Message avec tag par défaut et ayant pour source \a emiter_rank,
-   * destination \a dest_rank et mode bloquant \a blocking_type
+   * \brief Message with default tag and source \a emiter_rank,
+   * destination \a dest_rank, and blocking mode \a blocking_type
    */
   ARCCORE_DEPRECATED_REASON("Y2022: This constructor is internal to Arcane and deprecated")
   PointToPointMessageInfo(MessageRank emiter_rank, MessageRank dest_rank, eBlockingType blocking_type)
@@ -123,7 +126,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   , m_type(Type::T_RankTag)
   {}
 
-  //! Message bloquant avec tag \a tag, ayant pour source \a emiter_rank, et ayant pour destination \a rank
+  //! Blocking message with tag \a tag, source \a emiter_rank, and destination \a rank
   ARCCORE_DEPRECATED_REASON("Y2022: This constructor is internal to Arcane and deprecated")
   PointToPointMessageInfo(MessageRank emiter_rank, MessageRank dest_rank, MessageTag tag)
   : m_emiter_rank(emiter_rank)
@@ -132,7 +135,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
   , m_type(Type::T_RankTag)
   {}
 
-  //! Message bloquant avec tag par défaut et ayant pour source \a emiter_rank et destination \a dest_rank
+  //! Blocking message with default tag, source \a emiter_rank, and destination \a dest_rank
   ARCCORE_DEPRECATED_REASON("Y2022: This constructor is internal to Arcane and deprecated")
   PointToPointMessageInfo(MessageRank emiter_rank, MessageRank dest_rank)
   : m_emiter_rank(emiter_rank)
@@ -144,8 +147,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
 
   /*!
    * \internal
-   * \brief Message avec tag \a tag, ayant pour source \a emiter_rank,
-   * pour destination \a dest_rank et mode bloquant \a blocking_type.
+   * \brief Message with tag \a tag, source \a emiter_rank,
+   * destination \a dest_rank, and blocking mode \a blocking_type.
    */
   PointToPointMessageInfo(MessageRank emiter_rank, MessageRank dest_rank, MessageTag tag, eBlockingType blocking_type)
   : m_emiter_rank(emiter_rank)
@@ -162,33 +165,33 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
     m_is_blocking = is_blocking;
     return (*this);
   }
-  //! Indique si le message est bloquant.
+  //! Indicates if the message is blocking.
   bool isBlocking() const { return m_is_blocking; }
-  //! Vrai si l'instance a été créée avec un MessageId. Dans ce cas messageId() est valide
+  //! True if the instance was created with a MessageId. In this case messageId() is valid
   bool isMessageId() const { return m_type == Type::T_MessageId; }
-  //! Vrai si l'instance a été créée avec un couple (rank,tag). Dans ce cas rank() et tag() sont valides.
+  //! True if the instance was created with a pair (rank,tag). In this case rank() and tag() are valid.
   bool isRankTag() const { return m_type == Type::T_RankTag; }
-  //! Identifiant du message
+  //! Message identifier
   MessageId messageId() const { return m_message_id; }
-  //! Positionne l'identifiant du message et change le type du message
+  //! Positions the message identifier and changes the message type
   void setMessageId(const MessageId& message_id)
   {
     m_type = Type::T_MessageId;
     m_message_id = message_id;
     _setInfosFromMessageId();
   }
-  //! Positionne le rang destination et le tag du message et change le type du message
+  //! Positions the message destination rank and tag and changes the message type
   void setRankTag(MessageRank rank, MessageTag tag)
   {
     m_type = Type::T_RankTag;
-    // Attention à bien appeler les méthodes pour mettre à jour
-    // les valeurs associées de `m_message_id`
+    // Attention to properly call the methods to update
+    // the associated values of `m_message_id`
     setDestinationRank(rank);
     setTag(tag);
   }
-  //! Rang de la destination du message
+  //! Message destination rank
   MessageRank destinationRank() const { return m_destination_rank; }
-  //! Positionne le rang de la destination du message
+  //! Positions the message destination rank
   void setDestinationRank(MessageRank rank)
   {
     m_destination_rank = rank;
@@ -197,14 +200,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
     m_message_id.setSourceInfo(si);
   }
 
-  //! Rang de l'émetteur du message
+  //! Message sender rank
   MessageRank emiterRank() const { return m_emiter_rank; }
-  //! Positionne le rang de l'émetteur du message
+  //! Positions the message sender rank
   void setEmiterRank(MessageRank rank) { m_emiter_rank = rank; }
 
-  //! Tag du message
+  //! Message tag
   MessageTag tag() const { return m_tag; }
-  //! Positionne le tag du message
+  //! Positions the message tag
   void setTag(MessageTag tag)
   {
     m_tag = tag;
@@ -212,7 +215,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
     si.setTag(tag);
     m_message_id.setSourceInfo(si);
   }
-  //! Affiche le message
+  //! Prints the message
   void print(std::ostream& o) const;
 
   friend std::ostream& operator<<(std::ostream& o, const PointToPointMessageInfo& pmessage)
@@ -223,7 +226,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
 
  public:
 
-  // Indique si le message est valide (i.e: il a été initialisé avec un message valide)
+  // Indicates if the message is valid (i.e.: it was initialized with a valid message)
   bool isValid() const
   {
     if (m_type == Type::T_Null)
@@ -237,11 +240,11 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
 
  public:
 
-  //! Rang d'origine du message
+  //! Message origin rank
   ARCCORE_DEPRECATED_REASON("Y2022: Use emiterRank() instead")
   MessageRank sourceRank() const { return m_emiter_rank; }
 
-  //! Positionne le rang d'origine du message
+  //! Positions the message origin rank
   ARCCORE_DEPRECATED_REASON("Y2022: Use setEmiterRank() instead")
   void setSourceRank(MessageRank rank) { m_emiter_rank = rank; }
 
@@ -269,5 +272,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointMessageInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

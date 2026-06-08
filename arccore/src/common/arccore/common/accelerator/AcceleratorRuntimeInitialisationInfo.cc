@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorRuntimeInitialisationInfo.cc                     (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour l'initialisation du runtime des accélérateurs.          */
+/* Information for initializing the accelerator runtime.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

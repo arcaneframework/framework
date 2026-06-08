@@ -24,18 +24,19 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Namespace contenant les types liés aux traces.
+ * \brief Namespace containing types related to traces.
  */
 namespace Trace
 {
-  //! Niveau de verbosité par défaut.
+  //! Default verbosity level.
   static const int DEFAULT_VERBOSITY_LEVEL = 3;
 
-  //! Niveau de verbosité non spécifié.
+  //! Unspecified verbosity level.
   static const int UNSPECIFIED_VERBOSITY_LEVEL = -2;
 
-  //! Flot sur lequel on envoie les messages.
+  //! Stream on which messages are sent.
   enum eMessageType
   {
     Normal=0,
@@ -49,70 +50,70 @@ namespace Trace
     Null=8
   };
 
-  //! Niveau de debug des traces
+  //! Trace debug level
   enum eDebugLevel
   {
-    None = 0, //! Pas de d'informations de débug
-    Lowest = 1, //!< Niveau le plus faible
-    Low = 2, //!< Niveau faible
-    Medium = 3, //!< Niveau moyen (défaut)
-    High = 4, //!< Niveau élevé
-    Highest = 5 //!< Niveau le plus élevé
+    None = 0, //! No debug information
+    Lowest = 1, //!< Lowest level
+    Low = 2, //!< Low level
+    Medium = 3, //!< Medium level (default)
+    High = 4, //!< High level
+    Highest = 5 //!< Highest level
   };
 
-  //! Paramêtres d'affichage.
+  //! Display parameters.
   enum ePrintFlags
   {
     PF_Default = 0,
-    PF_NoClassName = 1 << 1, //!< Affichage ou non de la classe de message.
-    PF_ElapsedTime = 1 << 2, //!< Affichage du temps écoulé
+    PF_NoClassName = 1 << 1, //!< Display or not the message class.
+    PF_ElapsedTime = 1 << 2, //!< Display of elapsed time
   };
 
   /*!
-   * \brief Formattage du flot en longueur.
+   * \brief Formatting the stream by length.
    *
    * \sa TraceMessage, ITraceMng
    */
   class ARCCORE_TRACE_EXPORT Width
   {
    public:
-    //! Formatte le flot sur une longueur de \a v caractères.
+    //! Formats the stream to a length of \a v characters.
     Width(Integer v) : m_width(v) {}
    public:
-    Integer m_width; //!< Longueur du formattage.
+    Integer m_width; //!< Formatting length.
   };
   /*!
-   * \brief Formattage des réels avec une précision donnée.
+   * \brief Formatting real numbers with a given precision.
    *
    * \sa TraceMessage, ITraceMng
    */
   class ARCCORE_TRACE_EXPORT Precision
   {
    public:
-    //! Imprime la valeur \a value avec \a n chiffres significatifs.
+    //! Prints the value \a value with \a n significant figures.
     Precision(Integer n,Real value)
     : m_precision(n), m_value(value), m_scientific(false) {}
-    /*! Imprime la valeur \a value avec \n n chiffres significatifs en mode scienfique si
-     * \a scientific est vrai
+    /*! Prints the value \a value with \n n significant figures in scientific mode if
+     * \a scientific is true
      */
     Precision(Integer n,Real value,bool scientific)
     : m_precision(n), m_value(value), m_scientific(scientific) {}
    public:
-    Integer m_precision; //!< Nombre de chiffres significatifs.
-    Real m_value; //!< Valeur à sortir
-    bool m_scientific; //! True si sortie en mode scientifique
+    Integer m_precision; //!< Number of significant figures.
+    Real m_value; //!< Value to output
+    bool m_scientific; //! True if output is in scientific mode
   };
 
   /*!
-   * \brief Positionne une couleur pour le message
+   * \brief Sets a color for the message
    *
    * \sa TraceMessage, ITraceMng
    */
   class ARCCORE_TRACE_EXPORT Color
   {
    public:
-    // Liste des couleurs.
-    // NOTE: tout changement ici doit être reporté dans TraceMng.cc
+    // List of colors.
+    // NOTE: any change here must be reported in TraceMng.cc
     enum { Black = 0,
            DarkRed, DarkGreen, DarkYellow, DarkBlue, DarkMagenta, DarkCyan, DarkGrey,
            Red, Green, Yellow, Blue, Magenta, Cyan, Grey };
@@ -142,23 +143,23 @@ namespace Trace
 
 
   /*!
-   * \brief Positionne une classe de message.
+   * \brief Sets a message class.
    *
-   * Positionne pour la classe de message \a name au moment de la construction
-   * de l'instance et remet l'ancienne au moment de sa destruction.
+   * Sets the message class \a name upon construction
+   * of the instance and restores the previous one upon destruction.
    *
    * \sa TraceMessage, ITraceMng
    */
   class ARCCORE_TRACE_EXPORT Setter
   {
    public:
-    //! Positionne la classe \a name pour le gestionnaire \a msg
+    //! Sets the class \a name for the manager \a msg
     Setter(ITraceMng* msg,const String& name);
-    //! Libère l'instance et remet l'ancienne classe de message dans \a m_msg
+    //! Releases the instance and restores the previous message class in \a m_msg
     ~Setter();
    public:
    private:
-    ITraceMng* m_msg; //!< Gestionnaire de message.
+    ITraceMng* m_msg; //!< Message manager.
   };
 }
 
@@ -171,4 +172,3 @@ namespace Trace
 /*---------------------------------------------------------------------------*/
 
 #endif
-

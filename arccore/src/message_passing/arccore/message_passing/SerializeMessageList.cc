@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SerializeMessageList.cc                                     (C) 2000-2025 */
 /*                                                                           */
-/* Liste de messages de sérialisation.                                       */
+/* Serialization message list.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -60,7 +60,7 @@ processPendingMessages()
     PointToPointMessageInfo message_info(buildMessageInfo(sm));
     bool is_any_source = sm->destination().isNull() || sm->destination().isAnySource();
     if (is_any_source && !m_allow_any_rank_receive) {
-      // Il faudra faire un probe pour ce message
+      // A probe will need to be done for this message
       m_messages_to_probe.add({sm,message_info});
     }
     else
@@ -77,10 +77,10 @@ Integer SerializeMessageList::
 waitMessages(eWaitType wait_type)
 {
   processPendingMessages();
-  // NOTE: il faudrait peut-être faire aussi faire des probe() dans l'appel
-  // à _waitMessages() car il est possible que tous les messages n'aient pas
-  // été posté. Dans ce cas, il faudrait passer en mode non bloquant tant
-  // qu'il y a des probe à faire
+  // NOTE: It might also be necessary to perform probes() in the call
+  // to _waitMessages() because it is possible that not all messages have been posted.
+  // In this case, it would be necessary to switch to non-blocking mode until
+  // there are probes to perform.
   while(!m_messages_to_probe.empty())
     _doProbe();
 
@@ -93,10 +93,10 @@ waitMessages(eWaitType wait_type)
 void SerializeMessageList::
 _doProbe()
 {
-  // Il faut tester avec probe() si des messages sont disponibles
+  // We must test with probe() if messages are available
   for( ProbeInfo& p : m_messages_to_probe ){
     //tm->info() << "CHECK PROBE msg=" << p.m_message_info << " is_done?=" << p.m_is_probe_done;
-    // Ne devrait pas être 'vrai' mais par sécurité on fait le test.
+    // Should not be 'true' but we perform the test for safety.
     if (p.m_is_probe_done)
       continue;
     MessageId message_id = mpProbe(m_message_passing_mng,p.m_message_info);
@@ -108,7 +108,7 @@ _doProbe()
     }
   }
 
-  // Supprime les probes qui sont terminés.
+  // Remove probes that are finished.
   auto k = std::remove_if(m_messages_to_probe.begin(),m_messages_to_probe.end(),
                           [](const ProbeInfo& p) { return p.m_is_probe_done; });
   m_messages_to_probe.resize(k-m_messages_to_probe.begin());
@@ -124,7 +124,7 @@ _waitMessages(eWaitType wait_type)
 
   if (wait_type==WaitAll){
     m_request_list->wait(WaitAll);
-    // Indique que les messages sont bien terminés
+    // Indicates that the messages are finished
     for( ISerializeMessage* sm : m_messages_serialize )
       sm->setFinished(true);
     m_request_list->clear();

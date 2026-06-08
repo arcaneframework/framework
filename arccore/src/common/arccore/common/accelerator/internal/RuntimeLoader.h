@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RuntimeLoader.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Gestion du chargement du runtime accélérateur.                            */
+/* Management of accelerator runtime loading.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_RUNTIMELOADER_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_RUNTIMELOADER_H
@@ -24,8 +24,9 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion du chargement du runtime accélérateur.
+ * \brief Management of accelerator runtime loading.
  */
 class ARCCORE_COMMON_EXPORT RuntimeLoader
 {

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CommandLineArguments.cc                                     (C) 2000-2025 */
 /*                                                                           */
-/* Arguments de la ligne de commande.                                        */
+/* Command line arguments.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,10 +36,10 @@ class CommandLineArguments::Impl
 {
  public:
   /*!
-   * \brief Paramètres de la ligne de commande.
+   * \brief Command line parameters.
    *
-   * Ils sont récupérés via l'option '-A' de la ligne de commande
-   * et sont de la forme -A,x=y,a=b.
+   * They are retrieved via the '-A' option on the command line
+   * and are in the form -A,x=y,a=b.
    */
   class NameValuePair
   {
@@ -115,16 +115,16 @@ class CommandLineArguments::Impl
   void addReference() { ++m_nb_ref; }
   void removeReference()
   {
-    // Décrémente et retourne la valeur d'avant.
-    // Si elle vaut 1, cela signifie qu'on n'a plus de références
-    // sur l'objet et qu'il faut le détruire.
+    // Decrements and returns the previous value.
+    // If it equals 1, it means there are no more references
+    // on the object and it must be destroyed.
     Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
     if (v==1)
       delete this;
   }
   void parseParameters(const CommandLineArguments& command_line_args)
   {
-    // On ne récupère que les arguments du style:
+    // We only retrieve arguments of the style:
     //   -A,x=b,y=c
     StringList args;
     command_line_args.fillArgs(args);
@@ -136,7 +136,7 @@ class CommandLineArguments::Impl
       String arg = args[i];
       if (arg.startsWith("-h") || arg.startsWith("--help")) {
         m_need_help = true;
-        // TODO AH : Voir pour faire une aide : "-h=module".
+        // TODO AH : See how to provide help: "-h=module".
         continue;
       }
       if (!arg.startsWith("-A,"))
@@ -169,8 +169,8 @@ class CommandLineArguments::Impl
  public:
   std::atomic<Int32> m_nb_ref;
   StringList m_args;
-  int* m_argc; //!< Nombre d'arguments de la ligne de commande
-  char*** m_argv; //!< Tableau des arguments de la ligne de commande
+  int* m_argc; //!< Number of command line arguments
+  char*** m_argv; //!< Array of command line arguments
   int* m_argc_orig = nullptr;
   char*** m_argv_orig = nullptr;
   char* m_argv0 = nullptr;
@@ -319,4 +319,3 @@ needHelp() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandImpl.cc                                           (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation de la gestion d'une commande sur accélérateur.             */
+/* Implementation of command management on accelerator.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -86,14 +86,14 @@ _createEvent()
 void RunCommandImpl::
 _init()
 {
-  // N'utilise les timers accélérateur que si le profiling est activé.
-  // On fait cela pour éviter d'appeler les évènements accélérateurs car on
-  // ne connait pas encore leur influence sur les performances. Si elle est
-  // négligeable alors on pourra l'activer par défaut.
+  // Only uses accelerator timers if profiling is enabled.
+  // This is done to avoid calling accelerator events since we
+  // do not yet know their influence on performance. If it is
+  // negligible, we can enable it by default.
 
-  // TODO: il faudrait éventuellement avoir une instance séquentielle et
-  // une associée à runner() pour gérer le cas ou ProfilingRegistry::hasProfiling()
-  // change en cours d'exécution.
+  // TODO: we should possibly have a sequential instance and
+  // one associated with runner() to handle the case where ProfilingRegistry::hasProfiling()
+  // changes during execution.
   if (m_use_accelerator && !ProfilingRegistry::hasProfiling())
     m_use_sequential_timer_event = true;
 
@@ -125,8 +125,9 @@ create(RunQueueImpl* r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Notification du début d'exécution de la commande.
+ * \brief Notification of the start of command execution.
  */
 void RunCommandImpl::
 notifyBeginLaunchKernel()
@@ -139,7 +140,7 @@ notifyBeginLaunchKernel()
   }
   IRunQueueStream* stream = internalStream();
   stream->notifyBeginLaunchKernel(*this);
-  // TODO: utiliser la bonne stream en séquentiel
+  // TODO: use the correct stream in sequential mode
   m_has_been_launched = true;
   if (m_use_profiling) {
     m_start_event->recordQueue(stream);
@@ -151,16 +152,17 @@ notifyBeginLaunchKernel()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Notification de la fin de lancement de la commande.
+ * \brief Notification of the end of command launch.
  *
- * La commande continue à s'exécuter en tâche de fond.
+ * The command continues to execute in the background.
  */
 void RunCommandImpl::
 notifyEndLaunchKernel()
 {
   IRunQueueStream* stream = internalStream();
-  // TODO: utiliser la bonne stream en séquentiel
+  // TODO: use the correct stream in sequential mode
   if (m_use_profiling)
     m_stop_event->recordQueue(stream);
   stream->notifyEndLaunchKernel(*this);
@@ -169,37 +171,39 @@ notifyEndLaunchKernel()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Notification du lancement d'un kernel SYCL.
+ * \brief Notification of a SYCL kernel launch.
  *
- * \a sycl_event_ptr est de type sycl::event* et contient
- * l'évènement associé à la commande qui est retourné lors
- * des appels à sycl::queue::submit().
+ * \a sycl_event_ptr is of type sycl::event* and contains
+ * the event associated with the command returned during
+ * calls to sycl::queue::submit().
  */
 void RunCommandImpl::
 notifyLaunchKernelSyclEvent(void* sycl_event_ptr)
 {
   IRunQueueStream* stream = internalStream();
   stream->_setSyclLastCommandEvent(sycl_event_ptr);
-  // Il faut enregistrer à nouveau la file associée à l'évènement
-  // car lors de l'appel à notifyBeginLaunchKernel() il n'y avait pas
-  // encore l'évènement associé à cette file.
+  // We must register the queue associated with the event again
+  // because when notifyBeginLaunchKernel() was called,
+  // the event associated with this queue was not yet available.
   m_start_event->recordQueue(stream);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Notification de la fin d'exécution du noyau.
+ * \brief Notification of kernel execution end.
  *
- * Après cet appel, on est sur que la commande a fini de s'exécuter et on
- * peut la recycler. En asynchrone, cette méthode est appelée lors de la
- * synchronisation d'une file.
+ * After this call, we are sure that the command has finished executing and we
+ * can recycle it. In asynchronous mode, this method is called during the
+ * synchronization of a queue.
  */
 void RunCommandImpl::
 notifyEndExecuteKernel()
 {
-  // Ne fait rien si la commande n'a pas été lancée.
+  // Do nothing if the command has not been launched.
   if (!m_has_been_launched)
     return;
 
@@ -289,8 +293,8 @@ runner() const
 ReduceMemoryImpl* RunCommandImpl::
 _getOrCreateReduceMemoryImpl()
 {
-  // Pas besoin d'allouer de la mémoire spécifique si on n'est pas
-  // sur un accélérateur
+  // No need to allocate specific memory if we are not
+  // on an accelerator
   if (!m_use_accelerator)
     return nullptr;
 
@@ -306,14 +310,15 @@ _getOrCreateReduceMemoryImpl()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Méthode appelée quand l'instance RunCommand associée est détruite.
+ * \brief Method called when the associated RunCommand instance is destroyed.
  */
 void RunCommandImpl::
 _notifyDestroyRunCommand()
 {
-  // Si la commande n'a pas été lancé, il faut la remettre dans le pool
-  // des commandes de la file (sinon on aura une fuite mémoire)
+  // If the command has not been launched, it must be put back into the
+  // queue's command pool (otherwise there will be a memory leak)
   if (!m_has_been_launched || m_may_be_put_in_pool)
     m_queue->_putInCommandPool(this);
 }

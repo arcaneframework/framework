@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FatalErrorException.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Exception lorsqu'une erreur fatale est survenue.                          */
+/* Exception when a fatal error has occurred.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_FATALERROREXCEPTION_H
 #define ARCCORE_BASE_FATALERROREXCEPTION_H
@@ -23,9 +23,10 @@ namespace Arcane
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Exception lorsqu'une erreur fatale est survenue.
+ * \brief Exception when a fatal error has occurred.
  */
 class ARCCORE_BASE_EXPORT FatalErrorException
 : public Exception
@@ -57,4 +58,4 @@ class ARCCORE_BASE_EXPORT FatalErrorException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

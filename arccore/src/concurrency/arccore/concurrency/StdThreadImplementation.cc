@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StdThreadImplementation.cc                                  (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation des threads utilisant la bibliothèque standard C++.        */
+/* Implementation of threads using the standard C++ library.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,8 +34,9 @@ namespace Arcane::Concurrency
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de ITreadImplementation avec la bibliothèque standard C++.
+ * \brief Implementation of ITreadImplementation using the standard C++ library.
  */
 class ARCCORE_CONCURRENCY_EXPORT StdThreadImplementation
 : public IThreadImplementation
@@ -97,11 +98,12 @@ namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation d'une barrière.
+ * \brief Implementation of a barrier.
  *
- * Cette implémentation etait utilisée avant le support du C++20 lorsque la
- * classe std::barrier n'existait pas.
+ * This implementation was used before C++20 support when the
+ * std::barrier class did not exist.
  */
 class LegacyStdThreadBarrier
 : public IThreadBarrier
@@ -149,8 +151,9 @@ class LegacyStdThreadBarrier
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation d'une barrière via std::barrier.
+ * \brief Implementation of a barrier using std::barrier.
  */
 class StdThreadBarrier
 : public IThreadBarrier

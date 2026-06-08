@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GenericFilterer.h                                           (C) 2000-2026 */
 /*                                                                           */
-/* Algorithme de filtrage.                                                   */
+/* Filtering algorithm.                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_GENERICFILTERER_H
 #define ARCCORE_ACCELERATOR_GENERICFILTERER_H
@@ -26,11 +26,12 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base pour effectuer un filtrage.
+ * \brief Base class for performing filtering.
  *
- * Contient les arguments nécessaires pour effectuer le filtrage.
+ * Contains the necessary arguments to perform the filtering.
  */
 class ARCCORE_ACCELERATOR_EXPORT GenericFilteringBase
 {
@@ -56,24 +57,24 @@ class ARCCORE_ACCELERATOR_EXPORT GenericFilteringBase
 
  protected:
 
-  //! File d'exécution. Ne doit pas être nulle.
+  //! Execution queue. Must not be null.
   RunQueue m_queue;
-  // Mémoire de travail pour l'algorithme de filtrage.
+  // Working memory for the filtering algorithm.
   GenericDeviceStorage m_algo_storage;
-  //! Mémoire sur le device du nombre de valeurs filtrées
+  //! Device memory for the number of filtered values
   DeviceStorage<int> m_device_nb_out_storage;
-  //! Mémoire hôte pour le nombre de valeurs filtrées
+  //! Host memory for the number of filtered values
   NumArray<Int32, MDDim1> m_host_nb_out_storage;
   /*!
-   * \brief Indique quelle mémoire est utilisée pour le nombre de valeurs filtrées.
+   * \brief Indicates which memory is used for the number of filtered values.
    *
-   * Si vrai utilise directement \a m_host_nb_out_storage. Sinon, utilise
-   * m_device_nb_out_storage et fait une copie asynchrone après le filtrage pour
-   * recopier la valeur dans m_host_nb_out_storage.
+   * If true, it uses \a m_host_nb_out_storage directly. Otherwise, it uses
+   * m_device_nb_out_storage and performs an asynchronous copy after filtering to
+   * copy the value into m_host_nb_out_storage.
    */
   bool m_use_direct_host_storage = true;
 
-  //! Indique si un appel est en cours
+  //! Indicates if a call is in progress
   bool m_is_already_called = false;
 };
 
@@ -81,7 +82,7 @@ class ARCCORE_ACCELERATOR_EXPORT GenericFilteringBase
 /*---------------------------------------------------------------------------*/
 
 #if defined(ARCCORE_COMPILING_SYCL)
-//! Implémentation pour SYCL
+//! Implementation for SYCL
 class SyclGenericFilteringImpl
 {
  public:
@@ -114,7 +115,7 @@ class SyclGenericFilteringImpl
     queue.barrier();
     SyclScanner<false /*is_exclusive*/, Int32, ScannerSumOperator<Int32>> scanner;
     scanner.doScan(queue, in_scan_data, out_scan_data, 0);
-    // La valeur de 'out_data' pour le dernier élément (nb_item-1) contient la taille du filtre
+    // The value of 'out_data' for the last element (nb_item-1) contains the filter size
     Int32 nb_output = out_scan_data[nb_item - 1];
     s.m_host_nb_out_storage[0] = nb_output;
 
@@ -124,10 +125,10 @@ class SyclGenericFilteringImpl
         std::cout << "out_data i=" << i << " out_data=" << out_scan_data[i]
                   << " in_data=" << in_scan_data[i] << " value=" << input_iter[i] << "\n ";
       }
-    // Copie depuis 'out_data' vers 'in_data' les indices correspondant au filtre
-    // Comme 'output_iter' et 'input_iter' peuvent se chevaucher, il
-    // faut faire une copie intermédiaire
-    // TODO: détecter cela et ne faire la copie que si nécessaire.
+    // Copy indices corresponding to the filter from 'out_data' to 'in_data'.
+    // Since 'output_iter' and 'input_iter' may overlap, it
+    // is necessary to make an intermediate copy.
+    // TODO: detect this and only perform the copy if necessary.
     NumArray<DataType, MDDim1> out_copy(eMemoryResource::Device);
     out_copy.resize(nb_output);
     auto out_copy_view = out_copy.to1DSpan();
@@ -148,8 +149,8 @@ class SyclGenericFilteringImpl
         output_iter[i] = out_copy_view[i];
       };
     }
-    // Obligatoire à cause de 'out_copy'. On pourra le supprimer avec une
-    // allocation temporaire.
+    // Necessary because of 'out_copy'. This can be removed with an
+    // temporary allocation.
     queue.barrier();
 #endif
   }
@@ -158,12 +159,13 @@ class SyclGenericFilteringImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe pour effectuer un filtrage
+ * \brief Class for performing filtering
  *
- * \a DataType est le type de donnée.
- * \a FlagType est le type du tableau de filtre.
+ * \a DataType is the data type.
+ * \a FlagType is the type of the filter array.
  */
 template <typename DataType, typename FlagType, typename OutputDataType>
 class GenericFilteringFlag
@@ -187,7 +189,7 @@ class GenericFilteringFlag
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
       cudaStream_t stream = AcceleratorUtils::toCudaNativeStream(queue);
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine the size for allocation
       int* nb_out_ptr = nullptr;
       ARCCORE_CHECK_CUDA(::cub::DeviceSelect::Flagged(nullptr, temp_storage_size,
                                                       input_data, flag_data, output_data, nb_out_ptr, nb_item, stream));
@@ -202,7 +204,7 @@ class GenericFilteringFlag
 #if defined(ARCCORE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine the size for allocation
       hipStream_t stream = AcceleratorUtils::toHipNativeStream(queue);
       int* nb_out_ptr = nullptr;
       ARCCORE_CHECK_HIP(rocprim::select(nullptr, temp_storage_size, input_data, flag_data, output_data,
@@ -226,7 +228,7 @@ class GenericFilteringFlag
     } break;
 #endif
     case eExecutionPolicy::Thread:
-      // Pas encore implémenté en multi-thread
+      // Not yet implemented in multi-thread
       [[fallthrough]];
     case eExecutionPolicy::Sequential: {
       Int32 index = 0;
@@ -246,22 +248,23 @@ class GenericFilteringFlag
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe pour effectuer un filtrage
+ * \brief Class for performing filtering
  *
- * \a DataType est le type de donnée.
- * \a FlagType est le type du tableau de filtre.
+ * \a DataType is the data type.
+ * \a FlagType is the type of the filter array.
  */
 class GenericFilteringIf
 {
  public:
 
   /*!
-   * \brief Applique le filtre.
+   * \brief Applies the filter.
    *
-   * Si \a InPlace est vrai, alors OutputIterator vaut InputIterator et on
-   * met à jour directement \a input_iter.
+   * If \a InPlace is true, then OutputIterator equals InputIterator and we
+   * update \a input_iter directly.
    */
   template <bool InPlace, typename SelectLambda, typename InputIterator, typename OutputIterator>
   void apply(GenericFilteringBase& s, Int32 nb_item, InputIterator input_iter, OutputIterator output_iter,
@@ -279,7 +282,7 @@ class GenericFilteringIf
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
       cudaStream_t stream = Impl::CudaUtils::toNativeStream(queue);
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine the size for allocation
       int* nb_out_ptr = nullptr;
       if constexpr (InPlace)
         ARCCORE_CHECK_CUDA(::cub::DeviceSelect::If(nullptr, temp_storage_size,
@@ -307,12 +310,12 @@ class GenericFilteringIf
 #if defined(ARCCORE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine the size for allocation
       hipStream_t stream = Impl::HipUtils::toNativeStream(queue);
       int* nb_out_ptr = nullptr;
-      // NOTE: il n'y a pas de version spécifique de 'select' en-place.
-      // A priori il est possible que \a input_iter et \a output_iter
-      // aient la même valeur.
+      // NOTE: there is no specific in-place 'select' version.
+      // It is possible that \a input_iter and \a output_iter
+      // have the same value.
       ARCCORE_CHECK_HIP(rocprim::select(nullptr, temp_storage_size, input_iter, output_iter,
                                         nb_out_ptr, nb_item, select_lambda, stream));
       s._allocateTemporaryStorage(temp_storage_size);
@@ -364,8 +367,9 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Algorithme générique de filtrage sur accélérateur.
+ * \brief Generic filtering algorithm on accelerator.
  */
 class GenericFilterer
 : private Impl::GenericFilteringBase
@@ -374,7 +378,7 @@ class GenericFilterer
  public:
 
   /*!
-   * \brief Créé une instance.
+   * \brief Creates an instance.
    *
    * \pre queue!=nullptr
    */
@@ -387,7 +391,7 @@ class GenericFilterer
   }
 
   /*!
-   * \brief Créé une instance.
+   * \brief Creates an instance.
    *
    * \pre queue!=nullptr
    */
@@ -400,13 +404,13 @@ class GenericFilterer
  public:
 
   /*!
-   * \brief Applique un filtre.
+   * \brief Applies a filter.
    *
-   * Filtre tous les éléments de \a input pour lesquels \a flag est différent de 0 et
-   * remplit \a output avec les valeurs filtrées. \a output doit avoir une taille assez
-   * grande pour contenir tous les éléments filtrés.
+   * Filters all elements in \a input for which \a flag is not 0 and
+   * fills \a output with the filtered values. \a output must be large enough
+   * to hold all filtered elements.
    *
-   * L'algorithme séquentiel est le suivant:
+   * The sequential algorithm is as follows:
    *
    * \code
    * Int32 index = 0;
@@ -419,8 +423,8 @@ class GenericFilterer
    * return index;
    * \endcode
    *
-   * Il faut appeler la méthode nbOutputElement() pour obtenir le nombre d'éléments
-   * après filtrage.
+   * You must call the nbOutputElement() method to get the number of elements
+   * after filtering.
    */
   template <typename InputDataType, typename OutputDataType, typename FlagType>
   void apply(SmallSpan<const InputDataType> input, SmallSpan<OutputDataType> output, SmallSpan<const FlagType> flag)
@@ -440,17 +444,17 @@ class GenericFilterer
   }
 
   /*!
-   * \brief Applique un filtre.
+   * \brief Applies a filter.
    *
-   * Filtre tous les éléments de \a input pour lesquels \a select_lambda vaut \a true et
-   * remplit \a output avec les valeurs filtrées. \a output doit avoir une taille assez
-   * grande pour contenir tous les éléments filtrés.
-   * Les zones mémoire associées à \a input et \a output ne doivent pas se chevaucher.
+   * Filters all elements in \a input for which \a select_lambda equals \a true and
+   * fills \a output with the filtered values. \a output must be large enough
+   * to hold all filtered elements. The memory regions associated with \a input and
+   * \a output must not overlap.
    *
-   * \a select_lambda doit avoir un opérateur `ARCCORE_HOST_DEVICE bool operator()(const DataType& v) const`.
+   * \a select_lambda must have an operator `ARCCORE_HOST_DEVICE bool operator()(const DataType& v) const'.
    *
-   * Par exemple la lambda suivante permet de ne garder que les éléments dont
-   * la valeur est supérieure à 569.
+   * For example, the following lambda keeps only elements whose
+   * value is greater than 569.
    *
    * \code
    * auto filter_lambda = [] ARCCORE_HOST_DEVICE (const DataType& x) -> bool {
@@ -458,7 +462,7 @@ class GenericFilterer
    * };
    * \endcode
    *
-   * L'algorithme séquentiel est le suivant:
+   * The sequential algorithm is as follows:
    *
    * \code
    * Int32 index = 0;
@@ -471,8 +475,8 @@ class GenericFilterer
    * return index;
    * \endcode
    *
-   * Il faut appeler la méthode nbOutputElement() pour obtenir le nombre d'éléments
-   * après filtrage.
+   * You must call the nbOutputElement() method to get the number of elements
+   * after filtering.
    */
   template <typename DataType, typename SelectLambda>
   void applyIf(SmallSpan<const DataType> input, SmallSpan<DataType> output,
@@ -492,11 +496,11 @@ class GenericFilterer
   }
 
   /*!
-   * \brief Applique un filtre en place.
+   * \brief Applies an in-place filter.
    *
-   * Cette méthode est identique à applyIf(SmallSpan<const DataType>, SmallSpan<DataType>,
-   * const SelectLambda&, const TraceInfo& trace_info) mais les valeurs filtrées sont
-   * directement recopié dans le tableau \a input_output.
+   * This method is identical to applyIf(SmallSpan<const DataType>, SmallSpan<DataType>,
+   * const SelectLambda&, const TraceInfo& trace_info) but the filtered values are
+   * directly copied into the \a input_output array.
    */
   template <typename DataType, typename SelectLambda>
   void applyIf(SmallSpan<DataType> input_output, const SelectLambda& select_lambda,
@@ -512,14 +516,14 @@ class GenericFilterer
   }
 
   /*!
-   * \brief Applique un filtre.
+   * \brief Applies a filter.
    *
-   * Cette méthode est identique à Filterer::applyIf(SmallSpan<const DataType> input,
-   * SmallSpan<DataType> output, const SelectLambda& select_lambda) mais permet de spécifier un
-   * itérateur \a input_iter pour l'entrée et \a output_iter pour la sortie.
-   * Le nombre d'entité en entrée est donné par \a nb_value.
+   * This method is identical to Filterer::applyIf(SmallSpan<const DataType> input,
+   * SmallSpan<DataType> output, const SelectLambda& select_lambda) but allows specifying an
+   * \a input_iter iterator for the input and \a output_iter for the output.
+   * The number of input entities is given by \a nb_value.
    *
-   * Les zones mémoire associées à \a input_iter et \a output_iter ne doivent pas se chevaucher.
+   * The memory regions associated with \a input_iter and \a output_iter must not overlap.
    */
   template <typename InputIterator, typename OutputIterator, typename SelectLambda>
   void applyIf(Int32 nb_value, InputIterator input_iter, OutputIterator output_iter,
@@ -534,18 +538,18 @@ class GenericFilterer
   }
 
   /*!
-   * \brief Applique un filtre avec une sélection suivant un index.
+   * \brief Applies a filter with selection based on an index.
    *
-   * Cette méthode permet de filtrer en spécifiant une fonction lambda à la fois
-   * pour la sélection et l'affection. Le prototype de ces lambda est:
+   * This method allows filtering by specifying a lambda function for both
+   * selection and assignment. The prototype for these lambdas is:
    *
    * \code
    * auto select_lambda = [=] ARCCORE_HOST_DEVICE (Int32 index) -> bool;
    * auto setter_lambda = [=] ARCCORE_HOST_DEVICE (Int32 input_index,Int32 output_index) -> void;
    * \endcode
    *
-   * Par exemple, si on souhaite recopier dans \a output le tableau \a input dont les
-   * valeurs sont supérieures à 25.0.
+   * For example, if you want to copy the \a input array into \a output whose
+   * values are greater than 25.0.
    *
    * \code
    * SmallSpan<Real> input = ...;
@@ -564,7 +568,7 @@ class GenericFilterer
    * Int32 nb_out = filterer.nbOutputElement();
    * \endcode
    *
-   * Les zones mémoire associées aux valeurs d'entrée et de sortie ne doivent pas se chevaucher.
+   * The memory regions associated with the input and output values must not overlap.
    */
   template <typename SelectLambda, typename SetterLambda>
   void applyWithIndex(Int32 nb_value, const SelectLambda& select_lambda,
@@ -581,9 +585,9 @@ class GenericFilterer
   }
 
   /*!
-   * \brief Nombre d'éléments en sortie.
+   * \brief Number of output elements.
    *
-   * \brief Cette méthode effectue une barrière avant de récupérer la valeur.
+   * \brief This method performs a barrier before retrieving the value.
    */
   Int32 nbOutputElement()
   {

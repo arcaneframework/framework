@@ -1,1 +1,1 @@
-#include "arccore/base/IFunctor.h"
+﻿#include "arccore/base/IFunctor.h"

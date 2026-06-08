@@ -1,5 +1,4 @@
-
-set(SOURCES
+﻿set(SOURCES
   ArccoreGlobal.h
   ArccoreGlobal.cc
   APReal.h

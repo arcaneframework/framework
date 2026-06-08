@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* APReal.h                                                    (C) 2000-2025 */
 /*                                                                           */
-/* Réel en précision arbitraire.                                             */
+/* Real number in arbitrary precision.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_APREAL_H
 #define ARCCORE_BASE_APREAL_H
@@ -28,13 +28,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Emulation d'un réel en précision arbitraire.
+ * \brief Emulation of a real number in arbitrary precision.
  *
- * Si on souhaite une précision arbitraire, il faut utiliser la bibliothèque
- * 'apfloat'. Cette classe définit un type pour le cas où cette bibliothèque
- * n'est pas disponible mais n'assure pas une précision arbitraire.
- * apfloat Cette classe émule la clas
+ * If one wants arbitrary precision, one must use the 'apfloat' library.
+ * This class defines a type for the case where this library 'apfloat'.
+ * This class emulates the clas
  */
 #ifndef ARCCORE_REAL_USE_APFLOAT
 
@@ -104,4 +104,3 @@ operator>> (std::istream& i,APReal& t)
 /*---------------------------------------------------------------------------*/
 
 #endif
-

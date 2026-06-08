@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SpanViews.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des vues pour les 'Span' pour les accélérateurs.                  */
+/* View management for 'Span' for accelerators.                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_SPANVIEW_H
 #define ARCCORE_ACCELERATOR_SPANVIEW_H
@@ -22,13 +22,14 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file SpanViews.h
  *
- * Ce fichier contient les déclarations des types pour gérer
- * les vues pour les accélérateurs des classes Array, Span, SmallSpan,
- * ArrayView et ConstArrayView.
+ * This file contains the type declarations for managing views for accelerators of the Array, Span, SmallSpan,
+ * ArrayView, and ConstArrayView classes.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,15 +44,16 @@ class SpanViewSetter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base des vues sur les 'NumArray'.
+ * \brief Base class for views on 'NumArray'.
  */
 class SpanViewBase
 {
  protected:
 
-  // Pour l'instant n'utilise pas encore \a command
-  // mais il ne faut pas le supprimer
+  // Currently does not use \a command
+  // but it should not be removed
   explicit SpanViewBase(const ViewBuildInfo&)
   {
   }
@@ -61,8 +63,9 @@ class SpanViewBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture, écriture ou lecture/écriture sur un 'Span'.
+ * \brief Read, write, or read/write view on a 'Span'.
  */
 template <typename Accessor>
 class SpanView
@@ -100,8 +103,9 @@ class SpanView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture, écriture ou lecture/écriture sur un 'SmallSpan'.
+ * \brief Read, write, or read/write view on a 'SmallSpan'.
  */
 template <typename Accessor>
 class SmallSpanView
@@ -139,8 +143,9 @@ class SmallSpanView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename DataType> auto
 viewOut(const ViewBuildInfo& command, Span<DataType> var)
@@ -151,8 +156,9 @@ viewOut(const ViewBuildInfo& command, Span<DataType> var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename DataType> auto
 viewOut(const ViewBuildInfo& command, Array<DataType>& var)
@@ -162,8 +168,9 @@ viewOut(const ViewBuildInfo& command, Array<DataType>& var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename DataType> auto
 viewOut(const ViewBuildInfo& command, SmallSpan<DataType> var)
@@ -173,8 +180,9 @@ viewOut(const ViewBuildInfo& command, SmallSpan<DataType> var)
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en écriture.
+ * \brief Write view.
  */
 template <typename DataType> auto
 viewOut(const ViewBuildInfo& command, ArrayView<DataType> var)
@@ -184,8 +192,9 @@ viewOut(const ViewBuildInfo& command, ArrayView<DataType> var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename DataType> auto
 viewInOut(const ViewBuildInfo& command, Span<DataType> var)
@@ -196,8 +205,9 @@ viewInOut(const ViewBuildInfo& command, Span<DataType> var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename DataType> auto
 viewInOut(const ViewBuildInfo& command, Array<DataType>& var)
@@ -207,8 +217,9 @@ viewInOut(const ViewBuildInfo& command, Array<DataType>& var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename DataType> auto
 viewInOut(const ViewBuildInfo& command, SmallSpan<DataType> var)
@@ -219,8 +230,9 @@ viewInOut(const ViewBuildInfo& command, SmallSpan<DataType> var)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture/écriture.
+ * \brief Read/write view.
  */
 template <typename DataType> auto
 viewInOut(const ViewBuildInfo& command, ArrayView<DataType> var)
@@ -230,8 +242,9 @@ viewInOut(const ViewBuildInfo& command, ArrayView<DataType> var)
 
 /*----------------------------------------------1-----------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template <typename DataType> auto
 viewIn(const ViewBuildInfo& command, Span<DataType> var)
@@ -242,8 +255,9 @@ viewIn(const ViewBuildInfo& command, Span<DataType> var)
 
 /*----------------------------------------------1-----------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template <typename DataType> auto
 viewIn(const ViewBuildInfo& command, const Array<DataType>& var)
@@ -253,8 +267,9 @@ viewIn(const ViewBuildInfo& command, const Array<DataType>& var)
 
 /*----------------------------------------------1-----------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vue en lecture.
+ * \brief Read view.
  */
 template <typename DataType> auto
 viewIn(const ViewBuildInfo& command, SmallSpan<DataType> var)
@@ -266,7 +281,7 @@ viewIn(const ViewBuildInfo& command, SmallSpan<DataType> var)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! \brief Vue en lecture
+//! \brief Read view
 template <typename DataType> auto
 viewIn(const ViewBuildInfo& command, ConstArrayView<DataType> var)
 {

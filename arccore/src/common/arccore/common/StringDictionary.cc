@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StringDictionary.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Dictionnaire de chaînes de caractères.                                    */
+/* String dictionary.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,12 +35,13 @@ class BadIndexException
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- \brief Implémentation du dictionnaire de chaîne unicode.
-  
-  L'implémentation utilise la classe map de la STL.
-*/
+ * \brief Implementation of the unicode string dictionary.
+ *
+ *  The implementation uses the STL map class.
+ */
 class StringDictionary::Impl
 {
  public:

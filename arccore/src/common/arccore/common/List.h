@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* List.h                                                      (C) 2000-2025 */
 /*                                                                           */
-/* Classe collection tableau.                                                */
+/* Array collection class.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_LIST_H
 #define ARCCORE_COMMON_LIST_H
@@ -30,12 +30,13 @@ extern "C" ARCCORE_COMMON_EXPORT void throwNullReference();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Tableau avec allocateur virtuel.
+ * \brief Array with virtual allocator.
  *
- * C'est à la classe virtuelle de détruire les objets dans le
- * destructeur virtuel.
+ * It is up to the virtual class to destroy the objects in the
+ * virtual destructor.
  */
 template <class T>
 class ListImplBase
@@ -49,44 +50,44 @@ class ListImplBase
 
   typedef const T& ObjectRef;
 
-  //! Type des éléments du tableau
+  //! Type of array elements
   typedef T value_type;
-  //! Type de l'itérateur sur un élément du tableau
+  //! Type of iterator over an array element
   typedef value_type* iterator;
-  //! Type de l'itérateur constant sur un élément du tableau
+  //! Type of constant iterator over an array element
   typedef const value_type* const_iterator;
-  //! Type pointeur d'un élément du tableau
+  //! Type pointer of an array element
   typedef value_type* pointer;
-  //! Type pointeur constant d'un élément du tableau
+  //! Type constant pointer of an array element
   typedef const value_type* const_pointer;
-  //! Type référence d'un élément du tableau
+  //! Type reference of an array element
   typedef value_type& reference;
-  //! Type référence constante d'un élément du tableau
+  //! Type constant reference of an array element
   typedef const value_type& const_reference;
 
-  //! Type d'un itérateur sur tout le tableau
+  //! Type of an iterator over the entire array
   typedef IterT<ListImplBase<T>> iter;
-  //! Type d'un itérateur constant sur tout le tableau
+  //! Type of a constant iterator over the entire array
   typedef ConstIterT<ListImplBase<T>> const_iter;
 
  public:
 
-  //! Construit un tableau vide.
+  //! Constructs an empty array.
   ListImplBase() = default;
 
  public:
 
-  //! Recopie le tableau \a s.
+  //! Copies the array \a from s.
   void assign(const ListImplBase<T>& s)
   {
     _arrayCopy(s);
   }
-  //! Recopie le tableau \a s.
+  //! Copies the array \a from s.
   void assign(const ConstArrayView<T>& s)
   {
     _arrayCopy(s);
   }
-  //! Recopie le tableau \a s.
+  //! Copies the array \a from s.
   void assign(const ArrayView<T>& s)
   {
     _arrayCopy(s);
@@ -95,9 +96,9 @@ class ListImplBase
  public:
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-th element of the array.
    *
-   * En mode \a check, vérifie les débordements.
+   * In \a check mode, checks for overflows.
    */
   T& operator[](Integer i)
   {
@@ -105,43 +106,43 @@ class ListImplBase
   }
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-th element of the array.
    *
-   * En mode \a check, vérifie les débordements.
+   * In \a check mode, checks for overflows.
    */
   const T& operator[](Integer i) const
   {
     return m_array[i];
   }
 
-  //! Retourne un iterateur sur le premier élément du tableau
+  //! Returns an iterator to the first element of the array
   iterator begin() override
   {
     return m_array.data();
   }
-  //! Retourne un iterateur sur le premier élément après la fin du tableau
+  //! Returns an iterator to the first element after the end of the array
   iterator end() override
   {
     return m_array.data() + this->count();
   }
-  //! Retourne un iterateur constant sur le premier élément du tableau
+  //! Returns a constant iterator to the first element of the array
   const_iterator begin() const override
   {
     return m_array.data();
   }
-  //! Retourne un iterateur constant sur le premier élément après la fin du tableau
+  //! Returns a constant iterator to the first element after the end of the array
   const_iterator end() const override
   {
     return m_array.data() + this->count();
   }
 
-  //! Retourne un iterateur sur le premier élément du tableau
+  //! Returns a pointer to the first element of the array
   T* begin2() const override
   {
     return const_cast<T*>(m_array.data());
   }
 
-  //! Retourne un iterateur sur le premier élément après la fin du tableau
+  //! Returns a pointer to the first element after the end of the array
   T* end2() const override
   {
     return begin2() + this->count();
@@ -149,7 +150,7 @@ class ListImplBase
 
  public:
 
-  //! Applique le fonctor \a f à tous les éléments du tableau
+  //! Applies the functor \a f to all elements of the array
   template <class Function> Function
   each(Function f)
   {
@@ -159,9 +160,9 @@ class ListImplBase
 
  public:
 
-  /*! \brief Signale qu'il faut réserver de la mémoire pour \a new_capacity éléments
-   * Il s'agit juste d'une indication. La classe dérivée est libre de ne
-   * pas en tenir compte.
+  /*! \brief Signals that memory should be reserved for \a new_capacity elements
+   * This is just an indication. The derived class is free not to take it
+   * into account.
    */
   void reserve(Integer new_capacity)
   {
@@ -169,10 +170,10 @@ class ListImplBase
   }
 
   /*!
-   * \brief Retourne le nombre d'éléments alloués du tableau.
+   * \brief Returns the number of allocated elements in the array.
    *
-   * Il s'agit juste d'une indication. La classe dérivée est libre de ne
-   * pas en tenir compte.
+   * This is just an indication. The derived class is free not to take it
+   * into account.
    */
   Integer capacity() const
   {
@@ -187,7 +188,7 @@ class ListImplBase
     this->onClearComplete();
   }
 
-  //! Ajoute l'élément \a elem à la fin du tableau
+  //! Adds element \a elem to the end of the array
   void add(ObjectRef elem) override
   {
     this->onInsert();
@@ -245,14 +246,14 @@ class ListImplBase
     this->onRemove();
     m_array.remove(index);
     this->_setCount(s - 1);
-    // TODO: supprimer utilisation de 'remove_ob' car ce n'est pas le bon objet
+    // TODO: remove usage of 'remove_ob' because it is not the correct object
     this->onRemoveComplete(remove_ob, index);
   }
 
  public:
 
-  /*!\brief Modifie la taille du tableau.
-   * \a new_size est le nouveau nombre d'éléments du tableau.
+  /*!\brief Changes the size of the array.
+   * \a new_size is the new number of elements in the array.
    */
   void resize(Integer new_size)
   {
@@ -294,13 +295,12 @@ class ListImplBase
  protected:
 
   /*!
-   * \brief Retourne un pointeur sur le tableau
+   * \brief Returns a pointer to the array
    *
-   * \warning Il est préférable de ne pas utiliser cette méthode pour
-   * accéder à un élément du tableau car
-   * ce pointeur peut être invalidé par un redimensionnement du tableau.
-   * De plus, accéder aux éléments du tableau par ce pointeur ne permet
-   * aucune vérification de dépassement, même en mode DEBUG.
+   * \warning It is preferable not to use this method to access an element
+   * of the array because this pointer can be invalidated by resizing the array.
+   * Furthermore, accessing the array elements via this pointer allows no
+   * overflow checking, even in DEBUG mode.
    */
   inline T* _ptr()
   {
@@ -433,8 +433,9 @@ enumerator() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur générique pour un tableau
+ * \brief Generic enumerator for an array
  */
 class ARCCORE_COMMON_EXPORT ListEnumeratorBase
 {
@@ -474,8 +475,9 @@ class ARCCORE_COMMON_EXPORT ListEnumeratorBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur générique constant pour un tableau
+ * \brief Generic constant enumerator for an array
  */
 class ARCCORE_COMMON_EXPORT ListConstEnumeratorBase
 {
@@ -520,8 +522,9 @@ template <typename T> class List;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enumérateur typé pour un tableau
+ * \brief Typed enumerator for an array
  */
 template <typename T>
 class ListEnumeratorT
@@ -618,8 +621,9 @@ class ListConstEnumeratorT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation d'une collection d'éléments sous forme de vecteur.
+ * \brief Implementation of a collection of elements in vector form.
  */
 template <typename T>
 class List
@@ -644,7 +648,7 @@ class List
   typedef typename Vec::reference reference;
   typedef typename Vec::const_reference const_reference;
 
-  //! Type d'un itérateur constant sur tout le tableau
+  //! Type of a constant iterator over the entire array
   typedef ListEnumeratorT<T> Enumerator;
 
   typedef ConstIterT<List<T>> const_iter;
@@ -681,7 +685,7 @@ class List
     return _cast()[i];
   }
 
-  //! Clone la collection \a base
+  //! Clone the collection \a base
   void clone(const Collection<T>& base)
   {
     //Impl* n = new Impl(base);
@@ -689,7 +693,7 @@ class List
     _cast().assign(base);
   }
 
-  //! Clone la collection
+  //! Clone the collection
   List<T> clone() const
   {
     return List<T>(new Impl(*this));
@@ -705,7 +709,7 @@ class List
   T* begin2() const { return _cast().begin2(); }
   T* end2() const { return _cast().end2(); }
 
-  //! Applique le fonctor \a f à tous les éléments du tableau
+  //! Apply the functor \a f to all elements of the array
   template <typename Function> Function
   each(Function f)
   {

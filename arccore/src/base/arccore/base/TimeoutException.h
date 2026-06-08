@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TimeoutException.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Exception lorsqu'un signal survient.                                      */
+/* Exception when a signal occurs.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_TIMEOUTEXCEPTION_H
 #define ARCCORE_BASE_TIMEOUTEXCEPTION_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception lorsqu'un timeout survient.
+ * \brief Exception when a timeout occurs.
  */
 class ARCCORE_BASE_EXPORT TimeoutException
 : public Exception
@@ -54,5 +55,4 @@ class ARCCORE_BASE_EXPORT TimeoutException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

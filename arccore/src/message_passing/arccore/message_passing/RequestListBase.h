@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RequestListBase.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'une liste de requêtes.                                   */
+/* Base class of a request list.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_REQUESTLISTBASE_H
 #define ARCCORE_MESSAGEPASSING_REQUESTLISTBASE_H
@@ -23,9 +23,10 @@
 
 namespace Arcane::MessagePassing::internal
 {
+
 /*!
  * \internal
- * \brief Classe de base d'une liste de requêtes.
+ * \brief Base class of a request list.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
 : public IRequestList
@@ -64,11 +65,11 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
     m_requests_done.remove(pos);
   }
   /*!
-   * \brief Effectue l'attente ou le test.
+   * \brief Performs the wait or test.
    *
-   * L'implémentation doit remplir à \a _requestsDone() avec la
-   * valeur \a true pour chaque requête terminée sauf si
-   * \a wait_type vaut WaitAll.
+   * The implementation must fill \a _requestsDone() with the
+   * value \a true for every completed request unless
+   * \a wait_type equals WaitAll.
    */
   virtual void _wait(eWaitType wait_type) =0;
 
@@ -97,5 +98,4 @@ using Arcane::MessagePassing::internal::RequestListBase;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

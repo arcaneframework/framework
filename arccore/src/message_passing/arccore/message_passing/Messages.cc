@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Messages.cc                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Identifiant d'un message point à point.                                   */
+/* Identifier of a point-to-point message.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,7 +29,7 @@
 /*!
  * \file Messages.h
  *
- * \brief Liste des fonctions d'échange de message.
+ * \brief Brief list of message exchange functions.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -64,9 +64,9 @@ void BasicSerializeGatherMessage::
 doAllGather(MessagePassing::IMessagePassingMng* pm, const BasicSerializer* send_serializer,
             BasicSerializer* receive_serializer)
 {
-  // TODO:  ne supporte pas encore les types 'Float16', 'BFloat16'
-  // 'Float128' et 'Int128' car ces derniers ne sont pas supportés
-  // dans les messages MPI.
+  // TODO: does not yet support types 'Float16', 'BFloat16'
+  // 'Float128' and 'Int128' because the latter are not supported
+  // in MPI messages.
 
   const BasicSerializer* sbuf = send_serializer;
   BasicSerializer* recv_buf = receive_serializer;
@@ -145,8 +145,9 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une liste de requêtes.
+ * \brief Creates a list of requests.
  *
  * \sa IRequestList
  */

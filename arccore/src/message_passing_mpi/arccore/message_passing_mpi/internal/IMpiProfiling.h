@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMpiProfiling.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'abstraction des operations MPI.                               */
+/* Abstraction interface for MPI operations.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_IMPIPROFILING_H
 #define ARCCORE_MESSAGEPASSINGMPI_IMPIPROFILING_H
@@ -30,18 +30,19 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'abstraction pour les operations MPI.
- * Sert principalement a utiliser un decorateur pour les fonctions MPI
- * afin de les profiler sans etre trop verbeux et intrusif dans le MPIAdapter
+ * \brief Abstraction interface for MPI operations.
+ * Primarily used to employ a decorator for MPI functions
+ * in order to profile them without being too verbose and intrusive in the MPIAdapter
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT IMpiProfiling
 : public IProfiler
 {
  public:
-  // Type de retour. Pour l'instant 'void' pour être conforme avec l'existant
-  // mais cela devrait être 'int' car c'est le type de retour de toutes les méthodes MPI.
+  // Return type. Currently 'void' to be compliant with existing code
+  // but it should be 'int' because it is the return type of all MPI methods.
   using ReturnType = void;
 
  public:
@@ -127,4 +128,4 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT IMpiProfiling
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

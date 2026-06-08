@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RequestListBase.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Liste de requêtes MPI.                                                    */
+/* MPI request list.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,7 +37,7 @@ clear()
 void RequestListBase::
 removeDoneRequests()
 {
-  // TODO: optimiser cela en supprimant plusieurs valeurs d'un coup
+  // TODO: optimize this by removing multiple values at once
   for( Integer i=0, n=m_requests.size(); i<n; ++i ){
     if (m_requests_done[i]){
       _removeRequestAtIndex(i);
@@ -65,8 +65,8 @@ wait(eWaitType wait_type)
 {
   m_requests_done.fill(false);
 
-  // Délegue l'appel effectif à la classe dérivée qui doit remplir
-  // le champ \a m_requests_done (sauf pour WaitAll)
+  // Delegates the actual call to the derived class which must fill
+  // the m_requests_done field (except for WaitAll)
   _wait(wait_type);
 
   if (wait_type==WaitAll)

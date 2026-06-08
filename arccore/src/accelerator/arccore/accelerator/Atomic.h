@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Atomic.h                                                    (C) 2000-2026 */
 /*                                                                           */
-/* Opérations atomiques.                                                     */
+/* Atomic operations.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_ATOMIC_H
 #define ARCCORE_ACCELERATOR_ATOMIC_H
@@ -29,7 +29,7 @@
 
 namespace Arcane::Accelerator
 {
-//! Liste des types supportant les opérations atomiques.
+//! List of types supporting atomic operations.
 template <typename T>
 concept AcceleratorAtomicConcept = std::same_as<T, float> || std::same_as<T, double> || std::same_as<T, Int32> || std::same_as<T, Int64>;
 } // namespace Arcane::Accelerator
@@ -171,10 +171,12 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique l'opération atomique \a Operation à la valeur à l'adresse \a ptr avec la valeur \a value.
+ * \brief Applies the atomic operation \a Operation to the value at
+ * address \a ptr with the value \a value.
  *
- * \retval l'ancienne valeur avant ajout.
+ * \retval the old value before addition.
  */
 template <enum eAtomicOperation Operation, AcceleratorAtomicConcept DataType, typename ValueType>
 ARCCORE_HOST_DEVICE inline DataType
@@ -187,10 +189,12 @@ requires(std::convertible_to<ValueType, DataType>)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique l'opération atomique \a Operation à la vue \a view avec la valeur \a value.
+ * \brief Applies the atomic operation \a Operation to the view \a view
+ * with the value \a value.
  *
- * \retval l'ancienne valeur avant ajout.
+ * \retval the old value before addition.
  */
 template <enum eAtomicOperation Operation, AcceleratorAtomicConcept DataType, typename ValueType>
 ARCCORE_HOST_DEVICE inline DataType
@@ -203,10 +207,11 @@ requires(std::convertible_to<ValueType, DataType>)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute atomiquement à la vue \a view avec la valeur \a value.
+ * \brief Atomically adds to the view \a view with the value \a value.
  *
- * \retval l'ancienne valeur avant ajout.
+ * \retval the old value before addition.
  */
 template <AcceleratorAtomicConcept DataType, typename ValueType>
 ARCCORE_HOST_DEVICE inline DataType
@@ -219,10 +224,12 @@ requires(std::convertible_to<ValueType, DataType>)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Ajoute atomiquement la valeur à l'adresse \a ptr avec la valeur \a value.
+ * \brief Atomically adds the value to the address \a ptr with the value
+ * \a value.
  *
- * \retval l'ancienne valeur avant ajout.
+ * \retval the old value before addition.
  */
 template <AcceleratorAtomicConcept DataType, typename ValueType>
 ARCCORE_HOST_DEVICE inline DataType

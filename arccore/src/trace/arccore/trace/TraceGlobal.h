@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TraceGlobal.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Définitions globales de la composante 'Trace' de 'Arccore'.               */
+/* Global definitions for the 'Trace' component of 'Arccore'.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_TRACE_TRACEGLOBAL_H
 #define ARCCORE_TRACE_TRACEGLOBAL_H
@@ -99,5 +99,4 @@ namespace Trace = ::Arcane::Trace;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

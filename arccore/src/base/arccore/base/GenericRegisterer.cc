@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GenericRegisterer.cc                                        (C) 2000-2025 */
 /*                                                                           */
-/* Enregistreur générique de types globaux.                                  */
+/* Generic global type registerer.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,8 +27,8 @@ namespace Arcane
 void GenericRegistererBase::
 doErrorConflict()
 {
-  // Cette fonction peut-être appelée lors des constructeurs globaux.
-  // On évite donc qu'elle lance des exceptions et on fait directement un abort.
+  // This function might be called during global constructors.
+  // Therefore, we prevent it from throwing exceptions and abort directly.
   std::cerr << "Arcane Fatal Error: Service conflict in service registration" << std::endl;
   abort();
 }
@@ -39,8 +39,8 @@ doErrorConflict()
 void GenericRegistererBase::
 doErrorNonZeroCount()
 {
-  // Cette fonction peut-être appelée lors des constructeurs globaux.
-  // On évite donc qu'elle lance des exceptions et on fait directement un abort.
+  // This function might be called during global constructors.
+  // Therefore, we prevent it from throwing exceptions and abort directly.
   std::cerr << "Arcane Fatal Error: Service breaks service registration (inconsistent shortcut)" << std::endl;
   abort();
 }
@@ -52,4 +52,3 @@ doErrorNonZeroCount()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

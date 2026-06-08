@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayIterator.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Itérateur sur les Array, ArrayView, ConstArrayView, ...                   */
+/* Iterator over Arrays, ArrayView, ConstArrayView, ...                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARRAYITERATOR_H
 #define ARCCORE_BASE_ARRAYITERATOR_H
@@ -26,19 +26,20 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Itérateur sur les classes tableau de Arccore.
+ * \brief Iterator over Arccore array classes.
  *
- * Cet itérateur est utilisé pour les classes Array, ArrayView et ConstArrayView.
+ * This iterator is used for Array, ArrayView, and ConstArrayView classes.
  *
- * Il est du type std::random_access_iterator_tag.
+ * It is of type std::random_access_iterator_tag.
  */
 template <typename Iterator_>
 class ArrayIterator
 {
  private:
 
-  // Pour le cas où on ne supporte pas le C++14.
+  // For the case where C++14 is not supported.
   template< bool B, class XX = void >
   using Iterator_enable_if_t = typename std::enable_if<B,XX>::type;
 
@@ -171,4 +172,4 @@ operator+(typename ArrayIterator<I>::difference_type n,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PointerAttribute.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Informations sur une adresse mémoire.                                     */
+/* Memory address information.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_POINTERATTRIBUTE_H
 #define ARCCORE_COMMON_ACCELERATOR_POINTERATTRIBUTE_H
@@ -25,16 +25,17 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations sur une adresse mémoire.
+ * \brief Information about a memory address.
  *
- * Les informations de cette instance sont équivalentes à celles obtenues
- * par l'appel à cudaPointerGetAttributes().
- * Les informations ne sont valides que si isValid() est vrai.
+ * The information in this instance is equivalent to that obtained
+ * by calling cudaPointerGetAttributes().
+ * The information is only valid if isValid() is true.
  */
 class ARCCORE_COMMON_EXPORT PointerAttribute
 {
-  // Seule cette classe peut construire une instance
+  // Only this class can construct an instance
   friend Impl::IRunnerRuntime;
 
  public:
@@ -53,7 +54,7 @@ class ARCCORE_COMMON_EXPORT PointerAttribute
 
  private:
 
-  //! Constructeur indiquant qu'on n'a pas d'informations sur la zone mémoire
+  //! Constructor indicating that there is no information about the memory region
   PointerAttribute(const void* pointer)
   : m_pointer(pointer)
   , m_is_valid(false)

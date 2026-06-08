@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IMemoryResourceMng.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
+/* Memory resource management for CPUs and accelerators.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_IMEMORYRESOURCEMNG_H
 #define ARCCORE_COMMON_IMEMORYRESOURCEMNG_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestion des ressources mémoire pour les CPU et accélérateurs.
+ * \brief Memory resource management for CPUs and accelerators.
  */
 class ARCCORE_COMMON_EXPORT IMemoryResourceMng
 {
@@ -37,32 +38,32 @@ class ARCCORE_COMMON_EXPORT IMemoryResourceMng
  public:
 
   /*!
-   * \brief Allocateur mémoire pour la ressource \a r.
+   * \brief Memory allocator for resource \a r.
    *
-   * Lève une exception si aucun allocateur pour la ressource \a v existe.
+   * Throws an exception if no allocator for resource \a v exists.
    */
   virtual IMemoryAllocator* getAllocator(eMemoryResource r) = 0;
 
   /*!
-   * \brief Allocateur mémoire pour la ressource \a r.
+   * \brief Memory allocator for resource \a r.
    *
-   * Si aucun allocateur pour la ressource \a v existe, lève une
-   * exception si \a throw_if_not_found est vrai ou retourne \a nullptr
-   * si \a throw_if_not_found est faux.
+   * If no allocator for resource \a v exists, throws an
+   * exception if \a throw_if_not_found is true or returns \a nullptr
+   * if \a throw_if_not_found is false.
    */
   virtual IMemoryAllocator* getAllocator(eMemoryResource r, bool throw_if_not_found) = 0;
 
   /*!
-   * \brief Pool mémoire pour la ressource \a r.
+   * \brief Memory pool for resource \a r.
    *
-   * Retourne le pool mémoire associé à la ressource \a v ou \a nullptr
-   * s'il n'y en a pas.
+   * Returns the memory pool associated with resource \a v or \a nullptr
+   * if there is none.
    */
   virtual IMemoryPool* getMemoryPoolOrNull(eMemoryResource r) = 0;
 
  public:
 
-  //! Interface interne
+  //! Internal interface
   virtual IMemoryResourceMngInternal* _internal() = 0;
 };
 
@@ -74,4 +75,4 @@ class ARCCORE_COMMON_EXPORT IMemoryResourceMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

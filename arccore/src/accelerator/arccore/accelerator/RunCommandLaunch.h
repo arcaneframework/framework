@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandLaunch.h                                          (C) 2000-2026 */
 /*                                                                           */
-/* RunCommand pour le parallélisme hiérarchique.                             */
+/* RunCommand for hierarchical parallelism.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_RUNCOMMANDLAUNCH_H
 #define ARCCORE_ACCELERATOR_RUNCOMMANDLAUNCH_H
@@ -40,27 +40,27 @@ operator<<(RunCommand& command, const Impl::ExtendedLaunchLoop<LoopBoundType, Re
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour Sycl, le type de l'itérateur ne peut pas être le même sur l'hôte et
-// le device car il faut un 'sycl::nd_item' et il n'est pas possible d'en
-// construire un (pas de constructeur par défaut). On utilise donc
-// une lambda template et le type de l'itérateur est un paramètre template
+// For Sycl, the iterator type cannot be the same on the host and
+// the device because a 'sycl::nd_item' is required and it is not possible to
+// construct one (no default constructor). We therefore use
+// a template lambda and the iterator type is a template parameter
 
 /*!
- * \brief Macro pour lancer une commande utilisant le parallélisme
- * hiérarchique, éventuellement coopératif.
+ * \brief Macro to launch a command using hierarchical,
+ * possibly cooperative, parallelism.
  *
- * \a bounds doit être une instance de type Arcane::Accelerator::WorkGroupLoopRange
- * ou Arcane::Accelerator::CooperativeWorkGroupLoopRange.
+ * \a bounds must be an instance of type Arcane::Accelerator::WorkGroupLoopRange
+ * or Arcane::Accelerator::CooperativeWorkGroupLoopRange.
  *
- * La création de ces instances se fait via l'appel à
- * Arcane::Accelerator::makeWorkGroupLoopRange() ou
+ * The creation of these instances is done by calling
+ * Arcane::Accelerator::makeWorkGroupLoopRange() or
  * Arcane::Accelerator::makeCooperativeWorkGroupLoopRange().
  *
- * \a iter_name sera du type Arcane::Accelerator::WorkGroupLoopContext ou
- * Arcane::Accelerator::CooperativeWorkGroupLoopContext (sauf
- * pour la politique d'exécution Arcane::Accelerator::eExecutionPolicy::SYCL
- * où le type est template et est différent si on s'exécute sur l'hôte ou
- * sur l'accélérateur).
+ * \a iter_name will be of type Arcane::Accelerator::WorkGroupLoopContext or
+ * Arcane::Accelerator::CooperativeWorkGroupLoopContext (except
+ * for the execution policy Arcane::Accelerator::eExecutionPolicy::SYCL
+ * where the type is templated and is different if running on the host or
+ * on the accelerator).
  */
 #if defined(ARCCORE_COMPILING_SYCL)
 #define RUNCOMMAND_LAUNCH(iter_name, bounds, ...) \

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Memory.h                                                    (C) 2000-2025 */
 /*                                                                           */
-/* Classes de gestion mémoire associées aux accélérateurs.                   */
+/* Memory management classes associated with accelerators.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_MEMORY_H
 #define ARCCORE_COMMON_ACCELERATOR_MEMORY_H
@@ -27,22 +27,23 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conseils pour la gestion mémoire.
+ * \brief Memory management advice.
  */
 enum class eMemoryAdvice
 {
-  //! Aucun conseil
+  //! No advice
   None = 0,
-  //! Indique que la zone mémoire est principalement en lecture seule.
+  //! Indicates that the memory region is primarily read-only.
   MostlyRead,
-  //! Privilégié le positionnement de la mémoire sur l'accélérateur
+  //! Prefers memory placement on the accelerator
   PreferredLocationDevice,
-  //! Privilégié le positionnement de la mémoire sur l'hôte.
+  //! Prefers memory placement on the host.
   PreferredLocationHost,
-  //! Indique que la zone mémoire est accédée par l'accélérateur.
+  //! Indicates that the memory region is accessed by the device.
   AccessedByDevice,
-  //! Indique que la zone mémoire est accédée par l'hôte.
+  //! Indicates that the memory region is accessed by the host.
   AccessedByHost
 };
 
@@ -54,8 +55,9 @@ operator<<(std::ostream& o,eMemoryAdvice r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments pour la copie mémoire.
+ * \brief Memory copy arguments.
  */
 class ARCCORE_COMMON_EXPORT MemoryCopyArgs
 {
@@ -72,12 +74,12 @@ class ARCCORE_COMMON_EXPORT MemoryCopyArgs
 
  public:
 
-  //! Copie \a length octets depuis \a source vers \a destination
+  //! Copies \a length bytes from \a source to \a destination
   MemoryCopyArgs(void* destination, const void* source, Int64 length)
   : MemoryCopyArgs(_toSpan(destination, length),_toSpan(source, length))
   {}
 
-  //! Copie \a source.size() octets depuis \a source vers \a destination
+  //! Copies \a source.size() bytes from \a source to \a destination
   MemoryCopyArgs(Span<std::byte> destination, Span<const std::byte> source)
   : m_source(source)
   , m_destination(destination)
@@ -85,7 +87,7 @@ class ARCCORE_COMMON_EXPORT MemoryCopyArgs
     // TODO: vérifier destination.size() > source.size();
   }
 
-  //! Copie depuis \a source vers \a destination
+  //! Copies from \a source to \a destination
   MemoryCopyArgs(MutableMemoryView destination, ConstMemoryView source)
   : m_source(source)
   , m_destination(destination)
@@ -116,8 +118,9 @@ class ARCCORE_COMMON_EXPORT MemoryCopyArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments pour le préfetching mémoire.
+ * \brief Memory prefetching arguments.
  */
 class ARCCORE_COMMON_EXPORT MemoryPrefetchArgs
 {
@@ -134,17 +137,17 @@ class ARCCORE_COMMON_EXPORT MemoryPrefetchArgs
 
  public:
 
-  //! Prefetch \a length octets depuis \a source
+  //! Prefetches \a length bytes from \a source
   MemoryPrefetchArgs(const void* source, Int64 length)
   : MemoryPrefetchArgs(_toSpan(source, length))
   {}
 
-  //! Prefetch \a source
+  //! Prefetches \a source
   explicit MemoryPrefetchArgs(ConstMemoryView source)
   : m_source(source)
   {}
 
-  //! Prefetch \a source
+  //! Prefetches \a source
   explicit MemoryPrefetchArgs(Span<const std::byte> source)
   : m_source(ConstMemoryView(source))
   {}
@@ -185,4 +188,4 @@ class ARCCORE_COMMON_EXPORT MemoryPrefetchArgs
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

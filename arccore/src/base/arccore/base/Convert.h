@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Convert.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions pour convertir une chaîne de caractère en un type donné.        */
+/* Functions to convert a character string into a given type.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_CONVERT_H
 #define ARCCORE_BASE_CONVERT_H
@@ -24,15 +24,16 @@
 
 namespace Arcane::Convert::Impl
 {
+
 /*!
- * \brief Encapsule un std::istream pour un StringView.
+ * \brief Encapsulates an std::istream for a StringView.
  *
- * Actuellement (C++20) std::istringstream utilise en
- * entrée un std::string ce qui nécessite une instance de ce type
- * et donc une allocation potentielle. Cette classe sert à éviter
- * cela en utilisant directement la mémoire pointée par l'instance
- * de StringView passé dans le constructeur. Cette dernière doit
- * rester valide durant toute l'ulisation de cette classe.
+ * Currently (C++20) std::istringstream uses an
+ * input std::string, which requires an instance of this type
+ * and thus a potential allocation. This class serves to avoid
+ * this by directly using the memory pointed to by the instance
+ * of StringView passed in the constructor. The latter must
+ * remain valid throughout the use of this class.
  */
 class ARCCORE_BASE_EXPORT StringViewInputStream
 : private std::streambuf
@@ -64,7 +65,8 @@ namespace Arcane::Convert
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti un \c Real en \c double
+
+//! Converts a \c Real to \c double
 inline double
 toDouble(Real r)
 {
@@ -77,7 +79,8 @@ toDouble(Real r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti un \c Real en \c Integer
+
+//! Converts a \c Real to \c Integer
 inline Integer
 toInteger(Real r)
 {
@@ -86,7 +89,8 @@ toInteger(Real r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti un \c Real en \c Int64
+
+//! Converts a \c Real to \c Int64
 inline Int64
 toInt64(Real r)
 {
@@ -96,7 +100,8 @@ toInt64(Real r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti un \c Real en \c Int32
+
+//! Converts a \c Real to \c Int32
 inline Int32
 toInt32(Real r)
 {
@@ -106,45 +111,49 @@ toInt32(Real r)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Converti un \c Real en \c Integer
+//! Converts a \c Real to \c Integer
 inline bool
 toBool(Real r)
 {
   return static_cast<bool>(toDouble(r));
 }
 
-//! Converti \c r en un \c Real
+//! Converts \c r to a \c Real
 inline Real
 toReal(Real r)
 {
   return r;
 }
-//! Converti \c r en un \c Real
+
+//! Converts \c r to a \c Real
 inline Real
 toReal(int r)
 {
   return static_cast<Real>(r);
 }
-//! Converti \c r en un \c Real
+
+//! Converts \c r to a \c Real
 inline Real
 toReal(unsigned int r)
 {
   return static_cast<Real>(r);
 }
-//! Converti \c r en un \c Real
+
+//! Converts \c r to a \c Real
 inline Real
 toReal(long r)
 {
   return static_cast<Real>(r);
 }
-//! Converti \c r en un \c Real
+
+//! Converts \c r to a \c Real
 inline Real
 toReal(unsigned long r)
 {
   return static_cast<Real>(r);
 }
 
-//! Converti \c r en un \c Real
+//! Converts \c r to a \c Real
 inline Real
 toReal(long long r)
 {
@@ -154,7 +163,8 @@ toReal(long long r)
   return static_cast<Real>(r);
 #endif
 }
-//! Converti \c r en un \c Real
+
+//! Converts \c r to a \c Real
 inline Real
 toReal(unsigned long long r)
 {
@@ -167,11 +177,12 @@ toReal(unsigned long long r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe template pour convertir un type.
+ * \brief Template class for converting a type.
  *
- * Actuellement cela est uniquement disponible via une spécialisation
- * pour les types 'Int32', 'Int64' et 'Real3'.
+ * Currently, this is only available via a specialization
+ * for the types 'Int32', 'Int64', and 'Real3'.
  */
 template <typename T>
 class Type;
@@ -181,13 +192,13 @@ class ScalarType
 {
  public:
 
-  //! Convertit \a s en le type \a T
+  //! Converts \a s to type \a T
   ARCCORE_BASE_EXPORT static std::optional<T> tryParse(StringView s);
 
   /*!
-   * \brief Convertit \a s en le type \a T.
+   * \brief Converts \a s to type \a T.
    *
-   * Si \a s.empty() est vrai, alors retourne \a default_value.
+   * If \a s.empty() is true, then it returns \a default_value.
    */
   static std::optional<T>
   tryParseIfNotEmpty(StringView s, const T& default_value)
@@ -196,18 +207,18 @@ class ScalarType
   }
 
   /*!
-   * \brief Convertit la valeur de la variable d'environnement \a s en le type \a T.
+   * \brief Converts the value of the environment variable \a s to type \a T.
    *
-   * Si platform::getEnvironmentVariable(s) est nul, return std::nullopt.
-   * Sinon, retourne cette valeur convertie en le type \a T. Si la conversion
-   * n'est pas possible, retourne std::nullopt si \a throw_if_invalid vaut \a false ou
-   * lève une exception s'il vaut \a true.
+   * If platform::getEnvironmentVariable(s) is null, return std::nullopt.
+   * Otherwise, it returns this value converted to type \a T. If the conversion
+   * is not possible, it returns std::nullopt if \a throw_if_invalid is \a false or
+   * throws an exception if it is \a true.
    */
   ARCCORE_BASE_EXPORT static std::optional<T>
   tryParseFromEnvironment(StringView s, bool throw_if_invalid);
 };
 
-//! Spécialisation pour les types scalaires
+//! Specialization for scalar types
 template <> class Type<Int64> : public ScalarType<Int64>
 {};
 template <> class Type<Int32> : public ScalarType<Int32>
@@ -223,5 +234,4 @@ template <> class Type<Real> : public ScalarType<Real>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

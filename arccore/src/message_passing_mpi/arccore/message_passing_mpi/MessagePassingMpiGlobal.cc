@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MessagePassingMpiGlobal.h                                   (C) 2000-2018 */
 /*                                                                           */
-/* Définitions globales de la composante 'MessagePassingMpi' de 'Arccore'.   */
+/* Global definitions for the 'MessagePassingMpi' component of 'Arccore'.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

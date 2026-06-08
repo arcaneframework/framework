@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BasicDataType.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Définition des types liés aux données.                                    */
+/* Definition of data-related types.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,12 +22,14 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file BasicDataType.h
  *
- * \brief Fichier contenant les définitions des types de données basiques
- * gérés par %Arccore.
+ * \brief File containing definitions of basic data types
+ * managed by %Arccore.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,7 +51,7 @@ const char* N_INT128 = "Int128";
 const char* N_UNKNOWN = "Unknown";
 const char* N_INVALID = "Invalid";
 
-//! Nom des types. Doit correspondre aux valeurs de l'énumération eBasicDataType
+//! Name of types. Must correspond to the values of the eBasicDataType enumeration
 const char* N_ALL_NAMES[NB_BASIC_DATA_TYPE] =
   {
     N_UNKNOWN, N_BYTE,
@@ -58,7 +60,7 @@ const char* N_ALL_NAMES[NB_BASIC_DATA_TYPE] =
     N_BFLOAT16, N_INT8
   };
 
-//! Taille d'un élément du type
+//! Size of an element of the type
 int ALL_SIZEOF[NB_BASIC_DATA_TYPE] =
   {
     0, 1,
@@ -122,7 +124,7 @@ basicDataTypeSize(eBasicDataType type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Trouve le type associé à \a name. Envoie une exception en cas d'erreur
+//! Finds the type associated with \a name. Throws an exception if there is an error
 extern "C++" eBasicDataType
 basicDataTypeFromName(const char* name)
 {
@@ -157,4 +159,3 @@ operator>> (std::istream& istr,eBasicDataType& data_type)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

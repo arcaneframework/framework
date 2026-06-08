@@ -53,7 +53,7 @@ _testLoopDirect(RunQueue queue, SmallSpan<const Int64> a, SmallSpan<const Int64>
     }
   }
   double y = Platform::getRealTime();
-  // Nombre d´octets transférés
+  // Number of bytes transferred
   Int64 nb_byte = c.size() * sizeof(Int64) * nb_loop * 3;
   Real diff = y - x;
   Real nb_giga_byte_second = (static_cast<Real>(nb_byte) / 1.0e9) / diff;

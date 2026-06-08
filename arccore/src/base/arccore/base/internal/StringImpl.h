@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StringImpl.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'une chaîne de caractère UTf-8 ou UTF-16.                 */
+/* Implementation of a UTF-8 or UTF-16 character string.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_STRINGIMPL_H
 #define ARCCORE_BASE_STRINGIMPL_H
@@ -27,19 +27,20 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  *
- * \brief Implémentation de la classe String.
+ * \brief Implementation of the String class.
  *
- * \warning Cette classe est interne à %Arcane et ne doit pas êre utilisée
- * en dehors de %Arcane.
+ * \warning This class is internal to %Arcane and should not be used
+ * outside of %Arcane.
  *
- * Actuellement l'implémentation supporte deux encodages simultanés: UTF-8 et UTF-16.
- * L'encodage UTF-16 est obsolète et sera supprimé fin 2019.
+ * Currently, the implementation supports two encodings simultaneously: UTF-8 and UTF-16.
+ * The UTF-16 encoding is obsolete and will be removed at the end of 2019.
  *
- * Lorsque le C++20 sera disponible, cette classe ne sera qu'une encapsulation
- * de std::u8string.
+ * When C++20 is available, this class will only be an encapsulation
+ * of std::u8string.
  */
 class ARCCORE_BASE_EXPORT StringImpl
 {
@@ -53,11 +54,11 @@ class ARCCORE_BASE_EXPORT StringImpl
   StringImpl();
   StringImpl(Span<const UChar> uchars);
  public:
-  //TODO: rendre obsolète.
+  //TODO: render obsolete.
   UCharConstArrayView utf16();
-  //! Vue sur l'encodage UTF-8 *AVEC* zéro terminal
+  //! View of the UTF-8 encoding *WITH* null terminator
   Span<const Byte> largeUtf8();
-  //! idem largeUtf8() mais *SANS* le zéro terminal
+  //! same as largeUtf8() but *WITHOUT* the null terminator
   Span<const Byte> bytes();
   bool isEqual(StringImpl* str);
   bool isLessThan(StringImpl* str);
@@ -122,4 +123,3 @@ class ARCCORE_BASE_EXPORT StringImpl
 /*---------------------------------------------------------------------------*/
 
 #endif
-

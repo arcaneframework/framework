@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ViewBuildInfo.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour construire une vue pour les données sur accélérateur.   */
+/* Information to build a view for accelerator data.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_VIEWBUILDINFO_H
 #define ARCCORE_COMMON_ACCELERATOR_VIEWBUILDINFO_H
@@ -24,12 +24,13 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour construire une vue pour les données sur accélérateur.
+ * \brief Information to build a view for accelerator data.
  *
- * Les instances de cette classes sont temporaires et ne doivent pas être
- * conservées au dela de la durée de vie de la RunCommand ou RunQueue utilisées
- * pour leur création.
+ * Instances of this class are temporary and should not be
+ * kept beyond the lifetime of the RunCommand or RunQueue used
+ * for their creation.
  */
 class ARCCORE_COMMON_EXPORT ViewBuildInfo
 {
@@ -38,13 +39,13 @@ class ARCCORE_COMMON_EXPORT ViewBuildInfo
 
  public:
 
-  // NOTE: les constructeurs suivant doivent être implicites
+  // NOTE: the following constructors must be implicit
 
-  //! Créé instance associée a la file \a queue.
+  //! Create instance associated with the queue.
   ViewBuildInfo(const RunQueue& queue);
-  //! Créé instance associée a la file \a queue.
+  //! Create instance associated with the queue.
   ViewBuildInfo(const RunQueue* queue);
-  //! Créé instance associée a la commande \a command.
+  //! Create instance associated with the command.
   ViewBuildInfo(RunCommand& command);
 
  private:
@@ -67,4 +68,4 @@ class ARCCORE_COMMON_EXPORT ViewBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

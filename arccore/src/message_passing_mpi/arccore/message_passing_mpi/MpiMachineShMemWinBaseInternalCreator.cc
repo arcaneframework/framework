@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiMachineShMemWinBaseInternalCreator.cc                    (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des objets de type                             */
+/* Class allowing the creation of objects of type                            */
 /* MpiContigMachineShMemWinBaseInternal.                                     */
 /*---------------------------------------------------------------------------*/
 

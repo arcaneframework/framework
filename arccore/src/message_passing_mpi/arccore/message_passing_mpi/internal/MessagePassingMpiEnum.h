@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MessagePassingMpiEnum.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Enumeration des differentes operations MPI.                               */
+/* Enumeration of different MPI operations.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_MESSAGEPASSINGMPIENUM_H
 #define ARCCORE_MESSAGEPASSINGMPI_MESSAGEPASSINGMPIENUM_H
@@ -29,9 +29,10 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe enumeration pour les operations MPI.
+ * \brief Enumeration class for MPI operations.
  */
 enum class ARCCORE_MESSAGEPASSINGMPI_EXPORT eMpiName
 {
@@ -64,23 +65,24 @@ enum class ARCCORE_MESSAGEPASSINGMPI_EXPORT eMpiName
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Structure informative liee aux enumerationx pour les operations MPI.
- * Donne le nom associe a l'enum ainsi qu'une description de l'operation
+ * \brief Informative structure linked to the enumerations for MPI operations.
+ * Provides the name associated with the enum as well as a description of the operation
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiInfo
 {
  public:
 
-  // Ctor : on construit tout a la volee plutot que de stocker une enorme table de string
+  // Ctor: we build everything on the fly rather than storing a huge string table
   explicit MpiInfo(eMpiName mpi_operation);
   ~MpiInfo() = default;
 
-  //! Accesseur sur le nom associe a l'enum
+  //! Accessor for the name associated with the enum
   const String& name() const;
 
-  //! Accesseur sur la description associee a l'enum
+  //! Accessor for the description associated with the enum
   const String& description() const;
 
  private:

@@ -7,9 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* MpiContigMachineShMemWinBaseInternal.h                      (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire pour un noeud              */
-/* de calcul avec MPI. Cette fenêtre sera contigüe pour tous les processus   */
-/* d'un même noeud.                                                          */
+/* Class allowing the creation of a memory window for a computing node with  */
+/* MPI. This window will be contiguous for all processes on the same node.   */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPICONTIGMACHINESHMEMWINBASEINTERNAL_H

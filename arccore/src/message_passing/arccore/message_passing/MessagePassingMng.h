@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MessagePassingMng.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire des échanges de messages.                                    */
+/* Message passing manager.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGEPASSINGMNG_H
 #define ARCCORE_MESSAGEPASSING_MESSAGEPASSINGMNG_H
@@ -27,11 +27,11 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des échanges de messages.
+ * \brief Message passing manager.
  *
- * Les instances de ces classes doivent être détruites via la méthode
- * mpDelete().
+ * Instances of these classes must be destroyed via the mpDelete() method.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
 : public ReferenceCounterImpl
@@ -75,4 +75,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

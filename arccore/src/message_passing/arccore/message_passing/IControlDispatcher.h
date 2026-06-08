@@ -51,12 +51,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT IControlDispatcher
 
   virtual MessageId probe(const PointToPointMessageInfo& message) = 0;
 
-  // NOTE novembre 2022
-  // Pour l'instant pas encore virtual pure pour rester compatible avec le code
-  // existant. L'implémentation lève une exception NotSupportedException
+  // NOTE November 2022
+  // For now, it is not yet a pure virtual function to remain compatible with the code
+  // existing. The implementation raises a NotSupportedException.
   virtual MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message);
 
-  //! Création d'une liste de requêtes associé à ce gestionnaire
+  //! Creation of a request list associated with this manager
   virtual Ref<IRequestList> createRequestListRef() = 0;
 
  public:

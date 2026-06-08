@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IObservable.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un observable.                                                */
+/* Interface of an observable.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_IOBSERVABLE_H
 #define ARCCORE_BASE_IOBSERVABLE_H
@@ -24,23 +24,23 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Interface d'un observable.
+ * \brief Interface of an observable.
  *
- * Un observable est un objet qui maintient une liste d'observateurs
- * (IObserver) et qui permet de les notifier d'un évènement par l'intermédiaire
- * de la méthode notifyAllObserver().
+ * An observable is an object that maintains a list of observers
+ * (IObserver) and allows them to be notified of an event via the
+ * notifyAllObserver() method.
  *
- * Un observateur est ajouté à la liste des observateurs par la méthode
- * attachObserver() et supprimé de cette même liste par detachObserver().
+ * An observer is added to the list of observers by the attachObserver()
+ * method and removed from this same list by detachObserver().
  *
- * La liste des observateurs attachés est ordonnée et les notifications se font
- * dans l'ordre des éléments de la liste. Si un même observateur est présent
- * plusieurs fois, il sera notifier autant de fois qu'il est présent.
+ * The list of attached observers is ordered, and notifications occur in the
+ * order of the list elements. If the same observer is present multiple times, it will be notified as many times as it is present.
  *
- * \warning Il est indispensable de supprimer, via l'appel à detachAllObservers()
- * les observeurs associés à un observable avant de le détruire.
+ * \warning It is essential to remove the observers associated with an
+ * observable by calling detachAllObservers() before destroying it.
  *
  * \sa IObserver
  */
@@ -48,7 +48,7 @@ class ARCCORE_BASE_EXPORT IObservable
 {
  public:
 
-  virtual ~IObservable() {} //!< Libère les ressources
+  virtual ~IObservable() {} //!< Frees resources
 
  public:
 
@@ -57,32 +57,32 @@ class ARCCORE_BASE_EXPORT IObservable
  public:
 
   /*!
-   * \brief Attache l'observateur \a obs à cette observable.
+   * \brief Attaches the observer \a obs to this observable.
    *
-   * Il est possible d'attacher un observateur plus d'une fois.
+   * It is possible to attach an observer more than once.
    */
   virtual void attachObserver(IObserver* obs) = 0;
 
   /*!
-   * \brief Détache l'observateur \a obs de cette observable.
+   * \brief Detaches the observer \a obs from this observable.
    *
-   * Si l'obervateur \a obs n'est pas présent, rien n'est fait. S'il est
-   * présent plusieurs fois, c'est la dernière occurence qui est effacé.
+   * If the observer \a obs is not present, nothing happens. If it is
+   * present multiple times, the last occurrence is deleted.
    */
   virtual void detachObserver(IObserver* obs) = 0;
 
   /*!
-   * \brief Notifie tous les observateurs.
+   * \brief Notifies all observers.
    *
-   * Pour chaque observateur attaché, appelle IObserver::observerUpdate().
+   * For each attached observer, calls IObserver::observerUpdate().
    */
   virtual void notifyAllObservers() = 0;
 
-  //! Vrai si des observers sont attachées à cette observable.
+  //! True if observers are attached to this observable.
   virtual bool hasObservers() const = 0;
 
   /*!
-   * \brief Détache tous les observeurs associés à cette instance.
+   * \brief Detaches all observers associated with this instance.
    */
   virtual void detachAllObservers() = 0;
 };
@@ -95,5 +95,4 @@ class ARCCORE_BASE_EXPORT IObservable
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

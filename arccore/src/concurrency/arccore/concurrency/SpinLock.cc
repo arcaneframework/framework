@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SpinLock.cc                                                 (C) 2000-2025 */
 /*                                                                           */
-/* SpinLock pour le multi-threading.                                         */
+/* SpinLock for multi-threading.                                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@
 
 #include <iostream>
 
-// La fonction atomic_flag::wait() n'est disponible que pour le C++20
+// The atomic_flag::wait() function is only available for C++20
 #if __cpp_lib_atomic_wait >= 201907L
 #define ARCCORE_HAS_ATOMIC_WAIT
 #endif
@@ -66,9 +66,9 @@ void SpinLock::
 _doLockReal()
 {
   while (m_spin_lock.test_and_set(std::memory_order_acquire)) {
-    // L'appel au wait() permet d'eviter la contention
-    // si beaucoup de threads essaient d'accéder en même temps
-    // au verrou.
+    // Calling wait() prevents contention
+    // if many threads try to access
+    // the lock at the same time.
     if (m_mode == eMode::SpinAndMutex) {
 #ifdef ARCCORE_HAS_ATOMIC_WAIT
       m_spin_lock.wait(true, std::memory_order_relaxed);
@@ -83,10 +83,10 @@ _doUnlockReal()
   m_spin_lock.clear(std::memory_order_release);
 #ifdef ARCCORE_HAS_ATOMIC_WAIT
   if (m_mode == eMode::SpinAndMutex) {
-    // A noter que notify_one() augmente de 50% le temps passé dans cette
-    // fonction. Il n'est utile que si on utilise wait()/
-    // Comme wait() n'est intéressant que s'il y a contention, on pourrait
-    // rendre cet appel configurable.
+    // Note that notify_one() increases the time spent in this
+    // function by 50%. It is only useful if wait() is used.
+    // Since wait() is only useful if there is contention, this
+    // call could be made configurable.
     m_spin_lock.notify_one();
   }
 #endif

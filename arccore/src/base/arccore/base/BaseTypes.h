@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* BaseTypes.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Définition des types de la composante 'base' de Arccore.                  */
+/* Definition of types for the 'base' component of Arccore.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_BASETYPES_H
 #define ARCCORE_BASE_BASETYPES_H
@@ -30,7 +30,7 @@ namespace Arcane
 /*!
  * \file BaseTypes.h
  *
- * \brief Déclarations des types de la composante 'base' de %Arccore.
+ * \brief Declarations of types for the 'base' component of %Arccore.
  */
 
 template <typename T> class IterT;
@@ -39,18 +39,18 @@ template <typename T> class ConstIterT;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Type d'un octet
+//! Type of a byte
 typedef unsigned char Byte;
-//! Type d'un octet
+//! Type of a byte
 typedef signed char SByte;
-//! Type d'un caractère unicode
+//! Type of a unicode character
 typedef unsigned short UChar;
-//! Type d'un Int16 non signé
+//! Type of an unsigned Int16
 typedef unsigned short UInt16;
-//! Type d'un réel simple précision
+//! Type of a single-precision real number
 typedef float Single;
 
-//! Constante pour indiquer que la dimension d'un tableau est dynamique
+//! Constant to indicate that an array dimension is dynamic
 inline constexpr Int32 DynExtent = -1;
 
 template <typename T> class ConstArrayView;
@@ -138,7 +138,7 @@ namespace impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Ces classes sont internes à Arccore/Arcane
+// These classes are internal to Arccore/Arcane
 template <typename T>
 class ArrayRange;
 namespace Impl
@@ -153,9 +153,9 @@ class ForLoopCumulativeStat;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Ces classes ne sont pas accessibles dans 'utils' mais il est possible
-// d'utiliser des pointeurs sur ces instances.
-// La définition est dans 'arcane_accelerator_core'
+// These classes are not accessible in 'utils' but it is possible
+// to use pointers to these instances.
+// The definition is in 'arcane_accelerator_core'
 namespace Accelerator
 {
 class Runner;
@@ -174,7 +174,7 @@ template<int RankValue> class MDDimType;
 class ConstMemoryView;
 class MutableMemoryView;
 class IMemoryResourceMng;
-// TODO: Rendre obsolète
+// TODO: Deprecate
 using IMemoryRessourceMng = IMemoryResourceMng;
 template <typename IndexType_ = Int32, Int32... RankSize> class ExtentsV;
 template<class DataType,typename Extents,typename LayoutPolicy = DefaultLayout >
@@ -215,91 +215,91 @@ class Observer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Equivalent C d'un tableau à une dimension de pointeurs
+//! C equivalent of a one-dimensional array of pointers
 typedef ArrayView<Pointer> PointerArrayView;
-//! Equivalent C d'un tableau à une dimension de caractères
+//! C equivalent of a one-dimensional array of characters
 typedef ArrayView<Byte> ByteArrayView;
-//! Equivalent C d'un tableau à une dimension de caractères unicode
+//! C equivalent of a one-dimensional array of unicode characters
 typedef ArrayView<UChar> UCharArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+//! C equivalent of a one-dimensional array of 64-bit integers
 typedef ArrayView<Int64> Int64ArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+//! C equivalent of a one-dimensional array of 32-bit integers
 typedef ArrayView<Int32> Int32ArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+//! C equivalent of a one-dimensional array of 16-bit integers
 typedef ArrayView<Int16> Int16ArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! C equivalent of a one-dimensional array of integers
 typedef ArrayView<Integer> IntegerArrayView;
-//! Equivalent C d'un tableau à une dimension de réels
+//! C equivalent of a one-dimensional array of reals
 typedef ArrayView<Real> RealArrayView;
-//! Equivalent C d'un tableau à une dimension de booléens
+//! C equivalent of a one-dimensional array of booleans
 typedef ArrayView<bool> BoolArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! C equivalent of a one-dimensional array of integers
 typedef ArrayView<Integer> IntegerArrayView;
 
-//! Equivalent C d'un tableau à une dimension de pointeurs
+//! C equivalent of a one-dimensional array of pointers
 typedef ConstArrayView<Pointer> PointerConstArrayView;
-//! Equivalent C d'un tableau à une dimension de caractères
+//! C equivalent of a one-dimensional array of characters
 typedef ConstArrayView<Byte> ByteConstArrayView;
-//! Equivalent C d'un tableau à une dimension de caractères unicode
+//! C equivalent of a one-dimensional array of unicode characters
 typedef ConstArrayView<UChar> UCharConstArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+//! C equivalent of a one-dimensional array of 64-bit integers
 typedef ConstArrayView<Int64> Int64ConstArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+//! C equivalent of a one-dimensional array of 32-bit integers
 typedef ConstArrayView<Int32> Int32ConstArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+//! C equivalent of a one-dimensional array of 16-bit integers
 typedef ConstArrayView<Int16> Int16ConstArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! C equivalent of a one-dimensional array of integers
 typedef ConstArrayView<Integer> IntegerConstArrayView;
-//! Equivalent C d'un tableau à une dimension de réels
+//! C equivalent of a one-dimensional array of reals
 typedef ConstArrayView<Real> RealConstArrayView;
-//! Equivalent C d'un tableau à une dimension de booléens
+//! C equivalent of a one-dimensional array of booleans
 typedef ConstArrayView<bool> BoolConstArrayView;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! C equivalent of a one-dimensional array of integers
 typedef ConstArrayView<Integer> IntegerConstArrayView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Equivalent C d'un tableau à une dimension de pointeurs
+//! C equivalent of a one-dimensional array of pointers
 typedef Span<Pointer> PointerSpan;
-//! Equivalent C d'un tableau à une dimension de caractères
+//! C equivalent of a one-dimensional array of characters
 typedef Span<std::byte> ByteSpan;
-//! Equivalent C d'un tableau à une dimension de caractères unicode
+//! C equivalent of a one-dimensional array of unicode characters
 typedef Span<UChar> UCharSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+//! C equivalent of a one-dimensional array of 64-bit integers
 typedef Span<Int64> Int64Span;
-//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+//! C equivalent of a one-dimensional array of 32-bit integers
 typedef Span<Int32> Int32Span;
-//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+//! C equivalent of a one-dimensional array of 16-bit integers
 typedef Span<Int16> Int16Span;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! C equivalent of a one-dimensional array of integers
 typedef Span<Integer> IntegerSpan;
-//! Equivalent C d'un tableau à une dimension de réels
+//! C equivalent of a one-dimensional array of reals
 typedef Span<Real> RealSpan;
-//! Equivalent C d'un tableau à une dimension de booléens
+//! C equivalent of a one-dimensional array of booleans
 typedef Span<bool> BoolSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! C equivalent of a one-dimensional array of integers
 typedef Span<Integer> IntegerSpan;
 
-//! Equivalent C d'un tableau à une dimension de pointeurs
+//! C equivalent of a one-dimensional array of pointers
 typedef Span<const Pointer> PointerConstSpan;
-//! Equivalent C d'un tableau à une dimension de caractères
+//! C equivalent of a one-dimensional array of characters
 typedef Span<const std::byte> ByteConstSpan;
-//! Equivalent C d'un tableau à une dimension de caractères unicode
+//! C equivalent of a one-dimensional array of unicode characters
 typedef Span<const UChar> UCharConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+//! C equivalent of a one-dimensional array of 64-bit integers
 typedef Span<const Int64> Int64ConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+//! C equivalent of a one-dimensional array of 32-bit integers
 typedef Span<const Int32> Int32ConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+//! C equivalent of a one-dimensional array of 16-bit integers
 typedef Span<const Int16> Int16ConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! C equivalent of a one-dimensional array of integers
 typedef Span<const Integer> IntegerConstSpan;
-//! Equivalent C d'un tableau à une dimension de réels
+//! C equivalent of a one-dimensional array of reals
 typedef Span<const Real> RealConstSpan;
-//! Equivalent C d'un tableau à une dimension de booléens
+//! C equivalent of a one-dimensional array of booleans
 typedef Span<const bool> BoolConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! C equivalent of a one-dimensional array of integers
 typedef Span<const Integer> IntegerConstSpan;
 
 /*---------------------------------------------------------------------------*/
@@ -412,11 +412,11 @@ using Arcane::IntegerConstSpan;
 
 using Arcane::DynExtent;
 
-// Ces classes sont internes à Arccore/Arcane
+// These classes are internal to Arccore/Arcane
 using Arcane::ArrayRange;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

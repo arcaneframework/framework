@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* IContigMachineShMemWinBaseInternal.h                        (C) 2000-2026 */
 /*                                                                           */
-/* Interface de classe permettant de créer une fenêtre mémoire pour un noeud */
-/* de calcul. Cette fenêtre sera contigüe en mémoire.                        */
+/* Class interface allowing the creation of a memory window for a node       */
+/* of computation. This window will be contiguous in memory.                 */
 /*---------------------------------------------------------------------------*/
 
 #ifndef ARCCORE_MESSAGEPASSING_INTERNAL_ICONTIGMACHINESHMEMWINBASEINTERNAL_H
@@ -30,11 +30,11 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Classe permettant de créer une fenêtre mémoire pour un noeud
- * de calcul.
+ * \brief Class allowing the creation of a memory window for a node
+ * of computation.
  *
- * Cette fenêtre sera contigüe en mémoire et sera accessible par
- * tous les processus du noeud.
+ * This window will be contiguous in memory and will be accessible by
+ * all processes of the node.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IContigMachineShMemWinBaseInternal
 {
@@ -45,84 +45,83 @@ class ARCCORE_MESSAGEPASSING_EXPORT IContigMachineShMemWinBaseInternal
  public:
 
   /*!
-   * \brief Méthode permettant d'obtenir la taille d'un élement de la fenêtre.
+   * \brief Method allowing the retrieval of the size of an element in the window.
    *
-   * \return La taille d'un élement.
+   * \return The size of an element.
    */
   virtual Int32 sizeofOneElem() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur son segment.
+   * \brief Method allowing the retrieval of a view of its segment.
    *
-   * \return Une vue.
+   * \return A view.
    */
   virtual Span<std::byte> segmentView() = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment d'un autre
-   * sous-domaine du noeud.
+   * \brief Method allowing the retrieval of a view of the segment of another
+   * subdomain of the node.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the subdomain.
+   * \return A view.
    */
   virtual Span<std::byte> segmentView(Int32 rank) = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre.
+   * \brief Method allowing the retrieval of a view of the entire window.
    *
-   * \return Une vue.
+   * \return A view.
    */
   virtual Span<std::byte> windowView() = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur son segment.
+   * \brief Method allowing the retrieval of a view of its segment.
    *
-   * \return Une vue.
+   * \return A view.
    */
   virtual Span<const std::byte> segmentConstView() const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur le segment d'un autre
-   * sous-domaine du noeud.
+   * \brief Method allowing the retrieval of a view of the segment of another
+   * subdomain of the node.
    *
-   * \param rank Le rang du sous-domaine.
-   * \return Une vue.
+   * \param rank The rank of the subdomain.
+   * \return A view.
    */
   virtual Span<const std::byte> segmentConstView(Int32 rank) const = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir une vue sur toute la fenêtre.
+   * \brief Method allowing the retrieval of a view of the entire window.
    *
-   * \return Une vue.
+   * \return A view.
    */
   virtual Span<const std::byte> windowConstView() const = 0;
 
   /*!
-   * \brief Méthode permettant de redimensionner les segments de la fenêtre.
+   * \brief Method allowing the resizing of the window segments.
    *
-   * Appel collectif.
+   * Collective call.
    *
-   * La taille totale de la fenêtre doit être inférieure ou égale à la taille
-   * d'origine.
+   * The total size of the window must be less than or equal to the original size.
    *
-   * \param new_sizeof_segment La nouvelle taille de notre segment (en octet).
+   * \param new_sizeof_segment The new size of our segment (in bytes).
    */
   virtual void resizeSegment(Int64 new_sizeof_segment) = 0;
 
   /*!
-   * \brief Méthode permettant d'obtenir les rangs qui possèdent un segment
-   * dans la fenêtre.
+   * \brief Method allowing the retrieval of the ranks that possess a segment
+   * in the window.
    *
-   * L'ordre des processus de la vue retournée correspond à l'ordre des
-   * segments dans la fenêtre.
+   * The order of the processes in the returned view corresponds to the order of the
+   * segments in the window.
    *
-   * \return Une vue contenant les ids des rangs.
+   * \return A view containing the rank IDs.
    */
   virtual ConstArrayView<Int32> machineRanks() const = 0;
 
   /*!
-   * \brief Méthode permettant d'attendre que tous les processus/threads
-   * du noeud appellent cette méthode pour continuer l'exécution.
+   * \brief Method allowing waiting until all processes/threads
+   * of the node call this method to continue execution.
    */
   virtual void barrier() const = 0;
 };
@@ -135,5 +134,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT IContigMachineShMemWinBaseInternal
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

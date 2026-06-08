@@ -7,7 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayExtents.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Gestion du nombre d'éléments par dimension pour les tableaux N-dimensions.*/
+/* Management of the number of elements per dimension for N-dimensional      */
+/* arrays.                                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARRAYEXTENTS_H
 #define ARCCORE_BASE_ARRAYEXTENTS_H
@@ -29,8 +30,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation de ArrayStrideBase pour les tableaux de dimension 0 (les scalaires)
+ * \brief Specialization of ArrayStrideBase for 0-dimensional arrays (scalars)
  */
 template <>
 class ArrayStridesBase<0>
@@ -38,26 +40,27 @@ class ArrayStridesBase<0>
  public:
 
   ArrayStridesBase() = default;
-  //! Valeur du pas de la \a i-ème dimension.
+  //! Value of the stride for the i-th dimension.
   ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
-  //! Value totale du pas
+  //! Value total of the stride
   ARCCORE_HOST_DEVICE Int64 totalStride() const { return 1; }
   ARCCORE_HOST_DEVICE static ArrayStridesBase<0> fromSpan([[maybe_unused]] Span<const Int32> strides)
   {
-    // TODO: vérifier la taille de \a strides
+    // TODO: check the size of \a strides
     return {};
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour conserver le pas dans chaque dimension.
+ * \brief Class to maintain the stride in each dimension.
  *
- * Le pas pour une dimension est la distance en mémoire entre deux éléments
- * du tableau pour cette dimension. En général le pas est égal au nombre
- * d'éléments dans la dimension sauf si on utilise des marges (padding) par
- * exemple pour aligner certaines dimensions.
+ * The stride for a dimension is the memory distance between two elements
+ * of the array for that dimension. Generally, the stride is equal to the number
+ * of elements in the dimension unless padding is used,
+ * for example, to align certain dimensions.
  */
 template <int RankValue>
 class ArrayStridesBase
@@ -65,11 +68,11 @@ class ArrayStridesBase
  public:
 
   ArrayStridesBase() = default;
-  //! Valeur du pas de la \a i-ème dimension.
+  //! Value of the stride for the i-th dimension.
   ARCCORE_HOST_DEVICE Int32 stride(int i) const { return m_strides[i]; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_strides[i]; }
   ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_strides.data(), RankValue }; }
-  //! Valeur totale du pas
+  //! Total stride value
   ARCCORE_HOST_DEVICE Int64 totalStride() const
   {
     Int64 nb_element = 1;
@@ -77,19 +80,19 @@ class ArrayStridesBase
       nb_element *= m_strides[i];
     return nb_element;
   }
-  // Instance contenant les dimensions après la première
+  // Instance containing dimensions after the first
   ARCCORE_HOST_DEVICE ArrayStridesBase<RankValue - 1> removeFirstStride() const
   {
     return ArrayStridesBase<RankValue - 1>::fromSpan({ m_strides.data() + 1, RankValue - 1 });
   }
   /*!
-   * \brief Construit une instance à partir des valeurs données dans \a stride.
+   * \brief Constructs an instance from the values given in \a stride.
    * \pre stride.size() == RankValue.
    */
   ARCCORE_HOST_DEVICE static ArrayStridesBase<RankValue> fromSpan(Span<const Int32> strides)
   {
     ArrayStridesBase<RankValue> v;
-    // TODO: vérifier la taille
+    // TODO: check the size
     for (int i = 0; i < RankValue; ++i)
       v.m_strides[i] = strides[i];
     return v;
@@ -105,8 +108,9 @@ class ArrayStridesBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation de ArrayExtentsBase pour les tableaux de dimension 0 (les scalaires)
+ * \brief Specialization of ArrayExtentsBase for 0-dimensional arrays (scalars)
  */
 template <>
 class ArrayExtentsBase<ExtentsV<>>
@@ -114,21 +118,22 @@ class ArrayExtentsBase<ExtentsV<>>
  public:
 
   ArrayExtentsBase() = default;
-  //! Nombre d'élément de la \a i-ème dimension.
+  //! Number of elements in the i-th dimension.
   constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
-  //! Nombre total d'eléments
+  //! Total number of elements
   constexpr ARCCORE_HOST_DEVICE Int32 totalNbElement() const { return 1; }
   ARCCORE_HOST_DEVICE static ArrayExtentsBase<ExtentsV<>> fromSpan([[maybe_unused]] Span<const Int32> extents)
   {
-    // TODO: vérifier la taille de \a extents
+    // TODO: check the size of \a extents
     return {};
   }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour conserver le nombre d'éléments dans chaque dimension.
+ * \brief Class to maintain the number of elements in each dimension.
  */
 template <typename Extents>
 class ArrayExtentsBase
@@ -168,24 +173,24 @@ class ArrayExtentsBase
 
  public:
 
-  //! TEMPORARY: Positionne à \a v le nombre d'éléments de la dimension 0.
+  //! TEMPORARY: Sets the number of elements of dimension 0 to \a v.
   ARCCORE_HOST_DEVICE void setExtent0(Int32 v) { this->m_extent0.v = v; }
 
-  // Instance contenant les dimensions après la première
+  // Instance containing dimensions after the first
   ARCCORE_HOST_DEVICE ArrayExtentsPreviousRank removeFirstExtent() const
   {
     auto x = BaseClass::_removeFirstExtent();
     return ArrayExtentsPreviousRank::fromSpan(x);
   }
 
-  // Nombre d'éléments de la \a I-éme dimension convertie en un 'Int64'.
+  // Number of elements of the I-th dimension converted to an 'Int64'.
   template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int64 constLargeExtent() const
   {
     return BaseClass::template constExtent<I>();
   }
 
   /*!
-   * \brief Construit une instance à partir des valeurs données dans \a extents.
+   * \brief Constructs an instance from the values given in \a extents.
    */
   ARCCORE_HOST_DEVICE static ArrayExtentsBase<Extents> fromSpan(SmallSpan<const Int32> extents)
   {
@@ -195,8 +200,9 @@ class ArrayExtentsBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extent pour les tableaux à 1 dimension.
+ * \brief Extent for 1-dimensional arrays.
  */
 template <typename SizeType_, int X0>
 class ArrayExtents<ExtentsV<SizeType_, X0>>
@@ -219,7 +225,7 @@ class ArrayExtents<ExtentsV<SizeType_, X0>>
   : BaseClass(extents)
   {
   }
-  // TODO: A supprimer
+  // TODO: To be removed
   constexpr ARCCORE_HOST_DEVICE explicit ArrayExtents(Int32 dim1_size)
   {
     static_assert(ExtentsType::nb_dynamic == 1, "This method is only allowed for full dynamic extents");
@@ -229,8 +235,9 @@ class ArrayExtents<ExtentsV<SizeType_, X0>>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extent pour les tableaux à 2 dimensions.
+ * \brief Extent for 2-dimensional arrays.
  */
 template <typename SizeType_, int X0, int X1>
 class ArrayExtents<ExtentsV<SizeType_, X0, X1>>
@@ -253,7 +260,7 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1>>
   : BaseClass(extents)
   {
   }
-  // TODO: A supprimer
+  // TODO: To be removed
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size, Int32 dim2_size)
   {
     static_assert(ExtentsType::nb_dynamic == 2, "This method is only allowed for full dynamic extents");
@@ -264,8 +271,9 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1>>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extent pour les tableaux à 3 dimensions.
+ * \brief Extent for 3-dimensional arrays.
  */
 template <typename SizeType_, int X0, int X1, int X2>
 class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2>>
@@ -288,7 +296,7 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2>>
   : BaseClass(extents)
   {
   }
-  // TODO: A supprimer
+  // TODO: To be removed
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
   {
     static_assert(ExtentsType::nb_dynamic == 3, "This method is only allowed for full dynamic extents");
@@ -300,8 +308,9 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2>>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extent pour les tableaux à 4 dimensions.
+ * \brief Extent for 4-dimensional arrays.
  */
 template <typename SizeType_, int X0, int X1, int X2, int X3>
 class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2, X3>>
@@ -324,7 +333,7 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2, X3>>
   : BaseClass(extents)
   {
   }
-  // TODO: A supprimer
+  // TODO: To be removed
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size)
   {
     static_assert(ExtentsType::nb_dynamic == 4, "This method is only allowed for full dynamic extents");
@@ -340,8 +349,9 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2, X3>>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extent et Offset pour les tableaux à 1 dimension.
+ * \brief Extent and Offset for 1-dimensional arrays.
  */
 template <typename SizeType_, int X0, typename LayoutType>
 class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0>, LayoutType>
@@ -365,7 +375,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0>, LayoutType>
  public:
 
   ArrayExtentsWithOffset() = default;
-  // TODO: a supprimer
+  // TODO: to be removed
   constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const ArrayExtents<ExtentsType>& rhs)
   : BaseClass(rhs)
   {
@@ -393,8 +403,9 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0>, LayoutType>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extent et Offset pour les tableaux à 2 dimensions.
+ * \brief Extent and Offset for 2-dimensional arrays.
  */
 template <typename SizeType_, int X0, int X1, typename LayoutType>
 class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1>, LayoutType>
@@ -418,7 +429,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1>, LayoutType>
  public:
 
   ArrayExtentsWithOffset() = default;
-  // TODO: a supprimer
+  // TODO: to be removed
   constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
@@ -445,8 +456,9 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1>, LayoutType>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extent et Offset pour les tableaux à 3 dimensions.
+ * \brief Extent and Offset for 3-dimensional arrays.
  */
 template <typename SizeType_, int X0, int X1, int X2, typename LayoutType>
 class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2>, LayoutType>
@@ -471,7 +483,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2>, LayoutType>
  public:
 
   ArrayExtentsWithOffset() = default;
-  // TODO: a supprimer
+  // TODO: to be removed
   constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
@@ -512,8 +524,9 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2>, LayoutType>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Extent et Offset pour les tableaux à 4 dimensions.
+ * \brief Extent and Offset for 4-dimensional arrays.
  */
 template <typename SizeType_, int X0, int X1, int X2, int X3, typename LayoutType>
 class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2, X3>, LayoutType>
@@ -539,7 +552,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2, X3>, LayoutType>
  public:
 
   ArrayExtentsWithOffset() = default;
-  // TODO: a supprimer
+  // TODO: to be removed
   constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {

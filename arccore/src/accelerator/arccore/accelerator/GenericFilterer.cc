@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Filtering.cc                                                (C) 2000-2026 */
 /*                                                                           */
-/* Algorithme de filtrage.                                                   */
+/* Filtering algorithm.                                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,7 +49,7 @@ _allocate()
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_FILTERER_USE_HOSTPINNED_STORAGE", true))
     m_use_direct_host_storage = (v.value() != 0);
 
-  // Pour l'instant l'usage direct de l'hôte n'est testé qu'avec CUDA.
+  // For now, direct host usage is only tested with CUDA.
   if (m_queue.executionPolicy() != eExecutionPolicy::CUDA)
     m_use_direct_host_storage = false;
 

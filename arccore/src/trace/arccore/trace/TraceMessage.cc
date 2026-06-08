@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TraceMessage.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des messages.                                                     */
+/* Message management.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -73,11 +73,12 @@ operator=(const TraceMessage& from)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// NOTE: ce destructeur peut envoyer une exception si le message est
-// de type Fatal ou ParallelFatal. Avec le C++11, il faut le signaler
-// explicitement sinon le code se termine via un appel à std::terminate().
-// A noter qu'avec gcc 4.7 et avant, même avec l'option std=c++11 il n'est
-// pas nécessaire de spécifier le noexcept.
+
+// NOTE: this destructor may throw an exception if the message is
+// of type Fatal or ParallelFatal. With C++11, it must be signaled
+// explicitly otherwise the code terminates via a call to std::terminate().
+// Note that with gcc 4.7 and before, even with the std=c++11 option it is
+// not necessary to specify noexcept.
 TraceMessage::
 ~TraceMessage() ARCCORE_NOEXCEPT_FALSE
 {
@@ -176,4 +177,3 @@ Trace::Setter::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

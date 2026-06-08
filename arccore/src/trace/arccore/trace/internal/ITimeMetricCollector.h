@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ITimeMetricCollector.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Interface gérant les statistiques sur les temps d'exécution.              */
+/* Interface managing statistics on execution times.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_TRACE_ITIMEMETRICCOLLECTOR_H
 #define ARCCORE_TRACE_ITIMEMETRICCOLLECTOR_H
@@ -19,8 +19,9 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * API en cours de définition. Ne pas utiliser en dehors de Arccore/Arcane.
+ * API under definition. Do not use outside of Arccore/Arcane.
  */
 
 namespace Arcane
@@ -28,8 +29,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface gérant les statistiques sur l'exécution.
+ * \brief Interface managing statistics on execution.
  */
 class ARCCORE_TRACE_EXPORT ITimeMetricCollector
 {
@@ -37,7 +39,7 @@ class ARCCORE_TRACE_EXPORT ITimeMetricCollector
 
  public:
 
-  // Libère les ressources.
+  // Releases resources.
   virtual ~ITimeMetricCollector() = default;
 
  public:

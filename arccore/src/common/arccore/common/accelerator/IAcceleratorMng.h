@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IAcceleratorMng.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des accélérateurs.                              */
+/* Accelerator manager interface.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_IACCELERATORMNG_H
 #define ARCCORE_COMMON_ACCELERATOR_IACCELERATORMNG_H
@@ -24,15 +24,16 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire des accélérateurs.
+ * \brief Accelerator manager interface.
  *
- * Cette interface permet de récupérer une instance de Runner et RunQueue
- * associée à un contexte. Il faut appeler initialize() pour créer ces deux
- * instances qu'il est ensuite possible de récupérer via runner() ou queue().
+ * This interface allows retrieving an instance of Runner and RunQueue
+ * associated with a context. You must call initialize() to create these two
+ * instances, which can then be retrieved via runner() or queue().
  *
- * Il est nécessaire d'appeler initialize() avant de pouvoir accéder aux
- * méthodes telles que defaultRunner() ou defaultQueue().
+ * It is necessary to call initialize() before accessing
+ * methods such as defaultRunner() or defaultQueue().
  */
 class ARCCORE_COMMON_EXPORT IAcceleratorMng
 {
@@ -43,34 +44,34 @@ class ARCCORE_COMMON_EXPORT IAcceleratorMng
  public:
 
   /*!
-   * \brief Initialise l'instance.
+   * \brief Initializes the instance.
    *
    * \pre isInitialized()==false
    */
   virtual void initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info) =0;
 
-  //! Indique si l'instance a été initialisée via l'appel à initialize()
+  //! Indicates if the instance has been initialized via the call to initialize()
   virtual bool isInitialized() const =0;
 
   /*!
-   * \brief Exécuteur par défaut.
+   * \brief Default runner.
    *
-   * \note Cette méthode sera à terme obsolète.. Il est préférable d'utiliser
-   * la méthode runner() à la place car elle est toujours valide.
+   * \note This method will eventually be obsolete. It is preferable to use
+   * the runner() method instead because it is always valid.
    *
-   * Le pointeur retourné reste la propriété de cette instance.
+   * The returned pointer remains the property of this instance.
    *
    * \pre isInitialized()==true
    */
   virtual Runner* defaultRunner() =0;
 
   /*!
-   * \brief File d'exécution par défaut.
+   * \brief Default run queue.
    *
-   * Le pointeur retourné reste la propriété de cette instance.
+   * The returned pointer remains the property of this instance.
    *
-   * \note Cette méthode sera à terme obsolète.. Il est préférable d'utiliser
-   * la méthode queue() à la place car elle est toujours valide.
+   * \note This method will eventually be obsolete. It is preferable to use
+   * the queue() method instead because it is always valid.
    *
    * * \pre isInitialized()==true
    */
@@ -79,18 +80,18 @@ class ARCCORE_COMMON_EXPORT IAcceleratorMng
  public:
 
   /*!
-   * \brief Exécuteur associé à l'instance.
+   * \brief Runner associated with the instance.
    *
-   * Si l'instance a été initialisée, retourne *defaultRunner().
-   * Sinon, retourne une instance de Runner nulle.
+   * If the instance has been initialized, returns *defaultRunner().
+   * Otherwise, returns a null Runner instance.
    */
   virtual Runner runner() = 0;
 
   /*!
-   * \brief File d'exécution associée à l'instance.
+   * \brief Run queue associated with the instance.
    *
-   * Si l'instance a été initialisée, retourne *defaultQueue().
-   * Sinon, retourne une file nulle.
+   * If the instance has been initialized, returns *defaultQueue().
+   * Otherwise, returns a null queue.
    */
   virtual RunQueue queue() = 0;
 };

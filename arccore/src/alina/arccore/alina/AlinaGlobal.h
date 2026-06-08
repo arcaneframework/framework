@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AlinaGlobal.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations générales de la composante 'arcane_alina'.                   */
+/* General declarations for the 'arcane_alina' component.                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ALINA_ALINAGLOBAL_H
 #define ARCCORE_ALINA_ALINAGLOBAL_H

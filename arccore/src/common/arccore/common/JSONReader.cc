@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* JSONReader.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Lecteur au format JSON.                                                   */
+/* JSON format reader.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -71,7 +71,7 @@ class JSONWrapperUtils
 };
 
 /*
- * Types définis par rapidjson.
+ * Types defined by rapidjson.
  enum Type {
   kNullType = 0,      //!< null
   kFalseType = 1,     //!< false
@@ -197,7 +197,7 @@ valueAsReal() const
   if (x->IsDouble())
     return x->GetDouble();
   if (x->GetType() == rapidjson::kStringType) {
-    // Convertie la chaîne de caractères en un réél
+    // Convert the string into a real
     StringView s = this->valueAsStringView();
     Real r = 0.0;
     if (!Convert::Impl::StringViewToIntegral::getValue(r, s))

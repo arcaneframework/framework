@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SerializeGlobal.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Définitions globales de la composante 'Serialize' de 'Arccore'.           */
+/* Global definitions for the 'Serialize' component of 'Arccore'.            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_SERIALIZE_SERIALIZEGLOBAL_H
 #define ARCCORE_SERIALIZE_SERIALIZEGLOBAL_H
@@ -56,5 +56,4 @@ using Arcane::BasicSerializer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

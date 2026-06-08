@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GenericSorter.h                                             (C) 2000-2026 */
 /*                                                                           */
-/* Algorithme de tri.                                                        */
+/* Sorting algorithm.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_GENERICSORTER_H
 #define ARCCORE_ACCELERATOR_GENERICSORTER_H
@@ -36,11 +36,12 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base pour effectuer un tri.
+ * \brief Base class for performing a sort.
  *
- * Contient les arguments nécessaires pour effectuer le tri.
+ * Contains the necessary arguments to perform the sort.
  */
 class ARCCORE_ACCELERATOR_EXPORT GenericSorterBase
 {
@@ -61,8 +62,8 @@ class ARCCORE_ACCELERATOR_EXPORT GenericSorterBase
 
   void _checkBarrier()
   {
-    // Les fonctions cub ou rocprim pour le scan sont asynchrones par défaut.
-    // Si on a une RunQueue synchrone, alors on fait une barrière.
+    // The cub or rocprim functions for scan are asynchronous by default.
+    // If we have a synchronous RunQueue, then we perform a barrier.
     if (!m_queue.isAsync())
       m_queue.barrier();
   }
@@ -70,16 +71,17 @@ class ARCCORE_ACCELERATOR_EXPORT GenericSorterBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe pour effectuer le tri d'une liste.
+ * \brief Class for sorting a list.
  *
- * La classe utilisateur associée est GenericSorter
+ * The associated user class is GenericSorter
  */
 class GenericSorterMergeSort
 {
-  // TODO: Faire le malloc sur le device associé à la queue.
-  //       et aussi regarder si on peut utiliser mallocAsync().
+  // TODO: Perform malloc on the device associated with the queue.
+  //       and also check if we can use mallocAsync().
 
  public:
 
@@ -94,7 +96,7 @@ class GenericSorterMergeSort
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
       cudaStream_t stream = Impl::CudaUtils::toNativeStream(&queue);
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to know the size for allocation
       ARCCORE_CHECK_CUDA(::cub::DeviceMergeSort::SortKeysCopy(nullptr, temp_storage_size,
                                                               input_iter, output_iter, nb_item,
                                                               compare_lambda, stream));
@@ -109,7 +111,7 @@ class GenericSorterMergeSort
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
       hipStream_t stream = Impl::HipUtils::toNativeStream(&queue);
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to know the size for allocation
       ARCCORE_CHECK_HIP(rocprim::merge_sort(nullptr, temp_storage_size, input_iter, output_iter,
                                             nb_item, compare_lambda, stream));
 
@@ -122,7 +124,7 @@ class GenericSorterMergeSort
 #if defined(ARCCORE_COMPILING_SYCL)
     case eExecutionPolicy::SYCL: {
       {
-        // Copie input dans output
+        // Copy input into output
         auto command = makeCommand(queue);
         command << RUNCOMMAND_LOOP1(iter, nb_item)
         {
@@ -144,10 +146,10 @@ class GenericSorterMergeSort
     } break;
 #endif
     case eExecutionPolicy::Thread:
-      // Pas encore implémenté en multi-thread
+      // Not yet implemented in multi-thread
       [[fallthrough]];
     case eExecutionPolicy::Sequential: {
-      // Copie input dans output
+      // Copy input into output
       auto output_iter_begin = output_iter;
       for (Int32 i = 0; i < nb_item; ++i) {
         *output_iter = *input_iter;
@@ -172,8 +174,9 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Algorithme générique de tri sur accélérateur.
+ * \brief Generic sorting algorithm on accelerator.
  */
 class GenericSorter
 : private Impl::GenericSorterBase
@@ -188,10 +191,10 @@ class GenericSorter
  public:
 
   /*!
-   * \brief Tri les entités.
+   * \brief Sorts the entities.
    *
-   * Remplit \a output avec les valeurs de \a input triées via le comparateur
-   * par défaut pour le type \a DataType. Le tableau \a input n'est pas modifié.
+   * Fills \a output with the values of \a input sorted using the comparator
+   * by default for the type \a DataType. The \a input array is not modified.
    *
    * \pre output.size() >= input.size()
    */

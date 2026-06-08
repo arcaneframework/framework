@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Array.cc                                                    (C) 2000-2026 */
 /*                                                                           */
-/* Vecteur de données 1D.                                                    */
+/* 1D data vector.                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -66,12 +66,12 @@ _checkAllocator() const
 /*---------------------------------------------------------------------------*/
 
 /*
- * TODO: pour les allocations, faire en sorte que le
- * début du tableau soit aligné sur 16 octets dans tous les cas.
- * Attention dans ce cas a bien traiter les problèmes avec realloc().
- * TODO: pour les grosses allocations qui correspondantes la
- * plupart du temps à des variables, ajouter un random sur le début
- * du tableau pour éviter les conflits de bancs mémoire ou de cache
+ * TODO: for allocations, ensure that the
+ * start of the array is aligned to 16 bytes in all cases.
+ * Be careful in this case to properly handle issues with realloc().
+ * TODO: for large allocations which most of the time correspond to variables,
+ * add a random value at the start of the array to avoid memory bank or
+ * cache conflicts
  */
 
 /*---------------------------------------------------------------------------*/

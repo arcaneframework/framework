@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IRunnerRuntime.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface du runtime associé à une RunQueue.                              */
+/* Interface of the runtime associated with a RunQueue.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_IRUNQUEUERUNTIME_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_IRUNQUEUERUNTIME_H
@@ -24,11 +24,12 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface du runtime associé à un accélérateur.
+ * \brief Interface of the runtime associated with an accelerator.
  *
- * Il existe actuellement trois implémentations accélérateurs pour cette
+ * There are currently three accelerator implementations for this
  * interface: CUDA, ROCM, SYCL.
  */
 class ARCCORE_COMMON_EXPORT IRunnerRuntime
@@ -80,4 +81,4 @@ class ARCCORE_COMMON_EXPORT IRunnerRuntime
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

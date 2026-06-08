@@ -325,7 +325,7 @@ void _testArrayNewInternal()
   {
     UniqueArray<Int32> values1 = { 2, 5 };
     UniqueArray<Int32> values2 = { 4, 9, 7 };
-    // Copie les valeurs de values2 à la fin de values1.
+    // Copy the values of values2 to the end of values1.
     std::copy(std::begin(values2), std::end(values2), std::back_inserter(values1));
     std::cout << "** VALUES1 = " << values1 << "\n";
     ARCCORE_UT_CHECK((values1.size() == 5), "BI: Bad size");
@@ -352,7 +352,7 @@ void _testArrayNewInternal()
   {
     UniqueArray<Int32> values1;
     UniqueArray<Int32> values2 = { 4, 9, 7, 6, 3 };
-    // Copie les valeurs de values2 à la fin de values1.
+    // Copy the values of values2 to the end of values1.
     values1.copy(values2);
     std::cout << "** VALUES1 = " << values1 << "\n";
     ARCCORE_UT_CHECK((values1.size() == 5), "BI: Bad size");
@@ -560,7 +560,7 @@ TEST(Array, SubViews)
   using namespace Arccore;
 
   {
-    // Test Array::subView() et Array::subConstView()
+    // Test Array::subView() and Array::subConstView()
     UniqueArray<Int32> v;
     v.resize(23);
     for (Int32 i = 0, n = v.size(); i < n; ++i)
@@ -635,8 +635,8 @@ TEST(Array, Misc3)
     ASSERT_EQ(c.size(), 21);
     std::cout << "C2=" << c << "\n";
 
-    // Redimensionne sans initialiser. Les valeurs pour les éléments
-    // de 9 à 18 doivent valoir \a ref_value2
+    // Resize without initializing. The values for elements
+    // from 9 to 18 must be \a ref_value2
     c.resizeNoInit(18);
     std::cout << "C4=" << c << "\n";
     for (Int32 i = 9, s = c.size(); i < s; ++i)
@@ -867,10 +867,10 @@ TEST(SharedArray, Allocator)
 }
 
 /*!
- * \brief Allocateur pour tester les arguments.
+ * \brief Allocator for testing arguments.
  *
- * Permet de vérifier qu'on a bien appelé avec les bons arguments.
- * On ne doit l'appeler qu'avec args.memoryLocationHint() qui vaut
+ * Allows verification that it was called with the correct arguments.
+ * It should only be called with args.memoryLocationHint() which equals
  * eMemoryLocationHint::None or eMemoryLocationHint::HostAndDeviceMostlyRead
  */
 class TesterMemoryAllocatorV3
@@ -911,7 +911,7 @@ class TesterMemoryAllocatorV3
 
   void notifyMemoryArgsChanged(MemoryAllocationArgs old_args, MemoryAllocationArgs new_args, AllocatedMemoryInfo ptr) override
   {
-    // Cette méthode n'est appelée qu'une seule fois donc on teste directement les valeurs attendues
+    // This method is only called once so we test the expected values directly
     ASSERT_EQ(old_args.memoryLocationHint(), eMemoryLocationHint::None);
     ASSERT_EQ(new_args.memoryLocationHint(), eMemoryLocationHint::MainlyHost);
     ASSERT_EQ(ptr.size(), 8);
@@ -972,7 +972,7 @@ TEST(Array, AllocatorV2)
     ASSERT_EQ(a1.size(), 5);
     a2.add(9);
     a2.add(17);
-    // Pour tester notifyMemoryArgsChanged()
+    // To test notifyMemoryArgsChanged()
     a2.setMemoryLocationHint(eMemoryLocationHint::MainlyHost);
 
     std::cout << "Array a3\n";
@@ -1092,8 +1092,8 @@ TEST(Collections, Memory)
 
 namespace Arcane
 {
-// Instancie explicitement les classes tableaux pour garantir
-// que toutes les méthodes fonctionnent
+// Explicitly instantiates array classes to ensure
+// that all methods work
 template class UniqueArray<IntSubClass>;
 template class SharedArray<IntSubClass>;
 template class Array<IntSubClass>;

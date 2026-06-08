@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunQueueEvent.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Evènement sur une file d'exécution.                                       */
+/* Event on a run queue.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,7 +61,7 @@ class RunQueueEvent::InternalImpl
 
  private:
 
-  //! Nombre de références sur l'instance.
+  //! Number of references on the instance.
   std::atomic<Int32> m_nb_ref = 0;
 };
 

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SyclAccelerator.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Backend 'SYCL' pour les accélérateurs.                                    */
+/* 'SYCL' Backend for accelerators.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_SYCL_SYCLACCELERATOR_H
 #define ARCCORE_ACCELERATOR_SYCL_SYCLACCELERATOR_H

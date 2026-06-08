@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SubRequestCompletionInfo.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Informations de complétion pour une sous-requête.                         */
+/* Completion information for a sub-request.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_INTERNAL_SUBREQUESTCOMPLETIONINFO_H
 #define ARCCORE_MESSAGEPASSING_INTERNAL_SUBREQUESTCOMPLETIONINFO_H
@@ -25,8 +25,9 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de complètion d'une sous-requête.
+ * \brief Completion information for a sub-request.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT SubRequestCompletionInfo
 {
@@ -39,9 +40,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT SubRequestCompletionInfo
 
  public:
 
-  //! Rang d'origine de la requête
+  //! Source rank of the request
   MessageRank sourceRank() const { return m_source_rank; }
-  //! Tag d'origine de la requête
+  //! Source tag of the request
   MessageTag sourceTag() const { return m_source_tag; }
 
  private:
@@ -58,5 +59,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT SubRequestCompletionInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

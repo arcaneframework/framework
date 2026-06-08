@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Collection.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'une collection.                                          */
+/* Base class for a collection.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_COLLECTION_H
 #define ARCCORE_COMMON_COLLECTION_H
@@ -29,11 +29,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'un objet avec compteur de référence.
+ * \brief Base class for an object with a reference counter.
  *
- * Ces objets sont gérés par compteur de référence.
+ * These objects are managed by a reference counter.
  */
 class ARCCORE_COMMON_EXPORT ObjectImpl
 {
@@ -48,9 +49,9 @@ class ARCCORE_COMMON_EXPORT ObjectImpl
 
  public:
 
-  //! Incrémente le compteur de référence
+  //! Increments the reference counter
   void addRef() { ++m_ref_count; }
-  //! Décrémente le compteur de référence
+  //! Decrements the reference counter
   void removeRef()
   {
     Int32 r = --m_ref_count;
@@ -59,17 +60,17 @@ class ARCCORE_COMMON_EXPORT ObjectImpl
     if (r == 0)
       deleteMe();
   }
-  //! Retourne la valeur du compteur de référence
+  //! Returns the value of the reference counter
   Int32 refCount() const { return m_ref_count.load(); }
 
  public:
 
-  //! Détruit cet objet
+  //! Destroys this object
   virtual void deleteMe() { delete this; }
 
  private:
 
-  std::atomic<Int32> m_ref_count; //!< Nombre de références sur l'objet.
+  std::atomic<Int32> m_ref_count; //!< Number of references on the object.
 
  private:
 
@@ -87,15 +88,14 @@ extern "C" ARCCORE_COMMON_EXPORT void throwNullReference();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un énumérateur.
+ * \brief Enumerator interface.
  *
- * Cette classe sert de classe de base à toutes les implémentations
- * d'itérateurs.
- * Cette classe ne doit pas être utilisée directement: pour effectuer une
- * énumération, il faut utiliser la classe Enumerator ou une de ces
- * classes dérivée.
+ * This class serves as the base class for all iterator implementations.
+ * This class should not be used directly: to perform an enumeration,
+ * you must use the Enumerator class or one of its derived classes.
  *
  * \sa Enumerator
  */
@@ -104,24 +104,25 @@ class ARCCORE_COMMON_EXPORT EnumeratorImplBase
 {
  public:
 
-  /*! \brief Remet à zéro l'énumérateur.
-  *
-  * Positionne l'énumérateur juste avant le premier élément de la collection.
-   * Il faut faire un moveNext() pour le rendre valide.
+  /*!
+   * \brief Resets the enumerator.
+   *
+   * Positions the enumerator just before the first element of the collection.
+   * A moveNext() must be performed to make it valid.
    */
   virtual void reset() = 0;
-  /*! \brief Avance l'énumérateur sur l'élément suivant de la collection.
+  /*! \brief Advances the enumerator to the next element in the collection.
    *
-   * \retval true si l'énumérateur n'a pas dépassé le dernier élément. Dans
-   * ce cas l'appel à current() est valide.
-   * \retval false si l'énumérateur a dépassé le derniere élément. Dans ce
-   * cas tout appel suivant à cette méthode retourne \a false et l'appel
-   * à current() n'est pas valide.
+   * \retval true if the enumerator has not passed the last element. In
+   * this case, the call to current() is valid.
+   * \retval false if the enumerator has passed the last element. In this
+   * case, any subsequent call to this method returns \a false and the call
+   * to current() is not valid.
    */
   virtual bool moveNext() = 0;
-  //! Objet courant de l'énumérateur.
+  //! Current object of the enumerator.
   virtual void* current() = 0;
-  //! Objet courant de l'énumérateur.
+  //! Current object of the enumerator.
   virtual const void* current() const = 0;
 
  private:
@@ -129,15 +130,16 @@ class ARCCORE_COMMON_EXPORT EnumeratorImplBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Enumérateur générique.
+ * \brief Generic enumerator.
  *
- * Cette classe permet d'itérer de manière générique sur une collection,
- * sans connaître le type des éléments de la collection. Pour une itération
- * utilisant un typage fort, il faut utiliser la classe template EnumeratorT.
+ * This class allows generic iteration over a collection without knowing
+ * the type of the collection elements. For iteration using strong typing,
+ * you must use the template class EnumeratorT.
  *
- * Exemple d'utilisation d'un énumérateur:
+ * Example of enumerator usage:
  *
  * \code
  * VectorT<int> integers;
@@ -149,14 +151,14 @@ class ARCCORE_COMMON_EXPORT EnumeratorBase
 {
  public:
 
-  //! Contruit un énumérateur nul.
+  //! Constructs a null enumerator.
   EnumeratorBase() = default;
 
   /*!
-   * \brief Contruit un énumérateur associé à l'implémentation \a impl.
+   * \brief Constructs an enumerator associated with the implementation \a impl.
    *
-   * L'instance devient propriétaire de l'implémentation qui est détruite
-   * lorsque l'instance est détruite.
+   * The instance becomes the owner of the implementation, which is destroyed
+   * when the instance is destroyed.
    */
   explicit EnumeratorBase(EnumeratorImplBase* impl)
   : m_impl(impl)
@@ -171,7 +173,7 @@ class ARCCORE_COMMON_EXPORT EnumeratorBase
 
  public:
 
-  //! Avance l'énumérateur sur l'élément suivant.
+  //! Advances the enumerator to the next element.
   bool operator++() { return moveNext(); }
 
  protected:
@@ -181,16 +183,17 @@ class ARCCORE_COMMON_EXPORT EnumeratorBase
 
  private:
 
-  AutoRef2<EnumeratorImplBase> m_impl; //!< Implémentation
+  AutoRef2<EnumeratorImplBase> m_impl; //!< Implementation
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Enumérateur typé.
+ * \brief Typed enumerator.
  *
- * \todo utiliser des traits pour les types références, pointeur et valeur
+ * \todo use traits for reference, pointer, and value types
  */
 template <class T>
 class EnumeratorT
@@ -239,17 +242,18 @@ EnumeratorT(const Collection<T>& collection)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Arguments d'un évènement envoyé par une collection.
+ * \brief Arguments of an event sent by a collection.
  *
  * \ingroup Collection
  *
- * Une collection peut envoyé 4 types d'évènements, indiqué par le champs
+ * A collection can send 4 types of events, indicated by the field
  * \a m_action:
- * \arg Clear lorsque tous les éléments de la liste sont supprimés
- * \arg Insert lorsqu'un élément de la liste est ajouté.
- * \arg Remove lorsqu'un élément de la liste est supprimé.
+ * \arg Clear when all elements of the list are deleted
+ * \arg Insert when an element is added to the list.
+ * \arg Remove when an element is deleted from the list.
  * \arg Set
  *
  */
@@ -288,34 +292,36 @@ class CollectionEventArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Evènements envoyés par une Collection
+ * \brief Events sent by a Collection
  * \relates Collection
  */
 typedef EventObservable<const CollectionEventArgs&> CollectionChangeEventHandler;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief classe de base d'implémentation d'une collection.
+ * \brief Base class for collection implementation.
  *
- * Une collection est un objet contenant des éléments (i.e. un conteneur).
+ * A collection is an object containing elements (i.e., a container).
  *
- * Il est possible de parcourir les éléments d'une collection au moyen
- * d'un énumerateur obtenu par enumerator(). L'énumérateur ainsi obtenu
- * est générique quel que soit le type de la collection. Il est par
- * conséquent moins performant qu'un énumérateur dédié à un type et il
- * vaut mieux utiliser ce dernier si cela est possible.
+ * It is possible to iterate over the elements of a collection using
+ * an enumerator obtained via enumerator(). The enumerator obtained this
+ * way is generic regardless of the collection type. It is therefore less
+ * performant than an enumerator dedicated to a type, and it is better
+ * to use the latter if possible.
  *
- * Une collection génère des événements lorsque des éléments sont supprimés,
- * insérés ou modifiés. Il est possible d'enregistrer un handler pour
- * obtenir ces évènements avec change().
+ * A collection generates events when elements are removed,
+ * inserted, or modified. It is possible to register a handler to
+ * receive these events using change().
  *
- * Les opérations constantes sont threadsafe.
+ * Constant operations are threadsafe.
  *
- * Cette classe est destinée à être dérivée pour chaque implémentation
- * d'une collection.
+ * This class is intended to be derived for each implementation
+ * of a collection.
  *
  * \sa EnumeratorImpl
  */
@@ -324,49 +330,49 @@ class CollectionImplBase
 {
  public:
 
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Integer size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type of a distance between array iterator elements
   typedef ptrdiff_t difference_type;
 
  public:
 
-  //! Construit une collection vide
+  //! Constructs an empty collection
   CollectionImplBase() = default;
-  //! Construit une collection avec \a acount éléments
+  //! Constructs a collection with \a acount elements
   explicit CollectionImplBase(Integer acount)
   : m_count(acount)
   {}
-  /*!\brief Opérateur de recopie.
-   * les handlers d'évènements ne sont pas recopiés. */
+  /*!\brief Copy constructor.
+   * event handlers are not copied. */
   CollectionImplBase(const CollectionImplBase& from) = delete;
 
  public:
 
-  //! Retourne le nombre d'éléments de la collection
+  //! Returns the number of elements in the collection
   Integer count() const { return m_count; }
-  //! Supprime tous les éléments de la collection
+  //! Removes all elements from the collection
   virtual void clear() = 0;
 
  public:
 
-  //! Evènement envoyé avant de supprimer tous les éléments
+  //! Event sent before removing all elements
   virtual void onClear() {}
-  //! Evènement envoyé lorsque tous les éléments ont été supprimés
+  //! Event sent when all elements have been removed
   virtual void onClearComplete()
   {
     _sendEvent(CollectionEventArgs::ClearComplete, 0, 0);
   }
-  //! Evènement envoyé avant d'insérer un élément
+  //! Event sent before inserting an element
   virtual void onInsert() {}
-  //! Evènement envoyé après insertion d'un élément
+  //! Event sent after inserting an element
   virtual void onInsertComplete(void* object, Integer position)
   {
     _sendEvent(CollectionEventArgs::InsertComplete, object, position);
   }
-  //! Evènement envoyé avant de supprimer un élément
+  //! Event sent before removing an element
   virtual void onRemove() {}
-  //! Evènement envoyé après supression d'un élément
+  //! Event sent after removing an element
   virtual void onRemoveComplete(void* object, Integer position)
   {
     _sendEvent(CollectionEventArgs::RemoveComplete, object, position);
@@ -380,7 +386,7 @@ class CollectionImplBase
 
  public:
 
-  //! Retourne un énumérateur générique sur la collection.
+  //! Returns a generic enumerator for the collection.
   virtual EnumeratorImplBase* enumerator() const = 0;
 
  public:
@@ -410,9 +416,10 @@ class CollectionImplBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief classe de base d'implémentation d'une collection typée.
+ * \brief base class for implementation of a typed collection.
  */
 template <class T>
 class CollectionImplT
@@ -443,7 +450,7 @@ class CollectionImplT
 
  public:
 
-  //! Applique le fonctor \a f à tous les éléments de la collection
+  //! Applies the functor \a f to all elements of the collection
   template <class Function> Function
   each(Function f)
   {
@@ -461,8 +468,9 @@ class CollectionImplT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'une collection.
+ * \brief Base class for a collection.
  * \ingroup Collection
  */
 class ARCCORE_COMMON_EXPORT CollectionBase
@@ -480,10 +488,11 @@ class ARCCORE_COMMON_EXPORT CollectionBase
 
  public:
 
-  /*! \brief Créé une collection nulle.
+  /*!
+   * \brief Creates a null collection.
    *
-   * L'instance n'est pas utilisable tant qu'elle n'a pas été affectée
-   * à une collection non nulle (par exemple un vecteur).
+   * The instance is not usable until it has been assigned
+   * to a non-null collection (e.g., a vector).
    */
   CollectionBase() = default;
   CollectionBase& operator=(const CollectionBase& rhs)
@@ -500,13 +509,13 @@ class ARCCORE_COMMON_EXPORT CollectionBase
 
  public:
 
-  //! Supprime tous les éléments de la collection
+  //! Removes all elements from the collection
   void clear() { m_ref->clear(); }
-  //! Nombre d'éléments de la collection
+  //! Number of elements in the collection
   Integer count() const { return m_ref->count(); }
-  //! True si la collection est vide
+  //! True if the collection is empty
   bool empty() const { return count() == 0; }
-  //! Evènement invoqués lorsque la collection change
+  //! Event invoked when the collection changes
   CollectionChangeEventHandler& change() { return m_ref->change(); }
 
  protected:
@@ -541,8 +550,9 @@ class ARCCORE_COMMON_EXPORT CollectionBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'une collection fortement typée.
+ * \brief Base class for a strongly typed collection.
  * \ingroup Collection
  */
 template <typename T>
@@ -561,16 +571,16 @@ class Collection
 
  public:
 
-  //! Type d'un itérateur sur toute la collection
+  //! Type of an iterator over the entire collection
   typedef EnumeratorT<T> Enumerator;
 
  public:
 
   /*!
-   * \brief Créé une collection nulle.
+   * \brief Creates a null collection.
    *
-   * L'instance n'est pas utilisable tant qu'elle n'a pas été affectée
-   * à une collection non nulle.
+   * The instance is not usable until it has been assigned
+   * to a non-null collection.
    */
   Collection() = default;
 
@@ -600,7 +610,7 @@ class Collection
 
  public:
 
-  //! Applique le fonctor \a f à tous les éléments de la collection
+  //! Applies the functor \a f to all elements of the collection
   template <class Function> Function
   each(Function f) { return _cast().each(f); }
 

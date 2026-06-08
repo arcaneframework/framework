@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiRequestList.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Liste de requêtes MPI.                                                    */
+/* MPI request list.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIREQUESTLIST_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIREQUESTLIST_H
@@ -22,8 +22,9 @@
 
 namespace Arcane::MessagePassing::Mpi
 {
+
 /*!
- * \brief Liste de requêtes MPI.
+ * \brief MPI request list.
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequestList
 : public internal::RequestListBase
@@ -54,5 +55,4 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequestList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

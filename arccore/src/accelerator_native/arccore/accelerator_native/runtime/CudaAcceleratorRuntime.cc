@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CudaAcceleratorRuntime.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Runtime pour 'Cuda'.                                                      */
+/* Runtime for 'Cuda'.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,7 +42,7 @@
 
 #include <cuda.h>
 
-// Pour std::memset
+// For std::memset
 #include <cstring>
 
 #ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
@@ -62,8 +62,8 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// A partir de CUDA 13, il y a un nouveau type cudaMemLocation
-// pour les méthodes telles cudeMemAdvise ou cudaMemPrefetch
+// Starting from CUDA 13, there is a new cudaMemLocation type
+// for methods such as cudeMemAdvise or cudaMemPrefetch
 #if defined(ARCCORE_USING_CUDA13_OR_GREATER)
 inline cudaMemLocation
 _getMemoryLocation(int device_id)
@@ -181,13 +181,14 @@ class UnifiedMemoryConcreteAllocator
       if (r != cudaSuccess)
         return r;
 
-      // Si demandé, indique qu'on préfère allouer sur le GPU.
-      // NOTE: Dans ce cas, on récupère le device actuel pour positionner la localisation
-      // préférée. Dans le cas où on utilise MemoryPool, cette allocation ne sera effectuée
-      // qu'une seule fois. Si le device par défaut pour un thread change au cours du calcul
-      // il y aura une incohérence. Pour éviter cela, on pourrait faire un cudaMemAdvise()
-      // pour chaque allocation (via _applyHint()) mais ces opérations sont assez couteuses
-      // et s'il y a beaucoup d'allocation il peut en résulter une perte de performance.
+      // If requested, indicates that we prefer to allocate on the GPU.
+      // NOTE: In this case, we retrieve the current device to position the
+      // preferred location. If we use MemoryPool, this allocation will only
+      // be performed once. If the default device for a thread changes during
+      // computation, there will be an inconsistency. To avoid this, we could
+      // call cudaMemAdvise() for each allocation (via _applyHint()) but these
+      // operations are quite costly and if there are many allocations, a
+      // performance loss may result.
       if (m_use_hint_as_mainly_device) {
         int device_id = 0;
         void* p = *ptr;
@@ -205,18 +206,20 @@ class UnifiedMemoryConcreteAllocator
  public:
 
   bool m_use_ats = false;
-  //! Si vrai, par défaut on considère toutes les allocations comme eMemoryLocationHint::MainlyDevice
+  //! If true, by default we consider all allocations as
+  //! eMemoryLocationHint::MainlyDevice
   bool m_use_hint_as_mainly_device = false;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur pour la mémoire unifiée.
+ * \brief Allocator for unified memory.
  *
- * Pour éviter des effets de bord du driver NVIDIA qui effectue les transferts
- * entre le CPU et le GPU par page. on alloue la mémoire par bloc multiple
- * de la taille d'une page.
+ * To avoid side effects of the NVIDIA driver which performs transfers
+ * between the CPU and the GPU page by page, we allocate memory in multiple
+ * blocks of the size of a page.
  */
 class UnifiedMemoryCudaMemoryAllocator
 : public AcceleratorMemoryAllocatorBase
@@ -252,9 +255,9 @@ class UnifiedMemoryCudaMemoryAllocator
   void _applyHint(void* p, size_t new_size, MemoryAllocationArgs args)
   {
     eMemoryLocationHint hint = args.memoryLocationHint();
-    // Utilise le device actif pour positionner le GPU par défaut
-    // On ne le fait que si le \a hint le nécessite pour éviter d'appeler
-    // cudaGetDevice() à chaque fois.
+    // Uses the active device to position the GPU by default
+    // We only do this if the hint requires it to avoid calling
+    // cudaGetDevice() every time.
     int device_id = 0;
     if (hint == eMemoryLocationHint::MainlyDevice || hint == eMemoryLocationHint::HostAndDeviceMostlyRead) {
       cudaGetDevice(&device_id);
@@ -446,13 +449,14 @@ void arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Map contenant l'occupation idéale pour un kernel donné.
+ * \brief Map containing the ideal occupancy for a given kernel.
  *
- * \note Pour l'instant, on ne supporte pas d'avoir une valeur non nulle
- * pour la quantité de mémoire partagée.
+ * \note For now, we do not support having a non-zero value
+ * for the shared memory quantity.
  *
- * En cas d'erreur dans le calcul, on retourne une valeur de zéro.
+ * In case of an error during calculation, we return a zero value.
  */
 class OccupancyMap
 {
@@ -620,7 +624,7 @@ class CudaRunQueueEvent
 
  public:
 
-  // Enregistre l'événement au sein d'une RunQueue
+  // Register the event within a RunQueue
   void recordQueue(Impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<CudaRunQueueStream*>(stream);
@@ -640,12 +644,12 @@ class CudaRunQueueEvent
 
   Int64 elapsedTime(IRunQueueEventImpl* start_event) final
   {
-    // NOTE: Les évènements doivent avoir été créé avec le timer actif
+    // NOTE: Events must have been created with the timer active
     ARCCORE_CHECK_POINTER(start_event);
     auto* true_start_event = static_cast<CudaRunQueueEvent*>(start_event);
     float time_in_ms = 0.0;
 
-    // TODO: regarder si nécessaire
+    // TODO: check if necessary
     // ARCCORE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
 
     ARCCORE_CHECK_CUDA(cudaEventElapsedTime(&time_in_ms, true_start_event->m_cuda_event, m_cuda_event));
@@ -795,8 +799,8 @@ class CudaRunnerRuntime
   {
     cudaPointerAttributes ca;
     ARCCORE_CHECK_CUDA(cudaPointerGetAttributes(&ca, ptr));
-    // NOTE: le type Arcane 'ePointerMemoryType' a normalememt les mêmes valeurs
-    // que le type CUDA correspondant donc on peut faire un cast simple.
+    // NOTE: the Arcane type 'ePointerMemoryType' normally has the same values
+    // as the corresponding CUDA type, so a simple cast can be done.
     auto mem_type = static_cast<ePointerMemoryType>(ca.type);
     _fillPointerAttribute(attribute, mem_type, ca.device,
                           ptr, ca.devicePointer, ca.hostPointer);
@@ -824,8 +828,8 @@ class CudaRunnerRuntime
   {
 #ifdef ARCCORE_HAS_CUDA_NVTOOLSEXT
     if (color_rgb >= 0) {
-      // NOTE: Il faudrait faire: nvtxEventAttributes_t eventAttrib = { 0 };
-      // mais cela provoque pleins d'avertissement de type 'missing initializer for member'
+      // NOTE: It would be necessary to do: nvtxEventAttributes_t eventAttrib = { 0 };
+      // but this causes many 'missing initializer for member' warnings
       nvtxEventAttributes_t eventAttrib;
       std::memset(&eventAttrib, 0, sizeof(nvtxEventAttributes_t));
       eventAttrib.version = NVTX_VERSION;
@@ -858,8 +862,8 @@ class CudaRunnerRuntime
   {
     Int32 shared_memory = orig_args.sharedMemorySize();
     if (orig_args.isCooperative()) {
-      // En mode coopératif, s'assure qu'on ne lance pas plus de blocs
-      // que le maximum qui peut résider sur le GPU.
+      // In cooperative mode, ensure that we do not launch more blocks
+      // than the maximum that can reside on the GPU.
       Int32 nb_thread = orig_args.nbThreadPerBlock();
       Int32 nb_block = orig_args.nbBlockPerGrid();
       int nb_block_per_sm = 0;
@@ -879,15 +883,15 @@ class CudaRunnerRuntime
       return orig_args;
     if (shared_memory < 0)
       shared_memory = 0;
-    // Pour l'instant, on ne fait pas de calcul si la mémoire partagée est non nulle.
+    // For now, we do not perform calculation if shared memory is non-zero.
     if (shared_memory != 0)
       return orig_args;
     Int32 computed_block_size = m_occupancy_map.getNbThreadPerBlock(kernel_ptr);
     if (computed_block_size == 0)
       return orig_args;
 
-    // Ici, on utilise le nombre de threads par bloc pour avoir une
-    // occupation maximale.
+    // Here, we use the number of threads per block to achieve a
+    // maximum occupancy.
     KernelLaunchArgs modified_args(orig_args);
     Int64 big_b = (total_loop_size + computed_block_size - 1) / computed_block_size;
     int blocks_per_grid = CheckedConvert::toInt32(big_b);
@@ -990,9 +994,9 @@ fillDevices(bool is_verbose)
     o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
 #endif
 
-    // TODO: On suppose que tous les GPUs sont les mêmes et donc
-    // que le nombre de SM par GPU est le même. Cela est utilisé pour
-    // calculer le nombre de blocs en mode coopératif.
+    // TODO: We assume that all GPUs are the same and therefore
+    // that the number of SM per GPU is the same. This is used to
+    // calculate the number of blocks in cooperative mode.
     m_multi_processor_count = dp.multiProcessorCount;
 
     {
@@ -1034,7 +1038,7 @@ fillDevices(bool is_verbose)
 
   Int32 global_cupti_level = 0;
 
-  // Regarde si on active Cupti
+  // Check if Cupti is active
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUPTI_LEVEL", true))
     global_cupti_level = v.value();
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_CUPTI_FLUSH", true))
@@ -1066,9 +1070,9 @@ class CudaMemoryCopier
       queue->copyMemory(MemoryCopyArgs(to.bytes(), from.bytes()).addAsync(queue->isAsync()));
       return;
     }
-    // 'cudaMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
-    // uniquement compte de la valeur des pointeurs. Il faudrait voir si
-    // utiliser \a from_mem et \a to_mem peut améliorer les performances.
+    // 'cudaMemcpyDefault' automatically knows what to do by only considering
+    // the pointer values. We should see if using \a from_mem and \a to_mem
+    // can improve performance.
     ARCCORE_CHECK_CUDA(cudaMemcpy(to.data(), from.data(), from.bytes().size(), cudaMemcpyDefault));
   }
 };
@@ -1098,8 +1102,8 @@ void _setAllocator(Accelerator::AcceleratorMemoryAllocatorBase* allocator)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Cette fonction est le point d'entrée utilisé lors du chargement
-// dynamique de cette bibliothèque
+// This function is the entry point used when dynamically loading
+// this library
 extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimecuda(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {

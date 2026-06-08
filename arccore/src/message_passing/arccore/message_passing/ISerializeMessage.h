@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISerializeMessage.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un message de sérialisation entre sous-domaines.              */
+/* Interface for a serialization message between subdomains.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_ISERIALIZEMESSAGE_H
 #define ARCCORE_MESSAGEPASSING_ISERIALIZEMESSAGE_H
@@ -25,21 +25,22 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un message de sérialisation entre IMessagePassingMng.
+ * \brief Interface for a serialization message between IMessagePassingMng.
  *
- * Un message de sérialisation consiste en une série d'octets envoyés
- * d'un rang source() à un rang destination().
- * Si isSend() est vrai, c'est source() qui envoie à destination(),
- * sinon c'est l'inverse.
- * S'il s'agit d'un message de réception, le serializer() est alloué
- * et remplit automatiquement. Pour que le parallélisme fonctionne correctement,
- * il faut qu'à un message d'envoi corresponde un message de réception
- * complémentaire (envoyé par le rang destination()).
+ * A serialization message consists of a series of bytes sent
+ * from a source rank() to a destination rank().
+ * If isSend() is true, source() sends to destination(),
+ * otherwise it is the reverse.
+ * If it is a receive message, the serializer() is allocated
+ * and filled automatically. For parallelism to work correctly,
+ * a send message must correspond to a receive message
+ * (sent by the destination rank).
  *
- * Le message peut-être non bloquant. Un message peut-être détruit
- * lorsque sa propriété finished() est vrai.
+ * The message can be non-blocking. A message can be destroyed
+ * when its finished() property is true.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
 {
@@ -51,72 +52,72 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
     MT_Recv,
     MT_Broadcast
   };
- //! Stratégie d'envoi/réception
+ //! Sending/receiving strategy
   enum class eStrategy
   {
-    //! Stratégie par défaut.
+    //! Default strategy.
     Default,
     /*!
-     * \brief Stratégie utilisant un seul message si possible.
+     * \brief Strategy using a single message if possible.
      *
-     * Cela suppose d'utiliser la fonction mpProbe()
-     * pour connaitre la taille du message
-     * avant de poster la réception.
+     * This assumes using the mpProbe() function
+     * to know the message size
+     * before posting the reception.
      */
     OneMessage
   };
 
-  virtual ~ISerializeMessage() = default; //!< Libère les ressources.
+  virtual ~ISerializeMessage() = default; //!< Releases resources.
 
  public:
 
-  //! \a true s'il faut envoyer, \a false s'il faut recevoir
+  //! \a true if it should send, \a false if it should receive
   virtual bool isSend() const =0;
 
-  //! Type du message
+  //! Message type
   virtual eMessageType messageType() const =0;
 
   /*!
-   * \brief Rang du destinataire (si isSend() est vrai) ou envoyeur.
+   * \brief Destination rank (if isSend() is true) or sender.
    *
-   * Dans le cas d'une réception, il est possible de spécifier n'importe quel
-   * rang en spécifiant A_NULL_RANK.
+   * In the case of a reception, it is possible to specify any
+   * rank by specifying A_NULL_RANK.
    */
   ARCCORE_DEPRECATED_2020("Use destination() instead")
   virtual Int32 destRank() const =0;
 
   /*!
-   * \brief Rang du destinataire (si isSend() est vrai) ou de l'envoyeur.
+   * \brief Destination rank (if isSend() is true) or sender.
    *
-   * Dans le cas d'une réception, le rang peut valoir nul pour indiquer
-   * qu'on souhaite recevoir de n'importe qui.
-   * rang en spécifiant A_NULL_RANK.
+   * In the case of a reception, the rank can be null to indicate
+   * that you wish to receive from anyone.
+   * rank by specifying A_NULL_RANK.
    */
   virtual MessageRank destination() const =0;
 
   /*!
-   * \brief Rang de l'envoyeur du message
-   * Voir aussi destRank() pour une interprétation suivant la valeur de isSend()
+   * \brief Message sender rank
+   * See also destRank() for interpretation based on the value of isSend()
    */
   ARCCORE_DEPRECATED_2020("Use source() instead")
   virtual Int32 origRank() const =0;
 
   /*!
-   * \brief Rang de l'envoyeur du message
+   * \brief Message sender rank
    *
-   * Voir aussi destination() pour une interprétation suivant la valeur de isSend()
+   * See also destination() for interpretation based on the value of isSend()
    */
   virtual MessageRank source() const =0;
 
-  //! Sérialiseur
+  //! Serializer
   virtual ISerializer* serializer() =0;
 
-  //! \a true si le message est terminé
+  //! \a true if the message is finished
   virtual bool finished() const =0;
 
   /*!
    * \internal
-   * \brief Positionne l'état 'fini' du message.
+   * \brief Sets the 'finished' state of the message.
    */
   virtual void setFinished(bool v) =0;
 
@@ -128,50 +129,50 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
 
   /*!
    * \internal
-   * \brief Positionne un tag interne pour le message.
+   * \brief Sets an internal tag for the message.
    *
-   * Ce tag est utile s'il faut envoyer/recevoir plusieurs messages
-   * à un même couple origin/destination.
+   * This tag is useful if multiple messages need to be sent/received
+   * to the same origin/destination pair.
    *
-   * Cette méthode est interne à %Arccore.
+   * This method is internal to %Arccore.
    */
   virtual void setInternalTag(MessageTag tag) =0;
 
   /*!
    * \internal
-   * \brief Tag interne du message.
+   * \brief Internal tag of the message.
    */
   ARCCORE_DEPRECATED_2020("Use internalTag() instead")
   virtual Int32 tag() const =0;
 
   /*!
    * \internal
-   * \brief Tag interne du message.
+   * \brief Internal tag of the message.
    */
   virtual MessageTag internalTag() const =0;
 
   /*!
    * \internal
-   * \brief Identificant du message
+   * \brief Message identifier
    */
   virtual MessageId _internalMessageId() const =0;
 
   /*!
-   * \brief Positionne la stratégie d'envoi/réception.
+   * \brief Sets the sending/receiving strategy.
    *
-   * La stratégie utilisée doit être la même pour le message envoyé
-   * et le message de réception sinon le comportement est indéfini.
+   * The strategy used must be the same for the sent message
+   * and the receive message, otherwise the behavior is undefined.
    */
   virtual void setStrategy(eStrategy strategy) =0;
 
-  //! Stratégie utilisée pour les envois/réceptions
+  //! Strategy used for sends/receives
   virtual eStrategy strategy() const =0;
 
   /*!
-   * \brief Indique si le message a déjà été traité.
+   * \brief Indicates if the message has already been processed.
    *
-   * Si le message a déjà été traité, il n'est pas possible de changer certaines
-   * caractéristiques (comme la stratégie ou le tag)
+   * If the message has already been processed, it is not possible to change certain
+   * characteristics (such as the strategy or the tag)
    */
   virtual bool isProcessed() const =0;
 };
@@ -184,5 +185,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT ISerializeMessage
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

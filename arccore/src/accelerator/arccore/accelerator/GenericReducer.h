@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GenericReducer.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Gestion des réductions pour les accélérateurs.                            */
+/* Reduction management for accelerators.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_GENERICREDUCER_H
 #define ARCCORE_ACCELERATOR_GENERICREDUCER_H
@@ -31,8 +31,9 @@ class GenericReducerIf;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Classe pour déterminer l'instance de 'Reducer2' à utiliser en fonction de l'opérateur.
-// A spécialiser.
+
+// Class to determine the 'Reducer2' instance to use based on the operator.
+// To be specialized.
 template <typename DataType, typename Operator>
 class ReduceOperatorToReducerTypeTraits;
 
@@ -60,11 +61,12 @@ class ReduceOperatorToReducerTypeTraits<DataType, SumOperator<DataType>>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base pour effectuer une réduction.
+ * \brief Base class for performing a reduction.
  *
- * Contient les arguments nécessaires pour effectuer une réduction.
+ * Contains the necessary arguments to perform a reduction.
  */
 template <typename DataType>
 class GenericReducerBase
@@ -103,19 +105,20 @@ class GenericReducerBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe pour effectuer un partitionnement d'une liste.
+ * \brief Class for partitioning a list.
  *
- * La liste est partitionnée en deux listes.
+ * The list is partitioned into two lists.
  *
- * \a DataType est le type de donnée.
+ * \a DataType is the data type.
  */
 template <typename DataType>
 class GenericReducerIf
 {
-  // TODO: Faire le malloc sur le device associé à la queue.
-  //       et aussi regarder si on peut utiliser mallocAsync().
+  // TODO: Perform malloc on the queue's associated device.
+  //       and also check if mallocAsync() can be used.
 
  public:
 
@@ -135,7 +138,7 @@ class GenericReducerIf
       size_t temp_storage_size = 0;
       cudaStream_t stream = Impl::CudaUtils::toNativeStream(queue);
       DataType* reduced_value_ptr = nullptr;
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine the size for allocation
       ARCCORE_CHECK_CUDA(::cub::DeviceReduce::Reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr,
                                                      nb_item, reduce_op, init_value, stream));
 
@@ -152,7 +155,7 @@ class GenericReducerIf
       size_t temp_storage_size = 0;
       hipStream_t stream = Impl::HipUtils::toNativeStream(queue);
       DataType* reduced_value_ptr = nullptr;
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine the size for allocation
       ARCCORE_CHECK_HIP(rocprim::reduce(nullptr, temp_storage_size, input_iter, reduced_value_ptr, init_value,
                                         nb_item, reduce_op, stream));
 
@@ -181,7 +184,7 @@ class GenericReducerIf
     } break;
 #endif
     case eExecutionPolicy::Thread:
-      // Pas encore implémenté en multi-thread
+      // Not yet implemented in multi-thread
       [[fallthrough]];
     case eExecutionPolicy::Sequential: {
       DataType reduced_value = init_value;
@@ -211,18 +214,19 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Algorithme générique de réduction sur accélérateur.
+ * \brief Generic accelerator reduction algorithm.
  *
- * La réduction se fait via les appels à applyMin(), applyMax(), applySum(),
- * applyMinWithIndex(), applyMaxWithIndex() ou applySumWithIndex(). Ces
- * méthodes sont asynchrones.  Après réduction, il est possible récupérer la
- * valeur réduite via reducedValue(). L'appel à reducedValue() bloque tant
- * que la réduction n'est pas terminée.
+ * The reduction is performed via calls to applyMin(), applyMax(), applySum(),
+ * applyMinWithIndex(), applyMaxWithIndex() or applySumWithIndex(). These
+ * methods are asynchronous. After reduction, it is possible to retrieve the
+ * reduced value via reducedValue(). The call to reducedValue() blocks until
+ * the reduction is complete.
  *
- * Les instances de cette classe peuvent être utilisées plusieurs fois.
+ * Instances of this class can be used multiple times.
  *
- * Voici un exemple pour calculer la somme d'un tableau de 50 éléments:
+ * Here is an example to calculate the sum of an array of 50 elements:
  *
  * \code
  * using namespace Arcane;
@@ -232,11 +236,11 @@ namespace Arcane::Accelerator
  * Arcane::RunQueue queue = ...;
  * Arcane::Accelerator::GenericReducer<Real> reducer(queue);
  *
- * // Calcul direct
+ * // Direct calculation
  * reducer.applySum(t1_view);
  * std::cout << "Sum is '" << reducer.reducedValue() << "\n";
  *
- * // Calcul avec lambda
+ * // Calculation with lambda
  * auto getter_func = [=] ARCCORE_HOST_DEVICE(Int32 index) -> Real
  * {
  *   return t1_view[index];
@@ -259,46 +263,46 @@ class GenericReducer
 
  public:
 
-  //! Applique une réduction 'Min' sur les valeurs \a values
+  //! Applies a 'Min' reduction on the values \a values
   void applyMin(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
     _apply(values.size(), values.data(), Impl::MinOperator<DataType>{}, trace_info);
   }
 
-  //! Applique une réduction 'Max' sur les valeurs \a values
+  //! Applies a 'Max' reduction on the values \a values
   void applyMax(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
     _apply(values.size(), values.data(), Impl::MaxOperator<DataType>{}, trace_info);
   }
 
-  //! Applique une réduction 'Somme' sur les valeurs \a values
+  //! Applies a 'Sum' reduction on the values \a values
   void applySum(SmallSpan<const DataType> values, const TraceInfo& trace_info = TraceInfo())
   {
     _apply(values.size(), values.data(), Impl::SumOperator<DataType>{}, trace_info);
   }
 
-  //! Applique une réduction 'Min' sur les valeurs sélectionnées par \a select_lambda
+  //! Applies a 'Min' reduction on the values selected by \a select_lambda
   template <typename SelectLambda>
   void applyMinWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
     _applyWithIndex(nb_value, select_lambda, Impl::MinOperator<DataType>{}, trace_info);
   }
 
-  //! Applique une réduction 'Max' sur les valeurs sélectionnées par \a select_lambda
+  //! Applies a 'Max' reduction on the values selected by \a select_lambda
   template <typename SelectLambda>
   void applyMaxWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
     _applyWithIndex(nb_value, select_lambda, Impl::MaxOperator<DataType>{}, trace_info);
   }
 
-  //! Applique une réduction 'Somme' sur les valeurs sélectionnées par \a select_lambda
+  //! Applies a 'Sum' reduction on the values selected by \a select_lambda
   template <typename SelectLambda>
   void applySumWithIndex(Int32 nb_value, const SelectLambda& select_lambda, const TraceInfo& trace_info = TraceInfo())
   {
     _applyWithIndex(nb_value, select_lambda, Impl::SumOperator<DataType>{}, trace_info);
   }
 
-  //! Valeur de la réduction
+  //! Reduction value
   DataType reducedValue()
   {
     m_is_already_called = false;

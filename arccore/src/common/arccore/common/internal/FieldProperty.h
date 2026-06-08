@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FieldProperty.h                                             (C) 2000-2026 */
 /*                                                                           */
-/* Gestion des propriétés comme champ de classes.                            */
+/* Management of properties as class fields.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_FIELDPROPERTY_H
 #define ARCCORE_COMMON_INTERNAL_FIELDPROPERTY_H
@@ -184,16 +184,16 @@ class PropertyImpl
    public:
 
     /*!
-   * \brief Récupère la valeur d'une option.
+   * \brief Retrieves the value of an option.
    *
-   * L'ordre de récupération est le suivant:
-   * - si \a param_name est non nul, regarde s'il existe une valeur
-   * dans \a m_values associée à ce paramètre. Si oui, on retourne cette
-   * valeur.
-   * - pour chaque nom \a x de \a env_values, regarde si une variable
-   * d'environnement \a x existe et retourne sa valeur si c'est le cas.
-   * - si aucune des méthodes précédente n'a fonctionné, retourne
-   * la valeur \a default_value.
+   * The retrieval order is as follows:
+   * - if \a param_name is not null, check if there is a value
+   * in \a m_values associated with this parameter. If so, return this
+   * value.
+   * - for each name \a x in \a env_values, check if an environment
+   * variable \a x exists and return its value if it does.
+   * - if none of the previous methods worked, return
+   * the \a default_value.
    */
     String getValue(const UniqueArray<String>& env_values, const String& param_name,
                     const String& default_value)
@@ -224,7 +224,7 @@ class PropertyImpl
     String _searchParam(const String& param_name)
     {
       String v;
-      // Une option peut être présente plusieurs fois. Prend la dernière.
+      // An option can appear multiple times. Takes the last one.
       for (const auto& x : m_values) {
         if (x.name == param_name)
           v = x.value;

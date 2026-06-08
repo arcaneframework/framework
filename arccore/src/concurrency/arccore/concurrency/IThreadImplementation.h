@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IThreadImplementation.h                                     (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service implémentant le support des threads.               */
+/* Interface of a service implementing thread support.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_ITHREADIMPLEMENTATION_H
 #define ARCCORE_CONCURRENCY_ITHREADIMPLEMENTATION_H
@@ -26,12 +26,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service implémentant le support des threads.
+ * \brief Interface of a service implementing thread support.
  *
- * Ce service utilise un compteur de référence et doit être détruit
- * s'il n'y a plus de références dessus. Il ne doit donc en général pas
- * être détruit explicitement.
+ * This service uses a reference counter and must be destroyed
+ * if there are no more references to it. It should therefore generally not
+ * be destroyed explicitly.
  */
 class ARCCORE_CONCURRENCY_EXPORT IThreadImplementation
 {
@@ -81,18 +82,17 @@ class ARCCORE_CONCURRENCY_EXPORT IThreadImplementation
   virtual IThreadBarrier* createBarrier() = 0;
 
   /*!
-   * \brief Vrai si l'implémentation supporte plusieurs threads.
+   * \brief True if the implementation supports multiple threads.
    *
-   * En mono-thread, seul un thread s'exécute. Il n'y a donc pas
-   * besoin de créer les classes gérant la synchronisation telles que les
-   * Mutex ou les SpinLock.
+   * In single-thread mode, only one thread executes. Therefore, there is no
+   * need to create synchronization management classes such as Mutexes or SpinLocks.
    */
   virtual bool isMultiThread() const { return true; }
 
  private:
 
-  // Définitions pour éviter d'affichier les messages d'avertissement
-  // à cause des méthodes obsolètes.
+  // Definitions to avoid displaying warnings
+  // due to deprecated methods.
 
   void _deprecatedCreateSpinLock(Int64* spin_lock_addr);
   void _deprecatedLockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr);

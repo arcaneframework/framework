@@ -21,8 +21,8 @@ struct StatInfo
   bool is_destroyed = false;
   int nb_add = 0;
   int nb_remove = 0;
-  // Vérifie que 'is_destroyed' est vrai et qu'on a fait
-  // le bon nombre d'appel à 'nb_add' et 'nb_remove'.
+  // Checks that 'is_destroyed' is true and that the correct number of
+  // calls to 'nb_add' and 'nb_remove' were made.
   bool checkValid(int nb_call)
   {
     if (nb_add!=nb_call){
@@ -72,7 +72,7 @@ class Simple1
   Int32 m_nb_ref;
   StatInfo* m_stat_info;
 };
-// Test sans compteur de référence (avec std::shared_ptr).
+// Test without reference counter (using std::shared_ptr).
 class Simple2
 {
  public:
@@ -103,7 +103,7 @@ _doTest1(const RefType& ref_type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Teste si le compteur de référence détruit bien l'instance.
+// Tests if the reference counter correctly destroys the instance.
 TEST(ReferenceCounter, Misc)
 {
   typedef ReferenceCounter<Simple1> Simple1Reference;
@@ -116,7 +116,8 @@ TEST(ReferenceCounter, Misc)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Teste si le compteur de référence détruit bien l'instance.
+
+// Tests if the reference counter correctly destroys the instance.
 TEST(ReferenceCounter, Ref)
 {
   {
@@ -172,7 +173,7 @@ class TestClassWithDeleter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Teste si le compteur de référence détruit bien l'instance.
+// Tests if the reference counter correctly destroys the instance.
 TEST(ReferenceCounter, RefWithDeleter)
 {
   try{

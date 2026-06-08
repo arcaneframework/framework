@@ -6,7 +6,7 @@ if(NOT MPI_FOUND)
   )
 endif()
 
-# On a besoin du support de MPI 3.1
+# MPI 3.1 support is required
 if (NOT WIN32)
   if (MPI_CXX_VERSION)
     if (MPI_CXX_VERSION VERSION_LESS "3.1")

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ValueFiller.h                                               (C) 2000-2024 */
 /*                                                                           */
-/* Fonctions pour générer des valeurs (pour les tests).                      */
+/* Functions for generating values (for tests).                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_VALUEFILLER_H
 #define ARCCORE_BASE_VALUEFILLER_H
@@ -327,5 +327,4 @@ void fillRandom(Int64 seed, Span<DataType> values)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

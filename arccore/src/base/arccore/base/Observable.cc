@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Observable.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Observateur.                                                              */
+/* Observer.                                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,7 +40,7 @@ Observable::
 void Observable::
 attachObserver(IObserver* obs)
 {
-  // Vérifie que l'observeur n'est pas dans la liste.
+  // Checks that the observer is not in the list.
   if (m_observers.contains(obs))
     return;
   obs->attachToObservable(this);

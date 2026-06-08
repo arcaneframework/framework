@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayMetaData.h                                             (C) 2000-2026 */
 /*                                                                           */
-/* Tableau 1D.                                                               */
+/* 1D Array.                                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ARRAYMETADATA_H
 #define ARCCORE_COMMON_ARRAYMETADATA_H
@@ -27,22 +27,23 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  *
- * \brief Meta-Données des tableaux.
+ * \brief Array Metadata.
  *
- * Cette classe sert pour contenir les meta-données communes à toutes les
- * implémentations qui dérivent de AbstractArray.
+ * This class is used to hold common metadata for all
+ * implementations that derive from AbstractArray.
  *
- * Seules les classes qui implémentent une sémantique à la UniqueArray
- * ont le droit d'utiliser un allocateur autre que l'allocateur par défaut.
+ * Only classes that implement a UniqueArray semantics
+ * are allowed to use an allocator other than the default allocator.
  */
 class ARCCORE_COMMON_EXPORT ArrayMetaData
 {
-  // NOTE: Les champs de cette classe sont utilisés pour l'affichage TTF de totalview.
-  // Si on modifie leur ordre il faut mettre à jour la copie de cette classe
-  // dans l'afficheur totalview de Arcane.
+  // NOTE: The fields of this class are used for the TTF display of totalview.
+  // If their order is modified, the copy of this class
+  // in Arcane's totalview displayer must be updated.
 
   template <typename> friend class AbstractArray;
   template <typename> friend class Array2;
@@ -60,25 +61,25 @@ class ARCCORE_COMMON_EXPORT ArrayMetaData
 
  protected:
 
-  //! Nombre d'éléments du tableau (pour les tableaux 1D)
+  //! Number of elements in the array (for 1D arrays)
   Int64 size = 0;
-  //! Taille de la première dimension (pour les tableaux 2D)
+  //! Size of the first dimension (for 2D arrays)
   Int64 dim1_size = 0;
-  //! Taille de la deuxième dimension (pour les tableaux 2D)
+  //! Size of the second dimension (for 2D arrays)
   Int64 dim2_size = 0;
-  //! Nombre d'éléments alloués
+  //! Number of allocated elements
   Int64 capacity = 0;
-  //! Allocateur mémoire et options associées
+  //! Memory allocator and associated options
   MemoryAllocationOptions allocation_options;
-  //! Nombre de références sur l'instance
+  //! Number of references on the instance
   Int32 nb_ref = 0;
-  //! Information sur la localisation physique de la mémoire (si connue)
+  //! Information about the physical location of the memory (if known)
   eHostDeviceMemoryLocation m_host_device_memory_location = eHostDeviceMemoryLocation::Unknown;
-  //! Indique is cette instance a été allouée par l'opérateur new.
+  //! Indicates if this instance was allocated by the new operator.
   bool is_allocated_by_new = false;
-  //! Indique si cette instance n'est pas l'instance nulle (partagée par tous les SharedArray)
+  //! Indicates if this instance is not the null instance (shared by all SharedArray)
   bool is_not_null = false;
-  //! Indique si les appels à l'allocateur doivent être effectués collectivement.
+  //! Indicates if calls to the allocator must be performed collectively.
   bool is_collective_allocator = false;
 
  protected:
@@ -127,10 +128,11 @@ class ARCCORE_COMMON_EXPORT ArrayMetaData
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  *
- * \brief Ce type n'est plus utilisé.
+ * \brief This type is no longer used.
  */
 class ArrayImplBase
 {
@@ -138,10 +140,11 @@ class ArrayImplBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  *
- * \brief Cette classe n'est plus utilisée.
+ * \brief This class is no longer used.
  */
 template <typename T>
 class ArrayImplT

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExtentsV.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Tag pour les tableaux N-dimensions.                                       */
+/* Tag for N-dimensional arrays.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_EXTENTSV_H
 #define ARCCORE_BASE_EXTENTSV_H
@@ -31,8 +31,8 @@ namespace impl::extent
   {
     return ((x == DynExtent) ? 1 : 0);
   }
-  // Nombre de valeurs dynamiques dans la liste des arguments
-  // Un argument est dynamique s'il vaut Arcane::DynExtent
+  // Number of dynamic values in the list of arguments
+  // An argument is dynamic if it equals Arcane::DynExtent
   template <class... Int32> constexpr int nbDynamic(Int32... args)
   {
     return doSum(oneIfDynamic(args)...);
@@ -41,8 +41,9 @@ namespace impl::extent
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation pour les dimensions des tableaux à 0 dimensions.
+ * \brief Specialization for 0-dimensional array extents.
  */
 template <typename IndexType_>
 class ExtentsV<IndexType_>
@@ -62,8 +63,9 @@ class ExtentsV<IndexType_>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation pour les dimensions des tableaux à 1 dimension.
+ * \brief Specialization for 1-dimensional array extents.
  */
 template <typename IndexType_, Int32 X0>
 class ExtentsV<IndexType_, X0>
@@ -88,8 +90,9 @@ class ExtentsV<IndexType_, X0>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation pour les dimensions des tableaux à 2 dimensions.
+ * \brief Specialization for 2-dimensional array extents.
  */
 template <typename IndexType_, Int32 X0, Int32 X1>
 class ExtentsV<IndexType_, X0, X1>
@@ -113,8 +116,9 @@ class ExtentsV<IndexType_, X0, X1>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation pour les dimensions des tableaux à 3 dimensions.
+ * \brief Specialization for 3-dimensional array extents.
  */
 template <typename IndexType_, Int32 X0, Int32 X1, Int32 X2>
 class ExtentsV<IndexType_, X0, X1, X2>
@@ -137,8 +141,9 @@ class ExtentsV<IndexType_, X0, X1, X2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation pour les dimensions des tableaux à 4 dimensions.
+ * \brief Specialization for 4-dimensional array extents.
  */
 template <typename IndexType_, Int32 X0, Int32 X1, Int32 X2, Int32 X3>
 class ExtentsV<IndexType_, X0, X1, X2, X3>

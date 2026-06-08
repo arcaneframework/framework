@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
   desc.add_options()("help,h", "Show this help.")("dense,d", po::bool_switch()->default_value(false),
                                                   "Matrix is dense.")("input,i", po::value<std::string>()->required(),
                                                                       "Input binary file.")("output,o", po::value<std::string>()->required(),
-                                                                                            "Ouput matrix in the MatrixMarket format.");
+                                                                                            "Output matrix in the MatrixMarket format.");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);

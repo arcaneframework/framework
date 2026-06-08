@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayLayout.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Gestion de la disposition mémoire pour les tableaux N-dimensions.         */
+/* Memory layout management for N-dimensional arrays.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARRAYLAYOUT_H
 #define ARCCORE_BASE_ARRAYLAYOUT_H
@@ -21,10 +21,10 @@
 #include <array>
 
 /*
- * ATTENTION:
+ * WARNING:
  *
- * Toutes les classes de ce fichier sont expérimentales et l'API n'est pas
- * figée. A NE PAS UTILISER EN DEHORS DE ARCANE.
+ * All classes in this file are experimental and the API is not
+ * fixed. DO NOT USE OUTSIDE OF ARCANE.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,7 +84,8 @@ class ArrayLayout3
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Layout par défaut pour chaque dimension
+
+// Default layout for each dimension
 
 template<int N> class RightLayoutN;
 template<int N> class LeftLayoutN;
@@ -92,7 +93,7 @@ template<int N> class LeftLayoutN;
 class RightLayout
 {
  public:
-  //! Implémentation pour le rang N
+  //! Implementation for rank N
   template <int Rank> using LayoutType = RightLayoutN<Rank>;
   using Layout1Type = LayoutType<1>;
   using Layout2Type = LayoutType<2>;
@@ -116,13 +117,13 @@ template<> class RightLayoutN<3> : public ArrayLayout3<0,1,2> {};
 template<> class LeftLayoutN<2> : public ArrayLayout2<1,0> {};
 template<> class LeftLayoutN<3> : public ArrayLayout3<2,1,0> {};
 
-// Les 4 using suivants sont pour compatibilité. A supprimer dans la 3.9
+// The following 4 usings are for compatibility. To be removed in 3.9
 using LeftLayout2 = LeftLayout;
 using LeftLayout3 = LeftLayout;
 using RightLayout2 = RightLayout;
 using RightLayout3 = RightLayout;
 
-//! Le layout par défaut est toujours RightLayout
+//! The default layout is always RightLayout
 class DefaultLayout : public RightLayout {};
 
 /*---------------------------------------------------------------------------*/

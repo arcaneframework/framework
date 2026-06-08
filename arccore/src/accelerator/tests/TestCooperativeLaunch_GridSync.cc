@@ -23,7 +23,7 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Test performance de la synchronisation de grille
+// Test grid synchronization performance
 extern "C++" void
 _testCooperativeLaunch_GridSync(RunQueue queue, Int32 nb_value, Int32 nb_loop, Int32 nb_loop2)
 {

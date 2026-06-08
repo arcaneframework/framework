@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiTypeDispatcher.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des messages pour un type de données.                             */
+/* Message handling for a data type.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPITYPEDISPATCHER_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPITYPEDISPATCHER_H
@@ -94,5 +94,4 @@ class MpiTypeDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumArray.h                                                  (C) 2000-2026 */
 /*                                                                           */
-/* Tableaux multi-dimensionnel pour les types numériques.                    */
+/* Multi-dimensional arrays for numerical types.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_NUMARRAY_H
 #define ARCCORE_COMMON_NUMARRAY_H
@@ -33,23 +33,24 @@ concept NumArrayDataTypeConcept = std::is_trivially_copyable_v<T>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Tableaux multi-dimensionnels pour les types numériques accessibles
- * sur accélérateurs.
+ * \brief Multi-dimensional arrays for numerical types accessible
+ * on accelerators.
  *
- * L'implémentation actuelle supporte des tableaux jusqu'à 4 dimensions. L'accès
- * aux éléments se fait via l'opérateur 'operator()'.
+ * The current implementation supports arrays up to 4 dimensions. Element access
+ * is done via the 'operator()'.
  *
- * \warning Le redimensionnement via resize() ne conserve pas les valeurs existantes
- * sauf pour les tableaux de rang 1.
+ * \warning Resizing via resize() does not preserve existing values
+ * except for rank 1 arrays.
  *
- * \warning Cette classe utilise par défaut un allocateur spécifique qui permet de
- * rendre accessible ces valeurs à la fois sur l'hôte (CPU) et l'accélérateur.
- * Néanmoins, il faut pour cela que le runtime associé à l'accélérateur ait été
- * initialisé (\ref arcanedoc_parallel_accelerator). C'est pourquoi il ne faut pas
- * utiliser de variables globales de cette classe ou d'une classe dérivée.
+ * \warning This class by default uses a specific allocator that allows these
+ * values to be accessible both on the host (CPU) and the accelerator.
+ * However, this requires that the accelerator's associated runtime has been
+ * initialized (\ref arcanedoc_parallel_accelerator). Therefore, global variables
+ * of this class or a derived class must not be used.
  *
- * Pour plus d'informations, se reporter à la page \ref arcanedoc_core_types_numarray.
+ * For more information, refer to the page \ref arcanedoc_core_types_numarray.
  */
 template <typename DataType, typename Extents, typename LayoutPolicy>
 class NumArray
@@ -78,88 +79,88 @@ class NumArray
 
  public:
 
-  //! Nombre de dimensions du tableau
+  //! Number of dimensions of the array
   static constexpr int rank() { return Extents::rank(); }
 
  public:
 
-  //! Construit un tableau vide
+  //! Constructs an empty array
   NumArray()
   {
     _resizeInit();
   }
 
-  //! Construit un tableau en spécifiant directement la liste des dimensions
+  //! Constructs an array by specifying the dimension list directly
   explicit NumArray(DynamicDimsType extents)
   {
     resize(extents);
   }
 
-  //! Construit un tableau en spécifiant directement la liste des dimensions
+  //! Constructs an array by specifying the dimension list directly
   NumArray(const DynamicDimsType& extents, eMemoryResource r)
   : m_data(r)
   {
     resize(extents);
   }
-  //! Créé un tableau vide utilisant la ressource mémoire \a r
+  //! Creates an empty array using the memory resource \a r
   explicit NumArray(eMemoryResource r)
   : m_data(r)
   {
     _resizeInit();
   }
 
-  //! Construit un tableau avec 4 valeurs dynamiques
+  //! Constructs an array with 4 dynamic values
   NumArray(Int32 dim1_size, Int32 dim2_size,
            Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
   : ThatClass(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size))
   {
   }
 
-  //! Construit un tableau avec 4 valeurs dynamiques
+  //! Constructs an array with 4 dynamic values
   NumArray(Int32 dim1_size, Int32 dim2_size,
            Int32 dim3_size, Int32 dim4_size, eMemoryResource r) requires(Extents::nb_dynamic == 4)
   : ThatClass(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size), r)
   {
   }
 
-  //! Construit un tableau avec 3 valeurs dynamiques
+  //! Constructs an array with 3 dynamic values
   NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
   : ThatClass(DynamicDimsType(dim1_size, dim2_size, dim3_size))
   {
   }
-  //! Construit un tableau avec 3 valeurs dynamiques
+  //! Constructs an array with 3 dynamic values
   NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, eMemoryResource r) requires(Extents::nb_dynamic == 3)
   : ThatClass(DynamicDimsType(dim1_size, dim2_size, dim3_size), r)
   {
   }
 
-  //! Construit un tableau avec 2 valeurs dynamiques
+  //! Constructs an array with 2 dynamic values
   NumArray(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
   : ThatClass(DynamicDimsType(dim1_size, dim2_size))
   {
   }
-  //! Construit un tableau avec 2 valeurs dynamiques
+  //! Constructs an array with 2 dynamic values
   NumArray(Int32 dim1_size, Int32 dim2_size, eMemoryResource r) requires(Extents::nb_dynamic == 2)
   : ThatClass(DynamicDimsType(dim1_size, dim2_size), r)
   {
   }
 
-  //! Construit un tableau avec 1 valeur dynamique
+  //! Constructs an array with 1 dynamic value
   explicit NumArray(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
   : ThatClass(DynamicDimsType(dim1_size))
   {
   }
-  //! Construit un tableau avec 1 valeur dynamique
+  //! Constructs an array with 1 dynamic value
   NumArray(Int32 dim1_size, eMemoryResource r) requires(Extents::nb_dynamic == 1)
   : ThatClass(DynamicDimsType(dim1_size), r)
   {
   }
 
   /*!
-   * \brief Construit un tableau à partir de valeurs prédéfinies (tableaux 2D dynamiques).
+   * \brief Constructs an array from predefined values (only dynamic 2D arrays).
    *
-   * Les valeurs sont rangées de manière contigues en mémoire donc
-   * la liste \a alist doit avoir un layout qui correspond à celui de cette classe.
+   * The values are stored contiguously in memory, so
+   * the list \a alist must have a layout corresponding to this class.
    */
   NumArray(Int32 dim1_size, Int32 dim2_size, std::initializer_list<DataType> alist)
   requires(Extents::is_full_dynamic() && Extents::rank() == 2)
@@ -168,7 +169,7 @@ class NumArray
     this->m_data.copyInitializerList(alist);
   }
 
-  //! Construit un tableau à partir de valeurs prédéfinies (uniquement tableaux 1D dynamiques)
+  //! Constructs an array from predefined values (only dynamic 1D arrays)
   NumArray(Int32 dim1_size, std::initializer_list<DataType> alist)
   requires(Extents::isDynamic1D())
   : NumArray(dim1_size)
@@ -176,7 +177,7 @@ class NumArray
     this->m_data.copyInitializerList(alist);
   }
 
-  //! Construit une instance à partir d'une vue (uniquement tableaux 1D dynamiques)
+  //! Constructs an instance from a view (only dynamic 1D arrays)
   NumArray(SmallSpan<const DataType> v)
   requires(Extents::isDynamic1D())
   : NumArray(v.size())
@@ -184,7 +185,7 @@ class NumArray
     copy(v);
   }
 
-  //! Construit une instance à partir d'une vue (uniquement tableaux 1D dynamiques)
+  //! Constructs an instance from a view (only dynamic 1D arrays)
   NumArray(Span<const DataType> v)
   requires(Extents::isDynamic1D())
   {
@@ -209,11 +210,11 @@ class NumArray
   ThatClass& operator=(ThatClass&&) = default;
 
   /*!
-   * \brief Opérateur de recopie.
+   * \brief Copy assignment operator.
    *
-   * \warning Après appel à cette méthode, la ressource mémoire de l'instance
-   * sera celle de \a rhs. Si on souhaite faire une recopie en conservant la
-   * ressource mémoire associée il faut utiliser copy().
+   * \warning After calling this method, the instance's memory resource
+   * will be that of \a rhs. If you wish to perform a copy while keeping the
+   * associated memory resource, you must use copy().
    */
   ThatClass& operator=(const ThatClass& rhs)
   {
@@ -228,11 +229,11 @@ class NumArray
   }
 
   /*!
-   * \brief Échange les données avec \a rhs.
+   * \brief Swaps the data with \a rhs.
    *
-   * \warning L'allocateur mémoire est aussi échangé. Il est donc
-   * préférable que les deux NumArray utilisent le même allocateur
-   * et le même memoryRessource().
+   * \warning The memory allocator is also swapped. It is therefore
+   * preferable that both NumArray instances use the same allocator
+   * and the same memoryResource().
    */
   void swap(ThatClass& rhs)
   {
@@ -243,126 +244,126 @@ class NumArray
 
  public:
 
-  //! Nombre total d'éléments du tableau
+  //! Total number of elements in the array
   constexpr Int64 totalNbElement() const { return m_total_nb_element; }
-  //! Nombre de dimensions
+  //! Number of dimensions
   static constexpr Int32 nbDimension() { return Extents::rank(); }
-  //! Valeurs des dimensions
+  //! Values of the dimensions
   ArrayExtents<Extents> extents() const { return m_span.extents(); }
   ArrayExtentsWithOffset<Extents, LayoutPolicy> extentsWithOffset() const
   {
     return m_span.extentsWithOffset();
   }
   Int64 capacity() const { return m_data.capacity(); }
-  //TODO: rendre obsolète mi 2026
+  //TODO: deprecate by mid 2026
   eMemoryResource memoryRessource() const { return m_data.memoryResource(); }
   eMemoryResource memoryResource() const { return m_data.memoryResource(); }
-  //! Vue sous forme d'octets
+  //! View as bytes
   Span<std::byte> bytes() { return asWritableBytes(to1DSpan()); }
-  //! Vue constante forme d'octets
+  //! Constant view as bytes
   Span<const std::byte> bytes() const { return asBytes(to1DSpan()); }
 
-  //! Allocateur mémoire associé
+  //! Associated memory allocator
   IMemoryAllocator* memoryAllocator() const { return m_data.allocator(); }
 
   /*!
-   * \brief Positionne le nom du tableau pour les informations de debug.
+   * \brief Sets the array name for debug information.
    *
-   * Ce nom peut être utilisé par exemple pour les affichages listing.
+   * This name can be used, for example, in listing displays.
    */
   void setDebugName(const String& str) { m_data.setDebugName(str); }
 
-  //! Nom de debug (nul si aucun nom spécifié)
+  //! Debug name (null if no name specified)
   String debugName() { return m_data.debugName(); }
 
  public:
 
-  //! Valeur de la première dimension
+  //! Value of the first dimension
   constexpr Int32 dim1Size() const requires(Extents::rank() >= 1) { return m_span.extent0(); }
-  //! Valeur de la deuxième dimension
+  //! Value of the second dimension
   constexpr Int32 dim2Size() const requires(Extents::rank() >= 2) { return m_span.extent1(); }
-  //! Valeur de la troisième dimension
+  //! Value of the third dimension
   constexpr Int32 dim3Size() const requires(Extents::rank() >= 3) { return m_span.extent2(); }
-  //! Valeur de la quatrième dimension
+  //! Value of the fourth dimension
   constexpr Int32 dim4Size() const requires(Extents::rank() >= 4) { return m_span.extent3(); }
 
-  //! Valeur de la première dimension
+  //! Value of the first dimension
   constexpr Int32 extent0() const requires(Extents::rank() >= 1) { return m_span.extent0(); }
-  //! Valeur de la deuxième dimension
+  //! Value of the second dimension
   constexpr Int32 extent1() const requires(Extents::rank() >= 2) { return m_span.extent1(); }
-  //! Valeur de la troisième dimension
+  //! Value of the third dimension
   constexpr Int32 extent2() const requires(Extents::rank() >= 3) { return m_span.extent2(); }
-  //! Valeur de la quatrième dimension
+  //! Value of the fourth dimension
   constexpr Int32 extent3() const requires(Extents::rank() >= 4) { return m_span.extent3(); }
 
  public:
 
-  //! Modifie la taille du tableau en gardant pas les valeurs actuelles
+  //! Resizes the array without keeping current values
   void resize(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
   {
     m_span.m_extents = DynamicDimsType(dim1_size);
     _resize();
   }
 
-  // TODO: Rendre obsolète (juin 2025)
-  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  // TODO: Deprecate (June 2025)
+  //! Resizes the array without keeping current values
   void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
-  // TODO: Rendre obsolète (juin 2025)
-  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  // TODO: Deprecate (June 2025)
+  //! Resizes the array without keeping current values
   void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size));
   }
 
-  // TODO: Rendre obsolète (juin 2025)
-  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  // TODO: Deprecate (June 2025)
+  //! Resizes the array without keeping current values
   void resize(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size));
   }
 
   /*!
-   * \brief Modifie la taille du tableau.
-   * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
-   * et les nouvelles valeurs ne sont pas initialisées.
+   * \brief Resizes the array.
+   * \warning Current values are not preserved during this operation
+   * and new values are not initialized.
    */
   //@{
-  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  //! Resizes the array without keeping current values
   void resizeDestructive(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
-  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  //! Resizes the array without keeping current values
   void resizeDestructive(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size));
   }
 
-  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  //! Resizes the array without keeping current values
   void resizeDestructive(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size));
   }
 
-  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  //! Resizes the array without keeping current values
   void resizeDestructive(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size));
   }
 
-  // TODO: Rendre obsolète (juin 2025)
-  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  // TODO: Deprecate (June 2025)
+  //! Resizes the array without keeping current values
   void resize(const DynamicDimsType& dims)
   {
     resizeDestructive(dims);
   }
 
-  //! Modifie la taille du tableau en ne gardant pas les valeurs actuelles
+  //! Resizes the array without keeping current values
   void resizeDestructive(const DynamicDimsType& dims)
   {
     m_span.m_extents = dims;
@@ -373,10 +374,10 @@ class NumArray
  public:
 
   /*!
-   * \brief Remplit les valeurs du tableau par \a v.
+   * \brief Fills the array values with \a v.
    *
-   * \warning L'opération se fait sur l'hôte donc la mémoire associée
-   * à l'instance doit être accessible sur l'hôte.
+   * \warning The operation is performed on the host, so the memory
+   * associated with the instance must be accessible on the host.
    */
   void fill(const DataType& v)
   {
@@ -384,11 +385,12 @@ class NumArray
   }
 
   /*!
-   * \brief Remplit via la file \a queue, les valeurs du tableau d'indices
-   * données par \a indexes par la valeur \a v .
+   * \brief Fills the index array values using the queue \a queue
+   * with the value \a v.
    *
-   * La mémoire associée à l'instance doit être accessible depuis la file \a queue.
-   * \a queue peut être nulle, auquel cas le remplissage se fait sur l'hôte.
+   * The memory associated with the instance must be accessible
+   * from the queue \a queue. \a queue can be null, in which case the
+   * filling is done on the host.
    */
   void fill(const DataType& v, SmallSpan<const Int32> indexes, const RunQueue* queue)
   {
@@ -396,10 +398,11 @@ class NumArray
   }
 
   /*!
-   * \brief Remplit via la file \a queue, les valeurs du tableau d'indices
-   * données par \a indexes par la valeur \a v .
+   * \brief Fills the index array values using the queue \a queue
+   * with the value \a v.
    *
-   * La mémoire associée à l'instance doit être accessible depuis la file \a queue.
+   * The memory associated with the instance must be accessible
+   * from the queue \a queue.
    */
   void fill(const DataType& v, SmallSpan<const Int32> indexes, const RunQueue& queue)
   {
@@ -407,9 +410,11 @@ class NumArray
   }
 
   /*!
-   * \brief Remplit les éléments de l'instance la valeur \a v en utilisant la file \a queue.
+   * \brief Fills the instance elements with the value \a v using
+   * the queue \a queue.
    *
-   * \a queue peut être nulle, auquel cas le remplissage se fait sur l'hôte.
+   * \a queue can be null, in which case the filling is done on
+   * the host.
    */
   void fill(const DataType& v, const RunQueue* queue)
   {
@@ -417,9 +422,11 @@ class NumArray
   }
 
   /*!
-   * \brief Remplit les éléments de l'instance la valeur \a v en utilisant la file \a queue.
+   * \brief Fills the instance elements with the value \a v using
+   * the queue \a queue.
    *
-   * \a queue peut être nulle, auquel cas le remplissage se fait sur l'hôte.
+   * \a queue can be null, in which case the filling is done on
+   * the host.
    */
   void fill(const DataType& v, const RunQueue& queue)
   {
@@ -427,10 +434,10 @@ class NumArray
   }
 
   /*!
-   * \brief Remplit les valeurs du tableau par \a v.
+   * \brief Fills the array values with \a v.
    *
-   * L'opération se fait sur l'hôte donc la mémoire associée
-   * à l'instance doit être accessible sur l'hôte.
+   * The operation is performed on the host, so the memory associated
+   * with the instance must be accessible on the host.
    */
   void fillHost(const DataType& v)
   {
@@ -441,10 +448,10 @@ class NumArray
  public:
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs.
+   * \brief Copies the values from \a rhs into the instance.
    *
-   * Cette opération est valide quelle que soit la mêmoire associée
-   * associée à l'instance.
+   * This operation is valid regardless of the memory associated
+   * with the instance.
    */
   void copy(SmallSpan<const DataType> rhs) requires(Extents::isDynamic1D())
   {
@@ -452,28 +459,29 @@ class NumArray
   }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs.
+   * \brief Copies the values from \a rhs into the instance.
    *
-   * Cette opération est valide quelle que soit la mêmoire associée
-   * associée à l'instance.
+   * This operation is valid regardless of the memory associated
+   * with the instance.
    */
   void copy(ConstMDSpanType rhs) { copy(rhs, nullptr); }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs.
+   * \brief Copies the values from \a rhs into the instance.
    *
-   * Cette opération est valide quelle que soit la mêmoire associée
-   * associée à l'instance.
+   * This operation is valid regardless of the memory associated
+   * with the instance.
    */
   void copy(const ThatClass& rhs) { copy(rhs, nullptr); }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   * \brief Copies the values from \a rhs into the instance via the
+   * queue \a queue.
    *
-   * Cette opération est valide quelle que soit la mêmoire associée
-   * associée à l'instance.
-   * \a queue peut être nul. Si la file est asynchrone, il faudra la
-   * synchroniser avant de pouvoir utiliser l'instance.
+   * This operation is valid regardless of the memory associated
+   * with the instance.
+   * \a queue can be null. If the queue is asynchronous, it must be
+   * synchronized before the instance can be used.
    */
   void copy(SmallSpan<const DataType> rhs, const RunQueue* queue) requires(Extents::isDynamic1D())
   {
@@ -481,12 +489,13 @@ class NumArray
   }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   * \brief Copies the values from \a rhs into the instance via the
+   * queue \a queue.
    *
-   * Cette opération est valide quelle que soit la mêmoire associée
-   * associée à l'instance.
-   * \a queue peut être nul. Si la file est asynchrone, il faudra la
-   * synchroniser avant de pouvoir utiliser l'instance.
+   * This operation is valid regardless of the memory associated
+   * with the instance.
+   * \a queue can be null. If the queue is asynchronous, it must be
+   * synchronized before the instance can be used.
    */
   void copy(ConstMDSpanType rhs, const RunQueue* queue)
   {
@@ -494,12 +503,14 @@ class NumArray
   }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   * \brief Copies the values from \a rhs into the instance via the
+   * queue \a queue.
    *
-   * Cette opération est valide quelle que soit la mêmoire associée
-   * associée à l'instance.
-   * \a queue peut être nulle, auquel cas la copie se fait sur l'hôte.
-   * Si la file est asynchrone, il faudra la synchroniser avant de pouvoir utiliser l'instance.
+   * This operation is valid regardless of the memory associated
+   * with the instance.
+   * \a queue can be null, in which case the copy is performed on the host.
+   * If the queue is asynchronous, it must be synchronized before the instance
+   * can be used.
    */
   void copy(SmallSpan<const DataType> rhs, const RunQueue& queue) requires(Extents::isDynamic1D())
   {
@@ -507,12 +518,14 @@ class NumArray
   }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   * \brief Copies the values from \a rhs into the instance via the
+   * queue \a queue.
    *
-   * Cette opération est valide quelle que soit la mêmoire associée
-   * associée à l'instance.
-   * \a queue peut être nulle, auquel cas la copie se fait sur l'hôte.
-   * Si la file est asynchrone, il faudra la synchroniser avant de pouvoir utiliser l'instance.
+   * This operation is valid regardless of the memory associated
+   * with the instance.
+   * \a queue can be null, in which case the copy is performed on the host.
+   * If the queue is asynchronous, it must be synchronized before the
+   * instance can be used.
    */
   void copy(ConstMDSpanType rhs, const RunQueue& queue)
   {
@@ -520,12 +533,14 @@ class NumArray
   }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   * \brief Copies the values from \a rhs into the instance via the
+   * queue \a queue.
    *
-   * Cette opération est valide quelle que soit la mêmoire associée
-   * associée à l'instance.
-   * \a queue peut être nulle, auquel cas la copie se fait sur l'hôte.
-   * Si la file est asynchrone, il faudra la synchroniser avant de pouvoir utiliser l'instance.
+   * This operation is valid regardless of the memory associated
+   * with the instance.
+   * \a queue can be null, in which case the copy is performed on the host.
+   * If the queue is asynchronous, it must be synchronized before the
+   * instance can be used.
    */
   void copy(const ThatClass& rhs, const RunQueue* queue)
   {
@@ -533,12 +548,13 @@ class NumArray
   }
 
   /*!
-   * \brief Copie dans l'instance les valeurs de \a rhs via la file \a queue.
+   * \brief Copies the values from \a rhs into the instance via the
+   * queue \a queue.
    *
-   * Cette opération est valide quelle que soit la mêmoire associée
-   * associée à l'instance.
-   * \a queue peut être nul. Si la file est asynchrone, il faudra la
-   * synchroniser avant de pouvoir utiliser l'instance.
+   * This operation is valid regardless of the memory associated
+   * with the instance.
+   * \a queue can be null. If the queue is asynchronous, it must be
+   * synchronized before the instance can be used.
    */
   void copy(const ThatClass& rhs, const RunQueue& queue)
   {
@@ -547,58 +563,58 @@ class NumArray
 
  public:
 
-  //! Récupère une référence pour l'élément \a i
+  //! Retrieves a reference for element \a i
   DataType& operator[](Int32 i) requires(Extents::rank() == 1) { return m_span(i); }
-  //! Valeur pour l'élément \a i
+  //! Value for element \a i
   DataType operator[](Int32 i) const requires(Extents::rank() == 1) { return m_span(i); }
 
  public:
 
-  //! Valeur pour l'élément \a i,j,k,l
+  //! Value for element \a i,j,k,l
   DataType operator()(Int32 i, Int32 j, Int32 k, Int32 l) const requires(Extents::rank() == 4)
   {
     return m_span(i, j, k, l);
   }
-  //! Positionne la valeur pour l'élément \a i,j,k,l
+  //! Positions the value for element \a i,j,k,l
   DataType& operator()(Int32 i, Int32 j, Int32 k, Int32 l) requires(Extents::rank() == 4)
   {
     return m_span(i, j, k, l);
   }
 
-  //! Valeur pour l'élément \a i,j,k
+  //! Value for element \a i,j,k
   DataType operator()(Int32 i, Int32 j, Int32 k) const requires(Extents::rank() == 3)
   {
     return m_span(i, j, k);
   }
-  //! Positionne la valeur pour l'élément \a i,j,k
+  //! Positions the value for element \a i,j,k
   DataType& operator()(Int32 i, Int32 j, Int32 k) requires(Extents::rank() == 3)
   {
     return m_span(i, j, k);
   }
 
-  //! Valeur pour l'élément \a i,j
+  //! Value for element \a i,j
   DataType operator()(Int32 i, Int32 j) const requires(Extents::rank() == 2)
   {
     return m_span(i, j);
   }
-  //! Positionne la valeur pour l'élément \a i,j
+  //! Positions the value for element \a i,j
   DataType& operator()(Int32 i, Int32 j) requires(Extents::rank() == 2)
   {
     return m_span(i, j);
   }
-  //! Valeur pour l'élément \a i
+  //! Value for element \a i
   DataType operator()(Int32 i) const requires(Extents::rank() == 1) { return m_span(i); }
-  //! Positionne la valeur pour l'élément \a i
+  //! Positions the value for element \a i
   DataType& operator()(Int32 i) requires(Extents::rank() == 1) { return m_span(i); }
 
  public:
 
-  //! Référence constante pour l'élément \a idx
+  //! Constant reference for element \a idx
   const DataType& operator()(ArrayBoundsIndexType idx) const
   {
     return m_span(idx);
   }
-  //! Référence modifiable l'élément \a idx
+  //! Modifiable reference for element \a idx
   DataType& operator()(ArrayBoundsIndexType idx)
   {
     return m_span(idx);
@@ -606,30 +622,30 @@ class NumArray
 
  public:
 
-  // TODO: rendre obsolète
-  //! Positionne la valeur pour l'élément \a i,j,k,l
+  // TODO: deprecate
+  //! Positions the value for element \a i,j,k,l
   ARCCORE_DEPRECATED_REASON("Y2023: Use operator() instead")
   DataType& s(Int32 i, Int32 j, Int32 k, Int32 l) requires(Extents::rank() == 4)
   {
     return m_span(i, j, k, l);
   }
-  //! Positionne la valeur pour l'élément \a i,j,k
+  //! Positions the value for element \a i,j,k
   ARCCORE_DEPRECATED_REASON("Y2023: Use operator() instead")
   DataType& s(Int32 i, Int32 j, Int32 k) requires(Extents::rank() == 3)
   {
     return m_span(i, j, k);
   }
-  //! Positionne la valeur pour l'élément \a i,j
+  //! Positions the value for element \a i,j
   ARCCORE_DEPRECATED_REASON("Y2023: Use operator() instead")
   DataType& s(Int32 i, Int32 j) requires(Extents::rank() == 2)
   {
     return m_span(i, j);
   }
-  //! Positionne la valeur pour l'élément \a i
+  //! Positions the value for element \a i
   ARCCORE_DEPRECATED_REASON("Y2023: Use operator() instead")
   DataType& s(Int32 i) requires(Extents::rank() == 1) { return m_span(i); }
 
-  //! Positionne la valeur pour l'élément \a idx
+  //! Positions the value for element \a idx
   ARCCORE_DEPRECATED_REASON("Y2023: Use operator() instead")
   DataType& s(ArrayBoundsIndexType idx)
   {
@@ -638,48 +654,48 @@ class NumArray
 
  public:
 
-  //! Vue multi-dimension sur l'instance
+  //! Multi-dimensional view on the instance
   ARCCORE_DEPRECATED_REASON("Y2024: Use mdspan() instead")
   MDSpanType span() { return m_span; }
 
-  //! Vue constante multi-dimension sur l'instance
+  //! Constant multi-dimensional view on the instance
   ARCCORE_DEPRECATED_REASON("Y2024: Use mdspan() instead")
   ConstMDSpanType span() const { return m_span.constMDSpan(); }
 
-  //! Vue constante multi-dimension sur l'instance
+  //! Constant multi-dimensional view on the instance
   ARCCORE_DEPRECATED_REASON("Y2024: Use constMDSpan() instead")
   ConstMDSpanType constSpan() const { return m_span.constMDSpan(); }
 
-  //! Vue multi-dimension sur l'instance
+  //! Multi-dimensional view on the instance
   MDSpanType mdspan() { return m_span; }
 
-  //! Vue constante multi-dimension sur l'instance
+  //! Constant multi-dimensional view on the instance
   ConstMDSpanType mdspan() const { return m_span.constMDSpan(); }
 
-  //! Vue constante multi-dimension sur l'instance
+  //! Constant multi-dimensional view on the instance
   ConstMDSpanType constMDSpan() const { return m_span.constMDSpan(); }
 
-  //! Vue 1D constante sur l'instance
+  //! Constant 1D view on the instance
   Span<const DataType> to1DSpan() const { return m_span.to1DSpan(); }
 
-  //! Vue 1D sur l'instance
+  //! 1D view on the instance
   Span<DataType> to1DSpan() { return m_span.to1DSpan(); }
 
-  //! Conversion vers une vue multi-dimension sur l'instance
+  //! Conversion to a multi-dimensional view on the instance
   constexpr operator MDSpanType() { return this->mdspan(); }
-  //! Conversion vers une vue constante multi-dimension sur l'instance
+  //! Conversion to a constant multi-dimensional view on the instance
   constexpr operator ConstMDSpanType() const { return this->constMDSpan(); }
 
-  //! Conversion vers une vue 1D sur l'instance (uniquement si rank == 1)
+  //! Conversion to a 1D view on the instance (only if rank == 1)
   constexpr operator SmallSpan<DataType>() requires(Extents::rank() == 1) { return this->to1DSpan().smallView(); }
-  //! Conversion vers une vue constante 1D sur l'instance (uniquement si rank == 1)
+  //! Conversion to a constant 1D view on the instance (only if rank == 1)
   constexpr operator SmallSpan<const DataType>() const requires(Extents::rank() == 1) { return this->to1DSpan().constSmallView(); }
 
-  //! Vue 1D sur l'instance (uniquement si rank == 1)
+  //! 1D view on the instance (only if rank == 1)
   constexpr SmallSpan<DataType> to1DSmallSpan() requires(Extents::rank() == 1) { return m_span.to1DSmallSpan(); }
-  //! Vue constante 1D sur l'instance (uniquement si rank == 1)
+  //! Constant 1D view on the instance (only if rank == 1)
   constexpr SmallSpan<const DataType> to1DSmallSpan() const requires(Extents::rank() == 1) { return m_span.to1DSmallSpan(); }
-  //! Vue constante 1D sur l'instance (uniquement si rank == 1)
+  //! Constant 1D view on the instance (only if rank == 1)
   constexpr SmallSpan<const DataType> to1DConstSmallSpan() const requires(Extents::rank() == 1) { return m_span.to1DConstSmallSpan(); }
 
  public:
@@ -707,7 +723,7 @@ class NumArray
     _updateSpanPointerFromData();
   }
 
-  //! Redimensionne le tableau à partir des valeurs de \a m_span.extents()
+  //! Resizes the array based on the values of \a m_span.extents()
   void _resize()
   {
     m_total_nb_element = m_span.extents().totalNbElement();
@@ -716,11 +732,10 @@ class NumArray
   }
 
   /*!
-   * \brief Allocation éventuelle lors de l'initialisation.
+   * \brief Possible allocation during initialization.
    *
-   * Il y a besoin de faire une allocation lors de l'initialisation
-   * avec le constructeur par défaut dans le cas où toutes les
-   * dimensions sont statiques.
+   * An allocation is needed during initialization
+   * with the default constructor if all dimensions are static.
    */
   void _resizeInit()
   {

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Int128.h                                                    (C) 2000-2025 */
 /*                                                                           */
-/* Type flottant 128bit.                                                     */
+/* 128-bit floating point type.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_INT128_H
 #define ARCCORE_BASE_INT128_H
@@ -16,7 +16,7 @@
 
 #include "arccore/base/ArccoreGlobal.h"
 
-// Tous les compilateurs Linux supportés par Arccore ont le type '__int128'
+// All Linux compilers supported by Arccore have the '__int128' type
 #if defined(ARCCORE_OS_LINUX)
 #define ARCCORE_HAS_NATIVE_INT128
 #endif
@@ -34,11 +34,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type entier sur 128 bits.
+ * \brief 128-bit integer type.
  *
- * \warning Cette classe est en cours de définition et ne doit pas être
- * utilisée.
+ * \warning This class is currently under definition and should not be
+ * used.
  */
 class alignas(16) Int128
 {

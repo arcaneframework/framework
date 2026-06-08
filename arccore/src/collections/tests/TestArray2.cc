@@ -301,8 +301,8 @@ TEST(Array2, Misc)
 
 namespace Arcane
 {
-// Instancie explicitement les classes tableaux pour garantir
-// que toutes les méthodes fonctionnent
+// Explicitly instantiate the array classes to ensure
+// that all methods work
 template class UniqueArray2<IntSubClass>;
 template class SharedArray2<IntSubClass>;
 template class Array2<IntSubClass>;

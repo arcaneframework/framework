@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TraceClassConfig.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Configuration d'une classe de messages.                                   */
+/* Configuration of a message class.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_TRACE_TRACECLASSCONFIG_H
 #define ARCCORE_TRACE_TRACECLASSCONFIG_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Configuration associée à une classe de trace.
+ * \brief Configuration associated with a trace class.
  */
 class TraceClassConfig
 {

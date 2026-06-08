@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * This file is based on the work on AMGCL library (version march 2026)
+ * This file is based on the work on the AMGCL library (version March 2026)
  * which can be found at https://github.com/ddemidov/amgcl.
  *
  * Copyright (c) 2012-2022 Denis Demidov <dennis.demidov@gmail.com>

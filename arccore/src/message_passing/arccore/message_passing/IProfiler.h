@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IProfiler.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des échanges de messages.                       */
+/* Interface of the message exchange manager.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_IPROFILER_H
 #define ARCCORE_MESSAGEPASSING_IPROFILER_H
@@ -24,8 +24,9 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un profiler pour les échanges de messages.
+ * \brief Interface of a profiler for message exchanges.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IProfiler
 {
@@ -42,4 +43,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT IProfiler
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

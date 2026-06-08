@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StringImpl.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation d'une chaîne de caractère UTf-8 ou UTF-16.                 */
+/* Implementation of a UTF-8 or UTF-16 character string.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -81,7 +81,7 @@ inline void StringImpl::
 _finalizeUtf8Creation()
 {
   m_flags |= eValidUtf8;
-  // \a m_utf8_array doit toujours avoir un zéro terminal.
+  // \a m_utf8_array must always have a null terminator.
   if (m_utf8_array.empty())
     m_utf8_array.add('\0');
   else if (m_utf8_array.back()!='\0')
@@ -165,12 +165,12 @@ bytes()
   Int64 size = x.size();
   if (size>0)
     return { x.data(), size-1 };
-  // Ne devrait normalement pas arriver mais si c'est le cas on retourne
-  // une vue sur la chaîne vide car cette méthode garantit qu'il y a un
-  // zéro terminal à la fin.
-  // NOTE: On ne lève pas d'exception car cette méthode est utilisée dans les
-  // sorties via operator<< et cela peut être utilisé notamment dans
-  // les destructeurs des objets.
+  // Should not normally happen, but if it does, we return
+  // a view of the empty string because this method guarantees a
+  // null terminator at the end.
+  // NOTE: No exception is thrown because this method is used in
+  // outputs via operator<< and can be used notably in
+  // destructors of objects.
   std::cerr << "INTERNAL ERROR: Null size in StringImpl::bytes()";
   return { reinterpret_cast<const Byte*>(global_empty_string), 0 };
 }
@@ -313,11 +313,11 @@ empty()
   _checkReference();
   if (m_flags & eValidUtf8) {
     ARCCORE_ASSERT((!m_utf8_array.empty()),("Not 0 terminated utf8 encoding"));
-    return m_utf8_array.size()<=1; // Décompte le 0 terminal
+    return m_utf8_array.size()<=1; // Counts the terminal 0
   }
   if (m_flags & eValidUtf16) {
     ARCCORE_ASSERT((!m_utf16_array.empty()),("Not 0 terminated utf16 encoding"));
-    return m_utf16_array.size()<=1; // Décompte le 0 terminal
+    return m_utf16_array.size()<=1; // Counts the terminal 0
   }
   ARCCORE_ASSERT((0),("InternalError in StringImpl::empty()"));
   return false;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ITypeDispatcher.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des messages pour un type de données.                             */
+/* Message handling for a data type.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_ITYPEDISPATCHER_H
 #define ARCCORE_MESSAGEPASSING_ITYPEDISPATCHER_H
@@ -29,9 +29,10 @@ _internalThrowNotImplementedTypeDispatcher ARCCORE_NORETURN ();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestion des messages parallèles pour le type \a Type.
+ * \brief Parallel message handling for the type \a Type.
  */
 template <class Type>
 class ITypeDispatcher
@@ -81,4 +82,4 @@ class ITypeDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Reduce.h                                                    (C) 2000-2026 */
 /*                                                                           */
-/* Gestion des réductions pour les accélérateurs.                            */
+/* Reduction management for accelerators.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_REDUCE_H
 #define ARCCORE_ACCELERATOR_REDUCE_H
@@ -58,7 +58,7 @@ internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 template <typename DataType>
 class ReduceIdentity;
 template <>
-// TODO: utiliser numeric_limits.
+// TODO: use numeric_limits.
 class ReduceIdentity<double>
 {
  public:
@@ -88,29 +88,32 @@ class ReduceIdentity<Int64>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// L'implémentation utilisée est définie dans 'CommonCudaHipReduceImpl.h'
+
+// The implementation used is defined in 'CommonCudaHipReduceImpl.h'
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Informations pour effectuer une réduction sur un device.
+ * \brief Information to perform a reduction on a device.
  */
 template <typename DataType>
 class ReduceDeviceInfo
 {
  public:
 
-  //! Valeur du thread courant à réduire.
+  //! Current thread value to reduce.
   DataType m_current_value = {};
-  //! Pointeur vers la donnée réduite (mémoire HostPinned accessible depuis l'hôte et l'accélérateur)
+  //! Pointer to the reduced data (HostPinned memory accessible from host
+  //! and accelerator)
   DataType* m_host_pinned_final_ptr = nullptr;
-  //! Tableau avec une valeur par bloc pour la réduction
+  //! Array with a per-block value for the reduction
   SmallSpan<DataType> m_grid_buffer;
   /*!
-   * Pointeur vers une zone mémoire contenant un entier pour indiquer
-   * combien il reste de blocs à réduire.
-   * La mémoire associée est allouée sur l'accélérateur.
+   * Pointer to a memory region containing an integer to indicate
+   * how many blocks remain to be reduced.
+   * The associated memory is allocated on the accelerator.
    */
   unsigned int* m_device_count = nullptr;
 };
@@ -282,28 +285,29 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Opérateur de réduction
+ * \brief Reduction operator
  *
- * Cette classe permet de gérer une réduction sur accélérateur ou en
+ * This class allows managing a reduction on an accelerator or in
  * multi-thread.
  *
- * La réduction finale a lieu lors de l'appel à reduce(). Il ne faut donc
- * faire cet appel qu'une seule fois et dans une partie collective. Cet appel
- * n'est valide que sur les instance créées avec un constructeur vide. Ces dernières
- * ne peuvent être créées que sur l'hôte.
+ * The final reduction takes place when calling reduce(). Therefore, this call
+ * must only be made once and in a collective part. This call is only
+ * valid on instances created with an empty constructor. These latter
+ * can only be created on the host.
  *
- * \warning Le constructeur de recopie ne doit pas être appelé explicitement.
- * L'instance de départ doit rester valide tant qu'il existe des copies ou
- * des références dans le noyau de calcul.
+ * \warning The copy constructor must not be called explicitly.
+ * The starting instance must remain valid as long as there are copies or
+ * references in the computation kernel.
  *
- * NOTE sur l'implémentation
+ * NOTE on implementation
  *
- * Sur GPU, les réductions sont effectuées dans le destructeur de la classe
- * La valeur 'm_host_or_device_memory_for_reduced_value' sert à conserver ces valeurs.
- * Sur l'hôte, on utilise un 'std::atomic' pour conserver la valeur commune
- * entre les threads. Cette valeur est référencée par 'm_parent_value' et n'est
- * valide que sur l'hôte.
+ * On GPU, reductions are performed in the class destructor
+ * The value 'm_host_or_device_memory_for_reduced_value' is used to retain these values.
+ * On the host, an 'std::atomic' is used to maintain the common value
+ * between threads. This value is referenced by 'm_parent_value' and is only
+ * valid on the host.
  */
 template <typename DataType, typename ReduceFunctor>
 class HostDeviceReducerBase
@@ -323,15 +327,15 @@ class HostDeviceReducerBase
     if (m_memory_impl) {
       m_memory_impl->allocateReduceDataMemory(sizeof(DataType));
       m_grid_memory_info = m_memory_impl->gridMemoryInfo();
-      // Initialise la valeur finale pour le cas où la réduction ne sera pas
-      // effectuée (par exemple si la RunCommand n'est jamais lancée)
+      // Initialize the final value for the case where the reduction will not be
+      // performed (e.g., if the RunCommand is never launched)
       DataType* ptr = _getHostPinnedMemoryForReducedValue();
       *ptr = m_local_value;
     }
   }
 
-  // Le compilateur Intel considère que cette classe n'est pas 'is_trivially_copyable'
-  // sur le device si on n'utilise pas le constructeur de copie.
+  // The Intel compiler considers this class not 'is_trivially_copyable'
+  // on the device if the copy constructor is not used.
 #if defined(__INTEL_LLVM_COMPILER) && defined(__SYCL_DEVICE_ONLY__)
   HostDeviceReducerBase(const HostDeviceReducerBase& rhs) = default;
 #else
@@ -379,9 +383,9 @@ class HostDeviceReducerBase
 
   Impl::IReduceMemoryImpl* m_memory_impl = nullptr;
   /*!
-   * \brief Pointeur vers la donnée qui contiendra la valeur réduite.
+   * \brief Pointer to the data that will contain the reduced value.
    *
-   * Cette valeur est uniquement valide si la réduction a lieu sur l'hôte.
+   * This value is only valid if the reduction takes place on the host.
    */
   DataType* m_host_memory_for_reduced_value = nullptr;
   Impl::IReduceMemoryImpl::GridMemoryInfo m_grid_memory_info;
@@ -396,7 +400,7 @@ class HostDeviceReducerBase
 
  protected:
 
-  //! Effectue la réduction et récupère la valeur. ATTENTION: ne faire qu'une seule fois.
+  //! Performs the reduction and retrieves the value. WARNING: only do this once.
   DataType _reduce()
   {
     if (!m_is_master_instance)
@@ -424,8 +428,8 @@ class HostDeviceReducerBase
     return *final_ptr;
   }
 
-  // NOTE: Lorsqu'il n'y aura plus la version V1 de la réduction, cette méthode ne sera
-  // appelée que depuis le device.
+  // NOTE: When the V1 version of the reduction is no longer available, this method will
+  // only be called from the device.
   ARCCORE_HOST_DEVICE void
   _finalize()
   {
@@ -447,7 +451,7 @@ class HostDeviceReducerBase
 #endif
 #else
     //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
-    // Code hôte
+    // Host code
     //std::cout << String::format("Reduce destructor this={0} parent_value={1} v={2} memory_impl={3}\n",this,(void*)m_parent_value,m_local_value,m_memory_impl);
     //std::cout << String::format("Reduce destructor this={0} grid_data={1} grid_size={2}\n",
     //                            this,(void*)m_grid_memory_value_as_bytes,m_grid_memory_size);
@@ -462,8 +466,8 @@ class HostDeviceReducerBase
  private:
 
   /*!
-   * \brief Zone mémoire qui contiendra le résultat de la réduction si cette
-   * dernière est réalisée sur le Device.
+   * \brief Memory zone that will contain the reduction result if it
+   * is performed on the Device.
    */
   ARCCORE_HOST_DEVICE DataType* _getHostPinnedMemoryForReducedValue()
   {
@@ -473,11 +477,12 @@ class HostDeviceReducerBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Version 1 de la réduction.
+ * \brief Version 1 of the reduction.
  *
- * Cette version est obsolète. Elle utilise le destructeur de la classe
- * pour effectuer la réduction.
+ * This version is obsolete. It uses the class destructor
+ * to perform the reduction.
  */
 template <typename DataType, typename ReduceFunctor>
 class HostDeviceReducer
@@ -513,8 +518,9 @@ class HostDeviceReducer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Version 2 de la réduction.
+ * \brief Version 2 of the reduction.
  */
 template <typename DataType, typename ReduceFunctor>
 class HostDeviceReducer2
@@ -566,13 +572,13 @@ class HostDeviceReducer2
     if (local_id == 0) {
       grid_buffer[group_id] = local_sum;
 
-      // TODO: En théorie il faut faire l'équivalent d'un __threadfence() ici
-      // pour garantir que les autres work-item voient bien la mise à jour de 'grid_buffer'.
-      // Mais ce mécanisme n'existe pas avec SYCL 2020.
+      // TODO: In theory, one should perform the equivalent of a __threadfence() here
+      // to ensure that other work-items see the update to 'grid_buffer'.
+      // But this mechanism does not exist with SYCL 2020.
 
-      // AdaptiveCpp 2024.2 ne supporte pas les opérations atomiques sur 'unsigned int'.
-      // Elles sont supportées avec le type 'int'. Comme on est certain de ne pas dépasser 2^31, on
-      // converti le pointeur en un 'int*'.
+      // AdaptiveCpp 2024.2 does not support atomic operations on 'unsigned int'.
+      // They are supported with the 'int' type. Since we are certain not to exceed 2^31, we
+      // convert the pointer to an 'int*'.
 #if defined(__ADAPTIVECPP__)
       int* atomic_counter_ptr_as_int = reinterpret_cast<int*>(atomic_counter_ptr);
       sycl::atomic_ref<int, sycl::memory_order::relaxed, sycl::memory_scope::device> a(*atomic_counter_ptr_as_int);
@@ -584,13 +590,13 @@ class HostDeviceReducer2
         is_last = true;
     }
 
-    // Je suis le dernier à faire la réduction.
-    // Calcule la réduction finale
+    // I am the last one to perform the reduction.
+    // Calculate the final reduction
     if (is_last) {
       DataType my_total = grid_buffer[0];
       for (int x = 1; x < nb_block; ++x)
         my_total = sycl_functor(my_total, grid_buffer[x]);
-      // Met le résultat final dans le premier élément du tableau.
+      // Put the final result in the first element of the array.
       grid_buffer[0] = my_total;
       DataType* final_value_ptr = reinterpret_cast<DataType*>(m_grid_memory_info.m_host_memory_for_reduced_value);
       *final_value_ptr = my_total;
@@ -602,11 +608,12 @@ class HostDeviceReducer2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de la réduction pour le backend SYCL.
+ * \brief Implementation of the reduction for the SYCL backend.
  *
- * \warning Pour l'instant il n'y aucune implémentation. Cette classe permet
- * juste la compilation.
+ * \warning Currently there is no implementation. This class only allows
+ * compilation.
  */
 template <typename DataType, typename ReduceFunctor>
 class SyclReducer
@@ -642,8 +649,9 @@ template <typename DataType, typename ReduceFunctor> using Reducer = HostDeviceR
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour effectuer une réduction 'somme'.
+ * \brief Class to perform a 'sum' reduction.
  */
 template <typename DataType>
 class ReducerSum
@@ -674,8 +682,9 @@ class ReducerSum
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour effectuer une réduction 'max'.
+ * \brief Class to perform a 'max' reduction.
  */
 template <typename DataType>
 class ReducerMax
@@ -709,8 +718,9 @@ class ReducerMax
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour effectuer une réduction 'min'.
+ * \brief Class to perform a 'min' reduction.
  */
 template <typename DataType>
 class ReducerMin
@@ -744,8 +754,9 @@ class ReducerMin
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour effectuer une réduction 'somme'.
+ * \brief Class to perform a 'sum' reduction.
  */
 template <typename DataType>
 class ReducerSum2
@@ -769,8 +780,9 @@ class ReducerSum2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour effectuer une réduction 'max'.
+ * \brief Class to perform a 'max' reduction.
  */
 template <typename DataType>
 class ReducerMax2
@@ -795,8 +807,9 @@ class ReducerMax2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour effectuer une réduction 'min'.
+ * \brief Class to perform a 'min' reduction.
  */
 template <typename DataType>
 class ReducerMin2
@@ -821,9 +834,10 @@ class ReducerMin2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour gérer les arguments de type HostDeviceReducer2 en
- * début et fin d'exécution des noyaux.
+ * \brief Class to manage HostDeviceReducer2 arguments at the beginning
+ * and end of kernel execution.
  */
 class Impl::HostDeviceReducerKernelRemainingArg
 {
@@ -882,10 +896,11 @@ class Impl::HostDeviceReducerKernelRemainingArg
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Cette macro est définie si on souhaite rendre inline l'implémentation.
-// Dans l'idéal il ne faut pas que ce soit le cas (ce qui permettrait de
-// changer l'implémentation sans tout recompiler) mais cela ne semble pas
-// bien fonctionner pour l'instant.
+
+// This macro is defined if we want to make the implementation inline.
+// Ideally, this should not be the case (which would allow changing the
+// implementation without recompiling everything) but it doesn't seem to
+// work well for now.
 
 #define ARCCORE_INLINE_REDUCE_IMPL
 

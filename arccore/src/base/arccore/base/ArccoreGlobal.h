@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArccoreGlobal.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations générales de Arccore.                                        */
+/* General declarations for Arccore.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARCCOREGLOBAL_H
 #define ARCCORE_BASE_ARCCOREGLOBAL_H
@@ -22,7 +22,7 @@
 #  undef ARCCORE_VALID_TARGET
 #endif
 
-// Determine le type de l'os.
+// Determine the OS type.
 #if defined(__linux)
 #  define ARCCORE_OS_LINUX
 #elif defined(__APPLE__) && defined(__MACH__)
@@ -40,7 +40,7 @@
 #  define ARCCORE_EXPORT     __declspec(dllexport)
 #  define ARCCORE_IMPORT     __declspec(dllimport)
 
-/* Supprime certains avertissements du compilateur Microsoft */
+/* Suppresses certain Microsoft compiler warnings */
 #  ifdef _MSC_VER
 #    pragma warning(disable: 4251) // class 'A' needs to have dll interface for to be used by clients of class 'B'.
 #    pragma warning(disable: 4275) // non - DLL-interface classkey 'identifier' used as base for DLL-interface classkey 'identifier'
@@ -50,12 +50,12 @@
 
 #endif
 
-// Sous Unix, indique que par défaut les symboles de chaque .so sont cachés.
-// Il faut alors explicitement marquer les
-// symboles qu'on souhaite exporter, comme sous windows.
-// La seule différence est que pour gcc avec les instantiations explicites
-// de template, il faut spécifier l'export lors de l'instantiation
-// explicite alors que sous windows c'est dans la classe.
+// On Unix, this indicates that symbols in each .so are hidden by default.
+// You must then explicitly mark the
+// symbols you wish to export, like on Windows.
+// The only difference is that for gcc with explicit template instantiations
+// you must specify the export during explicit instantiation
+// whereas on Windows it is done in the class.
 #ifndef ARCCORE_OS_WIN32
 #  define ARCCORE_EXPORT __attribute__ ((visibility("default")))
 #  define ARCCORE_IMPORT __attribute__ ((visibility("default")))
@@ -96,8 +96,8 @@
 
 #define ARCCORE_STD std
 
-//Tag var as a voluntary unused variable.
-//Works with any compiler but might be improved by using attribute.
+// Tag var as a voluntary unused variable.
+// Works with any compiler but might be improved by using attribute.
 #define ARCCORE_UNUSED(var) do { (void)(var) ; } while(false)
 
 /*---------------------------------------------------------------------------*/
@@ -111,13 +111,14 @@ typedef ARCCORE_TYPE_INT64 Int64;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Macros pour le support de la programmation hétérogène (CPU/GPU)
- - ARCCORE_DEVICE_CODE: indique une partie de code compilée uniquement sur le device
- - ARCCORE_HOST_DEVICE: indique que la méthode/variable est accessible à la fois
-   sur le device et l'hôte
- - ARCCORE_DEVICE: indique que la méthode/variable est accessible uniquement sur
-   le device.
+ * Macros for heterogeneous programming support (CPU/GPU)
+ - ARCCORE_DEVICE_CODE: indicates a part of code compiled only on the device
+ - ARCCORE_HOST_DEVICE: indicates that the method/variable is accessible both
+   on the device and the host
+ - ARCCORE_DEVICE: indicates that the method/variable is accessible only on
+   the device.
 */
 
 #if defined(__SYCL_DEVICE_ONLY__)
@@ -130,8 +131,8 @@ typedef ARCCORE_TYPE_INT64 Int64;
 #  endif
 #  if defined(__CUDA_ARCH__)
 #    define ARCCORE_DEVICE_TARGET_CUDA
-// Nécessaire pour assert() par exemple dans arccoreCheckAt()
-// TODO: regarder si cela est aussi nécessaire pour AMD HIP.
+// Necessary for assert(), for example in arccoreCheckAt()
+// TODO: check if this is also necessary for AMD HIP.
 #include <cassert>
 #  endif
 #endif
@@ -151,18 +152,20 @@ typedef ARCCORE_TYPE_INT64 Int64;
 #endif
 
 #if defined(ARCCORE_HAS_CUDA) && defined(__CUDACC__)
+
 /*!
- * \brief Macro pour indiquer qu'on compile %Arcane avec le support
- * de CUDA et qu'on utilise le compilateur CUDA.
+ * \brief Macro to indicate that %Arcane is compiled with support
+ * for CUDA and that the CUDA compiler is used.
  */
 #define ARCCORE_COMPILING_CUDA
 //! \deprecated
 #define ARCANE_COMPILING_CUDA
 #endif
 #if defined(ARCCORE_HAS_HIP) && defined(__HIP__)
+
 /*!
- * \brief Macro pour indiquer qu'on compile %Arcane avec le support
- * de HIP et qu'on utilise le compilateur HIP.
+ * \brief Macro to indicate that %Arcane is compiled with support
+ * for HIP and that the HIP compiler is used.
  */
 #define ARCCORE_COMPILING_HIP
 //! \deprecated
@@ -171,9 +174,10 @@ typedef ARCCORE_TYPE_INT64 Int64;
 
 #if defined(ARCCORE_HAS_SYCL)
 #  if defined(SYCL_LANGUAGE_VERSION) || defined(__ADAPTIVECPP__)
+
 /*!
- * \brief Macro pour indiquer qu'on compile %Arcane avec le support
- * de SYCL et qu'on utilise le compilateur SYCL.
+ * \brief Macro to indicate that %Arcane is compiled with support
+ * for SYCL and that the SYCL compiler is used.
  */
 #    define ARCCORE_COMPILING_SYCL
 //! \deprecated
@@ -182,9 +186,10 @@ typedef ARCCORE_TYPE_INT64 Int64;
 #endif
 
 #if defined(ARCCORE_COMPILING_CUDA) || defined(ARCCORE_COMPILING_HIP)
+
 /*!
- * \brief Macro pour indiquer qu'on compile avec le support
- * de CUDA ou de HIP.
+ * \brief Macro to indicate that compilation is done with support
+ * for CUDA or HIP.
  */
 #define ARCCORE_COMPILING_CUDA_OR_HIP
 //! \deprecated
@@ -214,28 +219,30 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Définition des types Arccore Int16, Int32 et Int64.
+ * Definition of Arccore types Int16, Int32, and Int64.
  */
-//! Type entier signé sur 8 bits
+//! Signed integer type of 8 bits
 using Int8 = std::int8_t;
-//! Type entier signé sur 16 bits
+//! Signed integer type of 16 bits
 using Int16 = std::int16_t;
-//! Type entier signé sur 32 bits
+//! Signed integer type of 32 bits
 using Int32 = std::int32_t;
-//! Type entier signé sur 64 bits
+//! Signed integer type of 64 bits
 using Int64 = std::int64_t;
-//! Type entier non signé sur 32 bits
+//! Unsigned integer type of 32 bits
 using UInt32 = std::uint32_t;
-//! Type entier non signé sur 64 bits
+//! Unsigned integer type of 64 bits
 using UInt64 = std::uint64_t;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type représentant un pointeur.
+ * \brief Type representing a pointer.
  *
- * Il doit être utilisé partout ou un objet de type pointeur quelconque est attendu.
+ * It must be used everywhere an object of any pointer type is expected.
  */
 using Pointer = void*;
 
@@ -247,23 +254,25 @@ using APReal = apfloat;
 #else
 #  ifdef ARCCORE_REAL_LONG
 #    define ARCCORE_REAL(val) val##L
+
 /*!
- * \brief Type représentant un réel.
+ * \brief Type representing a real number.
  *
- * Il doit être utilisé partout ou un objet de type réel est attendu.
+ * It must be used everywhere a real number object is expected.
  */
 using long double Real;
 #  else
 #    define ARCCORE_REAL(val) val
 #    define ARCCORE_REAL_IS_DOUBLE
+
 /*!
- * \brief Type représentant un réel.
+ * \brief Type representing a real number.
  *
- * Il doit être utilisé partout ou un objet de type réel est attendu.
+ * It must be used everywhere a real number object is expected.
  */
 using Real = double;
 #  endif
-//! Emulation de réel en précision arbitraire.
+//! Emulation of real number in arbitrary precision.
 class APReal
 {
  public:
@@ -283,28 +292,28 @@ using Integer = Int32;
 
 /*!
  * \def ARCCORE_INTEGER_MAX
- * \brief Macro indiquant la valeur maximal que peut prendre le type #Integer
+ * \brief Macro indicating the maximum value that the #Integer type can take
  */
 
 
 /*!
  * \typedef Int64
- * \brief Type entier signé sur 64 bits.
+ * \brief Signed integer type of 64 bits.
  */
 /*!
  * \typedef Int32
- * \brief Type entier signé sur 32 bits.
+ * \brief Signed integer type of 32 bits.
  */
 /*!
  * \typedef Int16
- * \brief Type entier signé sur 16 bits.
+ * \brief Signed integer type of 16 bits.
  */
 /*!
  * \typedef Integer
- * \brief Type représentant un entier
+ * \brief Type representing an integer
  *
- * Si la macro ARCCORE_64BIT est définie, le type Integer correspond à un
- * entier Int64, sinon à un entier Int32.
+ * If the ARCCORE_64BIT macro is defined, the Integer type corresponds to an
+ * Int64 integer, otherwise to an Int32 integer.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -316,7 +325,7 @@ class BFloat16;
 //! Float 16 bit
 class Float16;
 
-//! Type flottant IEEE-753 simple précision
+//! IEEE-753 single-precision floating-point type
 using Float32 = float;
 
 //! Float 128 bit
@@ -330,12 +339,13 @@ class Int128;
 
 /*!
  * \internal
- * \brief Structure équivalente à la valeur booléenne \a vrai
+ * \brief Structure equivalent to the boolean value \a true
  */
 struct TrueType  {};
+
 /*!
   \internal
-  \brief Structure équivalente à la valeur booléenne \a vrai
+  \brief Structure equivalent to the boolean value \a true
 */
 struct FalseType {};
 
@@ -358,8 +368,8 @@ struct FalseType {};
 #define ARCCORE_DEPRECATED_2020(reason) [[deprecated(reason)]]
 #define ARCCORE_DEPRECATED_REASON(reason) [[deprecated(reason)]]
 
-// Définir cette macro si on souhaite supprimer de la compilation les
-// méthodes et types obsolètes.
+// Define this macro if you wish to suppress obsolete
+// methods and types from compilation.
 #define ARCCORE_NO_DEPRECATED
 
 #ifndef ARCCORE_DEPRECATED
@@ -371,34 +381,36 @@ struct FalseType {};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Macros de compatibilités avec les différents standards du C++.
-// Maintenant (en 2021) tous les compilateurs avec lesquels Arccore compile
-// ont le support du C++17 donc la plupart de ces macros ne sont plus utiles.
-// On les garde uniquement pour compatibilité avec le code existant.
 
-// La macro ARCCORE_NORETURN utilise l'attribut [[noreturn]] du C++11 pour
-// indiquer qu'une fonction ne retourne pas.
+// Compatibility macros with different C++ standards.
+// Now (in 2021) all compilers with which Arccore compiles
+// support C++17, so most of these macros are no longer useful.
+// We keep them only for compatibility with existing code.
+
+// The ARCCORE_NORETURN macro uses the C++11 [[noreturn]] attribute to
+// indicate that a function does not return.
 #define ARCCORE_NORETURN [[noreturn]]
 
-//! Macro permettant de spécifier le mot-clé 'constexpr' du C++11
+//! Macro allowing specification of the C++11 'constexpr' keyword
 #define ARCCORE_CONSTEXPR constexpr
 
-// Macro pour indiquer qu'on ne lance pas d'exceptions.
+// Macro to indicate that no exceptions are thrown.
 #define ARCCORE_NOEXCEPT noexcept
 
-// Macros pour indiquer qu'on lance pas d'exceptions.
+// Macros to indicate that no exceptions are thrown.
 #define ARCCORE_NOEXCEPT_FALSE noexcept(false)
 
-// Support pour operator[](a,b,...)
+// Support for operator[](a,b,...)
 #ifdef __cpp_multidimensional_subscript
 #define ARCCORE_HAS_MULTI_SUBSCRIPT
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Macros pour l'attribut [[no_unique_address]]
-// Avec VS2022, cet attribut n'est pas pris en compte et il faut
-// utiliser [[msvc::no_unique_address]]
+
+// Macros for the [[no_unique_address]] attribute
+// With VS2022, this attribute is not taken into account and you must
+// use [[msvc::no_unique_address]]
 #ifdef _MSC_VER
 #define ARCCORE_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
 #else
@@ -408,23 +420,22 @@ struct FalseType {};
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Support pour l'alignement.
-// le C++11 utilise le mot clé alignas pour spécifier l'alignement.
-// Cela fonctionne avec GCC 4.9+ et Visual Studio 2015. Cela ne fonctionne
-// pas avec Visual Studio 2013. Donc pour Visual Studio on utilise dans tous
-// les cas __declspec qui fonctionne toujours. Sous Linux, __attribute__ fonctionne
-// aussi toujours donc on utilise cela. A noter que les structures Simd ont besoin
-// de l'attribut 'packed' qui n'existe que avec GCC et Intel. Il ne semble pas y avoir
-// d'équivalent avec MSVC.
+// Support for alignment.
+// C++11 uses the alignas keyword to specify alignment.
+// This works with GCC 4.9+ and Visual Studio 2015. It does not work
+// with Visual Studio 2013. So for Visual Studio we use __declspec which always works.
+// Under Linux, __attribute__ also always works, so we use that. Note that Simd structures need
+// the 'packed' attribute, which only exists with GCC and Intel. There seems to be no
+// equivalent with MSVC.
 #ifdef _MSC_VER
-//! Macro pour garantir le compactage et l'alignement d'une classe sur \a value octets
+//! Macro to guarantee the packing and alignment of a class to \a value bytes
 #  define ARCCORE_ALIGNAS(value) __declspec(align(value))
-//! Macro pour garantir l'alignement d'une classe sur \a value octets
+//! Macro to guarantee the alignment of a class to \a value bytes
 #  define ARCCORE_ALIGNAS_PACKED(value) __declspec(align(value))
 #else
-//! Macro pour garantir le compactage et l'alignement d'une classe sur \a value octets
+//! Macro to guarantee the packing and alignment of a class to \a value bytes
 #  define ARCCORE_ALIGNAS_PACKED(value) __attribute__ ((aligned (value),packed))
-//! Macro pour garantir l'alignement d'une classe sur \a value octets
+//! Macro to guarantee the alignment of a class to \a value bytes
 #  define ARCCORE_ALIGNAS(value) __attribute__ ((aligned (value)))
 #endif
 
@@ -439,27 +450,28 @@ struct FalseType {};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vrai si on est en mode vérification.
+ * \brief True if in check mode.
  *
- * Ce mode est actif si la macro ARCCORE_CHECK est définie
- * ou si la méthode arccoreSetCheck() a été positionnée a vrai.
+ * This mode is active if the ARCCORE_CHECK macro is defined
+ * or if the arccoreSetCheck() method has been set to true.
  */
 extern "C++" ARCCORE_BASE_EXPORT 
 bool arccoreIsCheck();
 
 /*!
- * \brief Active ou désactive le mode vérification.
+ * \brief Activates or deactivates check mode.
  *
- * Le mode vérification est toujours actif si la macro ARCCORE_CHECK est définie.
- * Sinon, il est possible de l'activer avec cette méthode. Cela permet
- * d'activer certains tests même en mode optimisé.
+ * Check mode is always active if the ARCCORE_CHECK macro is defined.
+ * Otherwise, it is possible to activate it using this method. This allows
+ * certain tests to be enabled even in optimized mode.
  */
 extern "C++" ARCCORE_BASE_EXPORT 
 void arccoreSetCheck(bool v);
 
 /*!
- * \brief Vrai si la macro ARCCORE_DEBUG est définie
+ * \brief True if the ARCCORE_DEBUG macro is defined
  */
 extern "C++" ARCCORE_BASE_EXPORT
 bool arccoreIsDebug();
@@ -467,29 +479,31 @@ bool arccoreIsDebug();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Encapsulation de la fonction C printf
+//! Encapsulation of the C printf function
 extern "C++" ARCCORE_BASE_EXPORT void
 arccorePrintf(const char*,...);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Passe en mode pause ou lance une erreur fatale.
+ * \brief Enters pause mode or throws a fatal error.
  *
- * Si arccoreSetPauseOnError() est appelé avec l'argument \a true,
- * met le programme en pause
- * pour éventuellement connecter un débugger dessus.
+ * If arccoreSetPauseOnError() is called with the argument \a true,
+ * it pauses the program
+ * to potentially attach a debugger.
  *
- * Sinon, lance une exception FatalErrorException avec le message
- * \a msg comme argument.
+ * Otherwise, it throws a FatalErrorException with the message
+ * \a msg as an argument.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreDebugPause(const char* msg);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Indique si on l'appel à arccoreDebugPause() effectue une pause.
+ * \brief Indicates whether calling arccoreDebugPause() results in a pause.
  *
  * \sa arccoreDebugPause()
  */
@@ -498,22 +512,23 @@ arccoreSetPauseOnError(bool v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro pour envoyer une exception avec formattage.
+ * \brief Macro to throw an exception with formatting.
  *
- * \a exception_class est le type de l'exception. Les arguments suivants de
- * la macro sont utilisés pour formatter un message d'erreur via la
- * méthode String::format().
+ * \a exception_class is the type of the exception. The following arguments of
+ * the macro are used to format an error message via the
+ * String::format() method.
  */
 #define ARCCORE_THROW(exception_class,...) \
   throw exception_class (A_FUNCINFO,Arccore::String::format(__VA_ARGS__))
 
 /*!
- * \brief Macro pour envoyer une exception avec formattage si \a cond est vrai.
+ * \brief Macro to throw an exception with formatting if \a cond is true.
  *
- * \a exception_class est le type de l'exception. Les arguments suivants de
- * la macro sont utilisés pour formatter un message d'erreur via la
- * méthode String::format().
+ * \a exception_class is the type of the exception. The following arguments of
+ * the macro are used to format an error message via the
+ * String::format() method.
  *
  * \sa ARCCORE_THROW
  */
@@ -523,20 +538,21 @@ arccoreSetPauseOnError(bool v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro envoyant une exception FatalErrorException.
+ * \brief Macro throwing a FatalErrorException.
  *
- * Les arguments de la macro sont utilisés pour formatter un message
- * d'erreur via la méthode String::format().
+ * The macro arguments are used to format an error message
+ * via the String::format() method.
  */
 #define ARCCORE_FATAL(...)\
   ARCCORE_THROW(::Arccore::FatalErrorException,__VA_ARGS__)
 
 /*!
- * \brief Macro envoyant une exception FatalErrorException si \a cond est vrai
+ * \brief Macro throwing a FatalErrorException if \a cond is true
  *
- * Les arguments de la macro sont utilisés pour formatter un message
- * d'erreur via la méthode String::format().
+ * The macro arguments are used to format an error message
+ * via the String::format() method.
  *
  * \sa ARCCORE_FATAL
  */
@@ -545,29 +561,29 @@ arccoreSetPauseOnError(bool v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Signalue l'utilisation d'un pointeur nul.
+ * \brief Signals the use of a null pointer.
  *
- * Signale une tentative d'utilisation d'un pointeur nul.
- * Affiche un message, appelle arccoreDebugPause() et lance une exception
- * de type FatalErrorException.
+ * Signals an attempt to use a null pointer.
+ * Displays a message, calls arccoreDebugPause(), and throws a FatalErrorException.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreNullPointerError ARCCORE_NORETURN ();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Signale qu'une valeur n'est pas dans l'intervalle souhaité.
+ * \brief Signals that a value is not within the desired range.
  *
- * Indique que l'assertion `min_value_inclusive <= i < max_value_exclusive`
- * est fausse.
- * Appelle arccoreDebugPause() puis lève une exception de type
- * IndexOutOfRangeException.
+ * Indicates that the assertion `min_value_inclusive <= i < max_value_exclusive`
+ * is false.
+ * Calls arccoreDebugPause() then throws an IndexOutOfRangeException.
  *
- * \param i valeur invalide.
- * \param min_value_inclusive valeur minimale inclusive autorisée.
- * \param max_value_exclusive valeur maximale exclusive autorisée.
+ * \param i invalid value.
+ * \param min_value_inclusive allowed minimum inclusive value.
+ * \param max_value_exclusive allowed maximum exclusive value.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreRangeError ARCCORE_NORETURN (Int64 i,Int64 min_value_inclusive,
@@ -575,24 +591,26 @@ arccoreRangeError ARCCORE_NORETURN (Int64 i,Int64 min_value_inclusive,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Signale qu'une valeur n'est pas dans l'intervalle souhaité.
+ * \brief Signals that a value is not within the desired range.
  *
- * Indique que l'assertion `0 <= i < max_value est fausse`.
- * Lance une execption IndexOutOfRangeException.
+ * Indicates that the assertion `0 <= i < max_value` is false.
+ * Throws an IndexOutOfRangeException.
  *
- * \param i indice invalide
- * \param max_size nombre d'éléments du tableau
+ * \param i invalid index
+ * \param max_size number of elements in the array
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreRangeError ARCCORE_NORETURN (Int64 i,Int64 max_size);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie que `min_value_inclusive <= i < max_value_exclusive`.
+ * \brief Checks that `min_value_inclusive <= i < max_value_exclusive`.
  *
- * Si ce n'est pas le cas, appelle arccoreRangeError() pour lancer une
+ * If this is not the case, calls arccoreRangeError() to throw an
  * exception.
  */
 inline ARCCORE_HOST_DEVICE void
@@ -603,19 +621,20 @@ arccoreCheckRange(Int64 i,Int64 min_value_inclusive,Int64 max_value_exclusive)
 #ifndef ARCCORE_DEVICE_CODE
   arccoreRangeError(i,min_value_inclusive,max_value_exclusive);
 #elif defined(ARCCORE_DEVICE_TARGET_CUDA)
-  // Code pour le device.
-  // assert() est disponible pour CUDA.
-  // TODO: regarder si une fonction similaire existe pour HIP
+  // Code for the device.
+  // assert() is available for CUDA.
+  // TODO: check if a similar function exists for HIP
   assert(false);
 #endif
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie un éventuel débordement de tableau.
+ * \brief Checks for potential array overflow.
  *
- * Appelle arccoreCheckRange(i,0,max_size).
+ * Calls arccoreCheckRange(i,0,max_size).
  */
 inline ARCCORE_HOST_DEVICE void
 arccoreCheckAt(Int64 i,Int64 max_size)
@@ -660,7 +679,8 @@ _checkPointer(const T* t,const char* file,const char* func,int line)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Macro pour obtenir par le pré-processeur le nom de la fonction actuelle
+
+// Macro to obtain the current function name via the preprocessor
 
 #if defined(__GNUG__)
 #  define ARCCORE_MACRO_FUNCTION_NAME __PRETTY_FUNCTION__
@@ -672,8 +692,9 @@ _checkPointer(const T* t,const char* file,const char* func,int line)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Macros utilisées pour le débug.
+ * Macros used for debugging.
  */
 #ifdef ARCCORE_DEBUG_ASSERT
 #  define ARCCORE_D_WHERE(a) ::Arcane::_doAssert(a, __FILE__, ARCCORE_MACRO_FUNCTION_NAME, __LINE__)
@@ -708,27 +729,29 @@ _checkPointer(const T* t,const char* file,const char* func,int line)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Signalee l'utilisation d'un pointeur nul en envoyant une exception
+ * \brief Signals the use of a null pointer by throwing an exception.
  *
- * Signale une tentative d'utilisation d'un pointeur nul.
- * Lance une exception de type FatalErrorException.
+ * Signals an attempt to use a null pointer.
+ * Throws a FatalErrorException.
  *
- * Dans l'exception, affiche \a text si non nul, sinon affiche \a ptr_name.
+ * In the exception, displays \a text if not null, otherwise displays \a ptr_name.
  *
- * Normalement cette méthode ne doit pas être appelée directement mais
- * via la macro ARCCORE_CHECK_POINTER.
+ * Normally this method should not be called directly but
+ * via the ARCCORE_CHECK_POINTER macro.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreThrowNullPointerError [[noreturn]] (const char* ptr_name,const char* text);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie qu'un pointeur n'est pas nul.
+ * \brief Checks that a pointer is not null.
  *
- * Si le pointeur est nul, appelle arccoreThrowNullPointerError().
- * Sinon, retourne le pointeur.
+ * If the pointer is null, calls arccoreThrowNullPointerError().
+ * Otherwise, returns the pointer.
  */
 inline void*
 arccoreThrowIfNull(void* ptr,const char* ptr_name,const char* text)
@@ -739,10 +762,10 @@ arccoreThrowIfNull(void* ptr,const char* ptr_name,const char* text)
 }
 
 /*!
- * \brief Vérifie qu'un pointeur n'est pas nul.
+ * \brief Checks that a pointer is not null.
  *
- * Si le pointeur est nul, appelle arccoreThrowNullPointerError().
- * Sinon, retourne le pointeur.
+ * If the pointer is null, calls arccoreThrowNullPointerError().
+ * Otherwise, returns the pointer.
  */
 inline const void*
 arccoreThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
@@ -754,9 +777,10 @@ arccoreThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro retournant le pointeur \a ptr s'il est non nul
- * ou lancant une exception s'il est nul.
+ * \brief Macro that returns the pointer \a ptr if it is not null
+ * or throws an exception if it is null.
  *
  * \sa arccoreThrowIfNull().
  */
@@ -764,8 +788,8 @@ arccoreThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
   arccoreThrowIfNull(ptr,#ptr,nullptr)
 
 /*!
- * \brief Macro retournant le pointeur \a ptr s'il est non nul
- * ou lancant une exception s'il est nul.
+ * \brief Macro that returns the pointer \a ptr if it is not null
+ * or throws an exception if it is null.
  *
  * \sa arccoreThrowIfNull().
  */
@@ -774,11 +798,12 @@ arccoreThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Les macros suivantes permettent de de créer un identifiant en suffixant
-// le numéro de ligne du fichier. Cela permet d'avoir un identifiant unique
-// pour un fichier et est utilisé par exemple pour générer des noms
-// de variable globale pour l'enregistrement des services.
-// La macro a utiliser est ARCANE_JOIN_WITH_LINE(name).
+
+// The following macros allow creating an identifier by suffixing
+// the file line number. This allows for a unique identifier
+// for a file and is used, for example, to generate names
+// of global variables for service registration.
+// The macro to use is ARCANE_JOIN_WITH_LINE(name).
 #define ARCCORE_JOIN_HELPER2(a,b) a ## b
 #define ARCCORE_JOIN_HELPER(a,b) ARCCORE_JOIN_HELPER2(a,b)
 #define ARCCORE_JOIN_WITH_LINE(a) ARCCORE_JOIN_HELPER(a,__LINE__)
@@ -786,13 +811,13 @@ arccoreThrowIfNull(const void* ptr,const char* ptr_name,const char* text)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Défitions des types de base.
+// Definitions of base types.
 class String;
 class StringView;
 class StringFormatterArg;
 class StringBuilder;
-// Pas dans cette composante mais comme cette interface on la met ici
-// pour compatibilité avec l'existant
+// Not in this component but included here for compatibility with existing
+// code
 class ITraceMng;
 
 /*---------------------------------------------------------------------------*/
@@ -828,16 +853,16 @@ using BFloat16 = Arcane::BFloat16;
 //! Type 'Float16' (binary16)
 using Float16 = Arcane::Float16;
 
-//! Type flottant IEEE-753 simple précision (binary32)
+//! IEEE-753 single precision floating point type (binary32)
 using Float32 = float;
 
-//! Type représentant un entier sur 8 bits
+//! Type representing an 8-bit integer
 using Int8 = Arcane::Int8;
 
-//! Type représentant un floattan sur 128 bits
+//! Type representing a 128-bit float
 using Float128 = Arcane::Float128;
 
-//! Type représentant un entier sur 128 bits
+//! Type representing a 128-bit integer
 using Int128 = Arcane::Int128;
 using Int16 = Arcane::Int16;
 using Int32 = Arcane::Int32;
@@ -865,4 +890,4 @@ using Arcane::_checkPointer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

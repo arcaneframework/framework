@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SerializeMessageList.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Liste de messages de sérialisation.                                       */
+/* Serialization message list.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_INTERNAL_SERIALIZEMESSAGEMESSAGELIST_H
 #define ARCCORE_MESSAGEPASSING_INTERNAL_SERIALIZEMESSAGEMESSAGELIST_H
@@ -28,13 +28,14 @@ namespace Arcane::MessagePassing::internal
 {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Liste de messages de sérialisation.
+ * \brief Serialization message list.
  *
- * Cette classe supporte le cas où une implémentation ne supporte par les
- * messages ayant comme destination n'importe quel rang (c'est par exemple
- * le cas du mode hybride).
+ * This class supports the case where an implementation does not support
+ * messages having any rank as destination (for example
+ * the hybrid mode).
  */
 class ARCCORE_MESSAGEPASSING_EXPORT SerializeMessageList
 : public ISerializeMessageList
@@ -92,5 +93,4 @@ class ARCCORE_MESSAGEPASSING_EXPORT SerializeMessageList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

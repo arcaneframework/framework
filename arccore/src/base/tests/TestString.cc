@@ -25,8 +25,8 @@ using namespace Arcane::Impl;
 
 namespace
 {
-// Classe pour restaurer automatiquement les flags() d'un 'std::ostream'
-  // To Test
+// Class to automatically restore the flags() of an 'std::ostream'
+// To Test
 class IosFlagsWrapper
 {
  public:
@@ -102,9 +102,9 @@ void _doConvertTest(const char* name, const String& str)
 
 } // namespace
 
-// TODO: Regarder pourquoi le test ne passe pas sous windows sur le CI de github
-// (alors qu'il fonctionne sur un PC perso. Il faudrait regarder si cela n'est pas
-// un problème d'encodage par défaut).
+// TODO: Check why the test fails on Windows on the GitHub CI
+// (while it works on a personal PC. We should check if it is not
+// a default encoding issue).
 TEST(String, Utf8AndUtf16)
 {
   IosFlagsWrapper io_wrapper(&std::cout);

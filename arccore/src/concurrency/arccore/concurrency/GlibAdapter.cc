@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GlibAdapter.cc                                              (C) 2000-2025 */
 /*                                                                           */
-/* Classes utilitaires pour s'adapter aux différentes versions de la 'glib'. */
+/* Utility classes to adapt to different versions of 'glib'.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,13 +15,13 @@
 
 #include <glib.h>
 
-// A partir de 2.32, 'glib' utilise un nouveau mécanisme pour gérer
-// tout ce qui concerne le multi-threading. En particulier, toutes les
-// fonctions de création/destruction changent.
+// Starting from 2.32, 'glib' uses a new mechanism to manage
+// everything related to multi-threading. In particular, all
+// creation/destruction functions change.
 
-// A terme, ces fonctionnalités seront disponibles dans la norme C++
-// et lorsqu'on pourra utiliser des compilateurs récents elles ne devraient
-// plus être utilisées.
+// Eventually, these features will be available in the C++ standard
+// and when recent compilers can be used, they should
+// no longer be used.
 
 #define ARCCORE_GLIB_HAS_NEW_THREAD
 
@@ -33,9 +33,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief GMutex de la glib.
+ * \brief Glib mutex.
  */
 class GlibMutex::Impl
 {
@@ -89,7 +90,7 @@ GPrivate null_gprivate = G_PRIVATE_INIT(nullptr);
 
 /*!
  * \internal
- * \brief GPrivate de la glib.
+ * \brief Glib private.
  */
 class GlibPrivate::Impl
 {

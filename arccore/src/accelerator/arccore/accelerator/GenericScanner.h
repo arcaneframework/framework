@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GenericScanner.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Algorithme de 'scan' pour les accélérateurs.                              */
+/* Scan algorithm for accelerators.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_GENERICSCANNER_H
 #define ARCCORE_ACCELERATOR_GENERICSCANNER_H
@@ -32,9 +32,10 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe pour effectuer un scan exlusif ou inclusif avec un opérateur spécifique.
+ * \brief Class to perform an exclusive or inclusive scan with a specific operator.
  */
 class ScannerImpl
 {
@@ -61,7 +62,7 @@ class ScannerImpl
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
       cudaStream_t stream = Impl::CudaUtils::toNativeStream(&m_queue);
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine size for allocation
       if constexpr (IsExclusive)
         ARCCORE_CHECK_CUDA(::cub::DeviceScan::ExclusiveScan(nullptr, temp_storage_size,
                                                             input_data, output_data, op, init_value, nb_item, stream));
@@ -80,7 +81,7 @@ class ScannerImpl
 #if defined(ARCCORE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine size for allocation
       hipStream_t stream = Impl::HipUtils::toNativeStream(&m_queue);
       if constexpr (IsExclusive)
         ARCCORE_CHECK_HIP(rocprim::exclusive_scan(nullptr, temp_storage_size, input_data, output_data,
@@ -138,9 +139,9 @@ class ScannerImpl
     } break;
 #endif
     case eExecutionPolicy::Thread:
-      // Si le nombre de valeurs est 1 on utilise la version séquentielle.
-      // TODO: il serait judicieux de faire cela aussi pour des valeurs plus importantes
-      // car en général sur les petites boucles le multi-threading est contre productif.
+      // If the number of values is 1, we use the sequential version.
+      // TODO: it would be wise to do this also for larger values
+      // because generally multi-threading is counterproductive on small loops.
       if (nb_item > 1) {
         MultiThreadAlgo scanner;
         scanner.doScan<IsExclusive, DataType>(launch_info.loopRunInfo(), nb_item, input_data, output_data, init_value, op);
@@ -185,44 +186,45 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Algorithmes de scan exclusif ou inclusif sur accélérateurs.
+ * \brief Exclusive or inclusive scan algorithms on accelerators.
  *
- * Voir https://en.wikipedia.org/wiki/Prefix_sum.
+ * See https://en.wikipedia.org/wiki/Prefix_sum.
  *
- * Dans les méthodes suivantes, l'argument \a queue ne doit pas être nul.
+ * In the following methods, the \a queue argument must not be null.
  */
 template <typename DataType>
 class Scanner
 {
  public:
 
-  //! Somme exclusive
+  //! Exclusive sum
   static void exclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     _applyArray<true>(queue, input, output, ScannerSumOperator<DataType>{});
   }
-  //! Minimum exclusif
+  //! Exclusive minimum
   static void exclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     _applyArray<true>(queue, input, output, ScannerMinOperator<DataType>{});
   }
-  //! Maximum exclusif
+  //! Exclusive maximum
   static void exclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     _applyArray<true>(queue, input, output, ScannerMaxOperator<DataType>{});
   }
-  //! Somme inclusive
+  //! Inclusive sum
   static void inclusiveSum(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     _applyArray<false>(queue, input, output, ScannerSumOperator<DataType>{});
   }
-  //! Minimum inclusif
+  //! Inclusive minimum
   static void inclusiveMin(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     _applyArray<false>(queue, input, output, ScannerMinOperator<DataType>{});
   }
-  //! Maximum inclusif
+  //! Inclusive maximum
   static void inclusiveMax(RunQueue* queue, SmallSpan<const DataType> input, SmallSpan<DataType> output)
   {
     _applyArray<false>(queue, input, output, ScannerMaxOperator<DataType>{});
@@ -249,27 +251,28 @@ class Scanner
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Algorithmes de scan exclusif ou inclusif sur accélérateurs.
+ * \brief Exclusive or inclusive scan algorithms on accelerators.
  *
- * Voir https://en.wikipedia.org/wiki/Prefix_sum.
+ * See https://en.wikipedia.org/wiki/Prefix_sum.
  *
- * Dans les méthodes de scan, les valeurs entre les entrées et les sorties
- * ne doivent pas se chevaucher.
+ * In scan methods, the values between inputs and outputs
+ * must not overlap.
  */
 class GenericScanner
 {
  public:
 
   /*!
-   * \brief Itérateur sur une lambda pour positionner une valeur via un index.
+   * \brief Iterator over a lambda to position a value via an index.
    */
   template <typename DataType, typename SetterLambda>
   class SetterLambdaIterator
   {
    public:
 
-    //! Permet de positionner un élément de l'itérateur de sortie
+    //! Allows positioning an element of the output iterator
     class Setter
     {
      public:
@@ -432,8 +435,8 @@ class GenericScanner
 
   void _checkBarrier()
   {
-    // Les fonctions cub ou rocprim pour le scan sont asynchrones par défaut.
-    // Si on a une RunQueue synchrone, alors on fait une barrière.
+    // cub or rocprim scan functions are asynchronous by default.
+    // If we have a synchronous RunQueue, then we perform a barrier.
     if (!m_queue.isAsync())
       m_queue.barrier();
   }

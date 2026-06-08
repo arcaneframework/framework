@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IThreadImplementationService.h                              (C) 2000-2026 */
 /*                                                                           */
-/* Interface d'un service de gestion des threads.                            */
+/* Interface of a thread management service.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_ITHREADIMPLEMENTATIONSERVICE_H
 #define ARCCORE_CONCURRENCY_ITHREADIMPLEMENTATIONSERVICE_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un service de gestion des threads.
+ * \brief Interface of a thread management service.
  */
 class ARCCORE_CONCURRENCY_EXPORT IThreadImplementationService
 {
