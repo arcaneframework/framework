@@ -346,7 +346,7 @@ _doHypreSolver(int nb_row,
   HYPRE_IJVectorAssemble(x);
   HYPRE_IJVectorGetObject(x, (void**)&par_x);
 
-  /*  Print out the system  - files names will be IJ.out.A.XXXXX
+  /* Print out the system - files names will be IJ.out.A.XXXXX
         and IJ.out.b.XXXXX, where XXXXX = processor id */
   if (print_system) {
     HYPRE_IJMatrixPrint(A, "IJ.out.A");
@@ -371,10 +371,10 @@ _doHypreSolver(int nb_row,
 
     /* Set some parameters (See Reference Manual for more parameters) */
     HYPRE_BoomerAMGSetPrintLevel(solver, 3); /* print solve info + parameters */
-    HYPRE_BoomerAMGSetOldDefault(solver); /* Falgout coarsening with modified classical interpolaiton */
+    HYPRE_BoomerAMGSetOldDefault(solver); /* Falgout coarsening with modified classical interpolation */
     HYPRE_BoomerAMGSetRelaxType(solver, 3); /* G-S/Jacobi hybrid relaxation */
     HYPRE_BoomerAMGSetRelaxOrder(solver, 1); /* uses C/F relaxation */
-    HYPRE_BoomerAMGSetNumSweeps(solver, 1); /* Sweeeps on each level */
+    HYPRE_BoomerAMGSetNumSweeps(solver, 1); /* Sweeps on each level */
     HYPRE_BoomerAMGSetMaxLevels(solver, 20); /* maximum number of levels */
     HYPRE_BoomerAMGSetTol(solver, solver_tolerance); /* conv. tolerance */
 
@@ -534,11 +534,11 @@ _doHypreSolver(int nb_row,
       printf("\n");
     }
 
-    /* Destory solver and preconditioner */
+    /* Destroy solver and preconditioner */
     HYPRE_ParCSRPCGDestroy(solver);
     HYPRE_ParaSailsDestroy(precond);
   }
-  /* Flexible GMRES with  AMG Preconditioner */
+  /* Flexible GMRES with AMG Preconditioner */
   else if (solver_id == 61) {
     auto t = prof.scoped_tic("HypreSolver Flexible GMRES - AMG");
     int num_iterations;
@@ -571,8 +571,8 @@ _doHypreSolver(int nb_row,
                               (HYPRE_PtrToSolverFcn)HYPRE_BoomerAMGSetup, precond);
 
     if (modify) {
-      /* this is an optional call  - if you don't call it, hypre_FlexGMRESModifyPCDefault
-            is used - which does nothing.  Otherwise, you can define your own, similar to
+      /* this is an optional call - if you don't call it, hypre_FlexGMRESModifyPCDefault
+            is used - which does nothing. Otherwise, you can define your own, similar to
             the one used here */
       HYPRE_FlexGMRESSetModifyPC(solver, (HYPRE_PtrToModifyPCFcn)hypre_FlexGMRESModifyPCAMGExample);
     }
@@ -597,7 +597,7 @@ _doHypreSolver(int nb_row,
       printf("\n");
     }
 
-    /* Destory solver and preconditioner */
+    /* Destroy solver and preconditioner */
     HYPRE_ParCSRFlexGMRESDestroy(solver);
     HYPRE_BoomerAMGDestroy(precond);
   }

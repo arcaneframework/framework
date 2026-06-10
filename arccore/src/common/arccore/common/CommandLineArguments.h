@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CommandLineArguments.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Arguments de la ligne de commande.                                        */
+/* Command Line Arguments.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_COMMANDLINEARGUMENTS_H
 #define ARCCORE_COMMON_COMMANDLINEARGUMENTS_H
@@ -27,23 +27,24 @@ class ParameterList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments de la ligne de commande.
+ * \brief Command Line Arguments.
  *
- * Cette classe utilise une sémantique par référence.
- * Les méthodes commandLineArgc() et commandLineArgv() retournent des
- * pointeurs sur des structures internes à cette classe qui ne sont
- * allouées que tant que l'instance est valide. Ils peuvent être utilisés
- * pour les méthodes classiques du C qui attendent des pointeurs sur les
- * arguments de la ligne de commande (soit l'équivalent du couple (argc,argv)
- * de la fonction main()).
+ * This class uses a reference semantics.
+ * The commandLineArgc() and commandLineArgv() methods return
+ * pointers to internal structures of this class which are
+ * allocated only as long as the instance is valid. They can be used
+ * for classic C methods that expect pointers to the
+ * command line arguments (i.e., the equivalent of the (argc,argv
+ * pair of the main() function).
  *
- * Les arguments qui commencent par '-A' sont considérés comme des paramètres
- * de type (clé,valeur) et doivent avoir la forme -A,x=y avec `x` la clé et
- * `y` la valeur. Il est ensuite possible de récupérer la valeur d'un
- * paramètre par l'intermédiaire de sa clé via la méthode getParameter();
- * Si un paramètre est présent plusieurs fois sur la ligne de commande, c'est
- * la dernière valeur qui est conservée.
+ * Arguments starting with '-A' are considered as (key,value) parameters
+ * type and must be in the form -A,x=y where `x` is the key and
+ * `y` is the value. It is then possible to retrieve the value of a
+ * parameter through its key using the getParameter() method;
+ * If a parameter is present multiple times on the command line, the
+ * last value is retained.
  */
 class ARCCORE_COMMON_EXPORT CommandLineArguments
 {
@@ -51,7 +52,7 @@ class ARCCORE_COMMON_EXPORT CommandLineArguments
 
  public:
 
-  //! Créé une instance à partir des arguments (argc,argv)
+  //! Create an instance from the arguments (argc,argv)
   CommandLineArguments(int* argc, char*** argv);
   CommandLineArguments();
   explicit CommandLineArguments(const StringList& args);
@@ -64,39 +65,39 @@ class ARCCORE_COMMON_EXPORT CommandLineArguments
   int* commandLineArgc() const;
   char*** commandLineArgv() const;
 
-  //! Remplit \a args avec arguments de la ligne de commande.
+  //! Fills \a args with command line arguments.
   void fillArgs(StringList& args) const;
 
   /*!
-   * \brief Récupère le paramètre de nom \a param_name.
+   * \brief Retrieves the parameter with name \a param_name.
    *
-   * Retourne une chaîne nulle s'il n'y aucun paramètre avec ce nom.
+   * Returns a null string if there is no parameter with this name.
    */
   String getParameter(const String& param_name) const;
 
   /*!
-   * \brief Ajoute un paramètre.
+   * \brief Adds a parameter.
    * \sa ParameterList::addParameterLine()
    */
   void addParameterLine(const String& line);
 
   /*!
-   * \brief Récupère la liste des paramètres et leur valeur.
+   * \brief Retrieves the list of parameters and their values.
    *
-   * Retourne dans \a param_names la liste des noms des paramètres et
-   * dans \a values la valeur associée.
+   * Returns the list of parameter names in \a param_names and
+   * the associated value in \a values.
    */
-  void fillParameters(StringList& param_names,StringList& values) const;
+  void fillParameters(StringList& param_names, StringList& values) const;
 
-  //! Liste des paramètres
+  //! List of parameters
   const ParameterList& parameters() const;
 
-  //! Liste des paramètres
+  //! List of parameters
   ParameterList& parameters();
 
   /*!
-   * \brief Méthode permettant de savoir si l'utilisateur a demandé
-   * de l'aide dans la ligne de commande.
+   * \brief Method to determine if the user requested
+   * help on the command line.
    */
   bool needHelp() const;
 

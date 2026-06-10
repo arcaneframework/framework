@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ConcurrencyUtils.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
+/* Classes managing concurrency (tasks, parallel loops, ...)                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -46,10 +46,10 @@ class SerialTask
   SerialTask(ITaskFunctor* f)
   : m_functor(f)
   {
-    // \a f doit être une instance de TaskFunctor<SerialTask>.
-    // on recopie dans un buffer pré-dimensionné pour éviter
-    // d'avoir à faire une allocation sur le tas via le new
-    // classique. On utilise donc le new avec placement.
+    // \a f must be an instance of TaskFunctor<SerialTask>.
+    // we copy it into a pre-dimensioned buffer to avoid
+    // having to perform a heap allocation via new
+    // classic. We therefore use placement new.
 
     m_functor = f->clone(functor_buf, FUNCTOR_CLASS_SIZE);
   }
@@ -265,7 +265,7 @@ destroyThreadObservable()
 void TaskFactory::
 terminate()
 {
-  // C'est celui qui a positionné l'implémentation qui gère sa destruction.
+  // The one that placed the implementation manages its destruction.
   if (m_impl == &NullTaskImplementation::singleton)
     return;
   if (m_impl)
@@ -280,12 +280,14 @@ terminate()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ConcurrencyUtils.h
  * 
- * \brief Classes, Types et macros pour gérer la concurrence.
+ * \brief Classes, Types, and macros for managing concurrency.
  *
- * Pour plus de renseignements, se reporter à la page \ref arcanedoc_parallel_concurrency
+ * For more information, refer to the page \ref arcanedoc_parallel_concurrency
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

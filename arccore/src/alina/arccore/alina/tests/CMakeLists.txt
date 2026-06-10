@@ -56,9 +56,9 @@ endif()
 
 
 # NOTE:
-# Certains tests utilisent OpenMP
-# On fixe en dur le nombre de threads sinon on utilise tous
-# les coeurs disponibles.
+# Some tests use OpenMP
+# We hardcode the number of threads, otherwise we use all
+# available cores.
 
 gtest_discover_tests(arccore_alina.tests
   DISCOVERY_TIMEOUT 30
@@ -80,8 +80,8 @@ arccore_add_component_test_executable(alina_mpi
 target_include_directories(arccore_alina_mpi.tests PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(arccore_alina_mpi.tests PRIVATE arccore_alina GTest::GTest)
 
-# Comme il faut lancer les tests avec 'mpiexec', on n'utilise pas 'gtest_discover_tests'
-# mais on ajoute manuellement les tests via la macro 'alina_add_test'
+# Since the tests must be run with 'mpiexec', we do not use 'gtest_discover_tests'
+# but we manually add the tests via the 'alina_add_test' macro
 
 macro(alina_mpi_add_test)
   set(options)

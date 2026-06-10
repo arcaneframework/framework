@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TimeoutException.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Exception lorsqu'un signal survient.                                      */
+/* Exception when a signal occurs.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_TIMEOUTEXCEPTION_H
 #define ARCCORE_BASE_TIMEOUTEXCEPTION_H
@@ -24,9 +24,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Exception lorsqu'un timeout survient.
+ * \brief Exception when a timeout occurs.
  */
 class ARCCORE_BASE_EXPORT TimeoutException
 : public Exception
@@ -34,12 +35,14 @@ class ARCCORE_BASE_EXPORT TimeoutException
  public:
 
   TimeoutException(const String& where);
-  TimeoutException(const String& where,const StackTrace& stack_trace);
-  TimeoutException(const TimeoutException& ex) : Exception(ex){}
+  TimeoutException(const String& where, const StackTrace& stack_trace);
+  TimeoutException(const TimeoutException& ex)
+  : Exception(ex)
+  {}
   ~TimeoutException() ARCCORE_NOEXCEPT {}
 
  public:
-	
+
   virtual void explain(std::ostream& m) const;
 };
 
@@ -49,10 +52,9 @@ class ARCCORE_BASE_EXPORT TimeoutException
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

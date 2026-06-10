@@ -1,4 +1,4 @@
-set(SOURCES
+﻿set(SOURCES
   AbstractArray.h
   AllocatedMemoryInfo.h
   AlignedMemoryAllocator.h

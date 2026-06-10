@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandLaunchInfo.cc                                     (C) 2000-2026 */
 /*                                                                           */
-/* Informations pour l'exécution d'une 'RunCommand'.                         */
+/* Information for running a 'RunCommand'.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,11 +38,11 @@ _init()
 {
   m_queue_impl = m_command._internalQueueImpl();
   m_exec_policy = m_queue_impl->executionPolicy();
-  // Le calcul des informations de kernel n'est utile que sur accélérateur
+  // Kernel launch information calculation is only useful on accelerator
   if (isAcceleratorPolicy(m_exec_policy)) {
     _computeInitialKernelLaunchArgs();
     m_command._allocateReduceMemory(m_kernel_launch_args.nbBlockPerGrid());
-    // Si des réductions sont présentes, on force la barrière à la fin du kernel
+    // If reductions are present, we force the barrier at the end of the kernel
     m_is_forced_need_barrier = m_command.m_p->hasActiveReduction();
   }
 }
@@ -76,8 +76,8 @@ RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size, bool is_coopera
 RunCommandLaunchInfo::
 ~RunCommandLaunchInfo() noexcept(false)
 {
-  // Notifie de la fin de lancement du noyau. Normalement, cela est déjà fait
-  // sauf s'il y a eu une exception pendant le lancement du noyau de calcul.
+  // Notifies the end of kernel launch. Normally, this is already done
+  // unless there was an exception during the computation kernel launch.
   _doEndKernelLaunch();
 }
 
@@ -97,11 +97,12 @@ beginExecute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Notifie de la fin de lancement de la commande.
+ * \brief Notifies the end of command launch.
  *
- * A noter que si la commande est asynchrone, son exécution peut continuer
- * après l'appel à cette méthode.
+ * Note that if the command is asynchronous, its execution may continue
+ * after calling this method.
  */
 void RunCommandLaunchInfo::
 endExecute()
@@ -138,15 +139,16 @@ _internalNativeStream()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule la valeur initiale de block/thread/grille du noyau
- * en fonction de \a full_size.
+ * \brief Calculates the initial value of kernel block/thread/grid
+ * based on \a full_size.
  */
 void RunCommandLaunchInfo::
 _computeInitialKernelLaunchArgs()
 {
   int threads_per_block = m_command.nbThreadPerBlock();
-  if (threads_per_block<=0)
+  if (threads_per_block <= 0)
     threads_per_block = 256;
   Int64 big_b = (m_total_loop_size + threads_per_block - 1) / threads_per_block;
   int blocks_per_grid = CheckedConvert::toInt32(big_b);
@@ -163,9 +165,9 @@ computeParallelLoopOptions() const
 {
   ParallelLoopOptions opt = m_command.parallelLoopOptions();
   const bool use_dynamic_compute = true;
-  // Calcule une taille de grain par défaut si cela n'est pas renseigné dans
-  // les options. Par défaut on fait en sorte de faire un nombre d'itérations
-  // égale à 2 fois le nombre de threads utilisés.
+  // Calculates a default grain size if it is not specified in
+  // the options. By default, we ensure a number of iterations
+  // equal to 2 times the number of threads used.
   if (use_dynamic_compute && opt.grainSize() == 0) {
     Int32 nb_thread = opt.maxThread();
     if (nb_thread <= 0)
@@ -180,10 +182,11 @@ computeParallelLoopOptions() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calcule la valeur de m_loop_run_info.
+ * \brief Calculates the value of m_loop_run_info.
  *
- * Cela n'est utile qu'en mode multi-thread.
+ * This is only useful in multi-thread mode.
  */
 void RunCommandLaunchInfo::
 _computeLoopRunInfo()
@@ -195,14 +198,15 @@ _computeLoopRunInfo()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détermine la configuration du kernel.
+ * \brief Determines the kernel configuration.
  *
- * La configuration est dépendante du runtime sous-jacent. Pour CUDA et ROCM,
- * il s'agit d'un nombre de blocs et de thread.
+ * The configuration depends on the underlying runtime. For CUDA and ROCM,
+ * it is a number of blocks and threads.
  *
- * Il est possible de calculer dynamiquement les valeurs optimales pour
- * maximiser l'occupation.
+ * It is possible to dynamically calculate the optimal values to
+ * maximize occupancy.
  */
 KernelLaunchArgs RunCommandLaunchInfo::
 _computeKernelLaunchArgs(const void* func) const
@@ -228,7 +232,7 @@ _addSyclEvent(void* sycl_event_ptr)
 bool RunCommandLaunchInfo::
 _isUseCooperativeLaunch() const
 {
-  // Indique si on utilise cudaLaunchCooperativeKernel()
+  // Indicates if cudaLaunchCooperativeKernel() is used
   return m_is_cooperative_launch;
 }
 /*---------------------------------------------------------------------------*/
@@ -237,7 +241,7 @@ _isUseCooperativeLaunch() const
 bool RunCommandLaunchInfo::
 _isUseCudaLaunchKernel() const
 {
-  // Indique si on utilise cudaLaunchKernel() au lieu de kernel<<<...>>>.
+  // Indicates if cudaLaunchKernel() is used instead of kernel<<<...>>>.
   return true;
 }
 
@@ -253,7 +257,7 @@ _setIsNeedBarrier(bool v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+} // namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

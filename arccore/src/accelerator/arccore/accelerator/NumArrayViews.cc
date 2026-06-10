@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* NumArrayViews.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des vues sur les 'NumArray' pour les accélérateurs.               */
+/* Managing views on 'NumArray' for accelerators.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,12 +22,14 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file NumArrayViews.h
  *
- * Ce fichier contient les déclarations des types pour gérer
- * les vues pour les accélérateurs de la classe 'NumArray'.
+ * This file contains the type declarations for managing
+ * views for 'NumArray' class accelerators.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

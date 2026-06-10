@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -274,7 +274,7 @@ void _testArrayNewInternal()
     c2.add(3);
     c2.add(5);
     SharedArray<IntSubClass> c22(33);
-    ASSERT_EQ(c22.size(),33);
+    ASSERT_EQ(c22.size(), 33);
     c22 = c2;
     {
       SharedArray<IntSubClass> c;
@@ -284,11 +284,11 @@ void _testArrayNewInternal()
       SharedArray<IntSubClass> c3(c2);
       SharedArray<IntSubClass> c4(c);
       c2.resize(125);
-      ASSERT_EQ(c2.size(),c3.size());
-      ASSERT_EQ(c2.size(),c4.size());
+      ASSERT_EQ(c2.size(), c3.size());
+      ASSERT_EQ(c2.size(), c4.size());
       c3.resize(459);
-      ASSERT_EQ(c2.size(),c3.size());
-      ASSERT_EQ(c2.size(),c4.size());
+      ASSERT_EQ(c2.size(), c3.size());
+      ASSERT_EQ(c2.size(), c4.size());
       c4.resize(932);
       c.resize(32);
     }
@@ -298,34 +298,33 @@ void _testArrayNewInternal()
     ARCCORE_UT_CHECK((c2[1] == 7), "Bad value [7]");
     ARCCORE_UT_CHECK((c2[32] == 3), "Bad value [7]");
     c2.resize(1293);
-    ASSERT_EQ(c2.size(),1293);
-    ASSERT_EQ(c22.size(),2);
+    ASSERT_EQ(c2.size(), 1293);
+    ASSERT_EQ(c22.size(), 2);
 
     {
       SharedArray<IntSubClass> values1 = { -7, 3, 4 };
-      ASSERT_EQ(values1.size(),3);
-      ASSERT_EQ(values1[0],-7);
-      ASSERT_EQ(values1[1],3);
-      ASSERT_EQ(values1[2],4);
+      ASSERT_EQ(values1.size(), 3);
+      ASSERT_EQ(values1[0], -7);
+      ASSERT_EQ(values1[1], 3);
+      ASSERT_EQ(values1[2], 4);
       values1 = { 2, -1, 9, 13 };
-      ASSERT_EQ(values1.size(),4);
-      ASSERT_EQ(values1[0],2);
-      ASSERT_EQ(values1[1],-1);
-      ASSERT_EQ(values1[2],9);
-      ASSERT_EQ(values1[3],13);
+      ASSERT_EQ(values1.size(), 4);
+      ASSERT_EQ(values1[0], 2);
+      ASSERT_EQ(values1[1], -1);
+      ASSERT_EQ(values1[2], 9);
+      ASSERT_EQ(values1[3], 13);
       SharedArray<IntSubClass> values2 = values1;
-      ASSERT_EQ(values2,values1);
+      ASSERT_EQ(values2, values1);
 
       values1 = {};
-      ASSERT_EQ(values1.size(),0);
-      ASSERT_EQ(values2.size(),0);
+      ASSERT_EQ(values1.size(), 0);
+      ASSERT_EQ(values2.size(), 0);
     }
-
   }
   {
     UniqueArray<Int32> values1 = { 2, 5 };
     UniqueArray<Int32> values2 = { 4, 9, 7 };
-    // Copie les valeurs de values2 à la fin de values1.
+    // Copy the values of values2 to the end of values1.
     std::copy(std::begin(values2), std::end(values2), std::back_inserter(values1));
     std::cout << "** VALUES1 = " << values1 << "\n";
     ARCCORE_UT_CHECK((values1.size() == 5), "BI: Bad size");
@@ -342,17 +341,17 @@ void _testArrayNewInternal()
     std::cout << "V=" << i->m_v << " " << ci->m_v << '\n';
 
     values1 = { -7, 3 };
-    ASSERT_EQ(values1.size(),2);
-    ASSERT_EQ(values1[0],-7);
-    ASSERT_EQ(values1[1],3);
+    ASSERT_EQ(values1.size(), 2);
+    ASSERT_EQ(values1[0], -7);
+    ASSERT_EQ(values1[1], 3);
 
     values1 = {};
-    ASSERT_EQ(values1.size(),0);
+    ASSERT_EQ(values1.size(), 0);
   }
   {
     UniqueArray<Int32> values1;
     UniqueArray<Int32> values2 = { 4, 9, 7, 6, 3 };
-    // Copie les valeurs de values2 à la fin de values1.
+    // Copy the values of values2 to the end of values1.
     values1.copy(values2);
     std::cout << "** VALUES1 = " << values1 << "\n";
     ARCCORE_UT_CHECK((values1.size() == 5), "BI: Bad size");
@@ -462,12 +461,11 @@ TEST(Array, Misc)
 
 namespace
 {
-void
-_Add(Array<Real>& v,Integer new_size)
+void _Add(Array<Real>& v, Integer new_size)
 {
   v.resize(new_size);
 }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -560,7 +558,7 @@ TEST(Array, SubViews)
   using namespace Arccore;
 
   {
-    // Test Array::subView() et Array::subConstView()
+    // Test Array::subView() and Array::subConstView()
     UniqueArray<Int32> v;
     v.resize(23);
     for (Int32 i = 0, n = v.size(); i < n; ++i)
@@ -602,6 +600,7 @@ TEST(Array, SubViews)
 class NoCopyData
 {
  public:
+
   NoCopyData(const NoCopyData& x) = delete;
 };
 
@@ -635,8 +634,8 @@ TEST(Array, Misc3)
     ASSERT_EQ(c.size(), 21);
     std::cout << "C2=" << c << "\n";
 
-    // Redimensionne sans initialiser. Les valeurs pour les éléments
-    // de 9 à 18 doivent valoir \a ref_value2
+    // Resize without initializing. The values for elements
+    // from 9 to 18 must be \a ref_value2
     c.resizeNoInit(18);
     std::cout << "C4=" << c << "\n";
     for (Int32 i = 9, s = c.size(); i < s; ++i)
@@ -655,10 +654,11 @@ TEST(Array, Misc3)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ArrayType>
+template <typename ArrayType>
 class AllocatorTest
 {
  public:
+
   static void doTestBase()
   {
     using namespace Arccore;
@@ -670,7 +670,7 @@ class AllocatorTest
     {
       std::cout << "Array a\n";
       ArrayType a(allocator1);
-      ASSERT_EQ(a.allocator(),allocator1);
+      ASSERT_EQ(a.allocator(), allocator1);
       a.add(27);
       a.add(38);
       a.add(13);
@@ -678,39 +678,39 @@ class AllocatorTest
 
       std::cout << "Array b\n";
       ArrayType b(allocator2);
-      ASSERT_EQ(b.capacity(),0);
-      ASSERT_EQ(b.size(),0);
-      ASSERT_EQ(b.allocator(),allocator2);
+      ASSERT_EQ(b.capacity(), 0);
+      ASSERT_EQ(b.size(), 0);
+      ASSERT_EQ(b.allocator(), allocator2);
 
       b = a;
-      ASSERT_EQ(b.size(),a.size());
-      ASSERT_EQ(b.allocator(),a.allocator());
+      ASSERT_EQ(b.size(), a.size());
+      ASSERT_EQ(b.allocator(), a.allocator());
 
       std::cout << "Array c\n";
       ArrayType c(a.clone());
-      ASSERT_EQ(c.allocator(),a.allocator());
-      ASSERT_EQ(c.size(),a.size());
-      ASSERT_EQ(c.constSpan(),a.constSpan());
+      ASSERT_EQ(c.allocator(), a.allocator());
+      ASSERT_EQ(c.size(), a.size());
+      ASSERT_EQ(c.constSpan(), a.constSpan());
 
       std::cout << "Array d\n";
-      ArrayType d(allocator2,a);
-      ASSERT_EQ(d.allocator(),allocator2);
-      ASSERT_EQ(d.size(),a.size());
-      ASSERT_EQ(d.constSpan(),a.constSpan());
+      ArrayType d(allocator2, a);
+      ASSERT_EQ(d.allocator(), allocator2);
+      ASSERT_EQ(d.size(), a.size());
+      ASSERT_EQ(d.constSpan(), a.constSpan());
 
       std::cout << "Array e\n";
-      ArrayType e(allocator2,25);
-      ASSERT_EQ(e.allocator(),allocator2);
-      ASSERT_EQ(e.size(),25);
+      ArrayType e(allocator2, 25);
+      ASSERT_EQ(e.allocator(), allocator2);
+      ASSERT_EQ(e.size(), 25);
 
       ArrayType f(allocator2);
       f = e;
-      ASSERT_EQ(f.allocator(),e.allocator());
-      ASSERT_EQ(f.size(),e.size());
+      ASSERT_EQ(f.allocator(), e.allocator());
+      ASSERT_EQ(f.size(), e.size());
 
       f = f;
-      ASSERT_EQ(f.allocator(),e.allocator());
-      ASSERT_EQ(f.size(),e.size());
+      ASSERT_EQ(f.allocator(), e.allocator());
+      ASSERT_EQ(f.size(), e.size());
     }
   }
 };
@@ -785,7 +785,7 @@ TEST(UniqueArray, Allocator)
 
     UniqueArray<Int32> array[2];
     IMemoryAllocator* allocator3 = allocator1;
-    for( Integer i=0; i<2; ++i ){
+    for (Integer i = 0; i < 2; ++i) {
       array[i] = UniqueArray<Int32>(allocator3);
     }
     ASSERT_EQ(array[0].allocator(), allocator3);
@@ -867,10 +867,10 @@ TEST(SharedArray, Allocator)
 }
 
 /*!
- * \brief Allocateur pour tester les arguments.
+ * \brief Allocator for testing arguments.
  *
- * Permet de vérifier qu'on a bien appelé avec les bons arguments.
- * On ne doit l'appeler qu'avec args.memoryLocationHint() qui vaut
+ * Allows verification that it was called with the correct arguments.
+ * It should only be called with args.memoryLocationHint() which equals
  * eMemoryLocationHint::None or eMemoryLocationHint::HostAndDeviceMostlyRead
  */
 class TesterMemoryAllocatorV3
@@ -886,7 +886,7 @@ class TesterMemoryAllocatorV3
   AllocatedMemoryInfo allocate(MemoryAllocationArgs args, Int64 new_size) override
   {
     _checkValid(args);
-    return m_default_allocator.allocate(args,new_size);
+    return m_default_allocator.allocate(args, new_size);
   }
   AllocatedMemoryInfo reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_ptr, Int64 new_size) override
   {
@@ -911,7 +911,7 @@ class TesterMemoryAllocatorV3
 
   void notifyMemoryArgsChanged(MemoryAllocationArgs old_args, MemoryAllocationArgs new_args, AllocatedMemoryInfo ptr) override
   {
-    // Cette méthode n'est appelée qu'une seule fois donc on teste directement les valeurs attendues
+    // This method is only called once so we test the expected values directly
     ASSERT_EQ(old_args.memoryLocationHint(), eMemoryLocationHint::None);
     ASSERT_EQ(new_args.memoryLocationHint(), eMemoryLocationHint::MainlyHost);
     ASSERT_EQ(ptr.size(), 8);
@@ -934,9 +934,9 @@ class TesterMemoryAllocatorV3
   }
 };
 
-#define ASSERT_SAME_ARRAY_INFOS(a,b) \
-  ASSERT_EQ(a.allocationOptions(), b.allocationOptions());\
-  ASSERT_EQ(a.size(), b.size());\
+#define ASSERT_SAME_ARRAY_INFOS(a, b) \
+  ASSERT_EQ(a.allocationOptions(), b.allocationOptions()); \
+  ASSERT_EQ(a.size(), b.size()); \
   ASSERT_EQ(a.capacity(), b.capacity())
 
 TEST(Array, AllocatorV2)
@@ -972,7 +972,7 @@ TEST(Array, AllocatorV2)
     ASSERT_EQ(a1.size(), 5);
     a2.add(9);
     a2.add(17);
-    // Pour tester notifyMemoryArgsChanged()
+    // To test notifyMemoryArgsChanged()
     a2.setMemoryLocationHint(eMemoryLocationHint::MainlyHost);
 
     std::cout << "Array a3\n";
@@ -1092,10 +1092,10 @@ TEST(Collections, Memory)
 
 namespace Arcane
 {
-// Instancie explicitement les classes tableaux pour garantir
-// que toutes les méthodes fonctionnent
+// Explicitly instantiates array classes to ensure
+// that all methods work
 template class UniqueArray<IntSubClass>;
 template class SharedArray<IntSubClass>;
 template class Array<IntSubClass>;
 template class AbstractArray<IntSubClass>;
-} // namespace Arccore
+} // namespace Arcane

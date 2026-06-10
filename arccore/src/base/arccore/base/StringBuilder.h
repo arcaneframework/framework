@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* StringBuilder.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Constructeur de chaîne de caractère unicode.                              */
+/* Unicode character string constructor.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_STRINGBUILDER_H
 #define ARCCORE_BASE_STRINGBUILDER_H
@@ -34,12 +34,13 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Constructeur de chaîne de caractère unicode.
+ * \brief Unicode character string constructor.
  *
- * Permet de construire de manière efficace une chaîne de caractère
- * par concaténation.
+ * Allows efficient construction of a character string
+ * by concatenation.
  *
  * \not_thread_safe
  */
@@ -47,73 +48,76 @@ class ARCCORE_BASE_EXPORT StringBuilder
 {
  public:
 
-  //! Crée une chaîne nulle
-  StringBuilder() : m_p(nullptr), m_const_ptr(nullptr) {}
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Creates a null string
+  StringBuilder()
+  : m_p(nullptr)
+  , m_const_ptr(nullptr)
+  {}
+  //! Creates a string from \a str in local encoding
   StringBuilder(const char* str);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
-  StringBuilder(const char* str,Integer len);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Creates a string from \a str in local encoding
+  StringBuilder(const char* str, Integer len);
+  //! Creates a string from \a str in local encoding
   StringBuilder(const std::string& str);
-  //! Créé une chaîne à partir de \a str dans l'encodage Utf16
+  //! Creates a string from \a str in Utf16 encoding
   StringBuilder(const UCharConstArrayView& ustr);
-  //! Créé une chaîne à partir de \a str dans l'encodage Utf8
+  //! Creates a string from \a str in Utf8 encoding
   StringBuilder(const ByteConstArrayView& ustr);
-  //! Créé une chaîne à partir de \a str_builder
+  //! Creates a string from \a str_builder
   StringBuilder(const StringBuilder& str_builder);
-  //! Créé une chaîne à partir de \a str dans l'encodage local
+  //! Creates a string from \a str in local encoding
   explicit StringBuilder(StringImpl* impl);
-  //! Créé une chaîne à partir de \a str
+  //! Creates a string from \a str
   StringBuilder(const String& str);
 
-  //! Copie \a str dans cette instance.
+  //! Copies \a str into this instance.
   const StringBuilder& operator=(const String& str);
-  //! Copie \a str dans cette instance.
+  //! Copies \a str into this instance.
   const StringBuilder& operator=(const char* str);
-  //! Copie \a str dans cette instance.
+  //! Copies \a str into this instance.
   const StringBuilder& operator=(const StringBuilder& str);
 
-  ~StringBuilder(); //!< Libère les ressources.
+  ~StringBuilder(); //!< Releases resources.
 
  public:
 
   /*!
-   * \brief Retourne la chaîne de caractères construite.
+   * \brief Returns the constructed character string.
    */
   operator String() const;
 
   /*!
-   * \brief Retourne la chaîne de caractères construite.
+   * \brief Returns the constructed character string.
    */
   String toString() const;
 
  public:
 
-  //! Ajoute \a str.
+  //! Appends \a str.
   StringBuilder& append(const String& str);
 
-  //! Clone cette chaîne.
+  //! Clones this string.
   StringBuilder clone() const;
 
-  /*! \brief Effectue une normalisation des caractères espaces.
-   * Tous les caractères espaces sont remplacés par des blancs espaces #x20,
-   * à savoir #xD (Carriage Return), #xA (Line Feed) et #x9 (Tabulation).
-   * Cela correspond à l'attribut xs:replace de XMLSchema 1.0
+  /*! \brief Performs whitespace character normalization.
+   * All whitespace characters are replaced by space characters #x20,
+   * namely #xD (Carriage Return), #xA (Line Feed), and #x9 (Tabulation).
+   * This corresponds to the xs:replace attribute of XMLSchema 1.0
    */
   StringBuilder& replaceWhiteSpace();
 
-  /*! \brief Effectue une normalisation des caractères espaces.
-   * Le comportement est identique à replaceWhiteSpace() avec en plus:
-   * - remplacement de tous les blancs consécutifs par un seul.
-   * - suppression des blancs en début et fin de chaîne.
-   * Cela correspond à l'attribut xs:collapse de XMLSchema 1.0
+  /*! \brief Performs whitespace character normalization.
+   * The behavior is identical to replaceWhiteSpace() plus:
+   * - replacement of all consecutive whitespaces with a single one.
+   * - removal of whitespaces at the beginning and end of the string.
+   * This corresponds to the xs:collapse attribute of XMLSchema 1.0
    */
   StringBuilder& collapseWhiteSpace();
 
-  //! Transforme tous les caracteres de la chaine en majuscules.
+  //! Converts all characters in the string to uppercase.
   StringBuilder& toUpper();
 
-  //! Transforme tous les caracteres de la chaine en minuscules.
+  //! Converts all characters in the string to lowercase.
   StringBuilder& toLower();
 
   void operator+=(const char* str);
@@ -131,24 +135,24 @@ class ARCCORE_BASE_EXPORT StringBuilder
 
  public:
 
-  friend ARCCORE_BASE_EXPORT bool operator==(const StringBuilder& a,const StringBuilder& b);
-  friend bool operator!=(const StringBuilder& a,const StringBuilder& b)
+  friend ARCCORE_BASE_EXPORT bool operator==(const StringBuilder& a, const StringBuilder& b);
+  friend bool operator!=(const StringBuilder& a, const StringBuilder& b)
   {
-    return !operator==(a,b);
+    return !operator==(a, b);
   }
 
  public:
 
   /*!
-   * \brief Affiche les infos internes de la classe.
+   * \brief Displays internal class information.
    *
-   * Cette méthode n'est utile que pour débugger %Arccore
+   * This method is only useful for debugging %Arccore
    */
   void internalDump(std::ostream& ostr) const;
 
  private:
 
-  mutable StringImpl* m_p = nullptr; //!< Implémentation de la classe
+  mutable StringImpl* m_p = nullptr; //!< Class implementation
   mutable const char* m_const_ptr = nullptr;
 
   void _checkClone() const;
@@ -157,13 +161,13 @@ class ARCCORE_BASE_EXPORT StringBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateur d'écriture d'une StringBuilder
-ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o,const StringBuilder&);
+//! Output operator for a StringBuilder
+ARCCORE_BASE_EXPORT std::ostream& operator<<(std::ostream& o, const StringBuilder&);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -34,11 +34,11 @@ _testCooperativeLaunch2(RunQueue queue, SmallSpan<const Int64> c,
                         Int32 nb_value, Int32 nb_loop)
 {
   Int64 total_x = 0;
-  // Valeurs partielles par bloc.
-  // Doit être dimensionné au nombre maximum de blocs possibles
+  // Partial values per block.
+  // Must be sized to the maximum number of possible blocks
   NumArray<Int64, MDDim1> by_block_partial_sum(queue.memoryResource());
   by_block_partial_sum.resize(2048);
-  // Pour récupèrer le résultat de la réduction.
+  // To retrieve the reduction result.
   NumArray<Int64, MDDim1> reduce_result(eMemoryResource::HostPinned);
   reduce_result.resize(1);
   double x = Platform::getRealTime();
@@ -61,16 +61,16 @@ _testCooperativeLaunch2(RunQueue queue, SmallSpan<const Int64> c,
         auto w = iter.workItem();
         auto block_partial_sum_span = block_partial_sum.span();
 
-        // Chaque WorkItem calcule la réduction pour les indices qu'il traite
-        // et range le résultat dans la mémoire locale.
+        // Each WorkItem calculates the reduction for the indices it processes
+        // and stores the result in local memory.
         Int64 my_v = 0;
         for (Int32 i : w.linearIndexes())
           my_v += c_view[i];
         block_partial_sum_span[w.rankInBlock()] = my_v;
-        // Attend que tous les WorkItem du bloc aient fini
+        // Wait until all WorkItems in the block are finished
         block.barrier();
-        // Le premier WorkItem du bloc fait la réduction
-        // sur les valeurs du tableau local.
+        // The first WorkItem in the block performs the reduction
+        // on the values of the local array.
         if (w.rankInBlock() == 0) {
           Int32 nb_local = block_partial_sum_span.size();
           Int64 block_v = 0;
@@ -78,9 +78,9 @@ _testCooperativeLaunch2(RunQueue queue, SmallSpan<const Int64> c,
             block_v += block_partial_sum_span[i];
           partial_sum_span[block.groupRank()] = block_v;
         }
-        // Attend que toute la grille ait terminée.
+        // Wait until the entire grid is finished.
         grid.barrier();
-        // Le premier WorkItem fait la réduction finale
+        // The first WorkItem performs the final reduction
         if (w.rankInBlock() == 0 && block.groupRank() == 0) {
           Int64 final_sum = 0;
           Int32 nb_block = grid.nbBlock();

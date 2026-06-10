@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IStackTraceService.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un service de trace des appels de fonctions.                  */
+/* Interface of a function call tracing service.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ISTACKTRACESERVICE_H
 #define ARCCORE_BASE_ISTACKTRACESERVICE_H
@@ -24,46 +24,47 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un service de trace des appels de fonctions.
+ * \brief Interface of a function call tracing service.
  */
 class ARCCORE_BASE_EXPORT IStackTraceService
 {
  public:
 
-  virtual ~IStackTraceService() {} //<! Libère les ressources
+  virtual ~IStackTraceService() {} //<! Releases resources
 
  public:
 
-  virtual void build() =0;
+  virtual void build() = 0;
 
  public:
-
-  /*! \brief Chaîne de caractère indiquant la pile d'appel.
-   *
-   * \a first_function indique le numéro dans la pile de la première fonction
-   * affichée dans la trace.
-   */
-  virtual StackTrace stackTrace(int first_function=0) =0;
 
   /*!
-   * \brief Nom d'une fonction dans la pile d'appel.
+   * \brief Character string indicating the call stack.
    *
-   * \a function_index indique la position de la fonction à retourner dans la
-   * pile d'appel. Par exemple, 0 indique la fonction courante, 1 celle
-   * d'avant (donc celle qui appelle cette méthode).
+   * \a first_function indicates the number in the stack of the first function
+   * displayed in the trace.
    */
-  virtual StackTrace stackTraceFunction(int function_index) =0;
+  virtual StackTrace stackTrace(int first_function = 0) = 0;
+
+  /*!
+   * \brief Name of a function in the call stack.
+   *
+   * \a function_index indicates the position of the function to return in the
+   * call stack. For example, 0 indicates the current function, 1 the previous one
+   * (i.e., the one calling this method).
+   */
+  virtual StackTrace stackTraceFunction(int function_index) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

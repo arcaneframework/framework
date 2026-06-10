@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AcceleratorCoreGlobalInternal.h                             (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* General declarations for accelerator support.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_ACCELERATORCOREGLOBALINTERNAL_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_ACCELERATORCOREGLOBALINTERNAL_H
@@ -25,60 +25,60 @@ namespace Arcane::Accelerator::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Indique si on utilise le runtime CUDA
+//! Indicates if CUDA runtime is being used
 extern "C++" ARCCORE_COMMON_EXPORT bool isUsingCUDARuntime();
 
-//! Positionne l'utilisation du runtime CUDA
+//! Sets the usage of the CUDA runtime
 extern "C++" ARCCORE_COMMON_EXPORT void setUsingCUDARuntime(bool v);
 
-//! Récupère l'implémentation CUDA de RunQueue (peut être nulle)
+//! Retrieves the CUDA implementation of RunQueue (may be null)
 extern "C++" ARCCORE_COMMON_EXPORT IRunnerRuntime*
 getCUDARunQueueRuntime();
 
-//! Positionne l'implémentation CUDA de RunQueue.
+//! Sets the CUDA implementation of RunQueue.
 extern "C++" ARCCORE_COMMON_EXPORT void setCUDARunQueueRuntime(IRunnerRuntime* v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Indique si on utilise le runtime HIP
+//! Indicates if HIP runtime is being used
 extern "C++" ARCCORE_COMMON_EXPORT bool isUsingHIPRuntime();
 
-//! Positionne l'utilisation du runtime HIP
+//! Sets the usage of the HIP runtime
 extern "C++" ARCCORE_COMMON_EXPORT void setUsingHIPRuntime(bool v);
 
-//! Récupère l'implémentation HIP de RunQueue (peut être nulle)
+//! Retrieves the HIP implementation of RunQueue (may be null)
 extern "C++" ARCCORE_COMMON_EXPORT IRunnerRuntime*
 getHIPRunQueueRuntime();
 
-//! Positionne l'implémentation HIP de RunQueue.
+//! Sets the HIP implementation of RunQueue.
 extern "C++" ARCCORE_COMMON_EXPORT void setHIPRunQueueRuntime(IRunnerRuntime* v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Indique si on utilise le runtime SYCL
+//! Indicates if SYCL runtime is being used
 extern "C++" ARCCORE_COMMON_EXPORT bool isUsingSYCLRuntime();
 
-//! Positionne l'utilisation du runtime SYCL
+//! Sets the usage of the SYCL runtime
 extern "C++" ARCCORE_COMMON_EXPORT void setUsingSYCLRuntime(bool v);
 
-//! Récupère l'implémentation SYCL de RunQueue (peut être nulle)
+//! Retrieves the SYCL implementation of RunQueue (may be null)
 extern "C++" ARCCORE_COMMON_EXPORT IRunnerRuntime*
 getSYCLRunQueueRuntime();
 
-//! Positionne l'implémentation SYCL de RunQueue.
+//! Sets the SYCL implementation of RunQueue.
 extern "C++" ARCCORE_COMMON_EXPORT void setSYCLRunQueueRuntime(IRunnerRuntime* v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Récupère l'implémentation accélérateur courante (peut être nulle).
+ * \brief Retrieves the current accelerator implementation (may be null).
  *
- * Le pointeur retourné est nul si aucun runtime accélérateur n'est positionné.
- * Si isUsingCUDARuntime() est vrai, retourne le runtime associé à CUDA.
- * Si isUsingHIPRuntime() est vrai retourne le runtime associé à HIP.
+ * The returned pointer is null if no accelerator runtime is set.
+ * If isUsingCUDARuntime() is true, returns the runtime associated with CUDA.
+ * If isUsingHIPRuntime() is true, returns the runtime associated with HIP.
  */
 extern "C++" ARCCORE_COMMON_EXPORT IRunnerRuntime*
 getAcceleratorRunnerRuntime();
@@ -86,25 +86,25 @@ getAcceleratorRunnerRuntime();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Récupère l'implémentation Séquentielle de RunQueue
+//! Retrieves the Sequential RunQueue implementation
 extern "C++" ARCCORE_COMMON_EXPORT IRunnerRuntime*
 getSequentialRunQueueRuntime();
 
-//! Récupère l'implémentation Thread de RunQueue
+//! Retrieves the Thread RunQueue implementation
 extern "C++" ARCCORE_COMMON_EXPORT IRunnerRuntime*
 getThreadRunQueueRuntime();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Affiche l'UUID d'un accélérateur
+//! Prints the UUID of an accelerator
 extern "C++" ARCCORE_COMMON_EXPORT void
 printUUID(std::ostream& o, char bytes[16]);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Classe statique fournissant des fonctions internes à Arcane.
+//! Static class providing internal functions for Arcane.
 class ARCCORE_COMMON_EXPORT RuntimeStaticInfo
 {
  public:
@@ -119,11 +119,12 @@ class ARCCORE_COMMON_EXPORT RuntimeStaticInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Initialise \a runner avec les informations de \a acc_info.
+ * \brief Initializes \a runner with the information in \a acc_info.
  *
- * Cette fonction appelle runner.setAsCurrentDevice() après
- * l'initialisation.
+ * This function calls runner.setAsCurrentDevice() after
+ * initialization.
  */
 extern "C++" ARCCORE_COMMON_EXPORT void
 arccoreInitializeRunner(Runner& runner, ITraceMng* tm,

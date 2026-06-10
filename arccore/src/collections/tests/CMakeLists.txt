@@ -1,4 +1,4 @@
-arccore_add_component_test_executable(collections
+﻿arccore_add_component_test_executable(collections
   FILES
   TestArray.cc
   TestArray2.cc

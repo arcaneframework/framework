@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ISerializer.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un serialiseur.                                               */
+/* Interface of a serializer.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_SERIALIZE_ISERIALIZER_H
 #define ARCCORE_SERIALIZE_ISERIALIZER_H
@@ -28,176 +28,176 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un sérialiseur.
+ * \brief Serializer interface.
  *
- * Il est possible de créér une instance de cette classe via la méthode
+ * It is possible to create an instance of this class via the method
  * createSerializer();
  *
- * Cette interface gère un sérialiseur pour stocker et relire un
- * ensemble de valeurs. La sérialisation se déroule en trois phases:
+ * This interface manages a serializer to store and read a set of values.
+ * Serialization takes place in three phases:
  *
- * 1. chaque objet appelle une ou plusieurs des méthodes reserve()/reserveSpan() pour
- *    indiquer de combien de mémoire il a besoin</li>
- * 2. la mémoire est allouée par allocateBuffer()</li>
- * 3. chaque objet appelle une ou plusieurs des méthodes put()/putSpan() pour ajouter
- *    au sérialiseur ses informations</li>
+ * 1. each object calls one or more of the methods reserve()/reserveSpan()
+ *    to indicate how much memory it needs</li>
+ * 2. the memory is allocated by allocateBuffer()</li>
+ * 3. each object calls one or more of the methods put()/putSpan() to add
+ *    its information to the serializer</li>
  *
- * La désérialisation se fait de manière identique mais utilise les fonctions
- * get()/getSpan(). Le fonctionnement est similaire à une file: à chaque
- * get()/getSpan() doit correspondre un précédent put()/putSpan() et les
- * get()/getSpan() et le put()/putSpan() doivent être dans le même ordre.
+ * Deserialization is done identically but uses the functions get()/getSpan().
+ * The operation is similar to a queue: for every get()/getSpan(), a previous
+ * put()/putSpan() must correspond, and the get()/getSpan() and the put()/putSpan()
+ * must be in the same order.
  *
- * Il est possible d'utiliser des surcharges de reserve()/get()/put(). Dans ce cas,
- * il faut assurer la cohérence de leur utilisation. Par exemple, si on fait
- * un reserveSpan(), il faut ensuite faire un putSpan() et un getSpan().
+ * It is possible to use overloads of reserve()/get()/put(). In this case, you
+ * must ensure consistency in their usage. For example, if you call reserveSpan(),
+ * you must then call putSpan() and getSpan().
  *
- * \todo ajouter exemple.
+ * \todo add example.
  */
 class ARCCORE_SERIALIZE_EXPORT ISerializer
 {
  public:
 
-  //! Mode de fonctionnement du sérialiseur
+  //! Serializer operating mode
   enum eMode
   {
-    ModeReserve, //! Le sérialiseur attend des reserve()
-    ModePut, //!< Le sérialiseur attend des put()
-    ModeGet //!< Le sérialiseur attend des get()
+    ModeReserve, //! The serializer expects reserve()
+    ModePut, //!< The serializer expects put()
+    ModeGet //!< The serializer expects get()
   };
-  //! Mode de lecture du sérialiseur
+  //! Serializer read mode
   enum eReadMode
   {
-    ReadReplace, //!< Replace les éléments actuels par ceux lus
-    ReadAdd //!< Ajoute aux éléments actuels ceux lus
+    ReadReplace, //!< Replace current elements with those read
+    ReadAdd //!< Add those read to the current elements
   };
 
-  // NOTE: ne pas changer ces valeurs car elles sont utilisées dans Arcane
+  // NOTE: do not change these values as they are used in Arcane
   enum eDataType
   {
-    DT_Byte = 0, //!< Donnée de type octet
-    DT_Real = 1, //!< Donnée de type réel
-    DT_Int16 = 2, //!< Donnée de type entier 16 bits
-    DT_Int32 = 3, //!< Donnée de type entier 32 bits
-    DT_Int64 = 4, //!< Donnée de type entier 64 bits
-    DT_Float32 = 12, //!< Donnée de type flottant 32 bits
-    DT_Float16 = 11, //!< Donnée de type flottant 16 bits
-    DT_BFloat16 = 10, //!< Donnée de type 'brain float'
-    DT_Int8 = 13, //!< Donnée de type entier 8 bits
-    DT_Float128 = 14, //!< Donnée de type flottant 128 bits
-    DT_Int128 = 15, //!< Donnée de type entier 128 bits
+    DT_Byte = 0, //!< Byte data type
+    DT_Real = 1, //!< Real data type
+    DT_Int16 = 2, //!< 16-bit integer data type
+    DT_Int32 = 3, //!< 32-bit integer data type
+    DT_Int64 = 4, //!< 64-bit integer data type
+    DT_Float32 = 12, //!< 32-bit floating point data type
+    DT_Float16 = 11, //!< 16-bit floating point data type
+    DT_BFloat16 = 10, //!< 'brain float' data type
+    DT_Int8 = 13, //!< 8-bit integer data type
+    DT_Float128 = 14, //!< 128-bit floating point data type
+    DT_Int128 = 15, //!< 128-bit integer data type
     DT_Float64 = DT_Real
   };
 
-  virtual ~ISerializer() = default; //!< Libère les ressources
+  virtual ~ISerializer() = default; //!< Frees resources
 
  public:
 
   /*!
-   * \brief Réserve de la mémoire pour \a n valeurs de \a dt.
+   * \brief Reserves memory for \a n values of \a dt.
    *
-   * Il faudra effectuer un appel à une méthode putSpan()
-   * pour que la sérialisation soit correcte.
+   * A call to a putSpan() method must be made for the
+   * serialization to be correct.
    */
   virtual void reserveSpan(eBasicDataType dt, Int64 n) = 0;
 
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const Real> values);
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const Int16> values);
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const Int32> values);
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const Int64> values);
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const Byte> values);
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const Int8> values);
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const Float16> values);
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const BFloat16> values);
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const Float32> values);
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const Float128> values);
-  //! Réserve pour une vue de \a values éléments
+  //! Reserve for a view of \a values elements
   virtual void reserveSpan(Span<const Int128> values);
 
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const Real> values) = 0;
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const Int16> values) = 0;
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const Int32> values) = 0;
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const Int64> values) = 0;
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const Byte> values) = 0;
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const Int8> values) = 0;
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const Float16> values) = 0;
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const Float32> values) = 0;
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const BFloat16> values) = 0;
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const Float128> values) = 0;
-  //! Réserve pour sauver le nombre d'éléments et les \a values éléments
+  //! Reserve to save the number of elements and the \a values elements
   virtual void reserveArray(Span<const Int128> values) = 0;
 
   /*!
-   * \brief Réserve de la mémoire pour \a n objets de type \a dt.
+   * \brief Reserves memory for \a n objects of type \a dt.
    *
-   * Il faudra effectuer \a n appels à une méthode put() avec une
-   * seule valeur pour que la sérialisation soit correcte.
+   * \a n calls to a put() method with a single value must be made for
+   * the serialization to be correct.
    *
-   * Si on souhaite sérialiser plusieurs valeurs avec un seul
-   * appel à put(), il faut utiliser la méthode reserveSpan().
+   * If you want to serialize multiple values with a single call to put(),
+   * you must use the reserveSpan() method.
    */
   virtual void reserve(eBasicDataType dt, Int64 n) = 0;
 
   virtual void reserveInteger(Int64 n) = 0;
 
-  //! Réserve de la mémoire pour une chaîne de caractère \a str.
+  //! Reserve memory for a character string \a str.
   virtual void reserve(const String& str) = 0;
 
-  //! Réserve pour \a n Real
+  //! Reserve for \a n Real
   void reserveReal(Int64 n) { reserve(eBasicDataType::Real, n); }
-  //! Réserve pour \a n Int16
+  //! Reserve for \a n Int16
   void reserveInt16(Int64 n) { reserve(eBasicDataType::Int16, n); }
-  //! Réserve pour \a n Int64
+  //! Reserve for \a n Int64
   void reserveInt64(Int64 n) { reserve(eBasicDataType::Int64, n); }
-  //! Réserve pour \a n Int32
+  //! Reserve for \a n Int32
   void reserveInt32(Int64 n) { reserve(eBasicDataType::Int32, n); }
-  //! Réserve pour \a n Byte
+  //! Reserve for \a n Byte
   void reserveByte(Int64 n) { reserve(eBasicDataType::Byte, n); }
-  //! Réserve pour \a n Int8
+  //! Reserve for \a n Int8
   void reserveInt8(Int64 n) { reserve(eBasicDataType::Int8, n); }
-  //! Réserve pour \a n Float16
+  //! Reserve for \a n Float16
   void reserveFloat16(Int64 n) { reserve(eBasicDataType::Float16, n); }
-  //! Réserve pour \a n Float32
+  //! Reserve for \a n Float32
   void reserveFloat32(Int64 n) { reserve(eBasicDataType::Float32, n); }
-  //! Réserve pour \a n BFloat16
+  //! Reserve for \a n BFloat16
   void reserveBFloat16(Int64 n) { reserve(eBasicDataType::BFloat16, n); }
-  //! Réserve pour \a n Float128
+  //! Reserve for \a n Float128
   void reserveFloat128(Int64 n) { reserve(eBasicDataType::Float128, n); }
-  //! Réserve pour \a n Int128
+  //! Reserve for \a n Int128
   void reserveInt128(Int64 n) { reserve(eBasicDataType::Int128, n); }
 
  public:
 
   /*!
-   * \brief Réserve de la mémoire pour \a n valeurs de \a dt.
+   * \brief Reserves memory for \a n values of \a dt.
    *
-   * \dt doit être un type intégral: DT_Int16, DT_Int32, DT_Int64,
-   * DT_Real ou DT_Byte.
+   * \dt must be an integral type: DT_Int16, DT_Int32, DT_Int64,
+   * DT_Real or DT_Byte.
    *
-   * Il faudra effectuer un appel à une méthode putSpan()
-   * pour que la sérialisation soit correcte.
+   * A call to a putSpan() method must be made for the serialization to be correct.
    *
-   * \deprecated Utiliser reserveSpan(eBasicDataType) à la place
+   * \deprecated Use reserveSpan(eBasicDataType) instead
    */
   ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
   virtual void reserveSpan(eDataType dt, Int64 n) = 0;
@@ -206,16 +206,16 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
   ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
   void reserveSpan(int dt, Int64 n);
   /*!
-   * \brief Réserve de la mémoire pour \a n objets de type \a dt.
+   * \brief Reserves memory for \a n objects of type \a dt.
    *
-   * \dt doit être un type intégral: DT_Int16, DT_Int32, DT_Int64,
-   * DT_Real ou DT_Byte.
+   * \dt must be an integral type: DT_Int16, DT_Int32, DT_Int64,
+   * DT_Real or DT_Byte.
    *
-   * Il faudra effectuer \a n appels à une méthode put() avec une
-   * seule valeur pour que la sérialisation soit correcte.
+   * \a n calls to a put() method with a single value must be made for the
+   * serialization to be correct.
    *
-   * Si on souhaite sérialiser plusieurs valeurs avec un seul
-   * appel à put(), il faut utiliser la méthode reserveSpan().
+   * If you want to serialize multiple values with a single call to put(),
+   * you must use the reserveSpan() method.
    */
   ARCCORE_DEPRECATED_REASON("Y2024: Use reserveSpan(eBasicDataType) instead")
   virtual void reserve(eDataType dt, Int64 n) = 0;
@@ -226,238 +226,239 @@ class ARCCORE_SERIALIZE_EXPORT ISerializer
 
  public:
 
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   ARCCORE_DEPRECATED_2020("Use putSpan() instead")
   virtual void put(Span<const Real> values) = 0;
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   ARCCORE_DEPRECATED_2020("Use putSpan() instead")
   virtual void put(Span<const Int16> values) = 0;
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   ARCCORE_DEPRECATED_2020("Use putSpan() instead")
   virtual void put(Span<const Int32> values) = 0;
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   ARCCORE_DEPRECATED_2020("Use putSpan() instead")
   virtual void put(Span<const Int64> values) = 0;
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   ARCCORE_DEPRECATED_2020("Use putSpan() instead")
   virtual void put(Span<const Byte> values) = 0;
 
  public:
 
-  //! Ajoute la chaîne \a value
+  //! Add the string \a value
   virtual void put(const String& value) = 0;
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const Real> values);
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const Int16> values);
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const Int32> values);
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const Int64> values);
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const Byte> values);
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const Int8> values) = 0;
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const Float16> values) = 0;
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const BFloat16> values) = 0;
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const Float32> values) = 0;
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const Float128> values) = 0;
-  //! Ajoute le tableau \a values
+  //! Add the array \a values
   virtual void putSpan(Span<const Int128> values) = 0;
 
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const Real> values) = 0;
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const Int16> values) = 0;
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const Int32> values) = 0;
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const Int64> values) = 0;
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const Byte> values) = 0;
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const Int8> values) = 0;
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const Float16> values) = 0;
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const BFloat16> values) = 0;
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const Float32> values) = 0;
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const Float128> values) = 0;
-  //! Sauve le nombre d'éléments et les \a values éléments
+  //! Save the number of elements and the \a values elements
   virtual void putArray(Span<const Int128> values) = 0;
 
-  //! Ajoute \a value
+  //! Add \a value
   virtual void put(Real value) = 0;
-  //! Ajoute \a value
+  //! Add \a value
   virtual void put(Int16 value) = 0;
-  //! Ajoute \a value
+  //! Add \a value
   virtual void put(Int32 value) = 0;
-  //! Ajoute \a value
+  //! Add \a value
   virtual void put(Int64 value) = 0;
-  //! Ajoute value
+  //! Add value
   virtual void put(Byte value) = 0;
-  //! Ajoute value
+  //! Add value
   virtual void put(Int8 value) = 0;
-  //! Ajoute value
+  //! Add value
   virtual void put(Float16 value) = 0;
-  //! Ajoute value
+  //! Add value
   virtual void put(BFloat16 value) = 0;
-  //! Ajoute value
+  //! Add value
   virtual void put(Float32 value) = 0;
-  //! Ajoute value
+  //! Add value
   virtual void put(Float128 value) = 0;
-  //! Ajoute value
+  //! Add value
   virtual void put(Int128 value) = 0;
 
-  //! Ajoute le réel \a value
+  //! Add the real \a value
   virtual void putReal(Real value) = 0;
-  //! Ajoute l'entier \a value
+  //! Add the integer \a value
   virtual void putInt16(Int16 value) = 0;
-  //! Ajoute l'entier \a value
+  //! Add the integer \a value
   virtual void putInt32(Int32 value) = 0;
-  //! Ajoute l'entier \a value
+  //! Add the integer \a value
   virtual void putInt64(Int64 value) = 0;
-  //! Ajoute l'entier \a value
+  //! Add the integer \a value
   virtual void putInteger(Integer value) = 0;
-  //! Ajoute l'octet \a value
+  //! Add the byte \a value
   virtual void putByte(Byte value) = 0;
-  //! Ajoute \a value
+  //! Add \a value
   virtual void putInt8(Int8 value) = 0;
-  //! Ajoute \a value
+  //! Add \a value
   virtual void putFloat16(Float16 value) = 0;
-  //! Ajoute \a value
+  //! Add \a value
   virtual void putBFloat16(BFloat16 value) = 0;
-  //! Ajoute \a value
+  //! Add \a value
   virtual void putFloat32(Float32 value) = 0;
-  //! Ajoute \a value
+  //! Add \a value
   virtual void putFloat128(Float128 value) = 0;
-  //! Ajoute \a value
+  //! Add \a value
   virtual void putInt128(Int128 value) = 0;
 
  public:
 
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
   virtual void get(ArrayView<Real> values) = 0;
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
   virtual void get(ArrayView<Int16> values) = 0;
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
   virtual void get(ArrayView<Int32> values) = 0;
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
   virtual void get(ArrayView<Int64> values) = 0;
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   ARCCORE_DEPRECATED_2020("Use getSpan() instead")
   virtual void get(ArrayView<Byte> values) = 0;
 
  public:
 
-  //! Récupère la chaîne \a value
+  //! Retrieve the string \a value
   virtual void get(String& value) = 0;
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<Real> values);
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<Int16> values);
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<Int32> values);
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<Int64> values);
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<Byte> values);
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<Int8> values) = 0;
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<Float16> values) = 0;
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<BFloat16> values) = 0;
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<Float32> values) = 0;
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<Float128> values) = 0;
-  //! Récupère le tableau \a values
+  //! Retrieve the array \a values
   virtual void getSpan(Span<Int128> values) = 0;
 
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<Real>& values) = 0;
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<Int16>& values) = 0;
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<Int32>& values) = 0;
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<Int64>& values) = 0;
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<Byte>& values) = 0;
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<Int8>& values) = 0;
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<Float16>& values) = 0;
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<BFloat16>& values) = 0;
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<Float32>& values) = 0;
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<Float128>& values) = 0;
-  //! Redimensionne et remplit \a values
+  //! Resize and fill \a values
   virtual void getArray(Array<Int128>& values) = 0;
 
-  //! Récupère un réel
+  //! Retrieve a real number
   virtual Real getReal() = 0;
-  //! Récupère un entier sur 16 bits
+  //! Retrieve a 16-bit integer
   virtual Int16 getInt16() = 0;
-  //! Récupère un entier naturel
+  //! Retrieve an integer
   virtual Int32 getInt32() = 0;
-  //! Récupère une taille
+  //! Retrieve a size
   virtual Int64 getInt64() = 0;
-  //! Récupère une taille
+  //! Retrieve a size
   virtual Integer getInteger() = 0;
-  //! Récupère un octet
+  //! Retrieve a byte
   virtual Byte getByte() = 0;
-  //! Récupère un Int8
+  //! Retrieve an Int8
   virtual Int8 getInt8() = 0;
-  //! Récupère un Float16
+  //! Retrieve a Float16
   virtual Float16 getFloat16() = 0;
-  //! Récupère un BFloat16
+  //! Retrieve a BFloat16
   virtual BFloat16 getBFloat16() = 0;
-  //! Récupère un Float32
+  //! Retrieve a Float32
   virtual Float32 getFloat32() = 0;
-  //! Récupère un Float32
+  //! Retrieve a Float128
   virtual Float128 getFloat128() = 0;
-  //! Récupère un Float32
+  //! Retrieve an Int128
   virtual Int128 getInt128() = 0;
 
-  //! Alloue la mémoire du sérialiseur
+  //! Allocates the serializer memory
   virtual void allocateBuffer() = 0;
 
   ARCCORE_DEPRECATED_2020("Internal method. Do not use")
   virtual void allocateBuffer(Int64 nb_real, Int64 nb_int16, Int64 nb_int32,
                               Int64 nb_int64, Int64 nb_byte) = 0;
 
-  //! Mode de fonctionnement actuel
+  //! Current operating mode
   virtual eMode mode() const = 0;
-  //! Positionne le fonctionnement actuel
+  //! Sets the current mode
   virtual void setMode(eMode new_mode) = 0;
 
-  //! Mode de lecture
+  //! Read mode
   virtual eReadMode readMode() const = 0;
-  //! Positionne le mode de lecture
+  //! Sets the read mode
   virtual void setReadMode(eReadMode read_mode) = 0;
 
-  //! Copie les données de \a from dans cette instance
+  //! Copies the data from \a from into this instance
   virtual void copy(const ISerializer* from) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une instance de ISerializer
+ * \brief Creates an instance of ISerializer
  */
 extern "C++" ARCCORE_SERIALIZE_EXPORT Ref<ISerializer>
 createSerializer();
@@ -478,5 +479,4 @@ using Arcane::createSerializer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

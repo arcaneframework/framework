@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Convert.cc                                                  (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions pour convertir une chaîne de caractère en un type donné.        */
+/* Functions to convert a character string into a given type.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,10 +27,10 @@ namespace Arcane::Convert::Impl
 namespace
 {
   /*!
-   * \brief Retourne \a s converti en \a 'const char*'.
+   * \brief Returns `s` converted to `const char*`.
    *
-   * \warning Si la valeur retournée est utilisée pour une fonction C,
-   * il faut être sur que \a s a un '\0' terminal.
+   * \warning If the returned value is used for a C function,
+   * you must ensure that `s` has a terminating '\0'.
    */
   const char* _stringViewData(StringView s)
   {
@@ -41,18 +41,19 @@ namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Retourne une vue en supprimant les caratères blancs du début.
+ * \brief Returns a view after removing leading whitespace characters.
  *
- * Un caractère blanc est un caractère pour lequel std::isspace() est vrai.
- * \a pos indique la position dans \a s à partir de laquelle
- * on cherche les blancs.
+ * A whitespace character is a character for which std::isspace() is true.
+ * `pos` indicates the position in `s` from which
+ * the whitespace characters are searched.
  */
 StringView _removeLeadingSpaces(StringView s, Int64 pos)
 {
   Span<const Byte> bytes = s.bytes();
   Int64 nb_byte = bytes.size();
-  // Supprime les espaces potentiels
+  // Remove potential spaces
   for (; pos < nb_byte; ++pos) {
     int charv = static_cast<unsigned char>(bytes[pos]);
     if (std::isspace(charv) == 0)
@@ -84,11 +85,12 @@ bool ConvertPolicy::m_use_same_convert_for_all_real = false;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti \a s en un double.
+ * \brief Converts `s` to a double.
  *
- * Utilise std::from_chars() si \a global_use_from_chars est vrai.
- * Sinon, utilise strtod().
+ * Uses std::from_chars() if `global_use_from_chars` is true.
+ * Otherwise, uses strtod().
  */
 Int64 StringViewToDoubleConverter::
 _getDoubleValue(double& v, StringView s)
@@ -114,33 +116,33 @@ _getDoubleValue(double& v, StringView s)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Converti une chaîne de caractères en un double.
+ * \brief Converts a character string to a double.
  *
- * Converti \a s en un double et range la valeur dans \a v.
- * Il ne doit pas y avoir de caractères blancs au début de \a s.
+ * Converts `s` to a double and stores the value in `v`.
+ * There must be no whitespace characters at the beginning of `s`.
  *
- * Le comportement de cette méthode est identique à std::strtod()
- * avec le locale 'C' si on est en C++20. Sinon il est identique
- * à std::strtod() avec le locale actuel (ce qui peut changer par exemple
- * le séparateur décimal). La documentation de référence est
- * ici: https://en.cppreference.com/w/cpp/utility/from_chars.
+ * The behavior of this method is identical to std::strtod()
+ * with the 'C' locale if running in C++20. Otherwise, it is identical
+ * to std::strtod() with the current locale (which can change, for example
+ * the decimal separator). The reference documentation is
+ * here: https://en.cppreference.com/w/cpp/utility/from_chars.
  *
- * \retval (-1) si la conversion a échouée.
- * \retval la position dans \s du dernier caractère lu plus 1.
+ * \retval (-1) if the conversion failed.
+ * \retval the position in `s` of the last character read plus 1.
  */
 Int64 StringViewToDoubleConverter::
 _getDoubleValueWithFromChars(double& v, StringView s)
 {
-  // NOTE: si on veut le même comportement que 'strtod',
-  // on suppose que l'appelant a enlevé les blancs en début de s.
+  // NOTE: if we want the same behavior as 'strtod',
+  // we assume the caller has removed leading whitespace from s.
   auto bytes = s.bytes();
   Int64 size = bytes.size();
   if (size == 0)
-    // NOTE: Avec la version historique d'Arcane (avant la 3.15) il
-    // n'y avait pas d'erreur retournée lorsqu'on converti une chaîne vide.
-    // A priori cela n'était jamais utilisé donc cela ne pose pas de
-    // problème de corriger ce bug.
+    // NOTE: With the historical version of Arcane (before 3.15) there
+    // was no error returned when converting an empty string.
+    // Apparently this was never used, so there is no problem correcting this bug.
     return (-1);
   const char* orig_data = reinterpret_cast<const char*>(bytes.data());
   const char* last_ptr = nullptr;
@@ -149,29 +151,29 @@ _getDoubleValueWithFromChars(double& v, StringView s)
   bool do_negatif = false;
   const bool is_verbose = ConvertPolicy::verbosity() > 0;
 
-  // std::from_chars() ne supporte pas les '+' en début alors
-  // que 'strto*' le supporte.
+  // std::from_chars() does not support '+' at the beginning while
+  // 'strto*' does.
   if (bytes[0] == '+') {
     ++data;
     --size;
     bytes = bytes.subspan(1, size);
   }
-  // std::from_chars() peut lire les valeurs au format hexadécimal
-  // mais il ne doit pas contenir le '0x' ou '0X' du début, contrairement
-  // à std::strtod(). On détecte ce cas et on commence la conversion
-  // après le '0x' ou '0X'.
-  // Détecte '-0x' ou '-0X'
+  // std::from_chars() can read values in hexadecimal format
+  // but it must not contain '0x' or '0X' at the beginning, unlike
+  // std::strtod(). We detect this case and start the conversion
+  // after '0x' or '0X'.
+  // Detects '-0x' or '-0X'
   if (size >= 3 && (bytes[0] == '-') && (bytes[1] == '0') && (bytes[2] == 'x' || bytes[2] == 'X')) {
     fmt = std::chars_format::hex;
     data += 3;
     do_negatif = true;
   }
-  // Détecte '0x' ou '0X'
+  // Detects '0x' or '0X'
   else if (size >= 2 && (bytes[0] == '0') && (bytes[1] == 'x' || bytes[1] == 'X')) {
     fmt = std::chars_format::hex;
     data += 2;
   }
-  // Cas général
+  // General case
   {
     auto [ptr, ec] = std::from_chars(data, data + size, v, fmt);
     last_ptr = ptr;
@@ -180,7 +182,7 @@ _getDoubleValueWithFromChars(double& v, StringView s)
     if (ec != std::errc())
       return (-1);
   }
-  // Prend en compte le signe '-' si demandé
+  // Account for the '-' sign if requested
   if (do_negatif)
     v = -v;
   if (is_verbose) {
@@ -236,7 +238,7 @@ getValue(int& v, StringView s)
   long z = 0;
   bool is_bad = getValue(z, s);
   if (!is_bad)
-    // TODO: Faire une vérification de la validité avant le cast
+    // TODO: Perform validity check before cast
     v = static_cast<int>(z);
   return is_bad;
 }

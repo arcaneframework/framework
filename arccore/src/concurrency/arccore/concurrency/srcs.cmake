@@ -1,4 +1,4 @@
-set(SOURCES
+﻿set(SOURCES
   ConcurrencyGlobal.h
   ConcurrencyGlobal.cc
   ConcurrencyUtils.cc

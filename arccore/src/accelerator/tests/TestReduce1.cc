@@ -110,7 +110,7 @@ void _doTestReduceDirect(bool use_accelerator, Int32 max_allowed_thread)
     }
     nb_part *= 2;
   }
-  // Teste la réduction avec un tableau vide (dans ce cas le kernel n'est pas lancé)
+  // Tests reduction with an empty array (in this case the kernel is not launched)
   {
     Int64 v = _testReduceEmpty(queue, {});
     ASSERT_EQ(v, 0);

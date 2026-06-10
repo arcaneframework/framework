@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMemoryCopier.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface pour les copies mémoire.                                        */
+/* Interface for memory copies.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_IMEMORYCOPIER_H
 #define ARCCORE_COMMON_INTERNAL_IMEMORYCOPIER_H
@@ -25,8 +25,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface pour les copies mémoire avec support des accélérateurs.
+ * \brief Interface for memory copies with accelerator support.
  */
 class ARCCORE_COMMON_EXPORT IMemoryCopier
 {
@@ -37,9 +38,9 @@ class ARCCORE_COMMON_EXPORT IMemoryCopier
  public:
 
   /*!
-   * \brief Copie les données de \a from vers \a to avec la queue \a queue.
+   * \brief Copies the data from \a from to \a to with the queue \a queue.
    *
-   * \a queue peut-être nul.
+   * \a queue may be null.
    */
   virtual void copy(ConstMemoryView from, eMemoryResource from_mem,
                     MutableMemoryView to, eMemoryResource to_mem,
@@ -54,4 +55,4 @@ class ARCCORE_COMMON_EXPORT IMemoryCopier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

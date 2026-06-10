@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AbstractArray.h                                             (C) 2000-2026 */
 /*                                                                           */
-/* Classe de base des tableaux.                                              */
+/* Base class for arrays.                                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ABSTRACTARRAY_H
 #define ARCCORE_COMMON_ABSTRACTARRAY_H
@@ -27,21 +27,22 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base interne pour les tableaux.
+ * \brief Internal base class for arrays.
  *
- * Cette classe gère uniquement les meta-données pour les tableaux comme
- * le nombre d'éléments ou la capacité.
+ * This class only manages metadata for arrays such as
+ * the number of elements or capacity.
  *
- * \a m_md est un pointeur contenant les meta-donné du tableau. Si le
- * tableau est partagé (SharedArray, SharedArray2), alors ce pointeur
- * est alloué dynamiquement et dans ce cas _isUseOwnMetaData() doit
- * retourner \a false. Si le tableau n'est pas partagé (UniqueArray ou
- * UniqueArray2), alors les meta-données sont conservées directement
- * dans l'instance du tableau pour éviter des allocations inutiles
- * et \a m_md pointe alors vers \a m_meta_data. Dans tous les cas, il
- * ne faut pas utiliser \a m_meta_data directement, mais toujours passer
- * par \a m_md.
+ * \a m_md is a pointer containing the array's metadata. If the
+ * array is shared (SharedArray, SharedArray2), then this pointer
+ * is dynamically allocated and in this case _isUseOwnMetaData() must
+ * return \a false. If the array is not shared (UniqueArray or
+ * UniqueArray2), then the metadata is kept directly
+ * in the array instance to avoid unnecessary allocations
+ * and \a m_md then points to \a m_meta_data. In all cases, you
+ * must not use \a m_meta_data directly, but always go through
+ * \a m_md.
  */
 class ARCCORE_COMMON_EXPORT AbstractArrayBase
 {
@@ -64,12 +65,12 @@ class ARCCORE_COMMON_EXPORT AbstractArrayBase
     return m_md->allocation_options;
   }
   /*!
-   * \brief Positionne le nom du tableau pour les informations de debug.
+   * \brief Sets the array name for debug information.
    *
-   * Ce nom peut être utilisé par exemple pour les affichages listing.
+   * This name can be used, for example, for listing displays.
    */
   void setDebugName(const String& name);
-  //! Nom de debug (nul si aucun nom spécifié)
+  //! Debug name (null if no name specified)
   String debugName() const;
 
  protected:
@@ -79,14 +80,14 @@ class ARCCORE_COMMON_EXPORT AbstractArrayBase
 
  protected:
 
-  //! Méthode explicite pour une RunQueue nulle.
+  //! Explicit method for a null RunQueue.
   static constexpr RunQueue* _nullRunQueue() { return nullptr; }
 
   /*!
-   * \brief Indique si \a m_md fait référence à \a m_meta_data.
+   * \brief Indicates if \a m_md refers to \a m_meta_data.
    *
-   * C'est le cas pour les UniqueArray et UniqueArray2 mais
-   * pas pour les SharedArray et SharedArray2.
+   * This is the case for UniqueArray and UniqueArray2 but
+   * not for SharedArray and SharedArray2.
    */
   virtual bool _isUseOwnMetaData() const
   {
@@ -105,9 +106,8 @@ class ARCCORE_COMMON_EXPORT AbstractArrayBase
 
   void _copyMetaData(const AbstractArrayBase& rhs)
   {
-    // Déplace les meta-données
-    // Attention si on utilise m_meta_data alors il
-    // faut positionner m_md pour qu'il pointe vers notre propre m_meta_data.
+    // Move the metadata
+    // Note if m_meta_data is used, m_md must be set to point to our own m_meta_data.
     m_meta_data = rhs.m_meta_data;
     m_md = rhs.m_md;
     _checkSetUseOwnMetaData();
@@ -157,12 +157,13 @@ class ARCCORE_COMMON_EXPORT AbstractArrayBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
- * \brief Classe abstraite de base d'un vecteur.
+ * \brief Abstract base class for a vector.
  *
- * Cette classe ne peut pas être utilisée directement. Pour utiliser un
- * vecteur, choisissez la classe SharedArray ou UniqueArray.
+ * This class cannot be used directly. To use a
+ * vector, choose the SharedArray or UniqueArray class.
  */
 template <typename T>
 class AbstractArray
@@ -177,23 +178,23 @@ class AbstractArray
 
  public:
 
-  //! Type des éléments du tableau
+  //! Type of the array elements
   typedef T value_type;
-  //! Type pointeur d'un élément du tableau
+  //! Pointer type of an array element
   typedef value_type* pointer;
-  //! Type pointeur constant d'un élément du tableau
+  //! Constant pointer type of an array element
   typedef const value_type* const_pointer;
-  //! Type de l'itérateur sur un élément du tableau
+  //! Type of the iterator over an array element
   typedef ArrayIterator<pointer> iterator;
-  //! Type de l'itérateur constant sur un élément du tableau
+  //! Type of the constant iterator over an array element
   typedef ArrayIterator<const_pointer> const_iterator;
-  //! Type référence d'un élément du tableau
+  //! Type reference of an array element
   typedef value_type& reference;
-  //! Type référence constante d'un élément du tableau
+  //! Type constant reference of an array element
   typedef ConstReferenceType const_reference;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Int64 size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type of a distance between array element iterators
   typedef ptrdiff_t difference_type;
 
   typedef std::reverse_iterator<iterator> reverse_iterator;
@@ -201,11 +202,11 @@ class AbstractArray
 
  protected:
 
-  //! Construit un vecteur vide avec l'allocateur par défaut
+  //! Constructs an empty vector with the default allocator
   AbstractArray()
   {
   }
-  //! Constructeur par déplacement. Ne doit être utilisé que par UniqueArray
+  //! Move constructor. Should only be used by UniqueArray
   AbstractArray(ThatClassType&& rhs) ARCCORE_NOEXCEPT
   : m_ptr(rhs.m_ptr)
   {
@@ -235,9 +236,9 @@ class AbstractArray
  protected:
 
   /*!
-   * \brief Initialise le tableau avec la vue \a view.
+   * \brief Initializes the array with the view \a view.
    *
-   * Cette méthode ne doit être appelée que dans un constructeur de la classe dérivée.
+   * This method must only be called in a derived class constructor.
    */
   void _initFromSpan(const Span<const T>& view)
   {
@@ -250,13 +251,13 @@ class AbstractArray
   }
 
   /*!
-   * \brief Construit un vecteur vide avec un allocateur spécifique \a a.
+   * \brief Constructs an empty vector with a specific allocator \a a.
    *
-   * Si \a acapacity n'est pas nul, la mémoire est allouée pour
-   * contenir \a acapacity éléments (mais le tableau reste vide).
+   * If \a acapacity is not null, memory is allocated to
+   * hold \a acapacity elements (but the array remains empty).
    *
-   * Cette méthode ne doit être appelée que dans un constructeur de la classe dérivée
-   * et uniquement par les classes utilisant une sémantique à la UniqueArray.
+   * This method must only be called in a derived class constructor
+   * and only by classes using UniqueArray semantics.
    */
   void _initFromAllocator(MemoryAllocationOptions o, Int64 acapacity,
                           void* pre_allocated_buffer = nullptr)
@@ -266,15 +267,15 @@ class AbstractArray
 
  public:
 
-  //! Libère la mémoire utilisée par le tableau.
+  //! Frees the memory used by the array.
   void dispose()
   {
     _destroy();
     MemoryAllocationOptions options(m_md->allocation_options);
     _internalDeallocate();
     _setToSharedNull();
-    // Si on a un allocateur spécifique, il faut allouer un
-    // bloc pour conserver cette information.
+    // If we have a specific allocator, we must allocate a
+    // block to keep this information.
     if (options.allocator() != m_md->_allocator())
       _directFirstAllocateWithAllocator(0, options);
     _updateReferences();
@@ -297,21 +298,21 @@ class AbstractArray
 
  public:
 
-  //! Nombre d'éléments du vecteur
+  //! Number of elements in the vector
   Integer size() const { return ARCCORE_CAST_SMALL_SIZE(m_md->size); }
-  //! Nombre d'éléments du vecteur
+  //! Number of elements in the vector
   Integer length() const { return ARCCORE_CAST_SMALL_SIZE(m_md->size); }
-  //! Capacité (nombre d'éléments alloués) du vecteur
+  //! Capacity (number of allocated elements) of the vector
   Integer capacity() const { return ARCCORE_CAST_SMALL_SIZE(m_md->capacity); }
-  //! Nombre d'éléments du vecteur (en 64 bits)
+  //! Number of elements in the vector (in 64 bits)
   Int64 largeSize() const { return m_md->size; }
-  //! Nombre d'éléments du vecteur (en 64 bits)
+  //! Number of elements in the vector (in 64 bits)
   Int64 largeLength() const { return m_md->size; }
-  //! Capacité (nombre d'éléments alloués) du vecteur (en 64 bits)
+  //! Capacity (number of allocated elements) of the vector (in 64 bits)
   Int64 largeCapacity() const { return m_md->capacity; }
-  //! Capacité (nombre d'éléments alloués) du vecteur
+  //! Capacity (number of allocated elements) of the vector
   bool empty() const { return m_md->size == 0; }
-  //! Vrai si le tableau contient l'élément de valeur \a v
+  //! True if the array contains the value element \a v
   bool contains(ConstReferenceType v) const
   {
     const T* ptr = m_ptr;
@@ -324,13 +325,13 @@ class AbstractArray
 
  public:
 
-  //! Elément d'indice \a i
+  //! Element at index \a i
   ConstReferenceType operator[](Int64 i) const
   {
     ARCCORE_CHECK_AT(i, m_md->size);
     return m_ptr[i];
   }
-  //! Elément d'indice \a i
+  //! Element at index \a i
   ConstReferenceType operator()(Int64 i) const
   {
     ARCCORE_CHECK_AT(i, m_md->size);
@@ -339,24 +340,24 @@ class AbstractArray
 
  public:
 
-  //! Modifie les informations sur la localisation mémoire
+  //! Modifies the memory location information
   void setMemoryLocationHint(eMemoryLocationHint new_hint)
   {
     m_md->_setMemoryLocationHint(new_hint, m_ptr, sizeof(T));
   }
 
   /*!
-   * \brief Positionne l'emplacement physique de la zone mémoire.
+   * \brief Sets the physical location of the memory region.
    *
-   * \warning L'appelant doit garantir la cohérence entre l'allocateur
-   * et la zone mémoire spécifiée.
+   * \warning The caller must guarantee consistency between the allocator
+   * and the specified memory region.
    */
   void _internalSetHostDeviceMemoryLocation(eHostDeviceMemoryLocation location)
   {
     m_md->m_host_device_memory_location = location;
   }
 
-  //! Positionne l'emplacement physique de la zone mémoire.
+  //! Sets the physical location of the memory region.
   eHostDeviceMemoryLocation hostDeviceMemoryLocation() const
   {
     return m_md->m_host_device_memory_location;
@@ -406,19 +407,19 @@ class AbstractArray
 
  protected:
 
-  // NOTE: Ces deux champs sont utilisés pour l'affichage TTF de totalview.
-  // Si on modifie leur ordre il faut mettre à jour la partie correspondante
-  // dans l'afficheur totalview de Arcane.
+  // NOTE: These two fields are used for the TTF display of totalview.
+  // If their order is changed, the corresponding part must be updated
+  // in Arcane's totalview displayer.
   T* m_ptr = nullptr;
 
  protected:
 
-  //! Réserve le mémoire pour \a new_capacity éléments
+  //! Reserves memory for \a new_capacity elements
   void _reserve(Int64 new_capacity)
   {
     if (new_capacity <= m_md->capacity) {
-      // Dans le cas d'un allocateur collectif, on doit quand même faire un
-      // réalloc (à l'allocateur de gérer l'optimisation).
+      // In the case of a collective allocator, we still have to perform a
+      // realloc (the allocator must handle the optimization).
       if (m_meta_data.is_collective_allocator) {
         _internalRealloc(m_md->capacity, false);
       }
@@ -427,14 +428,14 @@ class AbstractArray
     _internalRealloc(new_capacity, false);
   }
   /*!
-   * \brief Réalloue le tableau pour une nouvelle capacité égale à \a new_capacity.
+   * \brief Reallocates the array for a new capacity equal to \a new_capacity.
    *
-   * Si la nouvelle capacité est inférieure à l'ancienne, rien ne se passe.
+   * If the new capacity is less than the old one, nothing happens.
    */
   void _internalRealloc(Int64 new_capacity, bool compute_capacity, RunQueue* queue = nullptr)
   {
-    // Remarque : Pour la mémoire partagée, si un des ptr est nullptr, alors
-    // il l'est pour tous les processus.
+    // Note: For shared memory, if one of the pointers is nullptr, then
+    // it is for all processes.
     if (_isSharedNull()) {
       if (new_capacity != 0 || m_meta_data.is_collective_allocator)
         _internalAllocate(new_capacity, queue);
@@ -449,8 +450,8 @@ class AbstractArray
         acapacity = (acapacity == 0) ? 4 : (acapacity + 1 + acapacity / 2);
       //std::cout << " REALLOC: want=" << wanted_size << " new_capacity=" << capacity << '\n';
     }
-    // Si la nouvelle capacité est inférieure à la courante, ne fait rien
-    // (sauf pour un allocateur collectif).
+    // If the new capacity is less than the current one, do nothing
+    // (except for a collective allocator).
     if (acapacity <= m_md->capacity) {
       if (m_meta_data.is_collective_allocator) {
         _internalReallocate(m_md->capacity, queue);
@@ -489,11 +490,11 @@ class AbstractArray
     }
   }
 
-  // Libère la mémoire
+  // Frees the memory
   void _internalDeallocate(RunQueue* queue = nullptr)
   {
-    // Remarque : Pour la mémoire partagée, si un des ptr est nullptr, alors
-    // il l'est pour tous les processus.
+    // Note: For shared memory, if one of the pointers is nullptr, then
+    // it is for all processes.
     if (!_isSharedNull())
       m_md->_deallocate(_currentMemoryInfo(), queue);
     if (m_md->is_not_null)
@@ -514,12 +515,12 @@ class AbstractArray
  private:
 
   /*!
-   * \brief Effectue la première allocation.
+   * \brief Performs the first allocation.
    *
-   * Si \a pre_allocated_buffer est non nul, on l'utilise comme buffer
-   * pour la première allocation. C'est à l'appelant de s'assurer que
-   * ce buffer est valide pour la capacité demandée. Le \a pre_allocated_buffer
-   * est utilisé notamment par l'allocateur de SmallArray.
+   * If \a pre_allocated_buffer is not null, it is used as a buffer
+   * for the first allocation. The caller must ensure that
+   * this buffer is valid for the requested capacity. \a pre_allocated_buffer
+   * is notably used by the SmallArray allocator.
    */
   void _directFirstAllocateWithAllocator(Int64 new_capacity, MemoryAllocationOptions options,
                                          void* pre_allocated_buffer = nullptr)
@@ -582,16 +583,16 @@ class AbstractArray
 
  protected:
 
-  //! Mise à jour des références
+  //! Update references
   virtual void _updateReferences()
   {
   }
-  //! Mise à jour des références
+  //! Update references
   virtual Integer _getNbRef()
   {
     return 1;
   }
-  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  //! Adds n elements of value val to the end of the array
   void _addRange(ConstReferenceType val, Int64 n)
   {
     Int64 s = m_md->size;
@@ -602,7 +603,7 @@ class AbstractArray
     m_md->size += n;
   }
 
-  //! Ajoute \a n élément de valeur \a val à la fin du tableau
+  //! Adds n elements of value val to the end of the array
   void _addRange(Span<const T> val)
   {
     Int64 n = val.size();
@@ -614,7 +615,7 @@ class AbstractArray
     m_md->size += n;
   }
 
-  //! Détruit l'instance si plus personne ne la référence
+  //! Destroys the instance if no one references it
   void _checkFreeMemory()
   {
     if (m_md->nb_ref == 0) {
@@ -628,7 +629,7 @@ class AbstractArray
   }
   void _destroyRange(Int64, Int64, TrueType)
   {
-    // Rien à faire pour un type POD.
+    // Nothing to do for a POD type.
   }
   void _destroyRange(Int64 abegin, Int64 aend, FalseType)
   {
@@ -780,11 +781,11 @@ class AbstractArray
   }
 
   /*!
-   * \brief Implémente l'opérateur d'assignement par déplacement.
+   * \brief Implements the move assignment operator.
    *
-   * Cet appel n'est valide que pour les tableaux de type UniqueArray
-   * qui n'ont qu'une seule référence. Les infos de \a rhs sont directement
-   * copiés cette l'instance. En retour, \a rhs contient le tableau vide.
+   * This call is only valid for UniqueArray type arrays
+   * that have only one reference. The info from \a rhs is directly
+   * copied to this instance. In return, \a rhs contains an empty array.
    */
   void _move(ThatClassType& rhs) ARCCORE_NOEXCEPT
   {
@@ -804,11 +805,11 @@ class AbstractArray
     rhs._reset();
   }
   /*!
-   * \brief Échange les valeurs de l'instance avec celles de \a rhs.
+   * \brief Swaps the values of the instance with those of \a rhs.
    *
-   * Cet appel n'est valide que pour les tableaux de type UniqueArray
-   * et l'échange se fait uniquement par l'échange des pointeurs. L'opération
-   * est donc de complexité constante.
+   * This call is only valid for UniqueArray type arrays
+   * and the exchange is done only by swapping pointers. The operation
+   * is therefore constant complexity.
    */
   void _swap(ThatClassType& rhs) ARCCORE_NOEXCEPT
   {
@@ -821,7 +822,7 @@ class AbstractArray
     _shrink(size());
   }
 
-  // Réalloue la mémoire pour avoir une capacité proche de \a new_capacity
+  // Reallocates the memory to have a capacity close to \a new_capacity
   void _shrink(Int64 new_capacity)
   {
     if (_isSharedNull())
@@ -835,9 +836,9 @@ class AbstractArray
   }
 
   /*!
-   * \brief Réinitialise le tableau à un tableau vide.
-   * \warning Cette méthode n'est valide que pour les UniqueArray et pas
-   * les SharedArray.
+   * \brief Resets the array to an empty array.
+   * \warning This method is only valid for UniqueArray and not
+   * SharedArray.
    */
   void _reset()
   {

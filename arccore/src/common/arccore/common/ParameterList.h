@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParameterList.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Liste de paramètres.                                                      */
+/* Parameter list.                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_PARAMETERLIST_H
 #define ARCCORE_COMMON_PARAMETERLIST_H
@@ -25,73 +25,74 @@ class ParameterCaseOption;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste de paramètres.
+ * \brief Parameter list.
  *
- * Une liste de paramètres est similaire à un ensemble (clé,valeur) mais
- * une clé peut-être éventuellement présente plusieurs fois (un peu à la
- * manière de la classe std::multi_map).
+ * A parameter list is similar to a set (key,value) but
+ * a key may potentially be present multiple times (a bit like the
+ * std::multi_map class).
  */
 class ARCCORE_COMMON_EXPORT ParameterList
 {
  private:
 
   friend class ParameterListWithCaseOption;
-  class Impl; //!< Implémentation
+  class Impl; //!< Implementation
 
  public:
 
-  //! Construit un dictionnaire
+  //! Constructs a dictionary
   ParameterList();
-  //! Construit un dictionnaire
+  //! Constructs a dictionary
   ParameterList(const ParameterList& rhs);
-  ~ParameterList(); //!< Libère les ressources
+  ~ParameterList(); //!< Frees resources
 
  public:
 
   /*!
-   * \brief Récupère le paramètre de nom \a param_name.
+   * \brief Retrieves the parameter with name \a param_name.
    *
-   * Retourne une chaîne nulle s'il n'y aucun paramètre avec ce nom.
+   * Returns a null string if there is no parameter with this name.
    *
-   * Si le paramètre est présent plusieurs fois, seule la dernière
-   * valeur est retournée.
+   * If the parameter is present multiple times, only the last
+   * value is returned.
    */
   String getParameterOrNull(const String& param_name) const;
 
   /*!
-   * \brief Analyse la ligne \a line.
+   * \brief Parses the line \a line.
    *
-   * La ligne doit avoir une des formes suivantes, avec \a A le
-   * paramètre et \a B la valeur:
+   * The line must have one of the following forms, with \a A the
+   * parameter and \a B the value:
    *
    * 1. A=B,
    * 2. A:=B
    * 3. A+=B,
    * 4. A-=B
    *
-   * Dans le cas (1) ou (3), la valeur de l'argument est ajoutée aux
-   * occurences déjà présentes. Dans le cas (2), la valeur de
-   * l'argument remplace toutes les occurences déjà présentes. Dans
-   * le cas (4), l'occurence ayant la valeur \a B est supprimée si elle
-   * était présente et rien ne se produit si elle était absente.
+   * In case (1) or (3), the argument's value is added to the
+   * already present occurrences. In case (2), the argument's value
+   * replaces all already present occurrences. In
+   * case (4), the occurrence having the value \a B is deleted if it
+   * was present and nothing happens if it was absent.
    *
-   * \retval false si un paramètre a pu être analysé
-   * \retval true sinon.
+   * \retval false if a parameter could be parsed
+   * \retval true otherwise.
    */
   bool addParameterLine(const String& line);
 
   /*!
-   * \brief Récupère la liste des paramètres et leur valeur.
+   * \brief Retrieves the list of parameters and their values.
    *
-   * Retourne dans \a param_names la liste des noms des paramêtres et
-   * dans \a values la valeur associée.
+   * Returns in \a param_names the list of parameter names and
+   * in \a values the associated value.
    */
   void fillParameters(StringList& param_names, StringList& values) const;
 
  private:
 
-  Impl* m_p = nullptr; //!< Implémentation
+  Impl* m_p = nullptr; //!< Implementation
 };
 
 /*---------------------------------------------------------------------------*/
@@ -102,4 +103,4 @@ class ARCCORE_COMMON_EXPORT ParameterList
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

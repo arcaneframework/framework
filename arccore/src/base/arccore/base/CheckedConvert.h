@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CheckedConvert.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Fonctions pour convertir un type en un autre avec vérification.           */
+/* Functions to convert one type to another with checking.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_CHECKEDCONVERT_H
 #define ARCCORE_BASE_CHECKEDCONVERT_H
@@ -22,19 +22,20 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonctions pour convertir un type en un autre avec vérification
+ * \brief Functions to convert one type to another with checking
  */
 namespace Arcane::CheckedConvert::Impl
 {
-  inline Integer
-  toInteger(Int64 v)
-  {
-    if (v > std::numeric_limits<Integer>::max() || v < std::numeric_limits<Integer>::min())
-      ARCCORE_THROW(BadCastException, "Invalid conversion from '{0}' to type Integer", v);
-    return static_cast<Integer>(v);
-  }
+inline Integer
+toInteger(Int64 v)
+{
+  if (v > std::numeric_limits<Integer>::max() || v < std::numeric_limits<Integer>::min())
+    ARCCORE_THROW(BadCastException, "Invalid conversion from '{0}' to type Integer", v);
+  return static_cast<Integer>(v);
 }
+} // namespace Arcane::CheckedConvert::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +45,8 @@ namespace Arcane::CheckedConvert
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti un \c Int64 en un \c Integer
+
+//! Converts a \c Int64 to an \c Integer
 inline Integer
 toInteger(Real r)
 {
@@ -56,37 +58,43 @@ toInteger(Real r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti \a v en le type \c Integer
+
+//! Converts \a v to the \c Integer type
 inline Integer
 toInteger(long long v)
 {
   return Impl::toInteger(static_cast<Int64>(v));
 }
-//! Converti \a v en le type \c Integer
+
+//! Converts \a v to the \c Integer type
 inline Integer
 toInteger(long v)
 {
   return Impl::toInteger(static_cast<Int64>(v));
 }
-//! Converti \a v en le type \c Integer
+
+//! Converts \a v to the \c Integer type
 inline Integer
 toInteger(int v)
 {
   return Impl::toInteger(static_cast<Int64>(v));
 }
-//! Converti \a v en le type \c Integer
+
+//! Converts \a v to the \c Integer type
 inline Integer
 toInteger(unsigned long long v)
 {
   return Impl::toInteger(static_cast<Int64>(v));
 }
-//! Converti \a v en le type \c Integer
+
+//! Converts \a v to the \c Integer type
 inline Integer
 toInteger(unsigned long v)
 {
   return Impl::toInteger(static_cast<Int64>(v));
 }
-//! Converti \a v en le type \c Integer
+
+//! Converts \a v to the \c Integer type
 inline Integer
 toInteger(unsigned int v)
 {
@@ -95,33 +103,34 @@ toInteger(unsigned int v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti un \c Int64 en un \c Int32
 
+//! Converts a \c Int64 to a \c Int32
 inline Int32
 toInt32(Int64 v)
 {
   if (v > std::numeric_limits<Int32>::max() || v < std::numeric_limits<Int32>::min())
-    ARCCORE_THROW(BadCastException,"Invalid conversion from '{0}' to type Int32", v);
+    ARCCORE_THROW(BadCastException, "Invalid conversion from '{0}' to type Int32", v);
   return static_cast<Int32>(v);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Converti un \c Int64 en un \c Int16
 
+//! Converts a \c Int64 to a \c Int16
 inline Int16
 toInt16(Int64 v)
 {
   if (v > std::numeric_limits<Int16>::max() || v < std::numeric_limits<Int16>::min())
-    ARCCORE_THROW(BadCastException,"Invalid conversion from '{0}' to type Int16", v);
+    ARCCORE_THROW(BadCastException, "Invalid conversion from '{0}' to type Int16", v);
   return static_cast<Int16>(v);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Multiplie trois 'Integer' et vérifie que le résultat peut être contenu
- * dans un 'Integer'.
+ * \brief Multiplies three 'Integer's and checks that the result can be contained
+ * in an 'Integer'.
  */
 inline Integer
 multiply(Integer x, Integer y, Integer z)
@@ -135,9 +144,10 @@ multiply(Integer x, Integer y, Integer z)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Multiplie deux 'Integer' et vérifie que le résultat peut être contenu
- * dans un 'Integer'.
+ * \brief Multiplies two 'Integer's and checks that the result can be contained
+ * in an 'Integer'.
  */
 inline Integer
 multiply(Integer x, Integer y)

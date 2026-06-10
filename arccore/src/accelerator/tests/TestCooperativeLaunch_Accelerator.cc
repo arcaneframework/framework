@@ -39,11 +39,11 @@ _testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c,
   //Int32 nb_group = 15 * 1200;
   //Int32 group_size = 128;
   double x = Platform::getRealTime();
-  // Valeurs partielles par bloc.
-  // Doit être dimensionné au nombre maximum de blocs possibles
+  // Partial values per block.
+  // Must be sized to the maximum number of possible blocks
   NumArray<Int64, MDDim1> by_block_partial_sum(queue.memoryResource());
   by_block_partial_sum.resize(2048);
-  // Pour récupèrer le résultat de la réduction.
+  // To retrieve the reduction result.
   NumArray<Int64, MDDim1> reduce_result(eMemoryResource::HostPinned);
   reduce_result.resize(1);
   {
@@ -84,7 +84,7 @@ _testCooperativeLaunch(RunQueue queue, SmallSpan<const Int64> c,
           partial_sum_span[0] = final_sum;
           out_reduce_result[0] = final_sum;
 #if !defined(__INTEL_LLVM_COMPILER)
-          // oneDPC++ ne possède pas de printf.
+          // oneDPC++ does not have printf.
           //printf("FINAL= nb_block=%d v=%ld\n", nb_block, final_sum);
 #endif
         }

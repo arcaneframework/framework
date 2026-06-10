@@ -1,28 +1,28 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Backend Arccore pour SYCL
+# Backend Arccore for SYCL
 
 set(ARCCORE_SOURCES
   SyclAccelerator.cc
   SyclAccelerator.h
 )
 
-# Pour compatibilité avec l'existant
+# For compatibility with existing code
 if (DEFINED ARCANE_CXX_SYCL_FLAGS AND NOT DEFINED ARCCORE_CXX_SYCL_FLAGS)
   set(ARCCORE_CXX_SYCL_FLAGS "${ARCANE_CXX_SYCL_FLAGS}")
-endif()
+endif ()
 
-# Créé une cible interface pour propager les options de compilation
-# communes pour la compilation SYCL
+# Created an interface target to propagate compilation options
+# common for SYCL compilation
 
 add_library(arccore_sycl_compile_flags INTERFACE)
 
 target_compile_options(arccore_sycl_compile_flags INTERFACE
-  # Pas d'option spécifique pour l'instant
+  # No specific option for now
 )
 if (CMAKE_CXX_COMPILER_ID STREQUAL IntelLLVM)
   target_link_options(arccore_sycl_compile_flags INTERFACE "-lsycl")
-endif()
+endif ()
 
 install(TARGETS arccore_sycl_compile_flags EXPORT ArccoreTargets)
 
@@ -38,19 +38,19 @@ target_link_libraries(arccore_accelerator_sycl PUBLIC
 )
 target_link_options(arccore_accelerator_sycl PUBLIC "${ARCCORE_CXX_SYCL_FLAGS}")
 
-# Détecte oneDPL si on utilise DPC++
-# On fait uniquement la détection et on suppose que c'est cohérent avec le
-# compilateur. Il ne faut pas ajouter la cible 'oneDPL' à 'arccore_accelerator_sycl'
-# car cela ajoute des flags de compilation (notamment liés à OpenMP) qui
-# peuvent provoquer des erreurs de compilation. En plus de cela, il peut y avoir
-# des incohérences avec la version de TBB utilisée ailleurs dans Arccore.
+# Detects oneDPL if using DPC++
+# We only perform detection and assume it is consistent with the
+# compiler. We should not add the 'oneDPL' target to 'arccore_accelerator_sycl'
+# because this adds compilation flags (notably related to OpenMP) which
+# can cause compilation errors. Furthermore, there may be
+# inconsistencies with the TBB version used elsewhere in Arccore.
 if (CMAKE_CXX_COMPILER_ID STREQUAL IntelLLVM)
   find_package(oneDPL CONFIG)
   message(STATUS "[Sycl] oneDPL found?=${oneDPL_FOUND} Version=${oneDPL_VERSION}")
   if (oneDPL_FOUND)
     target_compile_definitions(arccore_accelerator_sycl PUBLIC ARCCORE_HAS_ONEDPL ARCANE_HAS_ONEDPL)
-  endif()
-endif()
+  endif ()
+endif ()
 
 # ----------------------------------------------------------------------------
 # Local Variables:

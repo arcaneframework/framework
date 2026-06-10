@@ -7,14 +7,12 @@
 /*---------------------------------------------------------------------------*/
 /* MpiMachineShMemWinBaseInternal.h                            (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
-/* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
-/* être redimensionnées.                                                     */
+/* Class allowing the creation of memory windows for a computing node.       */
+/* The segments of these windows are not contiguous in memory and can        */
+/* be resized.                                                               */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINESHMEMWINBASEINTERNAL_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMACHINESHMEMWINBASEINTERNAL_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -76,37 +74,37 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMachineShMemWinBaseInternal
 
  private:
 
-  //! Tableau contenant toutes les fenêtres principales.
+  //! Table containing all primary windows.
   //!
-  //! Rappel : un MPI_Win = un segment.
+  //! Reminder: an MPI_Win = a segment.
   UniqueArray<MPI_Win> m_all_mpi_win;
-  //! Tableau avec les vues sur les segments. La taille des vues correspond à tout
-  //! l'espace mémoire réservé.
+  //! Table with views on the segments. The size of the views corresponds to all
+  //! the reserved memory space.
   Span<std::byte> m_reserved_part_span;
 
-  //! Fenêtre contiguë avec taille de redimensionnement (ou -1 si
-  //! redimensionnement non demandé).
+  //! Contiguous window with resize size (or -1 if
+  //! resizing is not requested).
   MPI_Win m_win_need_resize;
-  //! Vue globale sur fenêtre contiguë avec taille de redimensionnement (ou -1 si
-  //! redimensionnement non demandé).
+  //! Global view on contiguous window with resize size (or -1 if
+  //! resizing is not requested).
   Span<Int64> m_need_resize;
 
-  //! Fenêtre contiguë avec taille des fenêtres principales.
+  //! Contiguous window with the size of the primary windows.
   MPI_Win m_win_actual_sizeof;
-  //! Vue globale sur fenêtre contiguë avec taille des fenêtres principales.
+  //! Global view on contiguous window with the size of the primary windows.
   Span<Int64> m_sizeof_used_part;
 
-  //! Fenêtre contiguë avec demande de modification de segment d'un autre
-  //! sous-domaine.
+  //! Contiguous window with a request to modify a segment from another
+  //! subdomain.
   MPI_Win m_win_target_segments;
-  //! Vue globale sur fenêtre contiguë avec demande de modification de segment
-  //! d'un autre sous-domaine.
+  //! Global view on contiguous window with a request to modify a segment
+  //! from another subdomain.
   //!
-  //! En considérant qu'un proprio de segment SD veuille modifier le
-  //! segment ST, il opèrera cette modification :
+  //! Considering that an owner of segment SD wants to modify segment ST,
+  //! they will perform this modification:
   //!
   //! m_target_segments[ST] = SD
-  //! (Voir méthode \a addToAnotherSegment()).
+  //! (See method \a addToAnotherSegment()).
   Span<Int32> m_target_segments;
 
   MPI_Comm m_comm_machine;

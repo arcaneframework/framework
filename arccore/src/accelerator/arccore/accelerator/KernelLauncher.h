@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* KernelLauncher.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Gestion du lancement des noyaux de calcul sur accélérateur.               */
+/* Management of kernel launch on accelerator.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_KERNELLAUNCHER_H
 #define ARCCORE_ACCELERATOR_KERNELLAUNCHER_H
@@ -25,9 +25,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Les macros suivantes servent à appliquer un noyau si le backend associé
-// est disponible. Sinon, on lève une exception.
-// Ces macros sont utilisées par exemple dans RunCommandLoop.
+// The following macros are used to apply a kernel if the associated backend
+// is available. Otherwise, an exception is raised.
+// These macros are used, for example, in RunCommandLoop.
 
 #if defined(ARCCORE_COMPILING_CUDA)
 #define ARCCORE_KERNEL_CUDA_FUNC(kernel, ...) ::Arcane::Accelerator::Impl::CudaKernelLauncher::apply(kernel, __VA_ARGS__)
@@ -55,29 +55,30 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour appliquer une opération pour les arguments supplémentaires
- * en début et en fin de noyau CUDA/HIP.
+ * \brief Class to apply an operation for additional arguments
+ * at the beginning and end of a CUDA/HIP kernel.
  */
 class CudaHipKernelRemainingArgsHelper
 {
  public:
 
-  //! Applique les fonctors des arguments additionnels en début de kernel
+  //! Applies the functors of additional arguments at the beginning of the kernel
   template <typename... RemainingArgs> static inline ARCCORE_DEVICE void
   applyAtBegin(Int32 index, RemainingArgs&... remaining_args)
   {
     (_doOneAtBegin(index, remaining_args), ...);
   }
 
-  //! Applique les fonctors des arguments additionnels en fin de kernel
+  //! Applies the functors of additional arguments at the end of the kernel
   template <typename... RemainingArgs> static inline ARCCORE_DEVICE void
   applyAtEnd(Int32 index, RemainingArgs&... remaining_args)
   {
     (_doOneAtEnd(index, remaining_args), ...);
   }
 
-  //! Indique si un des arguments supplémentaires nécessite une barrière.
+  //! Indicates if one of the additional arguments requires a barrier.
   template <typename... RemainingArgs> static inline bool
   isNeedBarrier(const RemainingArgs&... remaining_args)
   {
@@ -109,16 +110,17 @@ class CudaHipKernelRemainingArgsHelper
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour appliquer une opération pour les arguments supplémentaires
- * en début et en fin de noyau Sycl.
+ * \brief Class to apply an operation for additional arguments
+ * at the beginning and end of a Sycl kernel.
  */
 class SyclKernelRemainingArgsHelper
 {
  public:
 
 #if defined(ARCCORE_COMPILING_SYCL)
-  //! Applique les fonctors des arguments additionnels en début de kernel
+  //! Applies the functors of additional arguments at the beginning of the kernel
   template <typename... RemainingArgs> static inline ARCCORE_HOST_DEVICE void
   applyAtBegin(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
                RemainingArgs&... remaining_args)
@@ -126,7 +128,7 @@ class SyclKernelRemainingArgsHelper
     (_doOneAtBegin(x, shm_view, remaining_args), ...);
   }
 
-  //! Applique les fonctors des arguments additionnels en fin de kernel
+  //! Applies the functors of additional arguments at the end of the kernel
   template <typename... RemainingArgs> static inline void
   applyAtEnd(sycl::nd_item<1> x, SmallSpan<std::byte> shm_view,
              RemainingArgs&... remaining_args)
@@ -134,7 +136,7 @@ class SyclKernelRemainingArgsHelper
     (_doOneAtEnd(x, shm_view, remaining_args), ...);
   }
 
-  //! Indique si un des arguments supplémentaires nécessite une barrière.
+  //! Indicates if one of the additional arguments requires a barrier.
   template <typename... RemainingArgs> static inline bool
   isNeedBarrier(const RemainingArgs&... remaining_args)
   {
@@ -211,15 +213,15 @@ void doDirectThreadLambda(Integer begin, Integer size, Lambda func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Plus utilisé
-// Fonction vide pour simuler un noyau invalide car non compilé avec
-// le compilateur adéquant. Ne devrait normalement pas être appelé.
+// More used
+// Empty function to simulate an invalid kernel because it was not compiled with
+// the adequate compiler. Should normally not be called.
 template <typename Lambda, typename... LambdaArgs>
 inline void invalidKernel(Lambda&, const LambdaArgs&...)
 {
   ARCCORE_FATAL("Invalid kernel");
 }
-// Plus utilisé
+// More used
 template <typename Lambda, typename... LambdaArgs>
 class InvalidKernelClass
 {
@@ -230,18 +232,18 @@ class InvalidKernelClass
 
 #if defined(ARCCORE_COMPILING_CUDA)
 
-//! Classe statique pour lancer les kernels CUDA.
+//! Static class for launching CUDA kernels.
 class CudaKernelLauncher
 {
  public:
 
   /*!
-   * \brief Fonction générique pour exécuter un kernel CUDA.
+   * \brief Generic function to execute a CUDA kernel.
    *
-   * \param kernel noyau CUDA
-   * \param func fonction à exécuter par le noyau
-   * \param bounds intervalle d'itération
-   * \param other_args autres arguments de la lambda
+   * \param kernel CUDA kernel
+   * \param func function to be executed by the kernel
+   * \param bounds iteration range
+   * \param other_args other lambda arguments
    */
   template <typename CudaKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
   apply(const CudaKernel& kernel, RunCommandLaunchInfo& launch_info, Lambda& func,
@@ -283,18 +285,18 @@ class CudaKernelLauncher
 
 #if defined(ARCCORE_COMPILING_HIP)
 
-//! Classe statique pour lancer les kernels ROCM/HIP
+//! Static class for launching ROCM/HIP kernels
 class HipKernelLauncher
 {
  public:
 
   /*!
-   * \brief Fonction générique pour exécuter un kernel HIP.
+   * \brief Generic function to execute a HIP kernel.
    *
-   * \param kernel noyau HIP
-   * \param func fonction à exécuter par le noyau
-   * \param bounds intervalle d'itération
-   * \param other_args autres arguments de la lambda
+   * \param kernel HIP kernel
+   * \param func function to be executed by the kernel
+   * \param bounds iteration range
+   * \param other_args other lambda arguments
    */
   template <typename HipKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
   apply(const HipKernel& kernel, RunCommandLaunchInfo& launch_info, const Lambda& func,
@@ -321,7 +323,7 @@ class HipKernelLauncher
                           const void* kernel_ptr, KernelArgs... args)
   {
     void* all_args[] = { (reinterpret_cast<void*>(&args))... };
-    // TODO: Regarder tester le code retour
+    // TODO: Check and test the return code
     (void)hipLaunchCooperativeKernel(kernel_ptr, tbi.nbBlockPerGrid(), tbi.nbThreadPerBlock(), all_args, tbi.sharedMemorySize(), s);
   }
 };
@@ -333,18 +335,18 @@ class HipKernelLauncher
 
 #if defined(ARCCORE_COMPILING_SYCL)
 
-//! Classe statique pour lancer les kernels SYCL
+//! Static class for launching SYCL kernels
 class SyclKernelLauncher
 {
  public:
 
   /*!
-   * \brief Fonction générique pour exécuter un kernel SYCL.
+   * \brief Generic function to execute a SYCL kernel.
    *
-   * \param kernel noyau SYCL
-   * \param func fonction à exécuter par le noyau
-   * \param bounds intervalle d'itération
-   * \param other_args autres arguments de la lambda
+   * \param kernel SYCL kernel
+   * \param func function to be executed by the kernel
+   * \param bounds iteration range
+   * \param other_args other lambda arguments
    */
   template <typename SyclKernel, typename Lambda, typename LoopBoundType, typename... RemainingArgs> static void
   apply(SyclKernel kernel, RunCommandLaunchInfo& launch_info, Lambda& func,
@@ -355,14 +357,14 @@ class SyclKernelLauncher
     bool is_need_barrier = SyclKernelRemainingArgsHelper::isNeedBarrier(remaining_args...);
     launch_info._setIsNeedBarrier(is_need_barrier);
     if constexpr (IsAlwaysUseSyclNdItem<LoopBoundType>::value || sizeof...(RemainingArgs) > 0) {
-      //TODO: regarder comment convertir \a kernel en un functor
+      //TODO: look into how to convert \a kernel into a functor
       auto tbi = launch_info._computeKernelLaunchArgs(nullptr);
       Int32 b = tbi.nbBlockPerGrid();
       Int32 t = tbi.nbThreadPerBlock();
       Int32 wanted_shared_memory = tbi.sharedMemorySize();
       sycl::nd_range<1> loop_size(b * t, t);
-      // TODO: regarder s'il y a un coût à utiliser à chaque fois
-      // 'sycl::local_accessor' même si on n'a pas besoin de mémoire partagée.
+      // TODO: check if there is a cost to use 'sycl::local_accessor' every time
+      // even if shared memory is not needed.
       event = s.submit([&](sycl::handler& cgh) {
         sycl::local_accessor<std::byte> shm_acc(sycl::range<1>(wanted_shared_memory), cgh);
         cgh.parallel_for(loop_size, [=](sycl::nd_item<1> i) {
@@ -392,10 +394,10 @@ class SyclKernelLauncher
 
 #define ARCCORE_MACRO_PARENS ()
 
-// Les trois macros suivantes permettent de générer récursivement un ensemble
-// de paramètres. Si on veut supporter plus de paramètres, on peut ajouter
-// des appels à la macro suivante dans chaque macro.
-// Plus d'info ici: https://stackoverflow.com/questions/70238923/how-to-expand-a-recursive-macro-via-va-opt-in-a-nested-context
+// The following three macros allow recursively generating a set
+// of parameters. If you want to support more parameters, you can add
+// calls to the following macro in each macro.
+// More info here: https://stackoverflow.com/questions/70238923/how-to-expand-a-recursive-macro-via-va-opt-in-a-nested-context
 #define ARCCORE_MACRO_EXPAND(...) ARCCORE_MACRO_EXPAND2(ARCCORE_MACRO_EXPAND2(ARCCORE_MACRO_EXPAND2(__VA_ARGS__)))
 #define ARCCORE_MACRO_EXPAND2(...) ARCCORE_MACRO_EXPAND1(ARCCORE_MACRO_EXPAND1(ARCCORE_MACRO_EXPAND1(__VA_ARGS__)))
 #define ARCCORE_MACRO_EXPAND1(...) __VA_ARGS__
@@ -406,16 +408,16 @@ class SyclKernelLauncher
 #define ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH_AGAIN() ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH_HELPER
 
 /*
- * \brief Macro pour générer les arguments de la lambda.
+ * \brief Macro to generate lambda arguments.
  *
- * Cette macro est interne à Arcane et ne doit pas être utilisée en dehors de Arcane.
+ * This macro is internal to Arcane and should not be used outside of Arcane.
  *
- * Cette macro permet de générer pour chaque argument \a arg une valeur `decltype(arg)& arg`.
+ * This macro allows generating a `decltype(arg)& arg` value for each argument \a arg.
  *
- * Par exemple:
+ * For example:
  * \code
  * ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(value1,value2)
- * // Cela génère le code suivant:
+ * // This generates the following code:
  * , decltype(value1)&, decltype(value2)&
  * \encode
  */

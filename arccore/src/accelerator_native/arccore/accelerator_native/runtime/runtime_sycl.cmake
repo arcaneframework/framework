@@ -1,6 +1,6 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Runtime Arcane pour SYCL
+# Arcane Runtime for SYCL
 
 message(STATUS "Adding Arccore Runtime for Sycl")
 

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RuntimeLoader.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Gestion du chargement du runtime accélérateur.                            */
+/* Management of the accelerator runtime loading.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,18 +31,19 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détecte et charge la bibliothèque de gestion du runtime des accélérateurs.
+ * \brief Detects and loads the accelerator runtime management library.
  *
- * Cette méthode ne doit être appelée qu'une seule fois.
+ * This method must only be called once.
  *
- * Si non nul, \a default_runtime_name sera utilisé si init_info.acceleratorRuntime()
- * est nul.
+ * If not null, \a default_runtime_name will be used if
+ * init_info.acceleratorRuntime() is null.
  *
- * En retour, \a has_accelerator est vrai si on a chargé un runtime accélérateur
- * (Cuda, Hip ou Sycl)
+ * In return, \a has_accelerator is true if an accelerator runtime
+ * (Cuda, Hip or Sycl) has been loaded.
  *
- * \retval 0 si tout est OK
+ * \retval 0 if everything is OK
  */
 int RuntimeLoader::
 loadRuntime(AcceleratorRuntimeInitialisationInfo& init_info,
@@ -63,13 +64,13 @@ loadRuntime(AcceleratorRuntimeInitialisationInfo& init_info,
     return 0;
   init_info.setAcceleratorRuntime(runtime_name);
   try {
-    // Pour l'instant, seuls les runtimes 'cuda', 'hip' et 'sycl' sont autorisés
+    // For now, only 'cuda', 'hip' and 'sycl' runtimes are allowed
     if (runtime_name != "cuda" && runtime_name != "hip" && runtime_name != "sycl")
       ARCCORE_FATAL("Invalid accelerator runtime '{0}'. Only 'cuda', 'hip' or 'sycl' is allowed", runtime_name);
 
-    // Pour pouvoir automatiquement enregistrer un runtime accélérateur de nom \a NAME,
-    // il faut appeler la méthode 'arcaneRegisterAcceleratorRuntime${NAME}' qui se trouve
-    // dans la bibliothèque dynamique 'arcane_${NAME}'.
+    // To automatically register an accelerator runtime named \a NAME,
+    // you must call the method 'arcaneRegisterAcceleratorRuntime${NAME}' which is found
+    // in the dynamic library 'arcane_${NAME}'.
 
     typedef void (*ArcaneAutoDetectAcceleratorFunctor)(Accelerator::RegisterRuntimeInfo&);
 
@@ -97,7 +98,7 @@ loadRuntime(AcceleratorRuntimeInitialisationInfo& init_info,
     (*my_functor)(runtime_info);
     has_accelerator = true;
 
-    // Permet de surcharger le choix de l'allocateur des données
+    // Allows overriding the data allocator choice
     String data_allocator_str = Platform::getEnvironmentVariable("ARCANE_DEFAULT_DATA_MEMORY_RESOURCE");
     if (!data_allocator_str.null()) {
       eMemoryResource v = MemoryUtils::getMemoryResourceFromName(data_allocator_str);

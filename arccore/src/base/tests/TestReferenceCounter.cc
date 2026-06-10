@@ -21,25 +21,25 @@ struct StatInfo
   bool is_destroyed = false;
   int nb_add = 0;
   int nb_remove = 0;
-  // Vérifie que 'is_destroyed' est vrai et qu'on a fait
-  // le bon nombre d'appel à 'nb_add' et 'nb_remove'.
+  // Checks that 'is_destroyed' is true and that the correct number of
+  // calls to 'nb_add' and 'nb_remove' were made.
   bool checkValid(int nb_call)
   {
-    if (nb_add!=nb_call){
+    if (nb_add != nb_call) {
       std::cout << "Bad nb_add n=" << nb_add << " expected=" << nb_call << "\n";
       return false;
     }
-    if (nb_remove!=nb_call){
+    if (nb_remove != nb_call) {
       std::cout << "Bad nb_remove n=" << nb_remove << " expected=" << nb_call << "\n";
       return false;
     }
     return is_destroyed;
   }
 };
-}
+} // namespace
 
-struct tag_ref_value {};
-
+struct tag_ref_value
+{};
 
 class Simple1;
 
@@ -48,11 +48,19 @@ ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Simple1);
 class Simple1
 {
  public:
+
   typedef ReferenceCounterTag ReferenceCounterTagType;
+
  public:
-  Simple1(StatInfo* stat_info) : m_nb_ref(0), m_stat_info(stat_info){}
-  ~Simple1(){ m_stat_info->is_destroyed = true; }
+
+  Simple1(StatInfo* stat_info)
+  : m_nb_ref(0)
+  , m_stat_info(stat_info)
+  {}
+  ~Simple1() { m_stat_info->is_destroyed = true; }
+
  public:
+
   void addReference()
   {
     ++m_nb_ref;
@@ -64,7 +72,7 @@ class Simple1
     --m_nb_ref;
     ++m_stat_info->nb_remove;
     std::cout << "REMOVE REFERENCE r=" << m_nb_ref << "\n";
-    if (m_nb_ref==0){
+    if (m_nb_ref == 0) {
       std::cout << "DESTROY!\n";
       delete this;
     }
@@ -72,20 +80,25 @@ class Simple1
   Int32 m_nb_ref;
   StatInfo* m_stat_info;
 };
-// Test sans compteur de référence (avec std::shared_ptr).
+// Test without reference counter (using std::shared_ptr).
 class Simple2
 {
  public:
-  Simple2(StatInfo* stat_info) : m_stat_info(stat_info){}
-  ~Simple2(){ m_stat_info->is_destroyed = true; }
+
+  Simple2(StatInfo* stat_info)
+  : m_stat_info(stat_info)
+  {}
+  ~Simple2() { m_stat_info->is_destroyed = true; }
+
  private:
+
   StatInfo* m_stat_info;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename RefType> void
+template <typename RefType> void
 _doTest1(const RefType& ref_type)
 {
   {
@@ -103,7 +116,7 @@ _doTest1(const RefType& ref_type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Teste si le compteur de référence détruit bien l'instance.
+// Tests if the reference counter correctly destroys the instance.
 TEST(ReferenceCounter, Misc)
 {
   typedef ReferenceCounter<Simple1> Simple1Reference;
@@ -116,7 +129,8 @@ TEST(ReferenceCounter, Misc)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Teste si le compteur de référence détruit bien l'instance.
+
+// Tests if the reference counter correctly destroys the instance.
 TEST(ReferenceCounter, Ref)
 {
   {
@@ -172,10 +186,10 @@ class TestClassWithDeleter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Teste si le compteur de référence détruit bien l'instance.
+// Tests if the reference counter correctly destroys the instance.
 TEST(ReferenceCounter, RefWithDeleter)
 {
-  try{
+  try {
     using namespace Test1;
     Ref<ITestClassWithDeleter> myx2;
     {
@@ -186,7 +200,7 @@ TEST(ReferenceCounter, RefWithDeleter)
     Arcane::Internal::ExternalRef external_ref;
     {
       auto* ptr1 = new TestClassWithDeleter();
-      Ref<ITestClassWithDeleter> x4 = Ref<ITestClassWithDeleter>::createWithHandle(ptr1,external_ref);
+      Ref<ITestClassWithDeleter> x4 = Ref<ITestClassWithDeleter>::createWithHandle(ptr1, external_ref);
     }
     {
       Ref<ITestClassWithDeleter> myx3 = createRef<TestClassWithDeleter>();
@@ -206,7 +220,7 @@ TEST(ReferenceCounter, RefWithDeleter)
       ASSERT_TRUE(!myx4);
     }
   }
-  catch(const std::exception& ex){
+  catch (const std::exception& ex) {
     std::cerr << "Exception ex=" << ex.what() << "\n";
     throw;
   }

@@ -321,7 +321,7 @@ struct inner_product_impl<Vec1, Vec2,
   static return_type parallel(const Vec1& x, const Vec2& y)
   {
     const size_t n = x.size();
-    // TODO: Use padding to avoir sharing cache line between threads
+    // TODO: Use padding to avoid sharing cache line between threads
     SmallArray<return_type, 256> sum_array;
     Int32 nb_thread = ConcurrencyBase::maxAllowedThread();
     const return_type zero = math::zero<return_type>();

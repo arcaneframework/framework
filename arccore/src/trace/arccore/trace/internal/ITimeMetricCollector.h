@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ITimeMetricCollector.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Interface gérant les statistiques sur les temps d'exécution.              */
+/* Interface managing statistics on execution times.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_TRACE_ITIMEMETRICCOLLECTOR_H
 #define ARCCORE_TRACE_ITIMEMETRICCOLLECTOR_H
@@ -19,8 +19,9 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * API en cours de définition. Ne pas utiliser en dehors de Arccore/Arcane.
+ * API under definition. Do not use outside of Arccore/Arcane.
  */
 
 namespace Arcane
@@ -28,29 +29,29 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface gérant les statistiques sur l'exécution.
+ * \brief Interface managing statistics on execution.
  */
 class ARCCORE_TRACE_EXPORT ITimeMetricCollector
 {
  public:
-
  public:
 
-  // Libère les ressources.
+  // Releases resources.
   virtual ~ITimeMetricCollector() = default;
 
  public:
 
-  virtual TimeMetricAction getAction(const TimeMetricActionBuildInfo& x) =0;
-  virtual TimeMetricId beginAction(const TimeMetricAction& handle) =0;
-  virtual void endAction(const TimeMetricId& metric_id) =0;
+  virtual TimeMetricAction getAction(const TimeMetricActionBuildInfo& x) = 0;
+  virtual TimeMetricId beginAction(const TimeMetricAction& handle) = 0;
+  virtual void endAction(const TimeMetricId& metric_id) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

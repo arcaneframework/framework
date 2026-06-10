@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AcceleratorCore.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* General declarations for accelerator support.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,7 +22,7 @@
 #include "arccore/common/accelerator/RunCommand.h"
 #include "arccore/common/accelerator/RunQueue.h"
 
-// Pas utilisé mais nécessaire pour les exports de symboles.
+// Not used but necessary for symbol exports.
 #include "arccore/common/accelerator/IAcceleratorMng.h"
 
 #include <iostream>
@@ -33,10 +33,10 @@
 /*!
  * \namespace Arcane::Accelerator
  *
- * \brief Espace de nom pour l'utilisation des accélérateurs.
+ * \brief Namespace for accelerator usage.
  *
- * Toutes les classes et types utilisés pour la gestion des accélérateurs
- * sont dans ce namespace.
+ * All classes and types used for accelerator management
+ * are in this namespace.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -76,14 +76,14 @@ setUsingCUDARuntime(bool v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Récupère l'implémentation CUDA de RunQueue
+//! Retrieves the CUDA implementation of RunQueue
 extern "C++" ARCCORE_COMMON_EXPORT Impl::IRunnerRuntime* Impl::
 getCUDARunQueueRuntime()
 {
   return global_cuda_runqueue_runtime;
 }
 
-//! Positionne l'implémentation CUDA de RunQueue.
+//! Sets the CUDA implementation of RunQueue.
 extern "C++" ARCCORE_COMMON_EXPORT void Impl::
 setCUDARunQueueRuntime(IRunnerRuntime* v)
 {
@@ -108,14 +108,14 @@ setUsingHIPRuntime(bool v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Récupère l'implémentation HIP de RunQueue
+//! Retrieves the HIP implementation of RunQueue
 extern "C++" ARCCORE_COMMON_EXPORT Impl::IRunnerRuntime* Impl::
 getHIPRunQueueRuntime()
 {
   return global_hip_runqueue_runtime;
 }
 
-//! Positionne l'implémentation HIP de RunQueue.
+//! Sets the HIP implementation of RunQueue.
 extern "C++" ARCCORE_COMMON_EXPORT void Impl::
 setHIPRunQueueRuntime(Impl::IRunnerRuntime* v)
 {
@@ -155,7 +155,7 @@ setSYCLRunQueueRuntime(Impl::IRunnerRuntime* v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Affiche le nom de la politique d'exécution
+//! Displays the name of the execution policy
 extern "C++" ARCCORE_COMMON_EXPORT
 std::ostream&
 operator<<(std::ostream& o, eExecutionPolicy exec_policy)
@@ -236,9 +236,9 @@ getAcceleratorRunnerRuntime()
 ePointerAccessibility Impl::RuntimeStaticInfo::
 getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribute* ptr_attr)
 {
-  // Regarde si le pointeur est accessible pour la politique d'exécution donnée.
-  // Le seul cas où on peut le savoir exactement est si on a un runtime
-  // accélérateur et que la valeur retournée par getPointeAttribute() est valide.
+  // Checks if the pointer is accessible for the given execution policy.
+  // The only case where we can know exactly is if we have an
+  // accelerator runtime and the value returned by getPointeAttribute() is valid.
   if (policy == eExecutionPolicy::None)
     return ePointerAccessibility::Unknown;
   IRunnerRuntime* r = getAcceleratorRunnerRuntime();
@@ -268,7 +268,7 @@ void Impl::RuntimeStaticInfo::
 checkPointerIsAcccessible(eExecutionPolicy policy, const void* ptr,
                           const char* name, const TraceInfo& ti)
 {
-  // Le pointeur nul est toujours accessible.
+  // The null pointer is always accessible.
   if (!ptr)
     return;
   PointerAttribute ptr_attr;

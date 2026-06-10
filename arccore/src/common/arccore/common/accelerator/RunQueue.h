@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RunQueue.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Gestion d'une file d'exécution sur accélérateur.                          */
+/* Execution queue management on an accelerator.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_RUNQUEUE_H
 #define ARCCORE_COMMON_ACCELERATOR_RUNQUEUE_H
@@ -26,27 +26,28 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief File d'exécution pour un accélérateur.
+ * \brief Execution queue for an accelerator.
  *
- * Cette classe utilise une sémantique par référence. La file d'exécution est
- * détruite lorsque la dernière référence dessus est détruite.
+ * This class uses a reference semantics. The execution queue is
+ * destroyed when the last reference to it is destroyed.
  *
- * Une file est attachée à une instance de Runner et permet d'exécuter
- * des commandes (RunCommand) sur un accélérateur ou sur le CPU. La méthode
- * executionPolicy() permet de savoir où s'exécutera les commandes issues
- * de la file.
+ * A queue is attached to a Runner instance and allows executing
+ * commands (RunCommand) on an accelerator or on the CPU. The method
+ * executionPolicy() allows knowing where the commands from
+ * the queue will be executed.
  *
- * Les instances de cette classe sont créées par l'appel à makeQueue(Runner).
- * On peut ensuite créer des noyaux de calcul (RunCommand) via l'appel
- * à makeCommand().
+ * Instances of this class are created by calling makeQueue(Runner).
+ * Calculation kernels (RunCommand) can then be created via the call
+ * to makeCommand().
  *
- * Le constructeur par défaut construit Une file nulle qui ne peut pas être
- * utilisée pour lancer des commandes. Les seules opérations autorisées sur
- * la file nulle sont isNull(), executionPolicy(), isAcceleratorPolicy(),
- * barrier(), allocationOptions() et memoryResource().
+ * The default constructor builds a null queue that cannot be
+ * used to launch commands. The only operations allowed on
+ * the null queue are isNull(), executionPolicy(), isAcceleratorPolicy(),
+ * barrier(), allocationOptions(), and memoryResource().
  *
- * Les méthodes de cette classe ne sont pas thread-safe pour une même instance.
+ * The methods of this class are not thread-safe for the same instance.
  */
 class ARCCORE_COMMON_EXPORT RunQueue
 {
@@ -57,14 +58,15 @@ class ARCCORE_COMMON_EXPORT RunQueue
   friend class Impl::RunCommandLaunchInfo;
   friend RunCommand makeCommand(const RunQueue& run_queue);
   friend RunCommand makeCommand(const RunQueue* run_queue);
-  // Pour _internalNativeStream()
+  // For _internalNativeStream()
   friend class Impl::CudaUtils;
   friend class Impl::HipUtils;
   friend class Impl::SyclUtils;
 
  public:
 
-  //! Permet de modifier l'asynchronisme de la file pendant la durée de vie de l'instance
+  //! Allows modifying the queue's asynchronous state during the
+  //! instance's lifetime
   class ScopedAsync
   {
    public:
@@ -72,7 +74,7 @@ class ARCCORE_COMMON_EXPORT RunQueue
     explicit ScopedAsync(RunQueue* queue)
     : m_queue(queue)
     {
-      // Rend la file asynchrone
+      // Makes the queue asynchronous
       if (m_queue) {
         m_is_async = m_queue->isAsync();
         m_queue->setAsync(true);
@@ -80,7 +82,8 @@ class ARCCORE_COMMON_EXPORT RunQueue
     }
     ~ScopedAsync() noexcept(false)
     {
-      // Remet la file dans l'état d'origine lors de l'appel au constructeur
+      // Restores the queue to its original state when the
+      // constructor is called
       if (m_queue)
         m_queue->setAsync(m_is_async);
     }
@@ -93,16 +96,16 @@ class ARCCORE_COMMON_EXPORT RunQueue
 
  public:
 
-  //! Créé une file nulle.
+  //! Creates a null queue.
   RunQueue();
   ~RunQueue();
 
  public:
 
-  //! Créé une file associée à \a runner avec les paramètres par défaut
+  //! Creates a queue associated with \a runner with default parameters
   ARCCORE_DEPRECATED_REASON("Y2024: Use makeQueue(runner) instead")
   explicit RunQueue(const Runner& runner);
-  //! Créé une file associée à \a runner avec les paramètres \a bi
+  //! Creates a queue associated with \a runner with parameters \a bi
   ARCCORE_DEPRECATED_REASON("Y2024: Use makeQueue(runner,bi) instead")
   RunQueue(const Runner& runner, const RunQueueBuildInfo& bi);
 
@@ -115,75 +118,75 @@ class ARCCORE_COMMON_EXPORT RunQueue
 
  public:
 
-  //! Indique si la RunQueue est nulle
+  //! Indicates if the RunQueue is null
   bool isNull() const { return !m_p; }
 
-  //! Politique d'exécution de la file.
+  //! Execution policy of the queue.
   eExecutionPolicy executionPolicy() const;
-  //! Indique si l'instance est associée à un accélérateur
+  //! Indicates if the instance is associated with an accelerator
   bool isAcceleratorPolicy() const;
 
   /*!
-   * \brief Positionne l'asynchronisme de l'instance.
+   * \brief Sets the instance's asynchronous state.
    *
-   * Si l'instance est asynchrone, les différentes commandes
-   * associées ne sont pas bloquantes et il faut appeler explicitement barrier()
-   * pour attendre la fin de l'exécution des commandes.
+   * If the instance is asynchronous, the different commands
+   * associated are non-blocking and you must explicitly call barrier()
+   * to wait for the commands to finish execution.
    *
    * \pre !isNull()
    */
   void setAsync(bool v);
-  //! Indique si la file d'exécution est asynchrone.
+  //! Indicates if the execution queue is asynchronous.
   bool isAsync() const;
 
   /*!
-   * \brief Positionne l'asynchronisme de l'instance.
+   * \brief Sets the instance's asynchronous state.
    *
-   * Retourne l'instance.
+   * Returns the instance.
    *
    * \pre !isNull()
    * \sa setAsync().
    */
   const RunQueue& addAsync(bool is_async) const;
 
-  //! Bloque tant que toutes les commandes associées à la file ne sont pas terminées.
+  //! Blocks until all commands associated with the queue are finished.
   void barrier() const;
 
-  //! Copie des informations entre deux zones mémoires
+  //! Copies information between two memory regions
   void copyMemory(const MemoryCopyArgs& args) const;
-  //! Effectue un préfetching de la mémoire
+  //! Performs a memory prefetch
   void prefetchMemory(const MemoryPrefetchArgs& args) const;
 
   /*!
-   * \name Gestion des évènements
+   * \name Event Management
    * \pre !isNull()
    */
   //!@{
-  //! Enregistre l'état de l'instance dans \a event.
+  //! Records the instance's state in \a event.
   void recordEvent(RunQueueEvent& event);
-  //! Enregistre l'état de l'instance dans \a event.
+  //! Records the instance's state in \a event.
   void recordEvent(Ref<RunQueueEvent>& event);
-  //! Bloque l'exécution sur l'instance tant que les jobs enregistrés dans \a event ne sont pas terminés
+  //! Blocks execution on the instance until the jobs recorded in \a event are finished
   void waitEvent(RunQueueEvent& event);
-  //! Bloque l'exécution sur l'instance tant que les jobs enregistrés dans \a event ne sont pas terminés
+  //! Blocks execution on the instance until the jobs recorded in \a event are finished
   void waitEvent(Ref<RunQueueEvent>& event);
   //!@}
 
-  //! \name Gestion mémoire
+  //! \name Memory Management
   //!@{
   /*!
-   * \brief Options d'allocation associée à cette file.
+   * \brief Allocation options associated with this queue.
    *
-   * Il est possible de changer la ressource mémoire et donc l'allocateur utilisé
+   * It is possible to change the memory resource and thus the allocator used
    * via setMemoryRessource().
    */
   MemoryAllocationOptions allocationOptions() const;
 
   /*!
-   * \brief Positionne la ressource mémoire utilisée pour les allocations avec cette instance.
+   * \brief Sets the memory resource used for allocations with this instance.
    *
-   * La valeur par défaut est eMemoryRessource::UnifiedMemory
-   * si isAcceleratorPolicy()==true et eMemoryRessource::Host sinon.
+   * The default value is eMemoryRessource::UnifiedMemory
+   * if isAcceleratorPolicy()==true and eMemoryRessource::Host otherwise.
    *
    * \sa memoryResource()
    * \sa allocationOptions()
@@ -192,41 +195,41 @@ class ARCCORE_COMMON_EXPORT RunQueue
    */
   void setMemoryRessource(eMemoryResource mem);
 
-  //! Ressource mémoire utilisée pour les allocations avec cette instance.
+  //! Memory resource used for allocations with this instance.
   eMemoryResource memoryRessource() const;
-  //! Ressource mémoire utilisée pour les allocations avec cette instance.
+  //! Memory resource used for allocations with this instance.
   eMemoryResource memoryResource() const;
   //!@}
 
  public:
 
   /*!
-   * \brief Indique si on autorise la création de RunCommand pour cette instance
-   * depuis plusieurs threads.
+   * \brief Indicates if the creation of RunCommand for this instance
+   * is allowed from multiple threads.
    *
-   * Cela nécessite d'utiliser un verrou (comme std::mutex) et peut dégrader les
-   * performances. Le défaut est \a false.
+   * This requires using a lock (like std::mutex) and may degrade
+   * performance. The default is \a false.
    *
-   * Cette méthode n'est pas supportée pour les files qui sont associées
-   * à des accélérateurs (isAcceleratorPolicy()==true)
+   * This method is not supported for queues that are associated
+   * with accelerators (isAcceleratorPolicy()==true)
    */
   void setConcurrentCommandCreation(bool v);
-  //! Indique si la création concurrente de plusieurs RunCommand est autorisée
+  //! Indicates if concurrent creation of multiple RunCommands is allowed
   bool isConcurrentCommandCreation() const;
 
  public:
 
   /*!
-   * \brief Pointeur sur la structure interne dépendante de l'implémentation.
+   * \brief Pointer to the internal structure dependent on the implementation.
    *
-   * Cette méthode est réservée à un usage avancée.
-   * La file retournée ne doit pas être conservée au delà de la vie de l'instance.
+   * This method is reserved for advanced usage.
+   * The returned queue must not be kept beyond the life of the instance.
    *
-   * Avec CUDA, le pointeur retourné est un 'cudaStream_t*'. Avec HIP, il
-   * s'agit d'un 'hipStream_t*'.
+   * With CUDA, the returned pointer is a 'cudaStream_t*'. With HIP, it
+   * is a 'hipStream_t*'.
    *
-   * \deprecated Utiliser toCudaNativeStream(), toHipNativeStream()
-   * ou toSyclNativeStream() à la place
+   * \deprecated Use toCudaNativeStream(), toHipNativeStream()
+   * or toSyclNativeStream() instead
    */
   ARCCORE_DEPRECATED_REASON("Y2024: Use toCudaNativeStream(), toHipNativeStream() or toSyclNativeStream() instead")
   void* platformStream() const;
@@ -248,11 +251,11 @@ class ARCCORE_COMMON_EXPORT RunQueue
 
  private:
 
-  // Les méthodes de création sont réservée à Runner.
-  // On ajoute un argument supplémentaire non utilisé pour ne pas utiliser
-  // le constructeur obsolète.
+  // Creation methods are reserved for Runner.
+  // An extra unused argument is added to avoid using
+  // the deprecated constructor.
   RunQueue(const Runner& runner, bool);
-  //! Créé une file associée à \a runner avec les paramètres \a bi
+  //! Creates a queue associated with \a runner with parameters \a bi
   RunQueue(const Runner& runner, const RunQueueBuildInfo& bi, bool);
   explicit RunQueue(Impl::RunQueueImpl* p);
 
@@ -264,7 +267,7 @@ class ARCCORE_COMMON_EXPORT RunQueue
   Impl::NativeStream _internalNativeStream() const;
   void _checkNotNull() const;
 
-  // Pour VariableViewBase
+  // For VariableViewBase
   friend class VariableViewBase;
   friend class NumArrayViewBase;
 
@@ -278,8 +281,9 @@ class ARCCORE_COMMON_EXPORT RunQueue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une commande associée à la file \a run_queue.
+ * \brief Creates a command associated with the queue \a run_queue.
  */
 inline RunCommand
 makeCommand(const RunQueue& run_queue)
@@ -289,7 +293,7 @@ makeCommand(const RunQueue& run_queue)
 }
 
 /*!
- * \brief Créé une commande associée à la file \a run_queue.
+ * \brief Creates a command associated with the queue \a run_queue.
  */
 inline RunCommand
 makeCommand(const RunQueue* run_queue)
@@ -307,4 +311,4 @@ makeCommand(const RunQueue* run_queue)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

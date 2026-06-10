@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Profiling.cc                                                (C) 2000-2026 */
 /*                                                                           */
-/* Classes pour gérer le profilage.                                          */
+/* Classes to manage profiling.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -63,10 +63,10 @@ void _dumpOneLoopListStat(std::ostream& o, const Impl::ForLoopStatInfoList& stat
     Impl::ForLoopProfilingStat m_stat;
   };
 
-  // Met 1 pour éviter de diviser par zéro.
+  // Set to 1 to avoid division by zero.
   Int64 cumulative_total = 1;
 
-  // Tri les fonctions par temps d'exécution décroissant
+  // Sort functions by decreasing execution time
   std::set<SortedStatInfo> sorted_set;
   for (const auto& x : stat_list._internalImpl()->m_stat_map) {
     const auto& s = x.second;
@@ -211,7 +211,7 @@ AllStatInfoList global_all_stat_info_list;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Permet de gérer une instance de ForLoopStatInfoList par thread pour éviter les verroux
+// Allows managing a ForLoopStatInfoList instance per thread to avoid locks
 class ThreadLocalStatInfo
 {
  public:
@@ -375,7 +375,7 @@ print(std::ostream& o) const
 void Impl::
 dumpProfilingStatistics(std::ostream& o)
 {
-  // Affiche les informations de profiling sur \a o
+  // Display profiling information on o
   _printGlobalLoopInfos(o, ProfilingRegistry::globalLoopStat());
   {
     auto f = [&](const Impl::ForLoopStatInfoList& stat_list) {
@@ -383,8 +383,8 @@ dumpProfilingStatistics(std::ostream& o)
     };
     ProfilingRegistry::visitLoopStat(f);
   }
-  // Avant d'afficher le profiling accélérateur, il faudrait être certain
-  // qu'il est désactivé. Normalement, c'est le cas si on utilise ArcaneMainBatch.
+  // Before displaying accelerator profiling, one should be sure
+  // that it is disabled. Normally, this is the case if ArcaneMainBatch is used.
   {
     auto f = [&](const Impl::AcceleratorStatInfoList& stat_list) {
       stat_list.print(o);

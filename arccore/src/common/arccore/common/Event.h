@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Event.h                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaires d'évènements.                                               */
+/* Event Handlers.                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_EVENT_H
 #define ARCCORE_COMMON_EVENT_H
@@ -26,9 +26,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'un handler d'évènement.
+ * \brief Base class for an event handler.
  */
 class ARCCORE_COMMON_EXPORT EventObservableBase
 {
@@ -73,12 +74,13 @@ class ARCCORE_COMMON_EXPORT EventObservableBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'un observateur d'évènement.
+ * \brief Base class for an event observer.
  *
- * L'ajoute ou la suppression d'un observeur se fait via les opérateurs
- * EventObservable::operator+=() et EventObservable::operator-=().
+ * Adding or removing an observer is done via the operators
+ * EventObservable::operator+=() and EventObservable::operator-=().
  */
 class ARCCORE_COMMON_EXPORT EventObserverBase
 {
@@ -101,9 +103,10 @@ class ARCCORE_COMMON_EXPORT EventObserverBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Utils
- * \brief Observateur d'évènements.
+ * \brief Event observer.
  */
 template <typename... Args>
 class EventObserver
@@ -135,8 +138,9 @@ class EventObserver
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conserve des références d'observateurs.
+ * \brief Stores references to observers.
  */
 class ARCCORE_COMMON_EXPORT EventObserverPool
 {
@@ -146,9 +150,9 @@ class ARCCORE_COMMON_EXPORT EventObserverPool
 
  public:
 
-  //! Ajoute l'observateur \a x
+  //! Adds the observer \a x
   void add(EventObserverBase* x);
-  //! Supprime tous les observateurs associés à cette instance.
+  //! Clears all observers associated with this instance.
   void clear();
 
  private:
@@ -158,24 +162,24 @@ class ARCCORE_COMMON_EXPORT EventObserverPool
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Utils
- * \brief Classe de base d'un handler d'évènement.
+ * \brief Base class for an event handler.
  *
- * Les instances de cette classe ne peuvent pas être copiées.
+ * Instances of this class cannot be copied.
  *
- * Cette classe permet d'enregistrer une liste d'observateurs qui peuvent
- * être notifiés lors de l'appel à notify(). \a Args contient
- * la liste des paramètres de notification.
+ * This class allows registering a list of observers that can
+ * be notified when notify() is called. \a Args contains
+ * the list of notification parameters.
  *
- * Il est possible d'ajouter un observateur via la méthode attach(). Si
- * l'observateur est une fonction lambda, il est nécessaire de
- * spécifier une instance de EventObserverPool pour gérer la durée
- * de vie de la lambda, qui sera alors la même que celle de
- * l'EventObserverPool associé.
- *
- \code
- * //! Evènement appelant une méthode void f(int,double):
+ * It is possible to add an observer via the attach() method. If
+ * the observer is a lambda function, it is necessary to
+ * specify an instance of EventObserverPool to manage the lifetime
+ * of the lambda, which will then be the same as that of
+ * the associated EventObserverPool.
+ * \code
+ * //! Event calling a method void f(int,double):
  * EventObservable<int,double> observable;
  * EventObserverPool pool;
  * observable.attach(pool,[](int a,double b) { ... });
@@ -201,21 +205,22 @@ class EventObservable
  public:
 
   /*!
-   * \brief Attache l'observateur \a o à cet observable.
+   * \brief Attaches the observer \a o to this observable.
    *
-   * Une exception est levée si l'observateur est déjà attaché à un observable.
+   * An exception is thrown if the observer is already attached to an observable.
    */
   void attach(ObserverType* o) { _attachObserver(o, false); }
+
   /*!
-   * \brief Détache l'observateur \a o de cet observable.
+   * \brief Detaches the observer \a o from this observable.
    *
-   * Une exception est levée si l'observateur n'est pas attaché à cet observable.
+   * An exception is thrown if the observer is not attached to this observable.
    */
   void detach(ObserverType* o) { _detachObserver(o); }
 
   /*!
-   * \brief Ajoute un observateur utilisant la lambda \a lambda
-   * et conserve une référence dans \a pool.
+   * \brief Adds an observer using the lambda \a lambda
+   * and stores a reference in \a pool.
    */
   template <typename Lambda>
   void attach(EventObserverPool& pool, const Lambda& lambda)
@@ -225,7 +230,7 @@ class EventObservable
     pool.add(x);
   }
 
-  //! Appelle les observeurs associés à cet observable.
+  //! Calls the observers associated with this observable.
   void notify(Args... args)
   {
     if (!hasObservers())
@@ -237,9 +242,10 @@ class EventObservable
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Utils
- * \brief Classe gérant les observateurs associés à un évènement.
+ * \brief Class managing observers associated with an event.
  * \sa EventObservable
  */
 template <typename... Args>
@@ -258,21 +264,22 @@ class EventObservableView
  public:
 
   /*!
-   * \brief Attache l'observateur \a o à cet observable.
+   * \brief Attaches the observer \a o to this observable.
    *
-   * Une exception est levée si l'observateur est déjà attaché à un observable.
+   * An exception is thrown if the observer is already attached to an observable.
    */
   void attach(ObserverType* o) { m_observable_ref.attach(o); }
+
   /*!
-   * \brief Détache l'observateur \a o de cet observable.
+   * \brief Detaches the observer \a o from this observable.
    *
-   * Une exception est levée si l'observateur n'est pas attaché à cet observable.
+   * An exception is thrown if the observer is not attached to this observable.
    */
   void detach(ObserverType* o) { m_observable_ref.detach(o); }
 
   /*!
-   * \brief Ajoute un observateur utilisant la lambda \a lambda
-   * et conserve une référence dans \a pool.
+   * \brief Adds an observer using the lambda \a lambda
+   * and stores a reference in \a pool.
    */
   template <typename Lambda>
   void attach(EventObserverPool& pool, const Lambda& lambda)

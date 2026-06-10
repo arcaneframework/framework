@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandLoop.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Macros pour exécuter une boucle sur une commande.                         */
+/* Macros for executing a loop on a command.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_RUNCOMMANDLOOP_H
 #define ARCCORE_ACCELERATOR_RUNCOMMANDLOOP_H
@@ -86,7 +86,7 @@ namespace Arcane::Accelerator::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// On utilise 'Argument dependent lookup' pour trouver 'arcaneGetLoopIndexCudaHip'
+// We use 'Argument dependent lookup' to find 'arcaneGetLoopIndexCudaHip'
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
 
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ void
@@ -94,7 +94,7 @@ doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs..
 {
   using namespace Arcane::Accelerator::Impl;
 
-  // TODO: a supprimer quand il n'y aura plus les anciennes réductions
+  // TODO: to be removed when old reductions are gone
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
@@ -102,8 +102,8 @@ doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs..
 
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
   if constexpr (requires { bounds.nbStride(); }) {
-    // Test expérimental pour utiliser un pas de la taille
-    // de la grille. Le nombre de pas est donné par bounds.nbStride().
+    // Experimental test to use a stride of the grid size. The number of
+    // strides is given by bounds.nbStride().
     Int32 nb_grid_stride = bounds.nbStride();
     Int32 offset = blockDim.x * gridDim.x;
 #pragma unroll 4
@@ -129,7 +129,7 @@ doDirectGPULambdaArrayBounds2(LoopBoundType bounds, Lambda func, RemainingArgs..
 
 #if defined(ARCCORE_COMPILING_SYCL)
 
-//! Boucle N-dimension sans indirection
+//! N-dimensional loop without indirection
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs>
 class DoDirectSYCLLambdaArrayBounds
 {
@@ -144,7 +144,7 @@ class DoDirectSYCLLambdaArrayBounds
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
     if (i < bounds.nbElement()) {
-      // Si possible, on passe \a x en argument
+      // If possible, pass \a x as an argument
       body(arcaneGetLoopIndexSycl(bounds, x), remaining_args...);
     }
     SyclKernelRemainingArgsHelper::applyAtEnd(x, shared_memory, remaining_args...);
@@ -176,18 +176,19 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique la lambda \a func sur une boucle \a bounds.
+ * \brief Applies the lambda \a func on a loop \a bounds.
  *
- * La lambda \a func est appliqué à la commande \a command.
- * \a bound est le type de la boucle. Les types supportés sont:
+ * The lambda \a func is applied to the command \a command.
+ * \a bound is the loop type. Supported types are:
  *
  * - SimpleForLoopRanges
  * - ComplexForLoopRanges
  *
- * Les arguments supplémentaires \a other_args sont utilisés pour supporter
- * des fonctionnalités telles que les réductions (ReducerSum2, ReducerMax2, ...)
- * ou la gestion de la mémoire locale (via LocalMemory).
+ * Additional arguments \a other_args are used to support
+ * features such as reductions (ReducerSum2, ReducerMax2, ...)
+ * or local memory management (via LocalMemory).
  */
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
 _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
@@ -234,11 +235,12 @@ _applyGenericLoop(RunCommand& command, LoopBoundType bounds,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour conserver les arguments d'une RunCommand.
+ * \brief Class to store arguments of a RunCommand.
  *
- * `LoopBoundType` est le type de la boucle. Par exemple, ce peut être
- * une SimpleForLoopRanges ou une ComplexForLoopRanges.
+ * `LoopBoundType` is the loop type. For example, it can be
+ * a SimpleForLoopRanges or a ComplexForLoopRanges.
  */
 template <typename LoopBoundType, typename... RemainingArgs>
 class ArrayBoundRunCommand
@@ -263,8 +265,9 @@ class ArrayBoundRunCommand
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour gérer les paramètres supplémentaires des commandes.
+ * \brief Class to manage additional parameters of commands.
  */
 template <typename LoopBoundType, typename... RemainingArgs>
 class ExtendedArrayBoundLoop
@@ -296,11 +299,12 @@ makeExtendedLoop(const LoopBoundType& bounds, RemainingArgs... args)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds.
+ * \brief Applies the lambda \a func on the iteration range given by \a bounds.
  *
- * \a other_args contient les éventuels arguments supplémentaires passés à
- * la lambda.
+ * \a other_args contains any additional arguments passed to
+ * the lambda.
  */
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
 runExtended(RunCommand& command, LoopBoundType bounds,
@@ -312,15 +316,15 @@ runExtended(RunCommand& command, LoopBoundType bounds,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
+//! Applies the lambda \a func on the iteration range given by \a bounds
 template <typename LoopBoundType, typename Lambda> void
 runGeneric(RunCommand& command, const LoopBoundType& bounds, const Lambda& func)
 {
   Impl::_applyGenericLoop(command, bounds, func);
 }
 
-// Spécialisation pour ArrayBound.
-//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
+// Specialization for ArrayBound.
+//! Applies the lambda \a func on the iteration range given by \a bounds
 template <typename ExtentType, typename Lambda> void
 runGeneric(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
 {
@@ -338,8 +342,8 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: a rendre obsolète et supprimer
-//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
+// TODO: to be deprecated and removed
+//! Applies the lambda \a func on the iteration range given by \a bounds
 template <typename ExtentType, typename Lambda> void
 run(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
 {
@@ -349,8 +353,8 @@ run(RunCommand& command, ArrayBounds<ExtentType> bounds, const Lambda& func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: a rendre obsolète et supprimer
-//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
+// TODO: to be deprecated and removed
+//! Applies the lambda \a func on the iteration range given by \a bounds
 template <int N, typename Lambda> void
 run(RunCommand& command, SimpleForLoopRanges<N, Int32> bounds, const Lambda& func)
 {
@@ -360,8 +364,8 @@ run(RunCommand& command, SimpleForLoopRanges<N, Int32> bounds, const Lambda& fun
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: a rendre obsolète et supprimer
-//! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
+// TODO: to be deprecated and removed
+//! Applies the lambda \a func on the iteration range given by \a bounds
 template <int N, typename Lambda> void
 run(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& func)
 {
@@ -430,41 +434,41 @@ inline void operator<<(ArrayBoundRunCommand<LoopBoundType, RemainingArgs...>&& n
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Boucle sur accélérateur
+//! Loop on accelerator
 #define RUNCOMMAND_LOOP(iter_name, bounds, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedLoop(bounds __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(typename decltype(bounds)::LoopIndexType iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 
-//! Boucle sur accélérateur
+//! Loop on accelerator
 #define RUNCOMMAND_LOOPN(iter_name, N, ...) \
   A_FUNCINFO << Arcane::ArrayBounds<typename Arcane::MDDimType<N>::DimType>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<N> iter_name)
 
-//! Boucle 2D sur accélérateur
+//! 2D loop on accelerator
 #define RUNCOMMAND_LOOP2(iter_name, x1, x2) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim2>(x1, x2) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<2> iter_name)
 
-//! Boucle 3D sur accélérateur
+//! 3D loop on accelerator
 #define RUNCOMMAND_LOOP3(iter_name, x1, x2, x3) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim3>(x1, x2, x3) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<3> iter_name)
 
-//! Boucle 4D sur accélérateur
+//! 4D loop on accelerator
 #define RUNCOMMAND_LOOP4(iter_name, x1, x2, x3, x4) \
   A_FUNCINFO << Arcane::ArrayBounds<MDDim4>(x1, x2, x3, x4) << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<4> iter_name)
 
 /*!
- * \brief Boucle 1D sur accélérateur avec arguments supplémentaires.
+ * \brief 1D loop on accelerator with additional arguments.
  *
- * Cette macro permet d'ajouter des arguments. Ces arguments peuvent être
- * des valeurs à réduire (telles que les classes Arcane::Accelerator::ReducerSum2,
- * Arcane::Accelerator::ReducerMax2 ou Arcane::Accelerator::ReducerMin2) ou des données
- * en mémoire locale (via la classe Arcane::Accelerator::LocalMemory).
+ * This macro allows adding arguments. These arguments can be
+ * reduction values (such as the classes Arcane::Accelerator::ReducerSum2,
+ * Arcane::Accelerator::ReducerMax2 or Arcane::Accelerator::ReducerMin2) or data
+ * in local memory (via the class Arcane::Accelerator::LocalMemory).
  */
 #define RUNCOMMAND_LOOP1(iter_name, x1, ...) \
   A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(x1) __VA_OPT__(, __VA_ARGS__)) \
              << [=] ARCCORE_HOST_DEVICE(Arcane::MDIndex<1> iter_name __VA_OPT__(ARCCORE_RUNCOMMAND_REMAINING_FOR_EACH(__VA_ARGS__)))
 
 /*!
- * \brief Boucle sur accélérateur pour exécution avec un seul thread.
+ * \brief Loop on accelerator for execution with a single thread.
  */
 #define RUNCOMMAND_SINGLE(...) \
   A_FUNCINFO << ::Arcane::Accelerator::Impl::makeExtendedArrayBoundLoop(::Arcane::SimpleForLoopRanges<1>(1) __VA_OPT__(, __VA_ARGS__)) \

@@ -1,4 +1,4 @@
-arccore_add_component_test_executable(serialize
+﻿arccore_add_component_test_executable(serialize
   FILES
   TestSerialize.cc
   )

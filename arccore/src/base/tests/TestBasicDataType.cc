@@ -61,22 +61,22 @@ void _check(eBasicDataType basic_type, int value, int nb_byte, const char* const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(BasicDataType,Misc)
+TEST(BasicDataType, Misc)
 {
-  ASSERT_EQ(NB_BASIC_DATA_TYPE,12);
+  ASSERT_EQ(NB_BASIC_DATA_TYPE, 12);
 
-  _check(eBasicDataType::Unknown,0,0,"Unknown");
-  _check(eBasicDataType::Byte,1,1,"Byte");
-  _check(eBasicDataType::Float16,2,2,"Float16");
-  _check(eBasicDataType::Float32,3,4,"Float32");
-  _check(eBasicDataType::Float64,4,8,"Float64");
-  _check(eBasicDataType::Float128,5,16,"Float128");
-  _check(eBasicDataType::Int16,6,2,"Int16");
-  _check(eBasicDataType::Int32,7,4,"Int32");
-  _check(eBasicDataType::Int64,8,8,"Int64");
-  _check(eBasicDataType::Int128,9,16,"Int128");
-  _check(eBasicDataType::BFloat16,10,2,"BFloat16");
-  _check(eBasicDataType::Int8,11,1,"Int8");
+  _check(eBasicDataType::Unknown, 0, 0, "Unknown");
+  _check(eBasicDataType::Byte, 1, 1, "Byte");
+  _check(eBasicDataType::Float16, 2, 2, "Float16");
+  _check(eBasicDataType::Float32, 3, 4, "Float32");
+  _check(eBasicDataType::Float64, 4, 8, "Float64");
+  _check(eBasicDataType::Float128, 5, 16, "Float128");
+  _check(eBasicDataType::Int16, 6, 2, "Int16");
+  _check(eBasicDataType::Int32, 7, 4, "Int32");
+  _check(eBasicDataType::Int64, 8, 8, "Int64");
+  _check(eBasicDataType::Int128, 9, 16, "Int128");
+  _check(eBasicDataType::BFloat16, 10, 2, "BFloat16");
+  _check(eBasicDataType::Int8, 11, 1, "Int8");
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RunQueueEvent.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Evènement sur une file d'exécution.                                       */
+/* Event on a run queue.                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_RUNQUEUEEVENT_H
 #define ARCCORE_COMMON_ACCELERATOR_RUNQUEUEEVENT_H
@@ -27,16 +27,17 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Évènement pour une file d'exécution.
+ * \brief Event for a run queue.
  *
- * Cette classe a une sémantique par référence.
+ * This class has a reference semantics.
  *
- * Les méthodes RunQueue::recordEvent() et RunQueue::waitEvent() permettent
- * d'associer un RunQueueEvent à une RunQueue donnée pour effectuer
- * une synchronisation.
+ * The RunQueue::recordEvent() and RunQueue::waitEvent() methods allow
+ * associating a RunQueueEvent with a given RunQueue to perform
+ * a synchronization.
  *
- * Par exemple:
+ * For example:
  *
  * \snippet RunQueueUnitTest.cc SampleRunQueueEventSample1
  */
@@ -50,7 +51,7 @@ class ARCCORE_COMMON_EXPORT RunQueueEvent
 
  private:
 
-  //! Construit un évènement. Utiliser makeEvent() pour constuire une instance
+  //! Constructs an event. Use makeEvent() to construct an instance
   explicit RunQueueEvent(const Runner& runner);
 
  public:
@@ -65,20 +66,22 @@ class ARCCORE_COMMON_EXPORT RunQueueEvent
  public:
 
   /*!
-   * \brief Indique si l'instance est nulle.
+   * \brief Indicates if the instance is null.
    *
-   * L'instance est nulle si elle a été construite avec le constructeur par défaut.
+   * The instance is null if it was constructed with the default constructor.
    */
   bool isNull() const { return m_p.get() == nullptr; }
 
-  //! Bloque tant que les files associées à cet évènement n'ont pas fini leur travail.
+  //! Blocks until the queues associated with this event have finished
+  //! their work.
   void wait();
 
   /*!
-   * \brief Indique si les RunQueue associées à cet évènement ont fini leur travail.
+   * \brief Indicates if the RunQueues associated with this event have
+   * finished their work.
    *
-   * Retourne \a false si les RunQueue enregistrées via RunQueue::recordEvent() ont
-   * fini leur travail. Retourn \a true sinon.
+   * Returns \a false if the RunQueues registered via RunQueue::recordEvent() have
+   * finished their work. Returns \a true otherwise.
    */
   bool hasPendingWork() const;
 
@@ -96,8 +99,9 @@ class ARCCORE_COMMON_EXPORT RunQueueEvent
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé un évènement associé à \a runner.
+ * \brief Creates an event associated with \a runner.
  */
 inline RunQueueEvent
 makeEvent(const Runner& runner)
@@ -107,8 +111,9 @@ makeEvent(const Runner& runner)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé un évènement associé à \a runner.
+ * \brief Creates an event associated with \a runner.
  */
 inline Ref<RunQueueEvent>
 makeEventRef(const Runner& runner)

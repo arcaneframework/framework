@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArrayViewCommon.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Déclarations communes aux classes ArrayView, ConstArrayView et Span.      */
+/* Common declarations for the ArrayView, ConstArrayView, and Span classes.  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARRAYVIEWCOMMON_H
 #define ARCCORE_BASE_ARRAYVIEWCOMMON_H
@@ -18,7 +18,7 @@
 
 #include <iostream>
 
-// 'assert' est nécessaire pour le code accélérateur
+// 'assert' is necessary for accelerator code
 #include <assert.h>
 
 /*---------------------------------------------------------------------------*/
@@ -30,56 +30,56 @@ namespace Arcane::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Sous-vue correspondant à l'interval \a index sur \a nb_interval
-template<typename ViewType> ARCCORE_HOST_DEVICE
-auto subViewInterval(ViewType view,
-                     typename ViewType::size_type index,
-                     typename ViewType::size_type nb_interval) -> ViewType
+//! Sub-view corresponding to the interval `index` over `nb_interval`
+template <typename ViewType> ARCCORE_HOST_DEVICE auto subViewInterval(ViewType view,
+                                                                      typename ViewType::size_type index,
+                                                                      typename ViewType::size_type nb_interval) -> ViewType
 {
   using size_type = typename ViewType::size_type;
-  if (nb_interval<=0)
+  if (nb_interval <= 0)
     return ViewType();
-  if (index<0 || index>=nb_interval)
+  if (index < 0 || index >= nb_interval)
     return ViewType();
   size_type n = view.size();
   size_type isize = n / nb_interval;
   size_type ibegin = index * isize;
-  // Pour le dernier interval, prend les elements restants
-  if ((index+1)==nb_interval)
+  // For the last interval, take the remaining elements
+  if ((index + 1) == nb_interval)
     isize = n - ibegin;
-  return ViewType::create(view.data()+ibegin,isize);
+  return ViewType::create(view.data() + ibegin, isize);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Affiche les valeurs de la vue.
+ * \brief Displays the values of the view.
  *
- * Affiche sur le flot \a o les valeurs de \a val.
- * Si \a max_print est supérieur à 0, indique le nombre maximum de valeurs
- * à afficher.
+ * Displays the values of `val` on the stream `o`.
+ * If `max_print` is greater than 0, it indicates the maximum number of values
+ * to display.
  */
-template<typename ViewType> inline void
-dumpArray(std::ostream& o,ViewType val,int max_print)
+template <typename ViewType> inline void
+dumpArray(std::ostream& o, ViewType val, int max_print)
 {
   using size_type = typename ViewType::size_type;
   size_type n = val.size();
-  if (max_print>0 && n>max_print){
-    // N'affiche que les (max_print/2) premiers et les (max_print/2) derniers
-    // sinon si le tableau est très grand cela peut générer des
-    // sorties listings énormes.
-    size_type z = (max_print/2);
+  if (max_print > 0 && n > max_print) {
+    // Only displays the first (max_print/2) and the last (max_print/2)
+    // otherwise if the array is very large it can generate enormous
+    // output listings.
+    size_type z = (max_print / 2);
     size_type z2 = n - z;
     o << "[0]=\"" << val[0] << '"';
-    for( size_type i=1; i<z; ++i )
+    for (size_type i = 1; i < z; ++i)
       o << " [" << i << "]=\"" << val[i] << '"';
     o << " ... ... (skipping indexes " << z << " to " << z2 << " ) ... ... ";
-    for( size_type i=(z2+1); i<n; ++i )
+    for (size_type i = (z2 + 1); i < n; ++i)
       o << " [" << i << "]=\"" << val[i] << '"';
   }
-  else{
-    for( size_type i=0; i<n; ++i ){
-      if (i!=0)
+  else {
+    for (size_type i = 0; i < n; ++i) {
+      if (i != 0)
         o << ' ';
       o << "[" << i << "]=\"" << val[i] << '"';
     }
@@ -89,16 +89,16 @@ dumpArray(std::ostream& o,ViewType val,int max_print)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Indique si les deux vues sont égales
-template<typename ViewType> inline bool
+//! Indicates if the two views are equal
+template <typename ViewType> inline bool
 areEqual(ViewType rhs, ViewType lhs)
 {
   using size_type = typename ViewType::size_type;
-  if (rhs.size()!=lhs.size())
+  if (rhs.size() != lhs.size())
     return false;
   size_type s = rhs.size();
-  for( size_type i=0; i<s; ++i ){
-    if (rhs[i]!=lhs[i])
+  for (size_type i = 0; i < s; ++i) {
+    if (rhs[i] != lhs[i])
       return false;
   }
   return true;
@@ -107,20 +107,20 @@ areEqual(ViewType rhs, ViewType lhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Indique si les deux vues sont égales
-template<typename View2DType> inline bool
+//! Indicates if the two views are equal
+template <typename View2DType> inline bool
 areEqual2D(View2DType rhs, View2DType lhs)
 {
   using size_type = typename View2DType::size_type;
   const size_type dim1_size = rhs.dim1Size();
   const size_type dim2_size = rhs.dim2Size();
-  if (dim1_size!=lhs.dim1Size())
+  if (dim1_size != lhs.dim1Size())
     return false;
-  if (dim2_size!=lhs.dim2Size())
+  if (dim2_size != lhs.dim2Size())
     return false;
-  for( size_type i=0; i<dim1_size; ++i ){
-    for( size_type j=0; j<dim2_size; ++j ){
-      if (rhs(i,j)!=lhs(i,j))
+  for (size_type i = 0; i < dim1_size; ++i) {
+    for (size_type j = 0; j < dim2_size; ++j) {
+      if (rhs(i, j) != lhs(i, j))
         return false;
     }
   }
@@ -130,7 +130,7 @@ areEqual2D(View2DType rhs, View2DType lhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Lance une exception 'ArgumentException'
+//! Throws an 'ArgumentException'
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreThrowTooBigInteger [[noreturn]] (std::size_t size);
 
@@ -143,11 +143,11 @@ arccoreThrowNegativeSize [[noreturn]] (Int64 size);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Teste si \a size est positif ou nul et lance une exception si ce n'est pas le cas
+//! Tests if `size` is positive or zero and throws an exception otherwise
 inline constexpr ARCCORE_HOST_DEVICE void
 arccoreCheckIsPositive(Int64 size)
 {
-  if (size<0){
+  if (size < 0) {
 #ifdef ARCCORE_DEVICE_CODE
     assert("'size' is negative");
 #else
@@ -156,11 +156,11 @@ arccoreCheckIsPositive(Int64 size)
   }
 }
 
-//! Teste si \a size est plus petit que ARCCORE_INTEGER_MAX et lance une exception si ce n'est pas le cas
+//! Tests if `size` is smaller than ARCCORE_INTEGER_MAX and throws an exception otherwise
 inline constexpr ARCCORE_HOST_DEVICE void
 arccoreCheckIsValidInteger(Int64 size)
 {
-  if (size>=ARCCORE_INTEGER_MAX){
+  if (size >= ARCCORE_INTEGER_MAX) {
 #ifdef ARCCORE_DEVICE_CODE
     assert("'size' is bigger than ARCCORE_INTEGER_MAX");
 #else
@@ -169,11 +169,11 @@ arccoreCheckIsValidInteger(Int64 size)
   }
 }
 
-//! Teste si \a size est plus petit que ARCCORE_INT64_MAX et lance une exception si ce n'est pas le cas
+//! Tests if `size` is smaller than ARCCORE_INT64_MAX and throws an exception otherwise
 inline constexpr ARCCORE_HOST_DEVICE void
 arccoreCheckIsValidInt64(size_t size)
 {
-  if (size>=ARCCORE_INT64_MAX){
+  if (size >= ARCCORE_INT64_MAX) {
 #ifdef ARCCORE_DEVICE_CODE
     assert("'size' is bigger than ARCCORE_INT64_MAX");
 #else
@@ -185,18 +185,19 @@ arccoreCheckIsValidInt64(size_t size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::impl
+} // namespace Arcane::impl
 
 namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that `size` can be converted into an 'Integer' to serve
+ * as an array size.
+ * If possible, returns `size` converted to an 'Integer'. Otherwise, throws
+ * an ArgumentException.
  */
 inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(unsigned long long size)
@@ -206,10 +207,10 @@ arccoreCheckArraySize(unsigned long long size)
 }
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that `size` can be converted into an 'Integer' to serve
+ * as an array size.
+ * If possible, returns `size` converted to an 'Integer'. Otherwise, throws
+ * an ArgumentException.
  */
 inline constexpr Integer
 arccoreCheckArraySize(long long size)
@@ -220,10 +221,10 @@ arccoreCheckArraySize(long long size)
 }
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that `size` can be converted into an 'Integer' to serve
+ * as an array size.
+ * If possible, returns `size` converted to an 'Integer'. Otherwise, throws
+ * an ArgumentException.
  */
 inline constexpr ARCCORE_BASE_EXPORT Integer
 arccoreCheckArraySize(unsigned long size)
@@ -233,11 +234,11 @@ arccoreCheckArraySize(unsigned long size)
 }
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
+ * \brief Checks that `size` can be converted into an 'Integer' to serve
+ * as an array size.
  *
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * If possible, returns `size` converted to an 'Integer'. Otherwise, throws
+ * an ArgumentException.
  */
 inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(long size)
@@ -248,10 +249,10 @@ arccoreCheckArraySize(long size)
 }
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that `size` can be converted into an 'Integer' to serve
+ * as an array size.
+ * If possible, returns `size` converted to an 'Integer'. Otherwise, throws
+ * an ArgumentException.
  */
 inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(unsigned int size)
@@ -261,10 +262,10 @@ arccoreCheckArraySize(unsigned int size)
 }
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
- * de taille à un tableau.
- * Si possible, retourne \a size convertie en un 'Integer'. Sinon, lance
- * une exception de type ArgumentException.
+ * \brief Checks that `size` can be converted into an 'Integer' to serve
+ * as an array size.
+ * If possible, returns `size` converted to an 'Integer'. Otherwise, throws
+ * an ArgumentException.
  */
 inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(int size)
@@ -275,11 +276,11 @@ arccoreCheckArraySize(int size)
 }
 
 /*!
- * \brief Vérifie que \a size peut être converti dans un 'Int64' pour servir
- * de taille à un tableau.
+ * \brief Checks that `size` can be converted into an 'Int64' to serve
+ * as an array size.
  *
- * Si possible, retourne \a size convertie en un 'Int64'. Sinon, lance
- * une exception de type ArgumentException.
+ * If possible, returns `size` converted to an 'Int64'. Otherwise, throws
+ * an ArgumentException.
  */
 inline constexpr ARCCORE_HOST_DEVICE Int64
 arccoreCheckLargeArraySize(size_t size)
@@ -293,7 +294,7 @@ arccoreCheckLargeArraySize(size_t size)
 
 template <typename IntType> class ArraySizeChecker;
 
-//! Spécialisation pour tester la conversion en Int32
+//! Specialization to test conversion to Int32
 template <>
 class ArraySizeChecker<Int32>
 {
@@ -305,7 +306,7 @@ class ArraySizeChecker<Int32>
   }
 };
 
-//! Spécialisation pour tester la conversion en Int64
+//! Specialization to test conversion to Int64
 template <>
 class ArraySizeChecker<Int64>
 {
@@ -320,7 +321,7 @@ class ArraySizeChecker<Int64>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -337,13 +338,13 @@ using Arcane::impl::areEqual;
 using Arcane::impl::areEqual2D;
 using Arcane::impl::dumpArray;
 using Arcane::impl::subViewInterval;
-} // namespace Arcane::impl
+} // namespace Arccore::impl
 
 namespace Arccore
 {
 using Arcane::arccoreCheckArraySize;
 using Arcane::arccoreCheckLargeArraySize;
-} // namespace Arcane
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

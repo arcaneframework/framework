@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ThreadPrivate.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Classe permettant de conserver une valeur spécifique par thread.          */
+/* Class for storing a specific value per thread.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_THREADPRIVATE_H
 #define ARCCORE_CONCURRENCY_THREADPRIVATE_H
@@ -28,13 +28,14 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Conteneur pour les valeurs privées par thread.
+ * \brief Container for thread-private values.
  *
- * Il faut appeler initialize() avant d'utiliser les méthodes setValue()/getValue().
- * Cette méthode initialize() peut être appelée plusieurs fois.
+ * initialize() must be called before using the setValue()/getValue() methods.
+ * This initialize() method can be called multiple times.
  *
- * \deprecated Utiliser 'thread_local' du C++11.
+ * \deprecated Use 'thread_local' from C++11.
  */
 class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
 {
@@ -47,12 +48,12 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
  public:
 
   /*!
-   * \brief Initialise la clé contenant les valeurs par thread.
-   * Cette méthode peut être appelée plusieurs fois et ne fait rien si
-   * la clé a déjà été initialisée.
+   * \brief Initializes the key containing thread-private values.
+   * This method can be called multiple times and does nothing if
+   * the key has already been initialized.
    *
-   * \warning Cette méthode n'est pas thread-safe. L'utilisateur doit donc
-   * faire attention lors du premier appel.
+   * \warning This method is not thread-safe. The user must therefore
+   * be careful during the first call.
    */
   void initialize();
   void* getValue();
@@ -65,10 +66,11 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base permettant de conserveur une instance d'un objet par thread.
+ * \brief Base class allowing an instance of an object to be stored per thread.
  *
- * \deprecated Utiliser 'thread_local' du C++11.
+ * \deprecated Use 'thread_local' from C++11.
  */
 class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
 {
@@ -98,14 +100,14 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
  public:
 
   /*!
-   * \brief Récupère l'instance spécifique au thread courant.
+   * \brief Retrieves the instance specific to the current thread.
    *
-   * Si cette dernière n'existe pas encore, elle est créé via
-   * le functor passé en argument du constructeur.
+   * If it does not yet exist, it is created via
+   * the functor passed as an argument to the constructor.
    *
-   * \warning Cette méthode ne doit pas être appelée tant que
-   * la clé associée (ThreadPrivateStorage) n'a pas été initialisée
-   * par l'apple à ThreadPrivateStorage::initialize().
+   * \warning This method must not be called until
+   * the associated key (ThreadPrivateStorage) has been initialized
+   * by calling ThreadPrivateStorage::initialize().
    */
   void* item();
 
@@ -118,22 +120,23 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe permettant une instance d'un type par thread.
+ * \brief Class allowing an instance of a type per thread.
  *
- * Il faut passer en argument du constructeur le conteneur permettant
- * de conserver les valeurs. Ce conteneur doit avoir été initialisé
- * via ThreadPrivateStorage::initialize() avant d'utiliser cette classe.
+ * The container allowing values to be stored must be passed as an argument
+ * to the constructor. This container must have been initialized
+ * via ThreadPrivateStorage::initialize() before using this class.
  *
- * Cette classe ne possède qu'une seule méthode item()
- * permettant de récupérer une instance d'un type \a T par
- * thread. Au premier appel de item() pour un thread donné,
- * une instance de \a T est construite.
- * Le type \a T doit avoir un constructeur par défaut
- * et doit avoir une méthode \a build().
+ * This class only has one method item()
+ * allowing retrieval of an instance of type \a T per
+ * thread. On the first call to item() for a given thread,
+ * an instance of \a T is constructed.
+ * The type \a T must have a default constructor
+ * and must have a \a build() method.
  * \threadsafeclass
  *
- * \deprecated Utiliser 'thread_local' du C++11.
+ * \deprecated Use 'thread_local' from C++11.
  */
 template <typename T>
 class ThreadPrivate
@@ -155,7 +158,7 @@ class ThreadPrivate
 
  public:
 
-  //! Instance spécifique au thread courant.
+  //! Instance specific to the current thread.
   T* item()
   {
     return (T*)(m_storage.item());
@@ -185,4 +188,4 @@ class ThreadPrivate
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

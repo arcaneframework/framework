@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IDispatchers.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Interface du conteneur des dispatchers.                                   */
+/* Interface of the dispatcher container.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_IDISPATCHERS_H
 #define ARCCORE_MESSAGEPASSING_IDISPATCHERS_H
@@ -25,8 +25,9 @@ class IControlDispatcher;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du conteneur des dispatchers.
+ * \brief Interface of the dispatcher container.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IDispatchers
 {
@@ -60,7 +61,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT IDispatchers
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

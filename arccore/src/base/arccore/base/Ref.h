@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Ref.h                                                       (C) 2000-2026 */
 /*                                                                           */
-/* Gestion des références sur une instance.                                  */
+/* Instance reference management.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_REF_H
 #define ARCCORE_BASE_REF_H
@@ -22,16 +22,18 @@
 
 namespace Arcane::impl
 {
+
 /*!
- * \brief Wrapper autour d'une classe gérant son propre compteur de référence.
+ * \brief Wrapper around a class managing its own reference counter.
  *
- * La classe \a InstanceType doit gérer son propre compteur de référence et
- * sa propre destruction.
+ * The class \a InstanceType must manage its own reference counter and
+ * its own destruction.
  */
 template <typename InstanceType>
 class ReferenceCounterWrapper
 {
-  //! Vérifie que la classe 'InstanceType' a bien un typedef sur ReferenceCounterTag (\sa Ref)
+  //! Checks that the class 'InstanceType' has a typedef for
+  //! ReferenceCounterTag (\sa Ref)
   inline static void _checkHasReferenceCounterTag()
   {
     static_assert(std::is_same_v<typename InstanceType::ReferenceCounterTagType, ReferenceCounterTag>, "Bad tag");
@@ -39,18 +41,18 @@ class ReferenceCounterWrapper
 
  public:
 
-  //! Constructeur avec un deleter vide. Dans ce cas pas besoin de le conserver
+  //! Constructor with an empty deleter. In this case, it does not need to be kept
   ReferenceCounterWrapper(InstanceType* ptr, const RefBase::BasicDeleterBase&)
   : m_instance(ptr)
   {
     _checkHasReferenceCounterTag();
   }
-  template <typename U> // U doit dériver de \a RefBase::DeleterBase
+  template <typename U> // U must derive from \a RefBase::DeleterBase
   ReferenceCounterWrapper(InstanceType* ptr, const U& deleter_base)
   : m_instance(ptr)
   {
-    // Ce constructeur est appelé lorqu'il y a une ExternalRef associé ou si on spécifie
-    // que l'objet doit être détruit manuellement.
+    // This constructor is called when there is an associated ExternalRef or if we specify
+    // that the object must be destroyed manually.
     _checkHasReferenceCounterTag();
     m_instance->_internalReferenceCounter()->_setExternalDeleter(new RefBase::DeleterBase(deleter_base));
   }
@@ -59,7 +61,7 @@ class ReferenceCounterWrapper
   {
     _checkHasReferenceCounterTag();
   }
-  //! Autorise à convertir si 'T*' et 'InstanceType*' sont convertibles
+  //! Allows conversion if 'T*' and 'InstanceType*' are convertible
   template <typename T,
             typename X = typename std::is_convertible<T*, InstanceType*>::type>
   explicit ReferenceCounterWrapper(const ReferenceCounterWrapper<T>& r)
@@ -71,10 +73,10 @@ class ReferenceCounterWrapper
 
  public:
 
-  //! Retourne l'instance
+  //! Returns the instance
   InstanceType* get() const { return m_instance.get(); }
 
-  //! Supprime la référence associée actuellement.
+  //! Resets the currently associated reference.
   void reset() { m_instance = nullptr; }
 
   RefBase::DeleterBase* getDeleter()
@@ -100,7 +102,8 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Spécialisation pour indiquer qu'on utilise l'implémentation 'shared_ptr'
+
+//! Specialization to indicate that 'shared_ptr' implementation is used
 template <typename InstanceType>
 struct RefTraitsTagId<InstanceType, REF_TAG_SHARED_PTR>
 {
@@ -108,7 +111,7 @@ struct RefTraitsTagId<InstanceType, REF_TAG_SHARED_PTR>
   static constexpr int RefType = REF_TAG_SHARED_PTR;
 };
 
-//! Spécialisation pour indiquer qu'on utilise l'implémentation 'ReferenceCounter'
+//! Specialization to indicate that 'ReferenceCounter' implementation is used
 template <typename InstanceType>
 struct RefTraitsTagId<InstanceType, REF_TAG_REFERENCE_COUNTER>
 {
@@ -118,8 +121,9 @@ struct RefTraitsTagId<InstanceType, REF_TAG_REFERENCE_COUNTER>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de la référence à une instance.
+ * \brief Implementation of the reference to an instance.
  *
  * \sa Ref
  */
@@ -127,8 +131,8 @@ template <typename InstanceType, typename RefClassType, int ImplTagId>
 class RefImpl
 : public RefBase
 {
-  // NOTE: RefClassType est utilisé uniquement pour accéder au destructeur
-  // de \a InstanceType qui peut être privé et 'friend' de 'Ref'.
+  // NOTE: RefClassType is used only to access the destructor
+  // of \a InstanceType which may be private and 'friend' of 'Ref'.
 
  public:
 
@@ -200,10 +204,10 @@ class RefImpl
  public:
 
   /*!
-   * \brief Construit une référence issue d'une autre référence sur un type compatible.
+   * \brief Constructs a reference from another reference of a compatible type.
    *
-   * La conversion est autorisée si on peut construire une instance de 'ImplType'
-   * à partir de celle de celle de Ref<T>::ImplType.
+   * Conversion is allowed if an instance of 'ImplType'
+   * can be constructed from an instance of Ref<T>::ImplType.
    */
   template <typename T, typename = _IsRefConstructible<typename RefImpl<T, Ref<T>, ImplTagId>::ImplType>>
   explicit RefImpl(const Ref<T>& rhs) noexcept
@@ -241,24 +245,24 @@ class RefImpl
 
  public:
 
-  //! Instance associée ou `nullptr` si aucune
+  //! Associated instance or `nullptr` if none
   InstanceType* get() const { return m_instance.get(); }
-  //! Indique si le compteur référence une instance non nulle.
+  //! Indicates if the counter references a non-null instance.
   bool isNull() const { return m_instance.get() == nullptr; }
   InstanceType* operator->() const { return m_instance.get(); }
-  //! Positionne l'instance au pointeur nul.
+  //! Positions the instance to the null pointer.
   void reset() { m_instance.reset(); }
   /*!
    * \internal
-   * \brief Libère le pointeur du compteur de référence sans le détruire.
-   * Cela n'est autorisé que si l'implémentation utiliser 'std::shared_ptr'.
+   * \brief Releases the reference counter pointer without destroying it.
+   * This is only allowed if the implementation uses 'std::shared_ptr'.
    */
-  template<typename T = ThatClass, typename std::enable_if_t<T::RefType == REF_TAG_SHARED_PTR, bool> = true>
+  template <typename T = ThatClass, typename std::enable_if_t<T::RefType == REF_TAG_SHARED_PTR, bool> = true>
   InstanceType* _release()
   {
-    // Relâche l'instance. Pour cela, on indique au destructeur
-    // de ne pas détruire l'instance de 'm_instance' et on
-    // retourne cette dernière.
+    // Releases the instance. To do this, we indicate to the destructor
+    // not to destroy the instance of 'm_instance' and we
+    // return the latter.
     auto* r = _getDeleter(m_instance);
     if (r)
       r->setNoDestroy(true);
@@ -294,25 +298,26 @@ class RefImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Référence à une instance.
+ * \brief Reference to an instance.
  *
- * Cette classe utilise un compteur de référence pour gérer la durée de vie
- * d'une instance C++. Elle fonctionne de manière similaire à std::shared_ptr.
+ * This class uses a reference counter to manage the lifetime
+ * of a C++ instance. It works similarly to std::shared_ptr.
  *
- * Lorsque la dernière instance de cette classe est détruite, l'instance
- * référencée est détruite. La manière de détruire l'instance associée
- * est spécifié lors de la création de la première référence via l'appel
- * à une des méthodes create() ou createWithHandle().
+ * When the last instance of this class is destroyed, the referenced
+ * instance is destroyed. The way the associated instance is destroyed
+ * is specified when creating the first reference via a call
+ * to one of the methods create() or createWithHandle().
  *
- * Il existe deux implémentation possibles pour compter les références.
- * Par défaut, on utilise 'std::shared_ptr'. Il est aussi possible
- * d'utiliser un compteur de référence interne à la classe ce qui
- * permet d'être compatible avec la classe ReferenceCounter et aussi de
- * pouvoir récupérer une référence à partir de l'instance elle même. Cette
- * deuxième implémentation est accessible en spécialisant le type
- * RefTraits pour qu'il définisse un un type ReferenceCounterTagType
- * valant ReferenceCounterTag.
+ * There are two possible implementations for counting references.
+ * By default, 'std::shared_ptr' is used. It is also possible
+ * to use an internal reference counter in the class, which
+ * allows compatibility with the ReferenceCounter class and also allows
+ * retrieving a reference from the instance itself. This
+ * second implementation is accessible by specializing the type
+ * RefTraits so that it defines a ReferenceCounterTagType
+ * equal to ReferenceCounterTag.
  */
 template <typename InstanceType>
 class Ref
@@ -341,10 +346,11 @@ class Ref
  public:
 
   /*!
-   * \brief Construit une référence issue d'une autre référence sur un type compatible.
+   * \brief Constructs a reference from another reference of a compatible type.
    *
-   * La conversion est autorisée si on peut construire une instance de 'ImplType'
-   * à partir de celle de celle de Ref<T>::ImplType.
+   * Conversion is allowed if an instance of 'ImplType'
+   * can be constructed
+   * from an instance of Ref<T>::ImplType.
    */
   template <typename T> //, typename = _IsRefConstructible<typename Ref<T>::ImplType>>
   Ref(const Ref<T>& rhs) noexcept
@@ -359,12 +365,12 @@ class Ref
 
   /*!
    * \internal
-   * \brief Créé une référence à partir de l'instance \a t.
+   * \brief Creates a reference from the instance \a t.
    *
-   * Cette méthode est interne à %Arccore.
+   * This method is internal to %Arccore.
    *
-   * L'instance \a t doit avoir été créée par l'opérateur 'operator new'
-   * et sera détruite par l'opérateur 'operator delete'
+   * The instance \a t must have been created by the 'operator new'
+   * operator and will be destroyed by the 'operator delete' operator
    */
   static ThatClass create(InstanceType* t)
   {
@@ -381,8 +387,8 @@ class Ref
 
   /*!
    * \internal
-   * \brief Créé une référence à partir d'une instance ayant une
-   * référence externe.
+   * \brief Creates a reference from an instance having an
+   * external reference.
    */
   static ThatClass createWithHandle(InstanceType* t, Internal::ExternalRef handle)
   {
@@ -407,12 +413,13 @@ class Ref
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une référence sur un pointeur.
+ * \brief Creates a reference on a pointer.
  *
- * La pointeur \a t doit avoir été alloué par l'operateur 'operator new' et
- * sera détruit par l'opérateur 'operator delete' lorsqu'il n'y aura plus
- * de référence dessus.
+ * The pointer \a t must have been allocated by the 'operator new'
+ * operator and will be destroyed by the 'operator delete' operator when there is no longer
+ * a reference to it.
  */
 template <typename InstanceType> inline auto
 makeRef(InstanceType* t) -> Ref<InstanceType>
@@ -422,11 +429,12 @@ makeRef(InstanceType* t) -> Ref<InstanceType>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Récupère une référence sur le pointeur \a t.
+ * \brief Retrieves a reference on the pointer \a t.
  *
- * Cette méthode n'est disponible que si la classe InstanceType utilise un
- * compteur de réference (ImplTagId==REF_TAG_REFERENCE_COUNTER).
+ * This method is only available if the class InstanceType uses a
+ * reference counter (ImplTagId==REF_TAG_REFERENCE_COUNTER).
  *
  * \code
  * class A {};
@@ -447,9 +455,10 @@ makeRefFromInstance(InstanceType2* t)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une instance de type \a TrueType avec les arguments \a Args
- * et retourne une référence dessus.
+ * \brief Creates an instance of type \a TrueType with arguments \a Args
+ * and returns a reference to it.
  */
 template <typename TrueType, class... Args> inline Ref<TrueType>
 createRef(Args&&... args)
@@ -460,7 +469,7 @@ createRef(Args&&... args)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -478,10 +487,9 @@ using Arcane::makeRefFromInstance;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* KernelLaunchArgs.h                                          (C) 2000-2026 */
 /*                                                                           */
-/* Arguments pour lancer un kernel.                                          */
+/* Arguments for launching a kernel.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_KERNELLAUNCHARGS_H
 #define ARCCORE_COMMON_ACCELERATOR_KERNELLAUNCHARGS_H
@@ -24,9 +24,10 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Arguments pour lancer un kernel.
+ * \brief Arguments for launching a kernel.
  */
 class ARCCORE_COMMON_EXPORT KernelLaunchArgs
 {
@@ -43,24 +44,24 @@ class ARCCORE_COMMON_EXPORT KernelLaunchArgs
 
  public:
 
-  //! Nombre de blocs de la grille
+  //! Number of grid blocks
   Int32 nbBlockPerGrid() const { return m_nb_block_per_grid; }
-  //! Nombre de blocs de la grille
+  //! Number of grid blocks
   void setNbBlockPerGrid(Int32 v) { m_nb_block_per_grid = v; }
 
-  //! Nombre de threads par bloc
+  //! Number of threads per block
   Int32 nbThreadPerBlock() const { return m_nb_thread_per_block; }
-  //! Nombre de threads par bloc
+  //! Number of threads per block
   void setNbThreadPerBlock(Int32 v) { m_nb_thread_per_block = v; }
 
-  //! Mémoire partagée à allouer pour le noyau
+  //! Shared memory to allocate for the kernel
   Int32 sharedMemorySize() const { return m_shared_memory_size; }
-  //! Mémoire partagée à allouer pour le noyau
+  //! Shared memory to allocate for the kernel
   void setSharedMemorySize(Int32 v) { m_shared_memory_size = v; }
 
-  //! Indique si on lance en mode coopératif (i.e. cudaLaunchCooperativeKernel)
+  //! Indicates if running in cooperative mode (i.e. cudaLaunchCooperativeKernel)
   bool isCooperative() const { return m_is_cooperative; }
-  //! Indique si on lance en mode coopératif
+  //! Indicates if running in cooperative mode
   void setIsCooperative(bool v) { m_is_cooperative = v; }
 
  private:

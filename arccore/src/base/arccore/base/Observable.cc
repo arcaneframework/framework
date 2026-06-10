@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Observable.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Observateur.                                                              */
+/* Observer.                                                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,7 +40,7 @@ Observable::
 void Observable::
 attachObserver(IObserver* obs)
 {
-  // Vérifie que l'observeur n'est pas dans la liste.
+  // Checks that the observer is not in the list.
   if (m_observers.contains(obs))
     return;
   obs->attachToObservable(this);
@@ -68,7 +68,7 @@ notifyAllObservers()
 {
   if (m_observers.empty())
     return;
-  for( IObserver* o : m_observers)
+  for (IObserver* o : m_observers)
     o->observerUpdate(this);
 }
 

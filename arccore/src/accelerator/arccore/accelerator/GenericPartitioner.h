@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GenericPartitioner.h                                        (C) 2000-2026 */
 /*                                                                           */
-/* Algorithme de partitionnement de liste.                                   */
+/* List partitioning algorithm.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_GENERICPARTITIONER_H
 #define ARCCORE_ACCELERATOR_GENERICPARTITIONER_H
@@ -35,11 +35,12 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base pour effectuer un filtrage.
+ * \brief Base class for performing filtering.
  *
- * Contient les arguments nécessaires pour effectuer le filtrage.
+ * Contains the necessary arguments to perform filtering.
  */
 class ARCCORE_ACCELERATOR_EXPORT GenericPartitionerBase
 {
@@ -66,16 +67,17 @@ class ARCCORE_ACCELERATOR_EXPORT GenericPartitionerBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe pour effectuer un partitionnement d'une liste.
+ * \brief Class for partitioning a list.
  */
 class GenericPartitionerIf
 {
  public:
 
   /*!
-   * \brief Effectue le partitionnement d'une liste en deux parties.
+   * \brief Performs the partitioning of a list into two parts.
    */
   template <typename SelectLambda, typename InputIterator, typename OutputIterator>
   void apply(GenericPartitionerBase& s, Int32 nb_item, InputIterator input_iter, OutputIterator output_iter,
@@ -92,7 +94,7 @@ class GenericPartitionerIf
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
       cudaStream_t stream = Impl::CudaUtils::toNativeStream(&queue);
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine the size for allocation
       int* nb_list1_ptr = nullptr;
       ARCCORE_CHECK_CUDA(::cub::DevicePartition::If(nullptr, temp_storage_size,
                                                     input_iter, output_iter, nb_list1_ptr, nb_item,
@@ -109,7 +111,7 @@ class GenericPartitionerIf
 #if defined(ARCCORE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine the size for allocation
       hipStream_t stream = Impl::HipUtils::toNativeStream(&queue);
       int* nb_list1_ptr = nullptr;
       ARCCORE_CHECK_HIP(rocprim::partition(nullptr, temp_storage_size, input_iter, output_iter,
@@ -126,16 +128,16 @@ class GenericPartitionerIf
 #if defined(ARCCORE_COMPILING_SYCL)
     case eExecutionPolicy::SYCL: {
 #if defined(ARCCORE_HAS_ONEDPL)
-      // Seulement implémenté pour DPC++.
-      // Actuellement (dpc++ 2025.0), il n'y a pas l'équivalent avec SYCL de
-      // la méthode de partition de cub ou rocprim.
-      // Utilise la fonction 'stable_partition'. Cependant, cette fonction
-      // ne supporte pas si la mémoire uniquement sur accélérateur. De plus,
-      // il faut que InputIterator et OutputIterator remplissent le concept
-      // std::random_access_iterator ce qui n'est pas le cas (notamment car il n'y a
-      // pas les opérateurs de copie ni de constructeur vide à cause de la lambda).
-      // Pour éviter tous ces problèmes, on alloue donc des tableaux temporaires
-      // pour l'appel à 'stable_sort' et on recopie les valeurs en sortie.
+      // Only implemented for DPC++.
+      // Currently (dpc++ 2025.0), there is no SYCL equivalent to
+      // the cub or rocprim partitioning method.
+      // Uses the 'stable_partition' function. However, this function
+      // does not support memory solely on the accelerator. Furthermore,
+      // InputIterator and OutputIterator must satisfy the
+      // std::random_access_iterator concept, which is not the case (notably because there are
+      // no copy operators or default constructors due to the lambda).
+      // To avoid all these problems, temporary arrays are allocated
+      // for the 'stable_sort' call and the values are copied to the output.
       using InputDataType = typename InputIterator::value_type;
       using DataType = typename OutputIterator::value_type;
       NumArray<DataType, MDDim1> tmp_output_numarray(nb_item);
@@ -160,11 +162,11 @@ class GenericPartitionerIf
       s.m_host_nb_list1_storage[0] = nb_list1;
       //std::cerr << "NbList1=" << nb_list1 << " NbList2=" << nb_list2 << "\n";
       {
-        // Recopie dans output les valeurs filtrées.
-        // Pour être cohérent avec 'cub' et 'rocprim', il faut inverser l'ordre des
-        // des valeurs de la liste pour les éléments ne remplissant pas la condition.
-        // Pour cela, on fait une boucle de taille (nb_list1 + nb_list/2) et chaque
-        // itération pour i>=nb_list1 gère deux éléments.
+        // Copy the filtered values into the output.
+        // To be consistent with 'cub' and 'rocprim', the order of
+        // the list values must be reversed for elements that do not meet the condition.
+        // For this, a loop of size (nb_list1 + nb_list/2) is performed, and each
+        // iteration for i>=nb_list1 handles two elements.
         auto command = makeCommand(queue);
         Int32 nb_iter2 = (nb_list2 / 2) + (nb_list2 % 2);
         //std::cout << "NB_ITER2=" << nb_iter2 << "\n";
@@ -172,7 +174,7 @@ class GenericPartitionerIf
         {
           auto [i] = iter();
           if (i >= nb_list1) {
-            // Partie de la liste pour les valeurs ne remplissant par le critère.
+            // Part of the list for values that do not meet the criterion.
             Int32 j = i - nb_list1;
             Int32 reverse_i = (nb_item - (j + 1));
             auto x1 = tmp_output[i];
@@ -191,7 +193,7 @@ class GenericPartitionerIf
     } break;
 #endif // ARCCORE_COMPILING_SYCL
     case eExecutionPolicy::Thread:
-      // Pas encore implémenté en multi-thread
+      // Not yet implemented in multi-thread
       [[fallthrough]];
     case eExecutionPolicy::Sequential: {
       auto saved_output_iter = output_iter;
@@ -218,7 +220,7 @@ class GenericPartitionerIf
   }
 
   /*!
-   * \brief Effectue le partitionnement d'une liste en trois parties.
+   * \brief Performs the partitioning of a list into three parts.
    */
   template <typename Select1Lambda, typename Select2Lambda,
             typename InputIterator, typename FirstOutputIterator,
@@ -243,7 +245,7 @@ class GenericPartitionerIf
     case eExecutionPolicy::CUDA: {
       size_t temp_storage_size = 0;
       cudaStream_t stream = Impl::CudaUtils::toNativeStream(&queue);
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine the size for allocation
       int* nb_list1_ptr = nullptr;
       ARCCORE_CHECK_CUDA(::cub::DevicePartition::If(nullptr, temp_storage_size,
                                                     input_iter, first_output_iter, second_output_iter,
@@ -262,7 +264,7 @@ class GenericPartitionerIf
 #if defined(ARCCORE_COMPILING_HIP)
     case eExecutionPolicy::HIP: {
       size_t temp_storage_size = 0;
-      // Premier appel pour connaitre la taille pour l'allocation
+      // First call to determine the size for allocation
       hipStream_t stream = Impl::HipUtils::toNativeStream(&queue);
       int* nb_list1_ptr = nullptr;
       using namespace rocprim;
@@ -285,7 +287,7 @@ class GenericPartitionerIf
     } break;
 #endif
     case eExecutionPolicy::Thread:
-      // Pas encore implémenté en multi-thread
+      // Not yet implemented in multi-thread
       [[fallthrough]];
     case eExecutionPolicy::Sequential: {
       Int32 nb_first = 0;
@@ -310,7 +312,7 @@ class GenericPartitionerIf
             ++unselected_iter;
           }
         }
-        // Incrémenter l'itérateur à la fin car il est utilisé pour le positionnement
+        // Increment the iterator at the end because it is used for positioning
         ++input_iter;
       }
       s.m_host_nb_list1_storage[0] = nb_first;
@@ -333,11 +335,12 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Algorithme générique de partitionnement d'une liste.
+ * \brief Generic algorithm for partitioning a list.
  *
- * Cette classe fournit des algorithmes pour partitionner une liste en deux
- * ou trois parties selon un critère fixé par l'utilisateur.
+ * This class provides algorithms to partition a list into two or three parts
+ * based on a criterion set by the user.
  */
 class GenericPartitioner
 : private Impl::GenericPartitionerBase
@@ -353,14 +356,14 @@ class GenericPartitioner
  public:
 
   /*!
-   * \brief Effectue un partitionnement d'une liste en deux parties.
+   * \brief Performs a two-way partition of a list.
    *
-   * Le nombre de valeurs de la liste est donné par \a nb_value.
-   * Les deux fonctions lambda \a select_lambda et \a setter_lambda permettent
-   * de partitionner et de positionner les valeurs de la liste.
+   * The number of values in the list is given by \a nb_value.
+   * The two lambda functions \a select_lambda and \a setter_lambda allow
+   * partitioning and positioning the list values.
    *
-   * Après exécution, il est possible de récupérer le nombre d'éléments
-   * de la première partie de la liste via la méthode \a nbFirstPart().
+   * After execution, it is possible to retrieve the number of elements
+   * in the first part of the list via the \a nbFirstPart() method.
    *
    * \snippet AcceleratorPartitionerUnitTest.cc SampleListPartitionerTwoWayIndex
    */
@@ -380,18 +383,18 @@ class GenericPartitioner
   }
 
   /*!
-   * \brief Effectue un partitionnement d'une liste en deux parties.
+   * \brief Performs a two-way partition of a list.
    *
-   * Le nombre de valeurs de la liste est donné par \a nb_value.
-   * Les valeurs en entrée sont fournies par l'itérateur \a input_iter et
-   * les valeurs en sorties par l'itérateur \a output_iterator. La fonction
-   * lambda \a select_lambda permet de sélectionner la partition utilisée :
-   * si le retour est \a true, la valeur sera dans la première partie de la liste,
-   * sinon elle sera dans la seconde. En sortie les valeurs de la deuxième
-   * partie sont rangées en ordre inverse de la liste d'entrée.
+   * The number of values in the list is given by \a nb_value.
+   * Input values are provided by the \a input_iter iterator and
+   * output values by the \a output_iterator iterator. The \a select_lambda
+   * function allows selecting the partition used:
+   * if the return is \a true, the value will be in the first part of the list,
+   * otherwise it will be in the second. The values in the second
+   * part are sorted in reverse order of the input list.
    *
-   * Après exécution, il est possible de récupérer le nombre d'éléments
-   * de la première partie de la liste via la méthode \a nbFirstPart().
+   * After execution, it is possible to retrieve the number of elements
+   * in the first part of the list via the \a nbFirstPart() method.
    *
    * \snippet AcceleratorPartitionerUnitTest.cc SampleListPartitionerTwoWayIf
    */
@@ -408,19 +411,19 @@ class GenericPartitioner
   }
 
   /*!
-   * \brief Effectue un partitionnement d'une liste en trois parties.
+   * \brief Performs a three-way partition of a list.
    *
-   * Le nombre de valeurs de la liste est donné par \a nb_value.
-   * Les deux fonctions lambda \a select1_lambda et \a select2_lambda permettent
-   * de partitionner la liste avec l'algorithme suivant:
-   * - si select1_lambda() est vrai, la valeur sera positionnée via \a setter1_lambda,
-   * - sinon si select2_lambda() est vrai, la valeur sera positionnée via \a setter2_lambda,
-   * - sinon la valeur sera positionnée via \a unselected_setter_lambda.
+   * The number of values in the list is given by \a nb_value.
+   * The two lambda functions \a select1_lambda and \a select2_lambda allow
+   * partitioning the list using the following algorithm:
+   * - if select1_lambda() is true, the value will be positioned via \a setter1_lambda,
+   * - otherwise if select2_lambda() is true, the value will be positioned via \a setter2_lambda,
+   * - otherwise the value will be positioned via \a unselected_setter_lambda.
    *
-   * Les listes en sortie sont dans le même ordre qu'en entrée.
+   * The output lists are in the same order as the input.
    *
-   * Après exécution, il est possible de récupérer le nombre d'éléments
-   * de la première et de la deuxième liste la méthode \a nbParts().
+   * After execution, it is possible to retrieve the number of elements
+   * in the first and second lists using the \a nbParts() method.
    *
    * \snippet AcceleratorPartitionerUnitTest.cc SampleListPartitionerThreeWayIndex
    */
@@ -448,19 +451,19 @@ class GenericPartitioner
   }
 
   /*!
-   * \brief Effectue un partitionnement d'une liste en trois parties.
+   * \brief Performs a three-way partition of a list.
    *
-   * Le nombre de valeurs de la liste est donné par \a nb_value.
-   * Les deux fonctions lambda \a select1_lambda et \a select2_lambda permettent
-   * de partitionner la liste avec l'algorithme suivant:
-   * - si select1_lambda() est vrai, la valeur ajoutée \a first_output_iter,
-   * - sinon si select2_lambda() est vrai, la valeur sera ajoutée à \a second_output_iter,
-   * - sinon la valeur sera ajoutée à \a unselected_iter.
+   * The number of values in the list is given by \a nb_value.
+   * The two lambda functions \a select1_lambda and \a select2_lambda allow
+   * partitioning the list using the following algorithm:
+   * - if select1_lambda() is true, the value is added to \a first_output_iter,
+   * - otherwise if select2_lambda() is true, the value will be added to \a second_output_iter,
+   * - otherwise the value will be added to \a unselected_iter.
    *
-   * Les listes en sortie sont dans le même ordre qu'en entrée.
+   * The output lists are in the same order as the input.
    *
-   * Après exécution, il est possible de récupérer le nombre d'éléments
-   * de la première et de la deuxième liste la méthode \a nbParts().
+   * After execution, it is possible to retrieve the number of elements
+   * in the first and second lists using the \a nbParts() method.
    *
    * \snippet AcceleratorPartitionerUnitTest.cc SampleListPartitionerThreeWayIf
    */
@@ -485,7 +488,7 @@ class GenericPartitioner
   }
 
   /*!
-   * \brief Nombre d'éléments de la première partie de la liste.
+   * \brief Number of elements in the first part of the list.
    */
   Int32 nbFirstPart()
   {
@@ -494,14 +497,13 @@ class GenericPartitioner
   }
 
   /*!
-   * \brief Nombre d'éléments de la première et deuxième partie de la liste.
+   * \brief Number of elements in the first and second parts of the list.
    *
-   * Retourne une vue de deux valeurs. La première valeur contient le nombre
-   * d'éléments de la première liste et la seconde valeur le
-   * nombre d'éléments de la deuxième liste.
+   * Returns a view of two values. The first value contains the number
+   * of elements in the first list and the second value the
+   * number of elements in the second list.
    *
-   * Cette méthode n'est valide qu'après avoir appelé une méthode de partitionnement
-   * en trois parties.
+   * This method is only valid after calling a three-way partitioning method.
    */
   SmallSpan<const Int32> nbParts()
   {

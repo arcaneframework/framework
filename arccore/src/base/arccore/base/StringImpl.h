@@ -1,2 +1,1 @@
-// This header is internal to Arccore
-
+﻿// This header is internal to Arccore

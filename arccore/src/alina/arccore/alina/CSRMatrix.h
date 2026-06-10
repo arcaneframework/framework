@@ -26,7 +26,7 @@
 #include "arccore/alina/AlinaGlobal.h"
 #include "arccore/alina/AlinaUtils.h"
 
-// A supprimer
+// To be removed
 #include "arccore/alina/BackendInterface.h"
 
 #include <cstddef>
@@ -158,7 +158,7 @@ public:
     ARCCORE_ALINA_TOC("CSR copy");
   }
 
-  // TODO: A supprimer. Mettre cela dans une function externe pour ne pas dépendre de backend
+  // TODO: To be removed. Put this in an external function so as not to depend on the backend
   template <class Matrix>
   CSRMatrix(const Matrix& A)
   : m_nb_row(backend::nbRow(A))

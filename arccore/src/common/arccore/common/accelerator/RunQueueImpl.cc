@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RunQueueImpl.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Gestion d'une file d'exécution sur accélérateur.                          */
+/* Management of a run queue on an accelerator.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,7 +38,7 @@ namespace Arcane::Accelerator::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Verrou pour le pool de RunCommand en multi-thread.
+//! Lock for the RunCommand pool in multi-thread.
 class RunQueueImpl::Lock
 {
  public:
@@ -129,11 +129,11 @@ _destroy(RunQueueImpl* q)
 void RunQueueImpl::
 _release()
 {
-  // S'il reste des commandes en cours d'exécution au moment de libérer
-  // la file d'exécution il faut attendre pour éviter des fuites mémoire car
-  // les commandes ne seront pas désallouées.
-  // TODO: Regarder s'il ne faudrait pas plutôt indiquer cela à l'utilisateur
-  // ou faire une erreur fatale.
+  // If there are commands currently running when releasing
+  // the run queue, we must wait to avoid memory leaks because
+  // the commands will not be deallocated.
+  // TODO: Check if it should rather indicate this to the user
+  // or throw a fatal error.
   if (!m_active_run_command_list.empty()) {
     if (!_internalStream()->_barrierNoException()) {
       _internalFreeRunningCommands();
@@ -260,19 +260,20 @@ _internalCreateOrGetRunCommandImpl()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Libère les commandes en cours d'exécution.
+ * \brief Frees running commands.
  *
- * Cette méthode est en général appelée après une barrière ce qui garantit
- * que les commandes asynchrones sont terminées.
+ * This method is generally called after a barrier, which guarantees
+ * that asynchronous commands are finished.
  */
 void RunQueueImpl::
 _internalFreeRunningCommands()
 {
   if (m_use_pool_mutex) {
     SmallArray<RunCommandImpl*> command_list;
-    // Recopie les commandes dans un tableau local car m_active_run_command_list
-    // peut être modifié par un autre thread.
+    // Copy the commands into a local array because m_active_run_command_list
+    // may be modified by another thread.
     {
       Lock my_lock(this);
       for (RunCommandImpl* p : m_active_run_command_list) {
@@ -301,15 +302,16 @@ _internalFreeRunningCommands()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Remet la commande dans le pool si possible.
+ * \brief Returns the command to the pool if possible.
  *
- * On ne remet pas la commande dans le pool tant qu'il y a une RunCommand
- * qui y fait référence. Dans ce cas la commande sera remise dans le pool
- * lors de l'appel au destructeur de RunCommand. Cela est nécessaire pour
- * gérer le cas où une RunCommand est créée mais n'est jamais utilisée car
- * dans ce cas elle ne sera jamais dans m_active_run_command_list et ne
- * sera pas traitée lors de l'appel à _internalFreeRunningCommands().
+ * The command is not returned to the pool as long as there is a RunCommand
+ * referencing it. In this case, the command will be returned to the pool
+ * when the RunCommand destructor is called. This is necessary to
+ * handle the case where a RunCommand is created but never used because
+ * in this case it will never be in m_active_run_command_list and will not
+ * be processed when calling _internalFreeRunningCommands().
  */
 void RunQueueImpl::
 _checkPutCommandInPoolNoLock(RunCommandImpl* p)
@@ -342,8 +344,9 @@ _putInCommandPool(RunCommandImpl* p)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Bloque jusqu'à ce que toutes les commandes soient terminées.
+ * \brief Blocks until all commands are finished.
  */
 void RunQueueImpl::
 _internalBarrier()
@@ -354,12 +357,13 @@ _internalBarrier()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Réinitialise l'implémentation
+ * \brief Resets the implementation
  *
- * Cette méthode est appelée lorsqu'on va initialiser une RunQueue avec
- * cette instance. Il faut dans ce cas réinitialiser les valeurs de l'instance
- * qui dépendent de l'état actuel.
+ * This method is called when initializing a RunQueue with
+ * this instance. In this case, the instance values
+ * that depend on the current state must be reset.
  */
 RunQueueImpl* RunQueueImpl::
 _reset(RunQueueImpl* p)

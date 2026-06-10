@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IStat.h                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Statistiques sur le parallélisme.                                         */
+/* Statistics on parallelism.                                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_ISTAT_H
 #define ARCCORE_MESSAGEPASSING_ISTAT_H
@@ -30,8 +30,9 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Statistique sur un message.
+ * \brief Statistic on a message.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT OneStat
 {
@@ -44,42 +45,42 @@ class ARCCORE_MESSAGEPASSING_EXPORT OneStat
 
  public:
 
-  //! Nom de la statistique
+  //! Name of the statistic
   const String& name() const { return m_name; }
 
-  //! Nombre de message envoyés.
+  //! Number of messages sent.
   Int64 nbMessage() const { return m_nb_msg; }
   void setNbMessage(Int64 v) { m_nb_msg = v; }
 
-  //! Nombre de message envoyés sur toute la durée d'exécution
+  //! Number of messages sent throughout the execution time
   Int64 cumulativeNbMessage() const { return m_cumulative_nb_msg; }
   void setCumulativeNbMessage(Int64 v) { m_cumulative_nb_msg = v; }
 
-  //! Taille totale des messages envoyés
+  //! Total size of messages sent
   Int64 totalSize() const { return m_total_size; }
   void setTotalSize(Int64 v) { m_total_size = v; }
 
-  //! Taille totale des messages envoyés sur toute la durée d'exécution
+  //! Total size of messages sent throughout the execution time
   Int64 cumulativeTotalSize() const { return m_cumulative_total_size; }
   void setCumulativeTotalSize(Int64 v) { m_cumulative_total_size = v; }
 
-  //! Temps total écoulé
+  //! Total elapsed time
   double totalTime() const { return m_total_time; }
   void setTotalTime(double v) { m_total_time = v; }
 
-  //! Temps total écoulé sur toute la durée d'exécution du programme
+  //! Total elapsed time throughout the program execution
   double cumulativeTotalTime() const { return m_cumulative_total_time; }
   void setCumulativeTotalTime(double v) { m_cumulative_total_time = v; }
 
  public:
 
-  //! Affiche sur \a o les informations de l'instance
+  //! Prints the instance information to \a o
   void print(std::ostream& o);
 
-  //! Ajoute un message
+  //! Adds a message
   void addMessage(Int64 msg_size, double elapsed_time);
 
-  //! Remet à zéro les statistiques courantes (non cumulées)
+  //! Resets current statistics (non-cumulative)
   void resetCurrentStat();
 
  private:
@@ -95,13 +96,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT OneStat
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste de statistiques.
+ * \brief List of statistics.
  *
- * Il est uniquement possible d'itérer sur les éléments de la collection.
+ * It is only possible to iterate over the elements of the collection.
  *
- * L'implémentation utilisée peut évoluer et il ne faut donc pas utiliser
- * le type explicite de l'itérateur.
+ * The implementation used may evolve, so the explicit iterator type should
+ * not be used.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT StatCollection
 {
@@ -126,9 +128,10 @@ class ARCCORE_MESSAGEPASSING_EXPORT StatCollection
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Statistiques sur le parallélisme.
- * \todo rendre thread-safe
+ * \brief Statistics on parallelism.
+ * \todo make thread-safe
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IStat
 {
@@ -139,36 +142,36 @@ class ARCCORE_MESSAGEPASSING_EXPORT IStat
 
  public:
 
-  //! Libère les ressources.
+  //! Frees resources.
   virtual ~IStat() = default;
 
  public:
 
   /*!
-   * \brief Ajoute une statistique.
+   * \brief Adds a statistic.
    *
-   * \param name nom de la statistique
-   * \param elapsed_time temps utilisé pour le message
-   * \param msg_size taille du message envoyé.
+   * \param name name of the statistic
+   * \param elapsed_time time used for the message
+   * \param msg_size size of the message sent.
    */
   virtual void add(const String& name, double elapsed_time, Int64 msg_size) = 0;
 
   /*!
-   * \brief Active ou désactive les statistiques.
+   * \brief Enables or disables statistics.
    *
-   * Si les statistiques sont désactivées, l'appel à add() est sans effet.
+   * If statistics are disabled, the call to add() has no effect.
    */
   virtual void enable(bool is_enabled) = 0;
 
-  //! Récuperation des statistiques
+  //! Retrieval of statistics
   virtual const StatCollection& statList() const = 0;
 
-  //! Remèt à zéro les statistiques courantes
+  //! Resets current statistics
   virtual void resetCurrentStat() = 0;
 
  public:
 
-  //! Récuperation des statistiques
+  //! Retrieval of statistics
   ARCCORE_DEPRECATED_REASON("Y2023: Use statList() instead")
   virtual const OneStatMap& stats() const = 0;
 };
@@ -176,10 +179,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT IStat
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

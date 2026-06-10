@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SpinLock.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* SpinLock pour le multi-threading.                                         */
+/* SpinLock for multi-threading.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_SPINLOCK_H
 #define ARCCORE_CONCURRENCY_SPINLOCK_H
@@ -27,7 +27,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Ajouter énumération pour la gestion du spin_lock (None, FullSpin, Spin+Wait)
+// TODO: Add enumeration for spin_lock management (None, FullSpin, Spin+Wait)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -76,40 +76,40 @@ class ARCCORE_CONCURRENCY_EXPORT SpinLock
 
  public:
 
-  //! Mode du spinlock. Le défaut est 'Auto'
+  //! Spinlock mode. The default is 'Auto'
   enum class eMode : uint8_t
   {
-    // Pas de synchronisation
+    // No synchronization
     None,
     /*!
-     * \brief Choix automatique.
+     * \brief Automatic choice.
      *
-     * Si `Concurrency::getThreadImplementation()->isMultiThread()` est vrai,
-     * alors le mode est SpinAndMutex. Sinon, le mode est None.
+     * If `Concurrency::getThreadImplementation()->isMultiThread()` is true,
+     * then the mode is SpinAndMutex. Otherwise, the mode is None.
      */
     Auto,
     /*!
-     * \brief Utilise toujours un spinlock.
+     * \brief Always uses a spinlock.
      *
-     * Ce type est plus rapide s'il y a très peu de contention mais les performances
-     * sont très mauvaises dans le cas contraire.
+     * This type is faster if there is very little contention, but performance
+     * is very poor otherwise.
      */
     FullSpin,
     /*!
-     * \brief SpinLock puis mutex.
+     * \brief SpinLock then mutex.
      *
-     * Effectue un spinlock puis rend la main (std::this_thread::yield())
-     * si cela dure trop longtemps. Ce mode n'est disponible que si on utilise le C++20.
-     * Sinon, il est équivalent à FullSpin.
+     * Performs a spinlock then yields (std::this_thread::yield())
+     * if it takes too long. This mode is only available if C++20 is used.
+     * Otherwise, it is equivalent to FullSpin.
      */
     SpinAndMutex
   };
 
  public:
 
-  //! SpinLock par défaut
+  //! Default SpinLock
   SpinLock();
-  //! SpinLock avec le mode \a mode
+  //! SpinLock with the \a mode
   SpinLock(eMode mode);
   ~SpinLock();
 
@@ -133,8 +133,8 @@ class ARCCORE_CONCURRENCY_EXPORT SpinLock
 
  private:
 
-  // TODO: rendre ces fonctions inline lorsque le C++20 sera disponible
-  // partout. Pour l'instant on ne peut pas le faire à cause de l'ODR.
+  // TODO: make these functions inline when C++20 is available everywhere.
+  // For now, we cannot do this because of the ODR.
   void _doLockReal();
   void _doUnlockReal();
 };
@@ -142,7 +142,7 @@ class ARCCORE_CONCURRENCY_EXPORT SpinLock
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

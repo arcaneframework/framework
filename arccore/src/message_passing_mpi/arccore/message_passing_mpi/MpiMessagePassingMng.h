@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MpiMessagePassingMng.h                                      (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation MPI du gestionnaire des échanges de messages.              */
+/* MPI implementation of the message exchange manager.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_MPIMESSAGEPASSINGMNG_H
 #define ARCCORE_MESSAGEPASSINGMPI_MPIMESSAGEPASSINGMNG_H
@@ -25,8 +25,9 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation MPI du gestionnaire des échanges de messages.
+ * \brief MPI implementation of the message exchange manager.
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMessagePassingMng
 : public MessagePassingMng
@@ -75,7 +76,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMessagePassingMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::MessagePassing::Mpi
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

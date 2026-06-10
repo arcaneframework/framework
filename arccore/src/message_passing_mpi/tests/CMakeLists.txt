@@ -7,8 +7,8 @@
 
 target_link_libraries(arccore_message_passing_mpi.tests PUBLIC arccore_message_passing_mpi GTest::GTest)
 
-# Comme il faut lancer les tests avec 'mpiexec', on n'utilise pas 'gtest_discover_tests'
-# mais on ajoute manuellement les tests via la macro 'mp_add_test'
+# Since the tests must be run with 'mpiexec', we do not use 'gtest_discover_tests'
+# but we manually add the tests using the 'mp_add_test' macro
 
 macro(mp_add_test)
   set(options)

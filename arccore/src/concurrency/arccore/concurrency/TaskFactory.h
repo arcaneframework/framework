@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TaskFactory.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Fabrique pour les tâches.                                                 */
+/* Factory for tasks.                                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_TASKFACTORY_H
 #define ARCCORE_CONCURRENCY_TASKFACTORY_H
@@ -26,9 +26,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Concurrency
- * \brief Fabrique pour les tâches.
+ * \brief Factory for tasks.
  */
 class ARCCORE_CONCURRENCY_EXPORT TaskFactory
 {
@@ -41,9 +42,9 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
  public:
 
   /*!
-   * \brief Créé une tâche.
-   * Lors de l'exécution, la tâche appellera la méthode \a function via
-   * l'instance \a instance.
+   * \brief Creates a task.
+   * During execution, the task will call the method \a function via
+   * the instance \a instance.
    */
   template <typename InstanceType> static ITask*
   createTask(InstanceType* instance, void (InstanceType::*function)(const TaskContext& tc))
@@ -53,9 +54,9 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
   }
 
   /*!
-   * \brief Créé une tâche.
-   * Lors de l'exécution, la tâche appellera la méthode \a function via
-   * l'instance \a instance.
+   * \brief Creates a task.
+   * During execution, the task will call the method \a function via
+   * the instance \a instance.
    */
   template <typename InstanceType> static ITask*
   createTask(InstanceType* instance, void (InstanceType::*function)())
@@ -65,10 +66,10 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
   }
 
   /*!
-   * \brief Créé une tâche fille.
+   * \brief Creates a child task.
    *
-   * Lors de l'exécution, la tâche appellera la méthode \a function via
-   * l'instance \a instance.
+   * During execution, the task will call the method \a function via
+   * the instance \a instance.
    */
   template <typename InstanceType> static ITask*
   createChildTask(ITask* parent_task, InstanceType* instance, void (InstanceType::*function)(const TaskContext& tc))
@@ -79,10 +80,10 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
   }
 
   /*!
-   * \brief Créé une tâche fille.
+   * \brief Creates a child task.
    *
-   * Lors de l'exécution, la tâche appellera la méthode \a function via
-   * l'instance \a instance.
+   * During execution, the task will call the method \a function via
+   * the instance \a instance.
    */
   template <typename InstanceType> static ITask*
   createChildTask(ITask* parent_task, InstanceType* instance, void (InstanceType::*function)())
@@ -92,31 +93,31 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
     return parent_task->_createChildTask(&functor);
   }
 
-  //! Exécute le fonctor \a f en concurrence.
+  //! Executes the functor \a f in parallel.
   static void executeParallelFor(Integer begin, Integer size, const ParallelLoopOptions& options, IRangeFunctor* f)
   {
     m_impl->executeParallelFor(begin, size, options, f);
   }
 
-  //! Exécute le fonctor \a f en concurrence.
+  //! Executes the functor \a f in parallel.
   static void executeParallelFor(Integer begin, Integer size, Integer block_size, IRangeFunctor* f)
   {
     m_impl->executeParallelFor(begin, size, block_size, f);
   }
 
-  //! Exécute le fonctor \a f en concurrence.
+  //! Executes the functor \a f in parallel.
   static void executeParallelFor(Integer begin, Integer size, IRangeFunctor* f)
   {
     m_impl->executeParallelFor(begin, size, f);
   }
 
-  //! Exécute la boucle \a loop_info en concurrence.
+  //! Executes the loop \a loop_info in parallel.
   static void executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
   {
     m_impl->executeParallelFor(loop_info);
   }
 
-  //! Exécute une boucle simple
+  //! Executes a simple loop
   static void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<1>* functor)
@@ -124,7 +125,7 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
     m_impl->executeParallelFor(loop_ranges, ForLoopRunInfo(options), functor);
   }
 
-  //! Exécute une boucle simple
+  //! Executes a simple loop
   static void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
                                  const ForLoopRunInfo& run_info,
                                  IMDRangeFunctor<1>* functor)
@@ -132,7 +133,7 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
     m_impl->executeParallelFor(loop_ranges, run_info, functor);
   }
 
-  //! Exécute une boucle 2D
+  //! Executes a 2D loop
   static void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<2>* functor)
@@ -140,7 +141,7 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
     m_impl->executeParallelFor(loop_ranges, ForLoopRunInfo(options), functor);
   }
 
-  //! Exécute une boucle 2D
+  //! Executes a 2D loop
   static void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
                                  const ForLoopRunInfo& run_info,
                                  IMDRangeFunctor<2>* functor)
@@ -148,7 +149,7 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
     m_impl->executeParallelFor(loop_ranges, run_info, functor);
   }
 
-  //! Exécute une boucle 3D
+  //! Executes a 3D loop
   static void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<3>* functor)
@@ -156,7 +157,7 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
     m_impl->executeParallelFor(loop_ranges, ForLoopRunInfo(options), functor);
   }
 
-  //! Exécute une boucle 3D
+  //! Executes a 3D loop
   static void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
                                  const ForLoopRunInfo& run_info,
                                  IMDRangeFunctor<3>* functor)
@@ -164,7 +165,7 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
     m_impl->executeParallelFor(loop_ranges, run_info, functor);
   }
 
-  //! Exécute une boucle 4D
+  //! Executes a 4D loop
   static void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<4>* functor)
@@ -172,7 +173,7 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
     m_impl->executeParallelFor(loop_ranges, ForLoopRunInfo(options), functor);
   }
 
-  //! Exécute une boucle 4D
+  //! Executes a 4D loop
   static void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
                                  const ForLoopRunInfo& run_info,
                                  IMDRangeFunctor<4>* functor)
@@ -180,15 +181,16 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
     m_impl->executeParallelFor(loop_ranges, run_info, functor);
   }
 
-  //! Nombre de threads utilisés au maximum pour gérer les tâches.
+  //! Maximum number of threads used to manage tasks.
   static Int32 nbAllowedThread() { return ConcurrencyBase::maxAllowedThread(); }
 
   /*!
-   * \brief Indice (entre 0 et nbAllowedThread()-1) du thread exécutant la tâche actuelle.
+   * \brief Index (between 0 and nbAllowedThread()-1) of the thread executing
+   * the current task.
    *
-   * Pour des raisons de performance, il est préférable d'appeler cette méthode
-   * le moins possible. L'idéal est de ne le faire qu'au début de l'exécution de la tâche
-   * et ensuite d'utiliser la valeur retournée.
+   * For performance reasons, it is preferable to call this method
+   * as little as possible. Ideally, it should only be called at the beginning
+   * of the task execution and then the returned value should be used.
    */
   static Int32 currentTaskThreadIndex()
   {
@@ -196,17 +198,17 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
   }
 
   /*!
-   * \brief Indice (entre 0 et nbAllowedThread()-1) de la tâche actuelle.
+   * \brief Index (between 0 and nbAllowedThread()-1) of the current task.
    *
-   * Cet indice est le même que currentTaskThreadIndex() sauf dans le cas
-   * où on se trouve dans un executeParallelFor() avec un partitionnement
-   * déterministe (ParallelLoopOptions::Partitioner::Deterministic).
-   * Dans ce dernier cas, le numéro de la tâche est assigné de manière
-   * déterministe qui ne dépend que du nombre de threads alloués pour la
-   * tâche et de ParallelLoopOptions::grainSize().
+   * This index is the same as currentTaskThreadIndex() except when we are in
+   * an executeParallelFor() with deterministic partitioning
+   * (ParallelLoopOptions::Partitioner::Deterministic).
+   * In the latter case, the task number is assigned deterministically, depending
+   * only on the number of threads allocated for the task and
+   * ParallelLoopOptions::grainSize().
    *
-   * Si le thread courant n'exécute pas une tâche associé à cette implémentation,
-   * retourne (-1).
+   * If the current thread is not executing a task associated with this implementation,
+   * it returns (-1).
    */
   static Int32 currentTaskIndex()
   {
@@ -215,16 +217,16 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
 
  public:
 
-  // TODO: rendre ces deux méthodes obsolètes et indiquer d'utiliser
-  // celles de ConcurrencyBase à la place.
+  // TODO: mark these two methods as obsolete and indicate using
+  // those from ConcurrencyBase instead.
 
-  //! Positionne les valeurs par défaut d'exécution d'une boucle parallèle
+  //! Sets the default parallel loop execution options
   static void setDefaultParallelLoopOptions(const ParallelLoopOptions& v)
   {
     ConcurrencyBase::setDefaultParallelLoopOptions(v);
   }
 
-  //! Valeurs par défaut d'exécution d'une boucle parallèle
+  //! Default parallel loop execution options
   static const ParallelLoopOptions& defaultParallelLoopOptions()
   {
     return ConcurrencyBase::defaultParallelLoopOptions();
@@ -233,9 +235,9 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
  public:
 
   /*!
-   * \brief Indique si les tâches sont actives.
-   * Les tâches sont actives si une implémentation est disponible et si le nombre
-   * de threads demandé est strictement supérieur à 1.
+   * \brief Indicates whether tasks are active.
+   * Tasks are active if an implementation is available and if the requested number
+   * of threads is strictly greater than 1.
    */
   static bool isActive()
   {
@@ -243,10 +245,10 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
   }
 
   /*!
-   * \brief Affiche les informations sur l'implémentation.
+   * \brief Prints information about the implementation.
    *
-   * Les informations sont par exemple le numéro de version ou le nom
-   * de l'implémentation.
+   * The information is for example the version number or the name
+   * of the implementation.
    */
   static void printInfos(std::ostream& o)
   {
@@ -254,40 +256,40 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
   }
 
   /*!
-   * \brief Observable appelé lors de la création d'un thread pour une tâche.
+   * \brief Observable called when a thread is created for a task.
    *
-   * \warning L'instance de l'observable est créée lors du premier appel
-   * à cette méthode. Elle n'est donc pas thread-safe. De même,
-   * la modification de l'observable (ajout/suppression d'observateur)
-   * n'est pas thread-safe.
+   * \warning The observable instance is created during the first call
+   * to this method. It is therefore not thread-safe. Similarly,
+   * modifying the observable (adding/removing observers)
+   * is not thread-safe.
    */
   ARCCORE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Do not use it")
   static IObservable* createThreadObservable();
 
   /*!
-   * \brief Observable appelé lors de la destruction d'un thread pour une tâche.
+   * \brief Observable called when a thread is destroyed for a task.
    *
-   * \warning L'instance de l'observable est créée lors du premier appel
-   * à cette méthode. Elle n'est donc pas thread-safe. De même,
-   * la modification de l'observable (ajout/suppression d'observateur)
-   * n'est pas thread-safe.
+   * \warning The observable instance is created during the first call
+   * to this method. It is therefore not thread-safe. Similarly,
+   * modifying the observable (adding/removing observers)
+   * is not thread-safe.
    */
   ARCCORE_DEPRECATED_REASON("Y2024: This method is internal to Arcane. Do not use it")
   static IObservable* destroyThreadObservable();
 
   /*!
    * \internal
-   * \brief Indique qu'on n'utilisera plus les threads.
-   * Cette méthode ne doit pas être appelée lorsque des tâches sont actives.
+   * \brief Indicates that threads will no longer be used.
+   * This method must not be called when tasks are active.
    */
   static void terminate();
 
  public:
 
-  //! Positionne le niveau de verbosité (0 pour pas d'affichage qui est le défaut)
+  //! Sets the verbosity level (0 for no output, which is the default)
   static void setVerboseLevel(Integer v) { m_verbose_level = v; }
 
-  //! Niveau de verbosité
+  //! Verbosity level
   static Integer verboseLevel() { return m_verbose_level; }
 
  public:
@@ -311,4 +313,4 @@ class ARCCORE_CONCURRENCY_EXPORT TaskFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

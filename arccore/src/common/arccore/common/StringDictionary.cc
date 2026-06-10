@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* StringDictionary.cc                                         (C) 2000-2025 */
 /*                                                                           */
-/* Dictionnaire de chaînes de caractères.                                    */
+/* String dictionary.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,12 +35,13 @@ class BadIndexException
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- \brief Implémentation du dictionnaire de chaîne unicode.
-  
-  L'implémentation utilise la classe map de la STL.
-*/
+ * \brief Implementation of the unicode string dictionary.
+ *
+ *  The implementation uses the STL map class.
+ */
 class StringDictionary::Impl
 {
  public:

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MemoryResourceMng.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des ressources mémoire pour les CPU et accélérateurs.             */
+/* Memory resource management for CPUs and accelerators.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_MEMORYRESOURCEMNG_H
 #define ARCCORE_COMMON_INTERNAL_MEMORYRESOURCEMNG_H
@@ -30,8 +30,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion des ressources mémoire pour les CPU et accélérateurs.
+ * \brief Memory resource management for CPUs and accelerators.
  */
 class ARCCORE_COMMON_EXPORT MemoryResourceMng
 : public IMemoryResourceMng
@@ -61,19 +62,19 @@ class ARCCORE_COMMON_EXPORT MemoryResourceMng
 
  public:
 
-  //! Interface interne
+  //! Internal interface
   IMemoryResourceMngInternal* _internal() override { return this; }
 
  public:
 
-  //! Copie générique utilisant platform::getDataMemoryRessourceMng()
+  //! Generic copy using platform::getDataMemoryRessourceMng()
   static void genericCopy(ConstMemoryView from, MutableMemoryView to);
 
  private:
 
-  //! Liste des allocateurs
+  //! List of allocators
   FixedArray<IMemoryAllocator*, ARCCORE_NB_MEMORY_RESOURCE> m_allocators;
-  //! Liste des pools mémoire
+  //! List of memory pools
   FixedArray<IMemoryPool*, ARCCORE_NB_MEMORY_RESOURCE> m_memory_pools;
   std::unique_ptr<IMemoryCopier> m_default_memory_copier;
   IMemoryCopier* m_copier = nullptr;
@@ -92,4 +93,4 @@ class ARCCORE_COMMON_EXPORT MemoryResourceMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

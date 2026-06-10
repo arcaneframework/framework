@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CooperativeWorkGroupLoopRange.h                             (C) 2000-2026 */
 /*                                                                           */
-/* Boucle pour le parallélisme hiérarchique coopératif.                      */
+/* Loop for cooperative hierarchical parallelism.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_COOPERATIVEWORKGROUPLOOPRANGE_H
 #define ARCCORE_ACCELERATOR_COOPERATIVEWORKGROUPLOOPRANGE_H
@@ -24,20 +24,21 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère une grille de WorkItem dans un
- * CooperativeWorkGroupLoopRange pour l'hôte.
+ * \brief Manages a WorkItem grid in a
+ * CooperativeWorkGroupLoopRange for the host.
  *
- * Cette classe possède juste une méthode barrier() qui effectue
- * une barrière sur l'ensemble des threads participants en mode multi-thread.
+ * This class only has a barrier() method which performs
+ * a barrier on all participating threads in multi-threaded mode.
  */
 class CooperativeHostWorkItemGrid
 {
-  template<typename T> friend class CooperativeWorkGroupLoopContext;
+  template <typename T> friend class CooperativeWorkGroupLoopContext;
 
  private:
 
-  //! Constructeur pour l'hôte
+  //! Constructor for the host
   explicit CooperativeHostWorkItemGrid(Int32 nb_block, Impl::ThreadGridSynchronizer* syncer)
   : m_nb_block(nb_block)
   , m_syncer(syncer)
@@ -45,10 +46,10 @@ class CooperativeHostWorkItemGrid
 
  public:
 
-  //! Nombre de blocs dans la grille
+  //! Number of blocks in the grid
   Int32 nbBlock() const { return m_nb_block; }
 
-  //! Bloque tant que tous les \a WorkItem de la grille ne sont pas arrivés ici.
+  //! Blocks until all \a WorkItems in the grid have arrived here.
   void barrier()
   {
     if (m_syncer)
@@ -68,9 +69,10 @@ class CooperativeHostWorkItemGrid
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère la grille de WorkItem dans un
- * CooperativeWorkGroupLoopRange pour un device CUDA ou HIP.
+ * \brief Manages the WorkItem grid in a
+ * CooperativeWorkGroupLoopRange for a CUDA or HIP device.
  */
 class CooperativeDeviceWorkItemGrid
 {
@@ -79,10 +81,10 @@ class CooperativeDeviceWorkItemGrid
  private:
 
   /*!
-   * \brief Constructeur pour le device.
+   * \brief Constructor for the device.
    *
-   * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
-   * récupéré via cooperative_groups::this_grid()
+   * This constructor does not need specific information because everything is
+   * retrieved via cooperative_groups::this_grid()
    */
   __device__ CooperativeDeviceWorkItemGrid()
   : m_grid_group(cooperative_groups::this_grid())
@@ -90,10 +92,10 @@ class CooperativeDeviceWorkItemGrid
 
  public:
 
-  //! Nombre de blocs dans la grille
+  //! Number of blocks in the grid
   __device__ Int32 nbBlock() const { return m_grid_group.group_dim().x; }
 
-  //! Bloque tant que tous les \a WorkItem de la grille ne sont pas arrivés ici.
+  //! Blocks until all \a WorkItems in the grid have arrived here.
   __device__ void barrier() { m_grid_group.sync(); }
 
  private:
@@ -108,19 +110,19 @@ class CooperativeDeviceWorkItemGrid
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Contexte d'exécution d'une commande sur un ensemble de blocs.
+ * \brief Execution context for a command on a set of blocks.
  *
- * Cette classe est utilisée pour l'hôte (séquentiel et multi-thread) et
- * pour CUDA et ROCM/HIP.
- * La méthode group() est différente sur accélérateur et sur l'hôte ce qui
- * permet de particulariser le traitement de la commande.
+ * This class is used for the host (sequential and multi-threaded) and
+ * for CUDA and ROCM/HIP. The group() method is different on accelerator and on the host, which
+ * allows for specialized command processing.
  */
 template <typename IndexType_>
 class CooperativeWorkGroupLoopContext
 : public WorkGroupLoopContextBase<IndexType_>
 {
-  // Pour accéder aux constructeurs
+  // For accessing constructors
   friend class CooperativeWorkGroupLoopRange<IndexType_>;
   friend Impl::WorkGroupSequentialForHelper;
   friend Impl::WorkGroupLoopContextBuilder;
@@ -132,7 +134,7 @@ class CooperativeWorkGroupLoopContext
 
  private:
 
-  //! Ce constructeur est utilisé dans l'implémentation hôte.
+  //! This constructor is used in the host implementation.
   constexpr CooperativeWorkGroupLoopContext(IndexType loop_index, Int32 group_index,
                                             Int32 group_size, Int32 nb_active_item,
                                             IndexType total_size, Int32 nb_block, Impl::ThreadGridSynchronizer* syncer)
@@ -142,8 +144,9 @@ class CooperativeWorkGroupLoopContext
   {
   }
 
-  // Ce constructeur n'est utilisé que sur le device
-  // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
+  // This constructor is only used on the device
+  // It does nothing because useful values are retrieved via
+  // cooperative_groups::this_thread_block()
   explicit constexpr ARCCORE_DEVICE CooperativeWorkGroupLoopContext(IndexType total_size)
   : BaseClass(total_size)
   {}
@@ -151,10 +154,10 @@ class CooperativeWorkGroupLoopContext
  public:
 
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCCORE_COMPILING_SYCL)
-  //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
+  //! Current group. For CUDA/ROCM, this is a thread block.
   __device__ CooperativeDeviceWorkItemGrid grid() const { return CooperativeDeviceWorkItemGrid{}; }
 #else
-  //! Groupe courant
+  //! Current group
   CooperativeHostWorkItemGrid grid() const { return CooperativeHostWorkItemGrid(m_nb_block, m_syncer); }
 #endif
 
@@ -166,13 +169,14 @@ class CooperativeWorkGroupLoopContext
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Implémentation pour SYCL.
+ * Implementation for SYCL.
  */
 #if defined(ARCCORE_COMPILING_SYCL)
 
 /*!
- * \brief Gère la grille de WorkItem dans un CooperativeWorkGroupLoopRange pour un device Sycl.
+ * \brief Manages the WorkItem grid in a CooperativeWorkGroupLoopRange for a Sycl device.
  */
 class SyclCooperativeDeviceWorkItemGrid
 {
@@ -187,10 +191,10 @@ class SyclCooperativeDeviceWorkItemGrid
 
  public:
 
-  //! Nombre de blocs dans la grille
+  //! Number of blocks in the grid
   Int32 nbBlock() const { return static_cast<Int32>(m_nd_item.get_group_range(0)); }
 
-  //! Bloque tant que tous les \a CooperativeWorkItem de la grille ne sont pas arrivés ici.
+  //! Blocks until all \a CooperativeWorkItems in the grid have arrived here.
   void barrier() { /* Not Yet Implemented */ }
 
  private:
@@ -200,11 +204,11 @@ class SyclCooperativeDeviceWorkItemGrid
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Contexte d'exécution d'une CooperativeWorkGroupLoopRange pour Sycl.
+ * \brief Execution context of a CooperativeWorkGroupLoopRange for Sycl.
  *
- * Cette classe est utilisée uniquement pour la polique
- * d'exécution eAcceleratorPolicy::SYCL.
+ * This class is used only for the eAcceleratorPolicy::SYCL execution policy.
  */
 template <typename IndexType_>
 class SyclCooperativeWorkGroupLoopContext
@@ -219,7 +223,7 @@ class SyclCooperativeWorkGroupLoopContext
 
  private:
 
-  // Ce constructeur n'est utilisé que sur le device
+  // This constructor is only used on the device
   explicit SyclCooperativeWorkGroupLoopContext(sycl::nd_item<1> nd_item, IndexType total_size)
   : SyclWorkGroupLoopContextBase<IndexType_>(nd_item, total_size)
   {
@@ -227,7 +231,7 @@ class SyclCooperativeWorkGroupLoopContext
 
  public:
 
-  //! Grille courante
+  //! Current grid
   SyclCooperativeDeviceWorkItemGrid grid() const
   {
     return SyclCooperativeDeviceWorkItemGrid(this->m_nd_item);
@@ -241,9 +245,9 @@ class SyclCooperativeWorkGroupLoopContext
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Intervalle d'itération d'une boucle utilisant le parallélisme
- * hiérarchique collaboratif.
+ * \brief Iteration range of a loop using cooperative hierarchical parallelism.
  *
  * \sa WorkGroupLoopRangeBase
  */

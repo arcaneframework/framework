@@ -47,8 +47,9 @@ namespace Arcane::Alina::detail
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief  Galerkin operator.
+ * \brief Galerkin operator.
  */
 template <class Matrix>
 std::shared_ptr<Matrix> galerkin(const Matrix& A, const Matrix& P, const Matrix& R)
@@ -1215,7 +1216,7 @@ struct RugeStubenCoarsening
     // ptr - start of a group;
     // cnt - size of a group;
     // i2n - variable number;
-    // n2i - vaiable position in a group.
+    // n2i - variable position in a group.
     std::vector<Ptr> ptr(n + 1, 0);
     std::vector<Ptr> cnt(n, 0);
     std::vector<Ptr> i2n(n);
@@ -1234,7 +1235,7 @@ struct RugeStubenCoarsening
     }
 
     // Process variables by decreasing lambda value.
-    // 1. The vaiable with maximum value of lambda becomes next C-variable.
+    // 1. The variable with maximum value of lambda becomes next C-variable.
     // 2. Its neighbours from S' become F-variables.
     // 3. Keep lambda values in sync.
     for (size_t top = n; top-- > 0;) {
@@ -1246,7 +1247,7 @@ struct RugeStubenCoarsening
         break;
       }
 
-      // Remove tne variable from its group.
+      // Remove the variable from its group.
       --cnt[lam];
 
       if (cf[i] == 'F')
@@ -1291,7 +1292,7 @@ struct RugeStubenCoarsening
         }
       }
 
-      // Decrease lambdas of the newly create C's neighbours.
+      // Decrease lambdas of the newly created C's neighbours.
       for (Ptr j = A.ptr[i], e = A.ptr[i + 1]; j < e; j++) {
         if (!S.val[j])
           continue;

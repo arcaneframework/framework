@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -54,8 +54,8 @@ TEST(MessagePassingMpi, Simple)
 
 TEST(MessagePassingMpi, SerializeGather)
 {
-  // Teste uniquement l'appel. Les tests avec des vraies valeurs
-  // sont faits dans Arcane.
+  // Tests only the call. Tests with actual values
+  // are done in Arcane.
   Ref<IMessagePassingMng> pm(StandaloneMpiMessagePassingMng::createRef(global_mpi_comm_world));
   ASSERT_EQ(pm->commSize(), 3);
   Int32 my_rank = pm->commRank();
@@ -109,7 +109,7 @@ void _doTestFloat16(IMessagePassingMng* pm)
     ASSERT_EQ(send_buf, receive_buf);
   }
 
-  // Teste les réductions
+  // Test reductions
   {
     UniqueArray<DataType> values(nb_rank);
     DataType expected_sum(0.0f);
@@ -138,8 +138,8 @@ void _doTestFloat16(IMessagePassingMng* pm)
 
 TEST(MessagePassingMpi, Float16)
 {
-  // Teste uniquement l'appel. Les tests avec des vraies valeurs
-  // sont faits dans Arcane.
+  // Tests only the call. Tests with actual values
+  // are done in Arcane.
   Ref<IMessagePassingMng> pm(StandaloneMpiMessagePassingMng::createRef(global_mpi_comm_world));
   _doTestFloat16<Float16>(pm.get());
   _doTestFloat16<BFloat16>(pm.get());

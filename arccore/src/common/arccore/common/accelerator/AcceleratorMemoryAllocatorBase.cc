@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AcceleratorMemoryAllocatorBase.cc                           (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'un allocateur spécifique pour accélérateur.              */
+/* Base class of a specific allocator for accelerator.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -109,13 +109,13 @@ reallocate(MemoryAllocationArgs args, AllocatedMemoryInfo current_info, Int64 ne
   if (m_use_memory_pool)
     _removeHint(current_info.baseAddress(), current_size, args);
   AllocatedMemoryInfo a = allocate(args, new_size);
-  // TODO: supprimer les Hint après le deallocate car la zone mémoire peut être réutilisée.
+  // TODO: remove the Hints after deallocate because the memory area can be reused.
   m_direct_sub_allocator->doMemoryCopy(a.baseAddress(), current_info.baseAddress(), current_size);
   deallocate(args, current_info);
   return a;
 }
 
-//! Initialisation pour la mémoire UVM
+//! Initialization for UVM memory
 void AcceleratorMemoryAllocatorBase::
 _doInitializeUVM(bool default_use_memory_pool)
 {
@@ -131,7 +131,7 @@ _doInitializeUVM(bool default_use_memory_pool)
   _setUseMemoryPool(use_memory_pool);
 }
 
-//! Initialisation pour la mémoire HostPinned
+//! Initialization for HostPinned memory
 void AcceleratorMemoryAllocatorBase::
 _doInitializeHostPinned(bool default_use_memory_pool)
 {
@@ -142,7 +142,7 @@ _doInitializeHostPinned(bool default_use_memory_pool)
   m_block_wrapper.initialize(128, use_memory_pool);
 }
 
-//! Initialisation pour la mémoire Device
+//! Initialization for Device memory
 void AcceleratorMemoryAllocatorBase::
 _doInitializeDevice(bool default_use_memory_pool)
 {
@@ -153,7 +153,7 @@ _doInitializeDevice(bool default_use_memory_pool)
   m_block_wrapper.initialize(128, use_memory_pool);
 }
 
-// IMPORTANT: doit être appelé avant toute allocation et ne plus être modifié ensuite.
+// IMPORTANT: must be called before any allocation and should not be modified afterward.
 void AcceleratorMemoryAllocatorBase::
 _setUseMemoryPool(bool is_used)
 {
@@ -175,5 +175,5 @@ _setUseMemoryPool(bool is_used)
 
 } // namespace Arcane::Accelerator
 
- /*---------------------------------------------------------------------------*/
- /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

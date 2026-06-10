@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ScanImpl.h                                                  (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation spécifique de l'opération de scan pour les accélérateurs.  */
+/* Specific implementation of the scan operation for accelerators.           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_SCANIMPL_H
 #define ARCCORE_ACCELERATOR_SCANIMPL_H
@@ -36,12 +36,12 @@ namespace Arcane::Accelerator::Impl
 #if defined(ARCCORE_COMPILING_SYCL)
 
 /*!
- * \brief Algorithme de Scan basique.
+ * \brief Basic Scan Algorithm.
  *
- * \note Avec Intel DPC++ 2024.1, l'opérateur de Scan doit être un des opérateurs
- * sycl de base (comme sycl::plus) pour qu'on puisse utiliser
- * sycl::inclusive_scan_over_group() avec. Ce n'est pas le cas avec AdaptiveCpp
- * 24.02 qui n'a pas cette limitation.
+ * \note With Intel DPC++ 2024.1, the Scan operator must be one of the
+ * basic sycl operators (like sycl::plus) to be usable
+ * with sycl::inclusive_scan_over_group(). This is not the case with AdaptiveCpp
+ * 24.02, which does not have this limitation.
  */
 template <bool IsExclusive, typename DataType, typename Operator>
 class SyclScanner
@@ -78,9 +78,9 @@ class SyclScanner
   {
     DataType identity = Operator::defaultValue();
     sycl::queue q = Impl::SyclUtils::toNativeStream(&rq);
-    // Contient l'application partielle de Operator pour chaque bloc de thread
+    // Contains the partial application of Operator for each thread block
     NumArray<DataType, MDDim1> tmp;
-    // Contient l'application partielle de Operator cumulée avec les blocs précédents
+    // Contains the partial application of Operator accumulated with previous blocks
     NumArray<DataType, MDDim1> tmp2;
     Int32 nb_item = input.size();
     Int32 block_size = 256;
@@ -127,10 +127,10 @@ class SyclScanner
          const int li = static_cast<int>(it.get_local_id(0));
          const int gid = static_cast<int>(it.get_group(0));
          const int local_range0 = static_cast<int>(it.get_local_range()[0]);
-         // Effectue le scan sur le groupe.
+         // Perform the scan over the group.
          DataType local_value = input_info._getInputValue(i);
          local[li] = sycl::inclusive_scan_over_group(it.get_group(), local_value, scan_op.syclFunctor());
-         // Le dernier élément sauve la valeur dans le tableau du groupe.
+         // The last element saves the value in the group array.
          if (li == local_range0 - 1)
            tmp[gid] = local[li];
        });
@@ -202,7 +202,7 @@ class SyclScanner
 
  private:
 
-  //! Return le premier multiple de \a block_size supérieur ou égal à \a nb_value
+  //! Return the first multiple of \a block_size greater than or equal to \a nb_value
   sycl::nd_range<1> _getNDRange(Int32 nb_value, Int32 block_size)
   {
     int x = nb_value / block_size;

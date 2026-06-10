@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MpiAdapter.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Gestionnaire de parallélisme utilisant MPI.                               */
+/* Parallelism manager using MPI.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -35,7 +35,7 @@ MpiDatatype(MPI_Datatype datatype)
 }
 
 MpiDatatype::
-MpiDatatype(MPI_Datatype datatype,bool is_built_in,IMpiReduceOperator* reduce_operator)
+MpiDatatype(MPI_Datatype datatype, bool is_built_in, IMpiReduceOperator* reduce_operator)
 : m_datatype(datatype)
 , m_reduce_operator(reduce_operator)
 , m_is_built_in(is_built_in)
@@ -48,8 +48,8 @@ MpiDatatype(MPI_Datatype datatype,bool is_built_in,IMpiReduceOperator* reduce_op
 MpiDatatype::
 ~MpiDatatype()
 {
-  if (!m_is_built_in){
-    if (m_datatype!=MPI_DATATYPE_NULL)
+  if (!m_is_built_in) {
+    if (m_datatype != MPI_DATATYPE_NULL)
       MPI_Type_free(&m_datatype);
   }
   m_datatype = MPI_DATATYPE_NULL;
@@ -65,14 +65,20 @@ MpiDatatype::
 MPI_Op BuiltInMpiReduceOperator::
 reduceOperator(eReduceType rt)
 {
-  // TODO: a fusionner avec reduceOperator de StdMpiReduceOperator.
+  // TODO: merge with StdMpiReduceOperator::reduceOperator.
   MPI_Op op = MPI_OP_NULL;
-  switch(rt){
-  case ReduceMax: op = MPI_MAX; break;
-  case ReduceMin: op = MPI_MIN; break;
-  case ReduceSum: op = MPI_SUM; break;
+  switch (rt) {
+  case ReduceMax:
+    op = MPI_MAX;
+    break;
+  case ReduceMin:
+    op = MPI_MIN;
+    break;
+  case ReduceSum:
+    op = MPI_SUM;
+    break;
   }
-  if (op==MPI_OP_NULL)
+  if (op == MPI_OP_NULL)
     ARCCORE_FATAL("Reduce operation unknown or not implemented");
   return op;
 }
@@ -87,7 +93,7 @@ template class StdMpiReduceOperator<long double>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandLaunchInfo.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Informations pour l'exécution d'une 'RunCommand'.                         */
+/* Information for running a 'RunCommand'.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_RUNCOMMANDLAUNCHINFO_H
 #define ARCCORE_COMMON_ACCELERATOR_RUNCOMMANDLAUNCHINFO_H
@@ -27,14 +27,15 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Object temporaire pour conserver les informations d'exécution d'une
- * commande et regrouper les tests.
+ * \brief Temporary object to store the execution information of a
+ * command and group tests.
  */
 class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
 {
-  // Les classes suivantes permettent de lancer les kernels.
+  // The following classes allow kernels to be launched.
   friend class CudaKernelLauncher;
   friend class HipKernelLauncher;
   friend class SyclKernelLauncher;
@@ -56,33 +57,33 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
   eExecutionPolicy executionPolicy() const { return m_exec_policy; }
 
   /*!
-   * \brief Indique qu'on commence l'exécution de la commande.
+   * \brief Indicates that command execution is starting.
    *
-   * Doit toujours être appelé avant de lancer la commande pour être
-   * sur que cette méthode est appelée en cas d'exception.
+   * Must always be called before launching the command to ensure that
+   * this method is called in case of an exception.
    */
   void beginExecute();
 
   /*!
-   * \brief Signale la fin de l'exécution.
+   * \brief Signals the end of execution.
    *
-   * Si la file associée à la commande est asynchrone, la commande
-   * peut continuer à s'exécuter après cet appel.
+   * If the queue associated with the command is asynchronous, the command
+   * may continue to execute after this call.
    */
   void endExecute();
 
-  //! Calcule et retourne les informations pour les boucles multi-thread
+  //! Calculates and returns the information for multi-thread loops
   ParallelLoopOptions computeParallelLoopOptions() const;
 
   /*!
-   * \brief Informations d'exécution de la boucle.
+   * \brief Loop execution information.
    *
-   * Ces informations ne sont valides que si executionPolicy()==eExecutionPolicy::Thread
-   * et si beginExecute() a été appelé.
+   * This information is only valid if executionPolicy()==eExecutionPolicy::Thread
+   * and if beginExecute() has been called.
    */
   const ForLoopRunInfo& loopRunInfo() const { return m_loop_run_info; }
 
-  //! Taille totale de la boucle
+  //! Total loop size
   Int64 totalLoopSize() const { return m_total_loop_size; }
 
  private:
@@ -101,13 +102,13 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
 
  private:
 
-  //! Calcule les arguments pour lancer le noyau dont l'adresse est \a func
+  //! Calculates the arguments for launching the kernel whose address is \a func
   KernelLaunchArgs _computeKernelLaunchArgs(const void* func) const;
   NativeStream _internalNativeStream();
   void _doEndKernelLaunch();
   void _computeInitialKernelLaunchArgs();
 
-  // Pour test uniquement avec CUDA
+  // For testing only with CUDA
   bool _isUseCooperativeLaunch() const;
   bool _isUseCudaLaunchKernel() const;
   void _setIsNeedBarrier(bool v);
@@ -116,8 +117,8 @@ class ARCCORE_COMMON_EXPORT RunCommandLaunchInfo
 
   void _computeLoopRunInfo();
 
-  // Pour SYCL: enregistre l'évènement associé à la dernière commande de la file
-  // \a sycl_event_ptr est de type 'sycl::event*'.
+  // For SYCL: registers the event associated with the last command in the queue
+  // \a sycl_event_ptr is of type 'sycl::event*'.
   void _addSyclEvent(void* sycl_event_ptr);
   void _init();
 };

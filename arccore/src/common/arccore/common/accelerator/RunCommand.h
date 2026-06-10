@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommand.h                                                (C) 2000-2026 */
 /*                                                                           */
-/* Gestion d'une commande sur accélérateur.                                  */
+/* Management of an accelerator command.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_RUNCOMMAND_H
 #define ARCCORE_COMMON_ACCELERATOR_RUNCOMMAND_H
@@ -23,23 +23,24 @@ namespace Arcane::Accelerator
 {
 namespace Impl
 {
-extern "C++" ARCCORE_COMMON_EXPORT IReduceMemoryImpl*
-internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+  extern "C++" ARCCORE_COMMON_EXPORT IReduceMemoryImpl*
+  internalGetOrCreateReduceMemoryImpl(RunCommand* command);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestion d'une commande sur accélérateur.
+ * \brief Management of an accelerator command.
  *
- * Une commande est associée à une file d'exécution (RunQueue) et sa durée
- * de vie ne doit pas excéder celle de cette dernière.
+ * A command is associated with an execution queue (RunQueue) and its lifespan
+ * must not exceed that of the latter.
  *
- * Une commande est une opération qui sera exécutée sur l'accélérateur
- * associé à l'instance de RunQueue utilisé lors de l'appel à makeCommand().
- * Sur un GPU, cela correspond à un noyau (kernel).
+ * A command is an operation that will be executed on the accelerator
+ * associated with the RunQueue instance used when calling makeCommand().
+ * On a GPU, this corresponds to a kernel.
  *
- * Pour plus d'informations, se reporter à la rubrique
+ * For more information, refer to the section
  * \ref arcanedoc_parallel_accelerator_runcommand.
  */
 class ARCCORE_COMMON_EXPORT RunCommand
@@ -70,76 +71,76 @@ class ARCCORE_COMMON_EXPORT RunCommand
 
  public:
 
-  //! Politique d'exécution de la commande
+  //! Command execution policy
   eExecutionPolicy executionPolicy() const;
 
   /*!
-   * \brief Positionne le informations de trace.
+   * \brief Sets the trace information.
    *
-   * Ces informations sont utilisées pour les traces ou pour le débug.
-   * Les macros RUNCOMMAND_LOOP ou RUNCOMMAND_ENUMERATE appellent
-   * automatiquement cette méthode.
+   * This information is used for tracing or debugging.
+   * The RUNCOMMAND_LOOP or RUNCOMMAND_ENUMERATE macros automatically call
+   * this method.
    */
   RunCommand& addTraceInfo(const TraceInfo& ti);
 
   /*!
-   * \brief Positionne le nom du noyau.
+   * \brief Sets the kernel name.
    *
-   * Ce nom est utilisé pour les traces ou pour le débug.
+   * This name is used for tracing or debugging.
    */
   RunCommand& addKernelName(const String& v);
 
   /*!
-   * \brief Positionne le nombre de thread par bloc pour les accélérateurs.
+   * \brief Sets the number of threads per block for accelerators.
    *
-   * Si la valeur \a v est nulle, le choix par défaut est utilisé.
-   * Si la valeur \a v est positive, sa valeur minimale valide dépend
-   * de l'accélérateur. En général c'est au moins 32.
+   * If the value \a v is zero, the default choice is used.
+   * If the value \a v is positive, its minimum valid value depends
+   * on the accelerator. Generally, it is at least 32.
    */
   RunCommand& addNbThreadPerBlock(Int32 v);
 
   /*!
-   * \brief Positionne le nombre de pas pour la décomposition de la boucle
-   * sur accélérateur/
+   * \brief Sets the number of strides for loop decomposition
+   * on accelerator/
    *
-   * La valeur par défaut est 1, ce qui indique qu'on ne décompose pas
-   * la boucle. Cette méthode ne fait rien si la commande ne s'exécute
-   * pas sur accélérateur. Cette valeur n'est utilisée que pour les boucles
-   * classiques (RUNCOMMAND_LOOP()) ou sur les entités (RUNCOMMAND_ENUMERATE()).
+   * The default value is 1, which indicates that the loop is not decomposed.
+   * This method does nothing if the command is not executed
+   * on an accelerator. This value is only used for classical loops
+   * (RUNCOMMAND_LOOP()) or on entities (RUNCOMMAND_ENUMERATE()).
    *
-   * \warning API EXPERIMENTALE. A UTILISER UNIQUEMENT DANS ARCANE
+   * \warning EXPERIMENTAL API. TO BE USED ONLY IN ARCANE
    */
   RunCommand& addNbStride(Int32 v);
 
-  //! Nombre de pas de décomposition de la boucle
+  //! Number of loop decomposition strides
   Int32 nbStride() const;
 
-  //! Informations pour les traces
+  //! Trace information
   const TraceInfo& traceInfo() const;
 
-  //! Nom du noyau
+  //! Kernel name
   const String& kernelName() const;
 
   /*
-   * \brief Nombre de threads par bloc ou 0 pour la valeur par défaut.
+   * \brief Number of threads per block or 0 for the default value.
    *
-   * Cette valeur est utilisée uniquement si on s'exécute sur accélérateur.
+   * This value is used only if running on an accelerator.
    */
   Int32 nbThreadPerBlock() const;
 
-  //! Positionne la configuration des boucles multi-thread
+  //! Sets the multi-thread loop configuration
   void setParallelLoopOptions(const ParallelLoopOptions& opt);
 
-  //! Configuration des boucles multi-thread
+  //! Multi-thread loop configuration
   const ParallelLoopOptions& parallelLoopOptions() const;
 
-  //! Affichage des informations de la commande
+  //! Displaying command information
   friend ARCCORE_COMMON_EXPORT RunCommand&
   operator<<(RunCommand& command, const TraceInfo& trace_info);
 
  private:
 
-  // Pour RunCommandLaunchInfo
+  // For RunCommandLaunchInfo
   void _internalNotifyBeginLaunchKernel();
   void _internalNotifyEndLaunchKernel();
   void _internalNotifyBeginLaunchKernelSyclEvent(void* sycl_event_ptr);
@@ -172,4 +173,4 @@ class ARCCORE_COMMON_EXPORT RunCommand
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BasicSerializer.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation simple de 'ISerializer'.                                   */
+/* Simple implementation of 'ISerializer'.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,36 +28,36 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation d'un buffer de sérialisation contigu en mémoire.
+ * \brief Implementation of a contiguous in-memory serialization buffer.
  *
- * Cette implémentation permet de sérialiser les données dans une zone
- * contigue en mémoire et ainsi de l'envoyer en une seule fois
- * via MPI par exemple.
- * Le buffer est composé d'un première partie contenant NB_SIZE_ELEM
- * objets de type Integer. Cette partie contient le nombre d'élément
- * sérialisé de chaque type (Real, Int64, Int32, Int16, Byte). La deuxième
- * partie contient les données sérialisées proprement dites.
+ * This implementation allows data to be serialized into a contiguous
+ * memory area and thus sent in a single operation, for example via MPI.
+ * The buffer consists of a first part containing NB_SIZE_ELEM
+ * objects of type Integer. This part contains the number of elements
+ * serialized for each type (Real, Int64, Int32, Int16, Byte). The second
+ * part contains the actual serialized data.
  *
- * Lorsque cette classe est utilisée dans le cadre d'un appel MPI,
- * on utilise le tableau \a m_size_copy_buffer pour envoyer les tailles.
- * lors du premier message lorsque le message complet est envoyé en plusieurs fois.
- * La norme MPI indique effectivement qu'un buffer utilisé lors d'un appel
- * MPI ne doit plus être utilisé tant que cet appel n'est pas terminé.
+ * When this class is used in the context of an MPI call,
+ * the array \a m_size_copy_buffer is used to send the sizes.
+ * during the first message when the complete message is sent in several parts.
+ * MPI standard indeed indicates that a buffer used during an MPI call
+ * must not be used until that call is finished.
  */
 class BasicSerializerNewImpl
 : public BasicSerializer::Impl
 {
-  //! Index du tag pour identifier qu'il s'agit d'une sérialisation
+  //! Index of the tag to identify that it is a serialization
   static constexpr int IDX_TAG = 0;
-  //! Tag identifiant la sérialisation
+  //! Tag identifying the serialization
   static constexpr Int64 SERIALIZE_TAG = 0x7a9b3cd0;
-  //! Version de la sérialisation
+  //! Serialization version
   static constexpr int IDX_VERSION = 1;
-  //! Champ réservé pour des informations supplémentaires (par exemple compression)
+  //! Field reserved for additional information (e.g., compression)
   static constexpr int IDX_RESERVED1 = 2;
 
-  //! Position du champs indiquant la taille totale de la sérialisation
+  //! Position of the field indicating the total size of the serialization
   static constexpr int IDX_TOTAL_SIZE = 3;
 
   static constexpr int IDX_NB_BYTE = 4;
@@ -72,7 +72,7 @@ class BasicSerializerNewImpl
   static constexpr int IDX_NB_INT8 = 13;
   static constexpr int IDX_NB_BFLOAT16 = 14;
 
-  // Laisse de la place pour de nouveaux types.
+  // Leaves room for new types.
   static constexpr int IDX_POS_BYTE = 32;
   static constexpr int IDX_POS_FLOAT16 = 33;
   static constexpr int IDX_POS_FLOAT32 = 34;
@@ -86,14 +86,14 @@ class BasicSerializerNewImpl
   static constexpr int IDX_POS_BFLOAT16 = 42;
 
   static constexpr Integer NB_SIZE_ELEM = 128;
-  // La taille de l'alignement est aussi un diviseur de la mémoire
-  // allouée pour le message. Elle ne doit pas être modifiée sans modifier
-  // la gestion MPI de la sérialisation.
+  // The alignment size is also a divisor of the memory
+  // allocated for the message. It must not be modified without modifying
+  // the MPI serialization handling.
   static constexpr Integer ALIGN_SIZE = BasicSerializer::paddingSize();
 
  public:
 
-  //! Informations sur la taille allouée avec et sans padding.
+  //! Information about the allocated size with and without padding.
   struct SizeInfo
   {
    public:
@@ -104,31 +104,31 @@ class BasicSerializerNewImpl
 
  public:
 
-  //! Tableau contenant les données sérialisées
+  //! Array containing the serialized data
   UniqueArray<Byte> m_buffer;
 
-  //! Vue alignée sur ALIGN_SIZE du m_buffer
+  //! View aligned to ALIGN_SIZE of m_buffer
   Span<Byte> m_buffer_view;
 
-  Span<Real> m_real_view; //!< Vue sur les reels;
-  Span<Int64> m_int64_view; //!< Vue sur les entiers 64 bits
-  Span<Int32> m_int32_view; //!< Vue sur les entiers 32 bits
-  Span<Int16> m_int16_view; //!< Vue sur les entiers 16 bits
-  Span<Byte> m_byte_view; //!< Vue les octets
-  Span<Int8> m_int8_view; //!< Vue les Int8
-  Span<Float16> m_float16_view; //!< Vue les Float16
-  Span<BFloat16> m_bfloat16_view; //!< Vue les BFloat16
-  Span<Float32> m_float32_view; //!< Vue les Float32
-  Span<Float128> m_float128_view; //!< Vue les Float128
-  Span<Int128> m_int128_view; //!< Vue les Int128
+  Span<Real> m_real_view; //!< View on reals;
+  Span<Int64> m_int64_view; //!< View on 64-bit integers
+  Span<Int32> m_int32_view; //!< View on 32-bit integers
+  Span<Int16> m_int16_view; //!< View on 16-bit integers
+  Span<Byte> m_byte_view; //!< View on bytes
+  Span<Int8> m_int8_view; //!< View on Int8
+  Span<Float16> m_float16_view; //!< View on Float16
+  Span<BFloat16> m_bfloat16_view; //!< View on BFloat16
+  Span<Float32> m_float32_view; //!< View on Float32
+  Span<Float128> m_float128_view; //!< View on Float128
+  Span<Int128> m_int128_view; //!< View on Int128
 
-  ArrayView<Int64> m_sizes_view; //!< Vue pour les tailles (doit être un multiple de ALIGN_SIZE);
+  ArrayView<Int64> m_sizes_view; //!< View for sizes (must be a multiple of ALIGN_SIZE);
 
   /*!
-   * \brief Copie des tailles utilisée pour l'envoie en plusieurs fois.
+   * \brief Copy of sizes used for multi-part sending.
    *
-   * Seuls les premiers éléments (actuellement 40) sont utilisés mais
-   * la taille de cette structure doit être un multiple de ALIGN_SIZE.
+   * Only the first elements (currently 40) are used, but
+   * the size of this structure must be a multiple of ALIGN_SIZE.
    */
   Int64 m_size_copy_buffer[NB_SIZE_ELEM];
 
@@ -367,8 +367,8 @@ class BasicSerializerNewImpl
 
   ConstArrayView<Byte> copyAndGetSizesBuffer() override
   {
-    // Recopie dans \a m_size_copy_buffer les valeurs de \a m_size_view
-    // et retourne un pointeur sur \a m_size_copy_buffer.
+    // Copies the values from \a m_size_view into \a m_size_copy_buffer
+    // and returns a pointer to \a m_size_copy_buffer.
     ArrayView<Int64> copy_buf(NB_SIZE_ELEM, m_size_copy_buffer);
     copy_buf.copy(m_sizes_view);
     ConstArrayView<Byte> bytes(sizeof(m_size_copy_buffer), (const Byte*)m_size_copy_buffer);
@@ -421,10 +421,10 @@ class BasicSerializerNewImpl
   }
 
   /*!
-   * \brief Remplit avec une valeur fixe les zones correspondantes au padding.
-   * Cela permet d'éviter d'avoir des valeurs non initialisées.
+   * \brief Fills the padding zones corresponding to the padding with a fixed value.
+   * This prevents having uninitialized values.
    *
-   * Il faut avoir appeler _allocBuffer() avant
+   * _allocBuffer() must be called beforehand
    */
   void _fillPadding(Int64 position, SizeInfo size_info)
   {
@@ -435,8 +435,8 @@ class BasicSerializerNewImpl
 
   void _fillPadding(Span<Byte> buf)
   {
-    // Utilise une valeur non nulle pour repérer plus facilement
-    // les zones de padding si besoin.
+    // Uses a non-zero value to easily locate
+    // padding zones if needed.
     constexpr Byte v = (Byte)(250);
     for (Int64 i = 0, s = buf.size(); i < s; ++i)
       buf[i] = v;
@@ -501,11 +501,11 @@ class BasicSerializerNewImpl
     if (padding != 0) {
       position = ALIGN_SIZE - padding;
     }
-    // La taille doit être un multiple de ALIGN_SIZE;
+    // The size must be a multiple of ALIGN_SIZE;
     Int64 new_size = (size + ALIGN_SIZE) - (size % ALIGN_SIZE);
     m_buffer_view = m_buffer.span().subspan(position, new_size);
 
-    // Initialise les valeurs de la zone tampon
+    // Initialize the buffer zone values
     auto padding_view = m_buffer.span().subspan(position + size, new_size - size);
     _fillPadding(padding_view);
   }
@@ -579,7 +579,7 @@ reserve(eDataType dt, Int64 n, Int64 nb_put)
     ARCCORE_THROW(ArgumentException, "bad datatype v={0}", (int)dt);
   }
   if (m_is_serialize_typeinfo)
-    // Pour le type de la donnée.
+    // For the data type.
     m_byte.m_reserved_size += nb_put;
 }
 
@@ -628,7 +628,7 @@ reserve(eBasicDataType bdt, Int64 n, Int64 nb_put)
     ARCCORE_THROW(ArgumentException, "Bad basic datatype v={0}", (int)bdt);
   }
   if (m_is_serialize_typeinfo)
-    // Pour le type de la donnée.
+    // For the data type.
     m_byte.m_reserved_size += nb_put;
 }
 
@@ -851,7 +851,7 @@ _p() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: rendre ces méthodes privées.
+// TODO: make these methods private.
 Span<Real> BasicSerializer::realBuffer()
 {
   return m_p2->m_real.m_buffer;
@@ -1419,8 +1419,8 @@ getArray(Array<Int128>& values)
 void BasicSerializer::
 get(String& str)
 {
-  // TODO: il faudrait utiliser des Int64 mais cela casse la compatibilité.
-  // A étudier.
+  // TODO: it would be necessary to use Int64 but this breaks compatibility.
+  // To be studied.
   ARCCORE_ASSERT((m_p2->m_mode == ModeGet), ("Bad mode"));
   Int64 len = getInt64();
   UniqueArray<Byte> bytes(len);
@@ -1619,7 +1619,7 @@ isSerializeTypeInfo() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

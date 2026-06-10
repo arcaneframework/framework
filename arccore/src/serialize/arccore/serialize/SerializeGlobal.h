@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SerializeGlobal.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Définitions globales de la composante 'Serialize' de 'Arccore'.           */
+/* Global definitions for the 'Serialize' component of 'Arccore'.            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_SERIALIZE_SERIALIZEGLOBAL_H
 #define ARCCORE_SERIALIZE_SERIALIZEGLOBAL_H
@@ -42,19 +42,18 @@ class BasicSerializer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arccore
 {
-using Arcane::ISerializer;
 using Arcane::BasicSerializer;
-}
+using Arcane::ISerializer;
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

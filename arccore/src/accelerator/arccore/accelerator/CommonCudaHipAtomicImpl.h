@@ -7,24 +7,24 @@
 /*---------------------------------------------------------------------------*/
 /* CommonCudaHipAtomicImpl.h                                   (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation CUDA et HIP des opérations atomiques.                      */
+/* CUDA and HIP implementation of atomic operations.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_COMMONCUDHIPATOMICIMPL_H
 #define ARCCORE_ACCELERATOR_COMMONCUDHIPATOMICIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Ce fichier doit être inclus uniquement par 'arcane/accelerator/Reduce.h'
-// et n'est valide que compilé par le compilateur CUDA et HIP
+// This file must only be included by 'arcane/accelerator/Reduce.h'
+// and is only valid when compiled by the CUDA and HIP compilers
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Attention: avec ROCm et un GPU sur bus PCI express la plupart des
-// méthodes atomiques ne fonctionnent pas si le pointeur est allouée
-// en mémoire unifiée. A priori le problème se pose avec atomicMin, atomicMax,
-// atomicInc. Par contre atomicAdd a l'air de fonctionner si les accès
-// concurrents ne sont pas trop nombreux.
+// Warning: with ROCm and a GPU on a PCI express bus, most
+// atomic methods do not work if the pointer is allocated
+// in unified memory. The problem seems to occur with atomicMin, atomicMax,
+// atomicInc. However, atomicAdd seems to work if concurrent accesses
+// are not too numerous.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -144,9 +144,9 @@ class CommonCudaHipAtomic<Int64, eAtomicOperation::Min>
 #endif
 };
 
-// Les devices d'architecture inférieure à 6.0 ne supportent pas
-// les atomicAdd sur les 'double'.
-// Ce code est issu de la documentation NVIDIA (programming guide)
+// Devices with architecture less than 6.0 do not support
+// atomicAdd on 'double'.
+// This code is derived from NVIDIA documentation (programming guide)
 __device__ inline double
 preArch60atomicAdd(double* address, double val)
 {

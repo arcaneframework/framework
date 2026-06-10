@@ -1,4 +1,4 @@
-set(SOURCES
+﻿set(SOURCES
   AlinaGlobal.h
   AlinaGlobal.cc
   AlinaUtils.cc

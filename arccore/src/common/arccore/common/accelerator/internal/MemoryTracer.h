@@ -7,7 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryTracer.h                                              (C) 2000-2026 */
 /*                                                                           */
-/* Utilitaires pour tracer les accès mémoire entre l'accélérateur et l'hôte. */
+/* Utilities for tracing memory accesses between the accelerator and the     */
+/* host.                                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_MEMORYTRACER_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_MEMORYTRACER_H
@@ -26,10 +27,11 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe utilitaire pour tracer les accès mémoire entre l'accélérateur
- * et l'hôte.
+ * \brief Utility class for tracing memory accesses between the accelerator
+ * and the host.
  */
 class ARCCORE_COMMON_EXPORT MemoryTracer
 {
@@ -42,9 +44,10 @@ class ARCCORE_COMMON_EXPORT MemoryTracer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe utilitaire pour tracer les allocations/désallocation
+ * \brief Utility class for tracing allocations/deallocations
  */
 class ARCCORE_COMMON_EXPORT MemoryTracerWrapper
 {

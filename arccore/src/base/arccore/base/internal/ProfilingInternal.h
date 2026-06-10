@@ -7,15 +7,15 @@
 /*---------------------------------------------------------------------------*/
 /* ProfilingInternal.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Classes internes pour gérer le profilage.                                 */
+/* Internal classes for managing profiling.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_INTERNAL_PROFILINGINTERNAL_H
 #define ARCCORE_BASE_INTERNAL_PROFILINGINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Note: ce fichier n'est pas disponible pour les utilisateurs de Arcane.
-// Il ne faut donc pas l'inclure dans un fichier d'en-tête public.
+// Note: this file is not available for Arcane users.
+// Therefore, it should not be included in a public header file.
 
 #include "arccore/base/String.h"
 #include "arccore/base/FixedArray.h"
@@ -32,14 +32,15 @@ namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Statistiques d'exécution d'une boucle.
+ * \brief Execution statistics of a loop.
  */
 struct ARCCORE_BASE_EXPORT ForLoopProfilingStat
 {
  public:
 
-  //! Ajoute les infos de l'exécution \a s
+  //! Adds the execution info of s
   void add(const ForLoopOneExecStat& s);
 
   Int64 nbCall() const { return m_nb_call; }
@@ -64,14 +65,15 @@ class ARCCORE_BASE_EXPORT ForLoopStatInfoListImpl
 
  public:
 
-  // TODO Utiliser un hash pour le map plutôt qu'une String pour accélérer les comparaisons
+  // TODO Use a hash for the map instead of a String to speed up comparisons
   std::map<String, ForLoopProfilingStat> m_stat_map;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Statistiques cumulées sur le nombre de boucles exécutées.
+ * \brief Cumulative statistics on the number of executed loops.
  */
 class ARCCORE_BASE_EXPORT ForLoopCumulativeStat
 {
@@ -99,17 +101,18 @@ class ARCCORE_BASE_EXPORT ForLoopCumulativeStat
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Statistiques pour les accélérateurs.
+ * \brief Statistics for accelerators.
  *
- * TODO: regarder comment rendre cela plus générique et permettre à
- * l'implémentation d'ajouter ses évènements
+ * TODO: look into how to make this more generic and allow the implementation
+ * to add its events
  */
 class ARCCORE_BASE_EXPORT AcceleratorStatInfoList
 {
  public:
 
-  //! Informations sur les transferts mémoire entre CPU et GPU
+  //! Information on memory transfers between CPU and GPU
   class MemoryTransferInfo
   {
    public:
@@ -126,7 +129,7 @@ class ARCCORE_BASE_EXPORT AcceleratorStatInfoList
     Int64 m_nb_call = 0;
   };
 
-  //! Informations sur les défauts de page sur CPU ou GPU
+  //! Information on page faults on CPU or GPU
   class MemoryPageFaultInfo
   {
    public:
@@ -181,10 +184,10 @@ class ARCCORE_BASE_EXPORT AcceleratorStatInfoList
 
  private:
 
-  // Doit avoir le même nombre d'éléments que 'eMemoryTransfertType'
+  // Must have the same number of elements as 'eMemoryTransfertType'
   FixedArray<MemoryTransferInfo, 2> m_managed_memory_transfer_list;
 
-  // Doit avoir le même nombre d'éléments que 'eMemoryPageFaultType'
+  // Must have the same number of elements as 'eMemoryPageFaultType'
   FixedArray<MemoryPageFaultInfo, 2> m_managed_memory_page_fault_list;
 };
 
@@ -192,7 +195,7 @@ class ARCCORE_BASE_EXPORT AcceleratorStatInfoList
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Affiche les statistiques de profiling sur le flot \a o.
+ * \brief Displays profiling statistics to the stream o.
  */
 extern "C++" ARCCORE_BASE_EXPORT void
 dumpProfilingStatistics(std::ostream& o);

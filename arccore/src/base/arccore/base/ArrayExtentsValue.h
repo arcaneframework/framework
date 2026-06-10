@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArrayExtentsValue.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Gestion de valeurs des dimensions des tableaux N-dimensions.              */
+/* Handling of N-dimensional array dimension values.                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_ARRAYEXTENTSVALUE_H
 #define ARCCORE_BASE_ARRAYEXTENTSVALUE_H
@@ -37,9 +37,9 @@ fastmod(T a, T b)
 }
 
 /*!
- * \brief Informations pour une dimension fixe connue à la compilation.
+ * \brief Information for a fixed dimension known at compile time.
  *
- * La valeur de la dimension est donnée en paramètre template
+ * The dimension value is given as a template parameter
  */
 template <Int32 Size, typename IndexType_ = Int32>
 class ExtentValue
@@ -51,9 +51,9 @@ class ExtentValue
 };
 
 /*!
- * \brief Spécialisation pour une dimension dynamique.
+ * \brief Specialization for a dynamic dimension.
  *
- * La valeur de la dimension est conservée dans \a v.
+ * The dimension value is stored in \a v.
  */
 template <typename IndexType_>
 class ExtentValue<DynExtent, IndexType_>
@@ -69,8 +69,9 @@ class ExtentValue<DynExtent, IndexType_>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation pour contenir les dimensions d'un tableau à 1 dimension.
+ * \brief Specialization to hold the dimensions of a 1-dimensional array.
  */
 template <typename IndexType_, Int32 X0>
 class ArrayExtentsValue<IndexType_, X0>
@@ -109,7 +110,7 @@ class ArrayExtentsValue<IndexType_, X0>
 
   constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
 
-  //! Liste des dimensions dynamiques
+  //! List of dynamic dimensions
   constexpr DynamicDimsType dynamicExtents() const
   {
     std::array<Int32, ExtentsType::nb_dynamic> x = {};
@@ -127,7 +128,7 @@ class ArrayExtentsValue<IndexType_, X0>
       m_extent0.v = extents[0];
   }
 
-  //! Construit une instance avec les N valeurs dynamiques.
+  //! Constructs an instance with the N dynamic values.
   constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
   {
     Int32 i = 0;
@@ -152,8 +153,9 @@ class ArrayExtentsValue<IndexType_, X0>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation pour contenir les dimensions d'un tableau à 2 dimensions.
+ * \brief Specialization to hold the dimensions of a 2-dimensional array.
  */
 template <typename IndexType_, Int32 X0, Int32 X1>
 class ArrayExtentsValue<IndexType_, X0, X1>
@@ -201,7 +203,7 @@ class ArrayExtentsValue<IndexType_, X0, X1>
   constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
   constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
 
-  //! Liste des dimensions dynamiques
+  //! List of dynamic dimensions
   constexpr DynamicDimsType dynamicExtents() const
   {
     std::array<Int32, ExtentsType::nb_dynamic> x = {};
@@ -223,7 +225,7 @@ class ArrayExtentsValue<IndexType_, X0, X1>
       m_extent1.v = extents[1];
   }
 
-  //! Construit une instance avec les N valeurs dynamiques.
+  //! Constructs an instance with the N dynamic values.
   constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
   {
     Int32 i = 0;
@@ -252,8 +254,9 @@ class ArrayExtentsValue<IndexType_, X0, X1>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation pour contenir les dimensions d'un tableau à 3 dimensions.
+ * \brief Specialization to hold the dimensions of a 3-dimensional array.
  */
 template <typename IndexType_, Int32 X0, Int32 X1, Int32 X2>
 class ArrayExtentsValue<IndexType_, X0, X1, X2>
@@ -306,7 +309,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
   constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
   constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extent2.v; };
 
-  //! Liste des dimensions dynamiques
+  //! List of dynamic dimensions
   constexpr DynamicDimsType dynamicExtents() const
   {
     std::array<Int32, ExtentsType::nb_dynamic> x = {};
@@ -332,7 +335,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
       m_extent2.v = extents[2];
   }
 
-  //! Construit une instance avec les N valeurs dynamiques.
+  //! Constructs an instance with N dynamic values.
   constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
   {
     Int32 i = 0;
@@ -365,8 +368,9 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Spécialisation pour contenir les dimensions d'un tableau à 4 dimensions.
+ * \brief Specialization to hold the dimensions of a 4-dimensional array.
  */
 template <typename IndexType_, Int32 X0, Int32 X1, Int32 X2, Int32 X3>
 class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
@@ -426,7 +430,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
   constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extent2.v; };
   constexpr ARCCORE_HOST_DEVICE Int32 extent3() const { return m_extent3.v; };
 
-  //! Liste des dimensions dynamiques
+  //! List of dynamic dimensions
   constexpr DynamicDimsType dynamicExtents() const
   {
     std::array<Int32, ExtentsType::nb_dynamic> x = {};
@@ -456,7 +460,7 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
       m_extent3.v = extents[3];
   }
 
-  //! Construit une instance avec les N valeurs dynamiques.
+  //! Constructs an instance with N dynamic values.
   ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DynamicDimsType dims)
   {
     Int32 i = 0;
@@ -499,4 +503,4 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

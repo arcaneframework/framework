@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BasicSerializerInternal.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Partie interne de 'BasicSerializer'.                                      */
+/* Internal part of 'BasicSerializer'.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_SERIALIZE_BASICSERIALIZERINTERNAL_H
 #define ARCCORE_SERIALIZE_BASICSERIALIZERINTERNAL_H
@@ -143,7 +143,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer::Impl2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ForLoopRanges.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Intervalles d'itérations pour les boucles.                                */
+/* Iteration ranges for loops.                                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_FORLOOPRANGES_H
 #define ARCCORE_BASE_FORLOOPRANGES_H
@@ -24,20 +24,21 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Intervalle d'itération pour une boucle.
+ * \brief Iteration range for a loop.
  */
-template<typename IndexType_>
+template <typename IndexType_>
 class ForLoopRange
 {
  public:
 
-  //! Créé un interval entre *[lower_bound,lower_bound+size[*
+  //! Creates an interval between *[lower_bound,lower_bound+size[*
   ForLoopRange(IndexType_ lower_bound, IndexType_ size)
   : m_lower_bound(lower_bound)
   , m_size(size)
   {}
-  //! Créé un interval entre *[0,size[*
+  //! Creates an interval between *[0,size[*
   explicit(false) ForLoopRange(IndexType_ size)
   : m_lower_bound(0)
   , m_size(size)
@@ -57,10 +58,11 @@ class ForLoopRange
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interval d'itération simple.
+ * \brief Simple iteration range.
  *
- * Les indices de début pour chaque dimension commencent à 0.
+ * The starting indices for each dimension start at 0.
  */
 template <int N, typename IndexType_>
 class SimpleForLoopRanges
@@ -98,12 +100,13 @@ class SimpleForLoopRanges
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interval d'itération complexe.
+ * \brief Complex iteration range.
  *
- * Les indices de début pour chaque dimension sont spécifiés \a lower et
- * le nombre d'éléments dans chaque dimension par \a extents.
+ * The starting indices for each dimension are specified by \a lower and
+ * the number of elements in each dimension by \a extents.
  */
 template <int N, typename IndexType_>
 class ComplexForLoopRanges
@@ -147,7 +150,8 @@ class ComplexForLoopRanges
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Créé un intervalle d'itération [0,n1[
+
+//! Creates an iteration range [0,n1[, [0,n2[
 inline SimpleForLoopRanges<1>
 makeLoopRanges(Int32 n1)
 {
@@ -157,7 +161,7 @@ makeLoopRanges(Int32 n1)
   return BoundsType(ArrayExtentType(n1));
 }
 
-//! Créé un intervalle d'itération [0,n1[, [0,n2[
+//! Creates an iteration range [0,n1[, [0,n2[
 inline SimpleForLoopRanges<2>
 makeLoopRanges(Int32 n1, Int32 n2)
 {
@@ -167,7 +171,7 @@ makeLoopRanges(Int32 n1, Int32 n2)
   return BoundsType(ArrayExtentType(n1, n2));
 }
 
-//! Créé un intervalle d'itération [0,n1[, [0,n2[, [0,n3[
+//! Creates an iteration range [0,n1[, [0,n2[, [0,n3[
 inline SimpleForLoopRanges<3>
 makeLoopRanges(Int32 n1, Int32 n2, Int32 n3)
 {
@@ -177,7 +181,7 @@ makeLoopRanges(Int32 n1, Int32 n2, Int32 n3)
   return BoundsType(ArrayExtentType(n1, n2, n3));
 }
 
-//! Créé un intervalle d'itération [0,n1[, [0,n2[, [0,n3[, [0,n4[
+//! Creates an iteration range [0,n1[, [0,n2[, [0,n3[, [0,n4[
 inline SimpleForLoopRanges<4>
 makeLoopRanges(Int32 n1, Int32 n2, Int32 n3, Int32 n4)
 {
@@ -187,7 +191,7 @@ makeLoopRanges(Int32 n1, Int32 n2, Int32 n3, Int32 n4)
   return BoundsType(ArrayExtentType(n1, n2, n3, n4));
 }
 
-//! Créé un intervalle d'itération dans ℕ.
+//! Creates an iteration range in N.
 inline ComplexForLoopRanges<1>
 makeLoopRanges(ForLoopRange<Int32> n1)
 {
@@ -199,7 +203,7 @@ makeLoopRanges(ForLoopRange<Int32> n1)
   return { lower_bounds, sizes };
 }
 
-//! Créé un intervalle d'itération dans ℕ².
+//! Creates an iteration range in N^2.
 inline ComplexForLoopRanges<2>
 makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2)
 {
@@ -211,7 +215,7 @@ makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2)
   return { lower_bounds, sizes };
 }
 
-//! Créé un intervalle d'itération dans ℕ³.
+//! Creates an iteration range in N^3.
 inline ComplexForLoopRanges<3>
 makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2, ForLoopRange<Int32> n3)
 {
@@ -223,7 +227,7 @@ makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2, ForLoopRange<Int3
   return { lower_bounds, sizes };
 }
 
-//! Créé un intervalle d'itération dans ℕ⁴.
+//! Creates an iteration range in N^4.
 inline ComplexForLoopRanges<4>
 makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2, ForLoopRange<Int32> n3, ForLoopRange<Int32> n4)
 {

@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiContigMachineShMemWinBaseInternal.h                      (C) 2000-2026 */
+/* MpiContigMachineShMemWinBaseInternal.cc                     (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer une fenêtre mémoire pour un noeud              */
-/* de calcul avec MPI. Cette fenêtre sera contigüe pour tous les processus   */
-/* d'un même noeud.                                                          */
+/* Class allowing the creation of a memory window for a calculation node     */
+/* with MPI. This window will be contiguous for all processes on the same    */
+/* node.                                                                     */
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/internal/MpiContigMachineShMemWinBaseInternal.h"
@@ -37,13 +38,13 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
 , m_machine_ranks(machine_ranks)
 , m_actual_sizeof_win(-1)
 {
-  // Toutes les fenêtres de cette classe doivent être contigües.
+  // All windows of this class must be contiguous.
   MPI_Info win_info;
   MPI_Info_create(&win_info);
   MPI_Info_set(win_info, "alloc_shared_noncontig", "false");
 
-  // On alloue la fenêtre principale (qui contiendra les données de l'utilisateur.
-  // On ne récupère pas le pointeur vers le segment.
+  // Allocate the main window (which will contain the user data.
+  // We do not retrieve the segment pointer.
   {
     void* ptr_seg = nullptr;
     int error = MPI_Win_allocate_shared(sizeof_segment, m_sizeof_type, win_info, m_comm_machine, &ptr_seg, &m_win);
@@ -55,8 +56,8 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
 
   //--------------------------
 
-  // On alloue la fenêtre qui contiendra la taille de chaque segment de la
-  // fenêtre principale.
+  // Allocate the window that will contain the size of each segment of the
+  // main window.
   {
     Int64* ptr_seg = nullptr;
     int error = MPI_Win_allocate_shared(sizeof(Int64), sizeof(Int64), win_info, m_comm_machine, &ptr_seg, &m_win_sizeof_segments);
@@ -64,13 +65,13 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
     if (error != MPI_SUCCESS) {
       ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
     }
-    // On utilise le pointeur vers notre segment pour mettre la taille de
-    // notre segment de la fenêtre principale.
+    // We use the pointer to our segment to set the size of
+    // our segment in the main window.
     *ptr_seg = sizeof_segment;
   }
 
-  // On alloue la fenêtre qui contiendra la position de chaque segment de la
-  // fenêtre principale.
+  // Allocate the window that will contain the position of each segment of the
+  // main window.
   {
     Int64* ptr_seg = nullptr;
     int error = MPI_Win_allocate_shared(sizeof(Int64), sizeof(Int64), win_info, m_comm_machine, &ptr_seg, &m_win_sum_sizeof_segments);
@@ -89,9 +90,9 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
 #ifdef ARCCORE_DEBUG
 
   for (Int32 i = 0; i < m_comm_machine_size; ++i) {
-    // On crée une vue sur toute la fenêtre contenant les tailles.
-    // (la boucle est là uniquement en mode debug pour vérifier qu'on a bien
-    // des fenêtres contigües).
+    // Create a view on the entire window containing the sizes.
+    // (The loop is only here in debug mode to verify that we have
+    // contiguous windows).
     {
       MPI_Aint size_seg;
       int size_type;
@@ -106,14 +107,14 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
       }
 
       if (m_sizeof_segments_span.data() + i != ptr_seg) {
-        ARCCORE_FATAL("Pb d'adresse de segment");
+        ARCCORE_FATAL("Segment address error");
       }
       if (m_sizeof_segments_span[i] != *ptr_seg) {
-        ARCCORE_FATAL("Pb taille de segment");
+        ARCCORE_FATAL("Segment size error");
       }
     }
 
-    // On crée une vue sur toute la fenêtre contenant les positions des segments.
+    // Create a view on the entire window containing the segment positions.
     {
       MPI_Aint size_seg;
       int size_type;
@@ -128,12 +129,12 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
       }
 
       if (m_sum_sizeof_segments_span.data() + i != ptr_seg) {
-        ARCCORE_FATAL("Pb d'adresse de segment");
+        ARCCORE_FATAL("Segment address error");
       }
     }
   }
 #else
-  // On crée une vue sur toute la fenêtre contenant les tailles.
+  // Create a view on the entire window containing the sizes.
   {
     MPI_Aint size_seg;
     int size_type;
@@ -146,7 +147,7 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
     m_sizeof_segments_span = SmallSpan<Int64>{ ptr_seg, m_comm_machine_size };
   }
 
-  // On crée une vue sur toute la fenêtre contenant les positions des segments.
+  // Create a view on the entire window containing the segment positions.
   {
     MPI_Aint size_seg;
     int size_type;
@@ -163,8 +164,8 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
 
   //--------------------------
 
-  // Seul le processus 0 doit remplir les positions.
-  // Tout le monde calcule la taille de la fenêtre principale.
+  // Only process 0 must fill the positions.
+  // Everyone calculates the size of the main window.
   if (m_comm_machine_rank == 0) {
     for (Int32 i = 0; i < m_comm_machine_size; ++i) {
       m_sum_sizeof_segments_span[i] = m_max_sizeof_win;
@@ -179,8 +180,8 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
 
   MPI_Barrier(m_comm_machine);
 
-  // La taille actuelle de la fenêtre est sa taille max.
-  // Utile en cas de resize.
+  // The current size of the window is its max size.
+  // Useful in case of resize.
   m_actual_sizeof_win = m_max_sizeof_win;
 
   //--------------------------
@@ -189,9 +190,9 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
   Int64 sum = 0;
 
   for (Int32 i = 0; i < m_comm_machine_size; ++i) {
-    // On crée la vue vers la fenêtre principale.
-    // (la boucle est là uniquement en mode debug pour vérifier qu'on a bien
-    // une fenêtre contigüe).
+    // Create the view to the main window.
+    // (The loop is only here in debug mode to verify that we have
+    // a contiguous window).
     MPI_Aint size_seg;
     int size_type;
     std::byte* ptr_seg = nullptr;
@@ -205,18 +206,18 @@ MpiContigMachineShMemWinBaseInternal(Int64 sizeof_segment, Int32 sizeof_type, co
     }
 
     if (ptr_seg != (m_window_span.data() + sum)) {
-      ARCCORE_FATAL("Pb d'adresse de segment");
+      ARCCORE_FATAL("Segment address error");
     }
     if (size_seg != m_sizeof_segments_span[i]) {
-      ARCCORE_FATAL("Pb taille de segment");
+      ARCCORE_FATAL("Segment size error");
     }
     sum += size_seg;
   }
   if (sum != m_max_sizeof_win) {
-    ARCCORE_FATAL("Pb taille de window -- Expected : {0} -- Found : {1}", m_max_sizeof_win, sum);
+    ARCCORE_FATAL("Window size error -- Expected : {0} -- Found : {1}", m_max_sizeof_win, sum);
   }
 #else
-  // On crée la vue vers la fenêtre principale.
+  // Create the view to the main window.
   {
     MPI_Aint size_seg;
     int size_type;

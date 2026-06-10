@@ -1,6 +1,6 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Runtime Arccore pour CUDA
+# Arccore Runtime for CUDA
 
 message(STATUS "Adding Arccore Runtime for Cuda")
 

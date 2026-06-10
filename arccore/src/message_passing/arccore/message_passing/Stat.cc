@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Stat.cc                                                     (C) 2000-2025 */
 /*                                                                           */
-/* Statistiques sur le parallélisme.                                         */
+/* Statistics on parallelism.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -86,7 +86,7 @@ print(std::ostream& o)
 Stat::
 ~Stat()
 {
-  // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
+  // TODO(FL): To be removed when m_list is deleted (handling DEPRECATED)
   for (const auto& i : m_list) {
     OneStat* os = i.second;
     delete os;
@@ -102,7 +102,7 @@ add(const String& name, double elapsed_time, Int64 msg_size)
 {
   if (!m_is_enabled)
     return;
-  // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
+  // TODO(FL): To be removed when m_list is deleted (handling DEPRECATED)
   OneStat* os = _find(name);
   os->addMessage(msg_size, elapsed_time);
 
@@ -115,7 +115,7 @@ add(const String& name, double elapsed_time, Int64 msg_size)
 void Stat::
 print(std::ostream& o)
 {
-  // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
+  // TODO(FL): To be removed when m_list is deleted (handling DEPRECATED)
   for (const auto& i : m_list) {
     OneStat* os = i.second;
     os->print(o);
@@ -128,7 +128,7 @@ print(std::ostream& o)
 void Stat::
 resetCurrentStat()
 {
-  // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
+  // TODO(FL): To be removed when m_list is deleted (handling DEPRECATED)
   for (auto& i : m_list)
     i.second->resetCurrentStat();
 
@@ -146,8 +146,8 @@ _find(const String& name)
     return i->second;
 
   OneStat* os = new OneStat(name);
-  // Important: utiliser os.m_name car m_list stocke juste un
-  // pointeur sur la chaîne de caractère.
+  // Important: use os.m_name because m_list only stores // a pointer to
+  // the character string.
   m_list.insert(OneStatMap::value_type(os->name(), os));
   return os;
 }
@@ -202,7 +202,7 @@ mergeAllData(const StatData& all_stat)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Surcharge temporaire avant de gerer le DEPRECATED OneStatMap
+// Temporary overload before handling the DEPRECATED OneStatMap
 void StatData::
 mergeAllData(const OneStatMap& all_stat)
 {
@@ -222,7 +222,7 @@ statList() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

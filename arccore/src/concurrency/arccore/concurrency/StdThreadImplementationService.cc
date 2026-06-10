@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* StdThreadImplementationService.cc                           (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation des threads utilisant la bibliothèque standard C++.        */
+/* Implementation of threads using the C++ standard library.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -29,8 +29,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation des threads utilisant les classes C++20 de la STL.
+ * \brief Implementation of threads using C++20 STL classes.
  */
 class StdThreadImplementationService
 : public IThreadImplementationService
@@ -49,11 +50,12 @@ class StdThreadImplementationService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation des threads utilisant LegacyStdBarrier pour les barrières.
+ * \brief Implementation of threads using LegacyStdBarrier for barriers.
  *
- * Cette implémentation n'est utile que tant que la classe StdThreadImplementation
- * est en cours de validation (mars 2026). Elle pourra être supprimée par la suite.
+ * This implementation is only useful while the StdThreadImplementation
+ * is being validated (March 2026). It may be removed later.
  */
 class LegacyStdThreadImplementationService
 : public IThreadImplementationService

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMpiProfiling.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'abstraction des operations MPI.                               */
+/* Abstraction interface for MPI operations.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_IMPIPROFILING_H
 #define ARCCORE_MESSAGEPASSINGMPI_IMPIPROFILING_H
@@ -30,25 +30,29 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'abstraction pour les operations MPI.
- * Sert principalement a utiliser un decorateur pour les fonctions MPI
- * afin de les profiler sans etre trop verbeux et intrusif dans le MPIAdapter
+ * \brief Abstraction interface for MPI operations.
+ * Primarily used to employ a decorator for MPI functions
+ * in order to profile them without being too verbose and intrusive in the MPIAdapter
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT IMpiProfiling
 : public IProfiler
 {
  public:
-  // Type de retour. Pour l'instant 'void' pour être conforme avec l'existant
-  // mais cela devrait être 'int' car c'est le type de retour de toutes les méthodes MPI.
+
+  // Return type. Currently 'void' to be compliant with existing code
+  // but it should be 'int' because it is the return type of all MPI methods.
   using ReturnType = void;
 
  public:
+
   IMpiProfiling() = default;
   virtual ~IMpiProfiling() = default;
 
  public:
+
   // Bcast
   virtual ReturnType broadcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm) = 0;
   // Gather
@@ -122,9 +126,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT IMpiProfiling
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::MessagePassing::Mpi
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

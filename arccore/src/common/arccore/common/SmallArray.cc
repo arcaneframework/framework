@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SmallArray.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Tableau 1D de données avec buffer pré-alloué.                             */
+/* 1D array of data with pre-allocated buffer.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,7 +25,7 @@ namespace Arcane::Impl
 
 namespace
 {
-  //! A mettre à true si on souhaite activer les traces d'allocation
+  //! Set to true if you want to activate allocation traces
   const bool is_verbose = false;
 } // namespace
 
@@ -52,11 +52,11 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr_info, Int64 new
   void* current_ptr = current_ptr_info.baseAddress();
   if (current_ptr != m_preallocated_buffer) {
     if (new_size < m_preallocated_size) {
-      // On passe d'un pointeur alloué vers notre buffer interne.
-      // Il faut recopier les valeurs. On ne connait pas exactement
-      // la taille de 'current_ptr' mais on est certain qu'elle est
-      // supérieure à 'm_preallocated_size' donc à 'new_size'.
-      // On ne recopie donc que ces valeurs là
+      // We switch from an allocated pointer to our internal buffer.
+      // We must copy the values. We do not know exactly
+      // the size of 'current_ptr' but we are certain that it is
+      // greater than 'm_preallocated_size' and thus greater than 'new_size'.
+      // We therefore only copy these values
       if (is_verbose)
         std::cout << "REALLOCATE: use own buffer from realloc s=" << new_size << "\n";
       std::memcpy(m_preallocated_buffer, current_ptr, new_size);
@@ -74,7 +74,7 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr_info, Int64 new
     return { m_preallocated_buffer, new_size };
   }
 
-  // Il faut allouer et recopier depuis le buffer pré-alloué.
+  // We must allocate and copy from the pre-allocated buffer.
   if (is_verbose)
     std::cout << "REALLOCATE: use malloc and copy s=" << new_size << "\n";
   void* new_ptr = std::malloc(new_size);
@@ -94,7 +94,7 @@ _freeMemory(void* ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IThreadBarrier.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Interface d'une barrière avec les threads.                                */
+/* Interface of a barrier with threads.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_ITHREADBARRIER_H
 #define ARCCORE_CONCURRENCY_ITHREADBARRIER_H
@@ -24,17 +24,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une barrière entre threads.
+ * \brief Interface of a barrier between threads.
  *
- * Une fois créée (via IThreadImplementation::createBarrier()),
- * la barrière doit être initialisée
- * via init() pour \a n threads. Ensuite, chaque thread doit
- * appeler la méthode wait() pour attendre que tous les
- * autres threads arrivent à ce même point.
- * La barrière peut être utilisée plusieurs fois.
- * Pour détruire la barrière, il faut appeler destroy(). Cela libère aussi
- * l'instance qui ne doit ensuite plus être utilisée.
+ * Once created (via IThreadImplementation::createBarrier()),
+ * the barrier must be initialized
+ * via init() for \a n threads. Then, each thread must
+ * call the wait() method to wait until all
+ * other threads reach this same point.
+ * The barrier can be used multiple times.
+ * To destroy the barrier, you must call destroy(). This also frees
+ * the instance which should no longer be used.
  */
 class ARCCORE_CONCURRENCY_EXPORT IThreadBarrier
 {
@@ -44,23 +45,22 @@ class ARCCORE_CONCURRENCY_EXPORT IThreadBarrier
 
  public:
 
-  //! Initialise la barrière pour \a nb_thread.
-  virtual void init(Integer nb_thread) =0;
+  //! Initializes the barrier for \a nb_thread.
+  virtual void init(Integer nb_thread) = 0;
 
-  //! Détruit la barrière.
-  virtual void destroy() =0;
+  //! Destroys the barrier.
+  virtual void destroy() = 0;
 
-  //! Bloque et attend que tous les threads appellent cette méthode.
+  //! Blocks and waits until all threads call this method.
   virtual void wait() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

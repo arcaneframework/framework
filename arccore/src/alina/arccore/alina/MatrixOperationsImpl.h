@@ -111,8 +111,9 @@ struct residual_impl<Matrix, Vector1, Vector2, Vector3,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Allows to do matrix-vector products with mixed scalar/nonscalar types.
+ * Allows matrix-vector products with mixed scalar/nonscalar types.
  * Reinterprets pointers to the vectors data into appropriate types.
  */
 template <class Alpha, class Matrix, class Vector1, class Beta, class Vector2>

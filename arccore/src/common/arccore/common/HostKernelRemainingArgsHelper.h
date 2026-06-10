@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* HostKernelRemainingArgsHelper.h                             (C) 2000-2025 */
 /*                                                                           */
-/* Classe pour exécuter une méthode en début et fin de noyau.                */
+/* Class to execute a method at the beginning and end of the kernel.         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_HOSTKERNELREMAININGARGSHELPER_H
 #define ARCCORE_COMMON_HOSTKERNELREMAININGARGSHELPER_H
@@ -24,23 +24,23 @@ namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe pour appliquer des méthodes des arguments additionnels
- * en début et fin de kernel.
+ * \brief Class to apply methods of additional arguments at the beginning and end of the kernel.
  */
 class HostKernelRemainingArgsHelper
 {
  public:
 
-  //! Applique les functors des arguments additionnels au début de l'itération.
+  //! Applies the functors of additional arguments at the beginning of the iteration.
   template <typename... RemainingArgs> static void
   applyAtBegin(RemainingArgs&... remaining_args)
   {
     (_doOneAtBegin(remaining_args), ...);
   }
 
-  //! Applique les functors des arguments additionnels à la fin de l'itération.
+  //! Applies the functors of additional arguments at the end of the iteration.
   template <typename... RemainingArgs> static void
   applyAtEnd(RemainingArgs&... remaining_args)
   {

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ITypeDispatcher.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des messages pour un type de données.                             */
+/* Message handling for a data type.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_ITYPEDISPATCHER_H
 #define ARCCORE_MESSAGEPASSING_ITYPEDISPATCHER_H
@@ -25,13 +25,15 @@
 namespace Arcane::MessagePassing
 {
 extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void
-_internalThrowNotImplementedTypeDispatcher ARCCORE_NORETURN ();
+_internalThrowNotImplementedTypeDispatcher
+ARCCORE_NORETURN();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestion des messages parallèles pour le type \a Type.
+ * \brief Parallel message handling for the type \a Type.
  */
 template <class Type>
 class ITypeDispatcher
@@ -76,9 +78,9 @@ class ITypeDispatcher
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

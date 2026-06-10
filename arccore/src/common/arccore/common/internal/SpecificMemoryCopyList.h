@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SpecificMemoryCopyList.h                                    (C) 2000-2026 */
 /*                                                                           */
-/* Classe template pour gérer des fonctions spécialisées de copie mémoire.   */
+/* Template class to manage specialized memory copy functions.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_SPECIFICMEMORYCOPYLIST_H
 #define ARCCORE_COMMON_INTERNAL_SPECIFICMEMORYCOPYLIST_H
@@ -30,8 +30,9 @@ namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments pour une copie de certains indices entre deux zones mémoire.
+ * \brief Arguments for copying specific indices between two memory regions.
  */
 class ARCCORE_COMMON_EXPORT IndexedMemoryCopyArgs
 {
@@ -59,15 +60,16 @@ class ARCCORE_COMMON_EXPORT IndexedMemoryCopyArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arguments pour une copie de certains indices vers/depuis
- * une zone mémoire multiple.
+ * \brief Arguments for copying specific indices to/from
+ * multiple memory regions.
  */
 class ARCCORE_COMMON_EXPORT IndexedMultiMemoryCopyArgs
 {
  public:
 
-  //! Constructeur pour copyTo
+  //! Constructor for copyTo
   IndexedMultiMemoryCopyArgs(SmallSpan<const Int32> indexes,
                              SmallSpan<const Span<const std::byte>> multi_memory,
                              Span<std::byte> destination,
@@ -78,7 +80,7 @@ class ARCCORE_COMMON_EXPORT IndexedMultiMemoryCopyArgs
   , m_queue(run_queue)
   {}
 
-  //! Constructor pour copyFrom
+  //! Constructor for copyFrom
   IndexedMultiMemoryCopyArgs(SmallSpan<const Int32> indexes,
                              SmallSpan<Span<std::byte>> multi_memory,
                              Span<const std::byte> source,
@@ -101,8 +103,9 @@ class ARCCORE_COMMON_EXPORT IndexedMultiMemoryCopyArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un copieur mémoire spécialisé pour une taille de donnée.
+ * \brief Interface of a specialized memory copier for a given data size.
  */
 class ARCCORE_COMMON_EXPORT ISpecificMemoryCopy
 {
@@ -123,8 +126,9 @@ class ARCCORE_COMMON_EXPORT ISpecificMemoryCopy
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'une liste d'instances de ISpecificMemoryCopy spécialisées.
+ * \brief Interface of a list of specialized ISpecificMemoryCopy instances.
  */
 class ARCCORE_COMMON_EXPORT ISpecificMemoryCopyList
 {
@@ -140,14 +144,14 @@ class ARCCORE_COMMON_EXPORT ISpecificMemoryCopyList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste d'instances de ISpecificMemoryCopy spécialisées.
+ * \brief List of specialized ISpecificMemoryCopy instances.
  *
- * Cette classe contient des instances de ISpecificMemoryCopy spécialisées
- * pour une taille et un type de données. Cela permet au compilateur de
- * connaitre précisément la taille d'un type de donnée et ainsi de mieux
- * optimiser les boucles sans avoir besoin que toutes ces méthodes soient
- * templates et inline pour le développeur.
+ * This class contains instances of ISpecificMemoryCopy specialized
+ * for a data size and type. This allows the compiler to know precisely
+ * the size of a data type and thus better optimize loops without requiring
+ * all these methods to be templates and inline for the developer.
  */
 template <typename Traits>
 class SpecificMemoryCopyList
@@ -178,7 +182,7 @@ class SpecificMemoryCopyList
 
  public:
 
-  //! Ajoute un copieur spécifique
+  //! Adds a specific copier
   template <typename CopierType>
   void addCopier()
   {
@@ -197,7 +201,7 @@ class SpecificMemoryCopyList
 
   void checkValid()
   {
-    // Vérifie que les taille sont correctes
+    // Checks that the sizes are correct
     for (Int32 i = 0; i < NB_COPIER; ++i) {
       auto* x = m_copier[i];
       if (x && (x->datatypeSize() != i))
@@ -263,7 +267,7 @@ class SpecificMemoryCopyList
   std::array<InterfaceType*, NB_COPIER> m_copier;
   std::atomic<Int32> m_nb_specialized = 0;
   std::atomic<Int32> m_nb_generic = 0;
-  //! Liste des copieurs qu'il faudra supprimer via 'delete'
+  //! List of copiers that need to be deleted via 'delete'
   std::vector<ISpecificMemoryCopy*> m_dynamic_copier_list;
 };
 
@@ -298,11 +302,12 @@ class SpecificMemoryCopyBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Référence sur un copieur.
+ * \brief Reference to a copier.
  *
- * Cette classe permet d'utiliser le copieur spécifique à une taille d'élément
- * s'il est disponible. Sinon on utilise un copieur générique.
+ * This class allows using the specific copier for an element size
+ * if it is available. Otherwise, a generic copier is used.
  */
 template <typename Traits>
 class SpecificMemoryCopyRef
@@ -359,13 +364,14 @@ class SpecificMemoryCopyRef
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe singleton contenant l'instance à utiliser pour les copies.
+ * \brief Singleton class containing the instance to use for copies.
  *
- * Par défaut, l'instance est définie dans 'SpecificMemoryCopy.cc' et ne
- * gère que les copies vers/depuis un CPU.
- * Si un runtime accélérateur est initialisé, il peut remplacer l'instance
- * par défaut pour gérer les copies entre CPU et accélérateur.
+ * By default, the instance is defined in 'SpecificMemoryCopy.cc' and only
+ * handles copies to/from a CPU.
+ * If an accelerator runtime is initialized, it can replace the default instance
+ * to handle copies between CPU and accelerator.
  */
 class ARCCORE_COMMON_EXPORT GlobalMemoryCopyList
 {
@@ -376,17 +382,17 @@ class ARCCORE_COMMON_EXPORT GlobalMemoryCopyList
 
  public:
 
-  //! Retourne l'instance par défaut pour la file \a queue
+  //! Returns the default instance for the queue
   static ISpecificMemoryCopyList* getDefault(const RunQueue* queue);
 
   /*!
-   * \brief Positionne l'instance par défaut pour les copies
-   * lorsqu'un runtime accélérateur est activé
+   * \brief Positions the default instance for copies
+   * when an accelerator runtime is enabled
    *
-   * L'instance doit rester valide pendant toute la durée du programme.
+   * The instance must remain valid for the entire duration of the program.
    * 
-   * Cette méthode est normalement appelée par l'API accélérateur pour
-   * fournir des noyaux de copie spécifiques à chaque device.
+   * This method is normally called by the accelerator API to
+   * provide specific copy kernels for each device.
    */
   static void setAcceleratorInstance(ISpecificMemoryCopyList* ptr);
   static ISpecificMemoryCopyList* acceleratorInstance()

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Process.cc                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des processus.                                                    */
+/* Process management.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,8 +17,8 @@
 #include "arccore/base/FixedArray.h"
 
 /*
- * NOTE: pour l'instant cette classe n'est implémentée que pour Linux
- * (elle devrait cependant fonctionner avec les autres Unix).
+ * NOTE: for now this class is only implemented for Linux
+ * (it should however work with other Unix systems).
  */
 
 #ifdef ARCCORE_OS_LINUX
@@ -43,8 +43,8 @@ execute(ProcessExecArgs& args)
   args.m_output_bytes.clear();
   ByteConstArrayView input_bytes = args.inputBytes();
 
-  // Créé deux pipes pour rediriger les entrées et les sorties du
-  // processus qu'on va lancer.
+  // Create two pipes to redirect the inputs and outputs of the
+  // process we are going to launch.
   int pipefd_out[2];
   int pipefd_in[2];
   int r0 = pipe2(pipefd_out, O_CLOEXEC);
@@ -59,16 +59,16 @@ execute(ProcessExecArgs& args)
 
   ProcessExecArgs::ExecStatus exec_status = ProcessExecArgs::ExecStatus::OK;
   if (cpid == 0) {
-    // Je suis le processus fils.
+    // I am the child process.
 
-    // TODO: vérifier les erreurs des close() et dup2().
+    // TODO: check errors for close() and dup2().
 
-    // Indique que pipefd_out[1] correspond à mon STDOUT
+    // Indicates that pipefd_out[1] corresponds to my STDOUT
     ::close(STDOUT_FILENO);
     ::close(pipefd_out[0]);
     ::dup2(pipefd_out[1], STDOUT_FILENO);
 
-    // Indique que pipefd_in[0] correspond à mon STDIN
+    // Indicates that pipefd_in[0] corresponds to my STDIN
     ::close(STDIN_FILENO);
     ::close(pipefd_in[1]);
     ::dup2(pipefd_in[0], STDIN_FILENO);
@@ -77,8 +77,8 @@ execute(ProcessExecArgs& args)
 
     ConstArrayView<String> arguments = args.arguments();
     Integer nb_arg = arguments.size();
-    // Le tableau passé à execve() pour les arguments doit se terminer par NULL
-    // et commencer par le nom de l'exécutable
+    // The array passed to execve() for arguments must end with NULL
+    // and start with the name of the executable
     UniqueArray<const char*> command_args(nb_arg + 2);
     for (Integer i = 0; i < nb_arg; ++i)
       command_args[i + 1] = arguments[i].localstr();
@@ -87,12 +87,12 @@ execute(ProcessExecArgs& args)
 
     const char* const newenviron[] = { NULL };
     ::execve(cmd_name, (char* const*)command_args.data(), (char* const*)newenviron);
-    // L'appel à execve() ne retourne pas.
+    // The execve() call does not return.
   }
   else {
     ::close(pipefd_out[1]);
     ::close(pipefd_in[0]);
-    // Ecrit sur le pipe d'entrée les octets de \a input_bytes
+    // Write the bytes of \a input_bytes to the input pipe
     Int64 nb_wanted_write = input_bytes.size();
     Int64 nb_written = ::write(pipefd_in[1], input_bytes.data(), nb_wanted_write);
     if (nb_written != nb_wanted_write)
@@ -103,7 +103,7 @@ execute(ProcessExecArgs& args)
     buf[BUF_SIZE] = '\0';
     Int32 max_iteration = 1000000;
     Int32 current_iteration = 0;
-    // Utilise une boucle finie pour éviter les avertissements de coverity/codacy
+    // Uses a finite loop to avoid coverity/codacy warnings
     for (Int32 i = 0; i < max_iteration; ++i) {
       ssize_t nb_read = ::read(pipefd_out[0], buf.data(), BUF_SIZE);
       if (nb_read == EINTR)
@@ -116,7 +116,7 @@ execute(ProcessExecArgs& args)
       //::write(STDOUT_FILENO, buf, r);
     }
 
-    // Attend que le processus fils soit fini.
+    // Wait for the child process to finish.
     int status = 0;
     pid_t child_pid = 0;
     do {
@@ -132,7 +132,7 @@ execute(ProcessExecArgs& args)
 
     close(pipefd_out[0]);
 
-    // Ajoute un '\0' terminal au flux de sortie.
+    // Adds a terminal '\0' to the output stream.
     args.m_output_bytes.add('\0');
   }
   return exec_status;

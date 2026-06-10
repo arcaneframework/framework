@@ -60,14 +60,14 @@ void _doTestMemoryBandwidth(bool use_accelerator, Int32 max_allowed_thread)
   NumArray<Int64, MDDim1> device_b(mem);
   device_b.resize(nb_value);
 
-  //! Teste la copie device/device
+  //! Tests device/device copy
   MemoryCopyArgs copy_args(device_b.bytes(), device_a.bytes());
   double x = Platform::getRealTime();
   for (Int32 i = 0; i < nb_loop; ++i)
     queue.copyMemory(copy_args);
   queue.barrier();
   double y = Platform::getRealTime();
-  // Il y a 1 tableau en lecture et 1 en écriture, soit 2 tableaux
+  // There is 1 array for reading and 1 for writing, totaling 2 arrays
   Int64 nb_byte = device_a.bytes().size() * nb_loop * 2;
   Real diff = y - x;
   Real nb_giga_byte_second = (static_cast<Real>(nb_byte) / 1.0e9) / diff;

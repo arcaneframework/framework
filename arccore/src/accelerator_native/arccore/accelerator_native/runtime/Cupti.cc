@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Cupti.cc                                                    (C) 2000-2026 */
 /*                                                                           */
-/* Intégration de CUPTI.                                                     */
+/* CUPTI Integration.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -144,7 +144,7 @@ printActivity(AcceleratorStatInfoList* stat_info,
       if (uvm->counterKind == CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_BYTES_TRANSFER_DTOH)
         stat_info->addMemoryTransfer(AcceleratorStatInfoList::eMemoryTransferType::DeviceToHost, nb_byte);
       if (uvm->counterKind == CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_CPU_PAGE_FAULT_COUNT)
-        // TODO: regarder à quoi correspond uvw->value pour cet évènement
+        // TODO: check what uvw->value corresponds to for this event
         stat_info->addMemoryPageFault(AcceleratorStatInfoList::eMemoryPageFaultType::Cpu, 1);
       if (uvm->counterKind == CUPTI_ACTIVITY_UNIFIED_MEMORY_COUNTER_KIND_GPU_PAGE_FAULT) {
         stat_info->addMemoryPageFault(AcceleratorStatInfoList::eMemoryPageFaultType::Gpu, nb_byte);
@@ -155,8 +155,8 @@ printActivity(AcceleratorStatInfoList* stat_info,
   case CUPTI_ACTIVITY_KIND_KERNEL:
   case CUPTI_ACTIVITY_KIND_CONCURRENT_KERNEL: {
     const char* kindString = (record->kind == CUPTI_ACTIVITY_KIND_KERNEL) ? "KERNEL" : "CONC KERNEL";
-    // NOTE: 'CUpti_ActivityKernel5' est disponible à partir de CUDA 11.0 mais obsolète à partir de CUDA 11.2
-    // à partir de Cuda 12 on pourra utiliser 'CUpti_ActivityKernel9'.
+    // NOTE: 'CUpti_ActivityKernel5' is available from CUDA 11.0 but obsolete from CUDA 11.2
+    // starting from Cuda 12 we can use 'CUpti_ActivityKernel9'.
     auto* kernel = reinterpret_cast<CUpti_ActivityKernel5*>(record);
     if (do_print) {
       ostr << kindString << " [ " << (kernel->start - startTimestamp) << " - " << (kernel->end - startTimestamp)
@@ -236,8 +236,8 @@ arcaneCuptiBufferRequested(uint8_t** buffer, size_t* size, size_t* maxNumRecords
 {
   const Int32 BUF_SIZE = 16 * 4096;
 
-  // TODO: utiliser un ou plusieurs buffers pré-alloués pour éviter les
-  // successions d'allocations/désallocations.
+  // TODO: use one or more pre-allocated buffers to avoid
+  // successive allocations/deallocations.
   *size = BUF_SIZE;
   *buffer = new (std::align_val_t{ 8 }) uint8_t[BUF_SIZE];
   *maxNumRecords = 0;
@@ -250,8 +250,8 @@ static void CUPTIAPI
 arcaneCuptiBufferCompleted(CUcontext ctx, uint32_t stream_id, uint8_t* buffer,
                            [[maybe_unused]] size_t size, size_t validSize)
 {
-  // NOTE: il semble que cette méthode soit toujours appelée depuis
-  // un thread spécifique créé par le runtime CUDA.
+  // NOTE: it seems that this method is always called from
+  // a specific thread created by the CUDA runtime.
 
   CUptiResult status;
   CUpti_Activity* record = nullptr;
@@ -319,8 +319,8 @@ start()
 
   ARCCORE_CHECK_CUDA(cuptiActivityConfigureUnifiedMemoryCounter(config.data(), config.size()));
 
-  // NOTE: un seul processus peut utiliser le sampling. Si on utilise MPI avec plusieurs
-  // rangs il ne faut pas activer le sampling
+  // NOTE: only one process can use sampling. If using MPI with multiple
+  // ranks, sampling should not be enabled
   if (level >= 3) {
     configPC.size = sizeof(CUpti_ActivityPCSamplingConfig);
     configPC.samplingPeriod = CUPTI_ACTIVITY_PC_SAMPLING_PERIOD_MIN;
@@ -330,9 +330,9 @@ start()
     ARCCORE_CHECK_CUDA(cuptiActivityConfigurePCSampling(cuCtx, &configPC));
   }
 
-  // Active les compteurs
-  // CONCURRENT_KERNEL et PC_SAMPLING ne sont pas compatibles
-  // Si on ajoute des compteurs ici il faut les désactiver dans stop()
+  // Enable counters
+  // CONCURRENT_KERNEL and PC_SAMPLING are not compatible
+  // If we add counters here, they must be disabled in stop()
   if (level >= 1)
     ARCCORE_CHECK_CUDA(cuptiActivityEnable(CUPTI_ACTIVITY_KIND_UNIFIED_MEMORY_COUNTER));
   if (level == 2)
@@ -342,8 +342,8 @@ start()
 
   ARCCORE_CHECK_CUDA(cuptiGetTimestamp(&startTimestamp));
 
-  // Mettre à la fin pour qu'en cas d'exception on considère l'initialisation
-  // non effectuée.
+  // Put at the end so that in case of an exception, the initialization
+  // is considered not performed.
   m_is_active = true;
 }
 
@@ -376,8 +376,8 @@ stop()
 void CuptiInfo::
 flush()
 {
-  // Il ne faut pas faire de flush si CUPTI n'a pas démarré car cela provoque
-  // une erreur.
+  // Do not flush if CUPTI has not started because it causes
+  // an error.
   if (!m_is_active)
     return;
   ARCCORE_CHECK_CUDA(cuptiActivityFlushAll(0));

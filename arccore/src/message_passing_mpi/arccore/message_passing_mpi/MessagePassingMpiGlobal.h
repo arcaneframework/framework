@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MessagePassingMpiGlobal.h                                   (C) 2000-2025 */
 /*                                                                           */
-/* Définitions globales de la composante 'MessagePassingMpi' de 'Arccore'.   */
+/* Global definitions for the 'MessagePassingMpi' component of 'Arccore'.    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_MESSAGEPASSINGMPIGLOBAL_H
 #define ARCCORE_MESSAGEPASSINGMPI_MESSAGEPASSINGMPIGLOBAL_H
@@ -19,8 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Ces deux macros permettent de s'assurer qu'on ne compile avec le support
-// de MpiC++ qui est obsolète
+// These two macros ensure that we do not compile with
+// MpiC++ support, which is obsolete
 #ifndef MPICH_SKIP_MPICXX
 #define MPICH_SKIP_MPICXX
 #endif
@@ -29,9 +29,9 @@
 #endif
 #include <mpi.h>
 
-// Vérifie la version de MPI minimale. Normalement, on ne devrait pas avoir
-// de problèmes car cela est vérifié lors de la configuration mais on ne
-// sait jamais.
+// Checks the minimum MPI version. Normally, we shouldn't have
+// problems because this is checked during configuration, but you never
+// know.
 #if !defined(ARCCORE_OS_WIN32)
 #if MPI_VERSION < 3 || (MPI_VERSION == 3 && MPI_SUBVERSION < 1)
 #error "MPI_VERSION 3.1 is required. Please disable MPI".
@@ -39,9 +39,9 @@
 #endif
 
 #if defined(ARCCORE_OS_WIN32)
-// La version de mpi est celle de microsoft. Le proto de MPI_Op doit
-// avoir la déclaration __stdcall.
-// TODO: verifier avec d'autres MPI sous Windows.
+// The MPI version is Microsoft's. The MPI_Op proto must
+// have the __stdcall declaration.
+// TODO: verify with other MPI implementations on Windows.
 #define ARCCORE_MPIOP_CALL __stdcall
 #endif
 
@@ -172,7 +172,7 @@ datatype(unsigned long long)
 
 namespace Arccore::MessagePassing::Mpi
 {
-// Pour compatibilité avec Alien
+// For compatibility with Alien
 using Arcane::MessagePassing::internal::BasicSerializeMessage;
 
 using Arcane::MessagePassing::Mpi::IMpiProfiling;

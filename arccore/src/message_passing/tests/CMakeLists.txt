@@ -1,4 +1,4 @@
-arccore_add_component_test_executable(message_passing
+﻿arccore_add_component_test_executable(message_passing
   FILES
   TestStat.cc
   )

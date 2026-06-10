@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CheckedPointer.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Classes encapsulant un pointeur permettant de vérifier l'utilisation.     */
+/* Classes encapsulating a pointer allowing usage checking.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_CHECKEDPOINTER_H
 #define ARCCORE_BASE_CHECKEDPOINTER_H
@@ -24,33 +24,34 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Encapsulation d'un pointeur.
+ * \brief Encapsulation of a pointer.
  *
- * Cette classe ne fait rien de particulier si ce n'est encapsulé un
- * pointeur d'un type quelconque. Elle sert de classe de base à d'autres
- * classes qui fournissent des fonctionnalités plus évoluées comme AutoRefT.
+ * This class does nothing special other than encapsulating a
+ * pointer of any type. It serves as a base class for other
+ * classes that provide more advanced features like AutoRefT.
  *
- * Afin d'éviter des copies malencontreuses, le constructeur de copie et
- * les opérateurs de copie sont protégés.
+ * To prevent accidental copies, the copy constructor and
+ * copy operators are protected.
  *
- * En mode débug, vérifie qu'on accède pas à un pointeur nul.
+ * In debug mode, it checks that a null pointer is not accessed.
  *
- * Le paramètre template n'a pas besoin d'être défini. Cette classe peut donc
- * être instanciée pour un type opaque.
+ * The template parameter does not need to be defined. This class can therefore
+ * be instantiated for an opaque type.
  */
-template<class T>
+template <class T>
 class CheckedPointer
 {
  protected:
 
-  //! Opérateur de copie
+  //! Copy operator
   const CheckedPointer<T>& operator=(const CheckedPointer<T>& from)
   {
     m_value = from.m_value;
     return (*this);
   }
-  
+
   template <typename T2>
   const CheckedPointer<T>& operator=(const CheckedPointer<T2>& from)
   {
@@ -58,57 +59,67 @@ class CheckedPointer
     return (*this);
   }
 
-
-  //! Affecte à l'instance la value \a new_value
+  //! Assigns the value \a new_value to the instance
   const CheckedPointer<T>& operator=(T* new_value)
   {
-    m_value = new_value; return (*this);
+    m_value = new_value;
+    return (*this);
   }
 
-  //! Construit une référence référant \a from
-  CheckedPointer(const CheckedPointer<T>& from) : m_value(from.m_value) {}
+  //! Constructs a reference referring to \a from
+  CheckedPointer(const CheckedPointer<T>& from)
+  : m_value(from.m_value)
+  {}
 
-  //! Construit une référence référant \a from
+  //! Constructs a reference referring to \a from
   template <typename T2>
-  CheckedPointer(const CheckedPointer<T2>& from) : m_value(from.m_value) {}
+  CheckedPointer(const CheckedPointer<T2>& from)
+  : m_value(from.m_value)
+  {}
 
  public:
 
-  //! Construit une instance sans référence
-  CheckedPointer() : m_value(nullptr) {}
+  //! Constructs an instance without a reference
+  CheckedPointer()
+  : m_value(nullptr)
+  {}
 
-  //! Construit une instance référant \a t
-  explicit CheckedPointer(T* t) : m_value(t) {}
+  //! Constructs an instance referring to \a t
+  explicit CheckedPointer(T* t)
+  : m_value(t)
+  {}
 
  public:
-  explicit operator bool() const { return get()!=nullptr; }
+
+  explicit operator bool() const { return get() != nullptr; }
+
  public:
-  
-  //! Retourne l'objet référé par l'instance
+
+  //! Returns the object referenced by the instance
   inline T* operator->() const
-    {
+  {
 #ifdef ARCCORE_CHECK
-      if (!m_value)
-        arccoreNullPointerError();
+    if (!m_value)
+      arccoreNullPointerError();
 #endif
-      return m_value;
-    }
+    return m_value;
+  }
 
-  //! Retourne l'objet référé par l'instance
+  //! Returns the object referenced by the instance
   inline T& operator*() const
-    {
+  {
 #ifdef ARCCORE_CHECK
-      if (!m_value)
-        arccoreNullPointerError();
+    if (!m_value)
+      arccoreNullPointerError();
 #endif
-      return *m_value;
-    }
+    return *m_value;
+  }
 
   /*!
-   * \brief Retourne l'objet référé par l'instance
+   * \brief Returns the object referenced by the instance
    *
-   * \warning En général, il faut être prudent lorsqu'on utilise cette
-   * fonction et ne pas conservé le pointeur retourné.
+   * \warning In general, caution must be used when using this
+   * function and the returned pointer should not be retained.
    */
   inline T* get() const
   {
@@ -120,43 +131,41 @@ class CheckedPointer
     return (!m_value);
   }
 
-
   /*!
-   * \brief Compare les objets référencés par \a v1 et \a v2
-   * La comparaison se fait pointeur par pointeur.
-   * \retval true s'ils sont égaux
-   * \retval false sinon
+   * \brief Compares the objects referenced by \a v1 and \a v2
+   * The comparison is done pointer by pointer.
+   * \retval true if they are equal
+   * \retval false otherwise
    */
-  template<typename T2> friend bool
-  operator==(const CheckedPointer<T>& v1,const CheckedPointer<T2>& v2)
+  template <typename T2> friend bool
+  operator==(const CheckedPointer<T>& v1, const CheckedPointer<T2>& v2)
   {
     return v1.get() == v2.get();
   }
 
   /*!
-   * \brief Compare les objets référencés par \a v1 et \a v2
-   * La comparaison se fait pointeur par pointeur.
-   * \retval false s'ils sont égaux
-   * \retval true sinon
+   * \brief Compares the objects referenced by \a v1 and \a v2
+   * The comparison is done pointer by pointer.
+   * \retval false if they are equal
+   * \retval true otherwise
    */
-  template<typename T2> friend bool
-  operator!=(const CheckedPointer<T>& v1,const CheckedPointer<T2>& v2)
+  template <typename T2> friend bool
+  operator!=(const CheckedPointer<T>& v1, const CheckedPointer<T2>& v2)
   {
     return v1.get() != v2.get();
   }
 
  protected:
-  
-  T* m_value; //!< Pointeur sur l'objet référencé
+
+  T* m_value; //!< Pointer to the referenced object
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* GenericRegisterer.h                                         (C) 2000-2025 */
 /*                                                                           */
-/* Enregistreur générique de types globaux.                                  */
+/* Generic registerer for global types.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_GENERICREGISTERER_H
 #define ARCCORE_BASE_GENERICREGISTERER_H
@@ -32,13 +32,14 @@ class ARCCORE_BASE_EXPORT GenericRegistererBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe template pour gérer une liste globale permettant d'enregistrer
- * des fabriques.
+ * \brief Template class to manage a global list for registering
+ * factories.
  *
- * Cette classe utilise le Curiously recurring template pattern (CRTP). Le
- * paramètre template doit être la classe dérivée et doit avoir une méthode
- * globalRegistererInfo() comme suit:
+ * This class uses the Curiously Recurring Template Pattern (CRTP). The
+ * template parameter must be the derived class and must have a method
+ * globalRegistererInfo() as follows:
  * \code
  * class MyRegisterer
  * : public GenericRegisterer<MyRegisterer>
@@ -82,21 +83,21 @@ class GenericRegisterer
 
  public:
 
-  //! Instance précédente (nullptr si la première)
+  //! Previous instance (nullptr if it is the first)
   InstanceType* previousRegisterer() const { return m_previous; }
 
-  //! Instance suivante (nullptr si la dernière)
+  //! Next instance (nullptr if it is the last)
   InstanceType* nextRegisterer() const { return m_next; }
 
  public:
 
-  //! Accès au premier élément de la chaine d'enregistreur
+  //! Access to the first element of the registerer chain
   static InstanceType* firstRegisterer()
   {
     return Type::registererInfo().firstRegisterer();
   }
 
-  //! Nombre d'enregisteur de service dans la chaine
+  //! Number of service registerers in the chain
   static Integer nbRegisterer()
   {
     return Type::registererInfo().nbRegisterer();
@@ -113,8 +114,8 @@ class GenericRegisterer
   {
     Info& reg_info = Type::registererInfo();
     Type* current_instance = static_cast<Type*>(this);
-    // ATTENTION: Cette méthode est appelée depuis un constructeur global
-    // (donc avant le main()) et il ne faut pas faire d'exception dans ce code.
+    // ATTENTION: This method is called from a global constructor
+    // (i.e., before main()) and no exceptions should be thrown in this code.
     InstanceType* first = reg_info.firstRegisterer();
     if (!first) {
       reg_info.m_first_registerer = current_instance;

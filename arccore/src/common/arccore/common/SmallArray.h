@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SmallArray.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Tableau 1D de données avec buffer pré-alloué.                             */
+/* 1D data array with pre-allocated buffer.                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_SMALLARRAY_H
 #define ARCCORE_COMMON_SMALLARRAY_H
@@ -25,15 +25,16 @@ namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Allocateur avec buffer pré-alloué.
+ * \brief Allocator with pre-allocated buffer.
  *
- * Le buffer pré-alloué \a m_preallocated_buffer est utilisé lorsque la
- * taille demandée pour l'allocation est inférieure ou égale à
+ * The pre-allocated buffer \a m_preallocated_buffer is used when the
+ * requested size for the allocation is less than or equal to
  * \a m_preallocated_size.
  *
- * Le buffer utilisé doit rester valide durant toute la durée de vie de l'allocateur.
+ * The buffer used must remain valid throughout the lifetime of the allocator.
  */
 class ARCCORE_COMMON_EXPORT StackMemoryAllocator final
 : public IMemoryAllocator
@@ -89,18 +90,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
  *
- * \brief Tableau 1D de données avec buffer pré-alloué sur la pile.
+ * \brief 1D data array with pre-allocated stack buffer.
  *
- * Cette classe s'utilise comme UniqueArray mais contient un buffer de taille
- * fixe pour conserver \a NbElement éléments qui est utilisé si le tableau contient
- * au plus \a NbElement éléments. Cela permet d'éviter des allocations dynamiques
- * lorsque le nombre d'éléments est faible.
+ * This class is used like UniqueArray but contains a fixed-size buffer to
+ * hold \a NbElement elements, which is used if the array contains at most
+ * \a NbElement elements. This avoids dynamic allocations when the number of elements is small.
  *
- * Si le tableau doit contenir plus de \a NbElement éléments, alors on utilise
- * une allocation dynamique standard.
+ * If the array must contain more than \a NbElement elements, then standard
+ * dynamic allocation is used.
  */
 template <typename T, Int32 NbElement = 32>
 class SmallArray final
@@ -117,59 +118,59 @@ class SmallArray final
 
  public:
 
-  //! Créé un tableau vide
+  //! Creates an empty array
   SmallArray()
   : m_stack_allocator(m_stack_buffer, MemorySize)
   {
     this->_initFromAllocator(MemoryAllocationOptions(&m_stack_allocator), nb_element_in_buf, m_stack_buffer);
   }
 
-  //! Créé un tableau de \a size éléments contenant la valeur \a value.
+  //! Creates an array of \a size elements containing the value \a value.
   SmallArray(Int64 req_size, ConstReferenceType value)
   : SmallArray()
   {
     this->_resize(req_size, value);
   }
 
-  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  //! Creates an array of \a asize elements containing the default value of type T()
   explicit SmallArray(Int64 asize)
   : SmallArray()
   {
     this->_resize(asize);
   }
 
-  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  //! Creates an array of \a asize elements containing the default value of type T()
   explicit SmallArray(Int32 asize)
   : SmallArray((Int64)asize)
   {
   }
 
-  //! Créé un tableau de \a asize éléments contenant la valeur par défaut du type T()
+  //! Creates an array of \a asize elements containing the default value of type T()
   explicit SmallArray(size_t asize)
   : SmallArray((Int64)asize)
   {
   }
 
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! Creates an array by copying the values from the view \a aview.
   SmallArray(const ConstArrayView<T>& aview)
   : SmallArray(Span<const T>(aview))
   {
   }
 
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! Creates an array by copying the values from the view \a aview.
   SmallArray(const Span<const T>& aview)
   : SmallArray()
   {
     this->_initFromSpan(aview);
   }
 
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! Creates an array by copying the values from the view \a aview.
   SmallArray(const ArrayView<T>& aview)
   : SmallArray(Span<const T>(aview))
   {
   }
 
-  //! Créé un tableau en recopiant les valeurs de la value \a aview.
+  //! Creates an array by copying the values from the view \a aview.
   SmallArray(const Span<T>& aview)
   : SmallArray(Span<const T>(aview))
   {
@@ -181,48 +182,48 @@ class SmallArray final
     this->_initFromInitializerList(alist);
   }
 
-  //! Créé un tableau en recopiant les valeurs \a rhs.
+  //! Creates an array by copying the values \a rhs.
   SmallArray(const Array<T>& rhs)
   : SmallArray(rhs.constSpan())
   {
   }
 
-  //! Copie les valeurs de \a rhs dans cette instance.
+  //! Copies the values of \a rhs into this instance.
   void operator=(const Array<T>& rhs)
   {
     this->copy(rhs.constSpan());
   }
 
-  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  //! Copies the values of the view \a rhs into this instance.
   void operator=(const ArrayView<T>& rhs)
   {
     this->copy(rhs);
   }
 
-  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  //! Copies the values of the view \a rhs into this instance.
   void operator=(const Span<T>& rhs)
   {
     this->copy(rhs);
   }
 
-  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  //! Copies the values of the view \a rhs into this instance.
   void operator=(const ConstArrayView<T>& rhs)
   {
     this->copy(rhs);
   }
 
-  //! Copie les valeurs de la vue \a rhs dans cette instance.
+  //! Copies the values of the view \a rhs into this instance.
   void operator=(const Span<const T>& rhs)
   {
     this->copy(rhs);
   }
 
-  //! Détruit l'instance.
+  //! Destroys the instance.
   ~SmallArray() override
   {
-    // Il faut détruire explicitement car notre allocateur
-    // sera détruit avant la classe de base et ne sera plus valide
-    // lors de la désallocation.
+    // It must be explicitly destroyed because our allocator
+    // will be destroyed before the base class and will no longer be valid
+    // during deallocation.
     this->_destroy();
     this->_internalDeallocate();
     this->_reset();

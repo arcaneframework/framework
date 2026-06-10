@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* GlibAdapter.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Classes utilitaires pour s'adapter aux différentes versions de la 'glib'. */
+/* Utility classes to adapt to different versions of 'glib'.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_GLIBADAPTER_H
 #define ARCCORE_CONCURRENCY_GLIBADAPTER_H
@@ -26,9 +26,10 @@ class GlibCond;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Encapsule un GMutex de la glib.
+ * \brief Encapsulates a GMutex from glib.
  */
 class ARCCORE_CONCURRENCY_EXPORT GlibMutex
 {
@@ -72,9 +73,10 @@ class ARCCORE_CONCURRENCY_EXPORT GlibMutex
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Encapsule un GPrivate de la glib.
+ * \brief Encapsulates a GPrivate from glib.
  */
 class ARCCORE_CONCURRENCY_EXPORT GlibPrivate
 {
@@ -97,9 +99,10 @@ class ARCCORE_CONCURRENCY_EXPORT GlibPrivate
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Encapsule un GCond de la glib.
+ * \brief Encapsulates a GCond from glib.
  */
 class ARCCORE_CONCURRENCY_EXPORT GlibCond
 {

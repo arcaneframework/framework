@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryAllocationArgs.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Arguments des méthodes de IMemoryAllocator.                               */
+/* Arguments for IMemoryAllocator methods.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_MEMORYALLOCATIONARGS_H
 #define ARCCORE_COMMON_MEMORYALLOCATIONARGS_H
@@ -24,8 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe contenant des informations pour spécialiser les allocations.
+ * \brief Class containing information to specialize allocations.
  */
 class ARCCORE_COMMON_EXPORT MemoryAllocationArgs
 {
@@ -40,7 +41,7 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationArgs
   ArrayDebugInfo* debugInfo() const { return m_debug_info; }
   void setDebugInfo(ArrayDebugInfo* v) { m_debug_info = v; }
 
-  // RunQueue associée à l'allocation. Peut-être nulle.
+  // RunQueue associated with the allocation. May be null.
   RunQueue* runQueue() const { return m_run_queue; }
   void setRunQueue(RunQueue* v) { m_run_queue = v; }
 
@@ -57,7 +58,7 @@ class ARCCORE_COMMON_EXPORT MemoryAllocationArgs
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

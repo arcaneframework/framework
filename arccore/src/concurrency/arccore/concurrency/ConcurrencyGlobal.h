@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConcurrencyGlobal.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Définitions globales de la composante 'Concurrency' de 'Arccore'.         */
+/* Global definitions of the 'Concurrency' component of 'Arccore'.           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_CONCURRENCYGLOBAL_H
 #define ARCCORE_CONCURRENCY_CONCURRENCYGLOBAL_H
@@ -50,14 +50,14 @@ class ITaskFunctor;
 template <typename InstanceType> class TaskFunctor;
 template <typename InstanceType> class TaskFunctorWithContext;
 
-//@{ Classe internes à Arccore/Arcane
+//@{ Internal classes in Arccore/Arcane
 class SpinLockImpl;
 class GlibThreadImplementation;
 //@}
 
-//! Classe opaque encapsulant l'implementation des threads
+//! Opaque class encapsulating thread implementation
 class ThreadImpl;
-//! Classe opaque encapsulant l'implementation d'un mutex
+//! Opaque class encapsulating mutex implementation
 class MutexImpl;
 } // namespace Arcane
 
@@ -121,19 +121,19 @@ using Arcane::ThreadImpl;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arccore::Concurrency
 {
+using Arcane::Concurrency::createGlibThreadImplementation;
+using Arcane::Concurrency::createNullThreadImplementation;
+using Arcane::Concurrency::createStdThreadImplementation;
 using Arcane::Concurrency::getThreadImplementation;
 using Arcane::Concurrency::setThreadImplementation;
-using Arcane::Concurrency::createGlibThreadImplementation;
-using Arcane::Concurrency::createStdThreadImplementation;
-using Arcane::Concurrency::createNullThreadImplementation;
-}
+} // namespace Arccore::Concurrency
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

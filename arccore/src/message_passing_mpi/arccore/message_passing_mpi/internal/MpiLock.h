@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MpiLock.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Verrou pour les appels MPI.                                               */
+/* Lock for MPI calls.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPILOCK_H
 #define ARCANE_PARALLEL_MPI_MPILOCK_H
@@ -27,30 +27,33 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Verrou pour les appels MPI.
+ * \brief Lock for MPI calls.
  *
- * Ce verrou sert en multi-threading pour sérialiser les appels
- * MPI en mode MPI_THREAD_SERIALIZED de MPI_Init_thread.
+ * This lock is used in multi-threading to serialize MPI calls in
+ * MPI_THREAD_SERIALIZED mode of MPI_Init_thread.
  */
 class MpiLock
 {
  public:
 
-  // Le spin lock est plus performant mais ne permet pas d'utiliser
-  // valgrind.
+  // The spin lock is more performant but does not allow using valgrind.
 
   //typedef SpinLock LockType;
 
   typedef Mutex LockType;
 
  public:
+
   class Section
   {
    public:
-    Section(MpiLock* lock) : mpi_lock(lock)
+
+    Section(MpiLock* lock)
+    : mpi_lock(lock)
     {
-      if (mpi_lock){
+      if (mpi_lock) {
         manual_lock.lock(mpi_lock->m_lock);
       }
     }
@@ -59,25 +62,30 @@ class MpiLock
       if (mpi_lock)
         manual_lock.unlock(mpi_lock->m_lock);
     }
+
    private:
+
     MpiLock* mpi_lock;
     LockType::ManualLock manual_lock;
   };
   friend class Section;
+
  public:
+
   MpiLock() {}
+
  public:
  private:
+
   LockType m_lock;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::MessagePassing::Mpi
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

@@ -1,5 +1,5 @@
-set(SOURCES
-  # On met ces fichiers en premier car ce sont les plus long à compiler
+﻿set(SOURCES
+  # We put these files first because they are the longest to compile
   MemoryCopier.cc
   MemoryCopierTpl1.cc
   MemoryCopierTpl2.cc

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryUtils.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires de gestion mémoire.                                 */
+/* Memory management utility functions.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,29 +19,30 @@
 #include "arccore/common/internal/MemoryUtilsInternal.h"
 #include "arccore/common/internal/MemoryResourceMng.h"
 
-// Pour std::memmove
+// For std::memmove
 #include <cstring>
 
-// TODO: ajouter statistiques sur les tailles de 'datatype' utilisées.
+// TODO: add statistics on the sizes of 'datatype' used.
 
 /*!
  * \file MemoryUtils.h
  *
- * \brief Fonctions utilitaires de gestion mémoire.
+ * \brief Memory management utility functions.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
 using RunQueue = Accelerator::RunQueue;
-using Impl::ISpecificMemoryCopyList;
 using Impl::GlobalMemoryCopyList;
+using Impl::ISpecificMemoryCopyList;
 
 /*!
  * \namespace MemoryUtils
  *
- * \brief Fonctions utilitaires de gestion mémoire.
+ * \brief Memory management utility functions.
  */
 
 namespace
@@ -417,7 +418,7 @@ extern "C++" ARCCORE_COMMON_EXPORT void
 arccorePrintSpecificMemoryStats()
 {
   if (arccoreIsCheck()) {
-    // N'affiche que pour les tests
+    // Only displays for tests
     //global_copy_list.printStats();
   }
 }

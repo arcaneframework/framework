@@ -1,20 +1,20 @@
 ﻿# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Backend Arcane pour CUDA
+# Arcane Backend for CUDA
 
 set(ARCCORE_SOURCES
   CudaAccelerator.cc
   CudaAccelerator.h
-  )
+)
 
 find_package(CUDAToolkit REQUIRED)
 
 if (ARCCORE_HAS_CXX23 AND (CMAKE_CUDA_COMPILER_VERSION VERSION_LESS 13.0))
   message(FATAL_ERROR "CUDA <=12 doesn't support C++23. Add -DARCCORE_CXX_STANDARD=20 to the configuration")
-endif()
+endif ()
 
-# Créé une cible interface pour propager les options de compilation
-# communes pour la compilation CUDA
+# Create an interface target to propagate compilation options
+# common for CUDA compilation
 
 add_library(arccore_cuda_compile_flags INTERFACE)
 add_library(arccore_cuda_build_compile_flags INTERFACE)
@@ -23,19 +23,19 @@ option(ARCCORE_CUDA_DEVICE_DEBUG "If True, add '--device-debug' to cuda compiler
 set(_CUDA_DEBUG_FLAGS "-lineinfo")
 if (ARCCORE_CUDA_DEVICE_DEBUG)
   set(_CUDA_DEBUG_FLAGS "--device-debug")
-endif()
+endif ()
 
 if (CMAKE_CUDA_COMPILER_ID STREQUAL "Clang")
-  # Lorsqu'on compile avec clang, il ne faut pas générer certaines informations
-  # de debug car cela provoque une erreur de compilation
-  # (voir https://github.com/llvm/llvm-project/issues/58491)
-  # Cela sera peut-être corrigé avec la version 19 de clang
+  # When compiling with clang, certain debug information should not be generated
+  # because it causes a compilation error
+  # (see https://github.com/llvm/llvm-project/issues/58491)
+  # This might be fixed in clang version 19
   target_compile_options(arccore_cuda_compile_flags INTERFACE
     "$<$<COMPILE_LANGUAGE:CUDA>:-Xarch_device>"
     "$<$<COMPILE_LANGUAGE:CUDA>:-g0>"
   )
-else()
-  # Compilateur CUDA classique (NVCC ou NVHPC)
+else ()
+  # Classic CUDA compiler (NVCC or NVHPC)
   target_compile_options(arccore_cuda_compile_flags INTERFACE
     "$<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>"
     "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>"
@@ -47,7 +47,7 @@ else()
   target_compile_options(arccore_cuda_build_compile_flags INTERFACE
     "$<$<COMPILE_LANGUAGE:CUDA>:${_CUDA_DEBUG_FLAGS}>"
   )
-endif()
+endif ()
 
 install(TARGETS arccore_cuda_compile_flags EXPORT ArccoreTargets)
 install(TARGETS arccore_cuda_build_compile_flags EXPORT ArccoreTargets)
@@ -66,12 +66,12 @@ target_link_libraries(arccore_accelerator_cuda PUBLIC
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Implémentation des routines spécifiques CUDA.
-# Pour que cela fonctionne, cette bibliothèque doit être statique
-# (sinon, il semble que CMake ne l'ajoute pas à l'édition de lien des cibles
-# qui en dépende mais peut-être s'agit-il d'une limitation de 'nvcc')
-# Elle permet aussi de propager les options de compilation aux utilisateurs
-# de cette bibliothèque
+# Implementation of CUDA-specific routines.
+# For this to work, this library must be static
+# (otherwise, it seems CMake does not add it to the link edit of targets
+# that depend on it, but perhaps this is an 'nvcc' limitation)
+# It also allows propagating compilation options to users
+# of this library
 # add_library(arccore_accelerator_cuda_impl STATIC
 #   Reduce.cu
 #   )

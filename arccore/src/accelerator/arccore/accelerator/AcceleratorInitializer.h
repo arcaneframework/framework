@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorInitializer.h                                    (C) 2000-2026 */
 /*                                                                           */
-/* Initialiseur pour un runtime-accélérator.                                 */
+/* Initializer for an accelerator runtime.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_ACCELERATORINITIALIZER_H
 #define ARCCORE_ACCELERATOR_ACCELERATORINITIALIZER_H
@@ -27,29 +27,30 @@ class Initializer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour initialiser un runtime pour l'API accélérateur.
+ * \brief Class to initialize a runtime for the accelerator API.
  *
- * \warning API expérimentatle en cours de définition.
+ * \warning Experimental API currently being defined.
  *
- * Une seule instance de cette classe peut exister à un moment donné.
+ * Only one instance of this class can exist at any given time.
  */
 class ARCCORE_ACCELERATOR_EXPORT AcceleratorInitializer
 {
  public:
 
-  //! Initialise un runtime séquentiel
+  //! Initializes a sequential runtime
   AcceleratorInitializer();
 
   /*!
-   * \brief Initialise un runtime.
+   * \brief Initializes a runtime.
    *
-   * Si \a use_accelerator est vrai, on initialise le runtime accélérateur
-   * utilisé pour compiler Arcane. Dans ce cas executionPolicy() retournera
-   * ce runtime.
+   * If \a use_accelerator is true, the accelerator runtime is initialized
+   * used to compile Arcane. In this case, executionPolicy() will return
+   * this runtime.
    *
-   * Si \a nb_thread est supérieur à 1, alors on initialise aussi le
-   * runtime multi-thread.
+   * If \a nb_thread is greater than 1, the multi-threaded runtime is also
+   * initialized.
    */
   explicit AcceleratorInitializer(bool use_accelerator, Int32 nb_thread = 1);
 
@@ -64,10 +65,10 @@ class ARCCORE_ACCELERATOR_EXPORT AcceleratorInitializer
 
  public:
 
-  //! Politique d'exécution initialisée par défaut
+  //! Default initialized execution policy
   eExecutionPolicy executionPolicy() const;
 
-  //! Gestionnaire de trace associé
+  //! Associated trace manager
   ITraceMng* traceMng() const;
 
  private:

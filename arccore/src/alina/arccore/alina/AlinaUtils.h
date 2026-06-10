@@ -47,7 +47,8 @@ namespace Arcane::Alina
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Result of a solving.
+
+//! Result of a solution.
 class ARCCORE_ALINA_EXPORT SolverResult
 {
  public:
@@ -85,7 +86,7 @@ class ARCCORE_ALINA_EXPORT SolverResult
 namespace detail
 {
   class PropertyWrapper;
-  //! Class to handle empty parameters list
+  //! Class to handle empty parameter list
   class ARCCORE_ALINA_EXPORT empty_params
   {
    public:
@@ -279,7 +280,7 @@ namespace detail
     obj.get(ap, std::string(path) + name + ".");
   }
 
-  // NOTE GG: This methods is not used in the tests.
+  // NOTE GG: This method is not used in the tests.
   template <>
   inline void params_export_child(PropertyTree& ap,
                                   const std::string& path, const char* name,
@@ -515,7 +516,7 @@ namespace std
 {
 
 // Read pointers from input streams.
-// This allows to exchange pointers through boost::property_tree::ptree.
+// This allows exchanging pointers through boost::property_tree::ptree.
 template <class T>
 inline istream& operator>>(istream& is, T*& ptr)
 {

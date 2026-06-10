@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryCopierTpl1.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions de copie mémoire sur accélérateur.                              */
+/* Memory copy functions on accelerator.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -24,7 +24,7 @@ addExplicitTemplate1()
 {
   using namespace Arcane::impl;
 
-  //! Ajoute des implémentations spécifiques pour les premières tailles courantes
+  //! Adds specific implementations for the first common sizes
   addCopier<SpecificType<std::byte, ExtentValue<1>>>(); // 1
   addCopier<SpecificType<Int16, ExtentValue<1>>>(); // 2
   addCopier<SpecificType<std::byte, ExtentValue<3>>>(); // 3

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -23,12 +23,11 @@ using namespace TestArccore;
 
 namespace
 {
-void
-_Add(Array<Real>& v,Integer new_size)
+void _Add(Array<Real>& v, Integer new_size)
 {
   v.resize(new_size);
 }
-}
+} // namespace
 
 namespace
 {
@@ -301,9 +300,9 @@ TEST(Array2, Misc)
 
 namespace Arcane
 {
-// Instancie explicitement les classes tableaux pour garantir
-// que toutes les méthodes fonctionnent
+// Explicitly instantiate the array classes to ensure
+// that all methods work
 template class UniqueArray2<IntSubClass>;
 template class SharedArray2<IntSubClass>;
 template class Array2<IntSubClass>;
-}
+} // namespace Arcane

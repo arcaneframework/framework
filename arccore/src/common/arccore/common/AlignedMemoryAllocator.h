@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AlignedMemoryAllocator.h                                    (C) 2000-2025 */
 /*                                                                           */
-/* Allocateur mémoire par défaut.                                            */
+/* Default memory allocator.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ALIGNEDMEMORYALLOCATOR_H
 #define ARCCORE_COMMON_ALIGNEDMEMORYALLOCATOR_H
@@ -33,13 +33,13 @@ namespace Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Allocateur mémoire avec alignement mémoire spécifique.
+ * \brief Memory allocator with specific memory alignment.
  *
- * Cette classe s'utilise via les deux méthodes publiques Simd()
- * et CacheLine() qui retournent respectivement un allocateur avec
- * un alignement adéquat pour autoriser la vectorisation et un allocateur
- * aligné sur une ligne de cache.
+ * This class is used via the two public methods Simd()
+ * and CacheLine(), which return an allocator with adequate alignment to
+ * allow vectorization, and an allocator aligned to a cache line, respectively.
  */
 class ARCCORE_COMMON_EXPORT AlignedMemoryAllocator
 : public IMemoryAllocator
@@ -51,30 +51,28 @@ class ARCCORE_COMMON_EXPORT AlignedMemoryAllocator
 
  public:
 
-  // TODO: essayer de trouver les bonnes valeurs en fonction de la cible.
-  // 64 est OK pour toutes les architectures x64 à la fois pour le SIMD
-  // et la ligne de cache.
+  // TODO: try to find the correct values based on the target.
+  // 64 is OK for all x64 architectures for both SIMD and cache line.
 
-  // IMPORTANT : Si on change la valeur ici, il faut changer la taille de
-  // l'alignement de ArrayImplBase.
+  // IMPORTANT: If we change the value here, we must change the alignment
+  // size of ArrayImplBase.
 
-  // TODO Pour l'instant seul un alignement sur 64 est autorisé. Pour
-  // autoriser d'autres valeurs, il faut modifier l'implémentation dans
-  // ArrayImplBase.
+  // TODO Currently, only 64 alignment is allowed. To allow other values,
+  // the implementation in ArrayImplBase must be modified.
 
-  // TODO marquer les méthodes comme 'final'.
+  // TODO mark the methods as 'final'.
 
-  //! Alignement pour les structures utilisant la vectorisation
+  //! Alignment for structures using vectorization
   static constexpr Integer simdAlignment() { return 64; }
-  //! Alignement pour une ligne de cache.
+  //! Alignment for a cache line.
   static constexpr Integer cacheLineAlignment() { return 64; }
 
   /*!
-   * \brief Allocateur garantissant l'alignement pour utiliser
-   * la vectorisation sur la plateforme cible.
+   * \brief Allocator guaranteeing alignment to use vectorization on the
+   * target platform.
    *
-   * Il s'agit de l'alignement pour le type plus restrictif et donc il
-   * est possible d'utiliser cet allocateur pour toutes les structures vectorielles.
+   * This is the alignment for the more restrictive type, and therefore
+   * this allocator can be used for all vector structures.
    */
   static AlignedMemoryAllocator* Simd()
   {
@@ -82,7 +80,7 @@ class ARCCORE_COMMON_EXPORT AlignedMemoryAllocator
   }
 
   /*!
-   * \brief Allocateur garantissant l'alignement sur une ligne de cache.
+   * \brief Allocator guaranteeing alignment to a cache line.
    */
   static AlignedMemoryAllocator* CacheLine()
   {
@@ -113,10 +111,9 @@ class ARCCORE_COMMON_EXPORT AlignedMemoryAllocator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

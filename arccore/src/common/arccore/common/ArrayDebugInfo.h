@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ArrayDebugInfo.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Informations de debug pour les classes tableaux.                          */
+/* Debug information for array classes.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ARRAYDEBUGINFO_H
 #define ARCCORE_COMMON_ARRAYDEBUGINFO_H
@@ -28,11 +28,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de debug pour les classes tableaux.
+ * \brief Debug information for array classes.
  *
- * Cette classe utilise un compteur de référence. Toutes les instances
- * doivent donc être allouée dynamiquement.
+ * This class uses a reference counter. All instances
+ * must therefore be allocated dynamically.
  */
 class ARCCORE_COMMON_EXPORT ArrayDebugInfo
 {
@@ -65,7 +66,7 @@ class ARCCORE_COMMON_EXPORT ArrayDebugInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

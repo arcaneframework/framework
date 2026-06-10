@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Observer.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Observateur.                                                              */
+/* Observer.                                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_OBSERVER_H
 #define ARCCORE_BASE_OBSERVER_H
@@ -25,9 +25,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'un observateur.
+ * \brief Base class of an observer.
  */
 class ARCCORE_BASE_EXPORT AbstractObserver
 : public IObserver
@@ -39,10 +40,10 @@ class ARCCORE_BASE_EXPORT AbstractObserver
 
  public:
 
-  //! S'attache à l'observable \a obs
+  //! Attaches to the observable \a obs
   void attachToObservable(IObservable* obs) override;
 
-  //! Se détache de l'observable
+  //! Detaches from the observable
   void detach() override;
 
  private:
@@ -52,33 +53,38 @@ class ARCCORE_BASE_EXPORT AbstractObserver
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Core
- * \brief Observateur pour un type T
+ * \brief Observer for a type T
  */
-template<class T>
+template <class T>
 class ObserverT
 : public AbstractObserver
 {
  public:
-	
-  typedef void (T::*Func0Ptr)(); //!< Type du pointeur sur la méthode
-  typedef void (T::*Func1Ptr)(const IObservable&); //!< Type du pointeur sur la méthode
 
- public:
-	
-  //! Constructeur
-  ObserverT(T* object,Func1Ptr funcptr)
-  : m_object(object), m_function0(nullptr), m_function1(funcptr) {}
-  ObserverT(T* object,Func0Ptr funcptr)
-  : m_object(object), m_function0(funcptr), m_function1(nullptr) {}
-
- public:
-  
+  typedef void (T::*Func0Ptr)(); //!< Type of the member function pointer
+  typedef void (T::*Func1Ptr)(const IObservable&); //!< Type of the member function pointer
 
  public:
 
-  //! Exécute la méthode associé
+  //! Constructor
+  ObserverT(T* object, Func1Ptr funcptr)
+  : m_object(object)
+  , m_function0(nullptr)
+  , m_function1(funcptr)
+  {}
+  ObserverT(T* object, Func0Ptr funcptr)
+  : m_object(object)
+  , m_function0(funcptr)
+  , m_function1(nullptr)
+  {}
+
+ public:
+ public:
+
+  //! Executes the associated method
   void observerUpdate(IObservable* iob) override
   {
     if (m_function1)
@@ -89,9 +95,9 @@ class ObserverT
 
  private:
 
-  T* m_object;    //!< Objet associé.
-  Func0Ptr m_function0; //!< Pointeur vers la méthode associée.
-  Func1Ptr m_function1; //!< Pointeur vers la méthode associée.
+  T* m_object; //!< Associated object.
+  Func0Ptr m_function0; //!< Pointer to the associated method.
+  Func1Ptr m_function1; //!< Pointer to the associated method.
 };
 
 /*---------------------------------------------------------------------------*/
@@ -102,5 +108,4 @@ class ObserverT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

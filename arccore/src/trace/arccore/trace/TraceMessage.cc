@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TraceMessage.cc                                             (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des messages.                                                     */
+/* Message management.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 TraceMessage::
-TraceMessage(std::ostream* ostr,ITraceMng* m,Trace::eMessageType id,int level)
+TraceMessage(std::ostream* ostr, ITraceMng* m, Trace::eMessageType id, int level)
 : m_stream(ostr)
 , m_parent(m)
 , m_type(id)
@@ -73,11 +73,12 @@ operator=(const TraceMessage& from)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// NOTE: ce destructeur peut envoyer une exception si le message est
-// de type Fatal ou ParallelFatal. Avec le C++11, il faut le signaler
-// explicitement sinon le code se termine via un appel à std::terminate().
-// A noter qu'avec gcc 4.7 et avant, même avec l'option std=c++11 il n'est
-// pas nécessaire de spécifier le noexcept.
+
+// NOTE: this destructor may throw an exception if the message is
+// of type Fatal or ParallelFatal. With C++11, it must be signaled
+// explicitly otherwise the code terminates via a call to std::terminate().
+// Note that with gcc 4.7 and before, even with the std=c++11 option it is
+// not necessary to specify noexcept.
 TraceMessage::
 ~TraceMessage() ARCCORE_NOEXCEPT_FALSE
 {
@@ -111,7 +112,7 @@ file() const
 /*---------------------------------------------------------------------------*/
 //static int zeroi = 0;
 std::ostream& Trace::
-operator<< (std::ostream& o,const Trace::Width& w)
+operator<<(std::ostream& o, const Trace::Width& w)
 {
   o.width(w.m_width);
   //if (zeroi==1)
@@ -121,11 +122,11 @@ operator<< (std::ostream& o,const Trace::Width& w)
 }
 
 std::ostream& Trace::
-operator<< (std::ostream& o,const Trace::Precision& w)
+operator<<(std::ostream& o, const Trace::Precision& w)
 {
   bool is_scientific = w.m_scientific;
   std::ios::fmtflags old_flags = o.flags();
-  if (is_scientific){
+  if (is_scientific) {
     o.flags(std::ios::scientific);
   }
   std::streamsize p = o.precision(w.m_precision);
@@ -140,7 +141,7 @@ operator<< (std::ostream& o,const Trace::Precision& w)
 /*---------------------------------------------------------------------------*/
 
 const TraceMessage&
-operator<<(const TraceMessage& o,const Trace::Color& c)
+operator<<(const TraceMessage& o, const Trace::Color& c)
 {
   o.m_color = c.m_color;
   return o;
@@ -153,7 +154,7 @@ operator<<(const TraceMessage& o,const Trace::Color& c)
 /*---------------------------------------------------------------------------*/
 
 Trace::Setter::
-Setter(ITraceMng* msg,const String& name)
+Setter(ITraceMng* msg, const String& name)
 : m_msg(msg)
 {
   m_msg->pushTraceClass(name);
@@ -172,8 +173,7 @@ Trace::Setter::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

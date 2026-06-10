@@ -1,4 +1,4 @@
-set(SOURCES
+﻿set(SOURCES
   ISerializer.h
   BasicSerializer.h
   BasicSerializer.cc

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Initializer.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Classe pour initialiser le runtime accélérateur.                          */
+/* Class to initialize the accelerator runtime.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -105,7 +105,7 @@ Initializer(bool use_accelerator, Int32 max_allowed_thread)
       ConcurrencyApplicationBuildInfo c(task_names.constView(), thread_names.constView(), nb_task_thread);
       m_concurrency_application.setCoreServices(c);
     }
-    // Si la politique d'exécution n'est pas positionnée, alors ce sera le multi-threading
+    // If the execution policy is not set, it will be multi-threading
     if (max_allowed_thread > 1 && m_policy == eExecutionPolicy::Sequential)
       m_policy = eExecutionPolicy::Thread;
   }

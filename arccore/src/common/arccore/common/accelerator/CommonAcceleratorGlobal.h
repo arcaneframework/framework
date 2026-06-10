@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorCoreGlobal.h                                     (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations générales pour le support des accélérateurs.                 */
+/* General declarations for accelerator support.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_COMMONACCELERATORCOREGLOBAL_H
 #define ARCCORE_COMMON_ACCELERATOR_COMMONACCELERATORCOREGLOBAL_H
@@ -22,9 +22,10 @@
 /*!
  * \file AcceleratorCoreGlobal.h
  *
- * Ce fichier contient les déclarations des types de la composante
- * 'arcane_accelerator_core'.
+ * This file contains the declarations of the types for the
+ * 'arcane_accelerator_core' component.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,7 +62,7 @@ namespace Impl
 {
   class RuntimeStaticInfo;
   class IRunnerRuntime;
-  // typedef pour compatibilité avec anciennes versions (octobre 2022)
+  // typedef for compatibility with older versions (October 2022)
   using IRunQueueRuntime = IRunnerRuntime;
   class IRunQueueStream;
   class RunCommandImpl;
@@ -81,103 +82,105 @@ namespace Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Politique d'exécution pour un Runner.
+ * \brief Execution policy for a Runner.
  */
 enum class eExecutionPolicy
 {
-  //! Aucune politique d'exécution
+  //! No execution policy
   None,
-  //! Politique d'exécution séquentielle
+  //! Sequential execution policy
   Sequential,
-  //! Politique d'exécution multi-thread
+  //! Multi-threaded execution policy
   Thread,
-  //! Politique d'exécution utilisant l'environnement CUDA
+  //! Execution policy using the CUDA environment
   CUDA,
-  //! Politique d'exécution utilisant l'environnement HIP
+  //! Execution policy using the HIP environment
   HIP,
-  //! Politique d'exécution utilisant l'environnement SYCL
+  //! Execution policy using the SYCL environment
   SYCL
 };
 
-//! Affiche le nom de la politique d'exécution
+//! Prints the name of the execution policy
 extern "C++" ARCCORE_COMMON_EXPORT
 std::ostream&
 operator<<(std::ostream& o, eExecutionPolicy exec_policy);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Politique des opératations de réduction sur les accélérateurs.
+ * \brief Reduction operation policy on accelerators.
  *
- * \note A partir de la version 3.15 de Arcane, seule la politique Grid
- * est disponible.
+ * \note Starting from Arcane version 3.15, only the Grid policy is available.
  */
 enum class eDeviceReducePolicy
 {
   /*!
-   * \brief Utilise des opérations atomiques entre les blocs.
+   * \brief Uses atomic operations between blocks.
    *
-   * \deprecated Cette politique n'est plus disponible. Si on
-   * spécifie cette politique, elle se comportera comme
-   * eDeviceReducePolicy::Grid.
+   * \deprecated This policy is no longer available. If specified, it will
+   * behave like eDeviceReducePolicy::Grid.
    */
   Atomic ARCCORE_DEPRECATED_REASON("Y2025: Use eDeviceReducePolicy::Grid instead") = 1,
-  //! Utilise un noyau de calcul avec une synchronisations entre les blocs.
+  //! Uses a compute kernel with synchronization between blocks.
   Grid = 2
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Niveaux de priorité prédéfinis pour les files d'exécution 
- *        sur les accélérateurs
+ * \brief Predefined priority levels for run queues
+ *        on accelerators
  */
 enum class eRunQueuePriority : int
 {
-  //! Utilise 0 comme valeur par défaut
+  //! Uses 0 as the default value
   Default = 0,
-  //! Une valeur arbitraire négative pour définir une priorité élevée
+  //! An arbitrary negative value to define a high priority
   High = -100,
-  //! Une valeur arbitraire positive pour définir une priorité faible
+  //! An arbitrary positive value to define a low priority
   Low = 100
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Type de mémoire pour un pointeur
+//! Memory type for a pointer
 enum class ePointerMemoryType
 {
-  //NOTE: Les valeurs sont équivalentes à cudaMemoryType. Si on
-  // change ces valeurs il faut changer la fonction correspondante
-  // dans le runtime (getPointerAttribute()).
+  //NOTE: The values are equivalent to cudaMemoryType. If
+  // these values are changed, the corresponding function
+  // in the runtime (getPointerAttribute()) must be changed.
   Unregistered = 0,
   Host = 1,
   Device = 2,
   Managed = 3
 };
 
-//! Affiche le nom du type de mémoire
+//! Prints the name of the memory type
 extern "C++" ARCCORE_COMMON_EXPORT
 std::ostream&
 operator<<(std::ostream& o, ePointerMemoryType mem_type);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations d'accessibilité d'une adresse mémoire.
+ * \brief Accessibility information of a memory address.
  *
- * Indique si une adresse mémoire est accessible sur un accélérateur ou
- * sur le CPU.
+ * Indicates whether a memory address is accessible on an accelerator or
+ * on the CPU.
  *
  * \sa getPointerAccessibility()
  */
 enum class ePointerAccessibility
 {
-  //! Accessibilité inconnue
+  //! Unknown accessibility
   Unknown = 0,
-  //! Non accessible
+  //! Not accessible
   No = 1,
   //! Accessible
   Yes = 2
@@ -186,7 +189,7 @@ enum class ePointerAccessibility
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Indique si \a exec_policy correspond à un accélérateur
+//! Indicates if \a exec_policy corresponds to an accelerator
 inline bool
 isAcceleratorPolicy(eExecutionPolicy exec_policy)
 {
@@ -195,36 +198,37 @@ isAcceleratorPolicy(eExecutionPolicy exec_policy)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Accessibilité de l'adresse \a ptr pour une exécution sur la file \a queue.
+ * \brief Accessibility of address \a ptr for execution on queue \a queue.
  *
- * Si \a queue est nul, retourne ePointerAccessibility::Unknown.
- * Si \a ptr_attr est non nul, il sera remplit avec les informations du pointeur
- * comme si on avait appelé Runner::fillPointerAttribute().
+ * If \a queue is null, returns ePointerAccessibility::Unknown.
+ * If \a ptr_attr is not null, it will be filled with pointer information
+ * as if Runner::fillPointerAttribute() had been called.
  */
 extern "C++" ARCCORE_COMMON_EXPORT ePointerAccessibility
 getPointerAccessibility(RunQueue* queue, const void* ptr, PointerAttribute* ptr_attr = nullptr);
 
 /*!
- * \brief Accessibilité de l'adresse \a ptr pour une exécution sur \a runner.
+ * \brief Accessibility of address \a ptr for execution on \a runner.
  *
- * Si \a runner est nul, retourne ePointerAccessibility::Unknown.
- * Si \a ptr_attr est non nul, il sera remplit avec les informations du pointeur
- * comme si on avait appelé Runner::fillPointerAttribute().
+ * If \a runner is null, returns ePointerAccessibility::Unknown.
+ * If \a ptr_attr is not null, it will be filled with pointer information
+ * as if Runner::fillPointerAttribute() had been called.
  */
 extern "C++" ARCCORE_COMMON_EXPORT ePointerAccessibility
 getPointerAccessibility(Runner* runner, const void* ptr, PointerAttribute* ptr_attr = nullptr);
 
 /*!
- * \brief Accessibilité de l'adresse \a ptr pour une politique d'exécution\a policy.
+ * \brief Accessibility of address \a ptr for execution policy\a policy.
  *
- * Si \a ptr_attr est non nul, il sera remplit avec les informations du pointeur
- * comme si on avait appelé Runner::fillPointerAttribute().
+ * If \a ptr_attr is not null, it will be filled with pointer information
+ * as if Runner::fillPointerAttribute() had been called.
  */
 extern "C++" ARCCORE_COMMON_EXPORT ePointerAccessibility
 getPointerAccessibility(eExecutionPolicy policy, const void* ptr, PointerAttribute* ptr_attr = nullptr);
 
-//! Accessibilité de l'adresse \a ptr pour une exécution sur \a queue_or_runner_or_policy.
+//! Accessibility of address \a ptr for execution on \a queue_or_runner_or_policy.
 template <typename T> inline ePointerAccessibility
 getPointerAccessibility(T& queue_or_runner_or_policy, const void* ptr, PointerAttribute* ptr_attr = nullptr)
 {
@@ -243,27 +247,27 @@ namespace Arcane::Accelerator::Impl
 {
 
 /*!
- * \brief Vérifie si \a ptr est accessible pour une exécution sur \a queue.
+ * \brief Checks if \a ptr is accessible for execution on \a queue.
  *
- * Lève une exception FatalErrorException si ce n'est pas le cas.
+ * Raises a FatalErrorException if it is not.
  */
 extern "C++" ARCCORE_COMMON_EXPORT void
 arcaneCheckPointerIsAccessible(const RunQueue* queue, const void* ptr,
                                const char* name, const TraceInfo& ti);
 
 /*!
- * \brief Vérifie si \a ptr est accessible pour une exécution sur \a runner.
+ * \brief Checks if \a ptr is accessible for execution on \a runner.
  *
- * Lève une exception FatalErrorException si ce n'est pas le cas.
+ * Raises a FatalErrorException if it is not.
  */
 extern "C++" ARCCORE_COMMON_EXPORT void
 arcaneCheckPointerIsAccessible(const Runner* runner, const void* ptr,
                                const char* name, const TraceInfo& ti);
 
 /*!
- * \brief Vérifie si \a ptr est accessible pour une exécution \a policy.
+ * \brief Checks if \a ptr is accessible for execution \a policy.
  *
- * Lève une exception FatalErrorException si ce n'est pas le cas.
+ * Raises a FatalErrorException if it is not.
  */
 extern "C++" ARCCORE_COMMON_EXPORT void
 arcaneCheckPointerIsAccessible(eExecutionPolicy policy, const void* ptr,
@@ -287,10 +291,11 @@ arcaneCheckPointerIsAccessible(const Runner& runner, const void* ptr,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro qui vérifie si \a ptr est accessible pour une RunQueue ou un Runner.
+ * Macro that checks if \a ptr is accessible for a RunQueue or a Runner.
  *
- * Lance une exception si ce n'est pas le cas.
+ * Raises an exception if it is not.
  */
 #define ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue_or_runner_or_policy, ptr) \
   ::Arcane::Accelerator::Impl::arcaneCheckPointerIsAccessible((queue_or_runner_or_policy), (ptr), #ptr, A_FUNCINFO)
@@ -303,17 +308,17 @@ arcaneCheckPointerIsAccessible(const Runner& runner, const void* ptr,
 
 #if defined(ARCCORE_CHECK)
 
-//! Macro qui vérifie en mode check si \a ptr est accessible pour une RunQueue ou un Runner.
+//! Macro that checks in check mode if \a ptr is accessible for a RunQueue or a Runner.
 #define ARCCORE_CHECK_ACCESSIBLE_POINTER(queue_or_runner_or_policy, ptr) \
   ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS((queue_or_runner_or_policy), (ptr))
 
 #define ARCANE_CHECK_ACCESSIBLE_POINTER(queue_or_runner_or_policy, ptr) \
   ARCCORE_CHECK_ACCESSIBLE_POINTER((queue_or_runner_or_policy), (ptr))
 
-//! Macro qui vérifie en mode check si \a ptr est accessible pour une RunQueue ou un Runner.
+//! Macro that checks in check mode if \a ptr is accessible for a RunQueue or a Runner.
 #else
 
-//! Macro qui vérifie en mode check si \a ptr est accessible pour une RunQueue ou un Runner.
+//! Macro that checks in check mode if \a ptr is accessible for a RunQueue or a Runner.
 #define ARCCORE_CHECK_ACCESSIBLE_POINTER(queue_or_runner_or_policy, ptr)
 
 #define ARCANE_CHECK_ACCESSIBLE_POINTER(queue_or_runner_or_policy, ptr)
@@ -325,10 +330,11 @@ arcaneCheckPointerIsAccessible(const Runner& runner, const void* ptr,
 
 namespace Arcane::Accelerator::impl
 {
-// Pour compatibilité avec les anciennes versions de Arcane.
-// A rendre obsolète fin 2026.
+
+// For compatibility with older versions of Arcane.
+// To be deprecated by the end of 2026.
 using Arcane::Accelerator::isAcceleratorPolicy;
-}
+} // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

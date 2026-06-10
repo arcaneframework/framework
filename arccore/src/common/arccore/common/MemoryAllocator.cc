@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MemoryAllocator.cc                                          (C) 2000-2025 */
 /*                                                                           */
-/* Allocateurs mémoires.                                                     */
+/* Memory allocators.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -106,7 +106,7 @@ reallocate(MemoryAllocationArgs, AllocatedMemoryInfo current_ptr, Int64 new_size
 /*---------------------------------------------------------------------------*/
 
 void DefaultMemoryAllocator::
-deallocate(MemoryAllocationArgs,AllocatedMemoryInfo ptr)
+deallocate(MemoryAllocationArgs, AllocatedMemoryInfo ptr)
 {
   ::free(ptr.baseAddress());
 }
@@ -115,7 +115,7 @@ deallocate(MemoryAllocationArgs,AllocatedMemoryInfo ptr)
 /*---------------------------------------------------------------------------*/
 
 Int64 DefaultMemoryAllocator::
-adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64 ) const
+adjustedCapacity(MemoryAllocationArgs, Int64 wanted_capacity, Int64) const
 {
   return wanted_capacity;
 }
@@ -134,10 +134,11 @@ CacheLineAllocator(AlignedMemoryAllocator::cacheLineAlignment());
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * NOTE: Normalement les fonctions _mm_alloc() et _mm_free() permettent
- * d'allouer de la mémoire alignée. Il faudrait vérifier si elles sont
- * disponibles partout.
+ * NOTE: Normally the _mm_alloc() and _mm_free() functions allow
+ * allocating aligned memory. It should be checked if they are
+ * available everywhere.
  */
 
 /*---------------------------------------------------------------------------*/
@@ -206,17 +207,17 @@ adjustMemoryCapacity(size_t wanted_capacity, size_t element_size, size_t alignme
 {
   if (element_size == 0)
     return wanted_capacity;
-  // Si \a element_size est plus petit que \a m_alignment, considère que
-  // la mémoire allouée doit être un multiple de l'alignement.
-  // (On pourrait être plus restrictif suivant les types mais ce n'est en
-  // général pas utile).
+  // If \a element_size is smaller than \a m_alignment, consider that
+  // the allocated memory must be a multiple of the alignment.
+  // (We could be more restrictive depending on the types but it is not in
+  // general useful).
   size_t block_size = alignment / element_size;
   if (block_size <= 1)
     return wanted_capacity;
 
-  // Si l'alignement n'est pas un multiple de la taille d'un élément,
-  // cela signifie que l'élément ne sera pas utilisé pour la vectorisation.
-  // Il n'est donc pas nécessaire dans ce cas de modifier la capacité.
+  // If the alignment is not a multiple of the element size,
+  // it means that the element will not be used for vectorization.
+  // Therefore, it is not necessary in this case to modify the capacity.
   size_t nb_element = alignment % element_size;
   if (nb_element != 0)
     return wanted_capacity;
@@ -226,7 +227,7 @@ adjustMemoryCapacity(size_t wanted_capacity, size_t element_size, size_t alignme
               << " element_size=" << element_size
               << " block_size=" << block_size << '\n';
 
-  // Ajoute à la capacité ce qu'il faut pour que le module soit 0.
+  // Adds to the capacity what is needed for the modulo to be 0.
   size_t modulo = wanted_capacity % block_size;
   if (modulo != 0)
     wanted_capacity += (block_size - modulo);
@@ -286,7 +287,7 @@ deallocate(MemoryAllocationArgs args, AllocatedMemoryInfo ptr)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

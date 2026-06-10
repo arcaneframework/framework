@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ReferenceCounterImpl.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Implémentations liées au gestionnaire de compteur de référence.           */
+/* Implementations related to the reference counter manager.                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_REFERENCECOUNTERIMPL_H
 #define ARCCORE_BASE_REFERENCECOUNTERIMPL_H
@@ -22,13 +22,15 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file ReferenceCounterImpl.h
  *
- * Ce fichier ne doit être inclus que par les classes implémentations
- * utilisant un compte de référence. Pour les déclarations, il faut utiliser
- * le fichier 'RefDeclarations.h'
+ * This file should only be included by implementation classes
+ * using a reference counter. For declarations, use
+ * the file 'RefDeclarations.h'
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -77,16 +79,17 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation thread-safe d'un compteur de référence.
+ * \brief Thread-safe implementation of a reference counter.
  *
- * L'implémentation utilise un std::atomic pour conserver le nombre de
- * références.
+ * The implementation uses a std::atomic to maintain the number of
+ * references.
  *
- * La méthode removeReference() détruit l'instance lorsque ce compteur
- * de référence atteint 0.
+ * The removeReference() method destroys the instance when this counter
+ * of references reaches 0.
  *
- * Cette classe est interne à Arcane.
+ * This class is internal to Arcane.
  */
 class ARCCORE_BASE_EXPORT ReferenceCounterImpl
 {
@@ -107,9 +110,9 @@ class ARCCORE_BASE_EXPORT ReferenceCounterImpl
   ARCCORE_DEPRECATED_REASON("Y2025: use _internalRemoveReference() instead")
   void removeReference()
   {
-    // Décrémente et retourne la valeur d'avant.
-    // Si elle vaut 1, cela signifie qu'on n'a plus de références
-    // sur l'objet et qu'il faut le détruire.
+    // Decrements and returns the previous value.
+    // If it equals 1, it means there are no more references
+    // on the object and it must be destroyed.
     Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
     if (v == 1) {
       if (_destroyThisReference())
@@ -125,9 +128,9 @@ class ARCCORE_BASE_EXPORT ReferenceCounterImpl
   }
   bool _internalRemoveReference()
   {
-    // Décrémente et retourne la valeur d'avant.
-    // Si elle vaut 1, cela signifie qu'on n'a plus de références
-    // sur l'objet et qu'il faut éventuellement le détruire.
+    // Decrements and returns the previous value.
+    // If it equals 1, it means there are no more references
+    // on the object and it must potentially be destroyed.
     Int32 v = std::atomic_fetch_add(&m_nb_ref, -1);
     if (v == 1)
       return _destroyThisReference();
@@ -136,7 +139,7 @@ class ARCCORE_BASE_EXPORT ReferenceCounterImpl
 
  private:
 
-  // Méthodes accessibles uniquement depuis ReferenceCounterWrapper
+  // Methods accessible only from ReferenceCounterWrapper
   void _setExternalDeleter(RefBase::DeleterBase* v)
   {
     delete m_external_deleter;
@@ -154,7 +157,7 @@ class ARCCORE_BASE_EXPORT ReferenceCounterImpl
 
  private:
 
-  //! Retourne \a true si l'instance doit être détruite par l'appel à operator delete()
+  //! Returns true if the instance must be destroyed by calling operator delete()
   bool _destroyThisReference()
   {
     if (!m_external_deleter)
@@ -174,9 +177,10 @@ class ARCCORE_BASE_EXPORT ReferenceCounterImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * Macro générique pour définir les méthodes gérant les compteurs de référence.
+ * Generic macro to define methods managing reference counters.
  */
 #define ARCCORE_INTERNAL_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS(OPTIONAL_OVERRIDE) \
  private: \
@@ -200,14 +204,15 @@ class ARCCORE_BASE_EXPORT ReferenceCounterImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro pour définir les méthodes gérant les compteurs
- * de référence.
+ * \brief Macro to define methods managing counters
+ * of references.
  *
- * Cette macro s'utilise dans une classe implémentant une interface
- * pour laquelle la macro ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS()
- * a été utilisée. La classe implémentation doit dériver de
- * ReferenceCounterImpl. Par exemple:
+ * This macro is used in a class implementing an interface
+ * for which the macro ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS()
+ * was used. The implementation class must inherit from
+ * ReferenceCounterImpl. For example:
  *
  * \code
  * class MyClass
@@ -227,13 +232,13 @@ class ARCCORE_BASE_EXPORT ReferenceCounterImpl
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Macro pour définir les méthodes et types une classe qui
- * utilise un compteur de référence.
+ * \brief Macro to define methods and types for a class that
+ * uses a reference counter.
  *
- * Cette macro doit être utilisée pour une classe pour laquelle on
- * a utilisé la macro ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(). Elle doit
- * se trouver dans une seule unité de translation (un fichier '.cc' par
- * exemple) et être utilisée dans le namespace Arccore. Par exemple:
+ * This macro must be used for a class for which
+ * the macro ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS() was used. It must
+ * be located in a single translation unit (a '.cc' file, for
+ * example) and be used in the Arccore namespace. For example:
  *
  * \code
  * namespace Arccore
@@ -248,9 +253,9 @@ class ARCCORE_BASE_EXPORT ReferenceCounterImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

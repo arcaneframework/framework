@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* AcceleratorMemoryCopier.h                                   (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation sur accélérateurs des fonctions de copie mémoire.          */
+/* Implementation of memory copy functions on accelerators.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_INTERNAL_ACCELERATORMEMORYCOPIER_H
 #define ARCCORE_ACCELERATOR_INTERNAL_ACCELERATORMEMORYCOPIER_H
@@ -111,9 +111,9 @@ class AcceleratorSpecificMemoryCopy
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, source.data());
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
-      // Idéalement il faudrait tester les valeurs des éléments de multi_views
-      // mais si on fait cela on peut potentiellement faire des transferts
-      // entre l'accélérateur et le CPU.
+      // Ideally, we should test the values of the elements of multi_views
+      // but if we do that, we can potentially perform transfers
+      // between the accelerator and the CPU.
     }
     const Int32 nb_index = indexes.size() / 2;
     const auto extent = m_extent;
@@ -126,8 +126,8 @@ class AcceleratorSpecificMemoryCopy
       Int64 index1 = indexes[(i * 2) + 1];
       Span<std::byte> orig_view_bytes = multi_views[index0];
       auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
-      // Utilise un span pour tester les débordements de tableau mais on
-      // pourrait directement utiliser 'orig_view_data' pour plus de performances
+      // Uses a span to test array overflows but
+      // could directly use 'orig_view_data' for better performance
       Span<DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
       Int64 zci = index1 * extent.v;
       Int64 z_index = i * extent.size();
@@ -137,9 +137,9 @@ class AcceleratorSpecificMemoryCopy
   }
 
   /*!
-   * \brief Remplit les valeurs d'indices spécifiés par \a indexes.
+   * \brief Fills the values at indices specified by \a indexes.
    *
-   * Si \a indexes est vide, remplit toutes les valeurs.
+   * If \a indexes is empty, fills all values.
    */
   void _fill(const RunQueue* queue, SmallSpan<const Int32> indexes, Span<const DataType> source,
              Span<DataType> destination)
@@ -154,9 +154,9 @@ class AcceleratorSpecificMemoryCopy
     const auto extent = m_extent;
     constexpr Int32 max_size = 24;
 
-    // Pour l'instant on limite la taille de DataType en dur.
-    // A terme, il faudrait allouer sur le device et désallouer en fin
-    // d'exécution (via cudaMallocAsync/cudaFreeAsync pour gérer l'asynchronisme)
+    // For now, we limit the size of DataType hardcoded.
+    // In the future, we should allocate on the device and deallocate at the end
+    // of execution (via cudaMallocAsync/cudaFreeAsync to manage asynchronous operations)
     if (extent.v > max_size)
       ARCCORE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
                     sizeof(DataType) * extent.v, sizeof(DataType) * max_size);
@@ -167,7 +167,7 @@ class AcceleratorSpecificMemoryCopy
       local_source[z] = {};
 
     auto command = makeCommand(queue);
-    // Si \a nb_index vaut 0, on remplit tous les éléments
+    // If \a nb_index is 0, we fill all elements
     if (nb_index == 0) {
       Int32 nb_value = CheckedConvert::toInt32(destination.size() / extent.v);
       command << RUNCOMMAND_LOOP1(iter, nb_value)
@@ -198,17 +198,17 @@ class AcceleratorSpecificMemoryCopy
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(eExecutionPolicy::Sequential, source.data());
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
-      // Idéalement il faudrait tester les valeurs des éléments de multi_views
-      // mais si on fait cela on peut potentiellement faire des transferts
-      // entre l'accélérateur et le CPU.
+      // Ideally, we should test the values of the elements of multi_views
+      // but if we do that, we can potentially perform transfers
+      // between the accelerator and the CPU.
     }
     const Int32 nb_index = indexes.size() / 2;
     const auto extent = m_extent;
     constexpr Int32 max_size = 24;
 
-    // Pour l'instant on limite la taille de DataType en dur.
-    // A terme, il faudrait allouer sur le device et désallouer en fin
-    // d'exécution (via cudaMallocAsync/cudaFreeAsync pour gérer l'asynchronisme)
+    // For now, we limit the size of DataType hardcoded.
+    // In the future, we should allocate on the device and deallocate at the end
+    // of execution (via cudaMallocAsync/cudaFreeAsync to manage asynchronous operations)
     if (extent.v > max_size)
       ARCCORE_THROW(NotSupportedException, "sizeof(type) is too big (v={0} max={1})",
                     sizeof(DataType) * extent.v, sizeof(DataType) * max_size);
@@ -219,9 +219,9 @@ class AcceleratorSpecificMemoryCopy
       local_source[z] = {};
 
     if (nb_index == 0) {
-      // Remplit toutes les valeurs du tableau avec la source.
-      // Comme le nombre d'éléments de la deuxième dimension dépend de la première,
-      // on utilise un noyau par dimension.
+      // Fills all values of the array with the source.
+      // Since the number of elements in the second dimension depends on the first,
+      // we use a kernel per dimension.
       RunQueue q(*queue);
       RunQueue::ScopedAsync sc(&q);
       const Int32 nb_dim1 = multi_views.size();
@@ -245,8 +245,8 @@ class AcceleratorSpecificMemoryCopy
         Int64 index1 = indexes[(i * 2) + 1];
         Span<std::byte> orig_view_bytes = multi_views[index0];
         auto* orig_view_data = reinterpret_cast<DataType*>(orig_view_bytes.data());
-        // Utilise un span pour tester les débordements de tableau mais on
-        // pourrait directement utiliser 'orig_view_data' pour plus de performances
+        // Uses a span to test array overflows but
+        // could directly use 'orig_view_data' for better performance
         Span<DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
         Int64 zci = index1 * extent.v;
         for (Int32 z = 0, n = extent.v; z < n; ++z)
@@ -286,9 +286,9 @@ class AcceleratorSpecificMemoryCopy
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, indexes.data());
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, destination.data());
       ARCCORE_CHECK_ACCESSIBLE_POINTER_ALWAYS(queue, multi_views.data());
-      // Idéalement il faudrait tester les valeurs des éléments de multi_views
-      // mais si on fait cela on peut potentiellement faire des transferts
-      // entre l'accélérateur et le CPU.
+      // Ideally, we should test the values of the elements of multi_views
+      // but if we do that, we can potentially perform transfers
+      // between the accelerator and the CPU.
     }
 
     const Int32 nb_index = indexes.size() / 2;
@@ -302,8 +302,8 @@ class AcceleratorSpecificMemoryCopy
       Int64 index1 = indexes[(i * 2) + 1];
       Span<const std::byte> orig_view_bytes = multi_views[index0];
       auto* orig_view_data = reinterpret_cast<const DataType*>(orig_view_bytes.data());
-      // Utilise un span pour tester les débordements de tableau mais on
-      // pourrait directement utiliser 'orig_view_data' pour plus de performances
+      // Uses a span to test array overflows but
+      // could directly use 'orig_view_data' for better performance
       Span<const DataType> orig_view = { orig_view_data, orig_view_bytes.size() / (Int64)sizeof(DataType) };
       Int64 zci = index1 * extent.v;
       Int64 z_index = i * extent.size();
@@ -327,8 +327,9 @@ class AcceleratorIndexedCopyTraits
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Singleton contenant les instances des copiers sur accélérateur.
+ * \brief Singleton containing the instances of the copy functions on accelerators.
  */
 class AcceleratorSpecificMemoryCopyList
 : public Arcane::Impl::SpecificMemoryCopyList<AcceleratorIndexedCopyTraits>

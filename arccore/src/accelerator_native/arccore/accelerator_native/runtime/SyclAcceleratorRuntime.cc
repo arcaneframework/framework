@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* SyclAcceleratorRuntime.cc                                   (C) 2000-2026 */
 /*                                                                           */
-/* Runtime pour 'SYCL'.                                                      */
+/* Runtime for 'SYCL'.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -47,9 +47,9 @@ class SyclRunnerRuntime;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Cette file est utilisée pour les allocations.
-// Elle doit donc toujours exister car on ne sait pas quand aura lieu
-// la dernière désallocation.
+// This file is used for allocations.
+// It must therefore always exist because we do not know when
+// the last deallocation will occur.
 sycl::queue global_default_queue;
 namespace
 {
@@ -61,8 +61,9 @@ namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'un allocateur spécifique pour 'Sycl'.
+ * \brief Base class for a specific 'Sycl' allocator.
  */
 class SyclMemoryAllocatorBase
 : public AlignedMemoryAllocator
@@ -139,7 +140,7 @@ class HostPinnedSyclMemoryAllocator
 
   void _allocate(void** ptr, size_t new_size, MemoryAllocationArgs, sycl::queue& q) override
   {
-    // TODO: Faire host-pinned
+    // TODO: Make host-pinned
     *ptr = sycl::malloc_host(new_size, q);
   }
   void _deallocate(void* ptr, MemoryAllocationArgs, sycl::queue& q) override
@@ -261,7 +262,7 @@ class SyclRunQueueStream
     return err_handler;
   }
 
-  //! Évènement correspondant à la dernière commande
+  //! Event corresponding to the last command
   sycl::event lastCommandEvent() { return m_last_command_event; }
 
  public:
@@ -295,7 +296,7 @@ class SyclRunQueueEvent
 
  public:
 
-  // Enregistre l'événement au sein d'une RunQueue
+  // Record the event within a RunQueue
   void recordQueue([[maybe_unused]] Impl::IRunQueueStream* stream) final
   {
     ARCCORE_CHECK_POINTER(stream);
@@ -303,7 +304,7 @@ class SyclRunQueueEvent
     m_sycl_event = rq->lastCommandEvent();
 #if defined(__ADAPTIVECPP__)
     m_recorded_stream = stream;
-    // TODO: Vérifier s'il faut faire quelque chose
+    // TODO: Check if anything needs to be done
 #elif defined(__INTEL_LLVM_COMPILER)
     //m_sycl_event = rq->trueStream().ext_oneapi_submit_barrier();
 #else
@@ -314,7 +315,7 @@ class SyclRunQueueEvent
   void wait() final
   {
     //ARCCORE_SYCL_FUNC_NOT_HANDLED;
-    // TODO: Vérifier ce que cela signifie exactement
+    // TODO: Check exactly what this means
     m_sycl_event.wait();
   }
 
@@ -336,10 +337,10 @@ class SyclRunQueueEvent
   Int64 elapsedTime([[maybe_unused]] IRunQueueEventImpl* start_event) final
   {
     ARCCORE_CHECK_POINTER(start_event);
-    // Il faut prendre l'évènement de début car on est certain qu'il contient
-    // la bonne valeur de 'sycl::event'.
+    // We must take the start event because we are certain it contains
+    // the correct 'sycl::event' value.
     sycl::event event = (static_cast<SyclRunQueueEvent*>(start_event))->m_sycl_event;
-    // Si pas d'évènement associé, on ne fait rien pour éviter une exception
+    // If there is no associated event, we do nothing to avoid an exception
     if (event == sycl::event())
       return 0;
 
@@ -380,8 +381,8 @@ class SyclRunnerRuntime
   }
   void barrier() override
   {
-    // TODO Faire le wait sur la file par défaut n'est pas strictement équivalent
-    // à la barrière en CUDA qui synchronize tout le device.
+    // TODO Waiting on the default queue is not strictly equivalent
+    // to the CUDA barrier which synchronizes the entire device.
     m_default_queue->wait();
   }
   eExecutionPolicy executionPolicy() const override
@@ -422,11 +423,11 @@ class SyclRunnerRuntime
     const void* host_ptr = nullptr;
     const void* device_ptr = nullptr;
     if (sycl_mem_type == sycl::usm::alloc::host) {
-      // HostPinned. Doit être accessible depuis le device mais
+      // HostPinned. Must be accessible from the device but
       //
       mem_type = ePointerMemoryType::Host;
       host_ptr = ptr;
-      // TODO: Regarder comment récupérer la valeur
+      // TODO: Look into how to retrieve the value
       device_ptr = ptr;
     }
     else if (sycl_mem_type == sycl::usm::alloc::device) {
@@ -435,12 +436,12 @@ class SyclRunnerRuntime
     }
     else if (sycl_mem_type == sycl::usm::alloc::shared) {
       mem_type = ePointerMemoryType::Managed;
-      // TODO: pour l'instant on remplit avec le pointeur car on ne sait
-      // pas comment récupérer l'info.
+      // TODO: for now we fill it with the pointer because we don't
+      // know how to retrieve the info.
       host_ptr = ptr;
       device_ptr = ptr;
     }
-    // TODO: à corriger
+    // TODO: to be corrected
     Int32 device_id = 0;
     _fillPointerAttribute(attribute, mem_type, device_id, ptr, device_ptr, host_ptr);
   }
@@ -456,13 +457,13 @@ class SyclRunnerRuntime
   {
     Int32 shared_memory = orig_args.sharedMemorySize();
     if (orig_args.isCooperative()) {
-      // En mode coopératif, s'assure qu'on ne lance pas plus de blocs
-      // que le maximum qui peut résider sur le GPU.
+      // In cooperative mode, ensures that we do not launch more blocks
+      // than the maximum that can reside on the GPU.
       // Int32 nb_thread = orig_args.nbThreadPerBlock();
       Int32 nb_block = orig_args.nbBlockPerGrid();
-      // Avec Sycl, il n'y a pas de moyen de récupérer le nombre maximal
-      // de blocs actifs pour une fonction donnée et du nombre de threads.
-      // On suppose qu'on peut prendre au maximum 4 blocks par SM.
+      // With Sycl, there is no way to retrieve the maximum number
+      // of active blocks for a given function and number of threads.
+      // We assume we can take a maximum of 4 blocks per SM.
       int nb_block_per_sm = 4;
       int max_block = nb_block_per_sm * m_multi_processor_count;
       if (nb_block > max_block) {
@@ -480,7 +481,7 @@ class SyclRunnerRuntime
 
   void finalize(ITraceMng*) override
   {
-    // Supprime la queue globale utilisée pour les allocations.
+    // Removes the global queue used for allocations.
     global_default_queue = sycl::queue{};
   }
 
@@ -510,14 +511,14 @@ SyclRunQueueStream(SyclRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
 : m_runtime(runtime)
 {
   sycl::device& d = runtime->defaultDevice();
-  // Indique que les commandes lancées sont implicitement exécutées les
-  // unes derrière les autres.
+  // Indicates that the launched commands are implicitly executed one after
+  // the other.
   auto queue_property = sycl::property::queue::in_order();
-  // Pour le profiling
+  // For profiling
   auto profiling_property = sycl::property::queue::enable_profiling();
   sycl::property_list queue_properties(queue_property, profiling_property);
 
-  // Gestionnaire d'erreur.
+  // Error handler.
   sycl::async_handler err_handler;
   err_handler = _getAsyncHandler();
   if (bi.isDefault())
@@ -554,8 +555,8 @@ fillDevicesAndSetDefaultQueue(bool is_verbose)
               << "\nMaxMemAllocSize=" << device.get_info<sycl::info::device::max_mem_alloc_size>()
               << "\n";
   m_multi_processor_count = device.get_info<sycl::info::device::max_compute_units>();
-  // Pour l'instant, on prend comme file par défaut la première trouvée
-  // et on ne considère qu'un seul device accessible.
+  // For now, we take the first found queue as the default and only
+  // consider one accessible device.
   _init(device);
 
   DeviceInfo device_info;
@@ -614,8 +615,8 @@ copy(ConstMemoryView from, [[maybe_unused]] eMemoryResource from_mem,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Cette fonction est le point d'entrée utilisé lors du chargement
-// dynamique de cette bibliothèque
+// This function is the entry point used during the dynamic loading
+// of this library
 extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimesycl(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ArccoreApplicationBuildInfo.h                               (C) 2000-2026 */
 /*                                                                           */
-/* Informations pour construire une instance de IApplication.                */
+/* Information for building an instance of IApplication.                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ARCCOREAPPLICATIONBUILDINFO_H
 #define ARCCORE_COMMON_ARCCOREAPPLICATIONBUILDINFO_H
@@ -25,8 +25,9 @@ class ArccoreApplicationBuildInfoImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations pour initialiser une application.
+ * \brief Information for initializing an application.
  */
 class ARCCORE_COMMON_EXPORT ArccoreApplicationBuildInfo
 {
@@ -54,11 +55,11 @@ class ARCCORE_COMMON_EXPORT ArccoreApplicationBuildInfo
 
   void addParameter(const String& name, const String& value);
   /*!
-   * \brief Analyse les arguments de \a args.
+   * \brief Parses the arguments in \a args.
    *
-   * On ne récupère que les arguments du style *-A,x=b,y=c*.
-   * La méthode setDefaultValues() est appelée à la fin de cette
-   * méthode.
+   * Only arguments of the style *-A,x=b,y=c* are retrieved.
+   * The setDefaultValues() method is called at the end of this
+   * method.
    */
   void parseArgumentsAndSetDefaultsValues(const CommandLineArguments& args);
   virtual void setDefaultValues();
@@ -77,5 +78,4 @@ class ARCCORE_COMMON_EXPORT ArccoreApplicationBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

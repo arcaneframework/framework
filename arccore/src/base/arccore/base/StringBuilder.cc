@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* StringBuilder.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Constructeur de chaîne de caractère unicode.                              */
+/* Unicode character string constructor.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -67,8 +67,8 @@ StringBuilder(StringImpl* impl)
 /*---------------------------------------------------------------------------*/
 
 StringBuilder::
-StringBuilder(const char* str,Integer len)
-: m_p(new StringImpl(std::string_view(str,len)))
+StringBuilder(const char* str, Integer len)
+: m_p(new StringImpl(std::string_view(str, len)))
 {
   m_p->addReference();
 }
@@ -81,11 +81,11 @@ StringBuilder(const char* str)
 : m_p(0)
 {
   const bool do_alloc = true;
-  if (do_alloc){
+  if (do_alloc) {
     m_p = new StringImpl(str);
     m_p->addReference();
   }
-  else{
+  else {
     m_p = 0;
     m_const_ptr = str;
   }
@@ -111,7 +111,7 @@ StringBuilder(const StringBuilder& str)
 : m_p(nullptr)
 , m_const_ptr(str.m_const_ptr)
 {
-  if (str.m_p){
+  if (str.m_p) {
     m_p = new StringImpl(*str.m_p);
     m_p->addReference();
   }
@@ -158,15 +158,15 @@ operator=(const char* str)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Copie \a str dans cette instance.
+//! Copies \a str into this instance.
 const StringBuilder& StringBuilder::
 operator=(const StringBuilder& str)
 {
-  if (str!=(*this)){
+  if (str != (*this)) {
     if (m_p)
       m_p->removeReference();
     m_const_ptr = str.m_const_ptr;
-    if (str.m_p){
+    if (str.m_p) {
       m_p = new StringImpl(*str.m_p);
       m_p->addReference();
     }
@@ -180,7 +180,7 @@ operator=(const StringBuilder& str)
 void StringBuilder::
 _checkClone() const
 {
-  if (m_const_ptr || !m_p){
+  if (m_const_ptr || !m_p) {
     std::string_view sv;
     if (m_const_ptr)
       sv = std::string_view(m_const_ptr);
@@ -189,7 +189,7 @@ _checkClone() const
     m_const_ptr = nullptr;
     return;
   }
-  if (m_p->nbReference()!=1){
+  if (m_p->nbReference() != 1) {
     StringImpl* old_p = m_p;
     m_p = m_p->clone();
     m_p->addReference();
@@ -237,8 +237,8 @@ append(const String& str)
   if (str.null())
     return *this;
   _checkClone();
-  if (str.m_const_ptr){
-    StringView sv{std::string_view(str.m_const_ptr,str.m_const_ptr_size)};
+  if (str.m_const_ptr) {
+    StringView sv{ std::string_view(str.m_const_ptr, str.m_const_ptr_size) };
     m_p = m_p->append(sv);
   }
   else
@@ -375,7 +375,7 @@ void StringBuilder::
 internalDump(std::ostream& ostr) const
 {
   ostr << "StringDump(m_const_ptr=" << (void*)m_const_ptr << ",m_p=" << m_p;
-  if (m_p){
+  if (m_p) {
     ostr << ",";
     m_p->internalDump(ostr);
   }
@@ -389,7 +389,7 @@ internalDump(std::ostream& ostr) const
 /*---------------------------------------------------------------------------*/
 
 std::ostream&
-operator<<(std::ostream& o,const StringBuilder& str)
+operator<<(std::ostream& o, const StringBuilder& str)
 {
   String s = str.toString();
   o << s.localstr();
@@ -399,17 +399,15 @@ operator<<(std::ostream& o,const StringBuilder& str)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool
-operator==(const StringBuilder& a,const StringBuilder& b)
+bool operator==(const StringBuilder& a, const StringBuilder& b)
 {
-  return a.toString()==b.toString();
+  return a.toString() == b.toString();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

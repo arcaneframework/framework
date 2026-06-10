@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelFor.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des boucles parallèles.                                           */
+/* Parallel loop management.                                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_PARALLELFOR_H
 #define ARCCORE_BASE_PARALLELFOR_H
@@ -24,11 +24,12 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Caractéristiques d'un boucle 1D multi-thread.
+ * \brief Characteristics of a multi-thread 1D loop.
  *
- * Cette classe permet de spécifier les options d'une boucle à paralléliser
- * en mode multi-thread.
+ * This class allows specifying the options of a loop to be parallelized
+ * in multi-thread mode.
  */
 class ARCCORE_CONCURRENCY_EXPORT ParallelFor1DLoopInfo
 {
@@ -77,9 +78,10 @@ class ARCCORE_CONCURRENCY_EXPORT ParallelFor1DLoopInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function concurrently
+ * over the iteration interval given by \a loop_ranges.
  */
 template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
 arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
@@ -87,16 +89,16 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                    const LambdaType& lambda_function,
                    const ReducerArgs&... reducer_args)
 {
-  // Modif Arcane 3.7.9 (septembre 2022)
-  // Effectue une copie pour privatiser au thread courant les valeurs de la lambda.
-  // Cela est nécessaire pour que objets comme les reducers soient bien pris
-  // en compte.
-  // TODO: regarder si on pourrait faire la copie uniquement une fois par thread
-  // si cette copie devient couteuse.
-  // NOTE: A partir de la version 3.12.15 (avril 2024), avec la nouvelle version
-  // des réducteurs (Reduce2), cette privatisation n'est plus utile. Une fois
-  // qu'on aura supprimer les anciennes classes gérant les réductions (Reduce),
-  // on pourra supprimer cette privatisation
+  // Modified Arcane 3.7.9 (September 2022)
+  // Performs a copy to privatize the lambda values to the current thread.
+  // This is necessary so that objects like reducers are properly taken
+  // into account.
+  // TODO: check if we could perform the copy only once per thread
+  // if this copy becomes costly.
+  // NOTE: Starting from version 3.12.15 (April 2024), with the new version
+  // of reducers (Reduce2), this privatization is no longer useful. Once
+  // we have removed the old classes managing reductions (Reduce),
+  // we can remove this privatization
   auto xfunc = [&lambda_function, reducer_args...](const ComplexForLoopRanges<RankValue>& sub_bounds) {
     using Type = typename std::remove_reference<LambdaType>::type;
     Type private_lambda(lambda_function);
@@ -108,9 +110,10 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function concurrently
+ * over the iteration interval given by \a loop_ranges.
  */
 template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
 arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
@@ -123,9 +126,10 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function concurrently
+ * over the iteration interval given by \a loop_ranges.
  */
 template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
 arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
@@ -139,9 +143,10 @@ arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function concurrently
+ * over the iteration interval given by \a loop_ranges.
  */
 template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
 arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
@@ -155,9 +160,10 @@ arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function concurrently
+ * over the iteration interval given by \a loop_ranges.
  */
 template <int RankValue, typename LambdaType> inline void
 arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
@@ -169,9 +175,10 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération donné par \a loop_ranges.
+ * \brief Applies the lambda function \a lambda_function concurrently
+ * over the iteration interval given by \a loop_ranges.
  */
 template <int RankValue, typename LambdaType> inline void
 arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
@@ -184,13 +191,14 @@ arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur l'intervalle d'itération [i0,i0+size] avec les options \a options.
+ * \brief Applies the lambda function \a lambda_function concurrently
+ * over the iteration interval [i0,i0+size] with the options \a options.
  */
 template <typename LambdaType> inline void
 arccoreParallelFor(Integer i0, Integer size, const ForLoopRunInfo& options,
-                  const LambdaType& lambda_function)
+                   const LambdaType& lambda_function)
 {
   LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
   ParallelFor1DLoopInfo loop_info(i0, size, &ipf, options);
@@ -205,4 +213,4 @@ arccoreParallelFor(Integer i0, Integer size, const ForLoopRunInfo& options,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

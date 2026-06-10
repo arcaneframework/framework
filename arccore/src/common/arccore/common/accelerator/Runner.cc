@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Runner.cc                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Gestion de l'exécution sur accélérateur.                                  */
+/* Accelerator execution management.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -116,11 +116,11 @@ initialize(Runner* runner, eExecutionPolicy v, DeviceId device)
   m_is_init = true;
   m_is_auto_prefetch_command = false;
 
-  // Pour test
+  // For testing
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PREFETCH_COMMAND", true))
     m_is_auto_prefetch_command = (v.value() != 0);
 
-  // Il faut initialiser le pool à la fin car il a besoin d'accéder à \a m_runtime
+  // The pool must be initialized at the end because it needs to access \a m_runtime
   m_run_queue_pool.initialize(runner->_impl());
 }
 
@@ -196,8 +196,8 @@ Impl::RunQueueImpl* RunnerImpl::
 _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
 {
   _checkIsInit();
-  // Si on utilise les paramètres par défaut, on peut utilier une RunQueueImpl
-  // issue du pool.
+  // If we use the default parameters, we can use a RunQueueImpl
+  // from the pool.
   if (bi.isDefault())
     return _internalCreateOrGetRunQueueImpl();
   Impl::IRunnerRuntime* runtime = m_runtime;
@@ -320,7 +320,7 @@ isInitialized() const
 void Runner::
 setConcurrentQueueCreation(bool)
 {
-  // Toujours thread-safe;
+  // Always thread-safe;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -496,10 +496,11 @@ _internalApi()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Arrête tout les profiling en cours de tout les runtime.
+ * \brief Stops all ongoing profiling in all runtimes.
  *
- * En général on utilise cela en fin de calcul.
+ * Generally, this is used at the end of computation.
  */
 void RunnerInternal::
 stopAllProfiling()
@@ -560,7 +561,7 @@ printProfilingInfos(std::ostream& o)
     stopProfiling();
 
   {
-    // Affiche les statistiques de profiling.
+    // Displays profiling statistics.
     using Arcane::Impl::AcceleratorStatInfoList;
     auto f = [&](const AcceleratorStatInfoList& stat_list) {
       stat_list.print(o);

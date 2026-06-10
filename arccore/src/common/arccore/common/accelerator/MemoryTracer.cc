@@ -7,7 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* MemoryTracer.cc                                             (C) 2000-2026 */
 /*                                                                           */
-/* Utilitaires pour tracer les accès mémoire entre l'accélérateur et l'hôte. */
+/* Utilities for tracing memory accesses between the accelerator and the     */
+/* host.                                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -77,14 +78,14 @@ void MemoryTracer::
 notifyMemoryAllocation(Span<const std::byte> bytes, const String& name,
                        const String& stack_trace, Int64 timestamp)
 {
-  // TODO: rendre thread-safe
+  // TODO: make thread-safe
   m_memory_tracer_mng.add(bytes, name, stack_trace, timestamp);
 }
 
 void MemoryTracer::
 notifyMemoryFree(void* ptr, const String& name, const String& stack_trace, Int64 timestamp)
 {
-  // TODO: rendre thread-safe
+  // TODO: make thread-safe
   m_memory_tracer_mng.remove(ptr, name, stack_trace, timestamp);
 }
 
@@ -115,8 +116,8 @@ traceDeallocate(const AllocatedMemoryInfo& mem_info, const MemoryAllocationArgs&
     return;
 
   void* ptr = mem_info.baseAddress();
-  // Utilise un flux spécifique pour être sur que les affichages ne seront pas mélangés
-  // en cas de multi-threading
+  // Uses a specific stream to ensure that outputs are not mixed
+  // in case of multi-threading
   std::ostringstream ostr;
   if (m_trace_level >= 2)
     ostr << "FREE_MANAGED=" << ptr << " size=" << mem_info.capacity() << " name=" << args.arrayName();
@@ -143,8 +144,8 @@ traceAllocate(void* p, size_t new_size, MemoryAllocationArgs args)
   if (!isActive())
     return;
 
-  // Utilise un flux spécifique pour être sur que les affichages ne seront pas mélangés
-  // en cas de multi-threading
+  // Uses a specific stream to ensure that outputs are not mixed
+  // in case of multi-threading
   std::ostringstream ostr;
   if (m_trace_level >= 2)
     ostr << "MALLOC_MANAGED=" << p << " size=" << new_size << " name=" << args.arrayName();

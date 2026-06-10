@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* BasicSerializer.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation simple de 'ISerializer'.                                   */
+/* Simple implementation of 'ISerializer'.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_SERIALIZE_BASICSERIALIZER_H
 #define ARCCORE_SERIALIZE_BASICSERIALIZER_H
@@ -31,20 +31,23 @@ class BasicSerializeGatherMessage;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Tampon pour sérialiser un type de donnée \a DataType.
+ * \brief Buffer for serializing a data type \a DataType.
  */
 template <class DataType>
 class BasicSerializerDataT
 {
  public:
+
   BasicSerializerDataT()
   : m_reserved_size(0)
   , m_current_position(0)
   {}
 
  public:
+
   void put(Span<const DataType> values)
   {
     Int64 n = values.size();
@@ -74,6 +77,7 @@ class BasicSerializerDataT
   }
 
  public:
+
   Int64 m_reserved_size;
   Int64 m_current_position;
   Span<DataType> m_buffer;
@@ -81,27 +85,33 @@ class BasicSerializerDataT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation basique de 'ISerializer'
+ * \brief Basic implementation of 'ISerializer'
  */
 class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 : public ISerializer
 {
   friend Arcane::BasicSerializeGatherMessage;
   typedef BasicSerializer ThatClass;
-  using ISerializer::reserveSpan;
   using ISerializer::putSpan;
+  using ISerializer::reserveSpan;
 
  public:
 
-  // Classe temporaire pour afficher les tailles des buffers.
+  // Temporary class to display buffer sizes.
   class SizesPrinter
   {
    public:
-    explicit SizesPrinter(const BasicSerializer& sbuf) : m_sbuf(sbuf){}
+
+    explicit SizesPrinter(const BasicSerializer& sbuf)
+    : m_sbuf(sbuf)
+    {}
     const BasicSerializer& buf() const { return m_sbuf; }
+
    private:
+
     const BasicSerializer& m_sbuf;
   };
 
@@ -125,6 +135,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   using ISerializer::reserve;
 
  public:
+
   void reserveSpan(eDataType dt, Int64 n) override;
   void reserveSpan(eBasicDataType dt, Int64 n) override;
   void reserve(eBasicDataType dt, Int64 n) override;
@@ -389,24 +400,25 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   void setReadMode(eReadMode new_read_mode) override;
 
  public:
+
   /*!
-   * \brief Indique si on sérialise le type de donnée pour
-   * garantir la cohérence.
+   * \brief Indicates whether to serialize the data type to
+   * ensure consistency.
    *
-   * Si actif, cela nécessite que les appels à reserve() et
-   * reserveArray() soient cohérents avec les put(). Comme ce
-   * n'est pas le cas historiquement, cette option n'est pas active
-   * par défaut.
+   * If active, it requires that calls to reserve() and
+   * reserveArray() are consistent with put(). Since this
+   * has not been the case historically, this option is not active
+   * by default.
    *
-   * Il n'est utile de positionner cette option qu'en écriture. En lecture,
-   * l'information est contenue dans le sérialiseur.
-   */  
+   * It is only useful to set this option during writing. In reading,
+   * the information is contained in the serializer.
+   */
   void setSerializeTypeInfo(bool v);
   bool isSerializeTypeInfo() const;
 
  private:
 
-  // Méthode obsolète dans l'interface. A supprimer dès que possible
+  // Obsolete method in the interface. To be removed as soon as possible
   void allocateBuffer(Int64 nb_real, Int64 nb_int16, Int64 nb_int32,
                       Int64 nb_int64, Int64 nb_byte) override;
 
@@ -437,7 +449,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
   void printSizes(std::ostream& o) const;
 
   friend inline std::ostream&
-  operator<<(std::ostream& o,const BasicSerializer::SizesPrinter& x)
+  operator<<(std::ostream& o, const BasicSerializer::SizesPrinter& x)
   {
     x.buf().printSizes(o);
     return o;
@@ -446,24 +458,24 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
  public:
 
   /*!
-   * \brief Initialise le sérialiseur en lecture à partir des données \a buf.
+   * \brief Initializes the serializer for reading from the data \a buf.
    *
-   * Le tableau \a buf doit avoir été obtenu via l'appel à globalBuffer()
-   * d'un sérialiseur en écriture.
+   * The array \a buf must have been obtained via the call to globalBuffer()
+   * from a writing serializer.
    */
   void initFromBuffer(Span<const Byte> buf);
   void copy(const ISerializer* from) override;
   void copy(const BasicSerializer& rhs);
   /*!
-   * \brief Taille du padding et de l'alignement.
+   * \brief Padding and alignment size.
    *
-   * Il est garanti que chaque tableau (buffer) géré par ce sérialiseur
-   * a une taille en octet multiple de paddingSize() et un
-   * alignement sur paddingSize().
+   * It is guaranteed that every array (buffer) managed by this serializer
+   * has a size that is a multiple of paddingSize() in bytes and an
+   * alignment on paddingSize().
    */
   static ARCCORE_CONSTEXPR Integer paddingSize() { return 128; }
 
-  // TEMPORAIRE tant qu'on utilise le AllGather de Arcane. Ensuite à mettre privé
+  // TEMPORARY until we use Arcane AllGather. Then to be made private
  protected:
 
   Impl2* m_p2;
@@ -474,7 +486,7 @@ class ARCCORE_SERIALIZE_EXPORT BasicSerializer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

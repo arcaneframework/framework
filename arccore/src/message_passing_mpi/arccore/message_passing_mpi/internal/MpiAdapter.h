@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiAdapter.h                                                (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation des messages avec MPI.                                     */
+/* Implementation of messages with MPI.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_MPIADAPTER_H
 #define ARCCORE_MESSAGEPASSINGMPI_MPIADAPTER_H
@@ -33,26 +33,29 @@ class MpiMachineShMemWinBaseInternalCreator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Adapteur pour MPI.
- * \warning en hybride MPI/Thread, une instance de cette classe
- * est partagée entre tous les threads d'un processus MPI et donc
- * toutes les méthodes de cette classe doivent être thread-safe.
- * \todo rendre thread-safe les statistiques
- * \todo rendre thread-safe le m_allocated_request
+ * \brief Adapter for MPI.
+ * \warning in hybrid MPI/Thread, an instance of this class
+ * is shared among all threads of an MPI process and therefore
+ * all methods of this class must be thread-safe.
+ * \todo make statistics thread-safe
+ * \todo make m_allocated_request thread-safe
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 : public TraceAccessor
 , public IRequestCreator
 {
  public:
+
   class RequestSet;
   struct SubRequestInfo;
+
  public:
 
-  MpiAdapter(ITraceMng* msg,IStat* stat,
-             MPI_Comm comm,MpiLock* mpi_lock,
+  MpiAdapter(ITraceMng* msg, IStat* stat,
+             MPI_Comm comm, MpiLock* mpi_lock,
              IMpiProfiling* mpi_prof = nullptr);
   MpiAdapter(const MpiAdapter& rhs) = delete;
   MpiAdapter& operator=(const MpiAdapter& rhs) = delete;
@@ -63,84 +66,88 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
  public:
 
-  //! Détruit l'instance. Elle ne doit plus être utilisée par la suite.
+  //! Destroys the instance. It should no longer be used afterward.
   void destroy();
 
  public:
 
-  void broadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
-  void allGather(const void* send_buf,void* recv_buf,
-                 Int64 nb_elem,MPI_Datatype datatype);
-  void gather(const void* send_buf,void* recv_buf,
-              Int64 nb_elem,Int32 root,MPI_Datatype datatype);
-  void allGatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
-                         const int* recv_indexes,Int64 nb_elem,MPI_Datatype datatype);
-  void gatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
-                      const int* recv_indexes,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
-  void scatterVariable(const void* send_buf,const int* send_count,const int* send_indexes,
-                       void* recv_buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
-  void allToAll(const void* send_buf,void* recv_buf,Int32 count,MPI_Datatype datatype);
-  void allToAllVariable(const void* send_buf,const int* send_counts,
-                        const int* send_indexes,void* recv_buf,const int* recv_counts,
-                        const int* recv_indexes,MPI_Datatype datatype);
-  void reduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op,Int32 root);
-  void allReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op);
-  void scan(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op);
-  void directSendRecv(const void* send_buffer,Int64 send_buffer_size,
-                      void* recv_buffer,Int64 recv_buffer_size,
-                      Int32 proc,Int64 elem_size,MPI_Datatype data_type);
+  void broadcast(void* buf, Int64 nb_elem, Int32 root, MPI_Datatype datatype);
+  void allGather(const void* send_buf, void* recv_buf,
+                 Int64 nb_elem, MPI_Datatype datatype);
+  void gather(const void* send_buf, void* recv_buf,
+              Int64 nb_elem, Int32 root, MPI_Datatype datatype);
+  void allGatherVariable(const void* send_buf, void* recv_buf, const int* recv_counts,
+                         const int* recv_indexes, Int64 nb_elem, MPI_Datatype datatype);
+  void gatherVariable(const void* send_buf, void* recv_buf, const int* recv_counts,
+                      const int* recv_indexes, Int64 nb_elem, Int32 root, MPI_Datatype datatype);
+  void scatterVariable(const void* send_buf, const int* send_count, const int* send_indexes,
+                       void* recv_buf, Int64 nb_elem, Int32 root, MPI_Datatype datatype);
+  void allToAll(const void* send_buf, void* recv_buf, Int32 count, MPI_Datatype datatype);
+  void allToAllVariable(const void* send_buf, const int* send_counts,
+                        const int* send_indexes, void* recv_buf, const int* recv_counts,
+                        const int* recv_indexes, MPI_Datatype datatype);
+  void reduce(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op, Int32 root);
+  void allReduce(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op);
+  void scan(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op);
+  void directSendRecv(const void* send_buffer, Int64 send_buffer_size,
+                      void* recv_buffer, Int64 recv_buffer_size,
+                      Int32 proc, Int64 elem_size, MPI_Datatype data_type);
 
-  Request directSend(const void* send_buffer,Int64 send_buffer_size,
-                     Int32 proc,Int64 elem_size,MPI_Datatype data_type,
-                     int mpi_tag,bool is_blocked);
-  
-  //! Version non bloquante de send sans statistique temporelle
-  Request sendNonBlockingNoStat(const void* send_buffer,Int64 send_buffer_size,
-                                Int32 proc,MPI_Datatype data_type,int mpi_tag);
+  Request directSend(const void* send_buffer, Int64 send_buffer_size,
+                     Int32 proc, Int64 elem_size, MPI_Datatype data_type,
+                     int mpi_tag, bool is_blocked);
 
-  Request directRecv(void* recv_buffer,Int64 recv_buffer_size,
-                     Int32 source_rank,Int64 elem_size,MPI_Datatype data_type,
-                     int mpi_tag,bool is_blocked);
+  //! Non-blocking version of send without temporal statistics
+  Request sendNonBlockingNoStat(const void* send_buffer, Int64 send_buffer_size,
+                                Int32 proc, MPI_Datatype data_type, int mpi_tag);
 
-  //! Version non bloquante de receive sans statistiques temporelles
-  Request receiveNonBlockingNoStat(void* recv_buffer,Int64 recv_buffer_size,
-                                   Int32 source_rank,MPI_Datatype data_type,int mpi_tag);
+  Request directRecv(void* recv_buffer, Int64 recv_buffer_size,
+                     Int32 source_rank, Int64 elem_size, MPI_Datatype data_type,
+                     int mpi_tag, bool is_blocked);
 
-  Request directSendPack(const void* send_buffer,Int64 send_buffer_size,
-                         Int32 proc,int mpi_tag,bool is_blocked);
+  //! Non-blocking version of receive without temporal statistics
+  Request receiveNonBlockingNoStat(void* recv_buffer, Int64 recv_buffer_size,
+                                   Int32 source_rank, MPI_Datatype data_type, int mpi_tag);
 
-  void  probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc);
+  Request directSendPack(const void* send_buffer, Int64 send_buffer_size,
+                         Int32 proc, int mpi_tag, bool is_blocked);
+
+  void probeRecvPack(UniqueArray<Byte>& recv_buffer, Int32 proc);
 
   MessageId probeMessage(PointToPointMessageInfo message);
 
   MessageSourceInfo legacyProbeMessage(PointToPointMessageInfo message);
 
-  Request directRecv(void* recv_buffer,Int64 recv_buffer_size,
-                     MessageId message,Int64 elem_size,MPI_Datatype data_type,
+  Request directRecv(void* recv_buffer, Int64 recv_buffer_size,
+                     MessageId message, Int64 elem_size, MPI_Datatype data_type,
                      bool is_blocked);
 
-  Request directRecvPack(void* recv_buffer,Int64 recv_buffer_size,
-                         Int32 proc,int mpi_tag,bool is_blocking);
+  Request directRecvPack(void* recv_buffer, Int64 recv_buffer_size,
+                         Int32 proc, int mpi_tag, bool is_blocking);
 
   void waitAllRequests(ArrayView<Request> requests);
 
-
  private:
-  bool _waitAllRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
+
+  bool _waitAllRequestsMPI(ArrayView<Request> requests, ArrayView<bool> indexes,
                            ArrayView<MPI_Status> mpi_status);
+
  public:
+
   void waitSomeRequests(ArrayView<Request> requests,
                         ArrayView<bool> indexes,
                         bool is_non_blocking);
 
   void waitSomeRequestsMPI(ArrayView<Request> requests,
                            ArrayView<bool> indexes,
-                           ArrayView<MPI_Status> mpi_status,bool is_non_blocking);
+                           ArrayView<MPI_Status> mpi_status, bool is_non_blocking);
+
  public:
-  //! Rang de cette instance dans le communicateur
+
+  //! Rank of this instance in the communicator
   int commRank() const { return m_comm_rank; }
 
-  //! Nombre de rangs dans le communicateur
+  //! Number of ranks in the communicator
   int commSize() const { return m_comm_size; }
 
   MpiMessagePassingMng* commSplit(bool keep);
@@ -152,42 +159,42 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   MpiLock* mpiLock() const { return m_mpi_lock; }
 
-  Request nonBlockingBroadcast(void* buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
-  Request nonBlockingAllGather(const void* send_buf,void* recv_buf,Int64 nb_elem,MPI_Datatype datatype);
-  Request nonBlockingGather(const void* send_buf,void* recv_buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
+  Request nonBlockingBroadcast(void* buf, Int64 nb_elem, Int32 root, MPI_Datatype datatype);
+  Request nonBlockingAllGather(const void* send_buf, void* recv_buf, Int64 nb_elem, MPI_Datatype datatype);
+  Request nonBlockingGather(const void* send_buf, void* recv_buf, Int64 nb_elem, Int32 root, MPI_Datatype datatype);
 
-  Request nonBlockingAllToAll(const void* send_buf,void* recv_buf,Int32 count,MPI_Datatype datatype);
-  Request nonBlockingAllReduce(const void* send_buf,void* recv_buf,Int64 count,MPI_Datatype datatype,MPI_Op op);
-  Request nonBlockingAllToAllVariable(const void* send_buf,const int* send_counts,
-                                      const int* send_indexes,void* recv_buf,const int* recv_counts,
-                                      const int* recv_indexes,MPI_Datatype datatype);
+  Request nonBlockingAllToAll(const void* send_buf, void* recv_buf, Int32 count, MPI_Datatype datatype);
+  Request nonBlockingAllReduce(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op);
+  Request nonBlockingAllToAllVariable(const void* send_buf, const int* send_counts,
+                                      const int* send_indexes, void* recv_buf, const int* recv_counts,
+                                      const int* recv_indexes, MPI_Datatype datatype);
 
   Request nonBlockingBarrier();
   void barrier();
 
   int toMPISize(Int64 count);
 
-  //! Construit une requête Arccore à partir d'une requête MPI.
-  Request buildRequest(int ret,MPI_Request request);
+  //! Constructs an Arccore request from an MPI request.
+  Request buildRequest(int ret, MPI_Request request);
 
  public:
 
-  //! Indique si les erreurs dans la liste des requêtes sont fatales
+  //! Indicates if errors in the list of requests are fatal
   void setRequestErrorAreFatal(bool v);
   bool isRequestErrorAreFatal() const;
 
-  //! Indique si on affiche des messages pour les erreurs dans les requêtes.
+  //! Indicates if messages are displayed for errors in the requests.
   void setPrintRequestError(bool v);
   bool isPrintRequestError() const;
 
-  //! Indique si on affiche des messages pour chaque appel MPI.
+  //! Indicates if messages are displayed for each MPI call.
   void setTraceMPIMessage(bool v) { m_is_trace = v; }
   bool isTraceMPIMessage() const { return m_is_trace; }
 
   /*!
-   * \brief Indique si on vérifie les requêtes.
+   * \brief Indicates if requests are checked.
    *
-   * Cette valeur ne doit être modifiée s'il y a des requêtes en cours.
+   * This value must not be modified if there are pending requests.
    */
   void setCheckRequest(bool v);
   bool isCheckRequest() const;
@@ -196,8 +203,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 
   void setMpiProfiling(IMpiProfiling* mpi_profiling);
   void setProfiler(IProfiler* profiler);
-	IMpiProfiling* getMpiProfiling() const;
-	IProfiler* profiler() const;
+  IMpiProfiling* getMpiProfiling() const;
+  IProfiler* profiler() const;
 
  public:
 
@@ -217,25 +224,25 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   MpiLock* m_mpi_lock = nullptr;
   IMpiProfiling* m_mpi_prof = nullptr;
   ITimeMetricCollector* m_metric_collector = nullptr;
-  MPI_Comm m_communicator; //!< Communicateur MPI
+  MPI_Comm m_communicator; //!< MPI Communicator
   int m_comm_rank = A_PROC_NULL_RANK;
   int m_comm_size = 0;
   Int64 m_nb_all_reduce = 0;
   Int64 m_nb_reduce = 0;
   bool m_is_trace = false;
   RequestSet* m_request_set = nullptr;
-  //! Requêtes vides. Voir MpiAdapter.cc pour plus d'infos.
+  //! Empty requests. See MpiAdapter.cc for more information.
   MPI_Request m_empty_request1;
   MPI_Request m_empty_request2;
   int m_recv_buffer_for_empty_request[1];
   int m_send_buffer_for_empty_request2[1];
   int m_recv_buffer_for_empty_request2[1];
 
-  // Si vrai, autorise d'utiliser le rang nul (A_NULL_RANK) pour spécifier MPI_ANY_SOURCE
-  // Cela est le défaut dans les versions de Arccore avant juillet 2024.
-  // A partir de 2025 il faudra l'interdire.
-  // La variable d'environnement ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE permettra
-  // de temporairement garder un mode compatible.
+  // If true, allows using the null rank (A_NULL_RANK) to specify MPI_ANY_SOURCE
+  // This is the default in Arccore versions before July 2024.
+  // Starting from 2025, it will have to be prohibited.
+  // The environment variable ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE will allow
+  // temporarily maintaining a compatible mode.
   bool m_is_allow_null_rank_for_any_source = true;
 
   Ref<MpiMachineShMemWinBaseInternalCreator> m_window_creator;
@@ -246,9 +253,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   void _addRequest(MPI_Request request);
   void _removeRequest(MPI_Request request);
   void _checkFatalInRequest();
-  MessageId _probeMessage(MessageRank source,MessageTag tag,bool is_blocking);
-  MessageSourceInfo _legacyProbeMessage(MessageRank source,MessageTag tag,bool is_blocking);
-  bool _handleEndRequests(ArrayView<Request> requests,ArrayView<bool> done_indexes,
+  MessageId _probeMessage(MessageRank source, MessageTag tag, bool is_blocking);
+  MessageSourceInfo _legacyProbeMessage(MessageRank source, MessageTag tag, bool is_blocking);
+  bool _handleEndRequests(ArrayView<Request> requests, ArrayView<bool> done_indexes,
                           ArrayView<MPI_Status> status);
   void _checkHasNoRequests();
   MessageSourceInfo _buildSourceInfoFromStatus(const MPI_Status& status);
@@ -257,9 +264,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing::Mpi
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

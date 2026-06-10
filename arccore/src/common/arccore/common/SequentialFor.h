@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SequentialFor.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des boucles for en séquentiel.                                    */
+/* Handling of sequential for loops.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_SEQUENTIALFOR_H
 #define ARCCORE_COMMON_SEQUENTIALFOR_H
@@ -25,7 +25,8 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Applique le functor \a func sur une boucle 1D.
+
+//! Applies the functor \a func over a 1D loop.
 template <typename IndexType, template <int T, typename> class LoopBoundType,
           typename Lambda, typename... RemainingArgs>
 void arccoreSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func,
@@ -40,7 +41,7 @@ void arccoreSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Applique le functor \a func sur une boucle 2D.
+//! Applies the functor \a func over a 2D loop.
 template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> void
 arccoreSequentialFor(LoopBoundType<2, IndexType> bounds, const Lambda& func)
 {
@@ -52,7 +53,7 @@ arccoreSequentialFor(LoopBoundType<2, IndexType> bounds, const Lambda& func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Applique le functor \a func sur une boucle 3D.
+//! Applies the functor \a func over a 3D loop.
 template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> void
 arccoreSequentialFor(LoopBoundType<3, IndexType> bounds, const Lambda& func)
 {
@@ -65,7 +66,7 @@ arccoreSequentialFor(LoopBoundType<3, IndexType> bounds, const Lambda& func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Applique le functor \a func sur une boucle 4D.
+//! Applies the functor \a func over a 4D loop.
 template <typename IndexType, template <int, typename> class LoopBoundType, typename Lambda> void
 arccoreSequentialFor(LoopBoundType<4, IndexType> bounds, const Lambda& func)
 {

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* TestCommon.h                                                (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations communes pour les tests.                                     */
+/* Common declarations for tests.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_TESTS_TESTCOMMON_H
 #define ARCCORE_ACCELERATOR_TESTS_TESTCOMMON_H
@@ -18,9 +18,10 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
- * Les macros suivantes permettent de définir des tests en fonctions
- * du support accélérateur disponible.
+ * The following macros allow defining tests based on
+ * the available accelerator support.
  */
 #if defined(ARCCORE_HAS_CUDA)
 #define ARCCORE_TEST_DO_TEST_CUDA(name1, name2, func) \
@@ -68,7 +69,7 @@
     func(false, 0); \
   }
 
-//! Macro pour définir les tests en fonction de l'accélérateur
+//! Macro to define tests based on the accelerator
 #define ARCCORE_TEST_DO_TEST_ACCELERATOR(name1, name2, func) \
   ARCCORE_TEST_DO_TEST_CUDA(name1, name2, func); \
   ARCCORE_TEST_DO_TEST_HIP(name1, name2, func); \

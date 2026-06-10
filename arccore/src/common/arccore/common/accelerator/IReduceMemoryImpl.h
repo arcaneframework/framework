@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IReduceMemoryImpl.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Interface de la gestion mémoire pour les réductions.                      */
+/* Interface for memory management for reductions.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_IREDUCEMEMORYIMPL_H
 #define ARCCORE_COMMON_ACCELERATOR_IREDUCEMEMORYIMPL_H
@@ -26,25 +26,27 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface de la gestion mémoire pour les réductions.
+ * \brief Interface for memory management for reductions.
  */
 class ARCCORE_COMMON_EXPORT IReduceMemoryImpl
 {
  public:
 
-  //! Informations mémoire pour la réduction sur les accélérateurs
+  //! Memory information for reduction on accelerators
   struct GridMemoryInfo
   {
-    //! Mémoire allouée pour la réduction sur une grille (de taille nb_bloc * sizeof(T))
+    //! Memory allocated for reduction on a grid (of size nb_block * sizeof(T))
     MutableMemoryView m_grid_memory_values;
-    //! Entier utilisé pour compter le nombre de blocs ayant déjà fait leur partie de la réduction
+    //! Integer used to count the number of blocks that have already
+    //! completed their part of the reduction
     unsigned int* m_grid_device_count = nullptr;
     /*!
-     * \brief Pointeur vers la mémoire sur l'hôte contenant la valeur réduite.
+     * \brief Pointer to the host memory containing the reduced value.
      *
-     * Cette mémoire est punaisée et est donc accessible depuis l'accélérateur.
+     * This memory is pinned and is therefore accessible from the accelerator.
      */
     void* m_host_memory_for_reduced_value = nullptr;
   };
@@ -56,22 +58,22 @@ class ARCCORE_COMMON_EXPORT IReduceMemoryImpl
  public:
 
   /*!
-   * \brief Alloue la mémoire pour une donnée dont on veut faire une réduction.
+   * \brief Allocates memory for a data item that needs to be reduced.
    *
-   * \a data_type_size est la taille de la donnée.
+   * \a data_type_size is the size of the data.
    */
   virtual void allocateReduceDataMemory(Int32 data_type_size) = 0;
 
-  //! Positionne la taille de la grille GPU (le nombre de blocs)
+  //! Sets the GPU grid size (the number of blocks) and allocates memory
   virtual void setGridSizeAndAllocate(Int32 grid_size) = 0;
 
-  //! Taille de la grille GPU (nombre de blocs)
+  //! GPU grid size (number of blocks)
   virtual Int32 gridSize() const = 0;
 
-  //! Informations sur la mémoire utilisée par la réduction
+  //! Information about the memory used by the reduction
   virtual GridMemoryInfo gridMemoryInfo() = 0;
 
-  //! Libère l'instance.
+  //! Releases the instance.
   virtual void release() = 0;
 };
 
@@ -83,4 +85,4 @@ class ARCCORE_COMMON_EXPORT IReduceMemoryImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

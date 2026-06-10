@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* NoMpiProfiling.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Implementation de l'interface IMpiProfiling.                              */
+/* Implementation of the IMpiProfiling interface.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_NOMPIPROFILING_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_NOMPIPROFILING_H
@@ -28,15 +28,17 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implementation de l'interface des operations MPI.
- * Correspond a un simple appel aux fonctions MPI du meme nom
+ * \brief Implementation of the MPI operations interface.
+ * Corresponds to a simple call to MPI functions of the same name
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT NoMpiProfiling
 : public IMpiProfiling
 {
  public:
+
   NoMpiProfiling() = default;
   virtual ~NoMpiProfiling() = default;
 
@@ -46,6 +48,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT NoMpiProfiling
   }
 
  public:
+
   // Bcast
   ReturnType broadcast(void* buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm) final
   {
@@ -189,9 +192,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT NoMpiProfiling
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore::MessagePassing::Mpi
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

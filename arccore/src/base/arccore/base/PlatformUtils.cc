@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* PlatformUtils.cc                                            (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions utilitaires dépendant de la plateforme.                         */
+/* Platform-dependent utility functions.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -63,14 +63,14 @@
 #include <unistd.h>
 #endif
 
-// Support pour gérer les exceptions flottantes:
-// - sous Linux avec la GlibC, cela se fait via les méthodes
-// feenableexcept(), fedisableexcept() et fegetexcept()
-// - sous Win32, cela se fait via la méthode _controlfp() mais pour
-// l'instant ce n'est pas utilisé dans Arccore.
+// Support for handling floating-point exceptions:
+// - under Linux with GlibC, this is done via the methods
+// feenableexcept(), fedisableexcept() and fegetexcept()
+// - under Win32, this is done via the _controlfp() method but for
+// the moment it is not used in Arccore.
 #if defined(ARCCORE_OS_LINUX) && defined(__USE_GNU)
-#  include <fenv.h>
-#  define ARCCORE_GLIBC_FENV
+#include <fenv.h>
+#define ARCCORE_GLIBC_FENV
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -79,7 +79,7 @@
 namespace Arcane
 {
 
-// Ces deux fonctions sont définies dans 'Exception.cc'
+// These two functions are defined in 'Exception.cc'
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreSetPauseOnException(bool v);
 extern "C++" ARCCORE_BASE_EXPORT void
@@ -93,7 +93,7 @@ namespace Platform
   IStackTraceService* global_stack_trace_service = nullptr;
   ISymbolizerService* global_symbolizer_service = nullptr;
   bool global_has_color_console = false;
-}
+} // namespace Platform
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -108,7 +108,7 @@ getCurrentDate()
   ::time(&now_time);
   now_tm = ::localtime(&now_time);
 
-  ::strftime(str,max_len,"%m/%d/%Y %X",now_tm);
+  ::strftime(str, max_len, "%m/%d/%Y %X", now_tm);
   return std::string_view(str);
 }
 
@@ -136,8 +136,8 @@ getCurrentDateTime()
   ::time(&now_time);
   now_tm = ::localtime(&now_time);
 
-  // Formattage ISO 8601
-  ::strftime(str,max_len,"%Y-%m-%dT%H:%M:%S",now_tm);
+  // ISO 8601 formatting
+  ::strftime(str, max_len, "%Y-%m-%dT%H:%M:%S", now_tm);
   return std::string_view(str);
 }
 
@@ -150,12 +150,12 @@ getHostName()
   char buf[1024];
   const char* host_name = buf;
 #ifdef ARCCORE_OS_WIN32
-  size_t len = sizeof(buf)-1;
+  size_t len = sizeof(buf) - 1;
   DWORD slen = (DWORD)len;
-  if (GetComputerName(buf,&slen)==0)
+  if (GetComputerName(buf, &slen) == 0)
     host_name = "Unknown";
 #else
-  if (::gethostname(buf,sizeof(buf)-1)!=0)
+  if (::gethostname(buf, sizeof(buf) - 1) != 0)
     host_name = "Unknown";
 #endif
   return std::string_view(host_name);
@@ -167,16 +167,16 @@ getHostName()
 extern "C++" ARCCORE_BASE_EXPORT String Platform::
 getUserName()
 {
-  // Récupère le nom de l'utilisateur
+  // Retrieves the username
   String user_name = "noname";
 #ifdef ARCCORE_OS_WIN32
   char buf[1024];
   const char* user_name_ptr = buf;
-  size_t len = sizeof(buf)-1;
+  size_t len = sizeof(buf) - 1;
   DWORD slen = (DWORD)len;
-  if (GetUserName(buf,&slen)==0)
+  if (GetUserName(buf, &slen) == 0)
     user_name_ptr = "Unknown";
-  user_name = String(user_name_ptr,true);
+  user_name = String(user_name_ptr, true);
 #else
   struct passwd* pwd = ::getpwuid(::getuid());
   if (pwd)
@@ -195,16 +195,14 @@ getHomeDirectory()
 #ifdef ARCCORE_OS_WIN32
   {
     TCHAR szPath[MAX_PATH];
-    if(SUCCEEDED(SHGetFolderPath(NULL, 
-                                 CSIDL_PERSONAL, 
-                                 NULL, 0, szPath)))
-      {
-        home_dir = String(szPath,true);
-      }
-    else 
-      {
-        home_dir = "c:";
-      }
+    if (SUCCEEDED(SHGetFolderPath(NULL,
+                                  CSIDL_PERSONAL,
+                                  NULL, 0, szPath))) {
+      home_dir = String(szPath, true);
+    }
+    else {
+      home_dir = "c:";
+    }
   }
 #else
   String user_home_env = Platform::getEnvironmentVariable("HOME");
@@ -221,8 +219,8 @@ extern "C++" ARCCORE_BASE_EXPORT String Platform::
 getCurrentDirectory()
 {
   char buf[4096];
-  char* c = ::getcwd(buf,4095);
-  if (!c){
+  char* c = ::getcwd(buf, 4095);
+  if (!c) {
     std::cerr << "ERROR: Arccore::getCurrentDirectory() can not get current directory\n";
     return std::string_view(".");
   }
@@ -245,8 +243,8 @@ extern "C++" ARCCORE_BASE_EXPORT long unsigned int Platform::
 getFileLength(const String& filename)
 {
   struct stat stat_info;
-  int r = ::stat(filename.localstr(),&stat_info);
-  if (r==-1)
+  int r = ::stat(filename.localstr(), &stat_info);
+  if (r == -1)
     return 0UL;
   return stat_info.st_size;
 }
@@ -268,23 +266,23 @@ getEnvironmentVariable(const String& name)
 
 namespace Platform
 {
-extern "C++" ARCCORE_BASE_EXPORT bool
-isDirectoryExist(const String& dir_name,bool& can_create)
-{
-  can_create = true;
-  struct stat dirstat;
-  const char* dirname = dir_name.localstr();
-  int stat_val = ::stat(dirname,&dirstat);
-  if (stat_val==0){
-    if (dirstat.st_mode & S_IFDIR)
-      return true;
-    // Le fichier existe mais n'est pas un répertoire
-    can_create = false;
+  extern "C++" ARCCORE_BASE_EXPORT bool
+  isDirectoryExist(const String& dir_name, bool& can_create)
+  {
+    can_create = true;
+    struct stat dirstat;
+    const char* dirname = dir_name.localstr();
+    int stat_val = ::stat(dirname, &dirstat);
+    if (stat_val == 0) {
+      if (dirstat.st_mode & S_IFDIR)
+        return true;
+      // The file exists but is not a directory
+      can_create = false;
+      return false;
+    }
     return false;
   }
-  return false;
-}
-}
+} // namespace Platform
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -294,18 +292,18 @@ recursiveCreateDirectory(const String& dir_name)
 {
   //cerr << "** REC CRE DIR " << dir_name << '\n';
   bool can_create = false;
-  bool is_dir = isDirectoryExist(dir_name,can_create);
+  bool is_dir = isDirectoryExist(dir_name, can_create);
   if (is_dir)
     return false;
   if (!can_create)
     return true;
   Int64 pos = 0;
   const char* dir_name_str = dir_name.localstr();
-  for( Int64 i=0, is=dir_name.length(); i<is; ++i )
-    if (dir_name_str[i]=='/')
+  for (Int64 i = 0, is = dir_name.length(); i < is; ++i)
+    if (dir_name_str[i] == '/')
       pos = i;
-  if (pos!=0){
-    String parent_dir(std::string_view(dir_name_str,pos));
+  if (pos != 0) {
+    String parent_dir(std::string_view(dir_name_str, pos));
     bool is_bad = recursiveCreateDirectory(parent_dir);
     if (is_bad)
       return true;
@@ -314,9 +312,9 @@ recursiveCreateDirectory(const String& dir_name)
 #ifdef ARCCORE_OS_WIN32
   int ret = mkdir(dir_name_str);
 #else
-  int ret = mkdir(dir_name_str,S_IRWXU|S_IRWXG);
+  int ret = mkdir(dir_name_str, S_IRWXU | S_IRWXG);
 #endif
-  if (ret==(-1))
+  if (ret == (-1))
     return true;
   return false;
 }
@@ -330,19 +328,19 @@ createDirectory(const String& dir_name)
   //cout << "** CREATE DIRECTORY " << dir_name << '\n';
   struct stat dirstat;
   const char* dirname = dir_name.localstr();
-  int stat_val = ::stat(dirname,&dirstat);
-  if (stat_val==0){
+  int stat_val = ::stat(dirname, &dirstat);
+  if (stat_val == 0) {
     if (dirstat.st_mode & S_IFDIR)
       return false;
-    // Le fichier existe mais n'est pas un répertoire
+    // The file exists but is not a directory
     return true;
   }
 #ifdef ARCCORE_OS_WIN32
   int ret = mkdir(dirname);
 #else
-  int ret = mkdir(dirname,S_IRWXU|S_IRWXG);
+  int ret = mkdir(dirname, S_IRWXU | S_IRWXG);
 #endif
-  if (ret==(-1))
+  if (ret == (-1))
     return true;
   return false;
 }
@@ -353,15 +351,15 @@ createDirectory(const String& dir_name)
 extern "C++" ARCCORE_BASE_EXPORT String Platform::
 getFileDirName(const String& file_name)
 {
-  // Sous windows, regarde s'il y a des '/'. Dans ce cas on prend ce caractère comme
-  // séparateur. Sinon, on prend '\\'.
+  // On Windows, checks if there are '/'. In this case, this character is taken as
+  // separator. Otherwise, '\\' is taken.
   char separator = '/';
   const char* file_name_str = file_name.localstr();
 #if defined(ARCCORE_OS_WIN32)
   {
     bool has_slash = false;
-    for( Int64 i=0, n=file_name.length(); i<n; ++i )
-      if (file_name_str[i]=='/'){
+    for (Int64 i = 0, n = file_name.length(); i < n; ++i)
+      if (file_name_str[i] == '/') {
         has_slash = true;
         break;
       }
@@ -370,14 +368,14 @@ getFileDirName(const String& file_name)
   }
 #endif
   Int64 pos = 0;
-  for( Int64 i=0, n=file_name.length(); i<n; ++i )
-    if (file_name_str[i]==separator)
+  for (Int64 i = 0, n = file_name.length(); i < n; ++i)
+    if (file_name_str[i] == separator)
       pos = i;
 
-  if (pos==0)
+  if (pos == 0)
     return String(".");
 
-  return std::string_view(file_name_str,pos);
+  return std::string_view(file_name_str, pos);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -387,10 +385,10 @@ extern "C++" ARCCORE_BASE_EXPORT bool Platform::
 removeFile(const String& file_name)
 {
   const char* file_name_str = file_name.localstr();
-	int r = ::unlink(file_name_str);
-	if (r!=0)
-		return true;
-	return false;
+  int r = ::unlink(file_name_str);
+  if (r != 0)
+    return true;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -400,18 +398,18 @@ extern "C++" ARCCORE_BASE_EXPORT bool Platform::
 isFileReadable(const String& file_name)
 {
   std::ifstream ifile(file_name.localstr());
-	if (!ifile)
-		return false;
-	return true;
+  if (!ifile)
+    return false;
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCCORE_BASE_EXPORT void Platform::
-stdMemcpy(void* to,const void* from,::size_t len)
+stdMemcpy(void* to, const void* from, ::size_t len)
 {
-  std::memcpy(to,from,len);
+  std::memcpy(to, from, len);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -420,7 +418,7 @@ stdMemcpy(void* to,const void* from,::size_t len)
 extern "C++" ARCCORE_BASE_EXPORT bool Platform::
 isDenormalized(Real /*v*/)
 {
-  //TODO: à implémenter
+  //TODO: to be implemented
   return false;
 }
 
@@ -452,7 +450,7 @@ getStackTrace()
 {
   IStackTraceService* stack_service = getStackTraceService();
   String s;
-  if (stack_service){
+  if (stack_service) {
     s = stack_service->stackTrace().toString();
   }
   return s;
@@ -482,10 +480,10 @@ setSymbolizerService(ISymbolizerService* service)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCCORE_BASE_EXPORT void Platform::
-safeStringCopy(char* output,Integer /*output_len*/,const char* input)
+safeStringCopy(char* output, Integer /*output_len*/, const char* input)
 {
-  //TODO utiliser correctement 'output_len'
-  ::strcpy(output,input);
+  //TODO use 'output_len' correctly
+  ::strcpy(output, input);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -494,7 +492,7 @@ safeStringCopy(char* output,Integer /*output_len*/,const char* input)
 #ifdef ARCCORE_OS_LINUX
 static long _getRSSMemoryLinux()
 {
-  FILE* f = ::fopen("/proc/self/stat","r");
+  FILE* f = ::fopen("/proc/self/stat", "r");
   if (!f)
     return 0;
 
@@ -523,14 +521,14 @@ static long _getRSSMemoryLinux()
   long z_starttime;
   unsigned long z_vsize;
   long z_rss;
-  int r = fscanf(f,"%d %s %c %d %d %d %d %d"
-                 "%lu %lu %lu %lu %lu %lu %lu"
-                 "%ld %ld %ld %ld %ld %ld %ld %lu %ld",
-                 &z_pid,z_comm,&z_state,&z_ppid,&z_pgrp,&z_session,&z_tty_nr,&z_tpgid,
-                 &z_flags,&z_minflt,&z_cminflt,&z_majflt,&z_cmajflt,&z_utime,&z_stime,
-                 &z_cutime,&z_cstime,&z_priority,&z_nice,&z_zero,&z_itrealvalue,
-                 &z_starttime,&z_vsize,&z_rss);
-  if (r!=24)
+  int r = fscanf(f, "%d %s %c %d %d %d %d %d"
+                    "%lu %lu %lu %lu %lu %lu %lu"
+                    "%ld %ld %ld %ld %ld %ld %ld %lu %ld",
+                 &z_pid, z_comm, &z_state, &z_ppid, &z_pgrp, &z_session, &z_tty_nr, &z_tpgid,
+                 &z_flags, &z_minflt, &z_cminflt, &z_majflt, &z_cmajflt, &z_utime, &z_stime,
+                 &z_cutime, &z_cstime, &z_priority, &z_nice, &z_zero, &z_itrealvalue,
+                 &z_starttime, &z_vsize, &z_rss);
+  if (r != 24)
     z_rss = 0;
 
   ::fclose(f);
@@ -564,22 +562,22 @@ getCPUTime()
 {
 #if defined(ARCCORE_OS_LINUX)
   struct timespec ts;
-  if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) == 0){
-    return (ts.tv_sec*1000000) + (ts.tv_nsec / 1000);
+  if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) == 0) {
+    return (ts.tv_sec * 1000000) + (ts.tv_nsec / 1000);
   }
   return 1;
 #else
-  // TODO Supprimer l'usage de clock() pour Win32 et MacOS.
+  // TODO Remove the use of clock() for Win32 and MacOS.
   static Int64 orig_clock = 0;
   static clock_t call_clock = 0;
   clock_t current_clock = ::clock();
-  if (orig_clock==0 && call_clock==0){
+  if (orig_clock == 0 && call_clock == 0) {
     call_clock = current_clock;
   }
-  else{
-    if (current_clock<call_clock){
-      // On a depasse la valeur max de clock
-      //cout << " WARNING: CLOCK depasse INT_MAX: " << call_clock
+  else {
+    if (current_clock < call_clock) {
+      // We have exceeded the max value of clock
+      //cout << " WARNING: CLOCK exceeds INT_MAX: " << call_clock
       //     << " current=" << current_clock << '\n';
       Int64 v = ARCCORE_INT64_MAX;
       v *= 2;
@@ -600,9 +598,9 @@ extern "C++" ARCCORE_BASE_EXPORT Real Platform::
 getRealTime()
 {
   auto x = std::chrono::high_resolution_clock::now();
-  // Converti la valeur en nanosecondes.
+  // Convert the value to nanoseconds.
   auto y = std::chrono::time_point_cast<std::chrono::nanoseconds>(x);
-  // Retourne le temps en secondes.
+  // Returns the time in seconds.
   return (Real)y.time_since_epoch().count() / 1.0e9;
 }
 
@@ -633,14 +631,14 @@ timeToHourMinuteSecond(Real t)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Met le process en sommeil pendant \a nb_second secondes.
+ * \brief Puts the process to sleep for \a nb_second seconds.
  */
 extern "C++" ARCCORE_BASE_EXPORT void Platform::
 sleep(Integer nb_second)
 {
-  if (nb_second>0){
+  if (nb_second > 0) {
 #ifdef ARCCORE_OS_WIN32
-    Sleep(nb_second*1000);
+    Sleep(nb_second * 1000);
 #endif
 #ifdef ARCCORE_OS_UNIX
     ::sleep(nb_second);
@@ -655,7 +653,7 @@ extern "C++" ARCCORE_BASE_EXPORT void Platform::
 dumpStackTrace(std::ostream& ostr)
 {
   IStackTraceService* stack_service = Platform::getStackTraceService();
-  if (stack_service){
+  if (stack_service) {
     StackTrace st = stack_service->stackTrace();
     String s = st.toString();
     ostr << s;
@@ -666,7 +664,7 @@ dumpStackTrace(std::ostream& ostr)
 /*---------------------------------------------------------------------------*/
 
 #ifdef ARCCORE_GLIBC_FENV
-const int FloatExceptFlags = FE_DIVBYZERO|FE_INVALID;
+const int FloatExceptFlags = FE_DIVBYZERO | FE_INVALID;
 #endif
 
 extern "C++" ARCCORE_BASE_EXPORT bool Platform::
@@ -683,11 +681,11 @@ extern "C++" ARCCORE_BASE_EXPORT void Platform::
 enableFloatingException(bool active)
 {
 #ifdef ARCCORE_GLIBC_FENV
- if (active){
+  if (active) {
     ::fesetenv(FE_DFL_ENV);
     ::feenableexcept(FloatExceptFlags);
   }
-  else{
+  else {
     ::fedisableexcept(FloatExceptFlags);
   }
 #endif
@@ -701,7 +699,7 @@ isFloatingExceptionEnabled()
 {
 #ifdef ARCCORE_GLIBC_FENV
   int x = ::fegetexcept();
-  return (x & (FloatExceptFlags))!=0;
+  return (x & (FloatExceptFlags)) != 0;
 #endif
   return false;
 }
@@ -713,8 +711,8 @@ extern "C++" ARCCORE_BASE_EXPORT void Platform::
 raiseFloatingException()
 {
 #ifdef ARCCORE_GLIBC_FENV
-  // Note: cette méthode n'a besoin que de fenv.h et devrait être portable
-  // même sans la GLIBC.
+  // Note: this method only needs fenv.h and should be portable
+  // even without GLIBC.
   ::feraiseexcept(FloatExceptFlags);
 #endif
 }
@@ -726,12 +724,11 @@ extern "C++" ARCCORE_BASE_EXPORT Int64 Platform::
 getRealTimeNS()
 {
   auto x = std::chrono::high_resolution_clock::now();
-  // Converti la valeur en nanosecondes.
+  // Convert the value to nanoseconds.
   auto y = std::chrono::time_point_cast<std::chrono::nanoseconds>(x);
-  // Retourne le temps en nano-secondes.
+  // Returns the time in nano-seconds.
   return static_cast<Int64>(y.time_since_epoch().count());
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -768,10 +765,10 @@ bool _getHasColorTerminal()
   String term = Platform::getEnvironmentVariable("TERM");
   //std::cout << "CHECK ENV term=" << term << '\n';
 
-  if (term=="xterm-color" || term=="xterm-256color")
+  if (term == "xterm-color" || term == "xterm-256color")
     return true;
 
-  if (term=="xterm" || term=="rxvt" || term=="rxvt-unicode"){
+  if (term == "xterm" || term == "rxvt" || term == "rxvt-unicode") {
     String color_term = Platform::getEnvironmentVariable("COLORTERM");
     //std::cout << "CHECK ENV color_term=" << color_term << '\n';
     if (!color_term.null())
@@ -787,10 +784,10 @@ bool _getHasColorTerminal()
 void Platform::
 platformInitialize(bool enable_fpe)
 {
-  // Pour l'instant, la seule initialisation spécifique dépend
-  // des processeurs i386. Elle consiste à changer la valeur par
-  // défaut des flags de la FPU pour générer une exception
-  // lors d'une erreur arithmétique (comme les divisions par zéro).
+  // For now, the only specific initialization depends
+  // on i386 processors. It consists of changing the default value of
+  // the FPU flags to generate an exception
+  // during an arithmetic error (such as division by zero).
   if (enable_fpe)
     enableFloatingException(true);
 
@@ -798,9 +795,9 @@ platformInitialize(bool enable_fpe)
 
   global_has_color_console = _getHasColorTerminal();
 
-  if (getEnvironmentVariable("ARCCORE_PAUSE_ON_EXCEPTION")=="1")
+  if (getEnvironmentVariable("ARCCORE_PAUSE_ON_EXCEPTION") == "1")
     arccoreSetPauseOnException(true);
-  if (getEnvironmentVariable("ARCCORE_PRINT_ON_EXCEPTION")=="1")
+  if (getEnvironmentVariable("ARCCORE_PRINT_ON_EXCEPTION") == "1")
     arccoreCallExplainInExceptionConstructor(true);
 }
 
@@ -830,7 +827,6 @@ getConsoleHasColor()
   return global_has_color_console;
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -845,11 +841,11 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
     std::ifstream ifile("/proc/self/maps");
     String v;
     String true_name = "lib" + dll_name + ".so";
-    while (ifile.good()){
+    while (ifile.good()) {
       ifile >> v;
       Span<const Byte> vb = v.bytes();
-      if (vb.size()>0 && vb[0]=='/'){
-        if (v.endsWith(true_name)){
+      if (vb.size() > 0 && vb[0] == '/') {
+        if (v.endsWith(true_name)) {
           full_path = v;
           //std::cout << "V='" << v << "'\n";
           break;
@@ -889,7 +885,7 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//TODO: faire pour windows.
+//TODO: implement for windows.
 extern "C++" String Platform::
 getCompilerId()
 {
@@ -931,7 +927,7 @@ getCompilerId()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

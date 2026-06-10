@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ReduceMemoryImpl.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Gestion de la mémoire pour les réductions.                                */
+/* Memory management for reductions.                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -88,8 +88,8 @@ _allocateMemoryForReduceData(Int32 new_size)
 void ReduceMemoryImpl::
 _allocateGridDataMemory()
 {
-  // TODO: pouvoir utiliser un padding pour éviter que les lignes de cache
-  // entre les blocs se chevauchent
+  // TODO: can use padding to prevent cache lines between blocks from
+  // overlapping
   Int32 total_size = CheckedConvert::toInt32(m_data_type_size * m_grid_size);
   if (total_size <= m_grid_memory_info.m_grid_memory_values.bytes().size())
     return;
@@ -106,8 +106,9 @@ _allocateGridDataMemory()
 void ReduceMemoryImpl::
 _allocateMemoryForGridDeviceCount()
 {
-  // Alloue sur le device la mémoire contenant le nombre de blocs restant à traiter
-  // Il s'agit d'un seul entier non signé.
+  // Allocates on the device the memory containing the number of remaining
+  // blocks to process
+  // This is a single unsigned integer.
   Int64 size = sizeof(unsigned int);
   const unsigned int zero = 0;
   m_grid_device_count.resize(1);
@@ -115,7 +116,7 @@ _allocateMemoryForGridDeviceCount()
 
   m_grid_memory_info.m_grid_device_count = ptr;
 
-  // Initialise cette zone mémoire avec 0.
+  // Initializes this memory area with 0.
   MemoryCopyArgs copy_args(ptr, &zero, size);
   m_command->internalStream()->copyMemory(copy_args);
 }

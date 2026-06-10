@@ -1,4 +1,4 @@
-// TODO: ne pas inclure car cela induit des dépendances circulaires
+﻿// TODO: do not include because it introduces circular dependencies
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/CommonCudaHipReduceImpl.h"
 
@@ -14,7 +14,7 @@ template class ReduceFunctorSum<double>;
 template class ReduceFunctorMin<int>;
 template class ReduceFunctorMax<int>;
 template class ReduceFunctorSum<int>;
-}
+} // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Array.cc                                                    (C) 2000-2026 */
 /*                                                                           */
-/* Vecteur de données 1D.                                                    */
+/* 1D data vector.                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,12 +34,17 @@ class BadAllocException
 : public std::bad_alloc
 {
  public:
-  explicit BadAllocException(std::string str) : m_message(std::move(str)){}
+
+  explicit BadAllocException(std::string str)
+  : m_message(std::move(str))
+  {}
   const char* what() const ARCCORE_NOEXCEPT override
   {
     return m_message.c_str();
   }
+
  public:
+
   std::string m_message;
 };
 
@@ -66,25 +71,25 @@ _checkAllocator() const
 /*---------------------------------------------------------------------------*/
 
 /*
- * TODO: pour les allocations, faire en sorte que le
- * début du tableau soit aligné sur 16 octets dans tous les cas.
- * Attention dans ce cas a bien traiter les problèmes avec realloc().
- * TODO: pour les grosses allocations qui correspondantes la
- * plupart du temps à des variables, ajouter un random sur le début
- * du tableau pour éviter les conflits de bancs mémoire ou de cache
+ * TODO: for allocations, ensure that the
+ * start of the array is aligned to 16 bytes in all cases.
+ * Be careful in this case to properly handle issues with realloc().
+ * TODO: for large allocations which most of the time correspond to variables,
+ * add a random value at the start of the array to avoid memory bank or
+ * cache conflicts
  */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-_setMemoryLocationHint(eMemoryLocationHint new_hint,void* ptr,Int64 sizeof_true_type)
+_setMemoryLocationHint(eMemoryLocationHint new_hint, void* ptr, Int64 sizeof_true_type)
 {
   MemoryAllocationArgs old_args = _getAllocationArgs();
   allocation_options.setMemoryLocationHint(new_hint);
   MemoryAllocationArgs new_args = _getAllocationArgs();
-  AllocatedMemoryInfo mem_info(ptr,size*sizeof_true_type,capacity*sizeof_true_type);
-  _allocator()->notifyMemoryArgsChanged(old_args,new_args,mem_info);
+  AllocatedMemoryInfo mem_info(ptr, size * sizeof_true_type, capacity * sizeof_true_type);
+  _allocator()->notifyMemoryArgsChanged(old_args, new_args, mem_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -264,8 +269,8 @@ _changeAllocator(const MemoryAllocationOptions& new_allocator_opt, const Allocat
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-overlapError(const void* begin1,Int64 size1,
-             const void* begin2,Int64 size2)
+overlapError(const void* begin1, Int64 size1,
+             const void* begin2, Int64 size2)
 {
   ARCCORE_UNUSED(begin1);
   ARCCORE_UNUSED(begin2);
@@ -331,7 +336,7 @@ debugName() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

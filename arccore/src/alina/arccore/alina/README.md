@@ -1,6 +1,5 @@
-The work is this directory is based on the AMGCL library (version march 2026)
-which can be found at https://github.com/ddemidov/amgcl and with use the MIT
-Licence.
+﻿This directory is based on the AMGCL library (version March 2026),
+which can be found at https://github.com/ddemidov/amgcl and uses the MIT License.
 
 For more information, see AMGCL documentation at http://amgcl.readthedocs.io/
 
@@ -12,7 +11,7 @@ implementation. Lobachevskii Journal of Mathematics, 40(5):535–546, May 2019.
 [bib](https://raw.githubusercontent.com/ddemidov/amgcl/master/docs/demidov19.bib)
 
 Demidov, Denis. AMGCL -- A C++ library for efficient solution of large sparse linear
-systems.  Software Impacts, 6:100037, November 2020.
+systems. Software Impacts, 6:100037, November 2020.
 [doi](https://doi.org/10.1016/j.simpa.2020.100037)
 [bib](https://raw.githubusercontent.com/ddemidov/amgcl/master/docs/demidov20.bib)
 

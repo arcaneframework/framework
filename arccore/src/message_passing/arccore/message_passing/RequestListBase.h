@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RequestListBase.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Classe de base d'une liste de requêtes.                                   */
+/* Base class of a request list.                                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_REQUESTLISTBASE_H
 #define ARCCORE_MESSAGEPASSING_REQUESTLISTBASE_H
@@ -23,9 +23,13 @@
 
 namespace Arcane::MessagePassing::internal
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Classe de base d'une liste de requêtes.
+ * \brief Base class of a request list.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
 : public IRequestList
@@ -56,7 +60,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
   virtual void _add(Span<Request> rlist)
   {
     m_requests.addRange(rlist);
-    m_requests_done.addRange(false,rlist.size());
+    m_requests_done.addRange(false, rlist.size());
   }
   virtual void _removeRequestAtIndex(Integer pos)
   {
@@ -64,13 +68,13 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
     m_requests_done.remove(pos);
   }
   /*!
-   * \brief Effectue l'attente ou le test.
+   * \brief Performs the wait or test.
    *
-   * L'implémentation doit remplir à \a _requestsDone() avec la
-   * valeur \a true pour chaque requête terminée sauf si
-   * \a wait_type vaut WaitAll.
+   * The implementation must fill \a _requestsDone() with the
+   * value \a true for every completed request unless
+   * \a wait_type equals WaitAll.
    */
-  virtual void _wait(eWaitType wait_type) =0;
+  virtual void _wait(eWaitType wait_type) = 0;
 
  protected:
 
@@ -87,7 +91,10 @@ class ARCCORE_MESSAGEPASSING_EXPORT RequestListBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing::internal
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace Arccore::MessagePassing::internal
 {
@@ -97,5 +104,4 @@ using Arcane::MessagePassing::internal::RequestListBase;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

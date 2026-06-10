@@ -7,25 +7,25 @@
 /*---------------------------------------------------------------------------*/
 /* CommonCudaHipReduceImpl.h                                   (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation CUDA et HIP des réductions.                                */
+/* CUDA and HIP implementation of reductions.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_COMMONCUDHIPAREDUCEIMPL_H
 #define ARCCORE_ACCELERATOR_COMMONCUDHIPAREDUCEIMPL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Ce fichier doit être inclus uniquement par 'arcane/accelerator/Reduce.h'
-// et n'est valide que compilé par le compilateur CUDA et HIP
+// This file must only be included by 'arcane/accelerator/Reduce.h'
+// and is only valid when compiled by the CUDA and HIP compilers
 
 #include "arccore/accelerator/AcceleratorGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Attention: avec ROCm et un GPU sur bus PCI express la plupart des
-// méthodes atomiques ne fonctionnent pas si le pointeur est allouée
-// en mémoire unifiée. A priori le problème se pose avec atomicMin, atomicMax,
-// atomicInc. Par contre atomicAdd a l'air de fonctionner.
+// Warning: with ROCm and a GPU on a PCI express bus, most
+// atomic methods do not work if the pointer is allocated
+// in unified memory. The problem seems to occur with atomicMin, atomicMax,
+// atomicInc. However, atomicAdd seems to work.
 
 namespace Arcane::Accelerator::Impl
 {
@@ -109,7 +109,8 @@ ARCCORE_DEVICE inline Int64 shfl_sync(Int64 var, int laneMask)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Cette implémentation est celle de RAJA
+
+// This implementation is that of RAJA
 //! reduce values in block into thread 0
 template <typename ReduceOperator, Int32 WarpSize, typename T>
 ARCCORE_DEVICE inline T block_reduce(T val)
@@ -203,9 +204,9 @@ grid_reduce(T& val, SmallSpan<T> device_mem, unsigned int* device_count)
     // ensure write visible to all threadblocks
     __threadfence();
     // increment counter, (wraps back to zero if old count == wrap_around)
-    // Attention: avec ROCm et un GPU sur bus PCI express si 'device_count'
-    // est alloué en mémoire unifiée le atomicAdd ne fonctionne pas.
-    // Dans ce cas on peut le remplacer par:
+    // Warning: with ROCm and a GPU on a PCI express bus, if 'device_count'
+    // is allocated in unified memory, atomicAdd does not work.
+    // In this case, we can replace it with:
     //   unsigned int old_count = ::atomicAdd(device_count, 1) % (wrap_around+1);
     unsigned int old_count = ::atomicInc(device_count, wrap_around);
     lastBlock = ((int)old_count == wrap_around);
@@ -245,9 +246,9 @@ _applyDeviceGeneric(const ReduceDeviceInfo<typename ReduceOperator::DataType>& d
   unsigned int* device_count = dev_info.m_device_count;
   DataType* host_pinned_ptr = dev_info.m_host_pinned_final_ptr;
   DataType v = dev_info.m_current_value;
-  // Avec CUDA, la taille d'un warp est toujours 32.
-  // Avec HIP, La taille d'un warp est 64 pour les GPUs de classe GFX9
-  // (MI50, MI100, ... , MI300) et 32 pour architectures GFX10 et les suivantes
+  // With CUDA, the size of a warp is always 32.
+  // With HIP, the size of a warp is 64 for GFX9 class GPUs
+  // (MI50, MI100, ... , MI300) and 32 for GFX10 and subsequent architectures
 #if defined(__GFX9__)
   constexpr const Int32 WARP_SIZE = 64;
 #else
@@ -262,7 +263,7 @@ _applyDeviceGeneric(const ReduceDeviceInfo<typename ReduceOperator::DataType>& d
   bool is_done = grid_reduce<ReduceOperator, WARP_SIZE, DataType>(v, grid_buffer, device_count);
   if (is_done) {
     *host_pinned_ptr = v;
-    // Il est important de remettre cette variable à zéro pour la prochaine utilisation d'un Reducer.
+    // It is important to reset this variable to zero for the next use of a Reducer.
     (*device_count) = 0;
   }
 }

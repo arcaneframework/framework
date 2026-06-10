@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* CudaAccelerator.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Backend 'CUDA' pour les accélérateurs.                                    */
+/* 'CUDA' Backend for accelerators.                                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CUDA_CUDAACCELERATOR_H
 #define ARCCORE_CUDA_CUDAACCELERATOR_H
@@ -34,18 +34,18 @@ namespace Arcane::Accelerator::Cuda
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCCORE_CUDA_EXPORT void
-arcaneCheckCudaErrors(const TraceInfo& ti,cudaError_t e);
+arcaneCheckCudaErrors(const TraceInfo& ti, cudaError_t e);
 
 extern "C++" ARCCORE_CUDA_EXPORT void
-arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti,cudaError_t e);
+arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti, cudaError_t e);
 
-//! Vérifie \a result et lance une exception en cas d'erreur
+//! Checks \a result and throws an exception if there is an error
 #define ARCCORE_CHECK_CUDA(result) \
-  Arcane::Accelerator::Cuda::arcaneCheckCudaErrors(A_FUNCINFO,result)
+  Arcane::Accelerator::Cuda::arcaneCheckCudaErrors(A_FUNCINFO, result)
 
-//! Verifie \a result et affiche un message d'erreur en cas d'erreur.
+//! Checks \a result and displays an error message if there is an error.
 #define ARCCORE_CHECK_CUDA_NOTHROW(result) \
-  Arcane::Accelerator::Cuda::arcaneCheckCudaErrorsNoThrow(A_FUNCINFO,result)
+  Arcane::Accelerator::Cuda::arcaneCheckCudaErrorsNoThrow(A_FUNCINFO, result)
 
 #define ARCANE_CHECK_CUDA(result) ARCCORE_CHECK_CUDA((result))
 #define ARCANE_CHECK_CUDA_NOTHROW(result) ARCCORE_CHECK_CUDA_NOTHROW((result))
@@ -61,7 +61,7 @@ arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti,cudaError_t e);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::accelerator::cuda
+} // namespace Arcane::Accelerator::Cuda
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

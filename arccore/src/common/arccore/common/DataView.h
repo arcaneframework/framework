@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataView.h                                                  (C) 2000-2026 */
 /*                                                                           */
-/* Vues sur des données des variables.                                       */
+/* Views of variable data.                                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_DATAVIEW_H
 #define ARCCORE_COMMON_DATAVIEW_H
@@ -18,12 +18,14 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file DataView.h
  *
- * Ce fichier contient les déclarations des types pour gérer
- * les vues pour les accélérateurs.
+ * This file contains the type declarations for managing
+ * views for accelerators.
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,8 +38,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour accéder à un élément d'une vue en lecture.
+ * \brief Class for accessing an element of a read view.
  */
 template <typename DataType>
 class DataViewGetter
@@ -54,13 +57,14 @@ class DataViewGetter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour accéder à un élément d'une vue en écriture.
+ * \brief Class for accessing an element of a write view.
  */
 template <typename DataType>
 class DataViewSetter
 {
-  // Pour accéder à m_ptr;
+  // To access m_ptr;
   friend class DataViewGetterSetter<DataType>;
 
  public:
@@ -85,9 +89,9 @@ class DataViewSetter
   ARCCORE_HOST_DEVICE DataViewSetter<DataType>&
   operator=(const DataViewSetter<DataType>& v)
   {
-    // Attention: il faut mettre à jour la valeur et pas le pointeur
-    // sinon le code tel que a = b avec 'a' et 'b' deux instances de cette
-    // classe ne fonctionnera pas.
+    // Attention: you must update the value and not the pointer
+    // otherwise the code like a = b with 'a' and 'b' two instances of this
+    // class will not work.
     *m_ptr = *(v.m_ptr);
     return (*this);
   }
@@ -173,49 +177,49 @@ class DataViewSetter
     m_ptr->z = value;
   }
 
-  ARCCORE_HOST_DEVICE void setXX(Real value) requires( requires() { DataType::x.x; } )
+  ARCCORE_HOST_DEVICE void setXX(Real value) requires(requires() { DataType::x.x; })
   {
     m_ptr->x.x = value;
   }
-  ARCCORE_HOST_DEVICE void setYX(Real value) requires( requires() { DataType::y.x; } )
+  ARCCORE_HOST_DEVICE void setYX(Real value) requires(requires() { DataType::y.x; })
   {
     m_ptr->y.x = value;
   }
-  ARCCORE_HOST_DEVICE void setZX(Real value) requires( requires() { DataType::z.x; } )
+  ARCCORE_HOST_DEVICE void setZX(Real value) requires(requires() { DataType::z.x; })
   {
     m_ptr->z.x = value;
   }
 
-  ARCCORE_HOST_DEVICE void setXY(Real value) requires( requires() { DataType::x.y; } )
+  ARCCORE_HOST_DEVICE void setXY(Real value) requires(requires() { DataType::x.y; })
   {
     m_ptr->x.y = value;
   }
-  ARCCORE_HOST_DEVICE void setYY(Real value) requires( requires() { DataType::y.y; } )
+  ARCCORE_HOST_DEVICE void setYY(Real value) requires(requires() { DataType::y.y; })
   {
     m_ptr->y.y = value;
   }
-  ARCCORE_HOST_DEVICE void setZY(Real value) requires( requires() { DataType::z.y; } )
+  ARCCORE_HOST_DEVICE void setZY(Real value) requires(requires() { DataType::z.y; })
   {
     m_ptr->z.y = value;
   }
 
-  ARCCORE_HOST_DEVICE void setXZ(Real value) requires( requires() { DataType::x.z; } )
+  ARCCORE_HOST_DEVICE void setXZ(Real value) requires(requires() { DataType::x.z; })
   {
     m_ptr->x.z = value;
   }
-  ARCCORE_HOST_DEVICE void setYZ(Real value) requires( requires() { DataType::y.z; } )
+  ARCCORE_HOST_DEVICE void setYZ(Real value) requires(requires() { DataType::y.z; })
   {
     m_ptr->y.z = value;
   }
-  ARCCORE_HOST_DEVICE void setZZ(Real value) requires( requires() { DataType::z.z; } )
+  ARCCORE_HOST_DEVICE void setZZ(Real value) requires(requires() { DataType::z.z; })
   {
     m_ptr->z.z = value;
   }
 
   /*!
-   * \brief Applique l'opérateur operator[] sur le type.
+   * \brief Applies the operator operator[] on the type.
    *
-   * L'opération n'est valide que si X::operator[](Int32) existe.
+   * The operation is only valid if X::operator[](Int32) exists.
    */
   template <typename X = DataType, typename SubscriptType = decltype(std::declval<const X>()[0])>
   ARCCORE_HOST_DEVICE DataViewSetter<SubscriptType> operator[](Int32 index)
@@ -230,11 +234,12 @@ class DataViewSetter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour accéder à un élément d'une vue en lecture/écriture.
+ * \brief Class for accessing an element of a read/write view.
  *
- * Cette classe étend les fonctionnalités de DataViewSetter en ajoutant
- * la possibilité d'accéder à la valeur de la donnée.
+ * This class extends the functionalities of DataViewSetter by adding
+ * the possibility to access the data value.
  */
 template <typename DataType>
 class DataViewGetterSetter
@@ -278,22 +283,22 @@ class DataViewGetterSetter
     return AccessorReturnType(ptr);
   }
 
-  //! Applique, s'il existe, l'opérateur operator[](Int32) sur le type 
+  //! Applies, if it exists, the operator operator[](Int32) on the type
   template <typename X = DataType, typename SubscriptType = decltype(std::declval<const X>()[0])>
   ARCCORE_HOST_DEVICE DataViewGetterSetter<SubscriptType> operator[](Int32 index)
   {
     return DataViewGetterSetter<SubscriptType>(&m_ptr->operator[](index));
   }
 
-  //! Applique, s'il existe, l'opérateur operator()(Int32) sur le type 
+  //! Applies, if it exists, the operator operator()(Int32) on the type
   template <typename X = DataType, typename DataTypeReturnType = decltype(std::declval<const X>()(0))>
   constexpr ARCCORE_HOST_DEVICE DataViewGetterSetter<DataTypeReturnType> operator()(Int32 i0)
   {
     return DataViewGetterSetter<DataTypeReturnType>(&m_ptr->operator()(i0));
   }
 
-  //! Applique, s'il existe, l'opérateur operator()(Int32,Int32) sur le type 
-  template <typename X = DataType, typename DataTypeReturnType = decltype(std::declval<const X>()(0,0))>
+  //! Applies, if it exists, the operator operator()(Int32,Int32) on the type
+  template <typename X = DataType, typename DataTypeReturnType = decltype(std::declval<const X>()(0, 0))>
   constexpr ARCCORE_HOST_DEVICE DataViewGetterSetter<DataTypeReturnType> operator()(Int32 i0, Int32 i1)
   {
     return DataViewGetterSetter<DataTypeReturnType>(&m_ptr->operator()(i0, i1));
@@ -301,7 +306,7 @@ class DataViewGetterSetter
 
  private:
 
-  //! Adresse de la donnée. Valide uniquement pour les types simples (i.e pas les Real3)
+  //! Address of the data. Valid only for simple types (i.e. not Real3)
   constexpr ARCCORE_HOST_DEVICE DataType* _address() const { return m_ptr; }
 };
 

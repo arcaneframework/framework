@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RunQueuePool.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Collection de RunQueue.                                                   */
+/* Collection of RunQueues.                                                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_RUNQUEUEPOOL_H
 #define ARCCORE_COMMON_ACCELERATOR_RUNQUEUEPOOL_H
@@ -27,19 +27,20 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Collection de RunQueue.
+ * \brief Collection of RunQueues.
  *
- * Il faut appeler initialize() avant d'utiliser l'instance.
+ * initialize() must be called before using the instance.
  *
- * L'opérateur d'accès aux éléments renvoit la
- * (i % poolSize()) ème RunQueue de la collection.
+ * The element access operator returns the
+ * (i % poolSize())-th RunQueue in the collection.
  */
 class ARCCORE_COMMON_EXPORT RunQueuePool
 {
  public:
 
-  //! Créé une instance vide
+  //! Creates an empty instance
   RunQueuePool();
 
  public:
@@ -51,32 +52,32 @@ class ARCCORE_COMMON_EXPORT RunQueuePool
 
  public:
 
-  //! Initialise l'instance avec \a pool_size RunQueue
+  //! Initializes the instance with \a pool_size RunQueues
   void initialize(Runner& runner, Int32 pool_size);
-  //! Initialise l'instance avec \a pool_size RunQueue
+  //! Initializes the instance with \a pool_size RunQueues
   void initialize(Runner& runner, Int32 pool_size, const RunQueueBuildInfo& bi);
 
  public:
 
-  //! Pour récupérer la i % poolSize() ième queue d'exécution
+  //! To retrieve the i % poolSize()-th execution queue
   const RunQueue& operator[](Int32 i) const
   {
     return m_pool[i % m_pool_size];
   }
 
-  //! Pour récupérer la i % poolSize() ième queue d'exécution
+  //! To retrieve the i % poolSize()-th execution queue
   RunQueue& operator[](Int32 i)
   {
     return m_pool[i % m_pool_size];
   }
 
-  //! Force l'attente de toutes les RunQueue
+  //! Forces waiting for all RunQueues
   void barrier() const;
 
-  //! Taille de la collection
+  //! Size of the collection
   Int32 size() const { return m_pool_size; }
 
-  //! Modifie l'état d'asynchronisme des files.
+  //! Modifies the asynchronous state of the queues.
   void setAsync(bool v) const;
 
  private:
@@ -94,4 +95,4 @@ class ARCCORE_COMMON_EXPORT RunQueuePool
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

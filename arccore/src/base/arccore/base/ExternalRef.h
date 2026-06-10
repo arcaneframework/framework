@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ExternalRef.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Gestion d'une référence sur un objet externe au C++.                      */
+/* Management of a reference to an object external to C++.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_EXTERNALREF_H
 #define ARCCORE_BASE_EXTERNALREF_H
@@ -26,20 +26,20 @@ namespace Arcane::Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gestion des références sur un objet externe.
+ * \brief Management of references to an external object.
  *
- * Cette classe permet de sauver des références à des objets qui ne sont
- * pas gérés directement par %Arccore. C'est le cas par exemple lorsqu'on
- * utiliser le wrapping C# et qu'on souhaite manipuler  des
- * objets 'managé' par '.Net' et dont il n'existe plus
- * obligatoirement de référence explicite en mode managé. Cette classe permet
- * de maintenir une référence sur ces objets pour les empêcher d'être
- * récupéré par le ramasse-miette (Garbage collector).
+ * This class allows saving references to objects that are not managed
+ * directly by %Arccore. This is the case, for example, when using C# wrapping
+ * and wanting to manipulate objects 'managed' by '.Net' that no longer
+ * necessarily have an explicit managed reference. This class allows
+ * maintaining a reference to these objects to prevent them from being
+ * collected by the garbage collector.
  *
- * Cette classe est interne à %Arccore et ne doit en principe par être utilisée
- * directement.
+ * This class is internal to %Arccore and should in principle not be used
+ * directly.
  */
 class ARCCORE_BASE_EXPORT ExternalRef
 {
@@ -95,7 +95,7 @@ class ARCCORE_BASE_EXPORT ExternalRef
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Internal
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

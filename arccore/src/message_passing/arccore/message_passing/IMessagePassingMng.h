@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IMessagePassingMng.h                                        (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des échanges de messages.                       */
+/* Interface of the message passing manager.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_IMESSAGEPASSINGMNG_H
 #define ARCCORE_MESSAGEPASSING_IMESSAGEPASSINGMNG_H
@@ -24,23 +24,25 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Détruit l'instance \a p.
+ * \brief Destroys the instance \a p.
  *
- * L'instance \a p ne doit plus être utilisée après cet appel
+ * The instance \a p must not be used after this call
  */
 extern "C++" void ARCCORE_MESSAGEPASSING_EXPORT
 mpDelete(IMessagePassingMng* p);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface du gestionnaire des échanges de messages.
+ * \brief Interface of the message passing manager.
  *
- * Ce gestionnaire ne fait pas grand chose en lui même et se contente de
- * déléguer les opérations via l'interface IDispatchers.
+ * This manager does not do much itself and merely
+ * delegates operations via the IDispatchers interface.
  *
- * Les instances de ces classes doivent être détruites via la méthode
+ * Instances of these classes must be destroyed via the method
  * mpDelete().
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
@@ -55,20 +57,20 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
 
  public:
 
-  //! Rang de cette instance dans le communicateur
+  //! Rank of this instance in the communicator
   virtual Int32 commRank() const = 0;
 
-  //! Nombre d'instance dans le communicateur
+  //! Number of instances in the communicator
   virtual Int32 commSize() const = 0;
 
-  //! Interface pour collecter les temps d'exécution (peut être nul)
+  //! Interface for collecting execution times (can be null)
   virtual ITimeMetricCollector* timeMetricCollector() const = 0;
 
   /*!
-   * \brief Communicateur MPI associé à cette instance.
+   * \brief MPI communicator associated with this instance.
    *
-   * Le communicateur n'est valide que si l'instance est associée à une
-   * implémentation MPI.
+   * The communicator is only valid if the instance is associated with an
+   * MPI implementation.
    */
   virtual Communicator communicator() const;
 
@@ -80,9 +82,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

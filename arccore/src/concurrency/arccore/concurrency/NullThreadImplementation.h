@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NullThreadImplementation.h                                  (C) 2000-2026 */
 /*                                                                           */
-/* Gestionnaire de thread en mode mono-thread.                               */
+/* Single-threaded thread manager.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_NULLTHREADIMPLEMENTATION_H
 #define ARCCORE_CONCURRENCY_NULLTHREADIMPLEMENTATION_H
@@ -27,8 +27,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation d'une barrière en mono-thread.
+ * \brief Implementation of a single-threaded barrier.
  */
 class ARCCORE_CONCURRENCY_EXPORT NullThreadBarrier
 : public IThreadBarrier
@@ -40,20 +41,21 @@ class ARCCORE_CONCURRENCY_EXPORT NullThreadBarrier
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation des threads en mode mono-thread.
+ * \brief Implementation of threads in single-threaded mode.
  */
 class ARCCORE_CONCURRENCY_EXPORT NullThreadImplementation
 : public IThreadImplementation
 , public ReferenceCounterImpl
 {
-  // Pour créer dynamiquement les instances
+  // To dynamically create instances
   friend class NullThreadImplementationFactory;
 
  private:
 
-  // TODO Utiliser ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS()
-  // quand il n'y a aura plus d'instances statiques de cette classe.
+  // TODO Use ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS()
+  // when there are no more static instances of this class.
   ReferenceCounterImpl* _internalReferenceCounter() override { return this; }
   void _internalAddReference() override
   {
@@ -114,7 +116,7 @@ class ARCCORE_CONCURRENCY_EXPORT NullThreadImplementation
 
  private:
 
-  // Constructeur utilisé par NullThreadImplementationFactory qui oblige à créer via 'new'
+  // Constructor used by NullThreadImplementationFactory which forces creation via 'new'
   explicit NullThreadImplementation(bool)
   {}
 
@@ -126,7 +128,7 @@ class ARCCORE_CONCURRENCY_EXPORT NullThreadImplementation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RefDeclarations.h                                           (C) 2000-2026 */
 /*                                                                           */
-/* Déclarations liées à la gestion des références sur une instance.          */
+/* Declarations related to reference management on an instance.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_REFDECLARATIONS_H
 #define ARCCORE_BASE_REFDECLARATIONS_H
@@ -25,16 +25,16 @@
 /*!
  * \file RefDeclarations.h
  *
- * Ce fichier contient les déclarations et macros pour gérer classes
- * utilisant les compteurs de référence. Pour l'implémentation il faut utiliser
- * le fichier 'ReferenceCounterImpl.h'
+ * This file contains the declarations and macros for managing classes
+ * using reference counters. For implementation, you must use
+ * the file 'ReferenceCounterImpl.h'
  */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// La classe ExternalReferenceCounterAccessor doit rester dans le namespace
-// Arccore pour compatiblité avec l'existant et la macro
+// The ExternalReferenceCounterAccessor class must remain in the
+// Arccore namespace for compatibility with existing code and the macro
 // ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS.
 namespace Arccore
 {
@@ -57,11 +57,12 @@ using Arccore::ExternalReferenceCounterAccessor;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Structure servant à tagger les interfaces/classes qui utilisent
- * un compteur de référence interne.
+ * \brief Structure used to tag interfaces/classes that use
+ * an internal reference counter.
  *
- * Ce tag s'utilise via un typedef comme suit:
+ * This tag is used via a typedef as follows:
  *
  * \code
  * class MyClass
@@ -85,13 +86,14 @@ constexpr int REF_TAG_REFERENCE_COUNTER = 1;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonction pour savoir quel type de compteur de référence
- * utilise une classe.
+ * \brief Function to determine what type of reference counter
+ * a class uses.
  *
- * Par défaut on utilise std::shared_ptr.
- * Pour utiliser un compteur de référence interne, il faur surcharger cette
- * méthode via la macro ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS().
+ * By default, std::shared_ptr is used.
+ * To use an internal reference counter, this
+ * method must be overridden using the macro ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS().
  */
 inline constexpr int arcaneImplGetRefTagId(void*)
 {
@@ -100,10 +102,11 @@ inline constexpr int arcaneImplGetRefTagId(void*)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Caractéristiques pour gérer les compteurs de référence.
+ * \brief Characteristics for managing reference counters.
  *
- * Par défaut, on utilise comme implémentation la classe std::shared_ptr.
+ * By default, the std::shared_ptr class is used as the implementation.
  */
 template <typename InstanceType>
 struct RefTraits
@@ -119,12 +122,13 @@ struct RefTraitsTagId;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Accesseur des méthodes de gestion de compteurs de référence.
+ * \brief Accessor for reference counter management methods.
  *
- * Le classe T doit définir deux méthodes addReference() et removeReference()
- * pour gérer les compteurs de références. removeReference() doit détruire
- * l'instance si le compteur arrive à zéro.
+ * The class T must define two methods addReference() and removeReference()
+ * to manage reference counters. removeReference() must destroy
+ * the instance if the counter reaches zero.
  */
 template <class T>
 class ReferenceCounterAccessor
@@ -152,17 +156,18 @@ class ReferenceCounterAccessor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro pour déclarer les méthodes virtuelles gérant les compteurs
- * de référence.
+ * \brief Macro to declare the virtual methods managing reference
+ * counters.
  *
- * Cette macro s'utilise de la même manière que les déclarations
- * de méthodes d'une interface. Elle permet de définir des méthodes virtuelles
- * pure pour accèder aux informations des compteurs de référence.
+ * This macro is used in the same way as declarations
+ * of interface methods. It allows defining pure virtual methods
+ * to access reference counter information.
  *
- * La classe implémentant l'interface doit utiliser la macro
- * ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS() pour définir les
- * méthodes virtuelles utilisées.
+ * The class implementing the interface must use the macro
+ * ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS() to define the
+ * virtual methods used.
  *
  * \code
  * class IMyInterface
@@ -187,15 +192,16 @@ class ReferenceCounterAccessor
   virtual ::Arcane::ReferenceCounterImpl* _internalReferenceCounter() = 0; \
   virtual void _internalAddReference() = 0; \
   [[nodiscard]] virtual bool _internalRemoveReference() = 0
-// NOTE: les classes 'friend' sont nécessaires pour l'accès au destructeur.
+// NOTE: The 'friend' classes are necessary for access to the destructor.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro pour déclarer qu'une classe utilise un compteur de
- * référence.
+ * \brief Macro to declare that a class uses a
+ * reference counter.
  *
- * La macro doit être utilisée en dehors de tout namespace. Par exemple:
+ * The macro must be used outside of any namespace. For example:
  *
  * \code
  * namespace MyNamespace
@@ -206,9 +212,9 @@ class ReferenceCounterAccessor
  * ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(MyNamespace::MyClass);
  * \endcode
  *
- * Il faudra ensuite utiliser la macro
- * ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS() dans le fichier source pour
- * définir les méthodes et types nécessaires
+ * You will then need to use the macro
+ * ARCCORE_DEFINE_REFERENCE_COUNTED_CLASS() in the source file to
+ * define the necessary methods and types
  */
 #define ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(class_name) \
   namespace Arcane \

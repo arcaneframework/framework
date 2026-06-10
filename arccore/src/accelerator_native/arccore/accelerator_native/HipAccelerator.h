@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* HipAccelerator.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Backend 'ROCM/HIP' pour les accélérateurs.                                */
+/* 'ROCM/HIP' backend for accelerators.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_HIP_HIPACCELERATOR_H
 #define ARCCORE_HIP_HIPACCELERATOR_H
@@ -34,18 +34,18 @@ namespace Arcane::Accelerator::Hip
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCCORE_HIP_EXPORT void
-arcaneCheckHipErrors(const TraceInfo& ti,hipError_t e);
+arcaneCheckHipErrors(const TraceInfo& ti, hipError_t e);
 
 extern "C++" ARCCORE_HIP_EXPORT void
-arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e);
+arcaneCheckHipErrorsNoThrow(const TraceInfo& ti, hipError_t e);
 
-//! Vérifie \a result et lance une exception en cas d'erreur
+//! Checks \a result and throws an exception if there is an error
 #define ARCCORE_CHECK_HIP(result) \
-  Arcane::Accelerator::Hip::arcaneCheckHipErrors(A_FUNCINFO,result)
+  Arcane::Accelerator::Hip::arcaneCheckHipErrors(A_FUNCINFO, result)
 
-//! Verifie \a result et affiche un message d'erreur en cas d'erreur.
+//! Checks \a result and displays an error message if there is an error.
 #define ARCCORE_CHECK_HIP_NOTHROW(result) \
-  Arcane::Accelerator::Hip::arcaneCheckHipErrorsNoThrow(A_FUNCINFO,result)
+  Arcane::Accelerator::Hip::arcaneCheckHipErrorsNoThrow(A_FUNCINFO, result)
 
 #define ARCANE_CHECK_HIP(result) ARCCORE_CHECK_HIP((result))
 #define ARCANE_CHECK_HIP_NOTHROW(result) ARCCORE_CHECK_HIP_NOTHROW((result))
@@ -53,7 +53,7 @@ arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::accelerator::Hip
+} // namespace Arcane::Accelerator::Hip
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

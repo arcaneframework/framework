@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* JSONWriter.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Ecrivain au format JSON.                                                  */
+/* JSON format writer.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,10 +17,13 @@
 #include "arccore/base/FatalErrorException.h"
 #include <limits>
 
-// Les deux lignes suivantes permettent d'utiliser des indices sur 64 bits
-// au lieu de 32 par défaut.
+// The following two lines allow using 64-bit indices
+// instead of the default 32-bit ones.
 #define RAPIDJSON_NO_SIZETYPEDEFINE
-namespace rapidjson { typedef ::std::size_t SizeType; }
+namespace rapidjson
+{
+typedef ::std::size_t SizeType;
+}
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include "arccore/common/internal/json/rapidjson/writer.h"
@@ -61,7 +64,7 @@ class JSONWriter::Impl
     Int64 size = bytes.size();
     if (size == 0)
       ARCCORE_FATAL("null size");
-    // TODO: regarder s'il faut toujours mettre 'true' et donc faire une copie.
+    // TODO: check if we always need to put 'true' and thus make a copy.
     m_writer.Key((const char*)bytes.data(), size, true);
   }
   void writeStringValue(StringView value)
@@ -72,7 +75,7 @@ class JSONWriter::Impl
       m_writer.Null();
       return;
     }
-    // TODO: regarder s'il faut toujours mettre 'true' et donc faire une copie.
+    // TODO: check if we always need to put 'true' and thus make a copy.
     m_writer.String((const char*)bytes.data(), size, true);
   }
   void writeStringValue(const std::string& value)
@@ -96,9 +99,9 @@ class JSONWriter::Impl
     writeKey(key);
     {
       m_real_ostr.str(std::string());
-      // NOTE: avec le C++11, on peut utiliser std::hexfloat comme modificateur
-      // pour écrire directement en hexadécimal flottant. Cependant ne fonctionne
-      // qu'à partir de GCC 5.0 ou visual studio 2015.
+      // NOTE: with C++11, we can use std::hexfloat as a modifier
+      // to write directly in floating hexadecimal. However, it only works
+      // starting from GCC 5.0 or Visual Studio 2015.
       // ostr << std::hexfloat;
       char buf[32];
       for (Int64 i = 0, n = view.size(); i < n; ++i) {

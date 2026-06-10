@@ -7,13 +7,13 @@
 /*---------------------------------------------------------------------------*/
 /* MessagePassingGlobal.cc                                     (C) 2000-2026 */
 /*                                                                           */
-/* Définitions globales de la composante 'message_passing' de 'Arccore'.     */
+/* Global definitions for the 'message_passing' component of 'Arccore'.      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Il est nécessaire d'inclure tous les fichiers d'en-tête qui ne sont
-// pas directement inclus par des fichiers '.cc' pour s'assurer que
-// les symboles externes sont bien définis.
+// It is necessary to include all header files that are not
+// directly included by '.cc' files to ensure that
+// external symbols are properly defined.
 #include "arccore/message_passing/MessagePassingGlobal.h"
 #include "arccore/message_passing/ITypeDispatcher.h"
 #include "arccore/message_passing/Dispatchers.h"
@@ -28,16 +28,19 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \file MessagePassingGlobal.h
  *
- * \brief Déclarations générales de la composante 'message_passing'
+ * \brief General declarations for the 'message_passing' component
  */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Espace de nommage contenant les types et déclarations qui gèrent
- * le mécanisme de parallélisme par échange de message.
+ * \brief Namespace containing the types and declarations that manage
+ * the message-passing parallelism mechanism.
  */
 namespace Arccore::MessagePassing
 {
@@ -45,7 +48,7 @@ namespace Arccore::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HipAcceleratorRuntime.cc                                    (C) 2000-2026 */
 /*                                                                           */
-/* Runtime pour 'HIP'.                                                       */
+/* Runtime for 'HIP'.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -371,7 +371,7 @@ class HipRunQueueEvent
 
  public:
 
-  // Enregistre l'événement au sein d'une RunQueue
+  // Register the event within a RunQueue
   void recordQueue(Impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
@@ -525,9 +525,9 @@ class HipRunnerRuntime
     hipPointerAttribute_t pa;
     hipError_t ret_value = hipPointerGetAttributes(&pa, ptr);
     auto mem_type = ePointerMemoryType::Unregistered;
-    // Si \a ptr n'a pas été alloué dynamiquement (i.e: il est sur la pile),
-    // hipPointerGetAttribute() retourne une erreur. Dans ce cas on considère
-    // la mémoire comme non enregistrée.
+    // If ptr has not been dynamically allocated (i.e.: it is on the stack),
+    // hipPointerGetAttribute() returns an error. In this case, we consider
+    // the memory as unregistered.
     if (ret_value == hipSuccess) {
 #if HIP_VERSION_MAJOR >= 6
       auto rocm_memory_type = pa.type;
@@ -592,8 +592,8 @@ class HipRunnerRuntime
   {
     Int32 shared_memory = orig_args.sharedMemorySize();
     if (orig_args.isCooperative()) {
-      // En mode coopératif, s'assure qu'on ne lance pas plus de blocs
-      // que le maximum qui peut résider sur le GPU.
+      // In cooperative mode, ensure that we do not launch more blocks
+      // than the maximum that can reside on the GPU.
       Int32 nb_thread = orig_args.nbThreadPerBlock();
       Int32 nb_block = orig_args.nbBlockPerGrid();
       int nb_block_per_sm = 0;
@@ -653,7 +653,7 @@ fillDevices(bool is_verbose)
     int has_managed_memory = 0;
     ARCCORE_CHECK_HIP(hipDeviceGetAttribute(&has_managed_memory, hipDeviceAttributeManagedMemory, i));
 
-    // Le format des versions dans HIP est:
+    // The format of versions in HIP is:
     // HIP_VERSION  =  (HIP_VERSION_MAJOR * 10000000 + HIP_VERSION_MINOR * 100000 + HIP_VERSION_PATCH)
 
     int runtime_version = 0;
@@ -708,9 +708,9 @@ fillDevices(bool is_verbose)
     ARCCORE_CHECK_HIP(hipDeviceGetAttribute(&memory_clock_rate, hipDeviceAttributeMemoryClockRate, i));
     o << " memoryClockRate = " << (memory_clock_rate / 1000) << " MHz\n";
 
-    // Sur AMD, la fréquence donnée pour la mémoire doit être multipliée par 8
-    // pour avoir la bande passante d'un bit du bus (comme il faut aussi diviser par 8
-    // pour avoir la valeur en octet, on supprime simplement cette division)
+    // On AMD, the frequency given for memory must be multiplied by 8
+    // to get the bandwidth of a bit of the bus (since we also have to divide by 8
+    // to get the value in bytes, we simply omit this division)
     Real memory_bandwith = (dp.memoryBusWidth * memory_clock_rate * 2.0) / 1.0e6;
     o << " MemoryBandwith = " << memory_bandwith << " GB/s\n";
 
@@ -723,9 +723,9 @@ fillDevices(bool is_verbose)
     o << " unifiedFunctionPointers = " << dp.unifiedFunctionPointers << "\n";
 #endif
 
-    // TODO: On suppose que tous les GPUs sont les mêmes et donc
-    // que le nombre de SM par GPU est le même. Cela est utilisé pour
-    // calculer le nombre de blocs en mode coopératif.
+    // TODO: We assume that all GPUs are the same and therefore
+    // that the number of SMs per GPU is the same. This is used to
+    // calculate the number of blocks in cooperative mode.
     m_multi_processor_count = dp.multiProcessorCount;
 
     std::ostringstream device_uuid_ostr;
@@ -777,9 +777,9 @@ class HipMemoryCopier
       queue->copyMemory(MemoryCopyArgs(to.bytes(), from.bytes()).addAsync(queue->isAsync()));
       return;
     }
-    // 'hipMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
-    // uniquement compte de la valeur des pointeurs. Il faudrait voir si
-    // utiliser \a from_mem et \a to_mem peut améliorer les performances.
+    // 'hipMemcpyDefault' automatically knows what to do by only considering
+    // the value of the pointers. We should see if
+    // using from_mem and to_mem can improve performance.
     ARCCORE_CHECK_HIP(hipMemcpy(to.data(), from.data(), from.bytes().size(), hipMemcpyDefault));
   }
 };
@@ -803,13 +803,13 @@ void _setAllocator(Accelerator::AcceleratorMemoryAllocatorBase* allocator)
   mrm->setAllocator(mem, allocator);
   mrm->setMemoryPool(mem, allocator->memoryPool());
 }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Cette fonction est le point d'entrée utilisé lors du chargement
-// dynamique de cette bibliothèque
+// This function is the entry point used when dynamically loading
+// this library
 extern "C" ARCCORE_EXPORT void
 arcaneRegisterAcceleratorRuntimehip(Arcane::Accelerator::RegisterRuntimeInfo& init_info)
 {

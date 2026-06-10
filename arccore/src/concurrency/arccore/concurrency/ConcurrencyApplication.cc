@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConcurrencyApplication.h                                    (C) 2000-2026 */
 /*                                                                           */
-/* Gestion des services de multi-threading d'une application Arccore.        */
+/* Management of multi-threading services for an Arccore application.        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,19 +32,22 @@
 namespace Arcane
 {
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
- * Essaie d'instancier un service implémentant \a InterfaceType avec
- * la liste de nom de services \a names.  Retourne l'instance trouvée
- * si elle existe et remplit \a found_name (si non nul) avec le nom de
- * l'instance. Dès qu'une instance est trouvée, on la retourne.
- * Retourne \a nullptr si aucune instance n'est disponible.
+ * Tries to instantiate a service implementing \a InterfaceType with
+ * the list of service names \a names. Returns the found instance
+ * if it exists and fills \a found_name (if not null) with the instance name.
+ * As soon as an instance is found, it is returned.
+ * Returns \a nullptr if no instance is available.
  */
 template <typename InterfaceType> Ref<InterfaceType> ConcurrencyApplication::
 tryCreateServiceUsingInjector(ConstArrayView<String> names, String* found_name, bool has_trace)
 {
   DependencyInjection::Injector injector;
   injector.fillWithGlobalFactories();
-  // Ajoute une instance de ITraceMng* pour les services qui en ont besoin
+  // Adds an instance of ITraceMng* for services that need it
   if (has_trace)
     injector.bind(m_trace.get());
 
@@ -67,8 +70,7 @@ tryCreateServiceUsingInjector(ConstArrayView<String> names, String* found_name, 
 void ConcurrencyApplication::
 setCoreServices(const ConcurrencyApplicationBuildInfo& build_info)
 {
-
-  // Recherche le service utilisé pour connaitre la pile d'appel
+  // Searches for the service used to know the call stack
   bool has_dbghelp = false;
   {
     String dbghelp_service_name = "DbgHelpStackTraceService";
@@ -90,9 +92,10 @@ setCoreServices(const ConcurrencyApplicationBuildInfo& build_info)
     }
   }
 
-  // Recherche le service utilisé pour connaitre les infos sur les symboles
-  // du code source. Pour l'instant, on ne supporte que LLVM et on n'active ce service
-  // que si la variable d'environnement ARCANE_LLVMSYMBOLIZER_PATH est définie.
+  // Searches for the service used to know the symbol information
+  // of the source code. For now, only LLVM is supported and this service
+  // is activated
+  // if the environment variable ARCANE_LLVMSYMBOLIZER_PATH is defined.
   {
     Impl::CoreArray<String> names;
     String found_name;
@@ -109,7 +112,7 @@ setCoreServices(const ConcurrencyApplicationBuildInfo& build_info)
     }
   }
 
-  // Recherche le service implémentant le support du multi-threading.
+  // Searches for the service implementing multi-threading support.
   {
     ConstArrayView<String> names = build_info.threadImplementationServices();
     String found_name;
@@ -123,11 +126,11 @@ setCoreServices(const ConcurrencyApplicationBuildInfo& build_info)
     m_used_thread_service_name = found_name;
   }
 
-  // Le gestionnaire de thread a pu changer et il faut donc
-  // reinitialiser le gestionnaire de trace.
+  // The thread manager may have changed and therefore
+  // the trace manager must be reinitialized.
   m_trace->resetThreadStatus();
 
-  // Recherche le service utilisé pour gérer les tâches
+  // Searches for the service used to manage tasks
   {
     Integer nb_task_thread = build_info.nbTaskThread();
     if (nb_task_thread >= 0) {

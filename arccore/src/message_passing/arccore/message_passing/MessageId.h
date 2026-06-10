@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MessageId.h                                                 (C) 2000-2025 */
 /*                                                                           */
-/* Identifiant d'un message point à point.                                   */
+/* Identifier of a point-to-point message.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGEID_H
 #define ARCCORE_MESSAGEPASSING_MESSAGEID_H
@@ -26,17 +26,21 @@
 
 namespace Arcane::MessagePassing
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \brief MessageId.
  *
- * Ces informations sont utilisées pour récupérer les informations d'un
- * message suite à un appel à mpProbe(). L'instance retournée peut-être
- * utilisée pour faire une réception via mpReceive().
+ * This information is used to retrieve the information of a
+ * message following a call to mpProbe(). The returned instance can be
+ * used to perform a reception via mpReceive().
  *
- * Une fois l'appel à mpProbe() effectué, il est possible de récupérer les
- * informations sur la source du message via sourceInfo().
+ * Once the call to mpProbe() is made, it is possible to retrieve the
+ * information about the message source via sourceInfo().
  *
- * Avec MPI, cette classe encapsule le type MPI_Message.
+ * With MPI, this class encapsulates the MPI_Message type.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 {
@@ -62,37 +66,39 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 
   using SourceInfo = MessageSourceInfo;
 
-  MessageId() : m_message(null_message){}
+  MessageId()
+  : m_message(null_message)
+  {}
 
-  MessageId(MessageSourceInfo source_info,void* amessage)
+  MessageId(MessageSourceInfo source_info, void* amessage)
   : m_source_info(source_info)
   {
     m_type = T_Ptr;
     m_message.v = amessage;
   }
 
-  MessageId(MessageSourceInfo source_info,const void* amessage)
+  MessageId(MessageSourceInfo source_info, const void* amessage)
   : m_source_info(source_info)
   {
     m_type = T_Ptr;
     m_message.cv = amessage;
   }
 
-  MessageId(MessageSourceInfo source_info,int amessage)
+  MessageId(MessageSourceInfo source_info, int amessage)
   : m_source_info(source_info)
   {
     m_type = T_Int;
     m_message.i = amessage;
   }
 
-  MessageId(MessageSourceInfo source_info,long amessage)
+  MessageId(MessageSourceInfo source_info, long amessage)
   : m_source_info(source_info)
   {
     m_type = T_Long;
     m_message.l = amessage;
   }
 
-  MessageId(MessageSourceInfo source_info,std::size_t amessage)
+  MessageId(MessageSourceInfo source_info, std::size_t amessage)
   : m_source_info(source_info)
   {
     m_type = T_SizeT;
@@ -100,7 +106,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
   }
 
   MessageId(const MessageId& rhs)
-  : m_source_info(rhs.m_source_info), m_type(rhs.m_type)
+  : m_source_info(rhs.m_source_info)
+  , m_type(rhs.m_type)
   {
     m_message.cv = rhs.m_message.cv;
   }
@@ -115,9 +122,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 
  public:
 
-  template<typename T>
+  template <typename T>
   explicit operator const T*() const { return (const T*)m_message.cv; }
-  template<typename T>
+  template <typename T>
   explicit operator T*() const { return (T*)m_message.v; }
   explicit operator int() const { return m_message.i; }
   explicit operator long() const { return m_message.l; }
@@ -128,15 +135,15 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
   //int returnValue() const { return m_source_info; }
   bool isValid() const
   {
-    if (m_type==T_Null)
+    if (m_type == T_Null)
       return false;
-    if (m_type==T_Int)
-      return m_message.i!=null_message.i;
-    if (m_type==T_Long)
-      return m_message.l!=null_message.l;
-    if (m_type==T_SizeT)
-      return m_message.st!=null_message.st;
-    return m_message.cv!=null_message.cv;
+    if (m_type == T_Int)
+      return m_message.i != null_message.i;
+    if (m_type == T_Long)
+      return m_message.l != null_message.l;
+    if (m_type == T_SizeT)
+      return m_message.st != null_message.st;
+    return m_message.cv != null_message.cv;
   }
   void* messageAsVoidPtr() const { return m_message.v; }
 
@@ -149,10 +156,10 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 
   void print(std::ostream& o) const;
 
-  //! Informations sur la source du message;
+  //! Information about the message source;
   MessageSourceInfo sourceInfo() const { return m_source_info; }
 
-  //! Positionne les informations sur la source du message;
+  //! Sets the message source information;
   void setSourceInfo(MessageSourceInfo si) { m_source_info = si; }
 
  private:
@@ -167,7 +174,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
 /*---------------------------------------------------------------------------*/
 
 inline std::ostream&
-operator<<(std::ostream& o,const MessageId& pmessage)
+operator<<(std::ostream& o, const MessageId& pmessage)
 {
   pmessage.print(o);
   return o;
@@ -176,10 +183,9 @@ operator<<(std::ostream& o,const MessageId& pmessage)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

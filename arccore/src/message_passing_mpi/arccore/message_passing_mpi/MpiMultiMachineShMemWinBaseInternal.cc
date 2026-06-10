@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiMultiMachineShMemWinBaseInternal.h                       (C) 2000-2026 */
+/* MpiMultiMachineShMemWinBaseInternal.cc                      (C) 2000-2026 */
 /*                                                                           */
-/* Classe permettant de créer des fenêtres mémoires pour un noeud de calcul. */
-/* Les segments de ces fenêtres ne sont pas contigües en mémoire et peuvent  */
-/* être redimensionnées. Un processus peut posséder plusieurs segments.      */
+/* Class allowing the creation of memory windows for a compute node.         */
+/* The segments of these windows are not contiguous in memory and can        */
+/* be resized. A process can possess multiple segments.                      */
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing_mpi/internal/MpiMultiMachineShMemWinBaseInternal.h"
@@ -25,7 +26,7 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Le sizeof_segments ne doit pas être conservé !
+//! sizeof_segments should not be preserved!
 MpiMultiMachineShMemWinBaseInternal::
 MpiMultiMachineShMemWinBaseInternal(SmallSpan<Int64> sizeof_segments, Int32 nb_segments_per_proc, Int32 sizeof_type, const MPI_Comm& comm_machine, Int32 comm_machine_rank, Int32 comm_machine_size, ConstArrayView<Int32> machine_ranks)
 : m_win_need_resize()
@@ -70,7 +71,7 @@ MpiMultiMachineShMemWinBaseInternal(SmallSpan<Int64> sizeof_segments, Int32 nb_s
   const Int32 pos_my_wins = m_comm_machine_rank * m_nb_segments_per_proc;
 
   {
-    // On crée tous les segments de tous les processus.
+    // We create all segments for all processes.
     for (Integer i = 0; i < m_comm_machine_size; ++i) {
       for (Integer j = 0; j < m_nb_segments_per_proc; ++j) {
         Int64 size_seg = 0;
@@ -99,9 +100,9 @@ MpiMultiMachineShMemWinBaseInternal(SmallSpan<Int64> sizeof_segments, Int32 nb_s
         ARCCORE_FATAL("Error with MPI_Win_shared_query() call");
       }
 
-      // Attention : L'utilisateur demande un nombre minimum d'éléments réservés.
-      // Mais MPI réserve la taille qu'il veut (effet du alloc_shared_noncontig=true).
-      // On est juste sûr que la taille qu'il a réservée est supérieure ou égale à sizeof_segment.
+      // Attention: The user requests a minimum number of reserved elements.
+      // But MPI reserves the size it wants (effect of alloc_shared_noncontig=true).
+      // We are just sure that the size it reserved is greater than or equal to sizeof_segment.
       m_reserved_part_span[i] = Span<std::byte>{ ptr_seg, size_seg };
     }
   }
@@ -426,9 +427,9 @@ executeAddToAnotherSegment()
 {
   MPI_Barrier(m_comm_machine);
 
-  // Pour chaque segment appartenant à mon processus, je regarde si quelqu'un
-  // veut le modifier.
-  // is_my_seg_edited sera utilisé à la fin de la méthode.
+  // For each segment belonging to my process, I check if someone
+  // wants to modify it.
+  // is_my_seg_edited will be used at the end of the method.
   auto is_my_seg_edited = std::make_unique<bool[]>(m_comm_machine_size);
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
     for (const Int32 rank_asked : m_target_segments) {
@@ -439,9 +440,8 @@ executeAddToAnotherSegment()
     }
   }
 
-  // Si je n'ai pas demandé de modification de segment, j'effectue uniquement
-  // les réallocations si besoin (d'autres processus peuvent me demander des
-  // réallocations).
+  // If I have not requested a segment modification, I only perform
+  // the reallocations if needed (other processes may request reallocations from me).
   if (!m_add_requested) {
     _executeRealloc();
   }
@@ -449,7 +449,7 @@ executeAddToAnotherSegment()
   else {
     m_add_requested = false;
 
-    // Un segment ne peut être modifié que par un seul thread à la fois. On vérifie cela ici :
+    // A segment can only be modified by one thread at a time. We check this here:
     for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
       const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
       const Int32 seg_needs_to_edit = m_target_segments[segment_infos_pos];
@@ -471,7 +471,7 @@ executeAddToAnotherSegment()
 
     _executeRealloc();
 
-    // On ajoute les éléments dans les segments.
+    // We add the elements into the segments.
     for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
       if (m_add_requests[num_seg].empty() || m_add_requests[num_seg].data() == nullptr) {
         continue;
@@ -480,13 +480,13 @@ executeAddToAnotherSegment()
       const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
       const Int32 target_segment_infos_pos = m_target_segments[segment_infos_pos];
       if (target_segment_infos_pos == -1) {
-        ARCCORE_FATAL("Ne devrait pas aller ici");
+        ARCCORE_FATAL("Should not go here");
       }
 
       const Int64 actual_sizeof_win = m_sizeof_used_part[target_segment_infos_pos];
       const Int64 future_sizeof_win = actual_sizeof_win + m_add_requests[num_seg].size();
 
-      // On récupère le segment à modifier.
+      // We retrieve the segment to modify.
       Span<std::byte> rank_reserved_part_span;
       {
         MPI_Aint size_seg;
@@ -504,7 +504,7 @@ executeAddToAnotherSegment()
         ARCCORE_FATAL("Bad realloc -- New size : {1} -- Needed size : {2}", rank_reserved_part_span.size(), future_sizeof_win);
       }
 
-      // On le modifie avec les éléments donnés dans la méthode requestAddToAnotherSegment().
+      // We modify it with the elements given in the requestAddToAnotherSegment() method.
       for (Int64 pos_win = actual_sizeof_win, pos_elem = 0; pos_win < future_sizeof_win; ++pos_win, ++pos_elem) {
         rank_reserved_part_span[pos_win] = m_add_requests[num_seg][pos_elem];
       }
@@ -516,7 +516,7 @@ executeAddToAnotherSegment()
   }
   MPI_Barrier(m_comm_machine);
 
-  // Vu que d'autres ont pu modifier nos segments, on recrée les vues.
+  // Since others may have modified our segments, we recreate the views.
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
     if (is_my_seg_edited[num_seg]) {
       const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
@@ -661,12 +661,12 @@ _requestRealloc(Int32 owner_pos_segment) const
 void MpiMultiMachineShMemWinBaseInternal::
 _executeRealloc()
 {
-  // Barrière importante car tout le monde doit savoir que l'on doit
-  // redimensionner un des segments que nous possédons.
+  // Important barrier because everyone must know that we must
+  // resize one of the segments we own.
   MPI_Barrier(m_comm_machine);
 
-  // Pas besoin de barrière car MPI_Win_allocate_shared() de _realloc() est
-  // bloquant.
+  // No need for a barrier because MPI_Win_allocate_shared() in _realloc() is
+  // blocking.
   _realloc();
 
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
@@ -674,11 +674,11 @@ _executeRealloc()
     m_need_resize[segment_infos_pos] = -1;
   }
 
-  // Barrière importante dans le cas où un MPI_Win_shared_query() de
-  // _reallocCollective() durerait trop longtemps (un autre processus pourrait
-  // rappeler cette méthode et remettre m_need_resize[m_owner_segment] à
-  // true => deadlock dans _reallocCollective() sur MPI_Win_allocate_shared()
-  // à cause du continue).
+  // Important barrier in case an MPI_Win_shared_query() from
+  // _reallocCollective() takes too long (another process could
+  // call this method and set m_need_resize[m_owner_segment] to
+  // true => deadlock in _reallocCollective() on MPI_Win_allocate_shared()
+  // due to the continue).
   MPI_Barrier(m_comm_machine);
 }
 
@@ -692,7 +692,7 @@ _realloc()
   MPI_Info_create(&win_info);
   MPI_Info_set(win_info, "alloc_shared_noncontig", "true");
 
-  // Chacun réalloc ses segments, si demandé.
+  // Everyone reallocates their segments, if requested.
   for (Integer rank = 0; rank < m_comm_machine_size; ++rank) {
     for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
 
@@ -704,37 +704,37 @@ _realloc()
       ARCCORE_ASSERT(m_need_resize[local_segment_infos_pos] >= 0, ("New size must be >= 0"));
       ARCCORE_ASSERT(m_need_resize[local_segment_infos_pos] % m_sizeof_type == 0, ("New size must be % sizeof type"));
 
-      // Si on doit realloc notre segment, on alloue au moins une taille de m_sizeof_type.
-      // Si ce n'est pas notre segment, taille 0 pour que MPI n'alloue rien.
+      // If we must realloc our segment, we allocate at least a size of m_sizeof_type.
+      // If it is not our segment, size 0 so that MPI allocates nothing.
       const Int64 size_seg = (m_comm_machine_rank == rank ? (m_need_resize[local_segment_infos_pos] == 0 ? m_sizeof_type : m_need_resize[local_segment_infos_pos]) : 0);
 
-      // On sauvegarde l'ancien segment pour déplacer les données.
+      // We save the old segment to move the data.
       MPI_Win old_win = m_all_mpi_win[local_segment_infos_pos];
       std::byte* ptr_new_seg = nullptr;
 
-      // Si size_seg == 0 alors ptr_seg == nullptr.
+      // If size_seg == 0 then ptr_seg == nullptr.
       int error = MPI_Win_allocate_shared(size_seg, m_sizeof_type, win_info, m_comm_machine, &ptr_new_seg, &m_all_mpi_win[local_segment_infos_pos]);
       if (error != MPI_SUCCESS) {
         MPI_Win_free(&old_win);
         ARCCORE_FATAL("Error with MPI_Win_allocate_shared() call");
       }
 
-      // Il n'y a que si c'est notre segment que l'on déplace les données.
+      // We only move the data if it is our segment.
       if (m_comm_machine_rank == rank) {
-        // On a besoin de deux infos supplémentaires :
-        // - le pointeur vers l'ancien segment (pas possible de le récupérer
-        //   via m_reserved_part_span à cause des échanges),
-        // - la taille du nouveau segment (MPI peut allouer plus que la taille
-        //   que l'on a demandée).
+        // We need two additional pieces of information:
+        // - the pointer to the old segment (not possible to retrieve
+        //   via m_reserved_part_span due to exchanges),
+        // - the size of the new segment (MPI may allocate more than the size
+        //   we requested).
         std::byte* ptr_old_seg = nullptr;
         MPI_Aint mpi_reserved_size_new_seg;
 
-        // Ancien segment.
+        // Old segment.
         {
           MPI_Aint size_old_seg;
           int size_type;
-          // Ici, ptr_seg n'est jamais == nullptr vu que l'on fait toujours un
-          // segment d'une taille d'au moins m_sizeof_type.
+          // Here, ptr_seg is never == nullptr since we always create a
+          // segment of at least m_sizeof_type size.
           error = MPI_Win_shared_query(old_win, m_comm_machine_rank, &size_old_seg, &size_type, &ptr_old_seg);
           if (error != MPI_SUCCESS || ptr_old_seg == nullptr) {
             MPI_Win_free(&old_win);
@@ -742,12 +742,12 @@ _realloc()
           }
         }
 
-        // Nouveau segment.
+        // New segment.
         {
           std::byte* ptr_seg = nullptr;
           int size_type;
-          // Ici, ptr_seg n'est jamais == nullptr vu que l'on fait toujours un
-          // segment d'une taille d'au moins m_sizeof_type.
+          // Here, ptr_seg is never == nullptr since we always create a
+          // segment of at least m_sizeof_type size.
           error = MPI_Win_shared_query(m_all_mpi_win[local_segment_infos_pos], m_comm_machine_rank, &mpi_reserved_size_new_seg, &size_type, &ptr_seg);
           if (error != MPI_SUCCESS || ptr_seg == nullptr || ptr_seg != ptr_new_seg) {
             MPI_Win_free(&old_win);
@@ -755,9 +755,8 @@ _realloc()
           }
         }
 
-        // Si le realloc est une réduction de la taille du segment (espace
-        // utilisé par l'utilisateur, si resize par exemple), on ne peut pas
-        // copier toutes les anciennes données.
+        // If the realloc is a reduction in segment size (user
+        // used space, if resize for example), we cannot copy all the old data.
         const Int64 min_size = std::min(m_need_resize[local_segment_infos_pos], m_sizeof_used_part[local_segment_infos_pos]);
 
         memcpy(ptr_new_seg, ptr_old_seg, min_size);
@@ -768,7 +767,7 @@ _realloc()
   }
   MPI_Info_free(&win_info);
 
-  // On reconstruit les spans des segments que l'on possède.
+  // We reconstruct the spans of the segments we own.
   for (Integer num_seg = 0; num_seg < m_nb_segments_per_proc; ++num_seg) {
     const Int32 segment_infos_pos = num_seg + m_comm_machine_rank * m_nb_segments_per_proc;
 

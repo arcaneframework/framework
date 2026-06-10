@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Messages.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Interface du gestionnaire des échanges de messages.                       */
+/* Interface for the message exchange manager.                               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGES_H
 #define ARCCORE_MESSAGEPASSING_MESSAGES_H
@@ -38,10 +38,10 @@ namespace Arcane::MessagePassing
   /*! gather */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
   mpGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 rank); \
-  /*! AllGather non bloquant */ \
+  /*! Non-blocking AllGather */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
   mpNonBlockingAllGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf); \
-  /*! Gather non bloquant */ \
+  /*! Non-blocking Gather */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
   mpNonBlockingGather(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 rank); \
   /*! AllGatherVariable */ \
@@ -62,13 +62,13 @@ namespace Arcane::MessagePassing
   /*! AllReduce */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
   mpAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<type> buf); \
-  /*! AllReduce non bloquant */ \
+  /*! Non-blocking AllReduce */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
   mpNonBlockingAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> recv_buf); \
   /*! Broadcast */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
   mpBroadcast(IMessagePassingMng* pm, Span<type> send_buf, Int32 rank); \
-  /*! Broadcast non bloquant */ \
+  /*! Non-blocking Broadcast */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
   mpNonBlockingBroadcast(IMessagePassingMng* pm, Span<type> send_buf, Int32 rank); \
   /*! Send */ \
@@ -92,7 +92,7 @@ namespace Arcane::MessagePassing
   /*! AllToAll */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
   mpAllToAll(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 count); \
-  /*! AllToAll non bloquant */ \
+  /*! Non-blocking AllToAll */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
   mpNonBlockingAllToAll(IMessagePassingMng* pm, Span<const type> send_buf, Span<type> recv_buf, Int32 count); \
   /*! AllToAllVariable */ \
@@ -100,7 +100,7 @@ namespace Arcane::MessagePassing
   mpAllToAllVariable(IMessagePassingMng* pm, Span<const type> send_buf, ConstArrayView<Int32> send_count, \
                      ConstArrayView<Int32> send_index, Span<type> recv_buf, \
                      ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index); \
-  /*! AllToAllVariable non bloquant */ \
+  /*! Non-blocking AllToAllVariable */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
   mpNonBlockingAllToAllVariable(IMessagePassingMng* pm, Span<const type> send_buf, ConstArrayView<Int32> send_count, \
                                 ConstArrayView<Int32> send_index, Span<type> recv_buf, \
@@ -108,8 +108,9 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une liste de requêtes.
+ * \brief Creates a list of requests.
  *
  * \sa IRequestList
  */
@@ -118,48 +119,53 @@ mpCreateRequestListRef(IMessagePassingMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Bloque tant que les requêtes de \a requests ne sont pas terminées.
+ * \brief Blocks until the requests in \a requests are finished.
  */
 ARCCORE_MESSAGEPASSING_EXPORT void
 mpWaitAll(IMessagePassingMng* pm, ArrayView<Request> requests);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Bloque jusqu'à ce que la requête \a request soit terminée.
+ * \brief Blocks until the request \a request is finished.
  */
 ARCCORE_MESSAGEPASSING_EXPORT void
 mpWait(IMessagePassingMng* pm, Request request);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Bloque jusqu'à ce qu'au moins une des requêtes de \a request soit terminée.
+ * \brief Blocks until at least one of the requests in \a request is finished.
  *
- * En retour, le tableaux \a indexes contient la valeur \a true pour indiquer
- * qu'une requête est terminée.
+ * In return, the array \a indexes contains the value \a true to indicate
+ * that a request is finished.
  */
 ARCCORE_MESSAGEPASSING_EXPORT void
 mpWaitSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Teste si des requêtes de \a request sont terminées.
+ * \brief Tests if any of the requests in \a request are finished.
  *
- * En retour, le tableaux \a indexes contient la valeur \a true pour indiquer
- * qu'une requête est terminée.
+ * In return, the array \a indexes contains the value \a true to indicate
+ * that a request is finished.
  */
 ARCCORE_MESSAGEPASSING_EXPORT void
 mpTestSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Fonction générale d'attente de terminaison de requête.
+ * \brief General function for waiting for request completion.
  *
- * En fonction de la valeur de \a wait_type, appelle mpWait(), mpWaitSome(), ou
+ * Depending on the value of \a wait_type, calls mpWait(), mpWaitSome(), or
  * mpTestSome().
  */
 ARCCORE_MESSAGEPASSING_EXPORT void
@@ -168,109 +174,116 @@ mpWait(IMessagePassingMng* pm, ArrayView<Request> requests,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Teste si un message est disponible.
+ * \brief Tests if a message is available.
  *
- * Cette fonction permet de savoir si un message issu du couple (rang,tag)
- * est disponible. \a message doit avoir été initialisé avec un couple (rang,tag)
- * (message.isRankTag() doit être vrai).
+ * This function checks if a message originating from the (rank,tag) pair
+ * is available. \a message must have been initialized with a (rank,tag) pair
+ * (message.isRankTag() must be true).
  *
- * Retourne une instance de \a MessageId.
+ * Returns an instance of \a MessageId.
  *
- * En mode non bloquant, si aucun message n'est disponible, alors
- * MessageId::isValid() vaut \a false pour l'instance retournée.
+ * In non-blocking mode, if no message is available, then
+ * MessageId::isValid() is false for the returned instance.
  *
- * La sémantique est identique à celle de MPI_Mprobe. Le message retourné est enlevé
- * de la liste des messages et donc un appel ultérieur à cette méthode avec les mêmes
- * paramètres retournera un autre message ou un message nul. Si on souhaite un
- * comportement identique à MPI_Iprobe()/MPI_Probe() alors il faut utiliser mpLegacyProbe().
+ * The semantics are identical to MPI_Mprobe. The returned message is removed
+ * from the message list, and thus a subsequent call to this method with the same
+ * parameters will return another message or a null message. If you want behavior
+ * identical to MPI_Iprobe()/MPI_Probe(), you must use mpLegacyProbe().
  */
 ARCCORE_MESSAGEPASSING_EXPORT MessageId
 mpProbe(IMessagePassingMng* pm, const PointToPointMessageInfo& message);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Teste si un message est disponible.
+ * \brief Tests if a message is available.
  *
- * Cette fonction permet de savoir si un message issu du couple (rang,tag)
- * est disponible. \a message doit avoir été initialisé avec un couple (rang,tag)
- * (message.isRankTag() doit être vrai).
+ * This function checks if a message originating from the (rank,tag) pair
+ * is available. \a message must have been initialized with a (rank,tag) pair
+ * (message.isRankTag() must be true).
  *
- * Retourne une instance de \a MessageSourceInfo. En mode non bloquant, si aucun message
- * n'est disponible, alors MessageSourceInfo::isValid() vaut \a false pour
- * l'instance retournée.
+ * Returns an instance of \a MessageSourceInfo. In non-blocking mode, if no message
+ * is available, then MessageSourceInfo::isValid() is false for
+ * the returned instance.
  *
- * La sémantique est identique à celle de MPI_Probe. Il est donc possible
- * si on appelle plusieurs fois cette fonction de retourner le même message.
- * Il n'est pas garanti non plus si on fait un mpReceive() avec l'instance retournée
- * d'avoir le même message. Pour toutes ces raisons il est préférable d'utiliser
- * la fonction mpProbe().
+ * The semantics are identical to MPI_Probe. Therefore, it is possible
+ * to return the same message if this function is called multiple times.
+ * It is also not guaranteed that if you perform an mpReceive() with the instance
+ * returned, you will get the same message. For all these reasons, it is preferable
+ * to use the mpProbe() function.
  */
 ARCCORE_MESSAGEPASSING_EXPORT MessageSourceInfo
 mpLegacyProbe(IMessagePassingMng* pm, const PointToPointMessageInfo& message);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une nouvelle instance de \a IMessagePassingMng.
+ * \brief Creates a new instance of \a IMessagePassingMng.
  *
- * \a keep est vrai si ce rang est présent dans le nouveau communicateur.
+ * \a keep is true if this rank is present in the new communicator.
  *
- * L'instance retournée doit être détruite par l'appel à l'opérateur
- * operator delele().
+ * The returned instance must be destroyed by calling the operator
+ * operator delete().
  */
 ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng*
 mpSplit(IMessagePassingMng* pm, bool keep);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Effectue une barrière
+ * \brief Performs a barrier
  *
- * Bloque tant que tous les rangs n'ont pas atteint cette appel.
+ * Blocks until all ranks have reached this call.
  */
 ARCCORE_MESSAGEPASSING_EXPORT void
 mpBarrier(IMessagePassingMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Effectue une barrière non bloquante.
+ * \brief Performs a non-blocking barrier.
  */
 ARCCORE_MESSAGEPASSING_EXPORT Request
 mpNonBlockingBarrier(IMessagePassingMng* pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une liste de messages de sérialisation.
+ * \brief Creates a serialization message list.
  *
  * \sa ISerializeMessageList
  */
 ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessageList>
 mpCreateSerializeMessageListRef(IMessagePassingMng* pm);
 
-//! Message d'envoi utilisant un ISerializer.
+//! Send message using an ISerializer.
 ARCCORE_MESSAGEPASSING_EXPORT Request
 mpSend(IMessagePassingMng* pm, const ISerializer* values, const PointToPointMessageInfo& message);
 
-//! Message de réception utilisant un ISerializer.
+//! Receive message using an ISerializer.
 ARCCORE_MESSAGEPASSING_EXPORT Request
 mpReceive(IMessagePassingMng* pm, ISerializer* values, const PointToPointMessageInfo& message);
 
-//! Message allGather() pour une sérialisation
+//! allGather() message for serialization
 ARCCORE_MESSAGEPASSING_EXPORT void
 mpAllGather(IMessagePassingMng* pm, const ISerializer* send_serializer, ISerializer* recv_serializer);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé un message de sérialisation.
+ * \brief Creates a serialization message.
  *
- * \a type est le type de message et \a target la cible.
- * Si le message est un envoi, \a target est la destination du message.
- * Si le message est une réception, \a target est la source du message.
+ * \a type is the message type and \a target is the target.
+ * If the message is a send, \a target is the message destination.
+ * If the message is a receive, \a target is the message source.
  *
  * \sa ISerializeMessageList
  */
@@ -278,7 +291,7 @@ ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessage>
 mpCreateSerializeMessage(IMessagePassingMng* pm, MessageRank target, ePointToPointMessageType type);
 
 /*!
- * \brief Créé un message de sérialisation correspondant à \a id.
+ * \brief Creates a serialization message corresponding to \a id.
  *
  * \sa ISerializeMessageList
  */
@@ -286,9 +299,9 @@ ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessage>
 mpCreateSerializeMessage(IMessagePassingMng* pm, MessageId id);
 
 /*!
- * \brief Créé un message de sérialisation en envoi.
+ * \brief Creates a serialization message for sending.
  *
- * Cette méthode est équivalente à
+ * This method is equivalent to
  * mpCreateSerializeMessage(pm, destination, ePointToPointMessageType::MsgSend).
  *
  * \sa ISerializeMessageList
@@ -297,9 +310,9 @@ ARCCORE_MESSAGEPASSING_EXPORT Ref<ISerializeMessage>
 mpCreateSendSerializeMessage(IMessagePassingMng* pm, MessageRank destination);
 
 /*!
- * \brief Créé un message de sérialisation en envoi.
+ * \brief Creates a serialization message for receiving.
  *
- * Cette méthode est équivalente à
+ * This method is equivalent to
  * mpCreateSerializeMessage(pm, source, ePointToPointMessageType::MsgReceive).
  *
  * \sa ISerializeMessageList
@@ -373,7 +386,7 @@ using Arcane::MessagePassing::mpTestSome;
 using Arcane::MessagePassing::mpWait;
 using Arcane::MessagePassing::mpWaitAll;
 using Arcane::MessagePassing::mpWaitSome;
-}
+} // namespace Arccore::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

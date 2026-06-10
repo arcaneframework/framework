@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Process.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des processus.                                                    */
+/* Process management.                                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_PROCESS_H
 #define ARCCORE_COMMON_INTERNAL_PROCESS_H
@@ -35,34 +35,34 @@ class ARCCORE_COMMON_EXPORT ProcessExecArgs
 
   enum class ExecStatus
   {
-    // Le processus fils a terminé correctement (mais peut être en erreur)
+    // The child process terminated correctly (but may have errors)
     OK,
-    //! Le fork() a échoué
+    //! fork() failed
     CanNotFork,
-    //! L'appel à pipe2() a échoué
+    //! The call to pipe2() failed
     CanNotCreatePipe,
-    // Le processus fils n'a pas terminé correctement (void waitpid())
+    // The child process did not terminate correctly (void waitpid())
     AbnormalExit
   };
 
  public:
 
-  //! Commande à exécuter. Doit correspondre à un exécutable.
+  //! Command to execute. Must correspond to an executable.
   String command() const { return m_command; }
   void setCommand(const String& v) { m_command = v; }
 
-  //! Liste des arguments
+  //! List of arguments
   ConstArrayView<String> arguments() const { return m_arguments; }
   void addArguments(const String& v) { m_arguments.add(v); }
   void setArguments(const Array<String>& v) { m_arguments = v; }
 
-  //! Chaîne de caractères à envoyer sur l'entrée standard (STDIN) du processsus.
+  //! String to send to the process's standard input (STDIN).
   ConstArrayView<Byte> inputBytes() const { return m_input_bytes; }
   void setInputBytes(ConstArrayView<Byte> s) { m_input_bytes = s; }
 
-  //! Contient le résultat de la sortie standard (STDOUT) du processus
+  //! Contains the result of the process's standard output (STDOUT).
   ConstArrayView<Byte> outputBytes() const { return m_output_bytes; }
-  //! Code de retour du processus exécuté.
+  //! Return code of the executed process.
   int exitCode() const { return m_exit_code; }
 
  private:
@@ -76,14 +76,15 @@ class ARCCORE_COMMON_EXPORT ProcessExecArgs
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe permettant d'exécuter un processus externe.
+ * \brief Class allowing the execution of an external process.
  */
 class ARCCORE_COMMON_EXPORT Process
 {
  public:
 
-  //! Exécute un processus dont les infos sont contenues dans \a args.
+  //! Executes a process whose information is contained in args.
   static ProcessExecArgs::ExecStatus execute(ProcessExecArgs& args);
 };
 

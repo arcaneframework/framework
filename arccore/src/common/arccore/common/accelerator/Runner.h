@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Runner.h                                                    (C) 2000-2025 */
 /*                                                                           */
-/* Gestion de l'exécution sur accélérateur.                                  */
+/* Execution management on accelerator.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_RUNNER_H
 #define ARCCORE_COMMON_ACCELERATOR_RUNNER_H
@@ -28,35 +28,36 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire d'exécution pour accélérateur.
+ * \brief Execution manager for accelerator.
  *
- * Cette classe utilise une sémantique par référence
+ * This class uses reference semantics
  *
- * Une instance de cette classe représente un back-end d'exécution. Il faut
- * d'abord appelé initialize() avant de pouvoir utiliser les méthodes de
- * l'instance ou alors il faut appeler l'un des constructeurs autre que le
- * constructeur par défaut. Le back-end utilisé est choisi via l'énumération
- * eExecutionPolicy. Les back-ends sont de deux types:
- * - les back-ends qui s'exécutent sur l'hôte: eExecutionPolicy::Sequential
- * et eExecutionPolicy::Thread,
- * - les back-ends qui s'exécutent sur accélérateurs : eExecutionPolicy::CUDA,
- * eExecutionPolicy::HIP et eExecutionPolicy::SYCL.
+ * An instance of this class represents an execution backend. It must be
+ * initialized using initialize() before its methods can be used, or one
+ * of the constructors other than the default constructor must be called.
+ * The backend used is chosen via the eExecutionPolicy enumeration. The
+ * backends are of two types:
+ * - backends that run on the host: eExecutionPolicy::Sequential
+ * and eExecutionPolicy::Thread,
+ * - backends that run on accelerators: eExecutionPolicy::CUDA,
+ * eExecutionPolicy::HIP and eExecutionPolicy::SYCL.
  *
- * La fonction \arcaneacc{isAcceleratorPolicy()} permet de savoir si une
- * eExecutionPolicy est associée à un accélérateur.
+ * The function \arcaneacc{isAcceleratorPolicy()} allows you to know if an
+ * eExecutionPolicy is associated with an accelerator.
  *
- * Si une instance de cette classe est associée à un accélérateur, celui-ci
- * n'est pas forcément celui utilisé par défaut pour le thread courant.
- * Pour garantir que les kernels associés à ce runner seront bien exécutés
- * sur le bon device il est nécessaire d'appeler au moins une fois
- * la méthode setAsCurrentDevice() et de le refaire si une autre partie du code
- * ou si une bibliothèque externe change l'accélérateur par défaut.
+ * If an instance of this class is associated with an accelerator, that
+ * accelerator is not necessarily the one used by default for the current thread.
+ * To ensure that the kernels associated with this runner are executed on the
+ * correct device, it is necessary to call the setAsCurrentDevice() method at
+ * least once, and to do so again if another part of the code or an external
+ * library changes the default accelerator.
  *
- * La classe Runner permet de créer des files d'exécutions (RunQueue)
- * via la fonction makeQueue(). Ces files peuvent ensuite être utilisées
- * pour lancer des commandes (RunCommand). La page \ref arcanedoc_acceleratorapi
- * décrit le fonctionnement de l'API accélérateur.
+ * The Runner class allows creating execution queues (RunQueue) via the
+ * makeQueue() function. These queues can then be used to launch commands
+ * (RunCommand). The page \ref arcanedoc_acceleratorapi describes the
+ * operation of the accelerator API.
  */
 class ARCCORE_COMMON_EXPORT Runner
 {
@@ -77,93 +78,95 @@ class ARCCORE_COMMON_EXPORT Runner
  public:
 
   /*!
-   * \brief Créé un gestionnaire d'exécution non initialisé.
+   * \brief Creates an uninitialized execution manager.
    *
-   * Il faudra appeler initialize() avant de pouvoir utiliser l'instance
+   * initialize() must be called before the instance can be used
    */
   Runner();
-  //! Créé et initialise un gestionnaire pour l'accélérateur \a p
+  //! Creates and initializes a manager for the accelerator \a p
   explicit Runner(eExecutionPolicy p);
-  //! Créé et initialise un gestionnaire pour l'accélérateur \a p et l'accélérateur \a device
+  //! Creates and initializes a manager for the accelerator \a p and the device \a device
   Runner(eExecutionPolicy p, DeviceId device);
 
  public:
 
-  //! Politique d'exécution associée
+  //! Associated execution policy
   eExecutionPolicy executionPolicy() const;
 
-  //! Initialise l'instance. Cette méthode ne doit être appelée qu'une seule fois.
+  //! Initializes the instance. This method must be called only once.
   void initialize(eExecutionPolicy v);
 
-  //! Initialise l'instance. Cette méthode ne doit être appelée qu'une seule fois.
+  //! Initializes the instance. This method must be called only once.
   void initialize(eExecutionPolicy v, DeviceId device);
 
-  //! Indique si l'instance a été initialisée
+  //! Indicates whether the instance has been initialized
   bool isInitialized() const;
 
   /*!
-   * \brief Indique si on autorise la création de RunQueue depuis plusieurs threads.
+   * \brief Indicates whether multiple threads are allowed to create RunQueues.
    *
-   * \deprecated La création de file est toujours thread-safe depuis la version
-   * 3.15 de Arcane.
+   * \deprecated Queue creation is always thread-safe since Arcane version
+   * 3.15.
    */
   ARCCORE_DEPRECATED_REASON("Y2025: this method is a no op. Concurrent queue creation is always thread-safe")
   void setConcurrentQueueCreation(bool v);
 
-  //! Indique si la création concurrent de plusieurs RunQueue est autorisé
+  //! Indicates whether concurrent creation of multiple RunQueues is allowed
   bool isConcurrentQueueCreation() const;
 
   /*!
-   * \brief Temps total passé dans les commandes associées à cette instance.
+   * \brief Total time spent in commands associated with this instance.
    *
-   * Ce temps n'est significatif que si les RunQueue sont synchrones.
+   * This time is only meaningful if the RunQueues are synchronous.
    */
   double cumulativeCommandTime() const;
 
-  //! Positionne la politique d'exécution des réductions
+  //! Sets the execution policy for reductions
   ARCCORE_DEPRECATED_REASON("Y2025: this method is a no op. reduce policy is always eDeviceReducePolicy::Grid")
   void setDeviceReducePolicy(eDeviceReducePolicy v);
 
-  //! politique d'exécution des réductions
+  //! Reduction execution policy
   eDeviceReducePolicy deviceReducePolicy() const;
 
-  //! Positionne un conseil sur la gestion d'une zone mémoire
+  //! Sets memory advice for a memory region
   void setMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice);
 
-  //! Supprime un conseil sur la gestion d'une zone mémoire
+  //! Unsets memory advice for a memory region
   void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice);
 
-  //! Device associé à cette instance.
+  //! Device associated with this instance.
   DeviceId deviceId() const;
 
   /*!
-   * \brief Positionne le device associé à cette instance comme le device par défaut du contexte.
+   * \brief Sets the device associated with this instance as the default
+   * context device.
    *
-   * Cet appel est équivalent à cudaSetDevice() ou hipSetDevice();
+   * This call is equivalent to cudaSetDevice() or hipSetDevice();
    */
   void setAsCurrentDevice();
 
-  //! Information sur le device associé à cette instance.
+  //! Information about the device associated with this instance.
   const DeviceInfo& deviceInfo() const;
 
-  //! Information sur le device associé à cette instance.
+  //! Information about the device associated with this instance.
   DeviceMemoryInfo deviceMemoryInfo() const;
 
-  //! Remplit \a attr avec les informations concernant la zone mémoire pointée par \a ptr
+  //! Fills \a attr with information concerning the memory region pointed to by \a ptr
   void fillPointerAttribute(PointerAttribute& attr, const void* ptr);
 
  public:
 
   /*!
-   * \brief Liste des devices pour la politique d'exécution \a policy.
+   * \brief List of devices for the execution policy \a policy.
    *
-   * Si le runtime associé n'a pas encore été initialisé, cette méthode retourne \a nullptr.
+   * If the associated runtime has not yet been initialized, this method
+   * returns \a nullptr.
    */
   static const IDeviceInfoList* deviceInfoList(eExecutionPolicy policy);
 
  private:
 
-  // La création est réservée aux méthodes globales makeQueue()
+  // Creation is reserved for the global methods makeQueue()
   static RunQueue _makeQueue(const Runner& runner)
   {
     return RunQueue(runner, true);
@@ -183,7 +186,7 @@ class ARCCORE_COMMON_EXPORT Runner
 
  public:
 
-  //! API interne à %Arcane
+  //! Internal API for %Arcane
   RunnerInternal* _internalApi();
 
  private:
@@ -208,9 +211,9 @@ class ARCCORE_COMMON_EXPORT Runner
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Créé une file associée à \a runner.
+ * \brief Creates a queue associated with \a runner.
  *
- * Cet appel est thread-safe.
+ * This call is thread-safe.
  */
 inline RunQueue
 makeQueue(const Runner& runner)
@@ -220,10 +223,11 @@ makeQueue(const Runner& runner)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une file associée à \a runner.
+ * \brief Creates a queue associated with \a runner.
  *
- * Cet appel est thread-safe.
+ * This call is thread-safe.
  */
 inline RunQueue
 makeQueue(const Runner* runner)
@@ -234,10 +238,11 @@ makeQueue(const Runner* runner)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une file associée à \a runner avec les propriétés \a bi.
+ * \brief Creates a queue associated with \a runner with properties \a bi.
  *
- * Cet appel est thread-safe.
+ * This call is thread-safe.
  */
 inline RunQueue
 makeQueue(const Runner& runner, const RunQueueBuildInfo& bi)
@@ -247,10 +252,11 @@ makeQueue(const Runner& runner, const RunQueueBuildInfo& bi)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une file associée à \a runner avec les propriétés \a bi.
+ * \brief Creates a queue associated with \a runner with properties \a bi.
  *
- * Cet appel est thread-safe.
+ * This call is thread-safe.
  */
 inline RunQueue
 makeQueue(const Runner* runner, const RunQueueBuildInfo& bi)
@@ -261,11 +267,13 @@ makeQueue(const Runner* runner, const RunQueueBuildInfo& bi)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une référence sur file avec la politique d'exécution par défaut de \a runner.
+ * \brief Creates a reference to a queue with the default execution policy
+ * of \a runner.
  *
- * Si la file est temporaire, il est préférable d'utiliser makeQueue() à la place
- * pour éviter une allocation inutile.
+ * If the queue is temporary, it is preferable to use makeQueue() instead
+ * to avoid unnecessary allocation.
  */
 inline Ref<RunQueue>
 makeQueueRef(const Runner& runner)
@@ -275,11 +283,13 @@ makeQueueRef(const Runner& runner)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une référence sur file avec la politique d'exécution par défaut de \a runner.
+ * \brief Creates a reference to a queue with the default execution policy
+ * of \a runner.
  *
- * Si la file est temporaire, il est préférable d'utiliser makeQueue() à la place
- * pour éviter une allocation inutile.
+ * If the queue is temporary, it is preferable to use makeQueue() instead
+ * to avoid unnecessary allocation.
  */
 inline Ref<RunQueue>
 makeQueueRef(Runner& runner, const RunQueueBuildInfo& bi)
@@ -289,11 +299,13 @@ makeQueueRef(Runner& runner, const RunQueueBuildInfo& bi)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une référence sur file avec la politique d'exécution par défaut de \a runner.
+ * \brief Creates a reference to a queue with the default execution policy
+ * of \a runner.
  *
- * Si la file est temporaire, il est préférable d'utiliser makeQueue() à la place
- * pour éviter une allocation inutile.
+ * If the queue is temporary, it is preferable to use makeQueue() instead
+ * to avoid unnecessary allocation.
  */
 inline Ref<RunQueue>
 makeQueueRef(Runner* runner)
@@ -310,4 +322,4 @@ makeQueueRef(Runner* runner)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* PointToPointMessageInfo.cc                                  (C) 2000-2025 */
 /*                                                                           */
-/* Informations pour les messages point à point.                             */
+/* Information for point-to-point messages.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,9 +27,9 @@ namespace Arcane::MessagePassing
 void PointToPointMessageInfo::
 print(std::ostream& o) const
 {
-  if (m_type==Type::T_Null)
+  if (m_type == Type::T_Null)
     o << "(null)";
-  else if (m_type==Type::T_RankTag)
+  else if (m_type == Type::T_RankTag)
     o << "(destination=" << m_destination_rank << ",emiter=" << m_emiter_rank
       << ",tag=" << m_tag << ")";
   else
@@ -39,7 +39,7 @@ print(std::ostream& o) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

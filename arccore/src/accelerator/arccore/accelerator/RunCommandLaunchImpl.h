@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandLaunchImpl.h                                      (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation d'une RunCommand pour le parallélisme hiérarchique.        */
+/* Implementation of a RunCommand for hierarchical parallelism.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_RUNCOMMANDLAUNCHIMPL_H
 #define ARCCORE_ACCELERATOR_RUNCOMMANDLAUNCHIMPL_H
@@ -32,9 +32,10 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations d'une boucle utilisant le parallélisme hiérarchique
- * sur l'hôte.
+ * \brief Information of a loop using hierarchical parallelism
+ * on the host.
  */
 template <typename IndexType_>
 class HostLaunchLoopRangeBase
@@ -50,20 +51,20 @@ class HostLaunchLoopRangeBase
 
  public:
 
-  //! Nombre d'éléments à traiter
+  //! Number of elements to process
   constexpr IndexType nbElement() const { return m_total_size; }
-  //! Taille d'un bloc
+  //! Block size
   constexpr IndexType blockSize() const { return m_block_size; }
-  //! Nombre de blocs
+  //! Number of blocks
   constexpr Int32 nbBlock() const { return m_nb_block; }
-  //! Nombre d'éléments du dernier bloc
+  //! Number of elements in the last block
   constexpr IndexType lastBlockSize() const { return m_last_block_size; }
-  //! Nombre d'éléments actifs pour le i-ème bloc
+  //! Number of active items for the i-th block
   constexpr IndexType nbActiveItem(Int32 i) const
   {
     return ((i + 1) != m_nb_block) ? m_block_size : m_last_block_size;
   }
-  //! Synchronizer de la grille (non nul uniquement en multi-thread coopératif)
+  //! Grid synchronizer (non-null only in cooperative multi-threading)
   ThreadGridSynchronizer* threadGridSynchronizer() const
   {
     return m_thread_grid_synchronizer;
@@ -75,7 +76,7 @@ class HostLaunchLoopRangeBase
 
  private:
 
-  //! Cette instance est gérée par arcaneParallelFor(HostLaunchLoopRange<>...)
+  //! This instance is managed by arcaneParallelFor(HostLaunchLoopRange<>...)
   ThreadGridSynchronizer* m_thread_grid_synchronizer = nullptr;
   IndexType m_total_size = 0;
   IndexType m_block_size = 0;
@@ -145,15 +146,15 @@ class WorkGroupLoopContextBuilder
 
 #if defined(ARCCORE_COMPILING_SYCL)
 
-// Pour indiquer qu'il faut toujours utiliser sycl::nd_item (et jamais sycl::id)
-// comme argument avec 'WorkGroupLoopRange.
+// To indicate that sycl::nd_item must always be used (and never sycl::id)
+// as an argument with 'WorkGroupLoopRange.
 template <typename IndexType_>
 class IsAlwaysUseSyclNdItem<StridedLoopRanges<WorkGroupLoopRange<IndexType_>>>
 : public std::true_type
 {
 };
-// Pour indiquer qu'il faut toujours utiliser sycl::nd_item (et jamais sycl::id)
-// comme argument avec 'CooperativeWorkGroupLoopRange.
+// To indicate that sycl::nd_item must always be used (and never sycl::id)
+// as an argument with 'CooperativeWorkGroupLoopRange.
 template <typename IndexType_>
 class IsAlwaysUseSyclNdItem<StridedLoopRanges<CooperativeWorkGroupLoopRange<IndexType_>>>
 : public std::true_type
@@ -167,13 +168,13 @@ class IsAlwaysUseSyclNdItem<StridedLoopRanges<CooperativeWorkGroupLoopRange<Inde
 
 /*!
  * \internal
- * \brief Classe pour exécuter en séquentiel sur l'hôte une partie de la boucle.
+ * \brief Class to execute a portion of the loop sequentially on the host.
  */
 class WorkGroupSequentialForHelper
 {
  public:
 
-  //! Applique le fonctor \a func sur une boucle séqentielle.
+  //! Applies the functor \a func on a sequential loop.
   template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> static void
   apply(Int32 begin_index, Int32 nb_loop, HostLaunchLoopRange<LoopBoundType> bounds,
         const Lambda& func, RemainingArgs... remaining_args)
@@ -183,9 +184,9 @@ class WorkGroupSequentialForHelper
     const Int32 group_size = bounds.blockSize();
     Int32 loop_index = begin_index * group_size;
     for (Int32 i = begin_index; i < (begin_index + nb_loop); ++i) {
-      // Pour la dernière itération de la boucle, le nombre d'éléments actifs peut-être
-      // inférieur à la taille d'un groupe si \a total_nb_element n'est pas
-      // un multiple de \a group_size.
+      // For the last loop iteration, the number of active elements may be
+      // less than the group size if \a total_nb_element is not
+      // a multiple of \a group_size.
       Int32 nb_active = bounds.nbActiveItem(i);
       LoopIndexType li(loop_index, i, group_size, nb_active, bounds.nbElement(), bounds.nbBlock(), bounds.threadGridSynchronizer());
       func(li, remaining_args...);
@@ -201,14 +202,14 @@ class WorkGroupSequentialForHelper
 
 #if defined(ARCCORE_COMPILING_CUDA_OR_HIP)
 
-// On utilise 'Argument dependent lookup' pour trouver 'arcaneGetLoopIndexCudaHip'
+// We use 'Argument dependent lookup' to find 'arcaneGetLoopIndexCudaHip'
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> __global__ static void
 doHierarchicalLaunchCudaHip(LoopBoundType bounds, Lambda func, RemainingArgs... remaining_args)
 {
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
 
   CudaHipKernelRemainingArgsHelper::applyAtBegin(i, remaining_args...);
-  // TODO: regarder s'il faut faire ce test
+  // TODO: check if this test is necessary
   if (i < bounds.nbOriginalElement()) {
     func(WorkGroupLoopContextBuilder::build(bounds.originalLoop()), remaining_args...);
   }
@@ -230,7 +231,7 @@ class doHierarchicalLaunchSycl
   {
     Int32 i = static_cast<Int32>(x.get_global_id(0));
     SyclKernelRemainingArgsHelper::applyAtBegin(x, shared_memory, remaining_args...);
-    // TODO: regarder s'il faut faire ce test
+    // TODO: check if this test is necessary
     if (i < bounds.nbOriginalElement()) {
       func(WorkGroupLoopContextBuilder::build(bounds.originalLoop(), x), remaining_args...);
     }
@@ -242,18 +243,19 @@ class doHierarchicalLaunchSycl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique la lambda \a func sur une boucle \a bounds.
+ * \brief Applies the lambda \a func on a loop \a bounds.
  *
- * La lambda \a func est appliqué à la commande \a command.
- * \a bound est le type de la boucle. Les types supportés sont:
+ * The lambda \a func is applied to the \a command.
+ * \a bound is the loop type. Supported types are:
  *
  * - WorkGroupLoopRange
  * - CooperativeWorkGroupLoopRange
  *
- * Les arguments supplémentaires \a other_args sont utilisés pour supporter
- * des fonctionnalités telles que les réductions (ReducerSum2, ReducerMax2, ...)
- * ou la gestion de la mémoire locale (via LocalMemory).
+ * Additional arguments \a other_args are used to support
+ * features such as reductions (ReducerSum2, ReducerMax2, ...)
+ * or local memory management (via LocalMemory).
  */
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
 _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
@@ -263,9 +265,9 @@ _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
   if (nb_orig_element == 0)
     return;
   const eExecutionPolicy exec_policy = command.executionPolicy();
-  // En mode coopératif, il faut toujours appeler setBlockSize()
-  // pour être certain que la taille de bloc est cohérente sur l'hôte
-  // (en séquentiel, il ne faut qu'un seul bloc dans ce cas).
+  // In cooperative mode, setBlockSize() must always be called
+  // to ensure that the block size is consistent on the host
+  // (in sequential mode, only one block is needed in this case).
   if ((bounds.blockSize() == 0) || bounds.isCooperativeLaunch())
     bounds.setBlockSize(command);
   using TrueLoopBoundType = StridedLoopRanges<LoopBoundType>;
@@ -308,8 +310,9 @@ _doHierarchicalLaunch(RunCommand& command, LoopBoundType bounds,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour conserver les arguments d'une RunCommand.
+ * \brief Class to retain the arguments of a RunCommand.
  */
 template <typename LoopBoundType, typename... RemainingArgs>
 class ExtendedLaunchRunCommand
@@ -334,8 +337,9 @@ class ExtendedLaunchRunCommand
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe pour gérer le lancement d'un noyau de calcul hiérarchique.
+ * \brief Class to manage the launch of a hierarchical compute kernel.
  */
 template <typename LoopBoundType, typename... RemainingArgs>
 class ExtendedLaunchLoop
@@ -377,9 +381,10 @@ operator<<(ExtendedLaunchRunCommand<LoopBoundType, RemainingArgs...>&& nr, const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Applique le fonctor \a func sur une boucle séqentielle.
+ * \brief Applies the functor \a func on a sequential loop.
  */
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
 arccoreSequentialFor(HostLaunchLoopRange<LoopBoundType> bounds, const Lambda& func, const RemainingArgs&... remaining_args)
@@ -389,9 +394,10 @@ arccoreSequentialFor(HostLaunchLoopRange<LoopBoundType> bounds, const Lambda& fu
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Applique le fonctor \a func sur une boucle parallèle.
+ * \brief Applies the functor \a func on a parallel loop.
  */
 template <typename LoopBoundType, typename Lambda, typename... RemainingArgs> void
 arccoreParallelFor(HostLaunchLoopRange<LoopBoundType> bounds, ForLoopRunInfo run_info,

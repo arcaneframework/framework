@@ -35,10 +35,10 @@
 #include "arccore/alina/Profiler.h"
 #include "arccore/alina/AlinaUtils.h"
 
-// Pour test compilation uniquement
+// For compilation test only
 #include "arccore/alina/DistributedSolver.h"
 
-// Pour test compilation uniquement
+// For compilation test only
 #include "arccore/alina/DistributedRelaxationRuntime.h"
 
 #include "DomainPartition.h"

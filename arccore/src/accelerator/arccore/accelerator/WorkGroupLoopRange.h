@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* WorkGroupLoopRange.h                                        (C) 2000-2026 */
 /*                                                                           */
-/* Boucle pour le parallélisme hiérarchique.                                 */
+/* Loop for hierarchical parallelism.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_WORKGROUPLOOPRANGE_H
 #define ARCCORE_ACCELERATOR_WORKGROUPLOOPRANGE_H
@@ -38,7 +38,7 @@ class WorkGroupSequentialForHelper;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Classe pour gérer la synchronisation de grille en multi-thread;
+//! Class to manage grid synchronization in multi-thread;
 class ThreadGridSynchronizer
 {
  private:
@@ -296,8 +296,9 @@ class SyclDeviceIndexes
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère pour l'hôte un WorkItem dans un WorkGroupLoopRange ou
+ * \brief Manages a WorkItem on the host within a WorkGroupLoopRange or
  * CooperativeWorkGroupLoopRange.
  */
 template <typename IndexType_>
@@ -311,7 +312,7 @@ class HostWorkItem
 
  private:
 
-  //! Constructeur pour l'hôte
+  //! Constructor for the host
   constexpr ARCCORE_HOST_DEVICE HostWorkItem(IndexType loop_index, Int32 nb_active_item)
   : m_loop_index(loop_index)
   , m_nb_active_item(nb_active_item)
@@ -319,13 +320,13 @@ class HostWorkItem
 
  public:
 
-  //! Rang du WorkItem actif dans son WorkGroup.
+  //! Rank of the active WorkItem in its WorkGroup.
   constexpr Int32 rankInBlock() const { return 0; }
 
-  //! Indique si on s'exécute sur un accélérateur
+  //! Indicates if running on a device
   static constexpr bool isDevice() { return false; }
 
-  //! Indexes de la boucle gérés par ce WorkItem
+  //! Loop indexes managed by this WorkItem
   constexpr HostIndexes<IndexType> linearIndexes() const
   {
     return HostIndexes<IndexType>(m_loop_index, m_nb_active_item);
@@ -339,9 +340,10 @@ class HostWorkItem
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère pour l'hôte un groupe de WorkItem dans un WorkGroupLoopRange
- * ou un CooperativeWorkGroupLoopRange.
+ * \brief Manages a block of WorkItems on the host within a WorkGroupLoopRange
+ * or a CooperativeWorkGroupLoopRange.
  */
 class HostWorkItemBlock
 {
@@ -349,7 +351,7 @@ class HostWorkItemBlock
 
  private:
 
-  //! Constructeur pour l'hôte
+  //! Constructor for the host
   constexpr ARCCORE_HOST_DEVICE HostWorkItemBlock(Int32 group_index, Int32 group_size)
   : m_group_size(group_size)
   , m_group_index(group_index)
@@ -357,16 +359,16 @@ class HostWorkItemBlock
 
  public:
 
-  //! Rang du groupe du WorkItem dans la liste des WorkGroup.
+  //! Rank of the WorkItem group in the list of WorkGroups.
   constexpr Int32 groupRank() const { return m_group_index; }
 
-  //! Nombre de WorkItem dans un WorkGroup.
+  //! Number of WorkItems in a WorkGroup.
   constexpr Int32 groupSize() const { return m_group_size; }
 
-  //! Indique si on s'exécute sur un accélérateur
+  //! Indicates if running on a device
   static constexpr bool isDevice() { return false; }
 
-  //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
+  //! Blocks until all \a WorkItems in the group have arrived here.
   void barrier() {}
 
  private:
@@ -382,9 +384,10 @@ class HostWorkItemBlock
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère pour un device CUDA ou HIP un WorkItem dans un
- * WorkGroupLoopRange ou un CooperativeWorkGroupLoopRange.
+ * \brief Manages a WorkItem on a CUDA or HIP device within a
+ * WorkGroupLoopRange or a CooperativeWorkGroupLoopRange.
  */
 template <typename IndexType_>
 class DeviceWorkItem
@@ -398,10 +401,10 @@ class DeviceWorkItem
  private:
 
   /*!
-   * \brief Constructeur pour le device.
+   * \brief Constructor for the device.
    *
-   * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
-   * récupéré via cooperative_groups::this_thread_block()
+   * This constructor does not need specific information as everything is
+   * retrieved via cooperative_groups::this_thread_block()
    */
   explicit __device__ DeviceWorkItem(IndexType total_size)
   : m_thread_block(cooperative_groups::this_thread_block())
@@ -410,10 +413,10 @@ class DeviceWorkItem
 
  public:
 
-  //! Rang du WorkItem dans son WorkGroup.
+  //! Rank of the WorkItem in its WorkGroup.
   __device__ Int32 rankInBlock() const { return m_thread_block.thread_index().x; }
 
-  //! Indique si on s'exécute sur un accélérateur
+  //! Indicates if running on a device
   static constexpr __device__ bool isDevice() { return true; }
 
   constexpr __device__ DeviceIndexes<IndexType> linearIndexes() const
@@ -430,8 +433,9 @@ class DeviceWorkItem
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère un bloc de WorkItem dans un WorkGroupLoopRange pour un device CUDA ou ROCM.
+ * \brief Manages a WorkItem block in a WorkGroupLoopRange for a CUDA or ROCM device.
  */
 class DeviceWorkItemBlock
 {
@@ -440,10 +444,10 @@ class DeviceWorkItemBlock
  private:
 
   /*!
-   * \brief Constructeur pour le device.
+   * \brief Constructor for the device.
    *
-   * Ce constructeur n'a pas besoin d'informations spécifiques car tout est
-   * récupéré via cooperative_groups::this_thread_block()
+   * This constructor does not need specific information because everything is
+   * retrieved via cooperative_groups::this_thread_block()
    */
   explicit __device__ DeviceWorkItemBlock()
   : m_thread_block(cooperative_groups::this_thread_block())
@@ -451,16 +455,16 @@ class DeviceWorkItemBlock
 
  public:
 
-  //! Rang du groupe du WorkItem dans la liste des WorkGroup.
+  //! Rank of the WorkItem group in the list of WorkGroups.
   __device__ Int32 groupRank() const { return m_thread_block.group_index().x; }
 
-  //! Nombre de WorkItem dans un WorkGroup.
+  //! Number of WorkItems in a WorkGroup.
   __device__ Int32 groupSize() { return m_thread_block.group_dim().x; }
 
-  //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
+  //! Blocks until all \a WorkItems in the group have arrived here.
   __device__ void barrier() { m_thread_block.sync(); }
 
-  //! Indique si on s'exécute sur un accélérateur
+  //! Indicates if running on an accelerator
   static constexpr __device__ bool isDevice() { return true; }
 
  private:
@@ -472,8 +476,9 @@ class DeviceWorkItemBlock
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base pour WorkGroupLoopContext et CooperativeWorkGroupLoopContext.
+ * \brief Base class for WorkGroupLoopContext and CooperativeWorkGroupLoopContext.
  */
 template <typename IndexType_>
 class WorkGroupLoopContextBase
@@ -484,7 +489,7 @@ class WorkGroupLoopContextBase
 
  protected:
 
-  //! Ce constructeur est utilisé dans l'implémentation hôte.
+  //! This constructor is used in the host implementation.
   constexpr WorkGroupLoopContextBase(IndexType loop_index, Int32 group_index, Int32 group_size,
                                      Int32 nb_active_item, IndexType total_size)
   : m_loop_index(loop_index)
@@ -495,8 +500,9 @@ class WorkGroupLoopContextBase
   {
   }
 
-  // Ce constructeur n'est utilisé que sur le device
-  // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
+  // This constructor is only used on the device
+  // It does nothing because useful values are retrieved via
+  // cooperative_groups::this_thread_block()
   explicit constexpr ARCCORE_DEVICE WorkGroupLoopContextBase(IndexType total_size)
   : m_total_size(total_size)
   {}
@@ -504,14 +510,14 @@ class WorkGroupLoopContextBase
  public:
 
 #if defined(ARCCORE_DEVICE_CODE) && !defined(ARCCORE_COMPILING_SYCL)
-  //! Groupe courant. Pour CUDA/ROCM, il s'agit d'un bloc de threads.
+  //! Current group. For CUDA/ROCM, this is a thread block.
   __device__ DeviceWorkItemBlock block() const { return DeviceWorkItemBlock(); }
-  //! WorkItem actif. Pour CUDA/ROCM, il s'agit d'un thread.
+  //! Active WorkItem. For CUDA/ROCM, this is a thread.
   __device__ DeviceWorkItem<IndexType> workItem() const { return DeviceWorkItem<IndexType>(m_total_size); }
 #else
-  //! Groupe courant
+  //! Current group
   HostWorkItemBlock block() const { return HostWorkItemBlock(m_group_index, m_group_size); }
-  //! WorkItem actif
+  //! Active WorkItem
   HostWorkItem<IndexType> workItem() const { return { m_loop_index, m_nb_active_item }; }
 #endif
 
@@ -526,19 +532,20 @@ class WorkGroupLoopContextBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Contexte d'exécution d'une commande sur un ensemble de blocs.
+ * \brief Execution context of a command on a set of blocks.
  *
- * Cette classe est utilisée pour l'hôte (séquentiel et multi-thread) et
- * pour CUDA et ROCM/HIP.
- * La méthode group() est différente sur accélérateur et sur l'hôte ce qui
- * permet de particulariser le traitement de la commande.
+ * This class is used for the host (sequential and multi-threaded) and
+ * for CUDA and ROCM/HIP.
+ * The group() method is different on the accelerator and on the host, which
+ * allows for specialized command processing.
  */
 template <typename IndexType_>
 class WorkGroupLoopContext
 : public WorkGroupLoopContextBase<IndexType_>
 {
-  // Pour accéder aux constructeurs
+  // For accessing constructors
   template <typename T> friend class WorkGroupLoopRange;
   friend Impl::WorkGroupSequentialForHelper;
   friend Impl::WorkGroupLoopContextBuilder;
@@ -550,7 +557,7 @@ class WorkGroupLoopContext
 
  private:
 
-  //! Ce constructeur est utilisé dans l'implémentation hôte.
+  //! This constructor is used in the host implementation.
   explicit constexpr WorkGroupLoopContext(IndexType loop_index, Int32 group_index, Int32 group_size,
                                           Int32 nb_active_item, IndexType total_size,
                                           [[maybe_unused]] Int32 nb_block,
@@ -559,8 +566,9 @@ class WorkGroupLoopContext
   {
   }
 
-  // Ce constructeur n'est utilisé que sur le device
-  // Il ne fait rien car les valeurs utiles sont récupérées via cooperative_groups::this_thread_block()
+  // This constructor is only used on the device
+  // It does nothing because useful values are retrieved via
+  // cooperative_groups::this_thread_block()
   explicit constexpr ARCCORE_DEVICE WorkGroupLoopContext(IndexType total_size)
   : BaseClass(total_size)
   {}
@@ -572,31 +580,32 @@ class WorkGroupLoopContext
 #if defined(ARCCORE_COMPILING_SYCL)
 
 /*
- * Implémentation pour SYCL.
+ * Implementation for SYCL.
  *
- * L'équivalent de \a cooperative_groups::thread_group() avec SYCL
- * est le \a sycl::nd_item<1>. Il est plus compliqué à utiliser pour deux
- * raisons:
+ * The equivalent of \a cooperative_groups::thread_group() with SYCL
+ * is \a sycl::nd_item<1>. It is more complicated to use for two
+ * reasons:
  *
- * - il n'y a pas dans SYCL un équivalent de
- * \a cooperative_groups::this_thread_block(). Il faut utiliser la valeur
- * de \a sycl::nb_item<1> passé en argument du noyau de calcul.
- * - il n'y a pas de constructeurs par défaut pour \a sycl::nb_item<1>.
+ * - there is no equivalent of \a cooperative_groups::this_thread_block()
+ * in SYCL. You must use the value of \a sycl::nb_item<1> passed as an
+ * argument to the compute kernel.
+ * - there are no default constructors for \a sycl::nb_item<1>.
  *
- * Pour contourner ces deux problèmes, on utilise un type spécifique pour
- * gérer les noyaux en SYCL. Heureusement, il est possible d'utiliser les
- * lambda template avec SYCL. On utilise donc deux types pour gérer
- * les noyaux selon qu'on s'exécute sur le device SYCL ou sur l'hôte.
+ * To circumvent these two problems, a specific type is used to manage
+ * kernels in SYCL. Fortunately, it is possible to use lambda templates with
+ * SYCL. Therefore, two types are used to manage kernels depending on whether
+ * running on the SYCL device or on the host.
  *
- * TODO: regarder si avec la macro SYCL_DEVICE_ONLY il n'est pas possible
- * d'avoir le même type comportant des champs différents
+ * TODO: check if it is possible with the SYCL_DEVICE_ONLY macro to have the
+ * same type containing different fields
  */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère pour un device Sycl un WorkItem dans un WorkGroupLoopRange
- * ou un CooperativeWorkGroupLoopRange.
+ * \brief Manages a WorkItem for a Sycl device in a WorkGroupLoopRange or
+ * a CooperativeWorkGroupLoopRange.
  */
 template <typename IndexType_>
 class SyclDeviceWorkItem
@@ -617,10 +626,10 @@ class SyclDeviceWorkItem
 
  public:
 
-  //! Rang du WorkItem actif dans le WorkGroup.
+  //! Rank of the active WorkItem in the WorkGroup.
   Int32 rankInBlock() const { return static_cast<Int32>(m_nd_item.get_local_id(0)); }
 
-  //! Indique si on s'exécute sur un accélérateur
+  //! Indicates if running on an accelerator
   static constexpr bool isDevice() { return true; }
 
   SyclDeviceIndexes<IndexType> linearIndexes() const
@@ -636,8 +645,9 @@ class SyclDeviceWorkItem
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gère un bloc de WorkItem dans un WorkGroupLoopRange pour un device Sycl.
+ * \brief Manages a WorkItem block in a WorkGroupLoopRange for a Sycl device.
  */
 class SyclDeviceWorkItemBlock
 {
@@ -652,16 +662,16 @@ class SyclDeviceWorkItemBlock
 
  public:
 
-  //! Rang du groupe du WorkItem dans la liste des WorkGroup.
+  //! Rank of the WorkItem group in the list of WorkGroups.
   Int32 groupRank() const { return static_cast<Int32>(m_nd_item.get_group(0)); }
 
-  //! Nombre de WorkItem dans un WorkGroup.
+  //! Number of WorkItems in a WorkGroup.
   Int32 groupSize() { return static_cast<Int32>(m_nd_item.get_local_range(0)); }
 
-  //! Bloque tant que tous les \a WorkItem du groupe ne sont pas arrivés ici.
+  //! Blocks until all \a WorkItems in the group have arrived here.
   void barrier() { m_nd_item.barrier(); }
 
-  //! Indique si on s'exécute sur un accélérateur
+  //! Indicates if running on an accelerator
   static constexpr bool isDevice() { return true; }
 
  private:
@@ -671,11 +681,11 @@ class SyclDeviceWorkItemBlock
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Contexte d'exécution d'un WorkGroupLoopRange pour Sycl.
+ * \brief Execution context of a WorkGroupLoopRange for Sycl.
  *
- * Cette classe est utilisée uniquement pour la polique
- * d'exécution eAcceleratorPolicy::SYCL.
+ * This class is used only for the eAcceleratorPolicy::SYCL execution policy.
  */
 template <typename IndexType_>
 class SyclWorkGroupLoopContextBase
@@ -688,7 +698,7 @@ class SyclWorkGroupLoopContextBase
 
  protected:
 
-  // Ce constructeur n'est utilisé que sur le device
+  // This constructor is only used on the device
   explicit SyclWorkGroupLoopContextBase(sycl::nd_item<1> n, IndexType total_size)
   : m_nd_item(n)
   , m_total_size(total_size)
@@ -697,10 +707,10 @@ class SyclWorkGroupLoopContextBase
 
  public:
 
-  //! Groupe courant
+  //! Current group
   SyclDeviceWorkItemBlock block() const { return SyclDeviceWorkItemBlock(m_nd_item); }
 
-  //! WorkItem courant
+  //! Current WorkItem
   SyclDeviceWorkItem<IndexType_> workItem() const
   {
     return SyclDeviceWorkItem<IndexType_>(m_nd_item, m_total_size);
@@ -714,11 +724,11 @@ class SyclWorkGroupLoopContextBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Contexte d'exécution d'un WorkGroupLoopRange pour Sycl.
+ * \brief Execution context of a WorkGroupLoopRange for Sycl.
  *
- * Cette classe est utilisée uniquement pour la polique
- * d'exécution eAcceleratorPolicy::SYCL.
+ * This class is used only for the eAcceleratorPolicy::SYCL execution policy.
  */
 template <typename IndexType_>
 class SyclWorkGroupLoopContext
@@ -733,7 +743,7 @@ class SyclWorkGroupLoopContext
 
  private:
 
-  // Ce constructeur n'est utilisé que sur le device
+  // This constructor is only used on the device
   explicit SyclWorkGroupLoopContext(sycl::nd_item<1> nd_item, IndexType total_size)
   : SyclWorkGroupLoopContextBase<IndexType_>(nd_item, total_size)
   {
@@ -747,21 +757,23 @@ class SyclWorkGroupLoopContext
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Intervalle d'itération d'une boucle utilisant le parallélisme hiérarchique.
+ * \brief Iteration range of a loop using hierarchical parallelism.
  *
- * Cette classe est la classe de base pour WorkGroupLoopRange et CooperativeWorkGroupLoopRange.
+ * This class is the base class for WorkGroupLoopRange and
+ * CooperativeWorkGroupLoopRange.
  *
- * Il faudra appeler setBlockSize() pour positionner la taille d'un bloc.
- * Cela peut être fait par le développeur ou automatiquement au lancement de la
- * commande.
+ * setBlockSize() must be called to set the block size.
+ * This can be done by the developer or automatically when launching the
+ * command.
  *
- * L'intervalle d'itération contient nbElement() et est décomposé en
- * \a nbBlock() WorkGroup contenant chacun \a blockSize() WorkItem.
+ * The iteration range contains nbElement() and is decomposed into \a nbBlock()
+ * WorkGroups, each containing \a blockSize() WorkItems.
  *
- * \note Sur accélérateur, La valeur de \a blockSize() est dépendante de l'architecture
- * de l'accélérateur. Afin d'être portable, cette valeur doit être comprise entre 32 et 1024
- * et être un multiple de 32.
+ * \note On the accelerator, the value of \a blockSize() depends on the
+ * accelerator architecture. To be portable, this value must be between
+ * 32 and 1024 and be a multiple of 32.
  *
  */
 template <bool IsCooperativeLaunch, typename IndexType_>
@@ -783,25 +795,25 @@ class WorkGroupLoopRangeBase
 
   static constexpr bool isCooperativeLaunch() { return IsCooperativeLaunch; }
 
-  //! Nombre d'éléments à traiter
+  //! Number of elements to process
   constexpr IndexType nbElement() const { return m_nb_element; }
-  //! Taille d'un block
+  //! Block size
   constexpr IndexType blockSize() const { return m_block_size; }
   /*!
-   * \brief Nombre de blocs.
+   * \brief Number of blocks.
    *
-   * Retourne 0 si setBlockSize() n'a pas encore été appelé.
+   * Returns 0 if setBlockSize() has not yet been called.
    */
   constexpr Int32 nbBlock() const { return m_nb_block; }
 
   /*!
-   * \brief Positionne la taille d'un bloc.
+   * \brief Sets the block size.
    *
-   * \a nb_block doit être un multiple de 32.
+   * \a nb_block must be a multiple of 32.
    */
   ARCCORE_ACCELERATOR_EXPORT void setBlockSize(IndexType nb_block);
 
-  //! Positionne la taille d'un bloc en fonction de la commande \a command
+  //! Sets the block size based on the \a command
   ARCCORE_ACCELERATOR_EXPORT void setBlockSize(RunCommand& command);
 
  private:
@@ -817,8 +829,9 @@ class WorkGroupLoopRangeBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Intervalle d'itération d'une boucle utilisant le parallélisme hiérarchique.
+ * \brief Iteration range of a loop using hierarchical parallelism.
  *
  * \sa WorkGroupLoopRangeBase
  */
@@ -848,6 +861,3 @@ class WorkGroupLoopRange
 /*---------------------------------------------------------------------------*/
 
 #endif
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/

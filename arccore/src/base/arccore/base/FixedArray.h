@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* FixedArray.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Tableau 1D de taille fixe.                                                */
+/* Fixed-size 1D array.                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_FIXEDARRAY_H
 #define ARCCORE_BASE_FIXEDARRAY_H
@@ -26,19 +26,20 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Collection
  *
- * \brief Tableau 1D de taille fixe.
+ * \brief Fixed-size 1D array.
  *
- * Cette classe est similaire à std::array avec les différences suivantes:
+ * This class is similar to std::array with the following differences:
  *
- * - le nombre d'élément est un 'Int32'.
- * - les éléments sont initialisés avec le constructeur par défaut
- * - en mode 'Check', vérifie les débordements de tableau
+ * - the number of elements is an 'Int32'.
+ * - elements are initialized with the default constructor
+ * - in 'Check' mode, checks for array overflows
  *
- * Cette classe propose aussi des conversions vers ArrayView, ConstArrayView
- * et SmallSpan.
+ * This class also provides conversions to ArrayView, ConstArrayView
+ * and SmallSpan.
  */
 template <typename T, Int32 NbElement>
 class FixedArray final
@@ -60,16 +61,16 @@ class FixedArray final
 
  public:
 
-  //! Créé un tableau en initialisant les éléments avec le constructeur par défaut de \a T
+  //! Creates an array by initializing elements with the default constructor of \a T
   constexpr FixedArray()
   : m_value({})
   {}
-  //! Créé un tableau en initialisant les éléments de \a x
+  //! Creates an array by initializing elements with \a x
   constexpr FixedArray(std::array<T, NbElement> x)
   : m_value(std::move(x))
   {}
-  //! Recopie \a x dans l'instance
-  constexpr FixedArray<T,NbElement>& operator=(std::array<T, NbElement> x)
+  //! Copies \a x into the instance
+  constexpr FixedArray<T, NbElement>& operator=(std::array<T, NbElement> x)
   {
     m_value = std::move(x);
     return *this;
@@ -77,41 +78,41 @@ class FixedArray final
 
  public:
 
-  //! Valeur du \a i-ème élément
+  //! Value of the i-th element
   constexpr ARCCORE_HOST_DEVICE T& operator[](Int32 index)
   {
     ARCCORE_CHECK_AT(index, NbElement);
     return m_value[index];
   }
-  //! Valeur du \a i-ème élément
+  //! Value of the i-th element
   constexpr ARCCORE_HOST_DEVICE const T& operator[](Int32 index) const
   {
     ARCCORE_CHECK_AT(index, NbElement);
     return m_value[index];
   }
-  //! Vue modifiable sur le tableau
+  //! Modifiable view of the array
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T, NbElement> span() { return { m_value.data(), NbElement }; }
-  //! Vue non modifiable sur le tableau
+  //! Non-modifiable view of the array
   constexpr ARCCORE_HOST_DEVICE SmallSpan<const T, NbElement> span() const { return { m_value.data(), NbElement }; }
-  //! Vue modifiable sur le tableau
+  //! Modifiable view of the array
   constexpr ARCCORE_HOST_DEVICE ArrayView<T> view() { return { NbElement, m_value.data() }; }
-  //! Vue non modifiable sur le tableau
+  //! Non-modifiable view of the array
   constexpr ARCCORE_HOST_DEVICE ConstArrayView<T> view() const { return { NbElement, m_value.data() }; }
   constexpr ARCCORE_HOST_DEVICE const T* data() const { return m_value.data(); }
   constexpr ARCCORE_HOST_DEVICE T* data() { return m_value.data(); }
 
-  //! Nombre d'éléments tu tableau
+  //! Number of elements in the array
   static constexpr Int32 size() { return NbElement; }
 
  public:
 
-  //! Itérateur sur le début du tableau
+  //! Iterator to the beginning of the array
   constexpr iterator begin() { return m_value.begin(); }
-  //! Itérateur sur la fin du tableau
+  //! Iterator to the end of the array
   constexpr iterator end() { return m_value.end(); }
-  //! Itérateur constant sur le début du tableau
+  //! Constant iterator to the beginning of the array
   constexpr const_iterator begin() const { return m_value.begin(); }
-  //! Itérateur constant la fin du tableau
+  //! Constant iterator to the end of the array
   constexpr const_iterator end() const { return m_value.end(); }
 
  private:

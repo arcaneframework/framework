@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandImpl.h                                            (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation de la gestion d'une commande sur accélérateur.             */
+/* Implementation of command management on accelerator.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_CORE_INTERNAL_RUNCOMMANDIMPL_H
 #define ARCANE_ACCELERATOR_CORE_INTERNAL_RUNCOMMANDIMPL_H
@@ -32,9 +32,10 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation d'une commande pour accélérateur.
+ * \brief Implementation of a command for accelerator.
  */
 class RunCommandImpl
 {
@@ -84,63 +85,63 @@ class RunCommandImpl
   Int32 m_nb_thread_per_block = 0;
   ParallelLoopOptions m_parallel_loop_options;
 
-  // NOTE: cette pile gère la mémoire associé à un seul runtime
-  // Si on souhaite un jour supporté plusieurs runtimes il faudra une pile
-  // par runtime. On peut éventuellement limiter cela si on est sur
-  // qu'une commande est associée à un seul type (au sens runtime) de RunQueue.
+  // NOTE: this stack manages the memory associated with a single runtime
+  // If we ever want to support multiple runtimes, a stack will be needed
+  // per runtime. We can possibly limit this if we are sure
+  // that a command is associated with only one type (in the runtime sense) of RunQueue.
   std::stack<ReduceMemoryImpl*> m_reduce_memory_pool;
 
-  //! Liste des réductions actives
+  //! List of active reductions
   std::set<ReduceMemoryImpl*> m_active_reduce_memory_list;
 
-  //! Indique si la commande a été lancée.
+  //! Indicates if the command has been launched.
   bool m_has_been_launched = false;
 
-  //! Indique si on souhaite le profiling
+  //! Indicates if profiling is desired
   bool m_use_profiling = false;
 
-  //! Indique si on utilise les évènements séquentiels pour calculer le temps d'exécution
+  //! Indicates if sequential events are used to calculate execution time
   bool m_use_sequential_timer_event = false;
 
-  //! Évènements pour le début et la fin de l'exécution.
+  //! Events for the start and end of execution.
   IRunQueueEventImpl* m_start_event = nullptr;
-  //! Évènements pour la fin de l'exécution.
+  //! Events for the end of execution.
   IRunQueueEventImpl* m_stop_event = nullptr;
 
-  //! Temps au lancement de la commande
+  //! Time when the command is launched
   Int64 m_begin_time = 0;
 
   ForLoopOneExecStat m_loop_one_exec_stat;
   ForLoopOneExecStat* m_loop_one_exec_stat_ptr = nullptr;
 
-  //! Indique si la commande s'exécute sur accélérateur
+  //! Indicates if the command executes on the accelerator
   const eExecutionPolicy m_execution_policy = eExecutionPolicy::None;
 
-  //! Indique si la commande s'exécute sur accélérateur
+  //! Indicates if the command executes on the accelerator
   const bool m_use_accelerator = false;
 
   /*!
-   * \brief Indique si on autorise à utiliser plusieurs fois la même commande.
+   * \brief Indicates if we allow the same command to be used multiple times.
    *
-   * Normalement cela est interdit mais avant novembre 2024, il n'y avait pas
-   * de mécanisme pour détecter cela. On peut donc temporairement autoriser
-   * cela et dans un on supprimera cette possibilité.
+   * Normally this is forbidden, but before November 2024, there was no
+   * mechanism to detect this. We can therefore temporarily allow
+   * this, and we will remove this possibility in a future version.
    */
   bool m_is_allow_reuse_command = false;
 
-  //! Indique si une RunCommand a une référence sur cette instance.
+  //! Indicates if a RunCommand has a reference to this instance.
   bool m_has_living_run_command = false;
 
-  //! Indique si on peut remettre la commande dans le pool associé à la RunQueue.
+  //! Indicates if the command can be returned to the pool associated with the RunQueue.
   bool m_may_be_put_in_pool = false;
 
-  //! Taille de la mémoire partagée à allouer
+  //! Size of the shared memory to allocate
   Int32 m_shared_memory_size = 0;
 
-  //! Nombre de pas de décomposition de la boucle
+  //! Number of loop decomposition strides
   Int32 m_nb_stride = 1;
 
-  //! Nombre de pas de décomposition par défaut
+  //! Default number of decomposition strides
   Int32 m_default_nb_stride = 1;
 
  private:
@@ -160,4 +161,4 @@ class RunCommandImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

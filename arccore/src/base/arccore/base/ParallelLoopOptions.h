@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* ParallelLoopOptions.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* Options de configuration pour les boucles parallèles en multi-thread.     */
+/* Configuration options for parallel loops in multi-threading.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_PARALLELLOOPOPTIONS_H
 #define ARCCORE_BASE_PARALLELLOOPOPTIONS_H
@@ -24,18 +24,18 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Concurrency
- * \brief Options d'exécution d'une boucle parallèle en multi-thread.
+ * \brief Execution options for a parallel loop in multi-threading.
  *
- * Cette classe permet de spécifier des paramètres d'exécution d'une
- * boucle parallèle.
+ * This class allows specifying execution parameters for a parallel loop.
  */
 class ARCCORE_BASE_EXPORT ParallelLoopOptions
 {
  private:
 
-  //! Drapeau pour indiquer quels champs ont été positionnés.
+  //! Flag to indicate which fields have been set.
   enum SetFlags
   {
     SF_MaxThread = 1,
@@ -45,31 +45,29 @@ class ARCCORE_BASE_EXPORT ParallelLoopOptions
 
  public:
 
-  //! Type du partitionneur
+  //! Partitioner type
   enum class Partitioner
   {
-    //! Laisse le partitionneur géré le partitionnement et l'ordonnancement (défaut)
+    //! Leaves the partitioner to manage partitioning and scheduling (default)
     Auto = 0,
     /*!
-     * \brief Utilise un partitionnement statique.
+     * \brief Uses static partitioning.
      *
-     * Dans ce mode, grainSize() n'est pas utilisé et le partitionnement ne
-     * dépend que du nombre de threads et de l'intervalle d'itération.
+     * In this mode, grainSize() is not used, and partitioning depends only on the number of threads and the iteration interval.
      *
-     * A noter que l'ordonnencement reste dynamique et donc du exécution à
-     * l'autre ce n'est pas forcément le même thread qui va exécuter
-     * le même bloc d'itération.
+     * Note that the scheduling remains dynamic, so it is not necessarily the same thread that will execute
+     * the same iteration block.
      */
     Static = 1,
     /*!
-     * \brief Utilise un partitionnement et un ordonnancement statique.
+     * \brief Uses static partitioning and scheduling.
      *
-     * Ce mode est similaire à Partitioner::Static mais l'ordonnancement
-     * est déterministe pour l'attribution des tâches: la valeur
-     * renvoyée par TaskFactory::currentTaskIndex() est déterministe.
+     * This mode is similar to Partitioner::Static, but the scheduling
+     * is deterministic for task assignment: the value
+     * returned by TaskFactory::currentTaskIndex() is deterministic.
      *
-     * \note Actuellement ce mode de partitionnement n'est disponible que
-     * pour la parallélisation des boucles 1D.
+     * \note Currently, this partitioning mode is only available
+     * for 1D loop parallelization.
      */
     Deterministic = 2
   };
@@ -85,48 +83,47 @@ class ARCCORE_BASE_EXPORT ParallelLoopOptions
 
  public:
 
-  //! Nombre maximal de threads autorisés.
+  //! Maximum number of allowed threads.
   Int32 maxThread() const { return m_max_thread; }
   /*!
-   * \brief Positionne le nombre maximal de threads autorisé.
+   * \brief Sets the maximum number of allowed threads.
    *
-   * Si \a v vaut 0 ou 1, l'exécution sera séquentielle.
-   * Si \a v est supérieur à ConcurrencyBase::maxAllowedThread(), c'est
-   * cette dernière valeur qui sera utilisée.
+   * If \a v is 0 or 1, the execution will be sequential.
+   * If \a v is greater than ConcurrencyBase::maxAllowedThread(), the latter value will be used.
    */
   void setMaxThread(Integer v)
   {
     m_max_thread = v;
     m_flags |= SF_MaxThread;
   }
-  //! Indique si maxThread() est positionné
+  //! Indicates if maxThread() is set
   bool hasMaxThread() const { return m_flags & SF_MaxThread; }
 
-  //! Taille d'un intervalle d'itération.
+  //! Size of an iteration interval.
   Integer grainSize() const { return m_grain_size; }
-  //! Positionne la taille (approximative) d'un intervalle d'itération
+  //! Sets the size (approximate) of an iteration interval
   void setGrainSize(Integer v)
   {
     m_grain_size = v;
     m_flags |= SF_GrainSize;
   }
-  //! Indique si grainSize() est positionné
+  //! Indicates if grainSize() is set
   bool hasGrainSize() const { return m_flags & SF_GrainSize; }
 
-  //! Type du partitionneur
+  //! Partitioner type
   Partitioner partitioner() const { return m_partitioner; }
-  //! Positionne le type du partitionneur
+  //! Sets the partitioner type
   void setPartitioner(Partitioner v)
   {
     m_partitioner = v;
     m_flags |= SF_Partitioner;
   }
-  //! Indique si grainSize() est positionné
+  //! Indicates if grainSize() is set
   bool hasPartitioner() const { return m_flags & SF_Partitioner; }
 
  public:
 
-  //! Fusionne les valeurs non modifiées de l'instance par celles de \a po.
+  //! Merges the unmodified values of the instance with those of \a po.
   void mergeUnsetValues(const ParallelLoopOptions& po)
   {
     if (!hasMaxThread())
@@ -139,11 +136,11 @@ class ARCCORE_BASE_EXPORT ParallelLoopOptions
 
  private:
 
-  //! Taille d'un bloc de la boucle
+  //! Size of a loop block
   Int32 m_grain_size = 0;
-  //!< Nombre maximum de threads pour la boucle
+  //!< Maximum number of threads for the loop
   Int32 m_max_thread = -1;
-  //!< Type de partitionneur.
+  //!< Partitioner type.
   Partitioner m_partitioner = Partitioner::Auto;
 
   unsigned int m_flags = 0;

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* RunQueueEvent.cc                                            (C) 2000-2025 */
 /*                                                                           */
-/* Evènement sur une file d'exécution.                                       */
+/* Event on a run queue.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,7 +61,7 @@ class RunQueueEvent::InternalImpl
 
  private:
 
-  //! Nombre de références sur l'instance.
+  //! Number of references on the instance.
   std::atomic<Int32> m_nb_ref = 0;
 };
 
@@ -156,7 +156,7 @@ hasPendingWork() const
 Impl::IRunQueueEventImpl* RunQueueEvent::
 _internalEventImpl() const
 {
-  ARCCORE_FATAL_IF((!m_p),"Invalid usage of null RunQueueEvent");
+  ARCCORE_FATAL_IF((!m_p), "Invalid usage of null RunQueueEvent");
   return m_p->m_impl;
 }
 

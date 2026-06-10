@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MessageId.cc                                                (C) 2000-2025 */
 /*                                                                           */
-/* Identifiant d'un message point à point.                                   */
+/* Identifier of a point-to-point message.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -33,11 +33,11 @@ void MessagePassing::MessageId::
 print(std::ostream& o) const
 {
   o << "(id=";
-  if (m_type==T_Null)
+  if (m_type == T_Null)
     o << "(null)";
-  else if (m_type==T_Int)
+  else if (m_type == T_Int)
     o << m_message.i;
-  else if (m_type==T_Long)
+  else if (m_type == T_Long)
     o << m_message.l;
   else
     o << m_message.cv;
@@ -49,7 +49,7 @@ print(std::ostream& o) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

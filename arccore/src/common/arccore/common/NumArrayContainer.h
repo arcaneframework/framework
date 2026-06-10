@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumArrayContainer.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Conteneur pour la classe 'NumArray'.                                      */
+/* Container for the 'NumArray' class.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_NUMARRAYCONTAINER_H
 #define ARCCORE_COMMON_NUMARRAYCONTAINER_H
@@ -24,9 +24,10 @@ namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Implémentation commune à pour NumArray.
+ * \brief Common implementation for NumArray.
  */
 class ARCCORE_COMMON_EXPORT NumArrayBaseCommon
 {
@@ -45,11 +46,12 @@ class ARCCORE_COMMON_EXPORT NumArrayBaseCommon
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Container pour la classe NumArray.
+ * \brief Container for the NumArray class.
  *
- * Wrapper de Arccore::Array pour la classe NumArray.
+ * Wrapper of Arccore::Array for the NumArray class.
  */
 template <typename DataType>
 class NumArrayContainer
@@ -103,8 +105,8 @@ class NumArrayContainer
   {
   }
 
-  // Cet opérateur est interdit car il faut gérer le potentiel
-  // changement de l'allocateur et la recopie
+  // This operator is deleted because it requires handling potential
+  // allocator changes and copying
   ThatClass& operator=(const ThatClass& rhs) = delete;
 
   ThatClass& operator=(ThatClass&& rhs)
@@ -128,7 +130,7 @@ class NumArrayContainer
   }
   void copy(Span<const DataType> rhs) { BaseClass::_copy(rhs.data()); }
   IMemoryAllocator* allocator() const { return BaseClass::allocator(); }
-  //TODO: rendre obsolète mi 2026
+  //TODO: deprecate by mid 2026
   eMemoryResource memoryRessource() const { return m_memory_ressource; }
   eMemoryResource memoryResource() const { return m_memory_ressource; }
   void copyInitializerList(std::initializer_list<DataType> alist)
@@ -139,23 +141,24 @@ class NumArrayContainer
     for (auto x : alist) {
       s[index] = x;
       ++index;
-      // S'assure qu'on ne déborde pas
+      // Ensures no overflow
       if (index >= s1)
         break;
     }
   }
 
   /*!
-   * \brief Copie les valeurs de \a v dans l'instance.
+   * \brief Copies the values of \a v into the instance.
    *
-   * \a input_ressource indique l'origine de la zone mémoire (ou eMemoryRessource::Unknown si inconnu)
+   * \a input_ressource indicates the origin of the memory area
+   * (or eMemoryRessource::Unknown if unknown)
    */
   void copyOnly(const Span<const DataType>& v, eMemoryResource input_ressource, const RunQueue* queue = nullptr)
   {
     _memoryAwareCopy(v, input_ressource, queue);
   }
   /*!
-   * \brief Remplit les indices données par \a indexes avec la valeur \a v.
+   * \brief Fills the indices provided by \a indexes with the value \a v.
    */
   void fill(const DataType& v, SmallSpan<const Int32> indexes, const RunQueue* queue)
   {
@@ -163,7 +166,7 @@ class NumArrayContainer
     NumArrayBaseCommon::_memoryAwareFill(asWritableBytes(destination), destination.size(), &v, _typeSize(), indexes, queue);
   }
   /*!
-   * \brief Remplit les éléments de l'instance la valeur \a v.
+   * \brief Fills the elements of the instance with the value \a v.
    */
   void fill(const DataType& v, const RunQueue* queue)
   {

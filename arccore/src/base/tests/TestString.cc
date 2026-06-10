@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -25,8 +25,8 @@ using namespace Arcane::Impl;
 
 namespace
 {
-// Classe pour restaurer automatiquement les flags() d'un 'std::ostream'
-  // To Test
+// Class to automatically restore the flags() of an 'std::ostream'
+// To Test
 class IosFlagsWrapper
 {
  public:
@@ -102,9 +102,9 @@ void _doConvertTest(const char* name, const String& str)
 
 } // namespace
 
-// TODO: Regarder pourquoi le test ne passe pas sous windows sur le CI de github
-// (alors qu'il fonctionne sur un PC perso. Il faudrait regarder si cela n'est pas
-// un problème d'encodage par défaut).
+// TODO: Check why the test fails on Windows on the GitHub CI
+// (while it works on a personal PC. We should check if it is not
+// a default encoding issue).
 TEST(String, Utf8AndUtf16)
 {
   IosFlagsWrapper io_wrapper(&std::cout);
@@ -120,7 +120,7 @@ TEST(String, Utf8AndUtf16)
 #ifdef ARCCORE_OS_WIN32
     _testWStringWin32(str1.localstr());
 #endif
-    std::vector < UChar> utf16_vector_direct{ StringUtils::asUtf16BE(str1_direct) };
+    std::vector<UChar> utf16_vector_direct{ StringUtils::asUtf16BE(str1_direct) };
     std::vector<UChar> utf16_vector{ StringUtils::asUtf16BE(str1) };
     std::vector<UChar> big_endian_ref_vector{ 0x25b2, 0x25bc, 0x25cf, 0x25a0, 0x25c6, 0x00E9, 0x00E0, 0xD83D, 0xDE00, 0x0061, 0xD83D, 0xDE08 };
     //std::vector<UChar> big_endian_ref_vector{ 0x25b2, 0x25bc, 0x25cf, 0x25a0, 0x25c6 };
@@ -205,31 +205,31 @@ TEST(String, Misc)
   ASSERT_FALSE(f.endsWith("Toto234")) << "Bad compare 6";
 
   String s2 = f.substring(3);
-  ASSERT_TRUE(s2=="o23") << "Bad compare 7";
+  ASSERT_TRUE(s2 == "o23") << "Bad compare 7";
 
-  s2 = f.substring(3,2);
+  s2 = f.substring(3, 2);
   std::cout << "S2_8=" << s2 << '\n';
-  ASSERT_FALSE(s2!="o2") << "Bad compare 8";
+  ASSERT_FALSE(s2 != "o2") << "Bad compare 8";
 
-  s2 = f.substring(1,2);
+  s2 = f.substring(1, 2);
   std::cout << "S2_9=" << s2 << '\n';
-  ASSERT_FALSE(s2!="ot") << "Bad compare 9";
+  ASSERT_FALSE(s2 != "ot") << "Bad compare 9";
 
-  s2 = f.substring(7,2);
+  s2 = f.substring(7, 2);
   std::cout << "S2_10=" << s2 << '\n';
-  ASSERT_FALSE(s2!="") << "Bad compare 10";
+  ASSERT_FALSE(s2 != "") << "Bad compare 10";
 
-  s2 = f.substring(2,1);
+  s2 = f.substring(2, 1);
   std::cout << "S2_11=" << s2 << '\n';
-  ASSERT_FALSE(s2!="t") << "Bad compare 11";
+  ASSERT_FALSE(s2 != "t") << "Bad compare 11";
 
-  s2 = f.substring(5,1);
+  s2 = f.substring(5, 1);
   std::cout << "S2_12=" << s2 << '\n';
-  ASSERT_FALSE(s2!="3") << "Bad compare 12";
+  ASSERT_FALSE(s2 != "3") << "Bad compare 12";
 
   s2 = f.substring(0);
   std::cout << "S2_13=" << s2 << '\n';
-  ASSERT_FALSE(s2!=f) << "Bad compare 13";
+  ASSERT_FALSE(s2 != f) << "Bad compare 13";
 
   String g = "   \tceci   \tcela ";
   std::cout << " G=  '" << g << "'" << '\n';
@@ -237,28 +237,28 @@ TEST(String, Misc)
   std::cout << " G2= '" << g2 << "'" << '\n';
   String g3 = String::replaceWhiteSpace(g);
   std::cout << " G3= '" << g3 << "'" << '\n';
-  String expected_g3 ="    ceci    cela ";
-  ASSERT_EQ(g3,expected_g3);
-  String expected_g2 ="ceci cela";
-  ASSERT_EQ(g2,expected_g2);
+  String expected_g3 = "    ceci    cela ";
+  ASSERT_EQ(g3, expected_g3);
+  String expected_g2 = "ceci cela";
+  ASSERT_EQ(g2, expected_g2);
 
   String gnull;
   String gnull2 = String::collapseWhiteSpace(gnull);
   std::cout << "GNULL2='" << gnull2 << "'" << '\n';
-  ASSERT_EQ(gnull2,String());
+  ASSERT_EQ(gnull2, String());
 
   String gempty("");
   String gempty2 = String::collapseWhiteSpace(gempty);
   std::cout << "GEMPTY2='" << gempty2 << "'" << '\n';
   String expected_gempty2 = "";
-  ASSERT_EQ(gempty2,expected_gempty2);
+  ASSERT_EQ(gempty2, expected_gempty2);
 
   {
     String knull;
-    String kempty { gempty };
-    String k1 { "titi" };
-    String k2 { "ti" };
-    String k3 { "to" };
+    String kempty{ gempty };
+    String k1{ "titi" };
+    String k2{ "ti" };
+    String k3{ "to" };
     ASSERT_TRUE(knull.contains(gnull)) << "Bad null contains null";
     ASSERT_FALSE(knull.contains(gempty)) << "Bad null contains empty";
     ASSERT_TRUE(kempty.contains(gnull)) << "Bad empty contains null";
@@ -275,17 +275,17 @@ TEST(String, Misc)
     //String k0 = ":Toto::Titi";
     std::cout << "ORIGINAL STRING TO STRING = '" << k0 << "'" << '\n';
     std::vector<String> k0_list;
-    k0.split(k0_list,':');
-    for( size_t i=0, n=k0_list.size(); i<n; ++i ){
+    k0.split(k0_list, ':');
+    for (size_t i = 0, n = k0_list.size(); i < n; ++i) {
       std::cout << "K i=" << i << " v='" << k0_list[i] << "' is_null?=" << k0_list[i].null() << '\n';
     }
-    ASSERT_EQ(k0_list[0],String(":Toto"));
-    ASSERT_EQ(k0_list[1],String(":Titi"));
-    ASSERT_EQ(k0_list[2],String(":"));
-    ASSERT_EQ(k0_list[3],String("Tata"));
-    ASSERT_EQ(k0_list[4],String(":"));
-    ASSERT_EQ(k0_list[5],String(":Tutu"));
-    ASSERT_EQ(k0_list[6],String("Tete"));
+    ASSERT_EQ(k0_list[0], String(":Toto"));
+    ASSERT_EQ(k0_list[1], String(":Titi"));
+    ASSERT_EQ(k0_list[2], String(":"));
+    ASSERT_EQ(k0_list[3], String("Tata"));
+    ASSERT_EQ(k0_list[4], String(":"));
+    ASSERT_EQ(k0_list[5], String(":Tutu"));
+    ASSERT_EQ(k0_list[6], String("Tete"));
   }
 }
 
@@ -295,9 +295,9 @@ TEST(String, StdStringView)
   const char* ref2 = "ù*aXZáé";
   // Ref3 = Ref1 + Ref2
   const char* ref3 = "S1éàù*aXZáé";
-  std::string std_ref3 { ref3 };
+  std::string std_ref3{ ref3 };
   String snull;
-  String sempty { "" };
+  String sempty{ "" };
   String s1 = ref1;
   String s2 = ref2;
   String s3 = ref1;
@@ -306,23 +306,23 @@ TEST(String, StdStringView)
   std::cout << "S2 '" << s2 << "'_SIZE=" << s2.length() << '\n';
   std::cout << "S3 '" << s3 << "'_SIZE=" << s3.length() << '\n';
   std::string_view vempty = sempty.toStdStringView();
-  ASSERT_EQ((Int64)vempty.size(),0) << "vempty.size()==0";
+  ASSERT_EQ((Int64)vempty.size(), 0) << "vempty.size()==0";
   std::string_view vnull = snull.toStdStringView();
-  ASSERT_EQ((Int64)vnull.size(),0) << "vnull.size()==0";
+  ASSERT_EQ((Int64)vnull.size(), 0) << "vnull.size()==0";
   std::string_view v1 = s1.toStdStringView();
-  ASSERT_EQ(v1,ref1) << "v1==ref1";
+  ASSERT_EQ(v1, ref1) << "v1==ref1";
   std::string_view v2 = s2.toStdStringView();
-  ASSERT_EQ(v2,ref2) << "v2==ref2";
+  ASSERT_EQ(v2, ref2) << "v2==ref2";
   std::string_view v3 = s3.toStdStringView();
-  ASSERT_EQ(v3,std_ref3) << "v3==ref3";
+  ASSERT_EQ(v3, std_ref3) << "v3==ref3";
 
   String s4 = s3 + snull;
   std::string_view v4 = s4.toStdStringView();
-  ASSERT_EQ(v4,v3) << "v4==v3";
+  ASSERT_EQ(v4, v3) << "v4==v3";
 
   String s5 = s3 + sempty;
   std::string_view v5 = s5.toStdStringView();
-  ASSERT_EQ(v5,v4) << "v5==v4";
+  ASSERT_EQ(v5, v4) << "v5==v4";
 
   String s6 = s2;
   const char* t1 = "testà1";
@@ -331,15 +331,15 @@ TEST(String, StdStringView)
   std::string_view st1v = st1;
   std::string st1_2 = st1 + t2;
   s6 = t1;
-  ASSERT_EQ(s6.toStdStringView(),st1v) << "s6==st1";
+  ASSERT_EQ(s6.toStdStringView(), st1v) << "s6==st1";
 
   String s7 = s3;
   s7 = st1_2;
-  ASSERT_EQ(s7,st1_2) << "s7==st1_2";
+  ASSERT_EQ(s7, st1_2) << "s7==st1_2";
   String s8 = s6 + t2;
-  ASSERT_EQ(s8,st1_2) << "s8==st1_2";
+  ASSERT_EQ(s8, st1_2) << "s8==st1_2";
   String s9 = s7 + snull;
-  ASSERT_EQ(s9,st1_2) << "s9==st1_2";
+  ASSERT_EQ(s9, st1_2) << "s9==st1_2";
   String s10 = s7 + sempty;
-  ASSERT_EQ(s10,st1_2) << "s10==st1_2";
+  ASSERT_EQ(s10, st1_2) << "s10==st1_2";
 }

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Task.h                                                      (C) 2000-2025 */
 /*                                                                           */
-/* Classes gérant les tâches concurrentes.                                   */
+/* Classes managing concurrent tasks.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_TASK_H
 #define ARCCORE_BASE_TASK_H
@@ -30,18 +30,20 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*
  * TODO:
- * - Vérifier les fuites memoires
- * - BIEN INDIQUER QU'IL NE FAUT PLUS UTILISER UNE TACHE APRES LE WAIT!!!
- * - Regarder mecanisme pour les exceptions.
- * - Surcharger les For et Foreach sans specifier le block_size
+ * - Check memory leaks
+ * - CLEARLY INDICATE THAT A TASK MUST NOT BE USED AFTER THE WAIT!!!
+ * - Look into exception mechanism.
+ * - Overload For and Foreach without specifying the block_size
  */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Contexte d'éxecution d'une tâche.
+ * \brief Execution context of a task.
  * \ingroup Concurrency
  */
 class ARCCORE_CONCURRENCY_EXPORT TaskContext
@@ -54,7 +56,7 @@ class ARCCORE_CONCURRENCY_EXPORT TaskContext
 
  public:
 
-  //! Tâche courante.
+  //! Current task.
   ITask* task() const { return m_task; }
 
  private:
@@ -64,9 +66,10 @@ class ARCCORE_CONCURRENCY_EXPORT TaskContext
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface d'un fonctor pour une tâche.
+ * \brief Interface for a task functor.
  * \ingroup Concurrency
  */
 class ARCCORE_CONCURRENCY_EXPORT ITaskFunctor
@@ -82,16 +85,17 @@ class ARCCORE_CONCURRENCY_EXPORT ITaskFunctor
 
  public:
 
-  //! Exécute la méthode associé
+  //! Executes the associated method
   virtual void executeFunctor(const TaskContext& tc) = 0;
   virtual ITaskFunctor* clone(void* buffer, Integer size) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fonctor sans argument pour une tâche.
+ * \brief Functor without arguments for a task.
  * \ingroup Concurrency
  */
 template <typename InstanceType>
@@ -114,7 +118,7 @@ class TaskFunctor
 
  public:
 
-  //! Exécute la méthode associé
+  //! Executes the associated method
   void executeFunctor(const TaskContext& /*tc*/) override
   {
     (m_instance->*m_function)();
@@ -134,9 +138,10 @@ class TaskFunctor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Fonctor pour une tâche prenant un TaskContext en argument.
+ * \brief Functor for a task taking a TaskContext as an argument.
  * \ingroup Concurrency
  */
 template <typename InstanceType>
@@ -158,7 +163,7 @@ class TaskFunctorWithContext
 
  public:
 
-  //! Exécute la méthode associé
+  //! Executes the associated method
   void executeFunctor(const TaskContext& tc) override
   {
     (m_instance->*m_function)(tc);
@@ -178,11 +183,12 @@ class TaskFunctorWithContext
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Concurrency
- * \brief Interface d'une tâche concourante.
+ * \brief Interface for a concurrent task.
  *
- * Les tâches sont créées via TaskFactory.
+ * Tasks are created via TaskFactory.
  */
 class ARCCORE_CONCURRENCY_EXPORT ITask
 {
@@ -195,15 +201,15 @@ class ARCCORE_CONCURRENCY_EXPORT ITask
  public:
 
   /*!
-   * \brief Lance la tâche et bloque jusqu'à ce qu'elle se termine.
+   * \brief Launches the task and blocks until it finishes.
    *
-   * Après appel à cette fonction, la tâche est détruite et ne doit
-   * plus être utilisée.
+   * After calling this function, the task is destroyed and must not
+   * be used again.
    */
   virtual void launchAndWait() = 0;
   /*!
-   * \brief Lance les tâches filles \a tasks et bloque
-   * jusqu'à ce qu'elles se terminent.
+   * \brief Launches the child tasks \a tasks and blocks
+   * until they finish.
    */
   virtual void launchAndWait(ConstArrayView<ITask*> tasks) = 0;
 
@@ -220,4 +226,4 @@ class ARCCORE_CONCURRENCY_EXPORT ITask
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

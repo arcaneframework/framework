@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -24,8 +24,10 @@
 
 namespace Arcane::MessagePassing
 {
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
  * \brief Manage control streams for parallel messages.
@@ -51,12 +53,12 @@ class ARCCORE_MESSAGEPASSING_EXPORT IControlDispatcher
 
   virtual MessageId probe(const PointToPointMessageInfo& message) = 0;
 
-  // NOTE novembre 2022
-  // Pour l'instant pas encore virtual pure pour rester compatible avec le code
-  // existant. L'implémentation lève une exception NotSupportedException
+  // NOTE November 2022
+  // For now, it is not yet a pure virtual function to remain compatible with the code
+  // existing. The implementation raises a NotSupportedException.
   virtual MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message);
 
-  //! Création d'une liste de requêtes associé à ce gestionnaire
+  //! Creation of a request list associated with this manager
   virtual Ref<IRequestList> createRequestListRef() = 0;
 
  public:

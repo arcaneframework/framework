@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConcurrencyApplication.h                                    (C) 2000-2026 */
 /*                                                                           */
-/* Gestion des services de multi-threading d'une application Arccore.        */
+/* Management of multi-threading services for an Arccore application.        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_CONCURRENCYAPPLICATION_H
 #define ARCCORE_COMMON_INTERNAL_CONCURRENCYAPPLICATION_H
@@ -79,15 +79,15 @@ class ARCCORE_CONCURRENCY_EXPORT ConcurrencyApplication
 
  public:
 
-  ReferenceCounter<ITraceMng> m_trace; //!< Gestionnaire de traces
+  ReferenceCounter<ITraceMng> m_trace; //!< Trace manager
   Ref<IStackTraceService> m_stack_trace_service;
   Ref<ISymbolizerService> m_symbolizer_service;
   Ref<IThreadImplementationService> m_thread_implementation_service;
   Ref<IThreadImplementation> m_thread_implementation;
   Ref<ITaskImplementation> m_task_implementation;
-  //! Nom du service utilisé pour gérer les threads
+  //! Name of the service used to manage threads
   String m_used_thread_service_name;
-  //! Nom du service utilisé pour gérer les tâches
+  //! Name of the service used to manage tasks
   String m_used_task_service_name;
 };
 

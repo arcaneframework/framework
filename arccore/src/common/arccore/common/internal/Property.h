@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Property.h                                                  (C) 2000-2025 */
 /*                                                                           */
-/* Gestion des propriétés.                                                   */
+/* Property management.                                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_INTERNAL_PROPERTY_H
 #define ARCCORE_COMMON_INTERNAL_PROPERTY_H
@@ -110,8 +110,9 @@ class ARCCORE_COMMON_EXPORT PropertySettingTraits<Int64>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un paramètre de propriété.
+ * \brief Property parameter interface.
  */
 class ARCCORE_COMMON_EXPORT IPropertySetting
 {
@@ -121,20 +122,21 @@ class ARCCORE_COMMON_EXPORT IPropertySetting
 
  public:
 
-  //! Nom de la propriété
+  //! Property name
   virtual String name() const = 0;
-  //! Type de la propriété
+  //! Property type
   virtual String typeName() const = 0;
-  //! Nom de l'argument de la ligne de commande (nul si aucun)
+  //! Command line argument name (null if none)
   virtual String commandLineArgument() const = 0;
-  //! Description de la propriété
+  //! Property description
   virtual String description() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'une proriété typée par une classe.
+ * \brief Base class of a property typed by a class.
  */
 template <typename T>
 class PropertySettingBase
@@ -180,8 +182,9 @@ class PropertySettingBuilder
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un visiteur sur une propriété.
+ * \brief Property visitor interface.
  */
 class ARCCORE_COMMON_EXPORT IPropertyVisitor
 {
@@ -193,8 +196,9 @@ class ARCCORE_COMMON_EXPORT IPropertyVisitor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe de base d'un visiteur typé sur une propriété.
+ * \brief Base class of a typed visitor on a property.
  */
 template <typename T>
 class PropertyVisitor
@@ -426,8 +430,9 @@ template <typename T> class PropertySettingsInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Enregistreur de paramètres de propriétés
+ * \brief Property settings registrar
  */
 class ARCCORE_COMMON_EXPORT PropertySettingsRegisterer
 {
@@ -443,45 +448,45 @@ class ARCCORE_COMMON_EXPORT PropertySettingsRegisterer
 
  public:
 
-  //! Accès au premier élément de la chaine d'enregistreur
+  //! Access to the first element of the registrar chain
   static PropertySettingsRegisterer* firstRegisterer();
 
-  //! Nombre d'enregisteur dans la chaîne
+  //! Number of registrars in the chain
   static Integer nbRegisterer();
 
-  //! Enregistreur précédent (nullptr si le premier)
+  //! Previous registrar (nullptr if the first)
   PropertySettingsRegisterer* previousRegisterer() const { return m_previous; }
 
-  //! Enregistreur suivant (nullptr si le dernier)
+  //! Next registrar (nullptr if the last)
   PropertySettingsRegisterer* nextRegisterer() const { return m_next; }
 
  public:
 
-  //! Nom de classe associée
+  //! Associated class name
   const char* name() const { return m_name; }
 
   Ref<IPropertySettingsInfo> createSettingsInfoRef() const;
 
  private:
 
-  //! Positionne l'enregistreur précédent
+  //! Positions the previous registrar
   void _setPreviousRegisterer(PropertySettingsRegisterer* s) { m_previous = s; }
 
-  //! Positionne l'enregistreur suivant
+  //! Positions the next registrar
   void _setNextRegisterer(PropertySettingsRegisterer* s) { m_next = s; }
 
  private:
 
-  //! Enregistreur précédent
+  //! Previous registrar
   PropertySettingsRegisterer* m_previous = nullptr;
-  //! Enregistreur suivant
+  //! Next registrar
   PropertySettingsRegisterer* m_next = nullptr;
 
  private:
 
-  //! Nom de l'enregistreur
+  //! Registrar name
   const char* m_name = nullptr;
-  //! Fonction de création
+  //! Creation function
   CreateFunc m_create_func = nullptr;
 
  private:
@@ -491,8 +496,9 @@ class ARCCORE_COMMON_EXPORT PropertySettingsRegisterer
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Applique un visiteur à tous les 'IPropertySetting' enregistrés
+ * \brief Applies a visitor to all registered 'IPropertySetting'
  * via 'PropertySettingsRegisterer'.
  */
 extern "C++" ARCCORE_COMMON_EXPORT void

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CommonGlobal.h                                              (C) 2000-2026 */
 /*                                                                           */
-/* Définitions globales de la composante 'Common' de 'Arccore'.              */
+/* Global definitions for the 'Common' component of 'Arccore'.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_COMMONGLOBAL_H
 #define ARCCORE_COMMON_COMMONGLOBAL_H
@@ -40,8 +40,8 @@ class RunQueue;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour l'instant on doit laisser ArrayTraits dans le namespace Arccore
-// pour des raisons de compatibilité avec la macro ARCCORE_DEFINE_ARRAY_PODTYPE
+// For now, ArrayTraits must remain in the Arccore namespace
+// for compatibility reasons with the ARCCORE_DEFINE_ARRAY_PODTYPE macro
 namespace Arccore
 {
 template <typename DataType> class ArrayTraits;
@@ -83,16 +83,16 @@ using Arccore::ArrayTraits;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> class EnumeratorT;
-template<typename T> class ListEnumeratorT;
+template <typename T> class EnumeratorT;
+template <typename T> class ListEnumeratorT;
 
-template<typename T> class Collection;
-template<typename T> class List;
+template <typename T> class Collection;
+template <typename T> class List;
 
 class EventObservableBase;
 class EventObserverBase;
-template<typename... Args> class EventObservable;
-template<typename... Args> class EventObserver;
+template <typename... Args> class EventObservable;
+template <typename... Args> class EventObserver;
 template <typename... Args> class EventObservableView;
 
 using StringList = List<String>;
@@ -126,42 +126,43 @@ class CommandLineArguments;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Indices sur la localisation mémoire attendue
+//! Indices for expected memory location
 enum class eMemoryLocationHint : int8_t
 {
-  //! Aucune indice
+  //! No hint
   None = 0,
-  //! Indique que la donnée sera plutôt utilisée sur accélérateur
+  //! Indicates that the data will primarily be used on the accelerator
   MainlyDevice = 1,
-  //! Indique que la donnée sera plutôt utilisée sur CPU
+  //! Indicates that the data will primarily be used on the CPU
   MainlyHost = 2,
   /*!
-   * \brief Indique que la donnée sera utilisée à la fois sur accélérateur et
-   * sur CPU et qu'elle ne sera pas souvent modifiée.
+   * \brief Indicates that the data will be used both on the accelerator and
+   * on the CPU and will not be frequently modified.
    */
   HostAndDeviceMostlyRead = 3
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Localisation physique d'une adresse mémoire.
+ * \brief Physical location of a memory address.
  *
- * Pour les valeurs ManagedMemoryDevice et ManagedMemoryHost il s'agit d'une
- * indication car il n'y a pas de moyen simple de savoir où se trouve
- * réellement la mémoire.
+ * For the ManagedMemoryDevice and ManagedMemoryHost values, this is an
+ * indication because there is no simple way to know where
+ * the memory is actually located.
  */
 enum class eHostDeviceMemoryLocation : int8_t
 {
-  //! Localisation inconnue
+  //! Unknown location
   Unknown = 0,
-  //! La mémoire est sur accélérateur
+  //! The memory is on the accelerator
   Device = 1,
-  //! La mémoire est sur l'hôte.
+  //! The memory is on the host.
   Host = 2,
-  //! La mémoire est de la mémoire managée sur accélérateur
+  //! The memory is managed memory on the accelerator
   ManagedMemoryDevice = 3,
-  //! La mémoire est de la mémoire managée sur l'hôte.
+  //! The memory is managed memory on the host.
   ManagedMemoryHost = 4,
 };
 
@@ -170,24 +171,25 @@ operator<<(std::ostream& o, eHostDeviceMemoryLocation r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Liste des ressources mémoire disponibles.
+ * \brief List of available memory resources.
  */
 enum class eMemoryResource
 {
-  //! Valeur inconnue ou non initialisée
+  //! Unknown or uninitialized value
   Unknown = 0,
-  //! Alloue sur l'hôte.
+  //! Allocates on the host.
   Host,
-  //! Alloue sur l'hôte.
+  //! Allocates on the host.
   HostPinned,
-  //! Alloue sur le device
+  //! Allocates on the device
   Device,
-  //! Alloue en utilisant la mémoire unifiée.
+  //! Allocates using unified memory.
   UnifiedMemory
 };
 
-//! Nombre de valeurs valides pour eMemoryResource
+//! Number of valid values for eMemoryResource
 static constexpr int ARCCORE_NB_MEMORY_RESOURCE = 5;
 
 /*---------------------------------------------------------------------------*/
@@ -198,11 +200,12 @@ operator<<(std::ostream& o, eMemoryResource r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Taille du padding pour les index dans les opérations SIMD.
+ * \brief Padding size for indices in SIMD operations.
  *
- * Afin d'avoir le même code quel que soit le mécanisme de vectorisation
- * utilisé, cette valeur est fixe et correspond au plus grand vecteur SIMD.
+ * To ensure the same code regardless of the vectorization mechanism
+ * used, this value is fixed and corresponds to the largest SIMD vector.
  *
  * \sa arcanedoc_simd
  */
@@ -213,10 +216,10 @@ static const Integer SIMD_PADDING_SIZE = 8;
 
 namespace Impl
 {
-class StridedLoopRangesBase;
-template <typename LoopRangesType>
-class StridedLoopRanges;
-};
+  class StridedLoopRangesBase;
+  template <typename LoopRangesType>
+  class StridedLoopRanges;
+}; // namespace Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -226,5 +229,4 @@ class StridedLoopRanges;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

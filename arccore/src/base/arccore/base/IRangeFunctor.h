@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IRangeFunctor.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Interface d'un fonctor sur un interval d'itération.                       */
+/* Interface of a functor on an iteration interval.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_IRANGEFUNCTOR_H
 #define ARCCORE_BASE_IRANGEFUNCTOR_H
@@ -24,32 +24,34 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un fonctor sur un interval d'itération.
+ * \brief Interface of a functor on an iteration interval.
  * \ingroup Core
  */
 class ARCCORE_BASE_EXPORT IRangeFunctor
 {
  public:
 
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IRangeFunctor() = default;
 
  public:
 
   /*!
-   * \brief Exécute la méthode associée.
-   * \param begin indice du début de l'itération.
-   * \param size nombre d'éléments à itérer.
+   * \brief Executes the associated method.
+   * \param begin index of the start of the iteration.
+   * \param size number of elements to iterate.
    */
   virtual void executeFunctor(Int32 begin, Int32 size) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Interface d'un fonctor sur un interval d'itération multi-dimensionnel
- * de dimension \a RankValue
+ * \brief Interface of a functor on a multi-dimensional iteration interval
+ * of dimension \a RankValue
  * \ingroup Core
  */
 template <int RankValue>
@@ -57,13 +59,13 @@ class IMDRangeFunctor
 {
  public:
 
-  //! Libère les ressources
+  //! Releases resources
   virtual ~IMDRangeFunctor() = default;
 
  public:
 
   /*!
-   * \brief Exécute la méthode associée.
+   * \brief Executes the associated method.
    */
   virtual void executeFunctor(const ComplexForLoopRanges<RankValue>& loop_range) = 0;
 };

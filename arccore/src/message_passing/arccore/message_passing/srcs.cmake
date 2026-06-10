@@ -1,4 +1,4 @@
-set(SOURCES
+﻿set(SOURCES
   BasicSerializeMessage.h
   BasicSerializeMessage.cc
   MessagePassingGlobal.h

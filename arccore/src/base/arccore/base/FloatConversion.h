@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* FloatConversion.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Opérations de conversion entre 'float' et 'Float16' et 'BFloat16'.        */
+/* Conversion operations between 'float', 'Float16', and 'BFloat16'.         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_FLOATCONVERSION_H
 #define ARCCORE_BASE_FLOATCONVERSION_H
@@ -18,8 +18,8 @@
 
 #include <cstring>
 
-// TODO: Utiliser 'std::endian' lorsqu'on sera en C++20.
-// TODO: Utiliser 'std::bit_cast' au lieu de 'std::memcpy' pour rendre les fonctions 'constexpr'
+// TODO: Use 'std::endian' when we are in C++20.
+// TODO: Use 'std::bit_cast' instead of 'std::memcpy' to make the functions 'constexpr'
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ convertToFloat16Impl(uint16_t val)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Converti en appliquant l'arrondi au plus proche (round-to-nearest)
+// Convert by applying round-to-nearest
 inline uint16_t
 convertBFloat16ToUint16Impl(float v)
 {
@@ -164,9 +164,9 @@ convertToBFloat16Impl(uint16_t val)
   float result;
   char* const first = reinterpret_cast<char*>(&result);
   char* const second = first + sizeof(uint16_t);
-  // Les macros suivantes ne sont pas définies sous Windows mais ce dernier
-  // ne supporte que des architectures big-endian donc cela ne pose pas
-  // de problèmes.
+  // The following macros are not defined under Windows, but the latter
+  // only supports big-endian architectures, so this does not cause
+  // problems.
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
   std::memcpy(first, &val, sizeof(uint16_t));
   std::memset(second, 0, sizeof(uint16_t));
@@ -180,15 +180,15 @@ convertToBFloat16Impl(uint16_t val)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::impl
 
 namespace Arccore::impl
 {
-using Arcane::impl::convertFloat16ToUint16Impl;
-using Arcane::impl::convertToFloat16Impl;
 using Arcane::impl::convertBFloat16ToUint16Impl;
+using Arcane::impl::convertFloat16ToUint16Impl;
 using Arcane::impl::convertToBFloat16Impl;
-}
+using Arcane::impl::convertToFloat16Impl;
+} // namespace Arccore::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CommonUtils.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* Fonctions/Classes utilitaires communes à tout les runtimes.               */
+/* Common utility functions/classes for all runtimes.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_COMMONUTILS_H
 #define ARCCORE_ACCELERATOR_COMMONUTILS_H
@@ -37,7 +37,7 @@
 #endif
 #endif
 
-// A définir si on souhaite utiliser LambdaStorage
+// Define if we want to use LambdaStorage
 // #ifdef ARCCORE_USE_LAMBDA_STORAGE
 
 #include <cstring>
@@ -47,26 +47,27 @@
 
 namespace Arcane::Accelerator::Impl
 {
+
 /*!
- * \brief Classe pour gérer la conservation d'une lambda dans un itérateur.
+ * \brief Class to manage the storage of a lambda within an iterator.
  *
- * Actuellement (C++20), on ne peut pas conserver une lambda dans un
- * itérateur car il manque deux choses: un constructeur par défaut et
- * un opérateur de recopie. Cette classe permet de supporter cela à condition
- * que les deux poins suivants soient respectés:
- * - instances capturées par la lambda sont trivialement copiables et donc
- *   la lambda l'est.
- * - les instances utilisant le constructeur par défaut ne sont pas utilisées
- *   (ce qui est le cas des itérateurs car ils ne sont pas valides s'ils sont
- *   construits avec le constructeur par défaut.
+ * Currently (C++20), we cannot store a lambda in an
+ * iterator because two things are missing: a default constructor and
+ * a copy assignment operator. This class allows this to be supported provided
+ * the following two points are respected:
+ * - instances captured by the lambda are trivially copyable and thus
+ *   the lambda is.
+ * - instances using the default constructor are not used
+ *   (which is the case for iterators because they are not valid if they are
+ *   constructed with the default constructor).
  *
- * A noter que l'alignement de cette classe doit être au moins celui de la
- * lambda associée.
+ * Note that the alignment of this class must be at least that of the
+ * associated lambda.
  *
- * Cette classe n'est indispensable que pour SYCL avec oneAPI car il est
- * nécessite que les itérateurs aient le concept std::random_access_iterator.
- * Cependant elle devrait aussi fonctionner avec CUDA et ROCM. A tester
- * l'effet sur les performances.
+ * This class is only indispensable for SYCL with oneAPI because it is
+ * required that iterators have the std::random_access_iterator concept.
+ * However, it should also work with CUDA and ROCM. Test the
+ * effect on performance.
  */
 template <typename LambdaType>
 class alignas(LambdaType) LambdaStorage
@@ -80,7 +81,7 @@ class alignas(LambdaType) LambdaStorage
   {
     std::memcpy(bytes, &v, SizeofLambda);
   }
-  //! Convertie la classe en la lambda.
+  //! Convert the class into the lambda.
   ARCCORE_HOST_DEVICE operator const LambdaType&() const { return *reinterpret_cast<const LambdaType*>(&bytes); }
 
  private:
@@ -90,9 +91,10 @@ class alignas(LambdaType) LambdaStorage
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gère l'allocation interne sur le device.
+ * \brief Manages internal allocation on the device.
  */
 class ARCCORE_ACCELERATOR_EXPORT GenericDeviceStorage
 {
@@ -131,9 +133,10 @@ class ARCCORE_ACCELERATOR_EXPORT GenericDeviceStorage
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gère l'allocation interne sur le device.
+ * \brief Manages internal allocation on the device.
  */
 class ARCCORE_ACCELERATOR_EXPORT DeviceStorageBase
 {
@@ -143,15 +146,16 @@ class ARCCORE_ACCELERATOR_EXPORT DeviceStorageBase
 
  protected:
 
-  //! Copie l'instance dans \a dest_ptr
+  //! Copies the instance into \a dest_ptr
   void _copyToAsync(Span<std::byte> destination, Span<const std::byte> source, const RunQueue& queue);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Gère l'allocation interne sur le device pour un type donné.
+ * \brief Manages internal allocation on the device for a given type.
  */
 template <typename DataType, Int32 N = 1>
 class DeviceStorage
@@ -168,7 +172,7 @@ class DeviceStorage
   }
   void deallocate() { m_storage.deallocate(); }
 
-  //! Copie l'instance dans \a dest_ptr
+  //! Copies the instance into \a dest_ptr
   void copyToAsync(SmallSpan<DataType> dest_ptr, const RunQueue& queue)
   {
     _copyToAsync(asWritableBytes(dest_ptr), m_storage.bytes(), queue);
@@ -177,10 +181,11 @@ class DeviceStorage
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Itérateur sur un index.
+ * \brief Iterator over an index.
  *
- * Permet d'itérer entre deux entiers.
+ * Allows iteration between two integers.
  */
 class IndexIterator
 {
@@ -243,7 +248,7 @@ class IndexIterator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateur de Scan/Reduce pour les sommes
+//! Scan/Reduce operator for sums
 template <typename DataType>
 class SumOperator
 {
@@ -262,7 +267,7 @@ class SumOperator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateur de Scan/Reduce pour le minimum
+//! Scan/Reduce Operator for minimum
 template <typename DataType>
 class MinOperator
 {
@@ -281,7 +286,7 @@ class MinOperator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Opérateur de Scan/Reduce pour le maximum
+//! Scan/Reduce Operator for maximum
 template <typename DataType>
 class MaxOperator
 {
@@ -299,8 +304,9 @@ class MaxOperator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Itérateur sur une lambda pour récupérer une valeur via un index.
+ * \brief Iterator over a lambda to retrieve a value via an index.
  */
 template <typename DataType, typename GetterLambda>
 class GetterLambdaIterator
@@ -379,17 +385,18 @@ class GetterLambdaIterator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Itérateur sur une lambda pour positionner une valeur via un index.
+ * \brief Iterator over a lambda to position a value via an index.
  *
- * Le positionnement se fait via Setter::operator=().
+ * Positioning is done via Setter::operator=().
  */
 template <typename SetterLambda>
 class SetterLambdaIterator
 {
  public:
 
-  //! Permet de positionner un élément de l'itérateur de sortie
+  //! Allows positioning an element of the output iterator
   class Setter
   {
    public:

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* DependencyInjection.cc                                      (C) 2000-2025 */
 /*                                                                           */
-/* Types et fonctions pour gérer le pattern 'DependencyInjection'.           */
+/* Types and functions to manage the 'DependencyInjection' pattern.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -71,8 +71,8 @@ class Injector::Impl
 
  public:
 
-  // Il faut conserver une instance de FactoryInfo pour éviter sa
-  // destruction prématurée car les instances dans m_factories en ont besoin.
+  // An instance of FactoryInfo must be kept to prevent its
+  // premature destruction because instances in m_factories need it.
   CoreArray<Ref<impl::IInstanceFactory>> m_factories;
   CoreArray<impl::FactoryInfo> m_factories_info;
 };
@@ -143,7 +143,7 @@ _factory(size_t i) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::DependencyInjection
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -157,7 +157,7 @@ namespace Arcane::DependencyInjection::impl
 void ConstructorRegistererBase::
 _doError1(const String& message, int nb_value)
 {
-  ARCCORE_FATAL(message,nb_value);
+  ARCCORE_FATAL(message, nb_value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -233,7 +233,7 @@ GenericRegisterer<GlobalRegisterer>::Info GlobalRegisterer::m_global_registerer_
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace impl
+} // namespace Arcane::DependencyInjection::impl
 
 namespace Arcane::DependencyInjection
 {
@@ -292,11 +292,11 @@ printFactories() const
 void Injector::
 _iterateFactories(const String& factory_name, IFactoryVisitorFunctor* functor) const
 {
-  // TODO: utiliser le std::type_info de l'instance qu'on souhaite pour limiter
-  // les itérations
+  // TODO: use the std::type_info of the instance you want to limit
+  // the iterations
 
-  // Il faut trouver un constructeur qui ait le même nombre d'arguments
-  // que le nombre d'instances enregistrées
+  // Find a constructor that has the same number of arguments
+  // as the number of registered instances
   bool has_no_name = factory_name.empty();
   size_t n = _nbFactory();
   size_t nb_instance = _nbValue();
@@ -315,7 +315,7 @@ _iterateFactories(const String& factory_name, IFactoryVisitorFunctor* functor) c
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Itère sur la lambda et s'arrête dès que cette dernière retourne \a true
+// Iterates over the lambda and stops as soon as it returns true
 void Injector::
 _iterateInstances(const std::type_info& t_info, const String& instance_name,
                   IInstanceVisitorFunctor* lambda)
@@ -350,9 +350,9 @@ _printValidImplementationAndThrow(const TraceInfo& ti,
                                   const String& implementation_name,
                                   FactoryFilterFunc filter_func)
 {
-  // Pas d'implémentation correspondante trouvée.
-  // Dans ce cas on récupère la liste des implémentations valides et on les affiche dans
-  // le message d'erreur.
+  // No corresponding implementation found.
+  // In this case, we retrieve the list of valid implementations and display them in
+  // the error message.
   CoreArray<String> valid_names;
   for (size_t i = 0, n = _nbFactory(); i < n; ++i) {
     impl::IInstanceFactory* f = _factory(i);
@@ -362,7 +362,7 @@ _printValidImplementationAndThrow(const TraceInfo& ti,
   };
   String message = String::format("No implementation named '{0}' found", implementation_name);
 
-  // TODO: améliorer le message
+  // TODO: improve the message
   String message2;
   if (valid_names.size() == 0)
     message2 = " and no implementation is available.";

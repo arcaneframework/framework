@@ -1,4 +1,4 @@
-arccore_add_component_test_executable(trace
+﻿arccore_add_component_test_executable(trace
   FILES
   TestTraceMng.cc
   )

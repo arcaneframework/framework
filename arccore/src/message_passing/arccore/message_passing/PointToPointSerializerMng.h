@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* PointToPointSerializerMng.h                                 (C) 2000-2025 */
 /*                                                                           */
-/* Communications point à point par des 'ISerializer'.                       */
+/* Point-to-point communications using 'ISerializer'.                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_POINTOTPOINTSERIALIZERMNG_H
 #define ARCCORE_MESSAGEPASSING_POINTOTPOINTSERIALIZERMNG_H
@@ -32,8 +32,9 @@ class ISerializeMessage;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Communications point à point par des 'ISerializer'.
+ * \brief Point-to-point communications using 'ISerializer'.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT PointToPointSerializerMng
 {
@@ -45,72 +46,74 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointSerializerMng
   ~PointToPointSerializerMng();
 
  public:
+
   PointToPointSerializerMng(const PointToPointSerializerMng&) = delete;
   PointToPointSerializerMng& operator=(const PointToPointSerializerMng&) = delete;
+
  public:
 
-  //! Gestionnaire de message associé
+  //! Associated message manager
   IMessagePassingMng* messagePassingMng() const;
 
   /*!
-   * \brief Envoie les messages de la liste qui ne l'ont pas encore été.
+   * \brief Sends the messages from the list that have not yet been processed.
    *
-   * Il n'est en général pas nécessaire d'appeler cette
-   * méthode car cele est fait automatiquement lors de l'appel à waitMessages().
+   * It is generally not necessary to call this
+   * method because it is done automatically when calling waitMessages().
    */
   void processPendingMessages();
 
   /*!
-   * \brief Attend que les messages aient terminé leur exécution.
+   * \brief Waits for the messages to finish execution.
    * 
-   * Le type d'attente est spécifié par \a wt.
+   * The wait type is specified by \a wt.
    *
-   * \return le nombre de messages complètement exécutés ou (-1) s'ils
-   * l'ont tous été.
+   * \return the number of messages completely executed or (-1) if they
+   * all have been.
    */
-  Integer waitMessages(eWaitType wt,std::function<void(ISerializeMessage*)> functor);
+  Integer waitMessages(eWaitType wt, std::function<void(ISerializeMessage*)> functor);
 
-  //! Indique s'il reste des messages qui ne sont pas encore terminés.
+  //! Indicates if there are remaining messages that have not yet finished.
   bool hasMessages() const;
 
   /*!
-   * \brief Créé un message de sérialisation en réception
+   * \brief Creates a receiving serialization message
    *
-   * \a sender_rank est le rang de celui qui envoie le message correspondant.
-   * Il est possible de spécifier un rang nul pour indiquer qu'on
-   * souhaite recevoir de n'importe qui.
+   * \a sender_rank is the rank of the sender of the corresponding message.
+   * It is possible to specify a null rank to indicate that one
+   * wishes to receive from anyone.
    */
   Ref<ISerializeMessage> addReceiveMessage(MessageRank sender_rank);
 
   /*!
-   * \brief Créé un message de sérialisation en réception
+   * \brief Creates a receiving serialization message
    *
-   * \a sender_rank est le rang de celui qui envoie le message correspondant.
-   * Il est possible de spécifier un rang nul pour indiquer qu'on
-   * souhaite recevoir de n'importe qui.
+   * \a sender_rank is the rank of the sender of the corresponding message.
+   * It is possible to specify a null rank to indicate that one
+   * wishes to receive from anyone.
    */
   Ref<ISerializeMessage> addReceiveMessage(MessageId message_id);
 
   /*!
-   * \brief Créé message de sérialisation en envoi.
+   * \brief Creates a sending serialization message.
    */
   Ref<ISerializeMessage> addSendMessage(MessageRank receiver_rank);
 
   /*!
-   * \brief Tag par défaut utilisé pour les messages.
+   * \brief Default tag used for messages.
    *
-   * Cette méthode ne peut être appelée que s'il n'y a pas de messages
-   * en cours (hasMessages()==false). Tous les rangs de messagePassingMng()
-   * doivent utiliser le même tag.
+   * This method can only be called if there are no messages
+   * currently in progress (hasMessages()==false). All ranks of messagePassingMng()
+   * must use the same tag.
    */
   void setDefaultTag(MessageTag default_tag);
 
   /*!
-   * \brief Stratégie utilisée pour les messages.
+   * \brief Strategy used for messages.
    *
-   * Cette méthode ne peut être appelée que s'il n'y a pas de messages
-   * en cours (hasMessages()==false). Tous les rangs de messagePassingMng()
-   * doivent utiliser la même stratégie.
+   * This method can only be called if there are no messages
+   * currently in progress (hasMessages()==false). All ranks of messagePassingMng()
+   * must use the same strategy.
    */
   void setStrategy(ISerializeMessage::eStrategy strategy);
 
@@ -122,10 +125,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT PointToPointSerializerMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

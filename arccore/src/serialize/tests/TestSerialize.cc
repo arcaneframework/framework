@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -32,11 +32,12 @@ class ISerializeValue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace
 {
 using Float64 = Real;
 template <typename T> class ValueTraits;
-#define VALUE_TRAITS(type_name,basic_type_name) \
+#define VALUE_TRAITS(type_name, basic_type_name) \
   template <> class ValueTraits<type_name> \
   { \
    public: \
@@ -45,7 +46,7 @@ template <typename T> class ValueTraits;
     static void getValue(ISerializer* s, type_name& v) { v = s->get##type_name(); } \
   };
 
-#define VALUE_TRAITS2(type_name) VALUE_TRAITS(type_name,type_name)
+#define VALUE_TRAITS2(type_name) VALUE_TRAITS(type_name, type_name)
 
 VALUE_TRAITS2(Byte);
 VALUE_TRAITS2(Int8);
@@ -55,7 +56,7 @@ VALUE_TRAITS2(Int64);
 VALUE_TRAITS2(Float16);
 VALUE_TRAITS2(Float32);
 VALUE_TRAITS2(BFloat16);
-VALUE_TRAITS(Real,Float64);
+VALUE_TRAITS(Real, Float64);
 VALUE_TRAITS2(Float128);
 VALUE_TRAITS2(Int128);
 

@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MpiRequest.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Spécialisation de 'Request' pour MPI.                                     */
+/* Specialization of 'Request' for MPI.                                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIREQUEST_H
 #define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIREQUEST_H
@@ -24,11 +24,12 @@
 namespace Arcane::MessagePassing::Mpi
 {
 class MpiAdapter;
+
 /*!
- * \brief Spécialisation MPI d'une 'Request'.
+ * \brief MPI specialization of a 'Request'.
  *
- * Cette classe permet de garantir qu'une requête MPI est bien construite
- * à partir d'une MPI_Request.
+ * This class ensures that an MPI request is properly constructed
+ * from an MPI_Request.
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequest
 : public Request
@@ -36,17 +37,17 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiRequest
  public:
 
   MpiRequest() = default;
-  MpiRequest(int ret_value,MpiAdapter* creator,MPI_Request mpi_request)
-  : Request(ret_value,creator,mpi_request){}
+  MpiRequest(int ret_value, MpiAdapter* creator, MPI_Request mpi_request)
+  : Request(ret_value, creator, mpi_request)
+  {}
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore::MessagePassing
+} // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

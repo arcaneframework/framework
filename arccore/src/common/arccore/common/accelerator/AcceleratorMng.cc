@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* AcceleratorMng.cc                                           (C) 2000-2025 */
 /*                                                                           */
-/* Implémentation de 'IAcceleratorMng'                                       */
+/* Implementation of 'IAcceleratorMng'                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -28,9 +28,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define CHECK_HAS_INIT()                        \
-  if (!m_has_init)\
-    ARCCORE_FATAL("Invalid call because IAcceleratorMng::initialized() has not been called")
+#define CHECK_HAS_INIT() \
+  if (!m_has_init) \
+  ARCCORE_FATAL("Invalid call because IAcceleratorMng::initialized() has not been called")
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,8 +40,9 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Gestionnaire des modules.
+ * \brief Module Manager.
  */
 class AcceleratorMng
 : public TraceAccessor
@@ -92,7 +93,7 @@ initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info)
   if (m_has_init)
     ARCCORE_FATAL("Method initialize() has already been called");
 
-  Impl::arccoreInitializeRunner(m_default_runner,traceMng(),runtime_info);
+  Impl::arccoreInitializeRunner(m_default_runner, traceMng(), runtime_info);
   m_has_init = true;
 
   m_default_runner_ref = std::make_unique<Runner>(m_default_runner);
@@ -112,7 +113,7 @@ arccoreCreateAcceleratorMngRef(ITraceMng* tm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

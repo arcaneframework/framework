@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* MemoryView.h                                                (C) 2000-2025 */
 /*                                                                           */
-/* Vues constantes ou modifiables sur une zone mémoire.                      */
+/* Constant or mutable views on a memory region.                             */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_MEMORYVIEW_H
 #define ARCCORE_BASE_MEMORYVIEW_H
@@ -24,15 +24,16 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup MemoryView
- * \brief Vue constante sur une zone mémoire contigue contenant des
- * éléments de taille fixe.
+ * \brief Constant view on a contiguous memory region containing
+ * fixed-size elements.
  *
- * Les fonctions makeConstMemoryView() permettent de créer des instances
- * de cette classe.
+ * The makeConstMemoryView() functions allow creating instances
+ * of this class.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is currently under definition. Do not use outside of Arcane.
  */
 class ARCCORE_BASE_EXPORT ConstMemoryView
 {
@@ -103,19 +104,19 @@ class ARCCORE_BASE_EXPORT ConstMemoryView
 
  public:
 
-  //! Vue sous forme d'octets
+  //! View in byte form
   constexpr SpanType bytes() const { return m_bytes; }
 
-  //! Pointeur sur la zone mémoire
+  //! Pointer to the memory region
   constexpr const std::byte* data() const { return m_bytes.data(); }
 
-  //! Nombre d'éléments
+  //! Number of elements
   constexpr Int64 nbElement() const { return m_nb_element; }
 
-  //! Taille du type de donnée associé (1 par défaut)
+  //! Size of the associated data type (1 by default)
   constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
-  //! Sous-vue à partir de l'indice \a begin_index et contenant \a nb_element
+  //! Sub-view starting from index \a begin_index and containing \a nb_element
   constexpr ConstMemoryView subView(Int64 begin_index, Int64 nb_element) const
   {
     Int64 byte_offset = begin_index * m_datatype_size;
@@ -125,7 +126,7 @@ class ARCCORE_BASE_EXPORT ConstMemoryView
 
  public:
 
-  //! Vue convertie en un Span
+  //! View converted to a Span
   ARCCORE_DEPRECATED_REASON("Use bytes() instead")
   SpanType span() const { return m_bytes; }
 
@@ -141,16 +142,17 @@ class ARCCORE_BASE_EXPORT ConstMemoryView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup MemoryView
  *
- * \brief Vue modifiable sur une zone mémoire contigue contenant des
- * éléments de taille fixe.
+ * \brief Mutable view on a contiguous memory region containing
+ * fixed-size elements.
  *
- * Les fonctions makeMutableMemoryView() permettent de créer des instances
- * de cette classe.
+ * The makeMutableMemoryView() functions allow creating instances
+ * of this class.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is currently under definition. Do not use outside of Arcane.
  */
 class ARCCORE_BASE_EXPORT MutableMemoryView
 {
@@ -211,19 +213,19 @@ class ARCCORE_BASE_EXPORT MutableMemoryView
 
  public:
 
-  //! Vue sous forme d'octets
+  //! View in byte form
   constexpr SpanType bytes() const { return m_bytes; }
 
-  //! Pointeur sur la zone mémoire
+  //! Pointer to the memory region
   constexpr std::byte* data() const { return m_bytes.data(); }
 
-  //! Nombre d'éléments
+  //! Number of elements
   constexpr Int64 nbElement() const { return m_nb_element; }
 
-  //! Taille du type de donnée associé (1 par défaut)
+  //! Size of the associated data type (1 by default)
   constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
-  //! Sous-vue à partir de l'indice \a begin_index
+  //! Sub-view starting from index \a begin_index
   constexpr MutableMemoryView subView(Int64 begin_index, Int64 nb_element) const
   {
     Int64 byte_offset = begin_index * m_datatype_size;
@@ -248,12 +250,13 @@ class ARCCORE_BASE_EXPORT MutableMemoryView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup MemoryView
  *
- * \brief Liste de vues constantes sur des zones mémoires contigues.
+ * \brief List of constant views on contiguous memory regions.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is currently under definition. Do not use outside of Arcane.
  */
 class ARCCORE_BASE_EXPORT ConstMultiMemoryView
 {
@@ -270,10 +273,10 @@ class ARCCORE_BASE_EXPORT ConstMultiMemoryView
     m_views = { ptr, views.size() };
   }
 
-  //! Vues en octets sur la zone mémoire
+  //! Views in byte form on the memory region
   constexpr SmallSpan<const Span<const std::byte>> views() const { return m_views; }
 
-  //! Taille du type de donnée associé (1 par défaut)
+  //! Size of the associated data type (1 by default)
   constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
  private:
@@ -284,12 +287,13 @@ class ARCCORE_BASE_EXPORT ConstMultiMemoryView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup MemoryView
  *
- * \brief Liste de vues modifiables sur des zones mémoires contigues.
+ * \brief List of mutable views on contiguous memory regions.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ * \warning API is currently under definition. Do not use outside of Arcane.
  */
 class ARCCORE_BASE_EXPORT MutableMultiMemoryView
 {
@@ -302,10 +306,10 @@ class ARCCORE_BASE_EXPORT MutableMultiMemoryView
 
  public:
 
-  //! Vues en octets sur la zone mémoire
+  //! Views in byte form on the memory region
   constexpr SmallSpan<Span<std::byte>> views() const { return m_views; }
 
-  //! Taille du type de donnée associé (1 par défaut)
+  //! Size of the associated data type (1 by default)
   constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
  private:
@@ -320,14 +324,14 @@ class ARCCORE_BASE_EXPORT MutableMultiMemoryView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Créé une vue mémoire constante à partir d'un \a Span
+//! Creates a constant memory view from a \a Span
 template <typename DataType> ConstMemoryView
 makeMemoryView(Span<DataType> v)
 {
   return ConstMemoryView(v);
 }
 
-//! Créé une vue mémoire constante sur l'adresse \a v
+//! Creates a constant memory view at address \a v
 template <typename DataType> ConstMemoryView
 makeMemoryView(const DataType* v)
 {
@@ -337,7 +341,7 @@ makeMemoryView(const DataType* v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Créé une vue mémoire modifiable à partir d'un \a Span
+//! Creates a mutable memory view from a \a Span
 template <typename DataType> MutableMemoryView
 makeMutableMemoryView(Span<DataType> v)
 {
@@ -347,7 +351,7 @@ makeMutableMemoryView(Span<DataType> v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Créé une vue mémoire modifiable sur l'adresse \a v
+//! Creates a mutable memory view at address \a v
 template <typename DataType> MutableMemoryView
 makeMutableMemoryView(DataType* v)
 {
@@ -356,28 +360,30 @@ makeMutableMemoryView(DataType* v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une vue mémoire modifiable.
+ * \brief Creates a mutable memory view.
  *
- * \param ptr adresse de la zone mémoire.
- * \param datatype_size taille (en octet) du type de la donnée.
- * \param nb_element nombre d'éléments de la vue.
+ * \param ptr address of the memory region.
+ * \param datatype_size size (in bytes) of the data type.
+ * \param nb_element number of elements in the view.
  *
- * La zone mémoire aura pour taille datatype_size * nb_element octets.
+ * The memory region will have a size of datatype_size * nb_element bytes.
  */
 extern "C++" ARCCORE_BASE_EXPORT MutableMemoryView
 makeMutableMemoryView(void* ptr, Int32 datatype_size, Int64 nb_element);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Créé une vue mémoire en lecture seule.
+ * \brief Creates a read-only memory view.
  *
- * \param ptr adresse de la zone mémoire.
- * \param datatype_size taille (en octet) du type de la donnée.
- * \param nb_element nombre d'éléments de la vue.
+ * \param ptr address of the memory region.
+ * \param datatype_size size (in bytes) of the data type.
+ * \param nb_element number of elements in the view.
  *
- * La zone mémoire aura pour taille datatype_size * nb_element octets.
+ * The memory region will have a size of datatype_size * nb_element bytes.
  */
 extern "C++" ARCCORE_BASE_EXPORT ConstMemoryView
 makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Partitioner.cc                                              (C) 2000-2026 */
 /*                                                                           */
-/* Algorithme de partitionnement de liste.                                   */
+/* List partitioning algorithm.                                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -57,8 +57,8 @@ _allocate()
   eMemoryResource r = eMemoryResource::HostPinned;
   if (m_host_nb_list1_storage.memoryRessource() != r)
     m_host_nb_list1_storage = NumArray<Int32, MDDim1>(r);
-  // Il faut deux valeurs pour la version qui décompose la liste en trois
-  // parties
+  // Two values are needed for the version that decomposes the list into
+  // three parts
   m_host_nb_list1_storage.resize(2);
 }
 

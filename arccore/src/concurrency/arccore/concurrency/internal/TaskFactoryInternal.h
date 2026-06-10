@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TaskFactoryInternal.h                                       (C) 2000-2025 */
 /*                                                                           */
-/* API interne à Arcane de 'TaskFactory'.                                    */
+/* Internal Arcane API for 'TaskFactory'.                                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_INTERNAL_TASKFACTORYINTERNAL_H
 #define ARCCORE_CONCURRENCY_INTERNAL_TASKFACTORYINTERNAL_H
@@ -24,20 +24,21 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief API interne à Arcane de 'TaskFactory'.
+ * \brief Internal Arcane API for 'TaskFactory'.
  */
 class ARCCORE_CONCURRENCY_EXPORT TaskFactoryInternal
 {
  public:
 
-  //! Ajoute un observateur pour la création de thread.
+  //! Adds an observer for thread creation.
   static void addThreadCreateObserver(IObserver* o);
 
-  //! Supprime un observateur pour la création de thread.
+  //! Removes an observer for thread creation.
   static void removeThreadCreateObserver(IObserver* o);
 
-  //! Notifie tous les observateurs de création de thread
+  //! Notifies all observers of thread creation
   static void notifyThreadCreated();
 
  public:

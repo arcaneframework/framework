@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* GlibThreadImplementation.h                                  (C) 2000-2026 */
 /*                                                                           */
-/* Implémentation de ITreadImplementation avec la 'Glib'.                    */
+/* Implementation of ITreadImplementation with 'Glib'.                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_CONCURRENCY_GLIBTHREADIMPLEMENTATION_H
 #define ARCCORE_CONCURRENCY_GLIBTHREADIMPLEMENTATION_H
@@ -28,8 +28,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Implémentation de ITreadImplementation avec la 'Glib'.
+ * \brief Implementation of ITreadImplementation with 'Glib'.
  */
 class ARCCORE_CONCURRENCY_EXPORT GlibThreadImplementation
 : public IThreadImplementation
@@ -78,7 +79,7 @@ class ARCCORE_CONCURRENCY_EXPORT GlibThreadImplementation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

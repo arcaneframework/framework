@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* TraceAccessor.h                                             (C) 2000-2025 */
 /*                                                                           */
-/* Accès aux traces.                                                         */
+/* Access to traces.                                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_TRACE_TRACEACCESSOR_H
 #define ARCCORE_TRACE_TRACEACCESSOR_H
@@ -31,118 +31,122 @@ class TraceMessage;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Classe d'accès aux traces.
+ * \brief Trace access class.
  * \ingroup Core
  */
 class ARCCORE_TRACE_EXPORT TraceAccessor
 {
  public:
-  // NOTE: il ne faut pas utiliser les versions 'default' des constructeurs,
-  // destructeurs et opérateurs de recopie sinon il faut que 'ITraceMng' soit connu
-  // à cause de l'utilisation de 'Ref' et on ne souhaite pas inclure
-  // 'ITraceMng.h' s'il n'est pas utilisé directement.
 
-  //! Construit un accesseur via le gestionnaire de trace \a m.
+  // NOTE: The 'default' versions of the constructors,
+  // destructors and copy operators must not be used unless 'ITraceMng' is known
+  // because of the use of 'Ref' and we do not want to include
+  // 'ITraceMng.h' if it is not used directly.
+
+  //! Constructs an accessor via the trace manager \a m.
   explicit TraceAccessor(ITraceMng* m);
-  //! Constructeur par recopie
+  //! Copy constructor
   TraceAccessor(const TraceAccessor& rhs);
-  //! Opérateur de recopie
+  //! Copy assignment operator
   TraceAccessor& operator=(const TraceAccessor& rhs);
-  virtual ~TraceAccessor(); //!< Libère les ressources
+  virtual ~TraceAccessor(); //!< Frees resources
 
  public:
 
-  //! Gestionnaire de trace
+  //! Trace manager
   ITraceMng* traceMng() const;
 
-  //! Flot pour un message d'information
+  //! Flow for an information message
   TraceMessage info() const;
 
-  /*! \brief Flot pour un message d'information en parallèle.
+  /*! \brief Flow for a parallel information message.
    *
-   * A la difference de info(), tous les processeurs écrivent ce
-   * message sur la sortie standard.
+   * Unlike info(), all processors write this
+   * message to standard output.
    */
   TraceMessage pinfo() const;
 
-  //! Flot pour un message d'information d'une catégorie donnée
+  //! Flow for an information message of a given category
   TraceMessage info(char category) const;
 
-  //! Flot pour un message d'information parallèle d'une catégorie donnée
+  //! Flow for a parallel information message of a given category
   TraceMessage pinfo(char category) const;
 
   /*!
-   * \brief Flot pour un message d'information.
+   * \brief Flow for an information message.
    *
-   * Si \a v est \a false, le message ne sera pas affiché.
+   * If \a v is \a false, the message will not be displayed.
    */
   TraceMessage info(bool v) const;
 
-  //! Flot pour un message d'avertissement
+  //! Flow for a warning message
   TraceMessage warning() const;
 
-  /*! Flot pour un message d'avertissement parallèle
+  /*! Flow for a parallel warning message
    *
-   * A la difference de warning(), seul le processeur maître écrit ce message.
+   * Unlike warning(), only the master processor writes this message.
    */
   TraceMessage pwarning() const;
 
-  //! Flot pour un message d'erreur
+  //! Flow for an error message
   TraceMessage error() const;
 
-  /*! Flot pour un message d'erreur parallèle
+  /*! Flow for a parallel error message
    *
-   * A la difference de error(), seul le processeur maître écrit ce message.
+   * Unlike error(), only the master processor writes this message.
    */
   TraceMessage perror() const;
 
-  //! Flot pour un message de log
+  //! Flow for a log message
   TraceMessage log() const;
 
-  //! Flot pour un message de log
+  //! Flow for a log message
   TraceMessage plog() const;
 
-  //! Flot pour un message de log précédé de la date
+  //! Flow for a log message preceded by the date
   TraceMessage logdate() const;
 
-  //! Flot pour un message d'erreur fatale
+  //! Flow for a fatal error message
   TraceMessage fatal() const;
 
-  //! Flot pour un message d'erreur fatale en parallèle
+  //! Flow for a parallel fatal error message
   TraceMessage pfatal() const;
 
 #ifdef ARCCORE_DEBUG
-  //! Flot pour un message de debug
-  TraceMessageDbg debug(Trace::eDebugLevel =Trace::Medium) const;
+  //! Flow for a debug message
+  TraceMessageDbg debug(Trace::eDebugLevel = Trace::Medium) const;
 #else
-  //! Flot pour un message de debug
-  TraceMessageDbg debug(Trace::eDebugLevel =Trace::Medium) const
-  { return TraceMessageDbg(); }
+  //! Flow for a debug message
+  TraceMessageDbg debug(Trace::eDebugLevel = Trace::Medium) const
+  {
+    return TraceMessageDbg();
+  }
 #endif
 
-  //! Niveau debug du fichier de configuration
+  //! Debug level of the configuration file
   Trace::eDebugLevel configDbgLevel() const;
 
-  //! Flot pour un message d'information d'un niveau donné
+  //! Flow for an information message of a given level
   TraceMessage info(Int32 verbose_level) const;
 
-  //! Flot pour un message d'information avec le niveau d'information local à cette instance.
+  //! Flow for an information message with the local information level of this instance.
   TraceMessage linfo() const
   {
     return info(m_local_verbose_level);
   }
 
-  //! Flot pour un message d'information avec le niveau d'information local à cette instance.
+  //! Flow for an information message with the local information level of this instance.
   TraceMessage linfo(Int32 relative_level) const
   {
-    return info(m_local_verbose_level+relative_level);
+    return info(m_local_verbose_level + relative_level);
   }
 
   void fatalMessage [[noreturn]] (const StandaloneTraceMessage& o) const;
 
  protected:
-  
+
   void _setLocalVerboseLevel(Int32 v) { m_local_verbose_level = v; }
   Int32 _localVerboseLevel() const { return m_local_verbose_level; }
 
@@ -155,10 +159,9 @@ class ARCCORE_TRACE_EXPORT TraceAccessor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

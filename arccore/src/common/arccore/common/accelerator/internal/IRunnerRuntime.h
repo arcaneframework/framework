@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* IRunnerRuntime.h                                            (C) 2000-2025 */
 /*                                                                           */
-/* Interface du runtime associé à une RunQueue.                              */
+/* Interface of the runtime associated with a RunQueue.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_ACCELERATOR_INTERNAL_IRUNQUEUERUNTIME_H
 #define ARCCORE_COMMON_ACCELERATOR_INTERNAL_IRUNQUEUERUNTIME_H
@@ -24,11 +24,12 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Interface du runtime associé à un accélérateur.
+ * \brief Interface of the runtime associated with an accelerator.
  *
- * Il existe actuellement trois implémentations accélérateurs pour cette
+ * There are currently three accelerator implementations for this
  * interface: CUDA, ROCM, SYCL.
  */
 class ARCCORE_COMMON_EXPORT IRunnerRuntime
@@ -51,7 +52,7 @@ class ARCCORE_COMMON_EXPORT IRunnerRuntime
   virtual void setCurrentDevice(DeviceId device_id) = 0;
   virtual const IDeviceInfoList* deviceInfoList() = 0;
   virtual void getPointerAttribute(PointerAttribute& attribute, const void* ptr) = 0;
-  virtual DeviceMemoryInfo getDeviceMemoryInfo(DeviceId device_id) =0;
+  virtual DeviceMemoryInfo getDeviceMemoryInfo(DeviceId device_id) = 0;
 
   virtual void startProfiling() {}
   virtual void stopProfiling() {}
@@ -80,4 +81,4 @@ class ARCCORE_COMMON_EXPORT IRunnerRuntime
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

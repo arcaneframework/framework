@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* LocalMemory.h                                               (C) 2000-2025 */
 /*                                                                           */
-/* Mémoire locale à une RunCommand.                                          */
+/* Local memory for a RunCommand.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_ACCELERATOR_LOCALMEMORY_H
 #define ARCCORE_ACCELERATOR_LOCALMEMORY_H
@@ -44,11 +44,12 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \internal
- * \brief Mémoire locale (__shared__) à une RunCommand.
+ * \brief Local memory (__shared__) for a RunCommand.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors d'Arcane.
+ * \warning API is currently under definition. Do not use outside of Arcane.
  */
 template <typename T, Int32 Extent>
 class LocalMemory
@@ -85,10 +86,10 @@ class LocalMemory
  private:
 
   T* m_ptr = nullptr;
-  // TODO: l'offset n'est utilisé on pourrait supprimer l'offset en le passant
-  //! Offset depuis le début de la mémoire __shared__
+  // TODO: the offset is not used, we could remove the offset by passing it
+  //! Offset from the beginning of the __shared__ memory
   Int32 m_offset = 0;
-  //! Nombre d'éléments du tableau
+  //! Number of elements in the array
   [[no_unique_address]] ::Arcane::Impl::ExtentStorage<Int32, Extent> m_size;
 
  protected:
@@ -109,8 +110,10 @@ namespace Arcane::Accelerator::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Handler pour LocalMemory appelés en début et fin d'exécution de noyau.
+ * \brief Handler for LocalMemory called at the beginning and end of kernel
+ * execution.
  */
 class LocalMemoryKernelRemainingArg
 {

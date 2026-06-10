@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* SubRequestCompletionInfo.h                                  (C) 2000-2025 */
 /*                                                                           */
-/* Informations de complétion pour une sous-requête.                         */
+/* Completion information for a sub-request.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_INTERNAL_SUBREQUESTCOMPLETIONINFO_H
 #define ARCCORE_MESSAGEPASSING_INTERNAL_SUBREQUESTCOMPLETIONINFO_H
@@ -25,8 +25,9 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Informations de complètion d'une sous-requête.
+ * \brief Completion information for a sub-request.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT SubRequestCompletionInfo
 {
@@ -39,9 +40,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT SubRequestCompletionInfo
 
  public:
 
-  //! Rang d'origine de la requête
+  //! Source rank of the request
   MessageRank sourceRank() const { return m_source_rank; }
-  //! Tag d'origine de la requête
+  //! Source tag of the request
   MessageTag sourceTag() const { return m_source_tag; }
 
  private:
@@ -53,10 +54,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT SubRequestCompletionInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif

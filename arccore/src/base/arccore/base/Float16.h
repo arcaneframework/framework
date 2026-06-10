@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* Float16.h                                                   (C) 2000-2025 */
 /*                                                                           */
-/* Type flottant demi-précision.                                             */
+/* Half-precision floating-point type.                                       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_BASE_FLOAT16_H
 #define ARCCORE_BASE_FLOAT16_H
@@ -26,8 +26,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Type flottant demi-précision
+ * \brief Half-precision floating-point type
  */
 class ARCCORE_BASE_EXPORT Float16
 {
@@ -76,7 +77,7 @@ class ARCCORE_BASE_EXPORT Float16
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arccore
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
