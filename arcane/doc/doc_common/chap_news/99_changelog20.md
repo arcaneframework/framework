@@ -626,7 +626,7 @@ IParallelMng* pm = ...;
 MessagePassing::namedBarrier(pm,"MyBarrier");
 ```
 
-- possibility to mix declarations of material and medium variables (for scalar
+- possibility to mix declarations of material and environment variables (for scalar
   variables only). In this case, all variables are allocated on materials and
   environment. By default, this is not active because it consumes memory
   unnecessarily.
@@ -735,8 +735,8 @@ ___
 - Support for the Arcane::MeshMaterialVariableRef::synchronize() method for
   variables only on environment.
 - Adds a method on material variables to fill partial values with the value of
-  the parent component cell. This allows filling material values with medium
-  values or medium values with global values. The method is called
+  the parent component cell. This allows filling material values with environment
+  values or environment values with global values. The method is called
   Arcane::Materials::MeshMaterialVariableRef::fillPartialValuesWithSuperValues().
 - Adds constant STL iterators for the Arcane::ItemVectorView class. This allows
   using STL algorithms with this class.
