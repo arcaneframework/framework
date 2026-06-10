@@ -1,22 +1,22 @@
-# Services et modules disponibles {#arcanedoc_services_modules}
+﻿# Available Services and Modules {#arcanedoc_services_modules}
 
-Ce chapitre présente les services et les modules disponibles dans %Arcane.
+This chapter presents the services and modules available in %Arcane.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 <!-- Pages générées par AxlDoc. -->
 
 - \subpage axldoc_casemainpage <br>
-  Présente la liste des modules/services disponibles dans %Arcane ainsi que 
-  leurs descriptions.
+  Presents the list of modules/services available in %Arcane as well as their
+  descriptions.
 
 - \subpage axldoc_interfacemainpage <br>
-  Présente les interfaces qu'implémentent les services.
+  Presents the interfaces implemented by the services.
 
 - \subpage axldoc_all_option_index <br>
-  Présente une liste des mots-clefs utilisés dans les modules/services.
+  Presents a list of keywords used in the modules/services.
 
 
 ____

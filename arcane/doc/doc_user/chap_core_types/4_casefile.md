@@ -1,148 +1,148 @@
-﻿# Jeu de données (.ARC) {#arcanedoc_core_types_casefile}
+﻿# Dataset (.ARC) {#arcanedoc_core_types_casefile}
 
 [TOC]
 
 ## Introduction {#arcanedoc_core_types_casefile_intro}
 
-Ce chapître décrit la structure d'un jeu de données. Le jeu de
-données est un fichier au format [XML](https://www.w3.org/TR/xml) qui
-contient les valeurs permettant de paramétrer l'exécution d'un code de
-calcul.
+This chapter describes the structure of a dataset. The dataset is an
+[XML](https://www.w3.org/TR/xml) file that contains the values used to configure
+the execution of a calculation code.
 
-Voici un exemple de jeu de donnée en anglais :
+Here is an example of a dataset in English:
 
 ```xml
 <?xml version="1.0"?>
 <case codename="ArcaneTest" codeversion="1.0">
- <arcane>
-  <title>Tube à choc de Sod</title>
-  <description>Ce JDD permet de tester le module Hydro simplifié de
-     Arcane</description>
-  <timeloop>ArcaneHydroLoop</timeloop>
- </arcane>
+  <arcane>
+    <title>Sod Shock Tube</title>
+    <description>This dataset allows testing the simplified Hydro module of
+      Arcane
+    </description>
+    <timeloop>ArcaneHydroLoop</timeloop>
+  </arcane>
 
- <!-- Liste des maillages (toujours en anglais) -->
- <meshes>
-  <mesh>
-   <filename>tube5x5x100.ice</filename>
-  </mesh>
- </meshes>
+  <!-- List of meshes (always in English) -->
+  <meshes>
+    <mesh>
+      <filename>tube5x5x100.ice</filename>
+    </mesh>
+  </meshes>
 
- <functions>
-  <table name="table-dt" parameter="time" value="real" interpolation="linear">
-   <value><x>0.0</x><y>1.0e-3</y></value>
-   <value><x>1.0e-2</x><y>1.0e-5</y></value>
-  </table>
- </functions>
+  <functions>
+    <table name="table-dt" parameter="time" value="real" interpolation="linear">
+      <value>
+        <x>0.0</x>
+        <y>1.0e-3</y>
+      </value>
+      <value>
+        <x>1.0e-2</x>
+        <y>1.0e-5</y>
+      </value>
+    </table>
+  </functions>
 
- <simple-hydro>
-  <deltat-init>0.001</deltat-init>
-  <deltat-min>0.0001</deltat-min>
-  <deltat-max>0.01</deltat-max>
-  <final-time>0.2</final-time>
- </simple-hydro>
+  <simple-hydro>
+    <deltat-init>0.001</deltat-init>
+    <deltat-min>0.0001</deltat-min>
+    <deltat-max>0.01</deltat-max>
+    <final-time>0.2</final-time>
+  </simple-hydro>
 
 </case>
 ```
 
-Un jeu de données se compose de quatre parties :
+A dataset consists of four parts:
 
-- l'élément `<arcane>` permettant entre autre de configurer la boucle
-  en temps et les modules actifs (voir \ref
-  arcanedoc_core_types_casefile_arcaneelement)
-- l'élément maillage (`<meshes>`) permettant de décrire le
-  maillage (voir \ref arcanedoc_core_types_casefile_meshes).
-- l'élément contenant les fonctions (`<functions>` ou
-  `<fonctions>`)(voir \ref
-  arcanedoc_core_types_casefile_functions)
-- les éléments restants concernent les options des différents
-  modules du code.
+- the `<arcane>` element, which allows, among other things, configuring the time
+  loop and the active modules (see
+  \ref arcanedoc_core_types_casefile_arcaneelement)
+- the mesh element (`<meshes>`), which allows describing the mesh (see
+  \ref arcanedoc_core_types_casefile_meshes).
+- the element containing functions (`<functions>` or `<fonctions>`) (see
+  \ref arcanedoc_core_types_casefile_functions)
+- the remaining elements concern the options of the different code modules.
 
-Seule la balise `<arcane>` est requise. Les autres balises sont
-optionnelles
+Only the `<arcane>` tag is required. The other tags are optional.
 
-\warning Les caractères blancs dans les attributs sont interdits dans
-la norme XML. Le jeu de données est donc invalide s'il y en
-a. Cependant les analyseurs peuvent les tolérer. Les caractères
-blancs en début et fin de balises sont
-significatifs et peuvent changer la signification ou rendre invalide
-un jeu de données. Par exemple, <file> Toto</file> indique que le
-fichier de maillage contient un blanc avant les caractères 'Toto'.
+\warning Whitespace characters in attributes are forbidden in the XML standard.
+Therefore, the dataset is invalid if they are present. However, parsers may
+tolerate them. Whitespace characters at the beginning and end of tags are
+significant and can change the meaning or render a dataset invalid. For example,
+`<file> Toto</file>` indicates that the mesh file contains a space before the
+characters 'Toto'.
 
-\note Pour des raisons historiques, il est toléré d'avoir des
-espaces en début ou fin de texte d'une balise dans le cas des
-options simples du jeu de données (voir \ref
-arcanedoc_core_types_axl_caseoptions_options_simple). Dans ce cas, ces espaces sont
-ignorés. Par exemple `<deltat>  25.0  </deltat>` est valide. Ces
-blancs ne sont autorisés que dans les options des modules et
-services, pas dans les balises spécifiques à %Arcane (comme
-`<arcane>`, `<functions>`, `<meshes>`, ...).
+\note For historical reasons, it is tolerated to have spaces at the beginning or
+end of a tag's text in the case of simple dataset options (see 
+\ref arcanedoc_core_types_axl_caseoptions_options_simple). In this case, these
+spaces are ignored. For example, `<deltat>  25.0  </deltat>` is valid. These
+spaces are only allowed in module and service options, not in tags specific to
+%Arcane (such as `<arcane>`, `<functions>`, `<meshes>`, ...).
 
-## Élément <arcane> {#arcanedoc_core_types_casefile_arcaneelement}
+## <arcane> Element {#arcanedoc_core_types_casefile_arcaneelement}
 
-Cet élément contient les informations sur la boucle en temps
-utilisée et la liste des modules actifs. Le contenu de cet élément
-est la première chose lue dans le jeu de données. Les éléments
-suivants sont possibles :
+This element contains information about the time loop used and the list of
+active modules. The content of this element is the first thing read in the
+dataset. The following elements are possible:
 
 ```xml
 <arcane>
-  <title>Tube à choc de Sod</title>
-  <description>Ce JDD permet de tester le module Hydro simplifié de Arcane</description>
+  <title>Sod Shock Tube</title>
+  <description>This dataset allows testing the simplified Hydro module of
+    Arcane
+  </description>
   <timeloop>ArcaneHydroLoop</timeloop>
   <modules>
-    <module name="Hydro" actif="true" />
-    <module name="PostProcessing" actif="false" />
+    <module name="Hydro" actif="true"/>
+    <module name="PostProcessing" actif="false"/>
   </modules>
   <configuration>
-    <parameter name="NotParallel" value="false" />
-    <parameter name="NotCheckpoint" value="true" />
+    <parameter name="NotParallel" value="false"/>
+    <parameter name="NotCheckpoint" value="true"/>
   </configuration>
 </arcane>
 ```
 
-Le tableau suivant donne la liste des éléments possibles :
+The following table lists the possible elements:
 
 <table>
 <tr>
-<th>élément anglais</th>
-<th>élément francais</th>
-<th>description</th>
+<th>English element</th>
+<th>French element</th>
+<th>Description</th>
 </tr>
 <tr>
 
 <td><b>timeloop</b></td>
 <td><b>boucle-en-temps</b></td>
-<td> nom de la boucle en temps utilisée. Ce nom doit correspondre à
-une boucle en temps disponible dans le fichier de configuration du code.
+<td> Name of the time loop used. This name must correspond to a time loop
+available in the code's configuration file.
 </td>
 </tr>
 
 <tr>
 <td><b>title</b></td>
 <td><b>titre</b></td>
-<td> titre du jeu de données. Purement informatif.
+<td> Title of the dataset. Purely informational.
 </td>
 </tr>
 
 <tr>
 <td><b>description</b></td>
 <td><b>description</b></td>
-<td> description du cas test. Purement informatif.
+<td> Description of the test case. Purely informational.
 </td>
 </tr>
 
 <tr>
 <td><b>modules</b></td>
 <td><b>modules</b></td>
-<td> Liste des modules avec leur état d'activation. Cette balise est
-utilisée pour indiquer si un module optionnel est activé ou non. Par
-défaut les modules optionnels ne sont pas actifs. Il s'agit d'une
-liste d'éléments `<module>` comme suit :
+<td> List of modules with their activation status. This tag is used to indicate
+whether an optional module is active or not. By default, optional modules are
+not active. It is a list of `<module>` elements as follows:
 
 ```xml
-<module name="Module1" active='true' />
-<module name="Module2" active='false' />
+<module name="Module1" active='true'/>
+<module name="Module2" active='false'/>
 ```
 </td>
 </tr>
@@ -150,40 +150,39 @@ liste d'éléments `<module>` comme suit :
 <tr>
 <td><b>services</b></td>
 <td><b>services</b></td>
-<td> Liste de services singletons avec leur état d'activation (qui
-vaut *vrai* par défaut). Il s'agit d'une liste d'éléments <service>
-comme suit :
+<td> List of singleton services with their activation status (which defaults to
+*true*). It is a list of `<service>` elements as follows:
 
 ```xml
-<service name="Service1" active='true' />
-<service name="Service2" active='false' />
-<service name="Service3" />
+<service name="Service1" active='true'/>
+<service name="Service2" active='false'/>
+<service name="Service3"/>
 ```
-Dans l'exemple précédent, les services de nom 'Service1' et 'Service3' seront chargés.
+In the previous example, the services named 'Service1' and 'Service3' will be
+loaded.
 </td>
 </tr>
 
 <tr>
 <td><b>configuration</b></td>
 <td><b>configuration</b></td>
-<td> Liste de paramêtres de configuration. Ces paramètres ne sont pas
-lus par %Arcane mais peuvent être utilisés par exemple par la procédure
-de lancement du code. Chaque paramètre est de la forme suivante :
+<td> List of configuration parameters. These parameters are not read by %Arcane
+but can be used, for example, by the code's launch procedure. Each parameter is
+in the following format:
 
 ```xml
-<parameter name="Param1" value='value1' /> <!-- Anglais -->
-<parametre name="Param1" value='value1' /> <!-- Francais -->
+<parameter name="Param1" value='value1'/> <!-- English -->
+<parametre name="Param1" value='value1'/> <!-- French -->
 ```
 </td>
 </tr>
 </table>
 
-## Maillages (balise <meshes>) {#arcanedoc_core_types_casefile_meshes}
+## Meshes (tag <meshes>) {#arcanedoc_core_types_casefile_meshes}
 
-Les maillages sont gérées par le service `ArcaneCaseMeshService`. Les
-valeurs possibles sont décrites dans la page \ref
-axldoc_service_ArcaneCaseMeshService_arcane_impl. Il est possible de
-spécifier plusieurs maillages. Par exemple :
+Meshes are managed by the `ArcaneCaseMeshService` service. Possible values are
+described in the page \ref axldoc_service_ArcaneCaseMeshService_arcane_impl. It
+is possible to specify multiple meshes. For example:
 
 ~~~xml
 <meshes>
@@ -196,11 +195,10 @@ spécifier plusieurs maillages. Par exemple :
 </meshes>
 ~~~
 
-Il existe une autre possibilité pour spécifier les maillages. Cette
-possibilité est déclarée obsolète et ne doit être utilisée que par les
-codes existants. Pour ces codes, on utilise la balise `<mesh>` (ou
-`<maillage>` en francais) pour spécifier les informations du
-maillage. Par exemple :
+There is another possibility to specify meshes. This possibility is declared
+obsolete and should only be used by existing codes. For these codes, the
+`<mesh>` tag (or `<maillage>` in French) is used to specify mesh information.
+For example:
 
 ~~~xml
 <maillage>
@@ -211,21 +209,19 @@ maillage. Par exemple :
 </maillage>
 ~~~
 
-## Fonctions (balises <fonctions> ou <functions>) {#arcanedoc_core_types_casefile_functions}
+## Functions (tags <fonctions> or <functions>) {#arcanedoc_core_types_casefile_functions}
 
-Il est possible de définir dans le jeu de données des fonctions qui
-sont utilisées pour faire varier les valeurs d'une option en fonction
-du temps physique ou de l'itération. L'ensemble des fonctions est
-défini dans la balise `<fonctions>` si la langue est le francais ou
-`<functions> si la langue est l'anglais.
+It is possible to define functions in the dataset that are used to vary the
+values of an option based on physical time or iteration. The set of functions is
+defined in the `<fonctions>` tag if the language is French or `<functions>` if
+the language is English.
 
-\note Dans la suite du document on utilisera uniquement les termes en
-anglais pour améliorer la lisibilité.
+\note In the rest of the document, only English terms will be used to improve
+readability.
 
-Une fonction doit avoir un nom unique qui est utilisé par l'option
-pour la référencer. L'exemple suivante montre comment définir une
-fonction `table-dt` et l'utiliser en référence dans l'option
-`<my-option>` :
+A function must have a unique name that is used by the option to reference it.
+The following example shows how to define a `table-dt` function and use it as a
+reference in the `<my-option>` option:
 
 ~~~{xml}
 <?xml version="1.0"?>
@@ -243,35 +239,32 @@ fonction `table-dt` et l'utiliser en référence dans l'option
  </my-module>
 ~~~
 
-Les fonctions prennent un seul argument en paramètre et peuvent
-retourner le type attendu par l'option qui les utilise. Les deux
-valeurs possibles pour les paramètres sont :
+Functions take a single argument as a parameter and can return the type expected
+by the option that uses them. The two possible values for the parameters are:
 
-- le temps physique. Dans ce cas le type du paramètre est un `reel`.
-- le numéro de l'itération. Dans ce cas le type du paramètre est un entier.
+- physical time. In this case, the parameter type is a `real`.
+- iteration number. In this case, the parameter type is an integer.
 
-Au début de chaque itération, %Arcane met automatiquement à jour les
-options du jeu de données qui référencent une fonction (via la méthode
+At the beginning of each iteration, %Arcane automatically updates the dataset
+options that reference a function (via the method
 \arcane{ICaseMng::updateOptions()}).
 
-La balise `<functions>` permet de définir deux types de fonction:
+The `<functions>` tag allows defining two types of functions:
 
-- les tables de marche qui sont spécifiées directement dans le jeu de
-  données. Il s'agit de fonctions linéaires continues ou linéaires par
-  morceau.
-- des fonctions externes écrite en C#. Dans ce cas il est possible de
-  définir n'importe quel type de fonction dont la signature correspond
-  au type attendu par l'option. Le chapître \ref
-  arcanedoc_wrapping_csharp_casefunction indique comment définir et
-  utiliser ces fonctions.
+- lookup tables specified directly in the dataset. These are continuous or
+  piecewise linear functions.
+- external functions written in C#. In this case, any type of function whose
+  signature matches the type expected by the option can be defined. Chapter
+  \ref arcanedoc_wrapping_csharp_casefunction indicates how to define and use
+  these functions.
 
-### Syntaxe des tables de marche
+### Lookup Table Syntax
 
-Une table de marche est une fonction linéaire continue ou linéaire par
-morceau définie par un ensemble de couples `(X,Y)`. Par exemple :
+A lookup table is a continuous or piecewise linear function defined by a set of
+`(X,Y)` pairs. For example:
 
 ~~~{xml}
- <!-- Exemple en anglais -->
+ <!-- Example in English -->
  <functions>
   <table name="table-dt" parameter="time" value="real" interpolation="linear">
    <value><x>0.0</x><y>1.0e-3</y></value>
@@ -281,7 +274,7 @@ morceau définie par un ensemble de couples `(X,Y)`. Par exemple :
 ~~~
 
 ~~~{xml}
- <!-- Exemple en francais -->
+ <!-- Example in French -->
  <table nom='test-time-real-2' parametre='temps' valeur='reel' interpolation='lineaire'>
   <valeur> <x>0.0</x> <y>3.0</y> </valeur>
   <valeur> <x>4.0</x> <y>9.0</y> </valeur>
@@ -292,19 +285,18 @@ morceau définie par un ensemble de couples `(X,Y)`. Par exemple :
  </table>
 ~~~
 
-Les couples `(X,Y)` doivent être rangés par valeur croissante de
-`X`. Si la valeur du paramètre est plus petite ou plus grande que la
-première ou la dernière valeur de la tablea de marche, on prend cette
-dernière. Dans l'exemple précédent pour la table de marche
-`test-time-real-2`, si `X<0.0` on retourne `3.0` et si `X>14.0` on
-retourne `-3.0`.
+The `(X,Y)` pairs must be sorted by increasing value of `X`. If the parameter
+value is smaller or larger than the first or last value of the lookup table, the
+last value is taken. In the previous example for the lookup table
+`test-time-real-2`, if `X<0.0` then `3.0` is returned, and if `X>14.0` then
+`-3.0` is returned.
 
-Les tables de marche ont les attributes suivants :
+Lookup tables have the following attributes:
 
 <table>
 <tr>
-<th>Nom Anglais</th>
-<th>Nom Francais</th>
+<th>English Name</th>
+<th>French Name</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -313,7 +305,7 @@ Les tables de marche ont les attributes suivants :
 <td>nom</td>
 <td>name</td>
 <td>string</td>
-<td>Nom de la table de marche.
+<td>Name of the lookup table.
 </td>
 
 </tr>
@@ -322,9 +314,9 @@ Les tables de marche ont les attributes suivants :
 <td>parameter</td>
 <td>parametre</td>
 <td>string</td>
-<td>Type du paramètre. Les valeurs possibles sont `time` (`temps` en
-francais) pour un paramètre qui est le temps physique ou `iteration`
-pour un paramètre qui est le numéro de l'itération courante.
+<td>Parameter type. Possible values are `time` (`temps` in French) for a
+parameter that is physical time or `iteration` for a parameter that is the
+current iteration number.
 </td>
 </tr>
 
@@ -332,9 +324,9 @@ pour un paramètre qui est le numéro de l'itération courante.
 <td>value</td>
 <td>valeur</td>
 <td>string</td>
-<td>Type de la valeur de retour de la table de marche. Les valeurs
-possibles sont `real`, `integer`, `real3`, `string` ou `bool`
-(respectivement `reel`, `entier`, `reel3`, `string` et `bool` en francais).
+<td>Type of the lookup table return value. Possible values are `real`,
+`integer`, `real3`, `string`, or `bool` (respectively `reel`, `entier`,
+`reel3`, `string`, and `bool` in French).
 </td>
 </tr>
 
@@ -342,18 +334,16 @@ possibles sont `real`, `integer`, `real3`, `string` ou `bool`
 <td>interpolation</td>
 <td>interpolation</td>
 <td>string</td>
-<td>Les valeurs possibles sont `linear` ou `constant` (`lineaire` ou
-`constant-par-morceaux` en francais). Si l'interpolation est
-constante, la valeur retournée est celle correspondante de `Y` qui
-correspond au `X` immédiatement inférieur à la valeur du paramètre. Si
-l'interpolation est linéaire, on réalise une interpolation linéaire
-entre `(X1,Y1)` et `(X2,Y2)`, avec `X1` la valeur de `X` immédiatement
-inférieure au paramètre et `X2` la valeur suivante dans la table de
-marche. Pour la table de marche précedente (`test-time-real-2`) en
-exemple, si `X` vaut `4.5` alors on retourne `9.0` si l'interpolation
-est constante par morceaux et `8.0` (soit `Y1 +
-(X-X1)*(Y2-Y1)/(X2-X1)` <=> `9.0 + (4.5-4.0)*(7.0-9.0)/(5.0-4.0)`) si
-l'interpolation est linéaire.
+<td>Possible values are `linear` or `constant` (`lineaire` or
+`constant-par-morceaux` in French). If the interpolation is constant, the
+returned value is the corresponding `Y` value that matches the `X` immediately
+below the parameter value. If the interpolation is linear, a linear
+interpolation is performed between `(X1,Y1)` and `(X2,Y2)`, where `X1` is the
+value of `X` immediately below the parameter and `X2` is the next value in the
+lookup table. For the previous lookup table (`test-time-real-2`) example, if
+`X` equals `4.5`, then `9.0` is returned if the interpolation is piecewise
+constant, and `8.0` (i.e., `Y1 + (X-X1)*(Y2-Y1)/(X2-X1)` <=> `9.0 + (4.5-4.0)*(7.0-9.0)/(5.0-4.0)`)
+if the interpolation is linear.
 </td>
 </tr>
 
@@ -361,11 +351,10 @@ l'interpolation est linéaire.
 <td>comul</td>
 <td>comul</td>
 <td>string</td>
-<td>Coefficient multiplicateur pour la valeur. Cet attribut est
-optionnel et doit être du même type que la valeur de la fonction. S'il
-est présent, la valeur de la fonction est multipliée par la valeur de
-cet attribut (pour un `Real3`, la multiplication est faite composante
-par composante)
+<td>Multiplier coefficient for the value. This attribute is optional and must be
+of the same type as the function's value. If present, the function's value is
+multiplied by the value of this attribute (for a `Real3`, the multiplication
+is done component by component).
 </td>
 </tr>
 
@@ -373,9 +362,9 @@ par composante)
 <td>deltat-coef</td>
 <td>deltat-coef</td>
 <td>real</td>
-<td>Coefficient multiplicateur pour le temps physique. Cet attribut est
-optionnel et est utilisé pour multiplier la valeur du pas de temps
-courant (voir \arcane{ICaseMng::updateOptions()}).
+<td>Multiplier coefficient for physical time. This attribute is optional and is
+used to multiply the current time step value (see
+\arcane{ICaseMng::updateOptions()}).
 </td>
 </tr>
 

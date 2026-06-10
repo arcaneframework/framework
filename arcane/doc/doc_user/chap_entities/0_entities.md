@@ -1,27 +1,26 @@
-# Entités, maillages et connectivités {#arcanedoc_entities}
+﻿# Entities, meshes, and connectivities {#arcanedoc_entities}
 
-Ce chapitre présente la notion de maillage présente dans %Arcane avec
-par exemple les maillages cartésiens et les différents types de mailles disponibles.  
-Présentation aussi de la gestion des connectivités des entités et de la gestion
-de la géométrie.
+This chapter presents the concept of meshing present in %Arcane, with examples
+such as Cartesian meshes and the different types of cells available. It also
+presents the management of entity connectivities and the management of geometry.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 1. \subpage arcanedoc_entities_cartesianmesh </br>
 
 2. \subpage arcanedoc_entities_snippet_cartesianmesh </br>
 
 3. \subpage arcanedoc_entities_amr_cartesianmesh <br>
-   Décrit le fonctionnement de l'AMR pour les maillages cartésiens.</br>
+   Describes the functioning of AMR for Cartesian meshes.</br>
 
 4. \subpage arcanedoc_entities_connectivity_internal <br>
-  Décrit le nouveau mécanisme (à partir de la version 2.5) de gestion
-   des connectivités des entités.</br>
+   Describes the new mechanism (starting from version 2.5) for managing entity
+   connectivities.</br>
 
 5. \subpage arcanedoc_entities_itemtype <br>
-   Décrit les types de mailles classiques.</br>
+   Describes the types of classic cells.</br>
 
 6. \subpage arcanedoc_entities_geometric </br>
 

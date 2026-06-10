@@ -1,12 +1,12 @@
-# Utilisation {#arcanedoc_services_modules_simplecsvcomparator_usage}
+﻿# Usage {#arcanedoc_services_modules_simplecsvcomparator_usage}
 
 [TOC]
 
 ## Singleton
 
-Pour une utilisation en tant que singleton (même objet pour tous les modules) :
+For use as a singleton (same object for all modules):
 
-Placer ces lignes dans le .config de votre projet :
+Place these lines in your project's .config:
 
 ```xml
 <singleton-services>
@@ -14,33 +14,33 @@ Placer ces lignes dans le .config de votre projet :
 </singleton-services>
 ```
 
-Et dans votre/vos module(s) :
+And in your module(s):
 
 ```cpp
-#include <arcane/ISimpleTableComparator.h>
+#include <arcane/core/ISimpleTableComparator.h>
 
 using namespace Arcane;
 
 ISimpleTableComparator* comparator = ServiceBuilder<ISimpleTableComparator>(subDomain()).getSingleton();
-comparator->init(/* Pointeur vers un ISimpleTableOutput */); // Ne doit être fait que par un seul module.
-comparator->compareWithReference(); // Ne doit être fait que par un seul module.
+comparator->init(/* Pointer to an ISimpleTableOutput */); // Must only be done by a single module.
+comparator->compareWithReference(); // Must only be done by a single module.
 ```
 
 ## Service
 
-Pour une utilisation en tant que service (objet different pour chaque module) : 
+For use as a service (different object for each module): 
 
-Placer ces lignes dans le .axl de votre module :
+Place these lines in your module's .axl:
 
 ```xml
 <!-- <options> -->
   <service-instance name="simple-table-comparator" type="Arcane::ISimpleTableComparator">
-    <description>Service implémentant ISimpleTableComparator</description>
+    <description>Service implementing ISimpleTableComparator</description>
   </service-instance>
 <!-- </options> -->
 ```
 
-Dans le .arc, vous pouvez déclarer l'implémentation à utiliser. Par exemple :
+In the .arc, you can declare the implementation to use. For example:
 
 ```xml
 <!-- <mon-module> -->
@@ -49,18 +49,18 @@ Dans le .arc, vous pouvez déclarer l'implémentation à utiliser. Par exemple :
 <!-- </mon-module> -->
 ```
 
-Et dans votre module :
+And in your module:
 
 ```cpp
-#include <arcane/ISimpleTableComparator.h>
+#include <arcane/core/ISimpleTableComparator.h>
 
 using namespace Arcane;
 
-options()->simpleCsvComparator()->init(/* Pointeur vers un ISimpleTableOutput */);
+options()->simpleCsvComparator()->init(/* Pointer to an ISimpleTableOutput */);
 options()->simpleCsvComparator()->compareWithReference();
 ```
 
-(Pour un exemple plus concret, voir les pages suivantes)
+(For a more concrete example, see the following pages)
 
 
 ____

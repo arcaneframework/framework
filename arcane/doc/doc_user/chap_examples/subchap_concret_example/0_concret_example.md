@@ -1,13 +1,15 @@
-# Exemple concret {#arcanedoc_examples_concret_example}
+﻿# Concrete Example {#arcanedoc_examples_concret_example}
 
-Ce sous-chapitre présente un exemple concret appelé `Quicksilver %Arcane Mini-App`.
+This subsection presents a concrete example called
+`Quicksilver %Arcane Mini-App`.
 
-Il est recommandé d'avoir lu le sous-chapitre précédent \ref arcanedoc_examples_simple_example
-pour bien comprendre ce qui suit, car certaines choses ne seront pas répétées ici.
+It is recommended that you have read the previous subsection
+\ref arcanedoc_examples_simple_example to fully understand what follows, as some
+things will not be repeated here.
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Table of Contents for this subsection:
 
 1. \subpage arcanedoc_examples_concret_example_struct
 

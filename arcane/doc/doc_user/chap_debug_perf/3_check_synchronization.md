@@ -1,29 +1,26 @@
-﻿# Comparaison des synchronisations {#arcanedoc_debug_perf_compare_synchronization}
+﻿# Synchronization Comparison {#arcanedoc_debug_perf_compare_synchronization}
 
-Depuis la version 3.11 de %Arcane, il existe un mécanisme automatique
-permettant de comparer les valeurs des variables avant et après une
-synchronisation. Cela permet de savoir si une synchronisation est
-utile ou pas.
+Since version 3.11 of %Arcane, there is an automatic mechanism that allows
+comparing variable values before and after a synchronization. This allows one to
+know if a synchronization is useful or not.
 
-\note Actuellement ce mécanisme ne fonctionne que pour les
-synchronisations simples (celles qui sont appelées via la méthode
-\arcane{MeshVariableRef::synchronize()}.
+\note Currently, this mechanism only works for simple synchronizations (those
+called via the \arcane{MeshVariableRef::synchronize()} method.
 
-Pour activer ce mode, il faut positionner la variable d'environnement
-`ARCANE_AUTO_COMPARE_SYNCHRONIZE`. Les trois valeurs possibles sont :
+To activate this mode, you must set the environment variable
+`ARCANE_AUTO_COMPARE_SYNCHRONIZE`. The three possible values are:
 
-- `1` : pour activer le mécanisme et afficher en fin de calcul pour
-  chaque variable le nombre de synchronisations qui ont modifiées les
-  valeurs des mailles fantômes.
-- `2` : comme `1` mais en plus il y a une impression listing au moment
-  de la synchronisation si la synchronisation n'a pas modifié de
-  valeurs (ce qui laisse supposer qu'elle n'est potentiellement pas
-  utile).
-- `3` : comme `2` mais en plus la pile d'appel au moment de la
-  synchronisation est affichée.
+- `1` : to activate the mechanism and display at the end of the calculation for
+  each variable the number of synchronizations that modified the ghost mesh
+  values.
+- `2` : like `1` but additionally there is a listing printout at the time of
+  synchronization if the synchronization did not modify any values (which
+  suggests that it is potentially not useful).
+- `3` : like `2` but additionally the call stack at the time of synchronization
+  is displayed.
 
-A noter que les modes `2` et `3` nécessitent de faire une réduction pour
-chaque synchronisation ce qui peut impacter les performances.
+Note that modes `2` and `3` require performing a reduction for each
+synchronization, which can impact performance.
 
 ____
 

@@ -1,10 +1,10 @@
-# Exemple simple {#arcanedoc_examples_simple_example}
+﻿# Simple example {#arcanedoc_examples_simple_example}
 
-Ce sous-chapitre contient un exemple simple appelé `HelloWorld`.
+This subsection contains a simple example called `HelloWorld`.
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Table of Contents for this subsection:
 
 1. \subpage arcanedoc_examples_simple_example_struct
 

@@ -1,80 +1,76 @@
-# Structures et types de base {#arcanedoc_getting_started_basicstruct}
+﻿# Basic Structures and Types {#arcanedoc_getting_started_basicstruct}
 
 [TOC]
 
-## Types de bases {#arcanedoc_getting_started_basicstruct_types}
+## Basic Types {#arcanedoc_getting_started_basicstruct_types}
 
-%Arcane fournit un ensemble de types de base, correspondant soit à un
-type existant du C++ (comme *int*, *double*), soit à une classe (comme
- \arcane{Real2}). Ces types sont utilisés pour toutes les opérations courantes
-mais aussi pour les variables. Par exemple, lorsqu'on souhaite
-déclarer un entier, il faut utiliser \arccore{Integer} au lieu de
-*int* ou *long*. Cela permet de modifier la taille de ces types
-(par exemple, utiliser des entiers sur 8 octets au lieu de 4)
-sans modifier le code source.
+%Arcane provides a set of basic types, corresponding either to an existing C++
+type (such as *int*, *double*) or to a class (such as \arcane{Real2}). These
+types are used for all common operations as well as for variables. For example,
+when you want to declare an integer, you must use \arccore{Integer} instead of
+*int* or *long*. This allows you to change the size of these types (for example,
+using 8-byte integers instead of 4) without modifying the source code.
 
-Les types de bases sont :
+The basic types are:
 
 <table>
-<tr><td><b>Nom de la classe</b></td><td><b>Correspondance dans les spécifications</b></td></tr>
-<tr><td>\arccore{Integer}   </td><td> entier signé sur 32 bits </td></tr>
-<tr><td>\arccore{Int16}     </td><td> entier signé sur 16 bits </td></tr>
-<tr><td>\arccore{Int32}     </td><td> entier signé sur 32 bits </td></tr>
-<tr><td>\arccore{Int64}     </td><td> entier signé sur 64 bits </td></tr>
-<tr><td>\arcane{Byte}       </td><td> représente un caractère sur 8 bits </td></tr>
-<tr><td>\arccore{Real}      </td><td> réel IEEE 754 </td></tr>
-<tr><td>\arcane{Real2}      </td><td> coordonnée 2D, vecteur de deux réels </td></tr>
-<tr><td>\arcane{Real3}      </td><td> coordonnée 3D, vecteur de trois réels </td></tr>
-<tr><td>\arcane{Real2x2}    </td><td> tenseur 2D, vecteur de quatre réels </td></tr>
-<tr><td>\arcane{Real3x3}    </td><td> tenseur 3D, vecteur de neufs réels </td></tr>
-<tr><td>\arccore{String}    </td><td> chaîne de caractères au format UTF-8 </td></tr>
+<tr><td><b>Class Name</b></td><td><b>Specification Mapping</b></td></tr>
+<tr><td>\arccore{Integer}   </td><td> 32-bit signed integer </td></tr>
+<tr><td>\arccore{Int16}     </td><td> 16-bit signed integer </td></tr>
+<tr><td>\arccore{Int32}     </td><td> 32-bit signed integer </td></tr>
+<tr><td>\arccore{Int64}     </td><td> 64-bit signed integer </td></tr>
+<tr><td>\arcane{Byte}       </td><td> represents an 8-bit character </td></tr>
+<tr><td>\arccore{Real}      </td><td> IEEE 754 real </td></tr>
+<tr><td>\arcane{Real2}      </td><td> 2D coordinate, vector of two reals </td></tr>
+<tr><td>\arcane{Real3}      </td><td> 3D coordinate, vector of three reals </td></tr>
+<tr><td>\arcane{Real2x2}    </td><td> 2D tensor, vector of four reals </td></tr>
+<tr><td>\arcane{Real3x3}    </td><td> 3D tensor, vector of nine reals </td></tr>
+<tr><td>\arccore{String}    </td><td> UTF-8 formatted character string </td></tr>
 </table>
 
-Les flottants (\arccore{Real}, \arcane{Real2}, \arcane{Real2x2},
-\arcane{Real3}, \arcane{Real3x3}) utilisent des réels double précision de la norme IEEE
-754 et sont stockés sur 8 octets.
+The floats (\arccore{Real}, \arcane{Real2}, \arcane{Real2x2}, \arcane{Real3},
+\arcane{Real3x3}) use double-precision IEEE 754 reals and are stored in 8 bytes.
 
-## Entités du maillage {#arcanedoc_getting_started_basicstruct_meshitem}
-Il existe 4 types d'entités de base dans un maillage : les noeuds, les
-arêtes, les faces et les mailles. \`A chacun de ces types correspond une
-classe C++ dans %Arcane. Pour chaque type d'entité, il existe un type
-*groupe* qui gère un ensemble d'entités de ce type. La classe qui gère
-un groupe d'une entité a pour nom celui de l'entité suffixée par
-*Group*. Par exemple, pour les noeuds, il s'agit de \arcane{NodeGroup}.
+## Mesh Entities {#arcanedoc_getting_started_basicstruct_meshitem}
+There are 4 types of basic entities in a mesh: nodes, edges, faces, and cells.
+Each of these types corresponds to a C++ class in %Arcane. For each entity type,
+there is a *group* type that manages a set of entities of that type. The class
+that manages a group of an entity is named after the entity with the suffix
+*Group*. For example, for nodes, this is \arcane{NodeGroup}.
 
 <table>
-<tr><td><b>Nom de la classe</b></td><td><b>Correspondance dans les spécifications</b></td></tr>
-<tr><td>\arcane{Node}      </td><td> un noeud </td></tr>
-<tr><td>\arcane{Cell}      </td><td> une maille </td></tr>
-<tr><td>\arcane{Face}      </td><td> une face en 3D, une arête en 2D</td></tr>
-<tr><td>\arcane{Edge}      </td><td> une arête en 3D</td></tr>
-<tr><td>\arcane{Particle}  </td><td> une particule</td></tr>
-<tr><td>\arcane{DoF}       </td><td> un degré de liberté</td></tr>
-<tr><td>\arcane{NodeGroup} </td><td> un groupe de noeuds </td></tr>
-<tr><td>\arcane{CellGroup} </td><td> un groupe de mailles </td></tr>
-<tr><td>\arcane{FaceGroup} </td><td> un groupe de faces </td></tr>
-<tr><td>\arcane{EdgeGroup} </td><td> un groupe d'arêtes </td></tr>
-<tr><td>\arcane{ParticleGroup} </td><td> un groupe de particules</td></tr>
-<tr><td>\arcane{DoFGroup} </td><td> un groupe de degrés de liberté</td></tr>
+<tr><td><b>Class Name</b></td><td><b>Specification Mapping</b></td></tr>
+<tr><td>\arcane{Node}      </td><td> a node </td></tr>
+<tr><td>\arcane{Cell}      </td><td> a cell </td></tr>
+<tr><td>\arcane{Face}      </td><td> a 3D face, a 2D edge</td></tr>
+<tr><td>\arcane{Edge}      </td><td> a 3D edge</td></tr>
+<tr><td>\arcane{Particle}  </td><td> a particle</td></tr>
+<tr><td>\arcane{DoF}       </td><td> a degree of freedom</td></tr>
+<tr><td>\arcane{NodeGroup} </td><td> a group of nodes </td></tr>
+<tr><td>\arcane{CellGroup} </td><td> a group of cells </td></tr>
+<tr><td>\arcane{FaceGroup} </td><td> a group of faces </td></tr>
+<tr><td>\arcane{EdgeGroup} </td><td> a group of edges </td></tr>
+<tr><td>\arcane{ParticleGroup} </td><td> a group of particles</td></tr>
+<tr><td>\arcane{DoFGroup} </td><td> a group of degrees of freedom</td></tr>
 </table>
 
 \note
-Les faces \arcane{Face} sont les entités de dimension N-1 avec N la dimension
-des mailles. En dimension 2, les faces correspondent donc aux arêtes et en dimension 3 aux
-faces des polyèdres. Ceci permet aux algorithmes numériques de parcourir le maillage
-indépendamment de sa dimension. L'entité arête (\arcane{Edge}) n'existe que
-pour les maillages 3D et correspond alors à une arête.
+The faces \arcane{Face} are the N-1 dimensional entities where N is the
+dimension of the cells. In dimension 2, faces therefore correspond to edges, and
+in dimension 3 to the faces of polyhedra. This allows numerical algorithms to
+traverse the mesh regardless of its dimension. The edge entity (\arcane{Edge})
+only exists for 3D meshes and then corresponds to an edge.
 
-Chaque entité du maillage correspond à une instance d'une classe. Par
-exemple, si le maillage contient 15 mailles, il y a 15 instances du
-type \arcane{Cell}. Chaque classe fournit un certain nombre d'opérations
-permettant de relier les instances entre elles. Par exemple, la méthode
-\arcane{Cell::node}(\arccore{Int32}) de la classe \arcane{Cell} permet de récupérer le
-\a i-ème noeud de cette maille. De même, la méthode \arcane{Cell::nbNode()} permet de
-récupérer le nombre de noeuds de la maille. Pour plus de
-renseignements sur les opérations supportées, il est nécessaire de se
-reporter à la documentation en ligne des classes correspondantes
-(\arcane{Node}, \arcane{Edge}, \arcane{Face}, \arcane{Cell}, \arcane{Particle}, \arcane{DoF}).
+Each mesh entity corresponds to an instance of a class. For example, if the mesh
+contains 15 cells, there are 15 instances of the \arcane{Cell} type. Each class
+provides a certain number of operations allowing instances to be linked
+together. For example, the \arcane{Cell::node}(\arccore{Int32}) method of the
+\arcane{Cell} class allows you to retrieve the i-th node of this cell.
+Similarly, the \arcane{Cell::nbNode()} method allows you to retrieve the number
+of nodes in the cell. For more information on the supported operations, you need
+to refer to the online documentation of the corresponding classes
+(\arcane{Node}, \arcane{Edge}, \arcane{Face}, \arcane{Cell}, \arcane{Particle},
+\arcane{DoF}).
 
 ____
 

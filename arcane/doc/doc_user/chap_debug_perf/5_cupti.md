@@ -1,94 +1,88 @@
-﻿# Intégration avec CUPTI (Cuda Profiling Tools Interface) {#arcanedoc_debug_perf_cupti}
+﻿# Integration with CUPTI (Cuda Profiling Tools Interface) {#arcanedoc_debug_perf_cupti}
 
 [TOC]
 
 ## Description
 
-[CUPTI](https://docs.nvidia.com/cupti/index.html) est une bibliothèque
-fournie par NVIDIA. Elle permet entre autre de récupérer des
-évènements concernant la gestion de la mémoire unifiée. C'est dans ce
-contexte qu'%Arcane utilise CUPTI.
+[CUPTI](https://docs.nvidia.com/cupti/index.html) is a library provided by
+NVIDIA. It allows, among other things, retrieving events concerning unified
+memory management. This is the context in which %Arcane uses CUPTI.
 
-L'utilisation de CUPTI se fait via des variables d'environnement
+CUPTI is used via environment variables
 
 <table>
-<tr><th>Variable d'environnement</th><th>Description</th></tr>
+<tr><th>Environment Variable</th><th>Description</th></tr>
 
 <tr>
 <td>ARCANE_CUPTI_LEVEL</td>
 <td>
-Indique les évènements qu'on veut tracer. A noter que pour le niveau 2
-il faut un accès exclusif au GPU et donc ce mode ne fonctionne pas en
-parallèle. Les valeurs possibles sont:
-- 0 non actif
-- 1 transferts mémoire unifiée
-- 2 idem 1 + noyaux de calcul
+Indicates the events we want to trace. Note that for level 2, exclusive access
+to the GPU is required, so this mode does not work in parallel. Possible values
+are:
+- 0 inactive
+- 1 unified memory transfers
+- 2 same as 1 + compute kernels
 </td>
 </tr>
 
 <tr>
 <td>ARCANE_CUPTI_FLUSH</td>
 <td>
-Indique à quel moment on affiche les informations sur les
-évènements. Pour avoir un suivi précis il est nécessaire d'afficher
-les informations après chaque exécution de noyau GPU mais ce mode
-peut augmenter d'une facteur important le temps d'exécution. Les
-valeurs possibles sont:
-- 0 pas de flush explicite
-- 1 flush après chaque noyau
+Indicates when the event information is displayed. To have precise tracking, it
+is necessary to display the information after each GPU kernel execution, but
+this mode can significantly increase execution time. Possible values are:
+- 0 no explicit flush
+- 1 flush after each kernel
 </td>
 </tr>
 
 <tr>
 <td>ARCANE_CUPTI_PRINT</td>
 <td>
-Indique si on souhaite effectuer un affichage pour chaque
-évènement. Cela peut ralentir considérablement le temps
-d'exécution. Les valeurs possibles sont:
-- 0 pas d’affichage
-- 1 affichage listing (sur std::cout)
+Indicates whether we want to perform a display for each event. This can
+considerably slow down execution time. Possible values are:
+- 0 no display
+- 1 listing display (on std::cout)
 </td>
 </tr>
 
 <tr>
 <td>ARCANE_CUDA_MALLOC_TRACE</td>
 <td>
-Indique si on souhaite tracer tous les appels à
-`cudaMallocManaged()`. Les valeurs possibles sont:
-- 0 pas de trace
-- 1 trace le nom du tableau
-- 2 idem 1 + affichage des malloc et des free
-- 3 idem 2 + pile d’appel
+Indicates whether we want to trace all calls to `cudaMallocManaged()`. Possible
+values are:
+- 0 no trace
+- 1 trace the array name
+- 2 same as 1 + display of malloc and free
+- 3 same as 2 + call stack
 </td>
 </tr>
 
 <tr>
 <td>ARCANE_CUDA_UM_PAGE_ALLOC</td>
 <td>
-Indique la manière d'allouer via `cudaMallocManaged()`. Il est
-possible pour chaque allocation d'allouer un multiple de la taille
-d'une page mémoire. Comme les transferts de la mémoire unifiée se font
-page par page, cela permet de mieux distinguer quel accès mémoire a
-provoqué le transfert. La contrepartie est que chaque allocation
-nécessite d'allouer au moins une page (soit 4Ko en général)
-Les valeurs possibles sont:
-- 0 allocation normale
-- 1 allocation par multiple de la taille d'une page.
+Indicates the manner of allocation via `cudaMallocManaged()`. It is possible to
+allocate a multiple of the memory page size for each allocation. Since unified
+memory transfers happen page by page, this allows for better distinction of
+which memory access caused the transfer. The trade-off is that each allocation
+requires allocating at least one page (usually 4KB). Possible values are:
+- 0 normal allocation
+- 1 allocation by multiple of the page size.
 </td>
 </tr>
 
 </table>
 
-## Exemple
+## Example
 
-L'exemple suivant permet de tracer les transferts en mémoire unifiée
-et d'afficher le nom du tableau associé.
+The following example allows tracing unified memory transfers and displaying the
+name of the associated array.
 
 ```
 ARCANE_CUDA_MALLOC_TRACE=1 ARCANE_CUPTI_FLUSH=1 ARCANE_CUPTI_LEVEL=1 ./my_test -A,AcceleratorRuntime=cuda toto.arc
 ```
 
-Avec le résultat suivant
+With the following result
 
 ```
 *I-ArcaneMasterInternal *** ITERATION       17  TIME 3.594972986357219e-03  LOOP       17  DELTAT 4.177248169415655e-04 ***
@@ -104,35 +98,32 @@ UNIFIED_MEMORY_COUNTER [ 4223957312 4223960384 ] address=0x7f1cc0bff000 kind=BYT
 UNIFIED_MEMORY_COUNTER [ 4353892054 4353895094 ] address=0x7f1cc0bff000 kind=BYTES_TRANSFER_HTOD value=4096 flags=2 source=0 destination=0 name=Mesh0_TimeHistory_Iterations_1 stack=
 ```
 
-Les deux valeurs après `UNIFIED_MEMORY_COUNTER` correspondent au temps
-de début et de fin du tranfert. Les autres champs sont:
-- `address` : adresse mémoire du tableau
-- `kind` : type de tranfert (`Host to device` ou `Device to host`)
-- `value`: quantité (en octet) de mémoire tranférée
-- `flags` : si `2` alors le tranfert est explicitement demandé par le
-  code. Si `3`, il s'agit d'un tranfert spéculatif initié par le
-  driver NVIDIA.
-- `source` et `destination` : numéro du device
-- `name` : nom du tableau Arcane. Cela n'est actif que si la variable
-  d'environnement `ARCANE_CUDA_MALLOC_TRACE` vaut au moins 1. Si le
-  transfert n'est pas lié à un tableau %Arcane (\arccore{UniqueArray} ou
-  \arcane{NumArray}), il n'y aura pas de nom associé. A noter
-  que comme les transferts se font page par page, il est possible que
-  le tableau indiqué ne soit pas celui qui a provoqué le
-  transfert. Pour éviter cet effet, il est possible d'allouer une page
-  pour chaque allocation en positionnant la variable d'environnement
-  `ARCANE_CUDA_UM_PAGE_ALLOC` à `1`.
+The two values after `UNIFIED_MEMORY_COUNTER` correspond to the start and end
+time of the transfer. The other fields are:
+- `address`: memory address of the array
+- `kind`: transfer type (`Host to device` or `Device to host`)
+- `value`: quantity (in bytes) of memory transferred
+- `flags`: if `2`, the transfer is explicitly requested by the code. If `3`, it
+  is a speculative transfer initiated by the NVIDIA driver.
+- `source` and `destination`: device number
+- `name`: Arcane array name. This is only active if the environment variable
+  `ARCANE_CUDA_MALLOC_TRACE` is at least 1. If the transfer is not linked to an
+  Arcane array (%Arcane (\arccore{UniqueArray} or \arcane{NumArray})), there
+  will be no associated name. Note that since transfers happen page by page, it
+  is possible that the indicated array is not the one that caused the transfer.
+  To avoid this effect, it is possible to allocate a page for each allocation by
+  setting the environment variable `ARCANE_CUDA_UM_PAGE_ALLOC` to `1`.
 
-En fin de calcul est affiché la quantité totale de mémoire transférée
-et le nombre de transferts. Par exemple:
+At the end of the calculation, the total amount of memory transferred and the
+number of transfers are displayed. For example:
 
 ```
 MemoryTransferSTATS: HTOD = 17895424 (680) DTOH = 7102464 (301)
 ```
 
-Dans cet exemple, on a fait 680 transferts du CPU vers le GPU pour
-17Mo de données transférées. On a fait 301 transferts du GPU vers le
-CPU pour 7Mo de données transférées.
+In this example, 680 transfers were made from the CPU to the GPU for 17MB of
+data transferred. 301 transfers were made from the GPU to the CPU for 7MB of
+data transferred.
 
 
 ____

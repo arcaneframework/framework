@@ -1,112 +1,98 @@
-﻿# Gestion des connectivités à la demande {#arcanedoc_connectivity}
+﻿# On-Demand Connectivity Management {#arcanedoc_connectivity}
 
 [TOC]
 
-## État actuel {#arcanedoc_connectivity_current}
+## Current Status {#arcanedoc_connectivity_current}
 
-Actuellement, l'interface IItemConnectivity permet de gèrer de nouvelles
-connectivités mais elle n'est pas prévues pour une mise à jour
-incrémentale des éléments. Par incrémental, on entend que les
-connectivités doivent être mises à jour immédiatement après l'ajout
-où la supression d'une entité.
+Currently, the IItemConnectivity interface allows managing new connectivities,
+but it is not designed for incremental updates of elements. By incremental, we
+mean that the connectivities must be updated immediately after the addition or
+deletion of an entity.
 
-Comme convenu lors d'une réunion avec Stéphane, une nouvelle
-interface IIncrementalItemConnectivity a été créée pour gérer ce type
-de connectivité. Une implémentation générique est disponible et
-s'apelle IncrementalItemConnectivity. Elle n'est pas optimisée mais
-peut s'appliquer à n'importe quel type de connectivité
+As agreed during a meeting with Stéphane, a new interface
+IIncrementalItemConnectivity has been created to manage this type of
+connectivity. A generic implementation is available and is called
+IncrementalItemConnectivity. It is not optimized but can be applied to any type
+of connectivity.
 
-L'interface IIncrementalItemConnectivity possède plusieurs méthodes
-réparties en trois catégories:
+The IIncrementalItemConnectivity interface has several methods divided into
+three categories:
 
-- les méthodes identiques à IItemConnectivity. Il s'agit de
-IItemConnectivity::name(), IItemConnectivity::families(),
-IItemConnectivity::sourceFamily() et
-IItemConnectivity::targetFamily().
+- methods identical to IItemConnectivity. These are IItemConnectivity::name(),
+  IItemConnectivity::families(), IItemConnectivity::sourceFamily() and
+  IItemConnectivity::targetFamily().
 
-- les méthodes d'ajout/supression. Il s'agit de
-IIncrementalItemConnectivity::addConnectedItem() et
-IIncrementalItemConnectivity::removeConnectedItem(). Ces deux méthodes
-permettent d'ajouter ou suprimer une entité.
-\note Pour l'instant ces méthodes prennent en argument un
-ItemInternal*. Il faudrait voir si ce ne serait pas mieux avec un
-ItemLocalId.
-- les méthodes de notification. Elles sont disponibles pour que les
-familles associées à ces connectivités puissent notifier ces
-dernières d'une modification interne. Il y a 4
-méthodes. IIncrementalItemConnectivity::notifySourceFamilyLocalIdChanged() et
-IIncrementalItemConnectivity::notifyTargetFamilyLocalIdChanged() sont appelés
-lorsque la famille source ou cible est compactée. La méthode
-IIncrementalItemConnectivity::notifySourceItemAdded() est appelé lorsqu'un
-élément est ajouté à la famille source. Cela permet notamment de
-redimensionner les tableaux internes. Enfin, la dernière méthode
-IIncrementalItemConnectivity::notifyReadFromDump() est appelé après une
-relecture suite à un retour-arrière où une reprise.
+- add/remove methods. These are IIncrementalItemConnectivity::addConnectedItem()
+  and IIncrementalItemConnectivity::removeConnectedItem(). These two methods
+  allow adding or removing an entity. \note For now, these methods take an
+  ItemInternal* argument. It would be worth seeing if it wouldn't be better with
+  an ItemLocalId.
+- notification methods. They are available so that the families associated with
+  these connectivities can notify them of an internal modification. There are 4
+  methods. IIncrementalItemConnectivity::notifySourceFamilyLocalIdChanged() and
+  IIncrementalItemConnectivity::notifyTargetFamilyLocalIdChanged() are called
+  when the source or target family is compacted. The method
+  IIncrementalItemConnectivity::notifySourceItemAdded() is called when an
+  element is added to the source family. This allows, in particular, resizing
+  internal arrays. Finally, the last method
+  IIncrementalItemConnectivity::notifyReadFromDump() is called after a reread
+  following a rollback or recovery.
 
-Ces méthodes de notification peuvent évoluer de plusieurs manières:
-- on peut ajouter aux familles la notion d'évènement, avec un
-évènement par type de notification et ensuite chaque famille
-s'enregistre. Cela a l'avantage de ne pas nécessiter de méthode
-spécifique dans l'interface IIncrementalItemConnectivity mais rend le
-code moins lisible (car l'enregistrement des familles ne se voit pas
-dans facilement dans le source) et ne permet pas de gérer facilement
-l'ordre des appels entre différentes connectivités si besoin.
-- on peut aussi rendre disponible ces notifications aux connectivités
-qui implémentent IItemConnectivity. Dans ce cas une interface de base
-commune avec IIncrementalItemConnectivity serait utile.
+These notification methods can evolve in several ways:
 
-Pour gérer correctement les mises à jour suite au compactage, j'ai du
-rendre privé à ItemFamily l'accès en écriture à
-ItemFamily::m_infos. Du coup, au lieu d'appeler le compactage des
-entités directement via DynamicMeshKindInfos::beginCompactItems() et
-DynamicMeshKindInfos::finishCompactItems(), il faut appeler les
-méthodes correspondantes de ItemFamily qui va faire la délégation et
-notifier les connectivités incrémentales de ce changement.
-\note C'est à cet endroit qu'on pourrait aussi notifier aux autres
-connectités d'un éventuel compactage.
+- we can add the notion of an event to the families, with one event per
+  notification type, and then each family registers itself. The advantage of
+  this is that it does not require a specific method in the
+  IIncrementalItemConnectivity interface, but it makes the code less readable
+  (because the registration of families is not easily visible in the source) and
+  does not easily allow managing the order of calls between different
+  connectivities if needed.
+- we can also make these notifications available to connectivities that
+  implement IItemConnectivity. In this case, a common base interface with
+  IIncrementalItemConnectivity would be useful.
 
-Ces nouvelles fonctionnalités ne sont pour l'instant implémentées que
-pour la connectivité noeud->face de NodeFamily. Cette connectivité se
-fait en double avec la connectivité classique. En mode check, on
-vérifie après chaque changement dans la famille que la nouvelle
-connectivité et l'ancienne (qui sert de référence) sont les
-mêmes.
-\warning Par contre, actuellement la nouvelle connectivité n'est jamais
-utilisée directement. L'accès via ItemInternal se fait toujours avec
-l'ancien mécanisme.
-\note Il n'y a actuellement qu'une seule opération qui n'est pas
-implémenté avec les nouvelles fonctionnalités, c'est le tri par
-uniqueId() croissant fait dans la méthode
+To correctly manage updates following compaction, I had to make the write access
+to ItemFamily::m_infos private in ItemFamily. As a result, instead of calling
+the entity compaction directly via DynamicMeshKindInfos::beginCompactItems() and
+DynamicMeshKindInfos::finishCompactItems(), we must call the corresponding
+methods of ItemFamily, which will handle the delegation and notify the
+incremental connectivities of this change. \note This is also where we could
+notify other connectivities of a potential compaction.
+
+These new features are currently only implemented for the node->face
+connectivity of NodeFamily. This connectivity is done in duplicate with the
+classic connectivity. In check mode, we verify after every change in the family
+that the new connectivity and the old one (which serves as a reference) are the
+same. \warning However, currently the new connectivity is never used directly.
+Access via ItemInternal is always done with the old mechanism. \note Currently,
+there is only one operation that is not implemented with the new features, which
+is sorting by increasing uniqueId() in the method
 DynamicMesh::_sortInternalReferences().
 
-Pour cette connectivité noeud->face, j'ai aussi implémenté la
-connectivité actuelle via l'interface
-IIncrementalItemConnectivity. La classe qui gère cela est
-NodeFaceCompactIncrementalItemConnectivity. Du coup, le même
-mécanisme est utilisé pour l'ancienne et la nouvelle connectivité et
-il est donc assez général.
+For this node->face connectivity, I also implemented the current connectivity
+via the IIncrementalItemConnectivity interface. The class that manages this is
+NodeFaceCompactIncrementalItemConnectivity. As a result, the same mechanism is
+used for the old and new connectivity, and it is therefore quite general.
 
-Pour activer la nouvelle connectivité, il faut positionner la
-variable d'environnement ARCANE_CONNECTIVITY_POLICY à 1. A terme
-évidemment il faudra faire autrement.
+To activate the new connectivity, you must set the environment variable
+ARCANE_CONNECTIVITY_POLICY to 1. Eventually, obviously, we will have to do
+something else.
 
-Actuellement, tous les cas de la base de test fonctionnent avec cette
-nouvelle connectivité. J'ai aussi testé (sommairement) sur la base
-d'intégration de nos codes sous Arcane et je n'ai pas eu de problèmes.
+Currently, all test base cases work with this new connectivity. I also tested
+(briefly) on the integration base of our codes under Arcane and I did not have
+any problems.
 
-## Prochaines phases {#arcanedoc_connectivity_next_phases}
+## Next Phases {#arcanedoc_connectivity_next_phases}
 
-Si la preuve de concept est ok, les phases suivantes seront (plus ou
-moins dans cet ordre):
-- modifier ItemInternal pour utiliser la nouvelle connectivité si elle
-est définie.
-- utiliser l'interface IIncrementalItemConnectivity pour gérer toutes
-les connectivités, même les anciennes. Cette phase peut se faire en
-plusieurs sous-phases suivant les connectivités. Les connectivités
-'classiques' noeuds, arêtes, faces et mailles d'abord, les
-connectivités plus compliquées (notamment AMR) ensuite.
-- optimiser IncrementalItemConnectivity notamment en gérant la
-pré-allocation pour ne pas réallouer à chaque fois. Il faudra aussi
-gérer le compactage.
-- pouvoir activer par configuration l'ancienne où la nouvelle
-connectivité.
+If the proof of concept is okay, the following phases will be (more or less in
+this order):
+
+- modify ItemInternal to use the new connectivity if it is defined.
+- use the IIncrementalItemConnectivity interface to manage all connectivities,
+  even the old ones. This phase can be done in several sub-phases depending on
+  the connectivities. The 'classic' connectivities (nodes, edges, faces, and
+  meshes) first, the more complicated connectivities (especially AMR)
+  afterwards.
+- optimize IncrementalItemConnectivity, particularly by managing pre-allocation
+  to avoid reallocating every time. We will also need to manage compaction.
+- be able to activate the old or the new connectivity via configuration.

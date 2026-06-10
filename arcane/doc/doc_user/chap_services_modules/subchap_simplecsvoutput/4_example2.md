@@ -1,85 +1,84 @@
-# Exemple n°2 {#arcanedoc_services_modules_simplecsvoutput_example2}
+﻿# Example No. 2 {#arcanedoc_services_modules_simplecsvoutput_example2}
 
 [TOC]
 
-L'exemple 2 est presque identique à l'exemple 1, mise à part la définition
-du nom du tableau (et du fichier) et du nom du sous-répertoire.
+Example 2 is almost identical to Example 1, apart from the definition of the
+table name (and file) and the subdirectory name.
 
-En tant que **singleton**, notre service n'a pas accès au jeu de données,
-donc il faut passer par l'un des modules pour transférer les informations.
+As a **singleton**, our service does not have access to the dataset, so we must
+go through one of the modules to transfer the information.
 
-L'exemple 2 montre comment faire ça simplement.
+Example 2 shows how to do this simply.
 
-## Fichier .axl -- Partie <options>
+## .axl File -- <options> Section
 
-Pour commencer, voyons les options du fichier axl :
+To start, let's look at the options of the axl file:
 
 `SimpleTableOutputExample2.axl`
 \snippet SimpleTableOutputExample2.axl SimpleTableOutputExample2_options
 
-Si vous jetez un oeil dans le `.axl` du service (ici : \ref axldoc_service_SimpleCsvOutput_arcane_std),
-vous pourrez constater que c'est identique.
-En effet, dans le cas du singleton, on utilise notre module principal pour récupérer
-les informations dont a besoin notre service.
+If you take a look at the service's `.axl` (here:
+\ref axldoc_service_SimpleCsvOutput_arcane_std), you will notice that it is
+identical.
+Indeed, in the case of the singleton, we use our main module to retrieve the
+information our service needs.
 
-Autre chose à noter : la valeur par défaut `default=""`.
-Mettre une valeur par défaut vide nous permet de déterminer si l'utilisateur
-a spécifié une valeur ou non dans le `.arc`.
-Plus tard, dans le module, on pourrait dire que s'il n'y a pas de valeurs sur les
-deux options, alors c'est que l'utilisateur ne veut simplement pas de sortie csv.
-(c'est la méthode utilisée dans QAMA).
+Another thing to note: the default value `default=""`.
+Setting an empty default value allows us to determine whether the user specified
+a value in the `.arc` or not.
+Later, in the module, we could say that if there are no values for both options,
+then the user simply does not want CSV output.
+(this is the method used in QAMA).
 
-## Fichier .arc -- Partie option du module
+## .arc File -- Module Option Section
 
-Voici le `.arc` correspondant :
+Here is the corresponding `.arc`:
 
 `SimpleTableOutputExample2.arc`
 \snippet SimpleTableOutputExample2.arc SimpleTableOutputExample2_arc
 
-Comme expliqué au-dessus, c'est le module qui gère les deux options,
-donc on se retrouve dans la partie "option du module".
+As explained above, the module manages the two options, so we are in the "module
+option" section.
 
 
-## Point d'entrée initial
+## Initial Entry Point
 
-Voyons le point d'entrée `start-init` :
+Let's look at the `start-init` entry point:
 
 `SimpleTableOutputExample2Module.cc`
 \snippet SimpleTableOutputExample2Module.cc SimpleTableOutputExample2_init
 
-C'est le module qui gère les deux options du service, y compris les valeurs par
-défaut. Si l'utilisateur ne spécifie pas de valeur pour l'option `tableName` dans le
-`.arc`, on définit un nom par défaut (sachant que le service le fait aussi si
-l'on appelle `table->init()` sans paramètres).
+This is the module that manages the service's two options, including the default
+values. If the user does not specify a value for the `tableName` option in the
+`.arc`, we define a default name (knowing that the service also does this if
+`table->init()` is called without parameters).
 
 \warning
-Un appel à init comme ceci : `table->init()` est différent d'un appel à init
-comme cela : `table->init("")` ! L'un prendra une valeur par défaut, l'autre
-aura un nom vide et le fichier de sortie n'aura simplement pas de noms (juste
-l'extension).
+A call to init like this: `table->init()` is different from a call to init like
+this: `table->init("")`! One will take a default value, the other will have an
+empty name, and the output file will simply have no name (just the extension).
 
 
-## Point d'entrée loop
+## Loop Entry Point
 
-Ce point d'entrée est identique à celui de l'exemple 1.
+This entry point is identical to that of Example 1.
 
 
-## Point d'entrée exit
+## Exit Entry Point
 
-Enfin, voyons le point d'entrée `exit` :
+Finally, let's look at the `exit` entry point:
 
 `SimpleTableOutputExample2Module.cc`
 \snippet SimpleTableOutputExample2Module.cc SimpleTableOutputExample2_exit
 
 
-La ligne
+The line
 ```cpp
 if(options()->getTableName() != "" || options()->getTableDir() != "")
 ```
-permet de savoir si l'utilisateur a entré au moins une des options.
-Si c'est le cas, alors on vérifie la valeur par défaut et on écrit
-le fichier.  
-Si ce n'est pas le cas, alors on n'écrit pas de fichier.
+allows us to know if the user entered at least one of the options.
+If so, we check the default value and write the file.
+If not, we do not write a file.
 
 
 

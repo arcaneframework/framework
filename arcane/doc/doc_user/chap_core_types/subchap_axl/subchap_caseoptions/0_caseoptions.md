@@ -1,33 +1,27 @@
-# Options {#arcanedoc_core_types_axl_caseoptions}
+﻿# Options {#arcanedoc_core_types_axl_caseoptions}
 
-Ce sous-chapitre décrit les options possibles pour le fichier *axl*. Ces options
-s'appliquent de manière identiques aux modules et aux services. Afin
-d'éviter des répétitions inutiles, on utilisera le terme module
-seulement, en sachant que cela s'applique aussi aux services.
+This subsection describes the possible options for the *axl* file. These options
+apply identically to modules and services. To avoid unnecessary repetition, we
+will use the term module only, knowing that this also applies to services.
 
-Chaque module possède des options qui peuvent être spécifiées
-par l'utilisateur lors du lancement d'une exécution. Ces options sont en
-général dictées par le *jeu de données* que fournit
-l'utilisateur pour lancer son cas. Le document \ref arcanedoc_core_types_module 
-montre que chaque module possède un fichier de configuration nommé
-*descripteur de module* composé de 3 parties : 
-les variables, les points d'entrée et les options de configuration.
-Le présent document s'intéresse à la partie concernant les
-options de configuration qui vont permettre de définir la grammaire
-du jeu de données du module.
+Each module has options that can be specified by the user when launching an
+execution. These options are generally dictated by the *dataset* that the user
+provides to run their case. The document \ref arcanedoc_core_types_module shows
+that each module has a configuration file named *module descriptor* consisting
+of 3 parts: variables, entry points, and configuration options. This document
+focuses on the part concerning configuration options, which will allow defining
+the grammar of the module's dataset.
 
-Le descripteur de module est un fichier au format XML. Ce fichier 
-est utilisé par %Arcane pour générer des classes C++. Une de ces
-classes se charge de la lecture des informations dans le jeu
-de données.
+The module descriptor is an XML file. This file is used by %Arcane to generate
+C++ classes. One of these classes is responsible for reading the information in
+the dataset.
 
-Par convention, pour un module appelé *Test*, le descripteur
-de module s'appelle *Test.axl*. Ce fichier `axl` permet de générer un fichier
-*Test_axl.h*. Ce fichier sera inclus par la classe implémentant le module.
+By convention, for a module called *Test*, the module descriptor is named
+*Test.axl*. This `axl` file allows the generation of a *Test_axl.h* file. This
+file will be included by the class implementing the module.
 
-Dans le jeu de données, les options d'un module sont fournies
-dans l'élément de nom `<options>`. Par exemple, les options
-du module *Test* sont :
+In the dataset, a module's options are provided in the `<options>` element. For
+example, the options for the *Test* module are:
 
 ```xml
 <module name="Test" version="1.0">
@@ -42,23 +36,23 @@ du module *Test* sont :
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Table of Contents for this subsection:
 
 1. \subpage arcanedoc_core_types_axl_caseoptions_struct <br>
-  Présente la structure d'une option d'un fichier AXL.
+   Presents the structure of an option in an AXL file.
 
 2. \subpage arcanedoc_core_types_axl_caseoptions_common_struct <br>
-  Présente les attributs et les propriétés communes aux options.
+   Presents the attributes and properties common to options.
 
 3. \subpage arcanedoc_core_types_axl_caseoptions_options <br>
-  Présente tous les types d'options qu'il est possible de définir dans un fichier AXL.
+   Presents all types of options that can be defined in an AXL file.
 
 4. \subpage arcanedoc_core_types_axl_caseoptions_usage <br>
-  Présente comment utiliser une option dans un module.
+   Presents how to use an option in a module.
 
 5. \subpage arcanedoc_core_types_axl_caseoptions_default_values <br>
-  Présente comment gérer les valeurs par défaut des options dans le cas où
-  le fichier ARC ne définisse pas de valeurs.
+   Presents how to manage default values for options in case the ARC file does
+   not define any values.
 
 
 

@@ -1,8 +1,8 @@
-# Python {#arcanedoc_wrapping_python}
+﻿# Python {#arcanedoc_wrapping_python}
 
 
-Sommaire de ce sous-chapitre :
-\todo A créer.
+Table of Contents for this subsection:
+\todo To be created.
 <!-- 1. \subpage  -->
 
 

@@ -1,43 +1,41 @@
-﻿# Equilibrage de charge sur le maillage {#arcanedoc_parallel_loadbalance}
+﻿# Load balancing on the mesh {#arcanedoc_parallel_loadbalance}
 
 [TOC]
 
 ## Introduction {#arcanedoc_parallel_loadbalance_introduction}
 
-%Arcane dispose d'un mécanisme d'équilibrage de la charge en
-redistribuant entre sous-domaines les mailles d'un maillage. Ce
-mécanisme gère l'échange des entités du maillage ainsi que les
-variables associées. Il est donc en grande partie transparent pour
-l'utilisateur.
+%Arcane has a load balancing mechanism by redistributing mesh elements between
+subdomains. This mechanism manages the exchange of mesh entities as well as
+associated variables. It is therefore largely transparent to the user.
 
-La gestion de l'équilibrage se fait via deux interfaces :
+Load balancing management is done via two interfaces:
 
-- \arcane{ICriteriaLoadBalanceMng} qui permet de spécifier les critères à prendre en
-  compte pour le calcul de la charge.
-- \arcane{IMeshPartitioner} qui permet de déterminer les entités qui doivent
-  migrer et d'effectuer la migration.
+- \arcane{ICriteriaLoadBalanceMng} which allows specifying the criteria to
+  consider for load calculation.
+- \arcane{IMeshPartitioner} which allows determining the entities that must
+  migrate and performing the migration.
 
-La classe \arcane{MeshCriteriaLoadBalanceMng} implémentant l'interface
-\arcane{ICriteriaLoadBalanceMng} permet, lors de
-l'initialisation, de spécifier une ou plusieurs variables aux mailles qui
-contiendront le poids de chaque maille pour le calcul de la charge.
+The class \arcane{MeshCriteriaLoadBalanceMng} implementing the
+\arcane{ICriteriaLoadBalanceMng} interface allows, during initialization,
+specifying one or more mesh variables that will contain the weight of each mesh
+element for load calculation.
 
-\deprecated L'utilisation de `ISubDomain::loadBalance()` pour définir les critères
-est maintenant obsolète.
+\deprecated Using `ISubDomain::loadBalance()` to define criteria is now
+obsolete.
 
-Par exemple :
+For example:
 ```cpp
 Arcane::VariableCellReal cells_weight(...);
 Arcane::MeshCriteriaLoadBalanceMng mesh_criteria = Arcane::MeshCriteriaLoadBalanceMng(subDomain(), mesh()->handle());
 mesh_criteria.addCriterion(cells_weight);
 ```
 
-\remark L'objet `mesh_criteria` peut être détruit sans problème après utilisation.
-Les variables enregistrées le seront encore après sa destruction.
+\remark The `mesh_criteria` object can be destroyed without problems after use.
+The registered variables will still exist after its destruction.
 
-\warning L'appel à la méthode Arcane::MeshCriteriaLoadBalanceMng::reset()
-concernera tous les critères ajoutés depuis le début (pour un maillage donné).
-Exemple :
+\warning Calling the Arcane::MeshCriteriaLoadBalanceMng::reset() method will
+affect all criteria added since the beginning (for a given mesh).
+Example:
 ```cpp
 Arcane::VariableCellReal cells_weight(...);
 {
@@ -46,23 +44,22 @@ Arcane::VariableCellReal cells_weight(...);
 }
 {
   Arcane::MeshCriteriaLoadBalanceMng mesh_criteria = Arcane::MeshCriteriaLoadBalanceMng(subDomain(), mesh()->handle());
-  mesh_criteria.reset(); // Ici, le critère représenté par la variable "cells_weight" est aussi retiré.
+  mesh_criteria.reset(); // Here, the criterion represented by the variable "cells_weight" is also removed.
 }
 ```
 
-Le calcul du poids est du ressort du code utilisateur. Le
-partitionneur va ensuite redistribuer le maillage en tentant
-d'équilibrer au mieux les poids sur l'ensemble des sous-domaines.
-Par exemple, si une méthode couteuse est appelée un nombre
-différent de fois pour chaque maille, il est possible de remplir
-*cells_weight* avec le nombre d'appels effectué.
+The weight calculation is the responsibility of the user code. The partitioner
+will then redistribute the mesh, attempting to best balance the weights across
+all subdomains. For example, if a costly method is called a different number of
+times for each mesh element, it is possible to fill *cells_weight* with the
+number of calls made.
 
-En général après un repartitionnement ces variables qui servent de
-critères doivent être remises à zéro.
+In general, after a repartitioning, these variables used as criteria must be
+reset to zero.
 
-Le repartitionnement et l'équilibrage se font via le service
-d'interface IMeshPartitioner. Il est possible d'obtenir une instance
-de ce service en spécifiant la ligne suivante dans le fichier 'axl':
+Repartitioning and balancing are done via the IMeshPartitioner interface
+service. It is possible to obtain an instance of this service by specifying the
+following line in the 'axl' file:
 
 ```xml
 <service-instance
@@ -72,32 +69,30 @@ de ce service en spécifiant la ligne suivante dans le fichier 'axl':
 />
 ```
 
-Dans ce cas, le partitionneur sera accessible via la méthode suivante :
+In this case, the partitioner will be accessible via the following method:
 
 ```cpp
 options()->partitioner()
 ```
 
-Pour programmer un repartitionnement au cours du calcul, il faut
-appeler ITimeLoopMng::registerActionMeshPartition() en spécifiant le
-partitionneur souhaité. Le repartitionnement et sera effectué à la fin de
-l'itération courante. Dans un module, on peut donc faire comme cela :
+To schedule a repartitioning during the calculation, you must call
+ITimeLoopMng::registerActionMeshPartition() specifying the desired partitioner.
+The repartitioning will be performed at the end of the current iteration. In a
+module, you can do this:
 
 ```cpp
 subDomain()->timeLoopMng()->registerActionMeshPartition(options()->partitioner());
 ```
 
-\remark Cet appel n'est valable que pour un pas de temps. Si vous souhaitez
-repartitionner à chaque pas de temps (ce qui peut être assez couteux en
-nombre de calculs), il est nécessaire d'enregistrer le partitionneur à chaque
-pas de temps.
+\remark This call is only valid for one time step. If you want to repartition at
+every time step (which can be quite costly in terms of computation), it is
+necessary to register the partitioner at every time step.
 
-Le repartionnement effectue le transfert de toutes les entités de
-maillage et les variables associées. Si le code utilisateur a besoin
-de faire d'autres opérations après un équilibrage, il est possible
-de spécifier un point d'entrée pour cela. Dans la boucle en temps,
-les points d'entrée avec l'attribut 'where="on-mesh-changed"' sont
-appelés après un équilibrage. Par exemple :
+Repartitioning performs the transfer of all mesh entities and associated
+variables. If the user code needs to perform other operations after a balancing,
+it is possible to specify an entry point for this. In the time loop, entry
+points with the attribute 'where="on-mesh-changed"' are called after a
+balancing. For example:
 
 ```xml
 <time-loop name="LoadBalanceLoop">
@@ -108,26 +103,25 @@ appelés après un équilibrage. Par exemple :
 </time-loop>
 ```
 
-\note Actuellement (mars 2017), l'équilibrage de charge ne
-fonctionne qu'avec une seule couche de mailles fantômes.
+\note Currently (March 2017), load balancing only works with a single layer of
+ghost meshes.
 
-## Multi-maillage {#arcanedoc_parallel_loadbalance_multimesh}
+## Multi-mesh {#arcanedoc_parallel_loadbalance_multimesh}
 
-%Arcane gérant le multi-maillage, il est aussi possible d'équilibrer la charge de
-plusieurs maillages.
+Since %Arcane handles multi-meshing, it is also possible to balance the load of
+several meshes.
 
-L'équilibrage est indépendant pour chaque maillage (dans le futur, il sera possible
-de définir des critères pour équilibrer plusieurs maillages qui nécessitent un
-équilibrage "commun").
+The balancing is independent for each mesh (in the future, it will be possible
+to define criteria to balance multiple meshes that require "common" balancing).
 
-Prenons deux maillages :
+Let's take two meshes:
 
 ```cpp
 IMesh* mesh0 = subDomain().meshes()[0];
 IMesh* mesh1 = subDomain().meshes()[1];
 ```
 
-Et reprenons l'exemple précédent mais avec deux maillages :
+And let's take the previous example but with two meshes:
 
 ```cpp
 Arcane::VariableCellReal cells_weight_mesh0(...);
@@ -142,13 +136,13 @@ Arcane::VariableCellReal cells_weight_mesh1(...);
 }
 ```
 
-\note Pour créer une variable pour le deuxième maillage, vous pouvez faire :
+\note To create a variable for the second mesh, you can do:
 ```cpp
 Arcane::VariableCellReal cells_weight_mesh1(VariableBuildInfo(mesh1->handle(), "CellsWeight"))
 ```
 
-En ce qui concerne les instances du service de partitionneur, il est possible
-de spécifier un maillage dans l'axl via l'attribut `mesh-name` :
+Regarding the partitioner service instances, it is possible to specify a mesh in
+the axl via the `mesh-name` attribute:
 
 ```axl
 <service-instance
@@ -166,16 +160,16 @@ de spécifier un maillage dans l'axl via l'attribut `mesh-name` :
 />
 ```
 
-Enfin, pour la programmation du repartitionnement au cours du calcul, il est possible de
-faire :
+Finally, to schedule repartitioning during the calculation, it is possible to
+do:
 
 ```cpp
 subDomain()->timeLoopMng()->registerActionMeshPartition(options()->partitioner0());
 subDomain()->timeLoopMng()->registerActionMeshPartition(options()->partitioner1());
 ```
 
-\note Il est aussi possible de créer les instances du service de partitionneur dans le code
-et de programmer leurs appels au cours du calcul :
+\note It is also possible to create the partitioner service instances in the
+code and schedule their calls during the calculation:
 ```cpp
 Ref<IMeshPartitionerBase> partitioner0 = ServiceBuilder<IMeshPartitionerBase>::createReference(subDomain(), "DefaultPartitioner", mesh0);
 Ref<IMeshPartitionerBase> partitioner1 = ServiceBuilder<IMeshPartitionerBase>::createReference(subDomain(), "DefaultPartitioner", mesh1);

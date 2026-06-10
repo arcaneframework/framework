@@ -1,51 +1,44 @@
-# Extensions C# avec Swig {#arcanedoc_wrapping_csharp_swig}
+﻿# C# Extensions with Swig {#arcanedoc_wrapping_csharp_swig}
 
 [TOC]
 
-Swig est un outil open source permettant d'interfacer du code C/C++
-avec un autre langage. Dans le cas d'Arcane, on wrappe les classes C++
-en C# pour qu'elles puissent être utilisée dans tout langage utilisant
-'.Net'.
+Swig is an open-source tool that allows interfacing C/C++ code with another
+language. In the case of Arcane, we wrap C++ classes in C# so that they can be
+used in any language using '.Net'.
 
-Il faut au moins la version 4.0 de swig.
+At least version 4.0 of Swig is required.
 
-Le wrapping se fait en décrivant dans un fichier avec l'extension .i
-quels seront les fichiers wrappés et la manière de le faire. En
-général, une classe C++ aura une classe C# de même nom. Par
-convention, les méthodes C# commencent pas une majuscule. Pour
-respecter cela, les méthodes des classes wrappées par Arcane sont
-converties. Par exemple, la méthode C++ Arcane::ISubDomain::caseMng()
-deviendra en C# la méthode `CaseMng()`.
+Wrapping is done by describing in a file with the .i extension which files will
+be wrapped and how to do it. Generally, a C++ class will have a C# class of the
+same name. By convention, C# methods do not start with a capital letter. To
+respect this, the methods of classes wrapped by Arcane are converted. For
+example, the C++ method Arcane::ISubDomain::caseMng() will become the C# method
+`CaseMng()`.
 
-La classe `Arcane::String` est convertie en la classe `string` de '.Net'.
+The class `Arcane::String` is converted into the `.Net` class `string`.
 
-\`A partir du fichier '.i', `swig` va générer un fichier `C++` et un
-ensemble de fichiers `C#`. Les premiers doivent être compilés comme
-un code `C++` normal sous forme de bibliothèque dynamique et les
-seconds comme un projet `C#` classique. La communication entre le
-`C++` et le `C#` se fait via un mécanisme de `.Net` appelé PInvoke
-(pour `Platform Invoke`). Lors de l'exécution, la bibliothèque
-compilée à partir du C++ doit être accessible. Pour cela, il faut
-qu'elle soit dans le même répertoire que l'assembly `C#` ou alors
-accessible via les variables d'environnement (LD_LIBRARY_PATH sous
-Unix ou PATH sous Windows).
+Starting from the '.i' file, `swig` will generate a `C++` file and a set of `C#`
+files. The former must be compiled as normal `C++` code in the form of a dynamic
+library, and the latter as a standard `C#` project. Communication between `C++`
+and `C#` is done via a `.Net` mechanism called PInvoke (for Platform Invoke).
+During execution, the library compiled from C++ must be accessible. For this, it
+must be in the same directory as the `C#` assembly or accessible via environment
+variables (LD_LIBRARY_PATH on Unix or PATH on Windows).
 
-L'exemple 'eos/csharp' montre comment effectuer le wrapping et lancer
-le code C#.
+The 'eos/csharp' example shows how to perform the wrapping and run the C# code.
 
-%Arcane utilise l'outil `swig` pour rendre accessible en `C#` les
-différentes classes.
+%Arcane uses the `swig` tool to make different classes accessible in `C#`.
 
-Ce document décrit comment le développeur peut ajouter ces propres
-classes pour qu'elles soient accessibles en `C# `.
+This document describes how the developer can add their own classes so that they
+are accessible in `C#`.
 
-L'outil `swig` utilise un fichier d'extension `.i` pour décrire les
-classes à wrapper.
+The `swig` tool uses a file with the `.i` extension to describe the classes to
+be wrapped.
 
-Par exemple, on suppose qu'on a une interface C++ représentant
-l'interface d'un service de calcul d'une équation d'état et qu'on
-souhaite pouvoir implémenter ce service en `C#`. L'interface est
-définie dans un fichier `IEquationOfState.h`:
+For example, let's assume we have a C++ interface representing the interface of
+an equation of state calculation service and that we want to be able to
+implement this service in `C#`. The interface is defined in the file
+`IEquationOfState.h`:
 
 ```cpp
 using namespace Arcane;
@@ -87,11 +80,10 @@ class IEquationOfState
 }
 ```
 
-L'interface définit deux méthodes `initEOS` et `applyEOS` qu'on
-souhaite rendre accessible en `C#`.
+The interface defines two methods, `initEOS` and `applyEOS`, which we want to
+make accessible in `C#`.
 
-Pour cela, il faut définir un fichier `EOSCSharp.i` contenant le code
-suivant :
+To do this, you must define a file `EOSCSharp.i` containing the following code:
 
 ```i
 // 1ère partie
@@ -136,56 +128,49 @@ ARCANE_SWIG_DEFINE_SERVICE(EOS,IEquationOfState,
                            );
 ```
 
-Ce fichier comporte trois parties:
+This file has three parts:
 
-1. La première partie commune à tous les wrappers qui décrit le nom du
-   module et le code qui sera intégré au code généré. Il faut mettre
-   dans cette partie tous les `.h` des classes qui seront wrappées par
-   `swig`.
-2. La deuxième partie qui indique explicitement les classes à
-   wrapper. Si une classe `C++` doit être considérée comme une
-   interface `C#`, il faut utiliser la macro
-   `ARCANE_DECLARE_INTERFACE` pour le spécifier. Le premier paramètre
-   est le nom du `namespace` et le second le nom de la classe. A noter
-   que si on souhaite définir plusieurs interfaces, il faut toutes les
-   déclarer avant de faire d'éventuels `%include`.
-3. La troisième partie qui définit les interfaces qu'on souhaite
-   étendre sous forme de service. On utilise pour cela la macro
-   `ARCANE_SWIG_DEFINE_SERVICE`. Cette macro contient 3 arguments. Les
-   deux premiers sont équivalents à ceux de la macro
-   `ARCANE_DECLARE_INTERFACE`. Le dernier contient la signature `C#`
-   des méthodes de l'interface wrappée. Elle n'est pas obligatoire en
-   théorie mais permet de s'assurer que l'utilisateur implémente bien
-   les méthodes de l'interface. En effet, via le mécanisme `swig` cela
-   n'est pas obligatoirement garanti et si l'utilisateur ne surcharge
-   pas les méthodes cela provoque une erreur lors de l'exécution. Swig
-   va alors généré une exception de type `DirectorPureVirtualException`.
+1. The first part, common to all wrappers, which describes the module name and
+   the code that will be integrated into the generated code. All `.h` files of
+   the classes to be wrapped by `swig` must be placed in this part.
+2. The second part, which explicitly indicates the classes to be wrapped. If a
+   `C++` class must be considered a `C#` interface, you must use the macro
+   `ARCANE_DECLARE_INTERFACE` to specify it. The first parameter is the name of
+   the `namespace` and the second is the name of the class. Note that if you
+   wish to define multiple interfaces, you must declare them all before any
+   potential `%include`.
+3. The third part, which defines the interfaces that we want to extend as a
+   service. For this, we use the macro `ARCANE_SWIG_DEFINE_SERVICE`. This macro
+   contains 3 arguments. The first two are equivalent to those of the
+   `ARCANE_DECLARE_INTERFACE` macro. The last contains the `C#` signature of the
+   wrapped interface's methods. While not mandatory in theory, it ensures that
+   the user correctly implements the interface methods. Indeed, via the `swig`
+   mechanism, this is not necessarily guaranteed, and if the user does not
+   override the methods, it causes an error during execution. Swig will then
+   generate a `DirectorPureVirtualException`.
 
-## Compilation du code généré par swig {#arcanedoc_wrapping_csharp_swig_build}
+## Compiling the code generated by swig {#arcanedoc_wrapping_csharp_swig_build}
 
-`swig` va générer deux types de fichiers :
+`swig` will generate two types of files:
 
-- les fichiers 'C++' contenant le wrapping qui sera appelé directement
-  depuis le `C#`.
-- les fichiers `C#` qui contiennent les classes générées par `swig` et
-  qui seront celles utilisées par le développeur.
+- the 'C++' files containing the wrapping, which will be called directly from
+  `C#`.
+- the `C#` files which contain the classes generated by `swig` and which will be
+  used by the developer.
 
-Pour que le wrapping fonctionne, il faut donc à la fois compiler les
-fichiers C++ sous la forme d'une bibliothèque dynamique et les
-fichiers `C#` sous la forme d'une assembly.
+For the wrapping to work, you must compile both the C++ files as a dynamic
+library and the `C#` files as an assembly.
 
-\note Pour que le code `.Net` puisse appeler facilement du code natif
-(C/C++), il faut que ce dernier soit accessible sous la forme d'une
-bibliothèque dynamique. Il faut obligatoirement compiler le code
-généré C++ généré par swig sous la forme d'une bibliothèque
-dynamique. Pour être précis, il est possible de faire cela autrement
-mais cela nécessite l'écriture de code dépendant du runtime (`mono` ou
-`coreclr`) utilisé.
+\note For the .Net code to easily call native code (C/C++), the latter must be
+accessible in the form of a dynamic library. It is mandatory to compile the C++
+code generated by swig in the form of a dynamic library. To be precise, it is
+possible to do this differently, but it requires writing code dependent on the
+runtime (`mono` or `coreclr`) used.
 
-Si le développeur utilise `cmake`, alors il existe un package qui gère
-à la fois la génération via swig et créé une cible pour le code C++
-correspondant. Si notre fichier `.i` s'appelle `Wrapper.i` et que la
-cible est `arcane_wrapper`, alors on peut utiliser le code suivant :
+If the developer uses `cmake`, there is a package that manages both the
+generation via swig and creates a target for the corresponding C++ code. If our
+`.i` file is named `Wrapper.i` and the target is `arcane_wrapper`, we can use
+the following code:
 
 ```cmake
 set(UseSWIG_TARGET_NAME_PREFERENCE STANDARD)
@@ -196,15 +181,15 @@ swig_add_library(arcane_wrapper
   TYPE SHARED
   LANGUAGE CSHARP
   SOURCES Wrapper.i
-  )
+)
 ```
 
-\todo ajouter infos sur le package CMake ArcaneSwigUtils.cmake
+\todo add info on the CMake package ArcaneSwigUtils.cmake
 
-Pour le code `C#`, il faut utiliser un fichier projet `C#` qui sera
-compilé via la commande `dotnet build` ou `dotnet publish`.
+For the `C#` code, you must use a `C#` project file which will be compiled via
+the `dotnet build` or `dotnet publish` command.
 
-   
+
 
 
 

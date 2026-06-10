@@ -1,45 +1,39 @@
-# Les règles de codage {#arcanedoc_general_codingrules}
+﻿# Coding Rules {#arcanedoc_general_codingrules}
 
 [TOC]
 
-Afin que les différents modules développés pour la plate-forme ARCANE 
-aient une certaine homogénéité, ce document propose un ensemble de
-règles de codages.
+To ensure that the different modules developed for the ARCANE platform have a
+certain homogeneity, this document proposes a set of coding rules.
 
+## General {#arcanedoc_general_codingrules_general}
 
-## Général {#arcanedoc_general_codingrules_general}
+- the language used is C++20
+- file encoding must be 'UTF-8' with BOM at the beginning of the file. The first
+  line of each file must be as follows:
+  // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+- all comments use the **Doxygen** product syntax to be able to extract paper or
+  hypertext documentation directly from the source code,
+- all identifiers are written in **English**.
+- indentations are done with 2 spaces. There must be no tab characters in the
+  code.
 
-- le langage utilisé est le C++20
-- l'encodage des fichiers est obligatoire 'UTF-8' avec le BOM au début
-  du fichier. La première ligne de chaque fichier doit être comme suit :
-```cpp
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
-```
-- tous les commentaires utilisent la syntaxe du produit
-**Doxygen** afin de pouvoir extraire directement du
-code source une documentation papier ou hypertextuelle,
-- tous les identifiants sont écrits en **Anglais**.
-- les indentations se font avec 2 espaces. Il ne doit pas y avoir de
-caractères de tabulation dans le code.
+## Source Files {#arcanedoc_general_codingrules_source}
 
-## Fichiers sources {#arcanedoc_general_codingrules_source}
+- all source files are formatted the same way and all begin with a header
+  describing the file name, the modification date.
+- the actual code follows. Each identifier must be commented and functions must
+  be separated by two lines of comments. For example:
 
-- tous les fichiers sources sont formatés de la même manière et
-  commencent tous par un en-tête décrivant le nom du fichier, la date
-  de modification et le nom du ou des auteurs.
-- vient ensuite le code proprement dit. Chaque
-  identifiant doit être commenté et les fonctions doivent être séparées
-  par deux lignes de commentaires. Par exemple :
 ```cpp
 /*!
-  \brief une fonction d'exemple.
-
-  Ceci est la description longue de la fonction d'exemple.
-
-  \param argc nombre d'arguments
-  \param argv tableau des valeurs des arguments
-  \return le nombre d'arguments divisés par 2
-*/
+ * \brief an example function.
+ *
+ * This is the long description of the example function.
+ *
+ * \param argc number of arguments
+ * \param argv array of argument values
+ * \return the number of arguments divided by 2
+ */
 int
 functionExample(int argc,char** argv)
 {
@@ -50,57 +44,54 @@ functionExample(int argc,char** argv)
 
 ## Variables {#arcanedoc_general_codingrules_variable}
 
-- les noms des variables sont toujours en **minuscules**. Si le nom 
-  est composé de plusieurs mots logiques, chaque mot est séparé par le 
-  caractère souligné. Par exemple :
+- variable names are always in **lowercase**. If the name is composed of several
+  logical words, each word is separated by the underscore character. For
+  example:
   - \c volume
   - \c list_of_element
   - \c cells
-- Pour éviter toute ambiguité, les noms pluriels sont réservés pour les
-  variables de type conteneur, tous les autres noms étant au **singulier**.
+- To avoid any ambiguity, plural names are reserved for container type
+  variables; all other names must be in the **singular**.
 
 ## Classes {#arcanedoc_general_codingrules_classe}
 
-- Les noms des classes (\c class) commencent par une
-  majuscule et continuent par des minuscules. Si le nom est composé de
-  plusieurs mots logiques, la première lettre de chaque nouveau mot est
-  en majuscule. Par exemple :
+- Class names (\c class) start with a capital letter and continue with lowercase
+  letters. If the name is composed of several logical words, the first letter of
+  each new word is capitalized. For example:
   - \c Component
   - \c ComponentMng
   - \c String
 
-- Les membres des classes, en plus de respecter les mêmes conventions
-  que n'importe quelle variable, seront toujours préfixés par les deux
-  caractères <tt>m_</tt>. Par exemple :
+- Class members, in addition to respecting the same conventions as any variable,
+  will always be prefixed by the two characters <tt>m_</tt>. For example:
   - \c m_volume
   - \c m_list_of_element
 
-## Méthodes et fonctions {#arcanedoc_general_codingrules_method}
+## Methods and Functions {#arcanedoc_general_codingrules_method}
 
-Dans ce qui suit, on utilisera le mot fonction pour
-désigner à la fois les fonctions et les méthodes de classe.
+In the following, the word function will be used to designate both functions and
+class methods.
 
-- les noms des fonctions sont toujours en <b>minuscules</b>. Si le
-  nom est composé de plusieurs mots logiques, la première lettre de
-  chaque nouveau mot est en majuscule. Par exemple :
-   - \c numberOfElement()
-   - \c assign()
-- si le nom de la méthode correspond à la notion de propriété (c'est-à-dire
-  équivalent sémantiquement à un champ de la classe) de nom \a value, l'accesseur doit
-  être le nom de la propriété (\a value()) et la méthode pour
-  changer la valeur doit être \a setValue(). <strong>L'accesseur ne doit
-  pas commencer par `get`</strong>. Si la propriété est booléenne, il est possible de
-  préfixer l'accesseur par \a is. Par exemple \a isEmpty().
+- function names are always in <b>lowercase</b>. If the name is composed of
+  several logical words, the first letter of each new word is capitalized. For
+  example:
+  - \c numberOfElement()
+  - \c assign()
+- if the method name corresponds to the notion of a property (i.e., semantically
+  equivalent to a class field) named \a value, the accessor must be the property
+  name (\a value()) and the method to change the value must be \a setValue().
+  <strong>The accessor must not start with `get`</strong>. If the
+  property is boolean, it is possible to prefix the accessor with \a is. For
+  example \a isEmpty().
 
-- Pour éviter toute ambiguité, tous les noms sont au <b>singulier</b>
-- La définition des fonctions se fait sur au moins deux lignes :
-  - la première comprend le type de retour et éventuellement
-    le nom de la classe s'il s'agit d'une méthode.
-  - la deuxième comprend obligatoirement le nom de la fonction.
-  - viennent ensuite la liste des arguments sur la deuxième ligne et
-    les suivantes.
-- L'accolade ouvrant le corps de la fonction et celle le fermant
-doivent être sur une ligne séparée :
+- To avoid any ambiguity, all names must be in the <b>singular</b>
+- Function definitions must be on at least two lines:
+  - the first includes the return type and possibly the class name if it is a
+    method.
+  - the second necessarily includes the function name.
+  - followed by the list of arguments on the second line and subsequent lines.
+- The opening brace of the function body and the closing brace must be on a
+  separate line:
 ```cpp
 int
 function1(int argc,char** argv)
@@ -110,25 +101,25 @@ function1(int argc,char** argv)
 ```
 
 
-## Exemple {#arcanedoc_general_codingrules_example}
+## Example {#arcanedoc_general_codingrules_example}
 
 ```cpp
 /*!
- * \brief Tableau constant d'un type \a T.
-
- Cette classe encapsule un tableau C constant standard (pointeur) et son nombre
- d'éléments. L'accès à ses éléments se fait par l'opérateur operator[]().
- La méthode base() permet d'obtenir le pointeur du tableau pour le passer
- aux fonctions C standard.
-
- L'instance conserve juste un pointeur sur le début du tableau C et ne fait
- aucune gestion mémoire. Le développeur doit s'assurer que le pointeur
- reste valide tant que l'instance existe.
-
- Les éléments du tableau ne peuvent pas être modifiés.
-
- En mode debug, une vérification de débordement est effectuée lors de l'accès
- à l'opérateur operator[]().
+ * \brief Constant array of type \a T.
+ * 
+ * This class encapsulates a standard constant C array (pointer) and its number
+ * of elements. Access to its elements is done via the operator operator[]().
+ * The base() method allows obtaining the array pointer to pass it
+ * to standard C functions.
+ * 
+ * The instance only keeps a pointer to the beginning of the C array and performs
+ * no memory management. The developer must ensure that the pointer
+ * remains valid as long as the instance exists.
+ * 
+ * The elements of the array cannot be modified.
+ * 
+ * In debug mode, an overflow check is performed when accessing
+ * the operator operator[]().
  */
 template<typename T>
 class ConstCArrayT
@@ -139,50 +130,50 @@ class ConstCArrayT
 
  public:
 	
-  //! Type des éléments du tableau
+  //! Type of the array elements
   typedef T value_type;
-  //! Type de l'itérateur constant sur un élément du tableau
+  //! Type of the constant iterator on an array element
   typedef const value_type * key_restrict const_iterator;
-  //! Type pointeur constant d'un élément du tableau
+  //! Type constant pointer of an array element
   typedef const value_type * key_restrict const_pointer;
-  //! Type référence constante d'un élément du tableau
+  //! Type constant reference of an array element
   typedef const value_type& const_reference;
-  //! Type indexant le tableau
+  //! Type indexing the array
   typedef Integer size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type of a distance between iterator elements of the array
   typedef ptrdiff_t difference_type;
 
-  //! Type d'un itérateur constant sur tout le tableau
+  //! Type of a constant iterator on the entire array
   typedef ConstIterT< ConstCArrayT<T> > const_iter;
 
  public:
 
-  //! Construit un tableau vide.
+  //! Constructs an empty array.
   ConstCArrayT() : m_size(0), m_ptr(0) {}
-  //! Construit un tableau avec \a s élément
+  //! Constructs an array with \a s elements
   explicit ConstCArrayT(Integer s,const T* ptr)
   : m_size(s), m_ptr(ptr) {}
-  /*! \brief Constructeur par copie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+  /*! \brief Copy constructor.
+   * \warning Only the pointer is copied. No memory copy is performed.
    */
   ConstCArrayT(const ConstCArrayT<T>& from)
   : m_size(from.m_size), m_ptr(from.m_ptr) {}
-  /*! \brief Constructeur par copie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+  /*! \brief Copy constructor.
+   * \warning Only the pointer is copied. No memory copy is performed.
    */
   ConstCArrayT(const CArrayBaseT<T>& from)
   : m_size(from.size()), m_ptr(from.begin())
     {
     }
 
-  /*! \brief Opérateur de recopie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+  /*! \brief Copy assignment operator.
+   * \warning Only the pointer is copied. No memory copy is performed.
    */
   const ConstCArrayT<T>& operator=(const ConstCArrayT<T>& from)
     { m_size=from.m_size; m_ptr=from.m_ptr; return *this; }
 	
-  /*! \brief Opérateur de recopie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+  /*! \brief Copy assignment operator.
+   * \warning Only the pointer is copied. No memory copy is performed.
    */
   const ConstCArrayT<T>& operator=(const CArrayBaseT<T>& from)
     {
@@ -194,33 +185,33 @@ class ConstCArrayT
  public:
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-th element of the array.
    *
-   * En mode \a check, vérifie les débordements.
+   * In \a check mode, overflows are checked.
    */
   const T& operator[](Integer i) const
     {
       return m_ptr[i];
     }
 
-  //! Nombre d'éléments du tableau
+  //! Number of elements in the array
   inline Integer size() const { return m_size; }
-  //! Iterateur sur le premier élément du tableau
+  //! Iterator on the first element of the array
   inline const_iterator begin() const { return m_ptr; }
-  //! Iterateur sur le premier élément après la fin du tableau
+  //! Iterator on the first element after the end of the array
   inline const_iterator end() const { return m_ptr+m_size; }
-  //! \a true si le tableau est vide (size()==0)
+  //! \a true if the array is empty (size()==0)
   inline bool empty() const { return m_size==0; }
 
-  //! Pointeur sur le début du tableau.
+  //! Pointer to the start of the array.
   inline const T* base() const { return m_ptr; }
 
  protected:
 
  private:
 
-  Integer m_size; //!< Nombre d'éléments 
-  const T* m_ptr; //!< Pointeur sur le début du tableau
+  Integer m_size; //!< Number of elements 
+  const T* m_ptr; //!< Pointer to the start of the array
 };
 ```
 

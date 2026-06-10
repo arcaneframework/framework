@@ -1,41 +1,35 @@
-# Analyse de performances des boucles {#arcanedoc_debug_perf_profiling_loop}
+﻿# Loop Performance Analysis {#arcanedoc_debug_perf_profiling_loop}
 
 [TOC]
 
-Il est possible de faire du profilage des boucles gérées par
-%Arcane. Cela concerne toutes les boucles telles que ENUMERATE_(),
-ENUMERATE_CELL(), RUNCOMMAND_ENUMERATE(), RUNCOMMAND_LOOP(). Le
-profiling fonctionne pour le code séquentiel, multi-threadé ou avec
-les accélérateurs. Dans ce mode, on mesure le temps pris pour exécuter
-chacune des boucles et on affiche en fin d'exécution les informations
-cumulées sur ces boucles.
+It is possible to profile loops managed by %Arcane. This applies to all loops
+such as ENUMERATE_(), ENUMERATE_CELL(), RUNCOMMAND_ENUMERATE(),
+RUNCOMMAND_LOOP(). Profiling works for sequential, multi-threaded, or
+accelerator code. In this mode, the time taken to execute each loop is measured,
+and the accumulated information about these loops is displayed at the end of
+execution.
 
-\note Pour des raisons de performance, le profilage des boucles telles
-que ENUMERATE_() n'est pas actif par défaut. Pour l'activer, il faut
-compiler le code utilisant ces boucles avec la macro
-`ARCANE_TRACE_ENUMERATOR`.
+\note For performance reasons, profiling of loops such as ENUMERATE_() is not
+active by default. To activate it, you must compile the code using these loops
+with the macro `ARCANE_TRACE_ENUMERATOR`.
 
-Pour avoir les informations de profiling, il suffit de positionner la
-variable d'environnement `ARCANE_LOOP_PROFILING_LEVEL`. Les deux
-valeurs possibles sont :
+To get the profiling information, simply set the environment variable
+`ARCANE_LOOP_PROFILING_LEVEL`. The two possible values are:
 
-- `1` pour activer le profiling de base.
-- `2` pour activer le profiling comme le mode `1`. La différence avec
-  ce mode est qu'on utilise les évènements pour calculer le temps
-  passé dans les noyaux accélérateurs. Ce mode est plus précis que le
-  mode `1` mais peut occasionner un léger surcout sur le temps de
-  calcul (de l'ordre du pourcent).
+- `1` to activate basic profiling.
+- `2` to activate profiling like mode `1`. The difference with this mode is that
+  events are used to calculate the time spent in accelerator cores. This mode is
+  more precise than mode `1` but may cause a slight overhead on calculation
+  time (on the order of a percent).
 
-Il est possible aussi de positionner de manière programatique le
-profilage en appelant la méthode
-\arcane{ProfilingRegistry::setProfilingLevel()}. Il est possible
-d'activer et de désactiver le profiling à n'importe quel moment en
-dehors des boucles.
+It is also possible to set profiling programmatically by calling the method
+\arcane{ProfilingRegistry::setProfilingLevel()}. It is possible to activate and
+deactivate profiling at any time outside of loops.
 
-Lorsque le profiling est activé, des informations sont affichées en
-fin de calcul.
+When profiling is active, information is displayed at the end of the
+calculation.
 
-Voici un exemple de résultat sur accélérateur :
+Here is an example of the result on an accelerator:
 
 ```
 *I-Internal   LoopStatistics:
@@ -56,7 +50,7 @@ ProfilingStat
          1         0      0.337         0   0.7  virtual void SimpleHydro::SimpleHydroAcceleratorService::hydroStartInit()
 ```
 
-et un exemple en multi-thread :
+and an example in multi-thread:
 
 ```
 *I-Internal   LoopStatistics:
@@ -78,15 +72,13 @@ ProfilingStat
 ```
 
 
-Voici la signification des champs :
+Here is the meaning of the fields:
 
-- `Ncall` : nombre de fois que la boucle est exécuté
-- `Nchunk` : nombre de partitions (chunks) de boucles en mode
-  multi-thread.
-- `T` : temps total (en milli-seconde) passé dans l'exécution de la boucle. En
-  multi-thread il s'agit du temps total cumulé sur tous les threads.
-- `Tck` : temps par chunk. Cette valeur n'est valide que pour les
-  exécutions en multi-thread.
+- `Ncall` : number of times the loop is executed
+- `Nchunk` : number of loop partitions (chunks) in multi-thread mode.
+- `T` : total time (in milliseconds) spent executing the loop. In multi-thread,
+  this is the total time accumulated across all threads.
+- `Tck` : time per chunk. This value is only valid for multi-thread executions.
 
 ____
 

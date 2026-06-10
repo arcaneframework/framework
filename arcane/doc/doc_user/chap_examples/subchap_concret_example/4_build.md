@@ -1,16 +1,16 @@
-# Compilation et lancement {#arcanedoc_examples_concret_example_build}
+﻿# Compilation and Launch {#arcanedoc_examples_concret_example_build}
 
 [TOC]
 
-Cette dernière partie sera assez courte étant donné qu'il n'y a pas
-de grandes différences avec le CMakeLists.txt du HelloWorld du chapitre
-précedent (\ref arcanedoc_examples_simple_example_cmake).
-De plus, les commandes de compilations ne changent pas grandement non
-plus (\ref arcanedoc_examples_simple_example_build).
+This last part will be quite short given that there are no major differences
+from the HelloWorld CMakeLists.txt of the previous chapter
+(\ref arcanedoc_examples_simple_example_cmake).
+Furthermore, the compilation commands do not change significantly either
+(\ref arcanedoc_examples_simple_example_build).
 
 ## CMakeLists.txt {#arcanedoc_examples_concret_example_build_cmakeliststxt}
 
-Voici le CMakeLists.txt de Quicksilver :
+Here is the Quicksilver CMakeLists.txt:
 ```cmake
 cmake_minimum_required(VERSION 3.16)
 project(Quicksilver LANGUAGES CXX)
@@ -39,37 +39,34 @@ target_include_directories(Quicksilver PUBLIC . ${CMAKE_CURRENT_BINARY_DIR})
 configure_file(Quicksilver.config ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 ```
 
-Concentrons-nous sur les nouvelles lignes.
+Let's focus on the new lines.
 
 ```cmake
 set(BUILD_SHARED_LIBS TRUE)
 ```
-Cette ligne demande à cmake de générer des librairies dynamiques
-au lieu de librairies statiques.
+This line asks CMake to generate dynamic libraries instead of static libraries.
 
 ____
 
 ```cmake
 target_compile_options(Quicksilver PUBLIC -Wpedantic)
 ```
-Cette ligne permet d'ajouter une option de compilation. L'option
-ajoutée ici demande l'ajout de plus de warnings lors de la compilation. 
+This line allows adding a compilation option. The option added here requests the
+addition of more warnings during compilation.
 
 
 ## Compilation {#arcanedoc_examples_concret_example_build_commands}
 
-Pour la compilation, on peut réutiliser les commandes présentées dans ce
-chapitre : \ref arcanedoc_examples_simple_example_build, en n'oubliant
-pas de modifier `HelloWorld` en `quicksilver`.
+For compilation, we can reuse the commands presented in this chapter:
+\ref arcanedoc_examples_simple_example_build, without forgetting to change
+`HelloWorld` to `quicksilver`.
 
-La liste des exemples `.arc` est disponible dans le `readme.md` de
-`Quicksilver`.
+The list of .arc examples is available in the `Quicksilver` readme.md.
 
 ____
 
-Si un problème est présent dans ce sous-chapitre, vous pouvez ouvrir une
-issue dans le GitHub d'%Arcane.
-
+If a problem exists in this subsection, you can open an issue on the %Arcane
+GitHub.
 
 ____
 

@@ -1,68 +1,69 @@
-# Prérequis {#arcanedoc_build_install_prerequisites}
+﻿# Prerequisites {#arcanedoc_build_install_prerequisites}
 
-Pour compiler et utiliser %Arcane, il est nécessaire d'installer certaines
-dépendances. Ce sous-chapitre est dédié à l'installation de ces dépendances.
+To compile and use %Arcane, it is necessary to install certain dependencies.
+This subsection is dedicated to installing these dependencies.
 
-\note A partir de la version 4 de %Arcane, le support du C++20 est obligatoire.
+\note Starting from version 4 of %Arcane, C++20 support is mandatory.
 
 <details>
-<summary>Liste des dépendances nécessaires</summary>
+<summary>List of required dependencies</summary>
 <table>
-<tr><th>Nom de la dépendance <th>Version (Mini/Maxi) <th>Description
-<tr><td>[GCC](https://gcc.gnu.org/)</td> <td>11/</td> <td rowspan="3">Compilateur supportant le C++20</td></tr>
+<tr><th>Dependency Name <th>Version (Min/Max) <th>Description
+<tr><td>[GCC](https://gcc.gnu.org/)</td> <td>11/</td> <td rowspan="3">Compiler supporting C++20</td></tr>
 <tr><td>[CLang](https://clang.llvm.org/)</td> <td>15/</td></tr>
 <tr><td>[Visual Studio](https://visualstudio.microsoft.com/)</td> <td>17.4/</td></tr>
-<tr><td>[Make](https://www.gnu.org/software/make/)</td> <td> <td>Système de génération d'exécutable</td></tr>
-<tr><td>[CMake](https://cmake.org/)</td> <td>3.21/ (3.26/ si utilisation de CUDA) <td>Système de build de projet</td></tr>
-<tr><td>[DotNet](https://dotnet.microsoft.com/)</td> <td>8/</td> <td>Pour AxlStar et le wrapper C#</td></tr>
-<tr><td>[GLib](https://www.gtk.org/)</td> <td> </td> <td>Support du multi-threading</td></tr>
-<tr><td>[LibXml2](http://www.xmlsoft.org/)</td> <td> </td> <td>Lecture des fichiers AXL/ARC</td></tr>
+<tr><td>[Make](https://www.gnu.org/software/make/)</td> <td> <td>Executable generation system</td></tr>
+<tr><td>[CMake](https://cmake.org/)</td> <td>3.21/ (3.26/ if using CUDA) <td>Project build system</td></tr>
+<tr><td>[DotNet](https://dotnet.microsoft.com/)</td> <td>8/</td> <td>For AxlStar and the C# wrapper</td></tr>
+<tr><td>[GLib](https://www.gtk.org/)</td> <td> </td> <td>Multi-threading support</td></tr>
+<tr><td>[LibXml2](http://www.xmlsoft.org/)</td> <td> </td> <td>Reading AXL/ARC files</td></tr>
 </table>
 </details>
 
 <details>
-<summary>Liste des dépendances recommandées</summary>
+<summary>List of recommended dependencies</summary>
 <table>
-<tr><th>Nom de la dépendance <th>Version (Mini/Maxi) <th>Description
-<tr><td>[oneTBB](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb.html) <td>2021/ <td>Support du multi-threading
-<tr><td>[OpenMPI](https://www.open-mpi.org/) <td>4.0/ <td rowspan="2">Ou une autre implémentation qui supporte la norme MPI 3.1
+<tr><th>Dependency Name <th>Version (Min/Max) <th>Description
+<tr><td>[oneTBB](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb.html) <td>2021/ <td>Multi-threading support
+<tr><td>[OpenMPI](https://www.open-mpi.org/) <td>4.0/ <td rowspan="2">Or another implementation that supports the MPI 3.1 standard
 <tr><td>[MPICH](https://www.mpich.org/) <td>3.2/
-<tr><td>[ParMetis](https://github.com/KarypisLab/ParMETIS) </td><td>4.0</td><td>Partitionneur de graphe pour l'équilibrage de charge<td></tr>
+<tr><td>[ParMetis](https://github.com/KarypisLab/ParMETIS) </td><td>4.0</td><td>Graph partitioner for load balancing<td></tr>
 </table>
 </details>
 
 <details>
-<summary>Liste des dépendances optionnelles</summary>
+<summary>List of optional dependencies</summary>
 <table>
-<tr><th>Nom de la dépendance</th><th>Version (Mini/Maxi)</th><th>Description</th></tr>
-<tr><td>[HDF5](https://www.hdfgroup.org/solutions/hdf5/) </td> <td>1.10/ </td><td>Bibliothèque de stockage de données</td></tr>
-<tr><td>[Google Test](https://github.com/google/googletest) </td> <td>1.10</td> <td>Bibliothèque de tests unitaires</td></tr>
-<tr><td>[Ninja](https://ninja-build.org/) </td><td>1.10/ </td><td>Système de génération d'exécutable</td></tr>
-<tr><td>[SWIG](https://www.swig.org/) </td><td>4.1/ </td><td>Bibliothèque permettant d'appeler le C++ d'%Arcane avec du C#</td></tr>
-<tr><td>[Hypre](https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods) </td><td>2.20</td><td>Bibliothèque d'algèbre linéaire</td></tr>
-<tr><td>[PETSc](https://gitlab.com/petsc/petsc) </td> <td>3.6</td><td>Bibliothèque d'algèbre linéaire</td></tr>
-<tr><td>[Trilinos](https://trilinos.github.io/) </td> <td>16</td><td>Bibliothèque d'algèbre linéaire et de partitionnement de graphe</td></tr>
-<tr><td>[Doxygen](https://doxygen.nl/) </td> <td>1.9.1/1.13.2 </td><td>Génération de la documentation</td></tr>
+<tr><th>Dependency Name</th><th>Version (Min/Max)</th><th>Description</th></tr>
+<tr><td>[HDF5](https://www.hdfgroup.org/solutions/hdf5/) </td> <td>1.10/ </td><td>Data storage library</td></tr>
+<tr><td>[Google Test](https://github.com/google/googletest) </td> <td>1.10</td> <td>Unit testing library</td></tr>
+<tr><td>[Ninja](https://ninja-build.org/) </td><td>1.10/ </td><td>Executable generation system</td></tr>
+<tr><td>[SWIG](https://www.swig.org/) </td><td>4.1/ </td><td>Library allowing C++ in %Arcane to be called from C#</td></tr>
+<tr><td>[Hypre](https://computing.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods) </td><td>2.20</td><td>Linear algebra library</td></tr>
+<tr><td>[PETSc](https://gitlab.com/petsc/petsc) </td> <td>3.6</td><td>Linear algebra library</td></tr>
+<tr><td>[Trilinos](https://trilinos.github.io/) </td> <td>16</td><td>Linear algebra and graph partitioning library</td></tr>
+<tr><td>[Doxygen](https://doxygen.nl/) </td> <td>1.9.1/1.13.2 </td><td>Documentation generation</td></tr>
 
 </table>
 </details>
 
-Choisissez votre OS :
+Choose your OS:
 
 - \subpage arcanedoc_build_install_prerequisites_ubuntu22 <br>
-  Présente les prérequis nécessaires pour %Arcane sous Ubuntu 22.04.
+  Presents the prerequisites necessary for %Arcane under Ubuntu 22.04.
 
 - \subpage arcanedoc_build_install_prerequisites_ubuntu24 <br>
-  Présente les prérequis nécessaires pour %Arcane sous Ubuntu 24.04.
+  Presents the prerequisites necessary for %Arcane under Ubuntu 24.04.
 
 - \subpage arcanedoc_build_install_prerequisites_ubuntu26 <br>
-  Présente les prérequis nécessaires pour %Arcane sous Ubuntu 26.04.
+  Presents the prerequisites necessary for %Arcane under Ubuntu 26.04.
 
 - \subpage arcanedoc_build_install_prerequisites_arch <br>
-  Présente les prérequis nécessaires pour %Arcane sous ArchLinux.
+  Presents the prerequisites necessary for %Arcane under ArchLinux.
 
 - \subpage arcanedoc_build_install_prerequisites_rh9 <br>
-  Présente les prérequis nécessaires pour %Arcane sous AlmaLinux 9 ou RedHat 9.
+  Presents the prerequisites necessary for %Arcane under AlmaLinux 9 or RedHat
+  9.
 
 ____
 

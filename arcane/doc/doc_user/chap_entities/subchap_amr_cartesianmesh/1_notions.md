@@ -2,86 +2,101 @@
 
 [TOC]
 
-Cette page explique quelques notions pour comprendre le fonctionnement de l'AMR dans %Arcane.
+This page explains some concepts to understand how AMR works in %Arcane.
 
 ## Patch {#arcanedoc_entities_amr_cartesianmesh_notions_patch}
 
-Classe `Arcane::CartesianPatch`.
+Class `Arcane::CartesianPatch`.
 
-Pour l'AMR type 1, un patch est un ensemble de mailles. Ces mailles ne forment pas forcément un ensemble contigü.
-Ces mailles sont regroupées dans un groupe de mailles accessible via la méthode `Arcane::CartesianPatch::cells()`.
+For AMR type 1, a patch is a set of meshes. These meshes do not necessarily form
+a contiguous set.
+These meshes are grouped into a set of meshes accessible via the method
+`Arcane::CartesianPatch::cells()`.
 
 \image html amr_1.webp
 
 
-Pour l'AMR type 3, un patch est un ensemble de mailles d'un même niveau et englobé au sein d'une boite englobante (patch
-régulier). Cette boite englobante est décrite par les coordonnées topologiques de deux mailles dans la grille
-cartésienne : `min` et `max`.
+For AMR type 3, a patch is a set of meshes of the same level and enclosed within
+a bounding box (regular patch). This bounding box is described by the
+topological coordinates of two meshes in the Cartesian grid: `min` and `max`.
 
-\remark `min` et `max` auront les mêmes valeurs en multi sous-domaine ou en mono sous-domaine.
+\remark `min` and `max` will have the same values in a multi-subdomain or a
+mono-subdomain.
 
 \image html amr_2.webp
 
-Cette boite englobante est décrite par la classe `Arcane::AMRPatchPosition`. Chaque patch contient une instance de cette
-classe, accessible via la méthode `Arcane::CartesianPatch::position()`.
+This bounding box is described by the class `Arcane::AMRPatchPosition`. Each
+patch contains an instance of this class, accessible via the method
+`Arcane::CartesianPatch::position()`.
 
-\note Une maille ne peut être que dans une seule boite englobante (pour un niveau donné).
+\note A mesh can only be in one bounding box (for a given level).
 
-Trois groupes de mailles sont accessibles pour chaque patch :
-- le groupe de toutes les mailles du patch : `Arcane::CartesianPatch::cells()`,
-- le groupe des mailles de recouvrement : `Arcane::CartesianPatch::overlapCells()` (ayant le flag `II_Overlap`),
-- le groupe des mailles du patch (non de recouvrement) : `Arcane::CartesianPatch::inPatchCells()`
-  (ayant le flag `II_InPatch`).
+Three sets of meshes are accessible for each patch:
+- the group of all meshes in the patch: `Arcane::CartesianPatch::cells()`,
+- the group of overlap meshes: `Arcane::CartesianPatch::overlapCells()` (having
+  the `II_Overlap` flag),
+- the group of patch meshes (non-overlapping):
+  `Arcane::CartesianPatch::inPatchCells()` (having the `II_InPatch` flag).
 
 
-## Mailles de recouvrement {#arcanedoc_entities_amr_cartesianmesh_notions_overlap}
+## Overlap Meshes {#arcanedoc_entities_amr_cartesianmesh_notions_overlap}
 
-\note Pour l'AMR type 1, il n'y a pas de mailles de recouvrement.
+\note For AMR type 1, there are no overlap meshes.
 
-Les mailles de recouvrement désignent les mailles autour des patchs (autour des boites englobantes).
+Overlap meshes refer to the meshes around the patches (around the bounding
+boxes).
 
 \image html amr_3.webp
 
-(en pointillé, on a les mailles/faces/noeuds de recouvrements / 2 couches pour le niveau 1)
+(In dotted lines, we have the overlap meshes/faces/nodes / 2 layers for level 1)
 
-Ces mailles permettent deux choses. D'abord, elles permettent d'obtenir les valeurs autour des items du patch (en trait
-plein sur l'image) (comme les mailles fantômes pour le calcul à la frontière des sous-domaines).
+These meshes allow two things. First, they allow obtaining values around the
+patch items (in solid lines in the image) (like ghost meshes for calculating at
+the subdomain boundary).
 
 \image html amr_4.webp
 
-(on peut voir des mailles de recouvrement qui recouvrent des mailles d'autres patchs (`II_Overlap && II_InPatch`))
+(We can see overlap meshes covering meshes from other patches
+(`II_Overlap && II_InPatch`))
 
-Ensuite, elles permettent d'éviter d'avoir plus d'un niveau de différence entre deux mailles.
-En effet, il n'est pas possible de raffiner une maille de recouvrement pure (`II_Overlap && ! II_InPatch`).
+Second, they prevent having more than one level of difference between two
+meshes.
+Indeed, it is not possible to refine a pure overlap mesh
+(`II_Overlap && ! II_InPatch`).
 
 \image html amr_5.webp
 
-(2 couches pour le niveau 1 / 0 couche pour le niveau 2)
+(2 layers for level 1 / 0 layers for level 2)
 
-Il est possible de modifier le nombre de couches de mailles de recouvrement du niveau le plus haut via la méthode
+It is possible to modify the number of overlap mesh layers of the highest level
+via the method
 `Arcane::CartesianMeshAMRMng::setOverlapLayerSizeTopLevel(Int32 new_size)`.
-Le nombre de couches des autres niveaux sera calculé automatiquement.
+The number of layers for other levels will be calculated automatically.
 
-Il est aussi possible de désactiver la création de ces couches avec la méthode
-`Arcane::CartesianMeshAMRMng::disableOverlapLayer()`. Dans ce cas, il pourra y avoir plus d'un niveau de différence
-entre niveaux.
+It is also possible to disable the creation of these layers with the method
+`Arcane::CartesianMeshAMRMng::disableOverlapLayer()`. In this case, there may be
+more than one level of difference between levels.
 
 ## Directions {#arcanedoc_entities_amr_cartesianmesh_notions_directions}
 
-(Lire la page \ref arcanedoc_entities_cartesianmesh_direction avant de continuer)
+(Read the page \ref arcanedoc_entities_cartesianmesh_direction before
+continuing)
 
-Chaque patch (pour les deux types d'AMR) possède ses propres directions, pour chaque item.
+Each patch (for both AMR types) has its own directions, for each item.
 
-Ces directions sont accessibles via les patchs (`Arcane::CartesianPatch`). Le fonctionnement est le même
-qu'avec le maillage sans AMR. 
+These directions are accessible via the patches (`Arcane::CartesianPatch`). The
+operation is the same as with the mesh without AMR.
 
-Deux nouvelles méthodes sont disponibles pour accéder aux groupes d'items `InPatch` et `Overlap` :
+Two new methods are available to access the `InPatch` and `Overlap` item groups:
 
-- `Arcane::CellDirectionMng::inPatchCells()` et `Arcane::CellDirectionMng::overlapCells()`,
-- `Arcane::FaceDirectionMng::inPatchFaces()` et `Arcane::FaceDirectionMng::overlapFaces()`,
-- `Arcane::NodeDirectionMng::inPatchNodes()` et `Arcane::NodeDirectionMng::overlapNodes()`.
+- `Arcane::CellDirectionMng::inPatchCells()` and
+  `Arcane::CellDirectionMng::overlapCells()`,
+- `Arcane::FaceDirectionMng::inPatchFaces()` and
+  `Arcane::FaceDirectionMng::overlapFaces()`,
+- `Arcane::NodeDirectionMng::inPatchNodes()` and
+  `Arcane::NodeDirectionMng::overlapNodes()`.
 
-Exemple :
+Example:
 
 ```cpp
 using namespace Arcane;
@@ -98,8 +113,9 @@ ENUMERATE_(Face, iface, face_dm.inPatchFaces()) {
   Cell next_cell = dir_face.nextCell(); // Maille après la face
 }
 ```
-Dans ce bout de code, avec au moins une couche de mailles de recouvrement, on est sûr que `dir_face.previousCell()` et
-`dir_face.nextCell()` ne sont pas nulles (sauf au bord du sous-domaine).
+In this piece of code, with at least one layer of overlap meshes, we are sure
+that `dir_face.previousCell()` and
+`dir_face.nextCell()` are not null (except at the subdomain boundary).
 
 \image html amr_6.webp
 

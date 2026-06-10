@@ -1,57 +1,52 @@
-﻿# Le support des tests unitaires dans %Arcane {#arcanedoc_debug_perf_unit_tests}
+﻿# Unit Test Support in %Arcane {#arcanedoc_debug_perf_unit_tests}
 
 [TOC]
 
 ## Introduction {#arcanedoc_debug_perf_unit_tests_intro}
 
-Les tests unitaires dans %Arcane sont exécutés sans que la simulation
-ne soit lancée. Ils permettent de tester des services, pas des
-modules. Leur mise en oeuvre est simple et rapide : les services
-déclarent des méthodes de test dans le descripteur (fichier
-'.axl'). Ces méthodes sont exécutées par un module de test et une
-boucle en temps dédiés qui sont fournis par %Arcane. Il suffit, pour
-exécuter les tests, d'ajouter le service à la liste des services du
-module de test.
-  
-Cette page décrit les différentes étapes à suivre pour construire et
-exécuter des tests unitaires. Notons, qu'à ce jour, les tests unitaires
-ne fonctionnent qu'en séquentiel. La génération du rapport de test
-n'est pas encore implémentée en parallèle.
-  
-## Déclaration des tests {#arcanedoc_debug_perf_unit_tests_decl}
+Unit tests in %Arcane are executed without running the simulation. They allow
+you to test services, not modules. Their implementation is simple and fast:
+services declare test methods in the descriptor ('.axl' file). These methods are
+executed by a dedicated test module and time loop provided by %Arcane. To run
+the tests, you simply need to add the service to the test module's list of
+services.
 
-Les tests unitaires peuvent être ajoutés à n'importe quel service. Il
-suffit pour cela de déclarer les méthodes de test dans le descripteur
-du service (fichier 'axl') sous la forme suivante :
-  
+This page describes the different steps required to build and run unit tests.
+Note that, as of today, unit tests only function sequentially. Test report
+generation is not yet implemented in parallel.
+
+## Declaring Tests {#arcanedoc_debug_perf_unit_tests_decl}
+
+Unit tests can be added to any service. To do this, you must declare the test
+methods in the service's descriptor (the 'axl' file) in the following format:
+
 ```xml
-<tests class-set-up="setUpForClass" test-set-up="setUp" class-tear-down="tearDownForClass" test-tear-down="tearDown">
+<tests class-set-up="setUpForClass" test-set-up="setUp"
+       class-tear-down="tearDownForClass" test-tear-down="tearDown">
   <test name="Test 1" method-name="myTestMethod1"/>
   <test name="Test 2" method-name="myTestMethod2"/>
   <test name="Test 3" method-name="myTestMethod3"/>
 </tests> 
 ```
 
-Le descripteur ci-dessus déclare :
+The descriptor above declares:
 
-- 3 méthodes de test 'myTestMethod1', 'myTestMethod2' et
-  'myTestMethod3'. Ces 3 tests comportent un nom (attribut 'name') qui
-  est utilisé pour les affichages lors de l'exécution du test.
-- 2 méthodes optionnelles 'setUp' et 'tearDown' qui sont appelées
-  respectivement avant et après chaque appel à une méthode de test. Si n
-  méthodes de test sont déclarées, 'setUp' et 'tearDown' sont donc
-  appelées n fois. Notons qu'il est tout à fait possible de ne déclarer
-  que le setUp ou que le tearDown.
-- 2 méthodes optionnelles 'setUpForClass' et 'tearDownForClass' qui
-  sont appelées respectivement avant et après l'exécution de
-  l'ensemble des méthodes déclarées dans le descripteur. Quel que soit
-  le nombre de méthodes déclarées, 'setUpForClass' et
-  'tearDownForClass' ne sont donc appelées qu'une seule fois.
+- 3 test methods: 'myTestMethod1', 'myTestMethod2', and 'myTestMethod3'. These 3
+  tests have a name (the 'name' attribute) which is used for display during test
+  execution.
+- 2 optional methods: 'setUp' and 'tearDown', which are called respectively
+  before and after each call to a test method. If no test methods are
+  declared, 'setUp' and 'tearDown' are called n times. Note that it is entirely
+  possible to declare only setUp or only tearDown.
+- 2 optional methods: 'setUpForClass' and 'tearDownForClass', which are called
+  respectively before and after the execution of all methods declared in the
+  descriptor. Regardless of the number of methods declared, 'setUpForClass'
+  and 'tearDownForClass' are called only once.
 
-Une fois ce travail effectué, il vous reste à écrire les méthodes
-déclarées dans le descripteur dans votre code du service. Pour
-l'exemple précédent, on obtient pour le fichier '.h' :
-  
+Once this work is done, you need to write the methods declared in the descriptor
+in your service code. For the previous example, the '.h' file will look like
+this:
+
 ```cpp
  ...
 public:
@@ -64,40 +59,46 @@ public:
  void myTestMethod3();
  ...
 ```
-  
-Néanmoins, si vous oubliez de définir une des méthodes dans votre '.h', une erreur de compilation se produira. 
-Dans l'exemple précédent, si vous oubliez de définir 'myTestMethod1', vous obtiendrez le message suivant :
+
+Nevertheless, if you forget to define one of the methods in your '.h', a
+compilation error will occur. In the previous example, if you forget to define
+'myTestMethod1', you will receive the following message:
 
 ```
 error: no 'void MonServiceDeTest::myTestMethod1()' member function declared in class 'MonServiceDeTest'
 ```
-  
-## Les assertions {#arcanedoc_debug_perf_unit_tests_assertions}
 
-Il faut maintenant coder les méthodes de test. Comme pour la plupart
-des bibliothèques de tests unitaires (CppUnit, GoogleTest...), %Arcane
-met à disposition un ensemble d'assertions pour tester les résultats
-de tests. Ces assertions sont disponibles sous forme de macros C++.
+## Assertions {#arcanedoc_debug_perf_unit_tests_assertions}
 
-\`A ce jour, les macros disponibles sont :
+You must now code the test methods. Like most unit testing libraries (CppUnit,
+GoogleTest...), %Arcane provides a set of assertions to test test results. These
+assertions are available as C++ macros.
 
-- FAIL : qui permet de faire échouer un test. Cette macro est utile,
-  par exemple, pour vérifier qu'une exception est appelée. Il suffit
-  de faire un appel à FAIL après l'instruction qui doit déclencher
-  l'exception. Si l'exception n'est pas déclenchée, l'instruction
-  suivante est exécutée et FAIL est appelée.
-- ASSERT_TRUE(condition) : qui permet de vérifier qu'une valeur booleéenne est vraie. Par exemple, ASSERT_TRUE(i<5).
-- ASSERT_FALSE(condition) : assertion inverse à la précédente.
-- ASSERT_EQUAL(expected, actual) : permet de vérifier l'égalité entre la valeur attendue pour le test et le résultat effectivement obtenu.
-  Cette macro s'appuie sur une méthode générique (template) qui utilise l'opérateur '=='. Cette macro est donc valable pour tout type 
-  définissant cet opérateur. Notons que les types de base de Arcane répondent à cette exigence (Integer, Real, Real2...).
-- ASSERT_NEARLY_EQUAL(expected, actual) : permet de vérifier la 'presque' égalité entre la valeur attendue pour le test et le résultat effectivement obtenu.
-  Cette assertion est utile pour tester l'égalité entre des réels malgré les imprécisions machine.
-  Cette macro s'appuie sur une méthode générique (template) qui utilise la méthode 'math::isNearlyEqual'. Cette macro est donc valable pour tout type 
-  définissant cette méthode. C'est le cas des réels Arcane.
-- ASSERT_NEARLY_EQUAL_EPSILON(expected, actual, epsilon) : fonctionne comme l'assertion précédente avec un epsilon de comparaison fourni en paramètre par l'appelant.
-  
-Voici quelques exemples d'utilisation de ces macros :
+As of today, the available macros are:
+
+- FAIL: allows a test to fail. This macro is useful, for example, to verify that
+  an exception is thrown. You simply call FAIL after the instruction that should
+  trigger the exception. If the exception is not triggered, the next instruction
+  is executed and FAIL is called.
+- ASSERT_TRUE(condition): checks that a boolean value is true. For example,
+  ASSERT_TRUE(i<5).
+- ASSERT_FALSE(condition): the inverse assertion of the previous one.
+- ASSERT_EQUAL(expected, actual): checks for equality between the expected value
+  for the test and the actual result obtained. This macro relies on a generic
+  method (template) that uses the '==' operator. Therefore, this macro is valid
+  for any type defining this operator. Note that Arcane's basic types meet this
+  requirement (Integer, Real, Real2...).
+- ASSERT_NEARLY_EQUAL(expected, actual): checks for 'nearly' equality between
+  the expected value for the test and the actual result obtained. This assertion
+  is useful for testing equality between reals despite machine inaccuracies.
+  This macro relies on a generic method (template) that uses the
+  'math::isNearlyEqual' method. Therefore, this macro is valid for any type
+  defining this method. This is the case for Arcane reals.
+- ASSERT_NEARLY_EQUAL_EPSILON(expected, actual, epsilon): functions like the
+  previous assertion but uses a comparison epsilon provided as a parameter by
+  the caller.
+
+Here are some examples of how to use these macros:
 
 ```cpp
 ASSERT_TRUE(i <= 5);
@@ -106,18 +107,16 @@ ASSERT_EQUAL(5, x);
 ASSERT_NEARLY_EQUAL(5.5, y);
 ```
 
-### Tests unitaires en parallèle {#arcanedoc_debug_perf_unit_tests_parallel}
+### Parallel Unit Tests {#arcanedoc_debug_perf_unit_tests_parallel}
 
-Depuis la version 2.20 de %Arcane, il est possible d'utiliser les
-tests unitaires en parallèle. Pour cela, une version des macros est
-disponible en spécifiant en paramètre une instance de
-Arcane::IParallelMng. Ces macros sont identiques dans leurs sémantiques
-à la version séquentielle et sont préfixées par `PARALLEL_`, comme par
-exemple PARALLEL_ASSERT_TRUE ou PARALLEL_ASSERT_NEARLY_EQUAL. Ces
-appels sont collectifs et le test est considéré comme ayant échoué si
-un des rangs a échoué.
+Since version 2.20 of %Arcane, it is possible to use unit tests in parallel. To
+do this, a version of the macros is available by specifying an instance of
+Arcane::IParallelMng as a parameter. These macros are semantically identical to
+the sequential version and are prefixed with `PARALLEL_`, such as
+PARALLEL_ASSERT_TRUE or PARALLEL_ASSERT_NEARLY_EQUAL. These calls are
+collective, and the test is considered failed if any thread fails.
 
-Voici un exemple d'utilisation :
+Here is an example of use:
 
 ```cpp
 using namespace Arcane;
@@ -126,65 +125,64 @@ Real deltat = ...;
 PARALLEL_ASSERT_NEARLY_EQUAL(deltat,1.0,pm);
 ```
 
-### Cas particulier des exceptions {#arcanedoc_debug_perf_unit_tests_exception} 
+### Special Case of Exceptions {#arcanedoc_debug_perf_unit_tests_exception}
 
-Parfois, on souhaite développer un test unitaire pour vérifier qu'une méthode déclenche une exception.
-Supposons qu'on veuille faire un test qui déclenche MyException dans la méthode myMethod().
-La technique consiste à appeler la macro FAIL juste après myMethod(). Ainsi, si l'exception est déclenchée,
-la macro n'est pas appelée et le test passe. Il suffit alors de traiter
-l'exception dans un bloc catch.  
+Sometimes, you want to develop a unit test to verify that a method throws an
+exception. Suppose you want to run a test that throws MyException in the
+myMethod() method. The technique is to call the FAIL macro immediately after
+myMethod(). Thus, if the exception is thrown, the macro is not called and the
+test passes. You then simply need to handle the exception in a catch block.
 
 ```cpp
 try {
-  myMethod();   // doit déclencher mon exception...
-  FAIL;         // ... si je suis ici c'est que l'exception n'est pas déclenchée
+  myMethod();   // must throw my exception...
+  FAIL;         // ... if I am here, the exception was not thrown
 } catch (const MyException& e) {
-  // ok, l'exception a été appelée
+  // ok, the exception was thrown
 }
 ```
 
-Parfois la méthode ne lève pas une exception mais appelle la méthode
-TraceAccessor::fatal() du gestionnaire de traces de Arcane (cf. \ref
-arcanedoc_execution_traces). Cette méthode lève une exception de type
-Arcane::FatalErrorException qu'il suffit de traiter comme dans
-l'exemple ci-dessus.
+Sometimes the method does not raise an exception but calls the
+TraceAccessor::fatal() method of Arcane's trace manager (see
+\ref arcanedoc_execution_traces).
+This method raises an exception of type Arcane::FatalErrorException, which
+should be handled like in the example above.
 
-## Le fichier de données {#arcanedoc_debug_perf_unit_tests_data}
+## The Data File {#arcanedoc_debug_perf_unit_tests_data}
 
-Les tests unitaires s'exécutent grâce à un service et à une boucle en
-temps spécifiques fournis par %Arcane. La seule chose à faire est de
-sélectionner la boucle en temps en question dans le fichier de données
-du code et d'ajouter votre service de test à la liste des services du module.
-  
-L'exemple ci-dessous montre un fichier de données type avec 'MonServiceDeTest' dans la liste des services de test.
+Unit tests run using a specific service and time loop provided by %Arcane. The
+only thing you need to do is select the time loop in question in the code's data
+file and add your test service to the module's list of services.
+
+The example below shows a typical data file with 'MonServiceDeTest' in the test
+services list.
 
 ```xml
- <arcane>
-   <titre>Mon cas test</titre>
-   <description>Description de mon cas test</description>
-   <boucle-en-temps>UnitTest</boucle-en-temps>
- </arcane>
+<arcane>
+  <titre>My Test Case</titre>
+  <description>Description of my test case</description>
+  <boucle-en-temps>UnitTest</boucle-en-temps>
+</arcane>
  ...
- <module-test-unitaire>
-   ...
-   <xml-test name="MonServiceDeTest">
-     <!-- ici les données de mon service de test (si bien sur il en a !)... -->
-   </xml-test>
-   ...
- </module-test-unitaire>
+<module-test-unitaire>
+  ...
+  <xml-test name="MonServiceDeTest">
+    <!-- here are the data for my test service (if it has any!)... -->
+  </xml-test>
+  ...
+</module-test-unitaire>
 ```
 
-## L'exécution {#arcanedoc_debug_perf_unit_tests_run}
-  
-Il suffit alors d'exécuter votre programme comme d'habitude en lui
-donnant comme jeu de données, le fichier défini à l'étape
-précédente. Le module de test va alors effectuer une itération en
-déclenchant l'ensemble des méthodes de test des services fournis dans
-le fichier de données. Vous pourrez alors voir dans le listing la
-trace de l'exécution des tests comme ci-dessous.
-   
-On remarque que le listing signale également le chemin du rapport de test.
-  
+## Execution {#arcanedoc_debug_perf_unit_tests_run}
+
+You then simply run your program as usual, providing the file defined in the
+previous step as the dataset. The test module will then perform an iteration by
+triggering all the test methods of the services provided in the data file. You
+will then be able to see the trace of the test execution in the listing, as
+shown below.
+
+It should be noted that the listing also indicates the path to the test report.
+
 ```
 ...
 *I-Master     *** ITERATION        1  TEMPS 1.000000000000000e+00  BOUCLE        1  DELTAT 1.000000000000000e+00 ***
@@ -198,41 +196,40 @@ On remarque que le listing signale également le chemin du rapport de test.
 ...
 ```
 
-Le listing est un fichier XML. Il a le format suivant :
-  
+The listing is an XML file. It has the following format:
+
 ```xml
 <unit-tests-results>
   <service name="MonServiceDeTest">
-    <unit-test method-name="Test 1" name="myTestMethod1" result="success" />
+    <unit-test method-name="Test 1" name="myTestMethod1" result="success"/>
     <unit-test method-name="Test 2" name="myTestMethod2" result="failure">
-       <exception file="/tmp/monprojet/src/MonServiceDeTest.cc" 
-               line="136" message="Obtenu : 6.5. Attendu : 5.5."
-		 where="virtual void MonServiceDeTest::myTestMethod2()" />
+      <exception file="/tmp/monprojet/src/MonServiceDeTest.cc"
+                 line="136" message="Obtained: 6.5. Expected: 5.5."
+                 where="virtual void MonServiceDeTest::myTestMethod2()"/>
     </unit-test>
-    <unit-test method-name="Test 3" name="myTestMethod3" result="success" />
-	</service>
+    <unit-test method-name="Test 3" name="myTestMethod3" result="success"/>
+  </service>
 </unit-tests-results>
 ```
 
-## Utiliser sa propre boucle en temps {#arcanedoc_debug_perf_unit_tests_own_timeloop}
+## Using Your Own Time Loop {#arcanedoc_debug_perf_unit_tests_own_timeloop}
 
-Parfois, avant d'exécuter les tests unitaires, on aimerait effectuer
-des initialisations réalisées dans des points d'entrée des modules de
-l'application. Or, comme les tests unitaires sont exécutés dans une
-boucle en temps spécifique, ces points d'entrée ne sont pas appelés.
+Sometimes, before running unit tests, you might want to perform initializations
+that are done in the application module entry points. However, since unit tests
+are executed within a specific time loop, these entry points are not called.
 
-Pour contourner cela, il est possible de faire sa propre boucle en
-temps. Cette boucle en temps doit obligatoirement comporter les 3 points d'entrée suivants :
+To bypass this, it is possible to create your own time loop. This time loop must
+necessarily include the following 3 entry points:
 
-- UnitTest.UnitTestInit dans la section Init,
-- UnitTest.UnitTestDoTest dans la section ComputeLoop,
-- UnitTest.UnitTestExit dans la section Exit.
+- UnitTest.UnitTestInit in the Init section,
+- UnitTest.UnitTestDoTest in the ComputeLoop section,
+- UnitTest.UnitTestExit in the Exit section.
 
-Il faut penser à ajouter le module 'UnitTest' à la liste des modules de la boucle.
+You must remember to add the 'UnitTest' module to the loop's list of modules.
 
-Il suffit alors d'insérer ses propres points d'entrée d'initialisation
-avant 'UnitTest.UnitTestInit'. La section 'ComputeLoop' ne comporte
-généralement que le point d'entrée 'UnitTest.UnitTestDoTest'.
+You simply need to insert your own initialization entry points before
+'UnitTest.UnitTestInit'. The 'ComputeLoop' section usually only contains the
+'UnitTest.UnitTestDoTest' entry point.
 
 ```xml
 <arcane-config code-name="MyCode">
@@ -240,29 +237,29 @@ généralement que le point d'entrée 'UnitTest.UnitTestDoTest'.
     <time-loop name="MyTimeLoop">
       <title>My nice timeloop</title>
       <modules>
-        <module name="UnitTest" need="required" />
+        <module name="UnitTest" need="required"/>
         ...
       </modules>
 
       <entry-points where="init">
         ...
-        <entry-point name="UnitTest.UnitTestInit" /> 
+        <entry-point name="UnitTest.UnitTestInit"/>
       </entry-points>
 
       <entry-points where="compute-loop">
-        <entry-point name="UnitTest.UnitTestDoTest" /> 
+        <entry-point name="UnitTest.UnitTestDoTest"/>
       </entry-points>
 
       <entry-points where="exit">
-        <entry-point name="UnitTest.UnitTestExit" /> 
+        <entry-point name="UnitTest.UnitTestExit"/>
       </entry-points>
     </time-loop>
   </time-loops>
 </arcane-config>
 ```
 
-Notons qu'il ne faut pas oublier de changer le nom de la boucle en
-temps dans le fichier de données !
+Note that you must not forget to change the name of the time loop in the data
+file!
 
 
 ____

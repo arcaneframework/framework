@@ -1,66 +1,62 @@
-# Concurrence et multi-threading {#arcanedoc_parallel_concurrency}
+﻿# Concurrency and Multi-threading {#arcanedoc_parallel_concurrency}
 
 [TOC]
 
-<!-- décrite la notion de concurrence et la parallélisation au niveau des boucles -->
+<!-- describes the notion of concurrency and parallelization at the loop level -->
 
-La notion de concurrence est implémentée dans %Arcane via la notion de tâche.
+The notion of concurrency is implemented in %Arcane via the notion of a task.
 
-Cette notion de tâche permet l'exécution concurrente de plusieurs
-opérations via les threads.
+This task notion allows the concurrent execution of multiple operations via
+threads.
 
-Cette notion est complémentaire de la notion de décomposition de
-domaine utilisée par le Arcane::IParallelMng. Il est donc tout à fait
-possible de mélanger décomposition de domaine et les threads.
+This notion is complementary to the notion of domain decomposition used by
+Arcane::IParallelMng. It is therefore entirely possible to mix domain
+decomposition and threads.
 
-\warning Néanmoins, si l'implémentation de Arcane::IParallelMng se fait via
-MPI, il est déconseillé de faire des appels au Arcane::IParallelMng lorsque
-des tâches se déroulent de manière concurrente, par exemle dans les
-boucles parallélisées. La plupart des implémentations MPI ne sont pas
-très performantes dans ce mode et certaines ne le supporte que
-partiellement.
+\warning Nevertheless, if the implementation of Arcane::IParallelMng is done via
+MPI, it is not recommended to call Arcane::IParallelMng when tasks are running
+concurrently, for example in parallelized loops. Most MPI implementations are
+not very performant in this mode, and some only support it partially.
 
-Pour utiliser les tâches, il faut inclure le fichier suivant :
+To use tasks, you must include the following file:
 
 ```cpp
 #include "arcane/Concurrency.h"
 ```
 
-Il existe deux mécanismes pour utiliser les tâches :
+There are two mechanisms for using tasks:
 
-1. Implicitement via la notion de boucle parallèle
-2. explicitement en créant les tâches directement
- 
-La première solution est la plus simple et doit être envisagée en priorité.
+1. Implicitly via the notion of a parallel loop
+2. Explicitly by creating tasks directly
+
+The first solution is the simplest and should be considered first.
 
 ## Activation {#arcanedoc_parallel_concurrency_activation}
 
-Par défaut, le support de la concurrence est désactivé. L'activation
-se fait **avant** le lancement du code, en spécifiant le
-nombre de tâches pouvant s'exécuter de manière concurrentes lors de la
-ligne de commande (se reporter à la page \ref arcanedoc_execution_launcher pour
-savoir comment faire cela).
- 
-Il est possible de savoir dans le code si la concurrence est active en
-appelant la méthode Arcane::TaskFactory::isActive().
+By default, concurrency support is disabled. Activation is done **before**
+launching the code, by specifying the number of tasks that can run concurrently
+on the command line (see page \ref arcanedoc_execution_launcher to find out how
+to do this).
 
-Il n'est pas possible d'activer la concurrence pendant l'exécution.
+It is possible to check in the code whether concurrency is active by calling the
+Arcane::TaskFactory::isActive() method.
 
-## Boucles parallèles {#arcanedoc_parallel_concurrency_parallel_for}
+It is not possible to activate concurrency during execution.
 
-Il existe deux formes de boucles parallèles. La première forme s'applique
-sur les boucles classiques, la seconde sur les groupes d'entités.
+## Parallel Loops {#arcanedoc_parallel_concurrency_parallel_for}
 
-Le mécanisme de fonctionnement est similaire aux directives
-`omp parallel for` de OpenMp.
+There are two forms of parallel loops. The first form applies to classic loops,
+the second to groups of entities.
 
-\warning L'utilisateur de ce mécanisme doit s'assurer que la boucle
-peut être correctement parallélisée sans qu'il y ait d'effets de
-bord. Notamment, cela inclut (mais ne se limite pas) la garantie que
-les itérations de la boucle sont indépendantes, qu'il n'y a pas
-d'opérations de sortie de boucle (return, break). 
+The operating mechanism is similar to the `omp parallel for` directives in
+OpenMp.
 
-La première forme est pour paralléliser la boucle séquentielle suivante :
+\warning The user of this mechanism must ensure that the loop can be correctly
+parallelized without edge effects. Specifically, this includes (but is not
+limited to) the guarantee that the loop iterations are independent, and that
+there are no loop exit operations (return, break).
+
+The first form is for parallelizing the following sequential loop:
 
 ```cpp
 void func()
@@ -70,10 +66,10 @@ void func()
 }
 ```
 
-La parallélisation se fait comme suit : il faut d'abord écrire une
-classe fonctor qui représente l'opération que l'on souhaite effectuée
-sur un interval d'itération. Ensuite, il faut utiliser l'opération
-arcaneParallelFor() en spécifiant ce fonctor en argument comme suit :
+Parallelization is done as follows: you must first write a functor class that
+represents the operation you wish to perform over an iteration interval. Then,
+you must use the arcaneParallelFor() operation, specifying this functor as an
+argument, as follows:
 
 ```cpp
 class Func
@@ -93,8 +89,8 @@ void func()
 }
 ```
 
-Cette syntaxe est un peu verbeuse. Si le compilateur supporte la norme
-C++11, il est possible d'utiliser les lambda function pour simplifier l'écriture :
+This syntax is a bit verbose. If the compiler supports the C++11 standard, it is
+possible to use lambda functions to simplify the writing:
 
 ```cpp
 void func()
@@ -106,8 +102,8 @@ void func()
 }
 ```
 
-Une spécialisation existe pour les groupes d'entités.
-Pour paralléliser une énumération sur un groupe comme le code suivant :
+A specialization exists for groups of entities. To parallelize an enumeration
+over a group like the following code:
 
 ```cpp
 void func()
@@ -118,7 +114,7 @@ void func()
 }
 ```
 
-Il faut écrire comme cela :
+You must write it like this:
 
 ```cpp
 using namespace Arcane;
@@ -140,7 +136,7 @@ void func()
 }
 ```
 
-De même, avec le support du C++11, on peut simplifier :
+Similarly, with C++11 support, you can simplify:
 
 ```cpp
 using namespace Arcane;
@@ -154,16 +150,16 @@ void func()
 }
 ```
 
-Pour les boucles Arcane::arcaneParallelFor() et Arcane::arcaneParallelForeach(), il est possible
-de passer en argument une instance de ParallelLoopOptions pour
-configurer la boucle parallèle. Par exemple, il est possible de
-spécifier la taille de l'intervalle pour découper la boucle :
+For the Arcane::arcaneParallelFor() and Arcane::arcaneParallelForeach() loops,
+it is possible to pass an instance of ParallelLoopOptions as an argument to
+configure the parallel loop. For example, it is possible to specify the interval
+size to divide the loop:
 
 ```cpp
 void func()
 {
   Arcane::ParallelLoopOptions options;
-  // Exécute la boucle par parties d'environ 50 mailles.
+  // Executes the loop in chunks of about 50 cells.
   options.setGrainSize(50);
   Arcane::arcaneParallelForeach(my_group,options,[&](Arcane::CellVectorView cells){
     ENUMERATE_CELL(icell,cells){
@@ -173,10 +169,10 @@ void func()
 }
 ```
 
-## Utilisation explicite des tâches {#arcanedoc_parallel_concurrency_task}
+## Explicit Task Usage {#arcanedoc_parallel_concurrency_task}
 
-La création d'un tâche se fait via la fabrique de tâche. Il faut spécifier
-en argument un fonctor de la même manière que les boucles parallèles :
+Creating a task is done via the task factory. You must specify a functor as an
+argument in the same way as with parallel loops:
 
 ```cpp
 class Func
@@ -184,7 +180,7 @@ class Func
   public:
    void exec(const TaskContext& ctx)
    {
-     // Execute la tâche.
+     // Execute the task.
    }
 };
 
@@ -195,15 +191,13 @@ void func()
 }
 ```
 
-Une fois la tâche créée, il est possible de la lancer et d'attendre sa
-terminaison via la méthode ITask::launchAndWait(). Pour des raisons de
-simplicité, la tâche n'est pas lancée tant que cette méthode n'a pas
-été appelée.
+Once the task is created, it is possible to launch it and wait for its
+termination using the ITask::launchAndWait() method. For simplicity reasons, the
+task is not launched until this method has been called.
 
-Il est possible de créer des sous-tâches à partir d'une première tâche
-via la méthode Arcane::TaskFactory::createChildTask().
-L'utilisateur doit gérer le lancement et l'attente des sous-tâches.
-Par exemple :
+It is possible to create sub-tasks from a primary task using the
+Arcane::TaskFactory::createChildTask() method. The user must manage the
+launching and waiting of sub-tasks. For example:
 
 ```cpp
 using namespace Arcane;
@@ -214,8 +208,8 @@ sub_tasks.add(TaskFactory::createChildTask(master_task,&my_functor,&Func::exec);
 master_task->launchAndWait(sub_tasks);
 ```
 
-L'exemple complet suivant montre l'implémentation du calcul d'une suite
-de Fibonacci via le mécanisme des tâches.
+The following complete example shows the implementation of calculating a
+Fibonacci sequence using the task mechanism.
 
 ```cpp
 using namespace Arcane;
@@ -241,7 +235,7 @@ public:
      child_tasks[1] = TaskFactory::createChildTask(parent_task,&b,&Test5Fibonnaci::execute);
      parent_task->launchAndWait(ConstArrayView<ITask*>(2,child_tasks));
 
-     // Effectue la somme
+     // Perform the sum
      *sum = x+y;
    }
  }

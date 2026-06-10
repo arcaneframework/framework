@@ -1,19 +1,19 @@
-# Compilation {#arcanedoc_build_install_build}
+﻿# Compilation {#arcanedoc_build_install_build}
 
 [TOC]
 
-La compilation doit se faire dans un répertoire différent de celui
-contenant les sources.
+Compilation must be done in a directory different from the one containing the
+sources.
 
-## Récupération des sources
+## Source retrieval
 
-Pour récupérer les sources :
+To retrieve the sources:
 
 ~~~{sh}
 git clone --recurse-submodules https://github.com/arcaneframework/framework
 ~~~
 
-ou
+or
 
 ~~~{sh}
 git clone https://github.com/arcaneframework/framework
@@ -22,17 +22,16 @@ cd framework && git submodule update --init --recursive
 
 ## Compilation
 
-Par défaut, on compile %Arcane et Alien si les pré-requis sont disponibles.
-La variable CMake `ARCANEFRAMEWORK_BUILD_COMPONENTS` contient la liste
-des composants du dépôt à compiler. Cette liste peut contenir les
-valeurs suivantes:
+By default, %Arcane and Alien are compiled if the prerequisites are available.
+The CMake variable `ARCANEFRAMEWORK_BUILD_COMPONENTS` contains the list of
+repository components to compile. This list can contain the following values:
 
 - `%Arcane`
 - `Alien`
 
-Par défaut la valeur est `%Arcane;Alien` et donc on compile les deux composants.
+By default, the value is `%Arcane;Alien`, and thus both components are compiled.
 
-Pour compiler %Arcane et Alien , il faut procéder comme suit:
+To compile %Arcane and Alien, you must proceed as follows:
 
 ~~~{sh}
 mkdir /path/to/build
@@ -41,127 +40,122 @@ cmake --build /path/to/build
 cmake --build /path/to/build --target install
 ~~~
 
-Par défaut, l'installation se fait dans `/usr/local` si l'option
-`CMAKE_INSTALL_PREFIX` n'est pas spécifiée.
+By default, installation takes place in `/usr/local` if the
+`CMAKE_INSTALL_PREFIX` option is not specified.
 
 <details>
-<summary>Les options de configuration générales disponibles</summary>
-Options générales :
+<summary>Available general configuration options</summary>
+General options:
 <table>
-<tr><th>Option <th>Valeur <th>Description
-<tr><td>`CMAKE_INSTALL_PREFIX` <td>`/path/to/install` <td>Choix d'un dossier d'installation
-<tr><td>`ARCANEFRAMEWORK_BUILD_COMPONENTS` <td>`%Arcane` ou `Alien` ou `%Arcane;Alien` <td>Composant(s) à compiler 
-<tr><td>`ARCCORE_CXX_STANDARD` <td>`20` (le défaut), `23` ou `26` <td>Choix du standard C++ à utiliser
-<tr><td>`ARCANE_ENABLE_TESTS` <td>`ON`/`OFF` <td>Active/Désactive les tests
-<tr><td>`ARCANE_ENABLE_DOTNET_WRAPPER` <td>`ON`/`OFF` <td>Active/Désactive le wrapper C#/.Net
-<tr><td>`ARCANE_ENABLE_ALEPH` <td>`ON`/`OFF` <td>Active/Désactive le support de la composante Aleph
+<tr><th>Option <th>Value <th>Description
+<tr><td>`CMAKE_INSTALL_PREFIX` <td>`/path/to/install` <td>Choice of an installation directory
+<tr><td>`ARCANEFRAMEWORK_BUILD_COMPONENTS` <td>`%Arcane` or `Alien` or `%Arcane;Alien` <td>Component(s) to compile 
+<tr><td>`ARCCORE_CXX_STANDARD` <td>`20` (the default), `23` or `26` <td>Choice of C++ standard to use
+<tr><td>`ARCANE_ENABLE_TESTS` <td>`ON`/`OFF` <td>Enable/Disable tests
+<tr><td>`ARCANE_ENABLE_DOTNET_WRAPPER` <td>`ON`/`OFF` <td>Enable/Disable the C#/.Net wrapper
+<tr><td>`ARCANE_ENABLE_ALEPH` <td>`ON`/`OFF` <td>Enable/Disable support for the Aleph component
 </table>
 </details>
 
-## Compilation avancée
+## Advanced compilation
 
-### Support des accélérateurs
+### Accelerator support
 
 <details>
-<summary>Les options de compilation pour les accélérateurs</summary>
+<summary>Compilation options for accelerators</summary>
 <table>
-<tr><th>Option <th>Valeur <th>Description
+<tr><th>Option <th>Value <th>Description
 <tr>
   <td>
     `ARCANE_ACCELERATOR_MODE`
   </td>
   <td>
-    - `CUDANVCC` pour les GPU NVIDIA
-    - `ROCMHIP` pour les GPU AMD
+    - `CUDANVCC` for NVIDIA GPUs
+    - `ROCMHIP` for AMD GPUs
   </td>
   <td>
-    Permet de spécifier le type d'accélerateur qu'on souhaite utiliser.
-    A partir de la version 3.14 de %Arcane, il est possible d'utiliser `CUDA` au lieu
-    de `CUDANVCC` et `ROCM` au lieu de `ROCMHIP`
+    Allows specifying the type of accelerator you wish to use.
+    Starting from version 3.14 of %Arcane, it is possible to use `CUDA` instead
+    of `CUDANVCC` and `ROCM` instead of `ROCMHIP`
   </td>
 </tr>
 
 <tr>
-<td>`CMAKE_CUDA_COMPILER` <td>Compilateur CUDA (exemple : `nvcc` ou
-`clang++`) </td>
+<td>`CMAKE_CUDA_COMPILER` <td>CUDA compiler (example: `nvcc` or `clang++`) </td>
 <td>
-Permet de spécifier le chemin vers le compilateur CUDA historique (`nvcc`) ou un autre
-compilateur supportant le format `ptx`
+Allows specifying the path to the historical CUDA compiler (`nvcc`) or another
+compiler supporting the `ptx` format
 </td>
 </tr>
 
 <tr>
-<td>`CMAKE_HIP_COMPILER` <td>Compilateur ROCM/HIP (exemple :
-`amdclang++` ou `clang++`)</td>
+<td>`CMAKE_HIP_COMPILER` <td>ROCM/HIP compiler (example: `amdclang++` or
+`clang++`)</td>
 <td>
-Permet de spécifier le chemin vers le compilateur utilisé pour générer
-le code pour ROCM/HIP
+Allows specifying the path to the compiler used to generate code for ROCM/HIP
 </td>
 </tr>
 
 <tr>
-<td>`CMAKE_CUDA_ARCHITECTURES` <td>Architecture cible (exemple : `80`)</td>
+<td>`CMAKE_CUDA_ARCHITECTURES` <td>Target architecture (example: `80`)</td>
 <td>
-Permet de spécifier une architecture cible (Capability Compute). Une
-liste de plusieurs valeurs est possible (par exemple `80;90`)
+Allows specifying a target architecture (Compute Capability). A list of multiple
+values is possible (for example `80;90`)
 </td>
 </tr>
 
 <tr>
-<td>`CMAKE_HIP_ARCHITECTURES` <td>Architecture cible (exemple : `gfx90a`)</td>
-<td>Permet de spécifier une architecture cible pour les GPUS AMD.
-Une liste de valeurs est possible (par exemple `gfx90a;gfx1031`)
+<td>`CMAKE_HIP_ARCHITECTURES` <td>Target architecture (example: `gfx90a`)</td>
+<td>Allows specifying a target architecture for AMD GPUs. A list of values is
+possible (for example `gfx90a;gfx1031`)
 </td>
 </tr>
 
 </table>
 </details>
 
-\note Avant la version 4.0 de %Arcane, il est nécessaire pour
-le support des accélérateurs de spécifier l'option
-CMake `-DARCCORE_CXX_STANDARD=20`.
+\note Before version 4.0 of %Arcane, it is necessary for accelerator support to
+specify the CMake option `-DARCCORE_CXX_STANDARD=20`.
 
-La variable CMake `ARCANE_ACCELERATOR_MODE` permet de spécifier le
-type d'accélerateur qu'on souhaite utiliser. Il y a actuellement deux
-valeurs supportées:
+The CMake variable `ARCANE_ACCELERATOR_MODE` allows specifying the type of
+accelerator you wish to use. There are currently two supported values:
 
-- `CUDANVCC` ou `CUDA` pour les GPU NVIDIA
-- `ROCMHIP` ou `ROCM` pour les GPU AMD
+- `CUDANVCC` or `CUDA` for NVIDIA GPUs
+- `ROCMHIP` or `ROCM` for AMD GPUs
 
-#### Compilation CUDA
+#### CUDA compilation
 
-Il est nécessaire d'avoir au moins la version 12 de
+You must have at least version 12 of
 [CUDA](https://developer.nvidia.com/cuda-downloads).
 
-Si on souhaite compiler le support CUDA, il faut ajouter l'argument
-`-DARCANE_ACCELERATOR_MODE=CUDA` à la configuration et spécifier
-le chemin vers le compilateur `nvcc` ou `clang++` via la variable CMake
-`CMAKE_CUDA_COMPILER` ou la variable d'environnement `CUDACXX`:
+If you wish to compile CUDA support, you must add the argument
+`-DARCANE_ACCELERATOR_MODE=CUDA` to the configuration and specify the path to
+the `nvcc` or `clang++` compiler via the CMake variable `CMAKE_CUDA_COMPILER` or
+the environment variable `CUDACXX`:
 
-\warning Si on souhaite utiliser %Arcane à la fois sur GPU et sur CPU,
-il est fortement recommandé d'utiliser `clang` comme compilateur au
-lieu de `nvcc` car ce dernier génère du code moins performant sur la
-partie CPU. Cela est du à l'usage de `std::function` pour encapsuler
-les lambdas utilisées dans %Arcane (voir
-[New Compiler Features in CUDA 8](https://developer.nvidia.com/blog/new-compiler-features-cuda-8/#extended___host_____device___lambdas)
-pour plus d'informations)
+\warning If you wish to use %Arcane on both GPU and CPU, it is strongly
+recommended to use `clang` as the compiler instead of `nvcc` because the latter
+generates less performant code on the CPU side. This is due to the use of
+`std::function` to encapsulate the lambdas used in %Arcane
+(see [New Compiler Features in CUDA 8](https://developer.nvidia.com/blog/new-compiler-features-cuda-8/#extended___host_____device___lambdas)
+for more information).
 
 ~~~{.sh}
-# Avec 'clang'
+# With 'clang'
 cmake -DARCANE_ACCELERATOR_MODE=CUDA
 -DCMAKE_CUDA_COMPILER=/usr/bin/clang++-19 \
 ...
 ~~~
 
 ~~~{.sh}
-# Avec 'nvcc'
+# With 'nvcc'
 cmake -DARCANE_ACCELERATOR_MODE=CUDA
 -DCMAKE_CUDA_COMPILER=/usr/local/cuda-12/bin/nvcc \
 ...
 ~~~
 
-Il est aussi possible d'utiliser directement le compilateur du [HPC
-SDK](https://developer.nvidia.com/hpc-sdk) de NVidia:
+It is also possible to use the
+NVIDIA [HPC SDK](https://developer.nvidia.com/hpc-sdk) compiler directly:
 
 ~~~{.sh}
 export CXX=`which nvc++`
@@ -170,20 +164,20 @@ cmake -DARCANE_ACCELERATOR_MODE=CUDA \
 ...
 ~~~
 
-Il est possible de spécifier une architecture cible (Capability
-Compute) via la variable `CMAKE_CUDA_ARCHITECTURES`, par exemple
+It is possible to specify a target architecture (Compute Capability) via the
+`CMAKE_CUDA_ARCHITECTURES` variable, for example
 `-DCMAKE_CUDA_ARCHITECTURES=80`.
 
-#### Compilation AMD ROCM/HIP
+#### AMD ROCM/HIP compilation
 
-La version de ROCM minimale requise est la version 5.7.
+The minimum required ROCM version is 5.7.
 
-Pour compiler pour les GPU AMD (comme par exemple les GPU MI100 ou
-MI250) il faut avoir auparavant installer la bibliothèque [ROCM](https://docs.amd.com/). Lors
-de la configuration de %Arcane, il faut spécifier `-DARCANE_ACCELERATOR_MODE=ROCMHIP`.
+To compile for AMD GPUs (such as the MI100 or MI250 GPUs), you must first
+install the [ROCM](https://docs.amd.com/) library. When configuring %Arcane, you
+must specify `-DARCANE_ACCELERATOR_MODE=ROCMHIP`.
 
-Par exemple, si ROCM est installé dans `/opt/rocm` et qu'on souhaite
-compiler pour les cartes MI250 (architecture gfx90x):
+For example, if ROCM is installed in `/opt/rocm` and you wish to compile for the
+MI250 cards (gfx90x architecture):
 
 ~~~{.sh}
 export ROCM_ROOT=/opt/rocm-5.0.0-9257
@@ -197,37 +191,37 @@ cmake -DCMAKE_PREFIX_PATH="/opt/rocm;/opt/rocm/hip" \
 ...
 ~~~
 
-### Génération de la documentation
+### Documentation generation
 
 <details>
-<summary>Les options de compilation pour la génération de la documentation</summary>
+<summary>Compilation options for documentation generation</summary>
 <table>
-<tr><th>Option <th>Valeur <th>Description
-<tr><td>`ARCANEDOC_OFFLINE` <td>`ON` ou `OFF` <td>Permet de savoir si on a accès à internet
-<tr><td>`ARCANEDOC_LEGACY_THEME` <td>`ON` ou `OFF` <td>Permet de générer la documentation avec le style de Doxygen original
+<tr><th>Option <th>Value <th>Description
+<tr><td>`ARCANEDOC_OFFLINE` <td>`ON` or `OFF` <td>Allows knowing if internet access is available
+<tr><td>`ARCANEDOC_LEGACY_THEME` <td>`ON` or `OFF` <td>Allows generating the documentation with the original Doxygen style
 </table>
 </details>
 
-La génération de la documentation n'a été testée que sur les plateforme Linux.
-Elle nécessite l'outil [Doxygen](https://www.doxygen.nl/index.html).
+Documentation generation has only been tested on Linux platforms.
+It requires [Doxygen](https://www.doxygen.nl/index.html).
 
-Si `ARCANEDOC_OFFLINE=ON`, l'outil Doxygen a besoin d'une installation de
-[LaTeX](https://www.latex-project.org/) pour générer correctement
-certaines équations.
+If `ARCANEDOC_OFFLINE=ON`, Doxygen requires a
+[LaTeX](https://www.latex-project.org/) installation to correctly generate
+certain equations.
 
-Suivant les plateformes, il peut être nécessaire
-d'installer des packages LaTeX supplémentaires (par exemple pour
-Ubuntu, le package `texlive-latex-extra` est nécessaire).
+Depending on the platform, it may be necessary to install additional LaTeX
+packages (for example, the `texlive-latex-extra` package is required for
+Ubuntu).
 
-Pour la configuration, deux options facultatives sont disponibles :
+For configuration, two optional options are available:
 - `ARCANEDOC_LEGACY_THEME`
 - `ARCANEDOC_OFFLINE`
 
-Avec chaqu'une deux valeurs possibles : `ON` et `OFF`.
+Each has two possible values: `ON` and `OFF`.
 
-Si les variables ne sont pas présentes, `OFF` est la valeur par défaut.
+If the variables are not present, `OFF` is the default value.
 
-Exemple :
+Example:
 ```bash
 cmake
   -S ... \
@@ -235,49 +229,49 @@ cmake
   -DARCANEDOC_LEGACY_THEME=ON \
   -DARCANEDOC_OFFLINE=ON
 ```
-L'option `ARCANEDOC_LEGACY_THEME` permet de générer la documentation
-avec le thème d'origine de Doxygen.
+The `ARCANEDOC_LEGACY_THEME` option allows generating the documentation with the
+original Doxygen theme.
 
-L'option `ARCANEDOC_OFFLINE` permet de dire à CMake que la documentation
-sera utilisée en local, sans accès à internet. Cela permet de désactiver
-les élements ayant besoin d'un accès à internet, comme MathJax.
+The `ARCANEDOC_OFFLINE` option tells CMake that the documentation will be used
+locally, without internet access. This allows disabling elements that require
+internet access, such as MathJax.
 
-Une fois la configuration terminée, il suffit de lancer:
+Once the configuration is complete, simply run:
 
-Pour la documentation utilisateur:
+For user documentation:
 
 ~~~{.sh}
 cmake --build ${BUILD_DIR} --target userdoc
 ~~~
 
-Pour la documentation développeur
+For developer documentation
 
 ~~~{.sh}
 cmake --build ${BUILD_DIR} --target devdoc
 ~~~
 
-La documentation utilisateur ne contient les infos que des classes
-utiles pour le développeur.
+The user documentation only contains information on classes useful for the
+developer.
 
-### Recherche de packages
+### Package search
 
 <details>
-<summary>Les options de compilation pour la recherche de packages</summary>
+<summary>Compilation options for package searching</summary>
 <table>
-<tr><th>Option <th>Valeur <th>Description
-<tr><td>`ARCANE_NO_DEFAULT_PACKAGE` <td>`TRUE` ou `FALSE` <td>Permet de supprimer la détection automatique des packages
-<tr><td>`ARCANE_REQUIRED_PACKAGE_LIST` <td>Nom de packages (exemple : `LibUnwind;HDF5`) <td>Permet de préciser explicitement les packages qu'on souhaite avoir
+<tr><th>Option <th>Value <th>Description
+<tr><td>`ARCANE_NO_DEFAULT_PACKAGE` <td>`TRUE` or `FALSE` <td>Allows removing automatic package detection
+<tr><td>`ARCANE_REQUIRED_PACKAGE_LIST` <td>Package name (example: `LibUnwind;HDF5`) <td>Allows explicitly specifying the
+packages you wish to have
 </table>
 </details>
 
-Par défaut, tous les packages optionnels sont détectés
-automatiquement. Il est possible de supprimer ce comportement et de
-supprimer la détection automatique des packages en ajoutant
-`-DARCANE_NO_DEFAULT_PACKAGE=TRUE` à la ligne de commande. Dans ce
-cas, il faut préciser explicitement les packages qu'on souhaite avoir
-en les spécifiant à la variable `ARCANE_REQUIRED_PACKAGE_LIST` sous
-forme de liste. Par exemple, si on souhaite avoir uniquement `HDF5` et
-`LibUnwind` de disponible, il faut utilise CMake comme suit:
+By default, all optional packages are automatically detected. It is possible to
+remove this behavior and disable automatic package detection by adding
+`-DARCANE_NO_DEFAULT_PACKAGE=TRUE` to the command line. In this case, you must
+explicitly specify the packages you wish to have by listing them in the
+`ARCANE_REQUIRED_PACKAGE_LIST` variable.
+For example, if you only want `HDF5` and `LibUnwind` available, you must use
+CMake as follows:
 
 ~~~{.sh}
 cmake -DARCANE_NO_DEFAULT_PACKAGE=TRUE -DARCANE_REQUIRED_PACKAGE_LIST="LibUnwind;HDF5"

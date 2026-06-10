@@ -1,10 +1,10 @@
-
+﻿
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 macro(adoc_commondoc_config_adoc_variables)
 
-  # La variable ADOC_LEGACY_THEME permet de passer au thème Doxygen classique.
+  # The ADOC_LEGACY_THEME variable allows switching to the classic Doxygen theme.
   if (NOT ADOC_LEGACY_THEME)
     if (ARCANEDOC_LEGACY_THEME AND ARCANEDOC_LEGACY_THEME STREQUAL ON)
       set(ADOC_LEGACY_THEME "ON")
@@ -15,7 +15,7 @@ macro(adoc_commondoc_config_adoc_variables)
 
   # ----------------------------------------------------------------------------
 
-  # Variable pour savoir si la doc aura accès à internet ou non.
+  # Variable to determine if the documentation will have internet access or not.
   if (NOT ADOC_MATHJAX)
     if (ARCANEDOC_OFFLINE AND ARCANEDOC_OFFLINE STREQUAL ON)
       set(ADOC_MATHJAX "OFF")
@@ -34,7 +34,7 @@ macro(adoc_commondoc_config_adoc_variables)
   # ----------------------------------------------------------------------------
 
   set(ADOC_LANGUAGE
-    "French"
+    "English"
   )
 
 endmacro()

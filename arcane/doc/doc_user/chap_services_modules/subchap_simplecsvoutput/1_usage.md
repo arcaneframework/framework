@@ -1,12 +1,12 @@
-# Utilisation {#arcanedoc_services_modules_simplecsvoutput_usage}
+﻿# Usage {#arcanedoc_services_modules_simplecsvoutput_usage}
 
 [TOC]
 
 ## Singleton
 
-Pour une utilisation en tant que singleton (même objet pour tous les modules) :
+For use as a singleton (the same object for all modules):
 
-Placer ces lignes dans le .config de votre projet :
+Place these lines in your project's .config:
 
 ```xml
 <singleton-services>
@@ -14,50 +14,50 @@ Placer ces lignes dans le .config de votre projet :
 </singleton-services>
 ```
 
-Et dans votre/vos module(s) :
+And in your module(s):
 
 ```cpp
-#include <arcane/ISimpleTableOutput.h>
+#include <arcane/core/ISimpleTableOutput.h>
 
 using namespace Arcane;
 
 ISimpleTableOutput* table = ServiceBuilder<ISimpleTableOutput>(subDomain()).getSingleton();
-table->init("Example_Name", "example"); // Ne doit être fait que par un seul module.
-// Utilisation du service...
-table->writeFile(); // Ne doit être fait que par un seul module (sauf si vous savez ce que vous faites).
+table->init("Example_Name", "example"); // Must only be done by a single module.
+// Using the service...
+table->writeFile(); // Must only be done by a single module (unless you know what you are doing).
 ```
 
 ## Service
 
-Pour une utilisation en tant que service (objet different pour chaque module) : 
+For use as a service (a different object for each module): 
 
-Placer ces lignes dans le .axl de votre module :
+Place these lines in your module's .axl:
 
 ```xml
 <!-- <options> -->
   <service-instance name="simple-table-output" type="Arcane::ISimpleTableOutput">
-    <description>Service implémentant ISimpleTableOutput</description>
+    <description>Service implementing ISimpleTableOutput</description>
   </service-instance>
 <!-- </options> -->
 ```
 
-Dans le .arc, vous pouvez configurer les options du service. Par exemple :
+In the .arc, you can configure the service options. For example:
 
 ```xml
 <!-- <mon-module> -->
   <simple-table-output name="SimpleCsvOutput">
-    <!-- Le nom du répertoire à créer/utiliser. -->
+    <!-- The name of the directory to create/use. -->
     <tableDir>example_dir</tableDir>
-    <!-- Le nom du fichier à créer/écraser. -->
+    <!-- The name of the file to create/overwrite. -->
     <tableName>Results_Example</tableName>
 
-    <!-- Au final, on aura un fichier ayant comme chemin : 
+    <!-- Finally, we will have a file with the path: 
     ./output/csv/example_dir/Results_Example.csv -->
   </simple-table-output>
 <!-- </mon-module> -->
 ```
 
-Et dans votre module :
+And in your module:
 
 ```cpp
 #include <arcane/ISimpleTableOutput.h>
@@ -69,27 +69,29 @@ options()->simpleCsvOutput()->init();
 options()->simpleCsvOutput()->writeFile();
 ```
 
-Vous pouvez aussi utiliser le service des deux façons en même temps, selon vos besoins.
+You can also use the service in both ways at the same time, depending on your
+needs.
 
-(Pour un exemple plus concret, voir les pages suivantes)
+(For a more concrete example, see the following pages)
 
 
-## Symboles de nom pour l'exécution parallèle (implémentation CSV)
+## Naming Symbols for Parallel Execution (CSV Implementation)
 
-Dans le nom du repértoire ou dans le nom du tableau, que ce soit en mode singleton ou en mode service, il est possible d'ajouter des *symboles* qui seront remplacés lors de l'exécution.
+In the directory name or the table name, whether in singleton mode or service
+mode, it is possible to add *symbols* that will be replaced during execution.
 
-Les *symboles* disponibles sont :
-- `@proc_id@` : Sera remplacé par le rank du processus.
-- `@num_procs@` : Sera remplacé par le nombre total de processus.
+The available *symbols* are:
+- `@proc_id@`: Will be replaced by the process rank.
+- `@num_procs@`: Will be replaced by the total number of processes.
 
-Par exemple, si l'on a :
+For example, if we have:
 
 ```xml
 <tableDir>N_@num_procs@</tableDir>
 <tableName>Results_P@proc_id@</tableName>
 ```
 
-ou lors de l'initialisation du service :
+or when initializing the service:
 
 ```cpp
 ...
@@ -97,16 +99,19 @@ table->init("Results_P@proc_id@", "N_@num_procs@");
 ...
 ```
 
-Et que l'on lance le programme avec 2 processus (ID = 0 et 1), on va obtenir deux csv ayant comme chemin :
+And if we run the program with 2 processes (ID = 0 and 1), we will get two CSV
+files with the path:
 - `./output/csv/N_2/Results_P0.csv`
 - `./output/csv/N_2/Results_P1.csv`
 
-(en séquentiel, on aura `./output/csv/N_1/Results_P0.csv`)
+(sequentially, we will have `./output/csv/N_1/Results_P0.csv`)
 
-Cela permet, entre autres, de :
-- créer un tableau par processus et de les nommer facilement,
-- créer des fichiers .arc "générique" où le nombre de processus n'importe pas,
-- avoir un nom différent pour chaque tableau, dans le cas où un *cat* est effectué (rappel : *tableName* donne le nom du fichier csv mais est aussi placé sur la première case du tableau).
+This allows, among other things, to:
+- create a table per process and name them easily,
+- create "generic" .arc files where the number of processes does not matter,
+- have a different name for each table, in the case where a *cat* is performed
+  (reminder: *tableName* gives the name of the csv file but is also placed in
+  the first cell of the table).
 
 
 

@@ -1,14 +1,14 @@
-# Répertoire d'exemples {#arcanedoc_samples_directory}
+﻿# Examples Directory {#arcanedoc_samples_directory}
 
 [TOC]
 
-Le répertoire `samples` à la base de l'installation de %Arcane
-contient un ensemble d'exemples d'utilisation
+The `samples` directory at the root of the %Arcane installation contains a set
+of usage examples
 
 <table>
 
 <tr>
-<th>Répertoire</th>
+<th>Directory</th>
 <th>Description</th>
 </tr>
 

@@ -1,27 +1,29 @@
-# Images Docker {#arcanedoc_build_install_docker}
+﻿# Docker images {#arcanedoc_build_install_docker}
 
 [TOC]
 
-## Les images incluant le framework Arcane
+## Images including the Arcane Framework
 
-Ces images contiennent tout ce qui est nécessaire pour travailler sur une application
-utilisant le framework %Arcane. %Arcane et tous les packages nécessaires y sont installés.
+These images contain everything necessary to work on an application using the
+%Arcane framework. %Arcane and all necessary packages are installed in them.
 
-Le dépôt GitHub hébergeant ces images est [ici](https://github.com/arcaneframework/containers).
-Ce dépôt contient un Readme complet expliquant comment les tags des images sont formés.
+The GitHub repository hosting these images is
+[here](https://github.com/arcaneframework/containers). This repository contains
+a complete Readme explaining how the image tags are formed.
 
-Les DockerFiles sont générés à la demande et certaines images sont mises à jour toutes les semaines.
+The DockerFiles are generated on demand and some images are updated weekly.
 
-Les images peuvent être trouvées [ici](https://github.com/arcaneframework/containers/pkgs/container/arcane_ubuntu-2404).
+The images can be
+found [here](https://github.com/arcaneframework/containers/pkgs/container/arcane_ubuntu-2404).
 
-Exemple d'utilisation :
+Usage example:
 ```sh
 IMAGE_ID=$(docker pull ghcr.io/arcaneframework/arcane_ubuntu-2404:gcc-14_full_release_latest)
 CONTAINER_ID=$(docker run -dt "$IMAGE_ID")
 docker exec -it "$CONTAINER_ID" bash
 ```
 
-Ou alors avec [Distrobox](https://github.com/89luca89/distrobox) :
+Or with [Distrobox](https://github.com/89luca89/distrobox):
 ```sh
 distrobox create --init \
   --name U24FullArcaneRelease \
@@ -31,26 +33,28 @@ distrobox create --init \
 distrobox enter U24FullArcaneRelease
 ```
 
-## Les images n'incluant pas le framework Arcane
+## Images not including the Arcane Framework
 
-Ces images était destinées à l'origine aux CI du dépôt framework. Mais ces images peuvent
-être aussi utilisées pour le développement étant donné qu'elles contiennent tous les packages
-nécessaires pour %Arcane.
+These images were originally intended for the framework repository's CI.
+However, these images can also be used for development since they contain all
+the necessary packages for %Arcane.
 
-Le dépôt GitHub hébergeant ces images est [ici](https://github.com/arcaneframework/framework-ci).
-Ce dépôt contient un Readme complet expliquant comment les tags des images sont formés.
-Chaque image a une branche qui lui est dédiée.
+The GitHub repository hosting these images is
+[here](https://github.com/arcaneframework/framework-ci). This repository
+contains a complete Readme explaining how the image tags are formed. Each image
+has a dedicated branch.
 
-Les images peuvent être trouvées [ici](https://github.com/arcaneframework/framework-ci/pkgs/container/ubuntu-2404).
+The images can be found
+[here](https://github.com/arcaneframework/framework-ci/pkgs/container/ubuntu-2404).
 
-Exemple d'utilisation :
+Usage example:
 ```sh
 IMAGE_ID=$(docker pull ghcr.io/arcaneframework/ubuntu-2404:full_stable)
 CONTAINER_ID=$(docker run -dt "$IMAGE_ID")
 docker exec -it "$CONTAINER_ID" bash
 ```
 
-Ou alors avec [Distrobox](https://github.com/89luca89/distrobox) :
+Or with [Distrobox](https://github.com/89luca89/distrobox):
 ```sh
 distrobox create --init \
   --name U24Full \

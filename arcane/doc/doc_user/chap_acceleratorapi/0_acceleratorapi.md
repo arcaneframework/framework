@@ -1,24 +1,25 @@
-# API accélérateur {#arcanedoc_acceleratorapi}
+﻿# Accelerator API {#arcanedoc_acceleratorapi}
 
-Ce chapitre décrit l'API accélérateur disponible dans %Arcane pour
-unifier l'exécution sur différents types d'accélérateurs.
+This chapter describes the Accelerator API available in %Arcane to unify
+execution across different types of accelerators.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 1. \subpage arcanedoc_parallel_accelerator <br>
-  Présente les mécanismes disponibles dans %Arcane pour pouvoir utiliser
-  les accélérateurs (GPU) dans %Arcane.
+   Presents the mechanisms available in %Arcane to use accelerators (GPU) in
+   %Arcane.
 
 2. \subpage arcanedoc_acceleratorapi_materials <br>
-  Présente l'utilisation de l'API accélérateur pour les matériaux.
+   Presents the use of the Accelerator API for materials.
 
 3. \subpage arcanedoc_acceleratorapi_reduction <br>
-  Présente les mécanismes disponibles pour effectuer des réductions.
+   Presents the mechanisms available for performing reductions.
 
 4. \subpage arcanedoc_acceleratorapi_memorypool <br>
-  Présente le mécanisme de pool de mémoire.
+   Presents the memory pool mechanism.
+
 ____
 
 <div class="section_buttons">

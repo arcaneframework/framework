@@ -1,13 +1,12 @@
-# Utilisation d'autres langages {#arcanedoc_wrapping}
+﻿# Using Other Languages {#arcanedoc_wrapping}
 
-Dans %Arcane, il est aussi possible d'utiliser d'autres
-langages pour écrire des modules et des services.  
-Par exemple, l'API d'%Arcane est (en grande partie) accessible
-en C#.
+In %Arcane, it is also possible to use other languages to write modules and
+services.
+For example, the %Arcane API is (largely) accessible in C#.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 1. \subpage arcanedoc_wrapping_csharp
 

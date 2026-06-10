@@ -1,39 +1,35 @@
-﻿# Structure du fichier {#arcanedoc_core_types_axl_caseoptions_struct}
+﻿# File Structure {#arcanedoc_core_types_axl_caseoptions_struct}
 
 [TOC]
 
-Le descripteur de module est au format XML. Nous allons nous
-intéresser à la partie configuration des options contenue dans 
-l'élément \c options de ce fichier. En voici un exemple :
+The module descriptor is in XML format. We will focus on the options
+configuration part contained in the \c options element of this file. Here is an
+example:
 
 ```xml
 <options>
-  <simple name = "simple-real" type = "real">
+  <simple name="simple-real" type="real">
     <name lang='fr'>reel-simple</name>
     <description>Réel simple</description>
   </simple>
 </options>
 ```
 
-Cet exemple définit une option de configuration appelée
-*simple-real*. Cette option est une variable simple de type
-`real` sans valeur par défaut.
+This example defines a configuration option called *simple-real*. This option is
+a simple variable of type `real` without a default value.
 
-La structure de tout élément de configuration des options d'un
-module est similaire à celle-ci. Toutes les options possibles doivent
-apparaître dans des éléments fils de \c options.
+The structure of any options configuration element of a module is similar to
+this one. All possible options must appear in child elements of \c options.
 
-Les différentes possibilités sont les suivantes :
-- les options simples, de type `real`, `bool`,
-  `integer` ou `string`.
-- les options énumérées, qui doivent correspondre à un type
-  `enum` du C++.
-- les options de types dit étendus. Il s'agit de types créés
-  par l'utilisateur (classes, structures...).  Cela comprend 
-  par exemple les groupes d'entités du maillage.
-- les options complexes, qui sont composées elles-mêmes d'options.
-  Les options complexes peuvent s'imbriquer.
-- les options services, qui permettent de référencer un service (voir le document \ref arcanedoc_core_types_service).
+The different possibilities are as follows:
+- simple options, of type `real`, `bool`, `integer`, or `string`.
+- enumerated options, which must correspond to a C++ `enum` type.
+- extended type options. These are user-created types (classes, structures...).
+  This includes, for example, mesh entity groups.
+- complex options, which are themselves composed of options. Complex options can
+  be nested.
+- service options, which allow referencing a service (see document \ref
+  arcanedoc_core_types_service).
 
 
 ____

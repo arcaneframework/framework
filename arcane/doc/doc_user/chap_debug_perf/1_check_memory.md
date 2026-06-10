@@ -1,43 +1,38 @@
-# Détection des problèmes mémoire {#arcanedoc_debug_perf_check_memory}
+﻿# Memory Problem Detection {#arcanedoc_debug_perf_check_memory}
 
-Arcane dispose d'un mécanisme permettant de détecter certains problèmes
-mémoires, en particulier :
-- les fuites mémoires
-- les désallocations qui ne correspondent à aucune allocation.
+Arcane has a mechanism to detect certain memory problems, particularly:
+- memory leaks
+- deallocations that do not correspond to any allocation.
 
-De plus, cela permet d'obtenir des statistiques sur l'utilisation
-mémoire.
+Furthermore, this allows for statistics on memory usage.
 
-\warning Ce mécanisme ne fonctionne actuellement que sur les OS Linux.
+\warning This mechanism currently only works on Linux OS.
 
-\warning Ce mécanisme ne fonctionne pas lorsque le multi-treading est activé.
+\warning This mechanism does not work when multi-threading is enabled.
 
-Pour l'activer, il suffit de positionner la variable d'environnement
-ARCANE_CHECK_MEMORY à \c true. Toutes les allocations et désallocations
-sont tracées. Cependant, pour des problèmes de performance, on ne
-conserve et n'affiche la pile d'appel que pour les allocations supérieures
-à une certaine taille. Par défaut, la valeur est de 1Mo (1000000). Il est possible
-de spécifier une autre valeur via la variable d'environnement
-ARCANE_CHECK_MEMORY_BLOCK_SIZE. La variable d'environnement
-ARCANE_CHECK_MEMORY_BLOCK_SIZE_ITERATION permet de spécifier une valeur
-de bloc qui sera utilisé pour la boucle en temps après
-l'initialisation. Cela permet de tracer plus finement les allocations
-durant le calcul que celles qui ont lieu lors de l'initialisation.
+To activate it, simply set the environment variable ARCANE_CHECK_MEMORY to
+\c true. All allocations and deallocations are traced. However, for performance
+reasons, the call stack is only preserved and displayed for allocations
+exceeding a certain size. By default, the value is 1MB (1000000). It is possible
+to specify another value via the environment variable
+ARCANE_CHECK_MEMORY_BLOCK_SIZE. The environment variable
+ARCANE_CHECK_MEMORY_BLOCK_SIZE_ITERATION allows specifying a block value that
+will be used for the loop after initialization. This allows for finer tracing of
+allocations during computation than those that occur during initialization.
 
-Les appels sont tracés depuis l'appel à ArcaneMain::arcaneInitialize()
-jusqu'à l'appel à ArcaneMain::arcaneFinalize(). Lors de ce dernier appel,
-une liste des blocs alloués qui n'ont pas été désalloués est affiché.
+Calls are traced from the call to ArcaneMain::arcaneInitialize() up to the call
+to ArcaneMain::arcaneFinalize(). During this last call, a list of allocated
+blocks that have not been deallocated is displayed.
 
-Il est possible de gérer plus finement le vérificateur mémoire
-via l'interface IMemoryInfo. Cette interface est un singleton accessible
-via la méthode arcaneGlobalMemoryInfo();
+It is possible to manage the memory checker more finely via the IMemoryInfo
+interface. This interface is a singleton accessible via the method
+arcaneGlobalMemoryInfo();
 
-\note INTERNE: Pour l'instant, les éventuelles incohérences entre allocation
-et désallocations sont indiquées sur std::cout. Cela peut poser des problèmes
-de lisibilités en parallèle. \`A terme, il faudra utiliser ITraceMng, mais
-cela est délicat actuellement car ce mécanisme effectue lui aussi des
-appels mémoire et il est difficile de le rendre compatible avec les fonctions
-de débug actuelles.
+\note INTERNAL: For now, any inconsistencies between allocations and
+deallocations are indicated on std::cout. This can cause readability issues in
+parallel. In the future, ITraceMng will need to be used, but this is tricky
+currently because this mechanism also performs memory calls and it is difficult
+to make it compatible with the current debugging functions.
 
 
 ____

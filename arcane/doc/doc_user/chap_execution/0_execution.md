@@ -1,30 +1,32 @@
-# Exécution, runtime {#arcanedoc_execution}
+﻿# Execution, runtime {#arcanedoc_execution}
 
-Ce chapitre est dédié à l'exécution d'un calcul avec %Arcane.  
-En plus de l'exécution classique d'un code de calcul avec des modules et une boucle en temps,
-il est possible de lancer %Arcane sans ces mécanismes.  
-Il est aussi possible de définir des variables d'environnement avant le lancement d'%Arcane
-pour en modifier le comportement (ajouter des vérifications, du profiling, &c).
+This chapter is dedicated to executing a calculation with %Arcane.
+In addition to the classic execution of a calculation code with modules and a
+time loop, it is possible to launch %Arcane without these mechanisms.
+It is also possible to define environment variables before launching %Arcane
+to modify its behavior (add checks, profiling, etc.).
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 1. \subpage arcanedoc_execution_launcher <br>
-  Explique l'initialisation et le lancement d'un calcul.
+   Explains the initialization and launching of a calculation.
 
 2. \subpage arcanedoc_execution_direct_execution <br>
-  Explique comment lancer un calcul directement avec %Arcane sans modules ni boucle en temps.
+   Explains how to launch a calculation directly with %Arcane without modules or
+   a time loop.
 
 3. \subpage arcanedoc_execution_env_variables <br>
-  Liste des variables d'environnement permettant de modifier le comportement de %Arcane.
+   List of environment variables that allow modifying %Arcane's behavior.
 
 4. \subpage arcanedoc_execution_traces <br>
-  Décrit comment afficher des traces pendant les exécutions et comment paramétrer leur affichage.
+   Describes how to display traces during executions and how to configure their
+   display.
 
 5. \subpage arcanedoc_execution_commandlineargs <br>
-   Détaille les possibilités de personnalisation du jeu de données au lancement avec
-   les options de la ligne de commande.
+   Details the possibilities for customizing the dataset upon launch using
+   command line options.
 
 ____
 
@@ -33,4 +35,3 @@ ____
 \ref arcanedoc_execution_launcher
 </span>
 </div>
-
