@@ -1,11 +1,11 @@
-﻿# Mesh types {#arcanedoc_entities_itemtype}
+﻿# Cell types {#arcanedoc_entities_itemtype}
 
-%Arcane uses the same mesh numbering convention as the [VTK] library. The
+%Arcane uses the same cell numbering convention as the [VTK] library. The
 following pages show examples of these connectivities:
 - [Exemple1](https://examples.vtk.org/site/Cxx/GeometricObjects/IsoparametricCellsDemo/)
 - [Exemple2](https://examples.vtk.org/site/VTKBook/08Chapter8)
 
-The following predefined types exist for 3D meshes:
+The following predefined types exist for 3D cells:
 
 The tetrahedron:
 

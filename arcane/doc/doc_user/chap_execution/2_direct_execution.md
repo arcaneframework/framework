@@ -45,8 +45,8 @@ subdomain. It is therefore preferable to define it in the code's `main()`.
 \warning Only one call to \arcane{ArcaneLauncher::createStandaloneSubDomain} is
 allowed.
 
-For example, the following code reads a mesh, displays the number of meshes,
-calculates, and displays the coordinates of the mesh centers.
+For example, the following code reads a mesh, displays the number of cells,
+calculates, and displays the coordinates of the cell centers.
 
 \snippet standalone_subdomain/main.cc StandaloneSubDomainFull
 

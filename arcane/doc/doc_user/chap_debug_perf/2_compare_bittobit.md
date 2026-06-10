@@ -102,9 +102,9 @@ When the variable is an array variable and is not on a mesh entity, (G) or (O)
 does not appear, and instead of the local entity number, the index of the
 element in the array is displayed.
 
-In parallel, it may be normal for the values on ghost meshes to be different
+In parallel, it may be normal for the values on ghost cells to be different
 from the reference if the variable is not synchronized. Since this can be the
-case for many variables, it is possible to display differences only on meshes
+case for many variables, it is possible to display differences only on cells
 belonging to the subdomain by setting the environment variable
 **STDENV_VERIF_SKIP_GHOSTS**.
 

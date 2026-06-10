@@ -22,7 +22,7 @@ Services are generally used:
 From a design perspective, this implies:
 - declaring an interface that will be the service contract. For example, here is
   the interface of a service for solving an equation of state on a group of
-  meshes passed as an argument:
+  cells passed as an argument:
 
 ```cpp
 class IEquationOfState

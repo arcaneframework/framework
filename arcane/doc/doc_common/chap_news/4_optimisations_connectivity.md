@@ -125,7 +125,7 @@ entity in (1), which would allow us to delete array (2).
 
 In Cartesian meshes, the schema for cells and nodes is independent of the number
 of cells and nodes. However, for faces, there is a schema per row and one per
-column. So, for example, for a 100x30x20 mesh, there are 32x20 schemas for the
+column. So, for example, for a 100x30x20 cell, there are 32x20 schemas for the
 faces, resulting in 640 values instead of 60000 without the optimization.
 
 In addition to reducing memory consumption, this will allow for better cache

@@ -39,12 +39,12 @@ ___
   exception if an assertion is not met (\pr{2303})
 - Always creates boundary groups (`XMIN`, `XMAX`, ...) when using the Cartesian
   mesh generator (\pr{2312})
-- Adds support for `Triangle10` type meshes (\pr{2318})
+- Adds support for `Triangle10` type cells (\pr{2318})
 - Optimizes and improves AMR patch management for Cartesian meshes (\pr{2338},
   \pr{2366}, \pr{2370}, \pr{2440}, \pr{2456}, \pr{2459}, \pr{2476}, \pr{2494})
 - Adds experimental geometric partitioner for initial partitioning (\pr{2340},
   \pr{2345}, \pr{2346}, \pr{2349}, \pr{2352}, \pr{2355})
-- Improves the numbering of new meshes in the mesh subdivider. The new numbering
+- Improves the numbering of new cells in the mesh subdivider. The new numbering
   respects the topological locality of the initial mesh (pr{2408})
 - Optimizes Ensight outputs for polyhedral meshes (\pr{2415})
 - Adds functions \arcane{math::normalizeL2()} for \arcane{Real2} and
@@ -201,7 +201,7 @@ ___
   \pr{2053}, \pr{2054}, \pr{2065}, \pr{2076}, \pr{2077}, \pr{2078})
 - Adds support for the `MSH` mesh format in the external partitioner (\pr{2029})
 - Adds support for the external partitioner in \arcane{ArcaneCaseMeshService}.
-  This allows it to be used in mesh tags (\pr{2040})
+  This allows it to be used in cell tags (\pr{2040})
 - Adds support for multi-dimensional meshes in the external partitioner
   (\pr{2048})
 - Improves support for order 2 meshes (\pr{2056}, \pr{2060}, \pr{2062},
@@ -231,7 +231,7 @@ ___
 - Adds experimental support for `Quad9`, `Hexaedron27`, and `Pyramid13` types
   (\pr{2205}, \pr{2206})
 - Adds methods in \arcane{MeshUtils} to directly calculate the owners of nodes,
-  edges, and faces when there are no ghost meshes (\pr{2230}, \pr{2236},
+  edges, and faces when there are no ghost cells (\pr{2230}, \pr{2236},
   \pr{2237}, \pr{2238})
 - Adds the possibility of disabling the entity owner verification test
   (\pr{2239})
@@ -282,7 +282,7 @@ ___
 
 ### Corrections
 
-- Does not disable the update of ghost meshes if \arcane{ItemFamilyNetwork} is
+- Does not disable the update of ghost cells if \arcane{ItemFamilyNetwork} is
   used (\pr{1998})
 - Corrects potential 'Read after free' in
   \arcane{ParallelMngDispatcher::setDefaultRunner()} (\pr{2021})
@@ -305,13 +305,13 @@ ___
 
 - Moves the \arcane{mesh::FaceReorienter} class to `arcane/core` (\pr{1969})
 - Adds the \arcane{mesh::ItemsOwnerBuilder} class to calculate entity owners
-  without needing a ghost mesh layer. This ensures owner consistency after mesh
+  without needing a ghost cell layer. This ensures owner consistency after mesh
   modifications (\pr{2008},\pr{2016}, \pr{2019})
 - Cleanup and various improvements in patch Cartesian mesh support (\pr{2031})
 - Ensures that the type of elements used in \arcane{NumArray} satisfies the
   `std::is_trivially_copyable` criterion (\pr{2032})
 - Cleanup of mesh utility script management (\pr{2043})
-- Uses mesh services for the direct execution mechanism (\pr{2046})
+- Uses cell services for the direct execution mechanism (\pr{2046})
 - Uses one \arcane{ItemTypeMng} instance per mesh (\pr{2079})
 - Improves the management of multi-dimensional or non-manifold meshes
   (\pr{2080}, \pr{2081}, \pr{2083}, \pr{2085}, \pr{2086}, \pr{2089})
@@ -390,7 +390,7 @@ ___
 ### New Features/Improvements
 
 - Adds service to subdivide an initial mesh (\pr{1937}, \pr{1938})
-- Starts support for meshes with multiple dimensions and non-manifold meshes
+- Starts support for cells with multiple dimensions and non-manifold meshes
   (\pr{1922}, \pr{1923}, \pr{1931}, \pr{1932}, \pr{1934}, \pr{1935}, \pr{1936},
   \pr{1943}, \pr{1944}, \pr{1945}, \pr{1948})
 - Adds experimental support for generating the uniqueId() of faces and edges
@@ -470,7 +470,7 @@ ___
 ### Internal
 
 - Adds class \arcane{mesh::ItemsOnwerBuilder} to calculate the owners of faces
-  from the owners of meshes (\pr{1861}, \pr{2082})
+  from the owners of cells (\pr{1861}, \pr{2082})
 - Uses \arcane{IMesh} instead of \arcane{mesh::DynamicMesh} in
   \arcane{mesh::MeshExchangeMng} (\pr{1841})
 - Adds specific `float` type for HDF5 utilities (\pr{1837})
@@ -528,7 +528,7 @@ ___
   the dataset (\pr{1826})
 - Adds experimental support for reading MSH files version 4.1 in binary format
   (\pr{1824})
-- Adds a mechanism to delete ghost meshes from refined meshes (\pr{1716},
+- Adds a mechanism to delete ghost cells from refined meshes (\pr{1716},
   \pr{1785}, \pr{1818})
 - Adds methods \arcane{ICartesianMesh::coarseZone2D()} and
   \arcane{ICartesianMesh::coarseZone3D()} to define a block of an AMR patch
@@ -753,7 +753,7 @@ ___
   mode for now (\pr{1550})
 - Adds function to generate a `uniqueId()` from a list of
   `uniqueId()` (\pr{1549})
-- Optimizes the calculation of the version 3 of ghost meshes (\pr{1547})
+- Optimizes the calculation of the version 3 of ghost cells (\pr{1547})
 
 ### Build and Continuous Integration (CI)
 
@@ -1272,7 +1272,7 @@ Studio 2022, as well as CMake version 3.26.
   activated if the environment variable
   `ARCANE_AUTO_COMPARE_SYNCHRONIZE` is set. When this mode is active, statistics
   at the end of the calculation allow knowing the number of synchronizations for
-  which ghost meshes were modified. The page \ref
+  which ghost cells were modified. The page \ref
   arcanedoc_debug_perf_compare_synchronization indicates how to use this
   mechanism (\pr{897}, \pr{898}, \pr{900}, \pr{902}, \pr{910}, \pr{926}).
 - Adds two experimental classes \arcane{CartesianMeshCoarsening} and
@@ -1334,7 +1334,7 @@ Studio 2022, as well as CMake version 3.26.
 - Corrects the optimization mode
   \arcanemat{eModificationFlags::OptimizeMultiMaterialPerEnvironment} to behave
   the same as other value update optimization modes when transitioning from a
-  partial mesh to a pure mesh. The expected behavior is to take the partial
+  partial cell to a pure cell. The expected behavior is to take the partial
   material value and the partial media value. To maintain backward
   compatibility, this mode is not active by default. The method
   \arcanemat{IMeshMaterialMng::setUseMaterialValueWhenRemovingPartialValue()}
@@ -1370,7 +1370,7 @@ Studio 2022, as well as CMake version 3.26.
   \arcane{VariableMng} (\pr{777}).
 - Adds method \arcane{JSON::value()} to return an \arccore{String} (\pr{778})
 - Adds a new test module for materials
-  (MaterialHeatModule). This module allows better testing of material mesh
+  (MaterialHeatModule). This module allows better testing of material cell
   addition and removal methods (\pr{788}, \pr{790}, \pr{824}, \pr{848}).
 - Improves the usage of \arcane{IProfilingService} (\pr{791})
 - Integrates Alien sources into the same repository as %Arcane (the
@@ -1385,7 +1385,7 @@ Studio 2022, as well as CMake version 3.26.
   do not have targets (\pr{846}).
 - Adds tests for version 3 of \arcane{FaceUniqueidBuilder} (\pr{850})
 - Starts MacOS porting (\pr{884}, \pr{885})
-- Optimizes EnsightGold output when the number of mesh types is very large
+- Optimizes EnsightGold output when the number of cell types is very large
   (polyhedral meshes) (\pr{911}).
 - Adds internal API to %Arcane for \arcane{ICartesianMesh} (\pr{943}).
 - Creates the \arcane{MeshHandle} for additional meshes before calling the
@@ -1536,7 +1536,7 @@ evolutions and potential modifications required in %Arcane user codes.
   operations and calculation on blocks (\pr{640}).
 - Uses accelerator memory for reduction operations. Previously, managed memory
   was used (\pr{643}, \pr{683}).
-- Changes the node numbering of hexagonal meshes for `HoneyCombMeshGenerator`
+- Changes the node numbering of hexagonal cells for `HoneyCombMeshGenerator`
   (\pr{657}).
 - Groups the functions of \arcane{mesh_utils} and \arcane{meshvisitor} into the
   \arcane{MeshUtils} namespace (\pr{725}).
@@ -1614,7 +1614,7 @@ evolutions and potential modifications required in %Arcane user codes.
   (\pr{722}).
 - Adds the possibility to display the CPU affinity of all ranks (\pr{729}).
 - For `VTK HDF` formats, adds information on the \arcane{Item::uniqueId()} of
-  nodes and meshes (\pr{741}).
+  nodes and cells (\pr{741}).
 - Improves continuous integration to avoid running tests if only certain files
   are modified (for example, only `.md`) and adds date and license verification
   (\pr{743}, \pr{745}).
@@ -1718,7 +1718,7 @@ ___
   (\pr{580}).
 - Various modifications in Arcane::ConstMemoryView and Arcane::MutableMemoryView
   (\pr{574}, \pr{573}, \pr{562}).
-- Adds a preliminary interface specific to a mesh for mesh allocation
+- Adds a preliminary interface specific to a mesh for cell allocation
   (\pr{568}).
 
 ### Arccore (version 2.2.0)
@@ -2231,7 +2231,7 @@ ___
 
 - Fixes incorrect detection of OneTBB version 2021.5 following the removal of
   the 'tbb_thread.h' file (\pr{146})
-- Fixes certain missing Cartesian information when there is only one mesh layer
+- Fixes certain missing Cartesian information when there is only one cell layer
   in Y or Z (\pr{162}).
 - Fixes missing implementation of 'Arccore::Span<T>::operator==' when the type
   `T` is not constant (\pr{163}).
@@ -2261,7 +2261,7 @@ ___
   - Added classes and types from %Arccore
 - Adds a new method for calculating the uniqueId() of faces in the Cartesian
   case. This new method allows for a Cartesian numbering of faces that is
-  consistent with those of nodes and meshes. To use it, you must specify the
+  consistent with those of nodes and cells. To use it, you must specify the
   option `<face-numbering-version>4</face-numbering-version>` in the data set
   within the mesh generator tag (\pr{104}).
 - Adds an option in the %Arcane post-processor to suppress dump output at the
@@ -2283,13 +2283,13 @@ ___
 - Deprecates the conversion of Arcane::ItemEnumerator to
   Arcane::ItemEnumeratorT. This prevents accidentally indexing a mesh variable
   with an enumerator of the wrong type (for example, indexing a variable in
-  meshes with a node enumerator).
+  cells with a node enumerator).
 
 ### Corrections:
 
 - Fixes the 'operator=' for the 'Arcane::CellDirectionMng' class (\pr{109})
 - Fixes unnecessary `Int64` to `Int32` conversion in the construction of
-  Cartesian meshes, which prevented exceeding 2^31 meshes (\pr{98})
+  Cartesian meshes, which prevented exceeding 2^31 cells (\pr{98})
 - Fixes incorrect calculation of time spent in synchronizations. Only the time
   of the last wait was used instead of the cumulative time (commit cf2cade961)
 - Fixes name collision for the 'MessagePassingService' option on the command
@@ -2343,7 +2343,7 @@ ___
 ### Corrections:
 
 - Adds version 4 for ghost layer calculation, which allows calling
-  Arcane::IMeshModifier::updateGhostLayers() even if one or more ghost mesh
+  Arcane::IMeshModifier::updateGhostLayers() even if one or more ghost cell
   layers already exist.
 
 ### Internal:
@@ -2400,7 +2400,7 @@ ___
   Arcane::IMesh::itemTypeMng().
 - Moves the classes managing the Cartesian mesh to the `arcane/cartesianmesh`
   directory. Old paths in `arcane/cea` remain valid.
-- By default, uses version 3 (instead of 2) of the ghost mesh creation service.
+- By default, uses version 3 (instead of 2) of the ghost cell creation service.
   This version is more efficient when using a large number of subdomains because
   it uses collective communications.
 - Removes memory preallocation for old connectivities.
@@ -2507,7 +2507,7 @@ ___
 - Support for parallel AMR by patch
 - Adds an Arcane::SimpleSVGMeshExporter class to export a set of meshes in SVG
   format
-- Support for patch AMR in the Arcane::DirNode class for neighboring meshes by
+- Support for patch AMR in the Arcane::DirNode class for neighboring cells by
   direction.
 - During group synchronization, ensures that all subdomains have the same groups
   and that synchronization occurs in the same order.
@@ -2543,7 +2543,7 @@ This version is the first 'open source' version of %Arcane.
   backups/restorations and bit-by-bit comparison of variables. The C# variable
   comparison utility has been updated to support this new version.
 - Support for 'msh' format mesh files version 4.1. This version allows
-  specifying groups of faces or meshes in the mesh file.
+  specifying groups of faces or cells in the mesh file.
 - Internally, uses a single executable for all C# utilities.
 
 ### Changes:

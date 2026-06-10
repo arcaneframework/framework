@@ -104,7 +104,7 @@ balancing. For example:
 ```
 
 \note Currently (March 2017), load balancing only works with a single layer of
-ghost meshes.
+ghost cells.
 
 ## Multi-mesh {#arcanedoc_parallel_loadbalance_multimesh}
 

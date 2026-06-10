@@ -113,7 +113,7 @@ public:
 void myEntryPoint()
 {
 RunQueue* queue = acceleratorMng()->defaultQueue();
-// Loop over meshes offloaded to accelerator
+// Loop over cells offloaded to accelerator
 auto command1 = makeCommand(queue);
 command1 << RUNCOMMAND_ENUMERATE(Cell,vi,allCells()){
 };
@@ -236,7 +236,7 @@ class MyModule
   {
     RunQueue queue = ...;
 
-    // Loop over meshes offloaded to accelerator
+    // Loop over cells offloaded to accelerator
     auto command1 = makeCommand(queue);
     command1 << RUNCOMMAND_ENUMERATE(Cell,vi,allCells()){
     };
@@ -286,7 +286,7 @@ Arcane::NumArray<Real,MDDim1> a;
 Arcane::NumArray<Real,MDDim1> b;
 Arcane::NumArray<Real,MDDim1> c;
 
-// 1D variable on meshes
+// 1D variable on cells
 VariableCellReal var_c = ...;
 
 // Input view (read-only)
@@ -394,8 +394,8 @@ command << RUNCOMMAND_LOOP1(iter,nb_value)
 
 ```cpp
 Arcane::Accelerator::RunCommand& command = ...
-// Loop over the meshes of the group 'my_group' with 'cid' the index of
-// the current mesh (of type Arcane::CellLocalId)
+// Loop over the cells of the group 'my_group' with 'cid' the index of
+// the current cell (of type Arcane::CellLocalId)
 command << RUNCOMMAND_ENUMERATE(Cell,icell,my_group)
 {
   // Code executed on accelerator
@@ -552,8 +552,8 @@ again after modifying the mesh.
 To access generic entity information, such as type or owner, you must use the
 \arcane{ItemGenericInfoListView} view.
 
-The following example shows how to access mesh nodes and mesh information. It
-iterates over all meshes and calculates the barycenter for those that are in our
+The following example shows how to access cell nodes and mesh information. It
+iterates over all cells and calculates the barycenter for those that are in our
 subdomain and are hexahedrons.
 
 \snippet accelerator/SimpleHydroAcceleratorService.cc AcceleratorConnectivity

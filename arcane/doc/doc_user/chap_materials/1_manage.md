@@ -410,9 +410,9 @@ The implementation of material variables aims to limit memory usage. With this
 goal in mind, values in environments and materials can use the same memory area,
 and in this case, modifying the environment value also modifies the material
 value and vice versa. This is the case if the following conditions are met in a
-mesh \a cell:
+cell \a cell:
 - only one material (MAT) in an environment (ENV), then var[MAT]==var[ENV]
-- only one environment (ENV) in the mesh, then var[ENV] == var[cell]
+- only one environment (ENV) in the cell, then var[ENV] == var[cell]
 
 ### Synchronizations {#arcanedoc_materials_manage_variable_synchronize}
 
@@ -421,7 +421,7 @@ classic variables, using the \arcanemat{MeshMaterialVariableRef::synchronize()}
 function.
 
 \warning Attention, it is still necessary that the information about the present
-materials is consistent across all subdomains: if a mesh exists in multiple
+materials is consistent across all subdomains: if a cell exists in multiple
 subdomains, it must have the same materials and environments in each subdomain.
 
 It is possible to guarantee that all information about materials and
@@ -534,7 +534,7 @@ attribute to \c true.
 />
 ```
 
-\warning Since the internal structures of material and environment meshes are
+\warning Since the internal structures of material and environment cells are
 unified, it is possible at compilation time to index an environment variable
 with a \arcanemat{MatCell}. Since there are no associated material values, this
 will cause an invalid memory access which is highly likely to result in a
@@ -552,7 +552,7 @@ example:
 
 ## Optimization of Modifications on Materials and Environments. {#arcanedoc_materials_manage_optimization}
 
-Modification of material and environment meshes is done via the
+Modification of material and environment cells is done via the
 \arcanemat{MeshMaterialModifier} class. This modification is done through
 successive calls to \arcanemat{MeshMaterialModifier::addCells()} or
 \arcanemat{MeshMaterialModifier::removeCells()}. These methods allow recording
@@ -562,9 +562,9 @@ destruction of the \arcanemat{MeshMaterialModifier} instance.
 By default, the behavior is as follows:
 - saving the values of all material variables
 - applying the modifications (which consists only of modifying the list of
-  entities of the mesh groups associated with materials and environments)
+  entities of the cell groups associated with materials and environments)
 - restoring the values of all material variables. During restoration, if a new
-  material mesh is created, its value depends on
+  material cell is created, its value depends on
   \arcanemat{IMeshMaterialMng::isDataInitialisationWithZero()}.
 
 Saving and restoring values are CPU and memory-intensive operations. It is
@@ -637,7 +637,7 @@ optimize multi-material environments).
 
 <h4>NOTE 1</h4>
 
-Currently, the optimized methods do not reuse partial values when meshes are
+Currently, the optimized methods do not reuse partial values when cells are
 deleted and then added to the same material, which leads to a gradual increase
 in the memory used by partial values. However, it is possible to free up this
 extra memory by calling IMeshMaterialMng::forceRecompute().
@@ -645,7 +645,7 @@ extra memory by calling IMeshMaterialMng::forceRecompute().
 <h4>NOTE 2</h4>
 
 The behavior in optimized mode when there is deletion followed by addition of
-the same mesh in the same material is different from classic mode. For example:
+the same cell in the same material is different from classic mode. For example:
 
 ```cpp
 MeshMaterialModifier m1(m_material_mng);
@@ -661,23 +661,23 @@ m1.removeCells(mat1,remove_ids);
 m1.addCells(mat1,add_ids);
 ```
 
-The mesh with localId() \a 5 is first deleted and then put back into the
-material. In classic mode, the mesh value will be the same as before the
+The cell with localId() \a 5 is first deleted and then put back into the
+material. In classic mode, the cell value will be the same as before the
 modification because the value is restored from the save. In optimized mode,
-with eModificationFlags::OptimizeMultiAddRemove specified, the mesh is first
+with eModificationFlags::OptimizeMultiAddRemove specified, the cell is first
 removed from the material and then recreated. Its value will therefore be that
-of a newly created material mesh, so 0 if
+of a newly created material cell, so 0 if
 IMeshMaterialMng::isDataInitialisationWithZero() or the value of the associated
-global mesh otherwise.
+global cell otherwise.
 
 <h4>NOTE 3</h4>
 
 Finally, the optimized methods are stricter than the classic methods, and
 certain operations that were tolerated in classic mode are no longer tolerated:
-- specifying in the list of meshes to add a mesh that is already in the
+- specifying in the list of cells to add a cell that is already in the
   material.
-- specifying in the list of meshes to remove a mesh that is not in the material.
-- specifying the same mesh multiple times in the list of meshes to remove or
+- specifying in the list of cells to remove a cell that is not in the material.
+- specifying the same cell multiple times in the list of cells to remove or
   add.
 
 ```cpp
@@ -687,7 +687,7 @@ ids.add(5);
 mm.addCells(mat1,ids); // Error if mesh 5 is already in mat1
 mm.removeCells(mat1,ids); // Error if mesh 5 is not in mat1
 ids.add(6);
-ids.add(6); // Error if \a ids contains the same mesh multiple times.
+ids.add(6); // Error if \a ids contains the same cells multiple times.
 ```
 
 If one of the previous cases occurs, there is a high chance that the code will

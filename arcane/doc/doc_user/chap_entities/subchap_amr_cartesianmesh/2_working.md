@@ -16,9 +16,9 @@ ICartesianMesh* cartesian_mesh = ICartesianMesh::getReference(mesh());
 CartesianMeshAMRMng amr_mng(cartesian_mesh);
 ```
 
-It is possible to choose the number of overlap mesh layers using the method
+It is possible to choose the number of overlap cell layers using the method
 `Arcane::CartesianMeshAMRMng::setOverlapLayerSizeTopLevel(Int32 new_size)`. By
-default, there are no overlap meshes for the highest level.
+default, there are no overlap cells for the highest level.
 
 ## Historical Adaptation API {#arcanedoc_entities_amr_cartesianmesh_working_histo}
 
@@ -29,29 +29,29 @@ To refine or coarsen a zone of the mesh, there are two methods:
 - `Arcane::CartesianMeshAMRMng::refineZone(const AMRZonePosition& position)`
 - `Arcane::CartesianMeshAMRMng::coarseZone(const AMRZonePosition& position)`
 
-The class `AMRZonePosition` defines a zone in the mesh. All active meshes whose
-barycenters are in this zone belong to this zone (active mesh = having no
+The class `AMRZonePosition` defines a zone in the mesh. All active cells whose
+barycenters are in this zone belong to this zone (active cell = having no
 children).
 
-For AMR type 3, it is necessary to have only active meshes of the same level in
+For AMR type 3, it is necessary to have only active cells of the same level in
 the zone.
 
 ### Refinement {#arcanedoc_entities_amr_cartesianmesh_working_histo_refine}
 
-Once the `refineZone()` method is called, all meshes in the zone will have child
-meshes. These child meshes will be gathered into a patch.
+Once the `refineZone()` method is called, all cells in the zone will have child
+cells. These child cells will be gathered into a patch.
 
-AMR type 3 will create the necessary overlap meshes and update the number of
-overlap mesh layers of the other patches.
+AMR type 3 will create the necessary overlap cells and update the number of
+overlap cell layers of the other patches.
 
 If necessary, it is possible to call the method
 `Arcane::CartesianMeshAMRMng::mergePatches()` to merge patches that can be
 merged (if merging two patches creates a regular patch) (this is a simple merge:
-no mesh creation/deletion).
+no cell creation/deletion).
 
 ### Coarsening {#arcanedoc_entities_amr_cartesianmesh_working_histo_coarsen}
 
-The `coarseZone()` method will delete the active meshes in the zone.
+The `coarseZone()` method will delete the active cells in the zone.
 
 For AMR type 1, the patches may then become irregular.
 
@@ -66,12 +66,12 @@ regular. To avoid having too many patches, it is possible to call
 (A complete and commented example is available here:
 `arcane/src/arcane/tests/cartesianmesh/DynamicCircleAMRModule.cc`)
 
-Compared to the other API, here, the user simply designates meshes to refine in
+Compared to the other API, here, the user simply designates cells to refine in
 the mesh. They do not have to construct one or more patches "by hand."
 
 %Arcane will take care of creating one or more regular patches including at
-least the meshes marked by the user.
-Other meshes around these marked meshes can therefore be refined in order to
+least the cells marked by the user.
+Other cells around these marked cells can therefore be refined in order to
 create regular patches.
 
 For the creation of these patches, there are two rules:
@@ -108,14 +108,14 @@ patches of the lower levels. The patches of the higher levels will be deleted to
 be recreated in the second phase.
 
 It is important to note that it is the patches that are deleted in this first
-phase, not the meshes of these patches. The meshes (and the various items around
+phase, not the cells of these patches. The cells (and the various items around
 them), if they are no longer in any patch at the end of the second phase, will
 be deleted in the third phase.
 
-The consequence is that if a mesh saw its patch deleted, but found a patch
+The consequence is that if a cell saw its patch deleted, but found a patch
 during the second phase, the variables associated with it will not be reset.
 
-Finally, it must be noted that an "InPatch" mesh can become an "Overlap" cell,
+Finally, it must be noted that an "InPatch" cell can become an "Overlap" cell,
 and vice versa.
 
 ### Level-by-Level Adaptation {#arcanedoc_entities_amr_cartesianmesh_working_new_adapt}
@@ -126,7 +126,7 @@ Method
 ```cpp
 amr_mng.adaptLevel(level_to_adapt, true);
 ```
-Second phase. Before calling this method, the meshes of the patches at level
+Second phase. Before calling this method, the cells of the patches at level
 `level_to_adapt` that must be refined must have the `II_Refine` flag.
 
 Example:
@@ -169,7 +169,7 @@ This phase will first adjust the number of overlap cell layers of each patch in
 the case where the maximum number of levels given during the first phase is not
 reached.
 
-Then, it will delete all meshes that do not have the `II_InPatch` flag or the
+Then, it will delete all cells that do not have the `II_InPatch` flag or the
 `II_Overlap` flag.
 
 A call to the method `Arcane::CartesianMeshAMRMng::clearRefineRelatedFlags()`

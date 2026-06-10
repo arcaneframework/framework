@@ -73,7 +73,7 @@ The available chapters are:
   only C#).
 
 - \subpage arcanedoc_entities <br>
-  Presents the entities available in %Arcane (predefined mesh types, meshing,
+  Presents the entities available in %Arcane (predefined cell types, meshing,
   entity connectivities, and description of classes managing geometry).
 
 - \subpage arcanedoc_services_modules <br>
