@@ -1304,7 +1304,7 @@ Studio 2022, as well as CMake version 3.26.
   (\pr{796}).
 - Adds accelerator support for version 6 and version 8 of material
   synchronizations (\pr{855}).
-- Adds support to retrieve the number of media in a mesh (\pr{860})
+- Adds support to retrieve the number of environment in a mesh (\pr{860})
 - Adds views on the environment variable (\pr{904}).
 - Adds support for inclusive and exclusive Scan algorithms via the
   \arcaneacc{Scanner} class (\pr{921}, \pr{923}).
@@ -1335,7 +1335,7 @@ Studio 2022, as well as CMake version 3.26.
   \arcanemat{eModificationFlags::OptimizeMultiMaterialPerEnvironment} to behave
   the same as other value update optimization modes when transitioning from a
   partial cell to a pure cell. The expected behavior is to take the partial
-  material value and the partial media value. To maintain backward
+  material value and the partial environment value. To maintain backward
   compatibility, this mode is not active by default. The method
   \arcanemat{IMeshMaterialMng::setUseMaterialValueWhenRemovingPartialValue()}
   allows it to be activated (\pr{844}, \pr{957}).
@@ -1676,7 +1676,7 @@ ___
   value of a coordinate (\pr{598}).
 - Optimizes the search for values in lookup tables by using dichotomy
   (\pr{596}).
-- Accelerator API support for media via the macro RUNCOMMAND_MAT_ENUMERATE()
+- Accelerator API support for environment via the macro RUNCOMMAND_MAT_ENUMERATE()
   (\pr{595},\pr{593}, \pr{588}, \pr{586}, \pr{577}).
 - Adds explicit constructors between Arcane::Real2 and Arcane::Real3 (\pr{591}).
 
@@ -2268,7 +2268,7 @@ ___
   end of the calculation.
 - Adds implementation of Arcane::IParallelMng::gather() and
   Arcane::IParallelMng::gatherVariable() for shared memory mode and hybrid mode
-- Adds the list of media in which the material is present to
+- Adds the list of environment in which the material is present to
   Arcane::Materials::MeshMaterialInfo
 - Supports compilation with the NVIDIA HPC SDK.
 - Supports (partially) deallocating the mesh
