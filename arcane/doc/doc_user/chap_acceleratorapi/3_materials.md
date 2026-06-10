@@ -26,8 +26,8 @@ The possible values for this macro are:
 <td>\arcanemat{EnvAndGlobalCellIteratorValue}</td>
 <td>\arcanemat{IMeshEnvironment} <br></br>
 \arcanemat{EnvCellVectorView}</td>
-<td>Iteration over an environment allowing the retrieval of the local mesh
-number of the environment, the iteration index, and the associated global mesh
+<td>Iteration over an environment allowing the retrieval of the local cell
+number of the environment, the iteration index, and the associated global cell
 number for each iteration.</td>
 </tr>
 
@@ -35,8 +35,8 @@ number for each iteration.</td>
 <td>MatAndGlobalCell</td>
 <td>\arcanemat{MatAndGlobalCellIteratorValue}</td>
 <td>\arcanemat{IMeshMaterial} <br></br> \arcanemat{MatCellVectorView}</td>
-<td>Iteration over a material allowing the retrieval of the local mesh number of
-the material, the iteration index, and the associated global mesh number for
+<td>Iteration over a material allowing the retrieval of the local cell number of
+the material, the iteration index, and the associated global cell number for
 each iteration.</td>
 </tr>
 

@@ -76,7 +76,7 @@ Quad4ElementConstView quad_const_view = quad;
 
 Unlike geometric elements, there is only one class to manage geometric shapes.
 This class is called GeomShape and can contain the geometric information of any
-mesh type defined in the GeomType enumeration.
+cell type defined in the GeomType enumeration.
 
 A geometric shape contains the coordinates of the nodes, the face centers, the
 edge midpoints, and the center of the shape.
@@ -98,7 +98,7 @@ after the geometric type suffixed by \a ShapeView:
 - Octaedron12ShapeView;
 
 %Arcane manages two possible uses of geometric shapes:
-- the geometric shape associated with a mesh element. For this use, the
+- the geometric shape associated with a cell element. For this use, the
   GeomShapeMng class is used, which retains all the necessary information for a
   given mesh (see the documentation for the GeomShapeMng class for its usage and
   initialization). Retrieving a view is done as follows:
@@ -107,13 +107,13 @@ after the geometric type suffixed by \a ShapeView:
 GeomShapeMng& shape_mng;
 Cell cell;
 GeomShapeView shape_view;
-// Initialization from a mesh \a cell
+// Initialization from a cell \a cell
 shape_mng.initShape(shape_view,cell);
 ```
 
 - an arbitrary geometric shape, which is not directly associated with a mesh
   entity and can be created anywhere. It can be used, for example, to define a
-  geometric shape on the control sub-volumes of a mesh. For this case, an
+  geometric shape on the control sub-volumes of a cell. For this case, an
   instance of GeomShape must be used to retain the information. This instance
   must remain valid as long as you wish to use the associated view.
   Initialization is done either with a hexahedron or with a quadrangle (it is
@@ -220,7 +220,7 @@ always be replaced by a method that takes a view of the corresponding element.
 
 GeomShapeViews are optimized for geometric calculations within a cell. It is
 therefore preferable to use them rather than fetching the node coordinates of a
-mesh every time via the IMesh::nodesCoordinates() variable. In particular, they
+cell every time via the IMesh::nodesCoordinates() variable. In particular, they
 use a data structure that is optimized for cache management and for
 vectorization. Furthermore, they will eventually allow managing geometric shapes
 corresponding to finite elements of order 2 or higher.

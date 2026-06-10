@@ -286,7 +286,7 @@ This version includes the following developments:
   methods taking std::string_view as arguments.
 - A reproducible mode for ParMetis has been developed that ensures the same
   partitioning between two executions by grouping the graph on a single
-  processor. This mode should not be used when the number of meshes is greater
+  processor. This mode should not be used when the number of cells is greater
   than a few tens of millions.
 
 ___
@@ -555,7 +555,7 @@ ___
 
 This version includes the following developments regarding materials and
 environment:
-- possibility to iterate only over pure or impure meshes of a material or an
+- possibility to iterate only over pure or impure cells of a material or an
   environment.
 - new mechanisms for looping over materials and environments
 - start of vectorization support for materials and environment. For now, this
@@ -588,7 +588,7 @@ ___
 This version activates the new connectivity access mechanism. The old mechanism
 remains accessible. Since the two mechanisms use different memory management,
 connectivities are allocated using both the new and the old mechanism, resulting
-in an increase of about 1KB of memory per mesh.
+in an increase of about 1KB of memory per cell.
 For more information, refer to page
 \ref arcanedoc_entities_connectivity_internal.
 
@@ -658,7 +658,7 @@ ___
 This version integrates developments to decouple connectivity management from
 entity management. For memory saving reasons, the current mechanism allows all
 connectivities to be available for each entity type. Potentially, this means,
-for example, that a particle and a mesh can have the same connectivities. For
+for example, that a particle and a cell can have the same connectivities. For
 more information on the new mechanisms, refer to the following page
 \ref arcanedoc_entities_connectivity_internal. In this 2.5.0 version, the new
 connectivities are not active (which corresponds to the '
@@ -735,7 +735,7 @@ ___
 - Support for the Arcane::MeshMaterialVariableRef::synchronize() method for
   variables only on environment.
 - Adds a method on material variables to fill partial values with the value of
-  the parent component mesh. This allows filling material values with medium
+  the parent component cell. This allows filling material values with medium
   values or medium values with global values. The method is called
   Arcane::Materials::MeshMaterialVariableRef::fillPartialValuesWithSuperValues().
 - Adds constant STL iterators for the Arcane::ItemVectorView class. This allows

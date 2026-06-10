@@ -91,7 +91,7 @@ this order):
 - use the IIncrementalItemConnectivity interface to manage all connectivities,
   even the old ones. This phase can be done in several sub-phases depending on
   the connectivities. The 'classic' connectivities (nodes, edges, faces, and
-  meshes) first, the more complicated connectivities (especially AMR)
+  cells) first, the more complicated connectivities (especially AMR)
   afterwards.
 - optimize IncrementalItemConnectivity, particularly by managing pre-allocation
   to avoid reallocating every time. We will also need to manage compaction.

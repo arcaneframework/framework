@@ -8,17 +8,17 @@ This page explains some concepts to understand how AMR works in %Arcane.
 
 Class `Arcane::CartesianPatch`.
 
-For AMR type 1, a patch is a set of meshes. These meshes do not necessarily form
+For AMR type 1, a patch is a set of cells. These cells do not necessarily form
 a contiguous set.
-These meshes are grouped into a set of meshes accessible via the method
+These cells are grouped into a set of cells accessible via the method
 `Arcane::CartesianPatch::cells()`.
 
 \image html amr_1.webp
 
 
-For AMR type 3, a patch is a set of meshes of the same level and enclosed within
+For AMR type 3, a patch is a set of cells of the same level and enclosed within
 a bounding box (regular patch). This bounding box is described by the
-topological coordinates of two meshes in the Cartesian grid: `min` and `max`.
+topological coordinates of two cells in the Cartesian grid: `min` and `max`.
 
 \remark `min` and `max` will have the same values in a multi-subdomain or a
 mono-subdomain.
@@ -29,46 +29,46 @@ This bounding box is described by the class `Arcane::AMRPatchPosition`. Each
 patch contains an instance of this class, accessible via the method
 `Arcane::CartesianPatch::position()`.
 
-\note A mesh can only be in one bounding box (for a given level).
+\note A cell can only be in one bounding box (for a given level).
 
-Three sets of meshes are accessible for each patch:
-- the group of all meshes in the patch: `Arcane::CartesianPatch::cells()`,
-- the group of overlap meshes: `Arcane::CartesianPatch::overlapCells()` (having
+Three sets of cells are accessible for each patch:
+- the group of all cells in the patch: `Arcane::CartesianPatch::cells()`,
+- the group of overlap cells: `Arcane::CartesianPatch::overlapCells()` (having
   the `II_Overlap` flag),
-- the group of patch meshes (non-overlapping):
+- the group of patch cells (non-overlapping):
   `Arcane::CartesianPatch::inPatchCells()` (having the `II_InPatch` flag).
 
 
-## Overlap Meshes {#arcanedoc_entities_amr_cartesianmesh_notions_overlap}
+## Overlap cells {#arcanedoc_entities_amr_cartesianmesh_notions_overlap}
 
-\note For AMR type 1, there are no overlap meshes.
+\note For AMR type 1, there are no overlap cells.
 
-Overlap meshes refer to the meshes around the patches (around the bounding
+Overlap cells refer to the cells around the patches (around the bounding
 boxes).
 
 \image html amr_3.webp
 
-(In dotted lines, we have the overlap meshes/faces/nodes / 2 layers for level 1)
+(In dotted lines, we have the overlap cells/faces/nodes / 2 layers for level 1)
 
-These meshes allow two things. First, they allow obtaining values around the
-patch items (in solid lines in the image) (like ghost meshes for calculating at
+These cells allow two things. First, they allow obtaining values around the
+patch items (in solid lines in the image) (like ghost cells for calculating at
 the subdomain boundary).
 
 \image html amr_4.webp
 
-(We can see overlap meshes covering meshes from other patches
+(We can see overlap cells covering cells from other patches
 (`II_Overlap && II_InPatch`))
 
 Second, they prevent having more than one level of difference between two
-meshes.
-Indeed, it is not possible to refine a pure overlap mesh
+cells.
+Indeed, it is not possible to refine a pure overlap cell
 (`II_Overlap && ! II_InPatch`).
 
 \image html amr_5.webp
 
 (2 layers for level 1 / 0 layers for level 2)
 
-It is possible to modify the number of overlap mesh layers of the highest level
+It is possible to modify the number of overlap cell layers of the highest level
 via the method
 `Arcane::CartesianMeshAMRMng::setOverlapLayerSizeTopLevel(Int32 new_size)`.
 The number of layers for other levels will be calculated automatically.
@@ -85,7 +85,7 @@ continuing)
 Each patch (for both AMR types) has its own directions, for each item.
 
 These directions are accessible via the patches (`Arcane::CartesianPatch`). The
-operation is the same as with the mesh without AMR.
+operation is the same as with the cell without AMR.
 
 Two new methods are available to access the `InPatch` and `Overlap` item groups:
 
@@ -113,7 +113,7 @@ ENUMERATE_(Face, iface, face_dm.inPatchFaces()) {
   Cell next_cell = dir_face.nextCell(); // Maille après la face
 }
 ```
-In this piece of code, with at least one layer of overlap meshes, we are sure
+In this piece of code, with at least one layer of overlap cells, we are sure
 that `dir_face.previousCell()` and
 `dir_face.nextCell()` are not null (except at the subdomain boundary).
 

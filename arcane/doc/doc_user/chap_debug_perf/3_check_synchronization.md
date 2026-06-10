@@ -11,7 +11,7 @@ To activate this mode, you must set the environment variable
 `ARCANE_AUTO_COMPARE_SYNCHRONIZE`. The three possible values are:
 
 - `1` : to activate the mechanism and display at the end of the calculation for
-  each variable the number of synchronizations that modified the ghost mesh
+  each variable the number of synchronizations that modified the ghost cell
   values.
 - `2` : like `1` but additionally there is a listing printout at the time of
   synchronization if the synchronization did not modify any values (which

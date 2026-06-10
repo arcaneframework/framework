@@ -8,7 +8,7 @@
 
 In ARCANE, parallelism is managed by message passing. The mesh is partitioned
 into several subdomains. Each subdomain may be supplemented by one or more
-layers of ghost meshes that represent a duplication of entities for which
+layers of ghost cells that represent a duplication of entities for which
 synchronization will be required. Each processor performs calculations on a
 subdomain and regularly synchronizes its variables with the other processors.
 
@@ -28,7 +28,7 @@ Generally, there is no single solution to the synchronization problem:
   entities.
 
 In order not to unnecessarily complicate the handling of parallelism, ARCANE
-currently operates using a single layer of ghost meshes and favors calculation
+currently operates using a single layer of ghost cells and favors calculation
 over the number of synchronizations. When developing your numerical modules, it
 is advisable to follow the same criterion.
 
@@ -38,11 +38,11 @@ algorithm. It is used for balancing the processor load.
 ## Sequential vs Parallel Calculations {#arcanedoc_parallel_intro_seqvspar}
 
 ARCANE uses the same numbering order in each subdomain. This helps to limit the
-number of synchronizations as much as possible. The meshes, nodes, and faces are
+number of synchronizations as much as possible. The cells, nodes, and faces are
 always described in the same order regardless of the subdomain and regardless of
 the partitioning.
 
-If all operations are performed by iterating over a group of nodes or meshes,
+If all operations are performed by iterating over a group of nodes or cells,
 the result is identical in sequential and parallel execution.
 
 ## Available Operations {#arcanedoc_parallel_intro_operation}

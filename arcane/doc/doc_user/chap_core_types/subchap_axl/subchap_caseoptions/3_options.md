@@ -96,7 +96,7 @@ The <b>type</b> attribute can take one of the following values:
 
 - *Arcane::NodeGroup* for a node group
 - *Arcane::FaceGroup* for a face group
-- *Arcane::CellGroup* for a mesh group
+- *Arcane::CellGroup* for a cell group
 
 If an option of this type exists, its value is validated after reading the mesh
 and must correspond to an existing group of the correct type.
@@ -236,7 +236,7 @@ possible sub-options are ignored.
 This option is available starting from version 2.0.7 of %Axlstar and 3.8.4 of
 %Arcane.
 
-\warning It is possible to specify the `mesh-name` attribute in AXL ET/OU and/or
+\warning It is possible to specify the `mesh-name` attribute in AXL and/or
 in the dataset (.ARC). The AXL one can be seen as a default `mesh-name` for a
 given service instance. If the `mesh-name` is specified in the dataset (.ARC),
 it will override the `mesh-name` specified in the AXL.

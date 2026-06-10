@@ -36,7 +36,7 @@ document. In particular, the implementation will be restricted to the following
 points:
 
   <ul>
-  <li>the only supported mesh type is the hexahedron;</li>
+  <li>the only supported cell type is the hexahedron;</li>
   <li>the only supported pseudo-viscosity type is cell pseudo-viscosity;</li>
   <li>the only supported characteristic length calculation type is the one using medians;</li>
   <li>the only supported boundary condition type will be imposing a velocity component on a surface;</li>
@@ -73,9 +73,9 @@ of <b>values</b> manipulated.
   <li>the displacement of nodes</li>
   <li>the calculation of new geometric values:
   <ul>
-  <li>mesh volume</li>
-  <li>mesh characteristic length</li>
-  <li>forces at the vertices of each mesh</li>
+  <li>cell volume</li>
+  <li>cell characteristic length</li>
+  <li>forces at the vertices of each cell</li>
   </ul>
   <li>the calculation of density</li>
   <li>the calculation of pressure and energy using the equation of state</li>
@@ -92,18 +92,18 @@ Naturally, the module will have an entry point for each phase.
 <small>
 <table>
 <tr><td><b>Name</b></td><td><b>Element</b></td><td><b>Type</b></td><td><b>Description</b></td></tr>
-<tr><td>Density </td><td> Mesh </td><td> Real </td><td> Density per mesh </td></tr>
-<tr><td>Pressure </td><td> Mesh </td><td> Real </td><td> Pressure per mesh </td></tr>
-<tr><td>CellMass </td><td> Mesh </td><td> Real </td><td> Mass per mesh </td></tr>
-<tr><td>InternalEnergy </td><td> Mesh </td><td> Real </td><td> Internal energy per mesh </td></tr>
-<tr><td>SoundSpeed          </td><td> Mesh </td><td> Real </td><td> Speed of sound in the mesh </td></tr>
-<tr><td>Volume         </td><td> Mesh </td><td> Real </td><td> Volume of the mesh </td></tr>
-<tr><td>OldVolume      </td><td> Mesh </td><td> Real </td><td> Volume of the mesh at the previous iteration </td></tr>
-<tr><td>ViscosityForce </td><td> Mesh </td><td> Coordinate Array </td><td> Contribution of viscosity forces to the mesh vertices </td></tr>
-<tr><td>ViscosityWork  </td><td> Mesh </td><td> Real  </td><td> Work done by viscosity forces </td></tr>
-<tr><td>AdiabaticCst   </td><td> Mesh </td><td> Real  </td><td> Adiabatic constant of the perfect gas per mesh </td></tr>
-<tr><td>CaracteristicLength </td><td> Mesh </td><td> Real </td><td> Characteristic length per mesh </td></tr>
-<tr><td>CellCQs             </td><td> Mesh </td><td> Coordinate Array</td><td> Resultant at the vertices of </td></tr>
+<tr><td>Density </td><td> cell </td><td> Real </td><td> Density per cell </td></tr>
+<tr><td>Pressure </td><td> cell </td><td> Real </td><td> Pressure per cell </td></tr>
+<tr><td>CellMass </td><td> cell </td><td> Real </td><td> Mass per cell </td></tr>
+<tr><td>InternalEnergy </td><td> cell </td><td> Real </td><td> Internal energy per cell </td></tr>
+<tr><td>SoundSpeed          </td><td> cell </td><td> Real </td><td> Speed of sound in the cell </td></tr>
+<tr><td>Volume         </td><td> cell </td><td> Real </td><td> Volume of the cell </td></tr>
+<tr><td>OldVolume      </td><td> cell </td><td> Real </td><td> Volume of the cell at the previous iteration </td></tr>
+<tr><td>ViscosityForce </td><td> cell </td><td> Coordinate Array </td><td> Contribution of viscosity forces to the cell vertices </td></tr>
+<tr><td>ViscosityWork  </td><td> cell </td><td> Real  </td><td> Work done by viscosity forces </td></tr>
+<tr><td>AdiabaticCst   </td><td> cell </td><td> Real  </td><td> Adiabatic constant of the perfect gas per cell </td></tr>
+<tr><td>CaracteristicLength </td><td> cell </td><td> Real </td><td> Characteristic length per cell </td></tr>
+<tr><td>CellCQs             </td><td> cell </td><td> Coordinate Array</td><td> Resultant at the vertices of </td></tr>
 <tr><td>Forces         </td><td> node </td><td> Coordinate </td><td> Force at the nodes </td></tr>
 <tr><td>Velocity       </td><td> node </td><td> Coordinate </td><td> Velocity at the nodes </td></tr>
 <tr><td>NodeMass       </td><td> node </td><td> Real  </td><td> Nodal mass </td></tr>
@@ -243,23 +243,23 @@ void computeDeltaT();
 
 private:
 
-VariableCellReal m_density; //!< Density per mesh
-VariableCellReal m_pressure; //!< Pressure per mesh
-VariableCellReal m_cell_mass; //!< Mass per mesh
-VariableCellReal m_internal_energy; //!< Internal energy of the meshes
-VariableCellReal m_volume; //!< Volume of the meshes
-VariableCellReal m_old_volume; //!< Volume of a mesh at the previous iteration
+VariableCellReal m_density; //!< Density per cell
+VariableCellReal m_pressure; //!< Pressure per cell
+VariableCellReal m_cell_mass; //!< Mass per cell
+VariableCellReal m_internal_energy; //!< Internal energy of the cells
+VariableCellReal m_volume; //!< Volume of the cells
+VariableCellReal m_old_volume; //!< Volume of a cell at the previous iteration
 VariableNodeReal3 m_force; //!< Force at the nodes
 VariableNodeReal3 m_velocity; //!< Velocity at the nodes
 VariableNodeReal m_node_mass; //! Nodal mass
 VariableCellReal m_cell_viscosity_force; //!< Local contribution of viscosity
 forces
-VariableCellReal m_viscosity_work; //!< Work done by viscosity forces per mesh
-VariableCellReal m_adiabatic_cst; //!< Adiabatic constant per mesh
-VariableCellReal m_caracteristic_length; //!< Characteristic length per mesh
-VariableCellReal m_sound_speed; //!< Speed of sound in the mesh
+VariableCellReal m_viscosity_work; //!< Work done by viscosity forces per cell
+VariableCellReal m_adiabatic_cst; //!< Adiabatic constant per cell
+VariableCellReal m_caracteristic_length; //!< Characteristic length per cell
+VariableCellReal m_sound_speed; //!< Speed of sound in the cell
 VariableNodeReal3 m_node_coord; //!< Coordinates of the nodes
-VariableCellArrayReal3 m_cell_cqs; //!< Resultant at the vertices for each mesh
+VariableCellArrayReal3 m_cell_cqs; //!< Resultant at the vertices for each cell
 VariableScalarReal m_density_ratio_maximum; //!< Maximum density increase over a
 time step
 VariableScalarReal m_delta_t_n; //!< Delta t n between t^{n-1/2} and t^{n+1/2}
@@ -1209,7 +1209,7 @@ In general, there is no single solution to this problem:
 </ul>
 
 To avoid unnecessarily complicating the consideration of parallelism, the
-previous example works by using a layer of ghost mesh and favors calculation
+previous example works by using a layer of ghost cell and favors calculation
 over the number of synchronizations.
 
 The previous example uses two parallel operations:
@@ -1231,10 +1231,10 @@ this order in the calculation loop:
 Using the same numbering order in each subdomain allows us to limit the number
 of synchronizations as much as possible. For example, since velocity is
 synchronized, the position of the nodes and the volume are also synchronized,
-because the volume is calculated by iterating over all nodes of a mesh, these
+because the volume is calculated by iterating over all nodes of a cell, these
 nodes always being described in the same order regardless of the subdomain (and
 also regardless of the partitioning). Furthermore, if all operations are
-performed by iterating over a group of nodes or meshes, it is guaranteed that
+performed by iterating over a group of nodes or cells, it is guaranteed that
 the result will be identical in sequential and parallel execution, regardless of
 the partitioning.
 
