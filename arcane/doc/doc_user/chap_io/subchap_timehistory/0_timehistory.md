@@ -1,23 +1,23 @@
-# TimeHistory {#arcanedoc_io_timehistory}
+﻿# TimeHistory {#arcanedoc_io_timehistory}
 
-Les structures TimeHistory permettent d'enregistrer des valeurs à chaque itération.
+TimeHistory structures allow values to be recorded at each iteration.
 
-Dans ce chapitre, on appellera un "historique de valeur" une structure de type "clef-valeur"
-avec comme clef une chaine de caractères au choix et comme valeur un tableau de valeurs contenant
-une valeur par itération.
+In this chapter, a "value history" will be called a "key-value" structure with a
+customizable string as the key and an array of values containing one value per
+iteration.
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Table of Contents for this subsection:
 
 1. \subpage arcanedoc_io_timehistory_howto <br>
-  Présente le fonctionnement par défaut de ces structures.
+   Presents the default operation of these structures.
 
 2. \subpage arcanedoc_io_timehistory_results_usage <br>
-  Présente comment exploiter les résultats.
+   Presents how to utilize the results.
 
 3. \subpage arcanedoc_io_timehistory_acv <br>
-  Présente les spécifications du format ACV.
+   Presents the specifications of the ACV format.
 
 
 

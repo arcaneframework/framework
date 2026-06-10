@@ -1,133 +1,131 @@
-﻿# Les types d'options {#arcanedoc_core_types_axl_caseoptions_options}
+﻿# Option Types {#arcanedoc_core_types_axl_caseoptions_options}
 
 [TOC]
 
-## Les options simples {#arcanedoc_core_types_axl_caseoptions_options_simple}
+## Simple Options {#arcanedoc_core_types_axl_caseoptions_options_simple}
 
-Elles sont décrites par l'élément <tt>simple</tt> :
+They are described by the `<tt>simple</tt>` element:
 
 ```xml
 <simple name="simple-real" type="real">
-  <description>Réel simple</description>
+  <description>Simple real</description>
 </simple>
 ```
 
-L'attribut `type` peut prendre une des valeurs suivantes :
-- `real` pour les réels. Ils correspondent au type Arccore::Real.
-- `integer` pour les entiers. Ils correspondent au type Arccore::Integer.
-- `int32` pour les entiers. Ils correspondent au type Arccore::Int32.
-- `int64` pour les entiers. Ils correspondent au type Arccore::Int64.
-- `bool` pour les booléens. Ils correspondent au type `bool` du C++.
-- `string` pour les chaînes de caractères. Ils correspondent à la classe Arccore::String.
+The `type` attribute can take one of the following values:
 
-Pour l'exemple précédent, le jeu de données contient, par exemple, la ligne :
+- `real` for real numbers. They correspond to the Arccore::Real type.
+- `integer` for integers. They correspond to the Arccore::Integer type.
+- `int32` for integers. They correspond to the Arccore::Int32 type.
+- `int64` for integers. They correspond to the Arccore::Int64 type.
+- `bool` for booleans. They correspond to the C++ `bool` type.
+- `string` for character strings. They correspond to the Arccore::String class.
+
+For the previous example, the dataset contains, for instance, the line:
 
 ```xml
 <simple-real>3.4</simple-real>
 ```
 
-## Les options énumérées {#arcanedoc_core_types_axl_caseoptions_options_enum}
+## Enumerated Options {#arcanedoc_core_types_axl_caseoptions_options_enum}
 
-Elles sont décrites par l'élément <tt>enumeration</tt> :
+They are described by the `<tt>enumeration</tt>` element:
 
 ```xml
 <enumeration name="boundary-condition" type="eBoundaryCondition" default="X">
-  <description>Type de condition aux limites</description>
-  <enumvalue name="X" genvalue="VelocityX" />
-  <enumvalue name="Y" genvalue="VelocityY"  />
-  <enumvalue name="Z" genvalue="VelocityZ"  />
+  <description>Boundary condition type</description>
+  <enumvalue name="X" genvalue="VelocityX"/>
+  <enumvalue name="Y" genvalue="VelocityY"/>
+  <enumvalue name="Z" genvalue="VelocityZ"/>
 </enumeration>
 ```
 
-L'attribut \c type doit indiquer le nom de
-l'énumération C++ correspondante (ici \c eBoundaryCondition). Si
-l'énumération appartient à un espace de nom C++ (\c namespace), il
-est possible de le spécifier directement (par exemple \c MonCode::eBoundaryCondition).
-	
-Ce type d'option comporte une liste d'éléments fils
-<tt>enumvalue</tt> qui référence chaque valeur
-de l'énumération. Cet élément comporte deux attributs :
-- `name` indique à quelle valeur de l'utilisateur va
-  correspondre cette énumération. Ce sont ces valeurs que
-  l'utilisateur va entrer.
-- `genvalue` indique le nom de l'énumération correspondante
-  dans le langage C++.
+The \c type attribute must indicate the name of the corresponding C++
+enumeration (here \c eBoundaryCondition). If the enumeration belongs to a C++
+namespace (\c namespace), it is possible to specify it directly (e.g., \c
+MonCode::eBoundaryCondition).
 
-Dans l'exemple précédent, l'option correspond à l'énumération C++
-suivante :
+This type of option includes a list of child elements <tt>enumvalue</tt> which
+reference each value of the enumeration. This element has two attributes:
+- `name` indicates which user value this enumeration corresponds to. These are
+  the values the user will enter.
+- `genvalue` indicates the name of the corresponding enumeration in the C++
+  language.
+
+In the previous example, the option corresponds to the following C++
+enumeration:
 
 ```cpp
 enum eBoundaryCondition { VelocityX, VelocityY, VelocityZ };
 ```
 
-La définition de l'énumération doit être effective avant d'inclure
-le fichier *Test_axl.h*. Par exemple, si l'énumération
-précédente est définie dans un fichier *BoundaryCondition.h*,
-il faudra inclure les fichiers dans l'ordre suivant :
+The enumeration definition must be effective before including the file
+*Test_axl.h*. For example, if the previous enumeration is defined in a file
+*BoundaryCondition.h*, you must include the files in the following order:
 ```cpp
 #include "BoundaryCondition.h"
 #include "Test_axl.h"
 ```
-  
-Si dans le jeu de données, on a la ligne :
+
+If the dataset contains the line:
 
 ```xml
 <boundary-condition>X</boundary-condition>
 ```
- 
-alors l'option associée dans la classe C++ générée par le fichier aura
-la valeur <tt>VelocityX</tt>.
 
-## Les options étendues {#arcanedoc_core_types_axl_caseoptions_options_extended}
+then the associated option in the C++ class generated by the file will have the
+value <tt>VelocityX</tt>.
 
-L'interface d'utilisation de ce type d'option est en cours de définition.
-Pour l'instant, ce type d'option ne doit être utilisé qu'avec les 
-groupes d'entités de maillage définis par %Arcane.
+## Extended Options {#arcanedoc_core_types_axl_caseoptions_options_extended}
 
-  Les options de type étendues sont décrites par l'élément <tt>extended</tt> :
+The usage interface for this option type is currently being defined.
+For now, this option type should only be used with mesh entity groups defined by
+%Arcane.
+
+Extended options are described by the <tt>extended</tt> element:
 
 ```xml
 <extended name="surface" type="Arcane::FaceGroup">
-   <description>
-     Surface sur laquelle s'applique la condition aux limites
-   </description>
+  <description>
+    Surface on which the boundary condition applies
+  </description>
 </extended>
 ```
 
-L'attribut <b>type</b> peut prendre une des valeurs suivantes :
-  
-- *Arcane::NodeGroup* pour un groupe de noeuds
-- *Arcane::FaceGroup* pour un groupe de faces
-- *Arcane::CellGroup* pour un groupe de mailles
+The <b>type</b> attribute can take one of the following values:
 
-Si une option de ce type existe, sa valeur est validée après lecture
-du maillage et doit correspondre à un groupe existant et du bon type.
+- *Arcane::NodeGroup* for a node group
+- *Arcane::FaceGroup* for a face group
+- *Arcane::CellGroup* for a mesh group
 
-Pour le développeur, une option de type \c extended génère un objet du type
-<tt>Arcane::NodeGroup</tt>, <tt>Arcane::FaceGroup</tt> 
-ou <tt>Arcane::CellGroup</tt> qui s'utilise donc comme un groupe. Par exemple,
-avec l'option précédente de nom <tt>surface</tt>, la méthode
-<tt>surface()</tt> de la classe gérant le jeu de donnée retourne un
-groupe de faces de type <tt>Arcane::FaceGroup</tt> et la ligne suivante est valide :
+If an option of this type exists, its value is validated after reading the mesh
+and must correspond to an existing group of the correct type.
+
+For the developer, an \c extended type option generates an object of type
+<tt>Arcane::NodeGroup</tt>, <tt>Arcane::FaceGroup</tt> or
+<tt>Arcane::CellGroup</tt> which is therefore used as a group. For example, with
+the previous option named <tt>surface</tt>, the <tt>surface()</tt> method of the
+class managing the dataset returns a face group of type
+<tt>Arcane::FaceGroup</tt> and the following line is valid:
 
 ```cpp
 ENUMERATE_FACE(i,surface())
 ```
 
-Pour l'exemple précédent, si XMIN est un surface définie sur le maillage,
-le jeu de données contient, par exemple, la ligne :
+For the previous example, if XMIN is a surface defined on the mesh, the dataset
+contains, for example, the line:
 
 ```xml
 <surface>XMIN</surface>
 ```
 
-## Les options complexes {#arcanedoc_core_types_axl_caseoptions_options_complex}
+## Complex Options {#arcanedoc_core_types_axl_caseoptions_options_complex}
 
-Une option complexe est composée de plusieurs autres options, y compris
-d'autres options complexes. L'option complexe est décrite par l'élément <tt>complex</tt>.
+A complex option is composed of several other options, including other complex
+options. The complex option is described by the <tt>complex</tt> element.
 
-L'exemple suivant définit une option <tt>pair-of-int</tt> composée
-de deux options simples <tt>first</tt> et <tt>second</tt> :
+The following example defines a <tt>pair-of-int</tt> option composed of two
+simple options <tt>first</tt> and <tt>second</tt>:
 
 ```xml
 <complex name="pair-of-int" type="PairOfInt">
@@ -136,7 +134,7 @@ de deux options simples <tt>first</tt> et <tt>second</tt> :
 </complex>
 ```
 
-Le jeu de données correspondant est :
+The corresponding dataset is:
 
 ```xml
 <pair-of-int>
@@ -145,29 +143,29 @@ Le jeu de données correspondant est :
 </pair-of-int>
 ```
 
-## Les options de type service {#arcanedoc_core_types_axl_caseoptions_options_service}
+## Service Options {#arcanedoc_core_types_axl_caseoptions_options_service}
 
-La notion de service %Arcane est expliqué dans la section \ref arcanedoc_core_types_service.
-Rappelons simplement qu'un service est un composant externe utilisé par un module
-et donc nécessaire au fonctionnement du module. Pour que le module puisse
-fonctionner, son jeu de données doit référencer le service nécessaire grâce à
-l'élément <tt>service-instance</tt>.
+The concept of a %Arcane service is explained in section \ref
+arcanedoc_core_types_service.
+We simply recall that a service is an external component used by a module and is
+therefore necessary for the module to function. For the module to function, its
+dataset must reference the necessary service using the <tt>service-instance</tt>
+element.
 
-L'exemple suivant définit un service nommé *eos-model* 
-de type \c IEquationOfState :
+The following example defines a service named *eos-model* of type
+\c IEquationOfState:
 
 ```xml
 <service-instance name="eos-model" type="IEquationOfState">
-  <description>Service d'equation d'état</description>
+  <description>Equation of state service</description>
 </service-instance>
 ```
 
-La classe \c IEquationOfState correspond à l'interface définie pour le service.
-Si la classe appartient à un espace de nom C++ (\c namespace), il est
-possible de le spécifier directement (par exemple \c
-MonCode::IEquationOfState).
+The \c IEquationOfState class corresponds to the interface defined for the
+service. If the class belongs to a C++ namespace (\c namespace), it is possible
+to specify it directly (e.g., \c MonCode::IEquationOfState).
 
-Le jeu de données correspondant est:
+The corresponding dataset is:
 
 ```xml
 <eos-model name="StiffenedGas">
@@ -175,7 +173,7 @@ Le jeu de données correspondant est:
 </eos-model>
 ```
 
-Il est aussi possible d'ajouter le nom du maillage dans le jeu de données :
+It is also possible to add the mesh name to the dataset:
 
 ```xml
 
@@ -184,32 +182,31 @@ Il est aussi possible d'ajouter le nom du maillage dans le jeu de données :
 </eos-model>
 ```
 
-Le code pour lire l'option est :
-  
+The code to read the option is:
+
 ```cpp
 IEquationOfState* eos = options()->eosModel();
 ```
-  
-Les services peuvent avoir les attributs suivants :
+
+Services can have the following attributes:
 <table>
 <tr>
-<th>Attribut</th>
+<th>Attribute</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
 <tr>
 <td>allow-null</td>
 <td>bool</td>
-<td>si \c false (le défaut), le service spécifié dans le jeu de
-données doit exister. Si ce n'est pas le cas, une erreur se produira
-lors de la lecture. Si cet attribut vaut \c true, et que le service
-spécifié n'existe pas, l'option correspondante sera nulle et il
-faudra tester sa valeur. Par exemple :
+<td>If \c false (the default), the service specified in the dataset must exist.
+If it does not, an error will occur during reading. If this attribute is
+\c true, and the specified service does not exist, the corresponding option will
+be null and its value must be checked. For example:
 
 ```cpp
 IEquationOfState* eos = options()->eosModel();
 if (!eos)
-  info() << "Service spécifié indisponible";
+  info() << "Specified service unavailable";
 ```
 </td>
 </tr>
@@ -217,35 +214,32 @@ if (!eos)
 <tr>
 <td>optional</td>
 <td>bool</td>
-<td>si \c false (le défaut), le service est toujours créé et si
-l'élément correspondant n'existe pas dans le jeu de données, le
-service avec le nom par défaut sera créé. Si cet attribut vaut \c
-true et que l'élément n'est pas présent dans le jeu de données,
-aucun service n'est créé.
+<td>If \c false (the default), the service is always created, and if the
+corresponding element does not exist in the dataset, the service with the
+default name will be created. If this attribute is \c true and the element is
+not present in the dataset, no service is created.
 </td>
 </tr>
 
 <tr>
 <td>mesh-name</td>
 <td>string</td>
-<td>Nom du maillage auquel le service sera associé. Lors de la
-construction du service, la valeur de Arcane::ServiceBuildInfo::mesh()
-sera le maillage de nom \a mesh-name. Si aucune valeur n'est spécifiée pour ce
-champ, alors c'est le maillage du service parent qui sera
-utilisé. S'il n'y a pas de service parent, alors c'est le maillage par
-défaut (Arcane::ISubDomain::defaultMesh()) qui sera utilisé.
+<td>The name of the mesh to which the service will be associated. When the
+service is constructed, the value of Arcane::ServiceBuildInfo::mesh() will be
+the mesh with the name \a mesh-name. If no value is specified for this field,
+the parent service's mesh will be used. If there is no parent service, the
+default mesh (Arcane::ISubDomain::defaultMesh()) will be used.
 
-Si le maillage associé à ce service n'existe pas, alors l'option est
-ignorée ainsi que les sous-options éventuelles.
+If the mesh associated with this service does not exist, the option and any
+possible sub-options are ignored.
 
-Cette option est disponible à partir de la version 2.0.7 de %Axlstar
-et 3.8.4 de %Arcane.
+This option is available starting from version 2.0.7 of %Axlstar and 3.8.4 of
+%Arcane.
 
-\warning Il est possible de spécifier l'attribut `mesh-name` dans l'AXL
-ET/OU dans le jeu de données (.ARC). On peut voir celui de l'AXL comme
-un `mesh-name` par défaut pour une instance de service donnée. Si
-le `mesh-name` est spécifié dans le jeu de données (.ARC), il écrasera
-le `mesh-name` spécifié dans l'AXL.
+\warning It is possible to specify the `mesh-name` attribute in AXL ET/OU and/or
+in the dataset (.ARC). The AXL one can be seen as a default `mesh-name` for a
+given service instance. If the `mesh-name` is specified in the dataset (.ARC),
+it will override the `mesh-name` specified in the AXL.
 </td>
 </tr>
 

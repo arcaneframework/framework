@@ -1,21 +1,21 @@
-# C# (C Croisillon) {#arcanedoc_wrapping_csharp}
+﻿# C# (C Sharp) {#arcanedoc_wrapping_csharp}
 
-C# est un langage de programmation objet développé par Microsoft.  
-Il est assez semblable au C++ syntaxiquement et au Java avec l'utilisation
-d'un runtime.
+C# is an object-oriented programming language developed by Microsoft.  
+It is quite similar to C++ syntactically and to Java with the use
+of a runtime.
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Table of Contents for this sub-chapter:
 
 1. \subpage arcanedoc_wrapping_csharp_dotnet <br>
-  Décrit comment utiliser et étendre les fonctionnalités de %Arcane en `C#`.
+  Describes how to use and extend %Arcane features in `C#`.
 
 2. \subpage arcanedoc_wrapping_csharp_swig <br>
-  Présente l'utilisation de Swig avec %Arcane.
+  Presents the use of Swig with %Arcane.
 
 3. \subpage arcanedoc_wrapping_csharp_casefunction <br>
-  Montre comment définir en C# et utiliser des fonctions du jeu de données.
+  Shows how to define and use dataset functions in `C#`.
 ____
 
 <div class="section_buttons">

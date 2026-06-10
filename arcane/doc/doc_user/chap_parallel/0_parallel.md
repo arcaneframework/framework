@@ -1,34 +1,30 @@
-# Paralléliser un code {#arcanedoc_parallel}
+﻿# Parallelizing code {#arcanedoc_parallel}
 
-Si vous souhaiter accélérer votre code, ce chapitre devrait vous intéresser.  
-Diveres méthodes sont disponibles dans %Arcane pour permettre d'accélérer un
-code : utilisation de tous les coeurs CPU disponibles, utilisation
-des unités vectoriels du CPU et utilisation d'accélérateurs (GPU).  
-Dans le cas d'un code déséquilibré, il est aussi possible d'utiliser
-de l'équilibre de charge, afin de répartir équitablement la charge de calcul
-sur tous les sous-domaines.
+If you wish to speed up your code, this chapter should interest you.
+Several methods are available in %Arcane to allow code acceleration: using all
+available CPU cores, using CPU vector units, and using accelerators (GPU).
+In the case of unbalanced code, it is also possible to use load balancing, in
+order to distribute the computational load equally across all subdomains.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 1. \subpage arcanedoc_parallel_intro <br>
-  Introduction au parallélisme introduit dans %Arcane.
+   Introduction to parallelism introduced in %Arcane.
 
 2. \subpage arcanedoc_parallel_concurrency <br>
-  Présente l'utilisation du multi-threading dans %Arcane (en plus de la
-  décomposition de domaine).
+   Presents the use of multi-threading in %Arcane (in addition to domain
+   decomposition).
 
 3. \subpage arcanedoc_parallel_simd <br>
-  Présente les mécanismes disponibles dans %Arcane pour pouvoir utiliser
-  les unités vectoriels des CPU d'aujourd'hui.
+   Presents the mechanisms available in %Arcane to use today's CPU vector units.
 
 4. \subpage arcanedoc_parallel_loadbalance <br>
-  Décrit l'utilisation du mécanisme d'équilibrage de charge sur le maillage.
+   Describes the use of the load balancing mechanism on the mesh.
 
 5. \subpage arcanedoc_parallel_shmem <br>
-   Décrit l'utilisation des fenêtres mémoires en mémoire partagée.
-
+   Describes the use of memory windows in shared memory.
 
 ____
 

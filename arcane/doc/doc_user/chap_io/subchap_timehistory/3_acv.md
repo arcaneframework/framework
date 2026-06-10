@@ -1,4 +1,4 @@
-# ArcaneCurveValues {#arcanedoc_io_timehistory_acv}
+﻿# ArcaneCurveValues {#arcanedoc_io_timehistory_acv}
 
 [TOC]
 

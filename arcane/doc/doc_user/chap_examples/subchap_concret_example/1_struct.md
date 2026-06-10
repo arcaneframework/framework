@@ -1,35 +1,35 @@
-# Structure générale {#arcanedoc_examples_concret_example_struct}
+﻿# General Structure {#arcanedoc_examples_concret_example_struct}
 
 [TOC]
 
 ## Quicksilver Arcane Mini-App (QAMA) {#arcanedoc_examples_concret_example_struct_qama}
 
-QAMA est une mini-application de transport de particule Monte-Carlo.
-Cette application a été écrite à partir de Quicksilver, une mini-app
-écrite par le LLNL mais avec l'utilisation des ressources fourni par
-le framework %Arcane.
+QAMA is a Monte-Carlo particle transport mini-application. This application was
+written using Quicksilver, a mini-app written by LLNL but utilizing resources
+provided by the %Arcane framework.
 
-Voici un schéma représentant la structure de Quicksilver (disponible ici : https://github.com/arcaneframework/arcane-benchs) :
+Here is a diagram representing the structure of Quicksilver (available
+here: https://github.com/arcaneframework/arcane-benchs):
 
 \image html QAMA_schema.jpg
 
-On peut trouver (en autres) les éléments suivants :
-- 3 modules nommés "QS", "SamplingMC" et "TrackingMC".
-- 1 service "singleton" nommé "RNG".
+The following elements can be found (among others):
+- 3 modules named "QS", "SamplingMC", and "TrackingMC".
+- 1 "singleton" service named "RNG".
 
-Dans chaque module, nous avons les trois fichiers habituels :
-- un header (.h)
-- un fichier source (.cc)
-- un fichier contenant les options du jeu de données (.axl)
+In each module, we have the three usual files:
+- a header (.h)
+- a source file (.cc)
+- a file containing the dataset options (.axl)
 
-L'interface du service RNG est une interface de service incluse
-dans le framework %Arcane. Dans Quicksilver, on utilise notre propre implémentation.
+The interface for the RNG service is a service interface included in the %Arcane
+framework. In Quicksilver, we use our own implementation.
 
 \warning
-Certains services, comme `BasicParticleExchanger` implémentant l'interface 
-`Arcane::IParticleExchanger` ou `SimpleCsvOutput` implémentant l'interface
-`Arcane::ISimpleTableOutput` sont des services inclus directement dans le framework %Arcane (c'est pour
-cela qu'ils sont en pointillés).
+Certain services, such as `BasicParticleExchanger` implementing the interface
+`Arcane::IParticleExchanger` or `SimpleCsvOutput` implementing the interface
+`Arcane::ISimpleTableOutput`, are services included directly in the %Arcane
+framework (this is why they are dashed).
 
 ____
 

@@ -1,70 +1,73 @@
-# Service SimpleCsvOutput {#arcanedoc_services_modules_simplecsvoutput}
+﻿# Service SimpleCsvOutput {#arcanedoc_services_modules_simplecsvoutput}
 
 [TOC]
 
-- Documentation générée du service disponible ici : \ref axldoc_service_SimpleCsvOutput_arcane_std
-- Documentation de l'interface implémentée par ce service : \arcane{ISimpleTableOutput}
+- Generated service documentation is available here:
+  \ref axldoc_service_SimpleCsvOutput_arcane_std
+- Documentation of the interface implemented by this service:
+  \arcane{ISimpleTableOutput}
 
 \warning
-L'interface n'est pas encore figée. Elle peut donc encore évoluer.
+The interface is not yet finalized. It may still evolve.
 
 ____
 
-Ce service permet de créer un tableau 2D de valeur avec des lignes et des colonnes nommées.
-Aujourd'hui, le format de fichier en sortie est le format CSV.
-Ce service peut être utilisé comme service classique à définir dans l'AXL d'un module ou comme
-singleton pour avoir une instance unique pour tous les modules.
+This service allows you to create a 2D table of values with named rows and
+columns.
+Currently, the output file format is CSV format.
+This service can be used as a standard service defined in a module's AXL or as a
+singleton to have a unique instance for all modules.
 
-Il suffit de créer une ou plusieurs lignes et une ou plusieurs colonnes, puis d'attribuer des
-valeurs à chaque [ligne,colonne] et enfin d'appeler la méthode writeFile() pour générer un
-fichier.csv.
+You just need to create one or more rows and one or more columns, then assign
+values to each [row,column], and finally call the writeFile() method to generate
+a .csv file.
 
-Exemple de fichier .csv :
+Example .csv file:
 ```csv
 Results_Example3;Iteration 1;Iteration 2;Iteration 3;
 Nb de Fissions;36;0;85;
 Nb de Collisions;29;84;21;
 ```
-Sous Excel (ou un autre tableur), on obtient ce tableau :
+In Excel (or another spreadsheet program), you get this table:
 | Results_Example3 | Iteration 1 | Iteration 2 | Iteration 3 |
 |------------------|-------------|-------------|-------------|
 | Nb de Fissions   | 36          | 0           | 85          |
 | Nb de Collisions | 29          | 84          | 21          |
 
-Ce sous-chapitre permet d'introduire ce service. Tous les cas d'utilisations ne seront pas abordés,
-il est donc recommandé d'aller voir la documentation de l'interface \arcane{ISimpleTableOutput}
-pour pouvoir exploiter pleinement ce service (notamment l'aspect gestion du multi-processus qui n'a pas d'exemple).
+This subsection introduces this service. Not all use cases will be covered, so
+it is recommended to view the documentation for the \arcane{ISimpleTableOutput}
+interface to fully exploit this service (notably the multi-process management
+aspect, which does not have an example).
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Table of Contents for this subsection:
 
 1. \subpage arcanedoc_services_modules_simplecsvoutput_usage <br>
-  Résume comment utiliser le service (en singleton, en parallèle).
+   Summarizes how to use the service (as a singleton, in parallel).
 
 2. \subpage arcanedoc_services_modules_simplecsvoutput_examples <br>
-  Quelques généralités à lire avant d'attaquer les exemples.
+   Some general information to read before tackling the examples.
 
 3. \subpage arcanedoc_services_modules_simplecsvoutput_example1 <br>
-  Cet exemple simple introduit comment utiliser le service en mode singleton.
+   This simple example introduces how to use the service in singleton mode.
 
 4. \subpage arcanedoc_services_modules_simplecsvoutput_example2 <br>
-  Cet exemple utilise aussi le mode singleton et montre comment faire passer des
-  options au service à travers le module principal.
+   This example also uses singleton mode and shows how to pass options to the
+   service through the main module.
 
 5. \subpage arcanedoc_services_modules_simplecsvoutput_example3 <br>
-  Cet exemple est le même que l'exemple 1 mais sans le mode singleton.
+   This example is the same as example 1 but without singleton mode.
 
 6. \subpage arcanedoc_services_modules_simplecsvoutput_example4 <br>
-  Cet exemple explique comment utiliser le service de manière plus optimimale.
+   This example explains how to use the service in a more optimal way.
 
 7. \subpage arcanedoc_services_modules_simplecsvoutput_example5 <br>
-  Cet exemple introduit le remplissage du tableau en passant par le pointeur de case
-  et les déplacements par direction.
+   This example introduces filling the table by using the cell pointer and
+   directional movements.
 
 8. \subpage arcanedoc_services_modules_simplecsvoutput_example6 <br>
-  Cet exemple continue l'explication du remplissage à l'aide du pointeur de case.
-
+   This example continues the explanation of filling using the cell pointer.
 
 ____
 

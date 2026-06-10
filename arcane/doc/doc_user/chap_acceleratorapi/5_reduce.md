@@ -1,24 +1,22 @@
-# Réductions {#arcanedoc_acceleratorapi_reduction}
+﻿# Reductions {#arcanedoc_acceleratorapi_reduction}
 
 [TOC]
 
-%Arcane permet d'effectuer sur accélérateur les trois types classiques
-de réduction (`Min`, `Max` et `Somme`). Il existe deux possibilités
-pour effectuer des réductions :
+%Arcane allows performing the three classic types of reduction (`Min`, `Max`,
+and `Sum`) on the accelerator. There are two ways to perform reductions:
 
-- via une boucle classique *RUNCOMMAND_* (\ref arcanedoc_acceleratorapi_reduceclass)
-- via une api spécifique (\ref arcanedoc_acceleratorapi_reducedirect)
+- via a classic loop *RUNCOMMAND_* (\ref arcanedoc_acceleratorapi_reduceclass)
+- via a specific API (\ref arcanedoc_acceleratorapi_reducedirect)
 
-## Réductions via une boucle {#arcanedoc_acceleratorapi_reduceclass}
+## Reductions via a loop {#arcanedoc_acceleratorapi_reduceclass}
 
-Les classes \arcaneacc{ReducerMax2}, \arcaneacc{ReducerMin2} et
-\arcaneacc{ReducerSum2} permettent d'effectuer des réductions sur
-accélérateurs. Elles s'utilisent à l'intérieur des boucles
-telles que RUNCOMMAND_LOOP1() ou RUNCOMMAND_ENUMERATE() ou
+The classes \arcaneacc{ReducerMax2}, \arcaneacc{ReducerMin2}, and
+\arcaneacc{ReducerSum2} allow performing reductions on accelerators. They are
+used inside loops such as RUNCOMMAND_LOOP1() or RUNCOMMAND_ENUMERATE() or
 RUNCOMMAND_MAT_ENUMERATE().
 
-Il faut d'abord déclarer un instance d'une des classes de réduction
-pui la passer en paramètre supplémentaires des boucles. Par exemple :
+First, you must declare an instance of one of the reduction classes and then
+pass it as an additional parameter to the loops. For example:
 
 ```cpp
 #include "arcane/accelerator/RunCommandEnumerate.h"
@@ -37,10 +35,10 @@ pui la passer en paramètre supplémentaires des boucles. Par exemple :
 }
 ```
 
-\warning Chaque instance ne peut être utilisée qu'une seule fois.
+\warning Each instance can only be used once.
 
-Il est possible d'utiliser plusieurs instances de réduction si on
-souhaite réaliser plusieurs réductions à la fois. Par exemple:
+It is possible to use multiple reduction instances if you want to perform
+several reductions at once. For example:
 
 ```cpp
 #include "arcane/accelerator/RunCommandEnumerate.h"
@@ -62,11 +60,11 @@ souhaite réaliser plusieurs réductions à la fois. Par exemple:
 }
 ```
 
-## Réductions directes {#arcanedoc_acceleratorapi_reducedirect}
+## Direct Reductions {#arcanedoc_acceleratorapi_reducedirect}
 
-La classe \arcaneacc{GenericReducer} permet de lancer une commande
-spécifique dédiée à la réduction. Une instance de
-\arcaneacc{GenericReducer} peut être utilisée plusieurs fois.
+The \arcaneacc{GenericReducer} class allows launching a specific command
+dedicated to reduction. An instance of \arcaneacc{GenericReducer} can be used
+multiple times.
 
 ____
 

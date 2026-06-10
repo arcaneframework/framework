@@ -1,19 +1,18 @@
-# AlmaLinux/RedHat 9 {#arcanedoc_build_install_prerequisites_rh9}
+﻿# AlmaLinux/RedHat 9 {#arcanedoc_build_install_prerequisites_rh9}
 
 [TOC]
 
-## Installation des packages nécessaires
+## Installation of necessary packages
 
-Pour compiler Arcane, il est nécessaire d'installer les packages
-suivants:
+To compile Arcane, it is necessary to install the following packages:
 
 ~~~{sh}
-# Packages nécessaires
+# Necessary packages
 yum -y install dotnet-sdk-6.0 glib2-devel libxml2-devel gcc-c++
 ~~~
 
-La version par défaut de CMake sur AlmaLinux 9 est trop ancienne
-(3.20). Il faut donc télécharger une version plus récente.
+The default version of CMake on AlmaLinux 9 is too old (3.20). Therefore, you
+must download a more recent version.
 
 \snippet{doc} _cmake.md snippet_build_install_prerequisites_cmake
 

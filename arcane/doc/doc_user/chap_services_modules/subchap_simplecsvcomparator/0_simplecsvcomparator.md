@@ -1,56 +1,60 @@
-# Service SimpleCsvComparator {#arcanedoc_services_modules_simplecsvcomparator}
+﻿# SimpleCsvComparator Service {#arcanedoc_services_modules_simplecsvcomparator}
 
 [TOC]
 
-- Documentation générée du service disponible ici : \ref axldoc_service_SimpleCsvComparator_arcane_std
-- Documentation de l'interface implémentée par ce service : \arcane{ISimpleTableComparator}
+- Generated documentation for the service is available here:
+  \ref axldoc_service_SimpleCsvComparator_arcane_std
+- Documentation for the interface implemented by this service:
+  \arcane{ISimpleTableComparator}
 
 \warning
-L'interface n'est pas encore figée. Elle peut donc encore évoluer.
+The interface is not yet finalized. It may still evolve.
 
 ____
 
 \warning
-Ce sous-chapitre a été pensé comme une suite au sous-chapitre \ref arcanedoc_services_modules_simplecsvoutput.
+This subsection was designed as a follow-up to the subsection
+\ref arcanedoc_services_modules_simplecsvoutput.
 
-Ce service permet de comparer les valeurs de deux `SimpleTableInternal` entre eux.  
-Lors d'un lancement de code ayant intégrer un service du type \arcane{ISimpleTableOutput},
-il est possible de générer un fichier de référence (ou plusieurs, un par sous-domaine, si on le souhaite).
+This service allows comparing the values of two `SimpleTableInternal` objects
+against each other.
+During a code run that integrates a service of type \arcane{ISimpleTableOutput},
+it is possible to generate a reference file (or several, one per subdomain, if
+desired).
 
-Puis, lors d'un lancement suivant, il est possible de comparer les valeurs du fichier de référence
-généré précédemment avec les valeurs stockées dans le service du type \arcane{ISimpleTableOutput}
-du lancement actuel.
+Then, during a subsequent run, it is possible to compare the values from the
+reference file generated previously with the values stored in the service of
+type \arcane{ISimpleTableOutput} of the current run.
 
-Grâce au format CSV, il est aussi possible de visualiser et de modifier les valeurs de références,
-si l'on souhaite.
+Thanks to the CSV format, it is also possible to view and modify the reference
+values, if desired.
 
-Ce service peut être utilisé comme service classique à définir dans l'AXL d'un module ou comme 
-singleton pour avoir une instance unique pour tous les modules.
+This service can be used as a standard service defined in a module's AXL or as
+a singleton to have a unique instance for all modules.
 
-Ce sous-chapitre permet d'introduire ce service. Tous les cas d'utilisations ne seront pas abordés,
-il est donc recommandé d'aller voir la documentation de l'interface \arcane{ISimpleTableComparator}
-pour pouvoir exploiter pleinement ce service.
+This subsection introduces this service. Not all use cases will be covered,
+so it is recommended to consult the documentation for the
+\arcane{ISimpleTableComparator} interface to fully utilize this service.
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Table of Contents for this subsection:
 
 1. \subpage arcanedoc_services_modules_simplecsvcomparator_usage <br>
-  Résume comment utiliser le service.
+   Summarizes how to use the service.
 
 2. \subpage arcanedoc_services_modules_simplecsvcomparator_examples <br>
-  Quelques généralités à lire avant d'attaquer les exemples.
+   Some general information to read before tackling the examples.
 
 3. \subpage arcanedoc_services_modules_simplecsvcomparator_example1 <br>
-  Cet exemple simple introduit comment utiliser le service en mode singleton.
+   This simple example introduces how to use the service in singleton mode.
 
 4. \subpage arcanedoc_services_modules_simplecsvcomparator_example2 <br>
-  Cet exemple n'utilise pas le mode singleton.
+   This example does not use singleton mode.
 
 5. \subpage arcanedoc_services_modules_simplecsvcomparator_example3 <br>
-  Cet exemple mixe un `SimpleCsvOutput` singleton et un `SimpleCsvComparator`
-  sans. Il y a aussi un exemple d'utilisation des expressions régulières.
-
+   This example mixes a singleton `SimpleCsvOutput` and a non-singleton
+   `SimpleCsvComparator`. There is also an example of using regular expressions.
 
 ____
 

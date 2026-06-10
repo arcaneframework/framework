@@ -1,80 +1,77 @@
-# Exemple n°3 {#arcanedoc_services_modules_simplecsvoutput_example3}
+﻿# Example No. 3 {#arcanedoc_services_modules_simplecsvoutput_example3}
 
 [TOC]
 
-Avec l'exemple 3 et les suivants, on n'utilise plus de singleton.
-Donc on va voir un exemple simple d'utilisation du service normal.
+With Example 3 and subsequent examples, we no longer use a singleton.
+So we will see a simple example of using the service normally.
 
-À noter que cet exemple fait la même chose que les exemples
-précédents.
+Note that this example does the same thing as the previous examples.
 
 
-## Fichier .axl -- Partie <options>
+## .axl File -- <options> Section
 
-Pour commencer, voyons les options du fichier `.axl` :
+To start, let's look at the options of the `.axl` file:
 
 `SimpleTableOutputExample3.axl`
 \snippet SimpleTableOutputExample3.axl SimpleTableOutputExample3_options
 
-Dans le `.axl`, on déclare juste l'utilisation d'un service implémentant
-l'interface Arcane::ISimpleTableOutput.
+In the `.axl`, we just declare the use of a service implementing the
+Arcane::ISimpleTableOutput interface.
 
-## Fichier .arc -- Partie option du module
+## .arc File -- Module Option Section
 
-Voici le `.arc` correspondant :
+Here is the corresponding `.arc`:
 
 `SimpleTableOutputExample3.arc`
 \snippet SimpleTableOutputExample3.arc SimpleTableOutputExample3_arc
 
-Ici, par rapport à l'exemple précédent, on remplit les options dans
-la partie service.
-On demande l'utilisation du service `SimpleCsvOutput` avec les deux options
-qu'il demande.
+Here, compared to the previous example, we fill in the options in the service
+section.
+We request the use of the `SimpleCsvOutput` service with the two options it
+requires.
 
 
-## Point d'entrée initial
+## Initial Entry Point
 
-Voyons le point d'entrée `start-init` :
+Let's look at the `start-init` entry point:
 
 `SimpleTableOutputExample3Module.cc`
 \snippet SimpleTableOutputExample3Module.cc SimpleTableOutputExample3_init
 
-Par rapport à l'exemple précédent, on n'a pas besoin de récupérer un pointeur
-vers un singleton ; ici c'est un service utilisé normalement.
+Compared to the previous example, we do not need to retrieve a pointer to a
+singleton; here it is a service used normally.
 
-Toujours par rapport à l'exemple précédent, c'est le service qui gère les
-valeurs par défaut.
+Still compared to the previous example, the service manages the default values.
 
 \note
-Pour l'instant, il est impossible de demander la non-écriture des fichiers
-de sortie directement dans le `.arc` partie service. Si vous ne mettez pas 
-de valeurs dans les options `tableDir` et `tableName`, il y aura quand même
-écriture. C'est à gérer par le module pour le moment.
+For now, it is impossible to request the non-writing of output files directly in
+the `.arc` service section. If you do not put values in the `tableDir` and
+`tableName` options, writing will still occur. This must be handled by the
+module for the time being.
 
 
-## Point d'entrée loop
+## Loop Entry Point
 
-Voyons le point d'entrée `compute-loop` :
+Let's look at the `compute-loop` entry point:
 
 `SimpleTableOutputExample3Module.cc`
 \snippet SimpleTableOutputExample3Module.cc SimpleTableOutputExample3_loop
 
-Mis à part le remplacement du pointeur de singleton par l'utilisation
-des options du module, il n'y a pas de différences avec les deux précédents
-exemples.
+Aside from replacing the singleton pointer with the use of module options, there
+are no differences from the two previous examples.
 
 
-## Point d'entrée exit
+## Exit Entry Point
 
-Enfin, voyons le point d'entrée `exit` :
+Finally, let's look at the `exit` entry point:
 
 `SimpleTableOutputExample3Module.cc`
 \snippet SimpleTableOutputExample3Module.cc SimpleTableOutputExample3_exit
 
-Ici, on se contente d'écrire le fichier de sortie (et de print le tableau).
-Si l'on souhaite agir sur l'écriture ou non du fichier via le `.arc`,
-c'est ici qu'on peut le faire en conditionnant l'appel à writeFile()
-avec un `if()`.
+Here, we simply write the output file (and print the table).
+If one wishes to control whether or not the file is written via the `.arc`, this
+is where it can be done by conditioning the call to `writeFile()` with an
+`if()`.
 
 
 

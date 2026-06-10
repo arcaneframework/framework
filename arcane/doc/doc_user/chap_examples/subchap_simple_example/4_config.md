@@ -1,13 +1,14 @@
-# Fichier de configuration {#arcanedoc_examples_simple_example_config}
+﻿# Configuration File {#arcanedoc_examples_simple_example_config}
 
 [TOC]
 
-En plus du `.arc`, Notre application a besoin d'un fichier `.config`.
-Ce fichier va permettre à %Arcane de "voir un résumé" de notre application.
+In addition to the `.arc`, our application needs a `.config` file.
+This file allows %Arcane to "see a summary" of our application.
 \note
-Ça peut aussi servir aux lecteurs de code pour avoir un aperçu global avant lecture.
+It can also serve code readers by providing a global overview before reading.
 \warning
-Le nom de ce fichier doit correspondre au nom du projet (avec `.config` à la fin).
+The name of this file must correspond to the project name (with `.config` at the
+end).
 
 ## HelloWorld.config {#arcanedoc_examples_simple_example_config_helloworldconfig}
 ```xml
@@ -37,14 +38,14 @@ Le nom de ce fichier doit correspondre au nom du projet (avec `.config` à la fi
   </time-loops>
 </arcane-config>
 ```
-Encore une fois, il y a plusieurs choses à voir ici.
-On commence par le classique nom de l'application à la seconde ligne.
+Once again, there are several things to look at here.
+We start with the classic application name on the second line.
 
-Puis :
+Then:
 ```xml
 <time-loop name="HelloWorldLoop">
 ```
-On retrouve le nom de la boucle en temps qui doit être présent dans les fichiers `.arc`.
+We find the name of the time loop, which must be present in the `.arc` files.
 
 ____
 
@@ -53,7 +54,7 @@ ____
   <module name="SayHello" need="required" />
 </modules>
 ```
-On retrouve ici notre module `SayHello` et on précise qu'il doit être obligatoirement présent.
+Here we find our `SayHello` module and specify that it must be present.
 
 ____
 
@@ -68,18 +69,23 @@ ____
   <entry-point name="SayHello.EndModule" />
 </entry-points>
 ```
-Si on fait un retour dans le `.axl`, on peut voir qu'on retrouve nos points d'entrées.
-Ici, on retrouve les points d'entrées de tous les modules (mais vu que l'on a qu'un seul
-module ici, on a que les points d'entrées de `SayHello`).
-De plus, on utilise le nom "Arcane" et non le nom des méthodes (la majuscule devant les noms).
+If we look back at the `.axl`, we can see that we find our entry points.
+Here, we find the entry points for all modules (but since we only have one
+module here, we only have the entry points for `SayHello`).
+In addition, we use the name "Arcane" and not the method names (capitalized
+names).
 
 \remarks
-Voici la partie du `.axl` du module `SayHello` dont on parle ici :
+Here is the `.axl` part of the `SayHello` module that we are talking about:
+
 ```xml
 <entry-points>
-  <entry-point method-name="startInit" name="StartInit" where="start-init" property="none" />
-  <entry-point method-name="compute" name="Compute" where="compute-loop" property="none" />
-  <entry-point method-name="endModule" name="EndModule" where="exit" property="none" />
+  <entry-point method-name="startInit" name="StartInit" where="start-init"
+               property="none"/>
+  <entry-point method-name="compute" name="Compute" where="compute-loop"
+               property="none"/>
+  <entry-point method-name="endModule" name="EndModule" where="exit"
+               property="none"/>
 </entry-points>
 ```
 

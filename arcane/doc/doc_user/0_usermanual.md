@@ -1,81 +1,80 @@
-﻿# Manuel utilisateur de la plate-forme ARCANE {#arcanedoc_usermanual}
+﻿# User Manual for the ARCANE Platform {#arcanedoc_usermanual}
 
 \mainpage %Arcane
 
-\image html cea_ifpen_logo.png "Logo du CEA et logo de l'IFPEN"
+\image html cea_ifpen_logo.png "CEA logo and IFPEN logo"
 
-Cette page contient la documentation pour les utilisateurs de la plate-forme %Arcane.
+This page contains the documentation for users of the %Arcane platform.
 
-La page \subpage arcanedoc_news présente la liste des nouveautés de chaque version.
+The \subpage arcanedoc_news page presents a list of new features for each
+version.
 
-La documentation accessible depuis cette page s'adresse aux personnes
-désirant connaitre les fonctionnalités de la plate-forme %Arcane ou
-souhaitant développer des modules ou services capables de s'exécuter
-sur la plate-forme %Arcane.
+The documentation accessible from this page is intended for people who wish to
+learn about the functionalities of the %Arcane platform or who wish to develop
+modules or services capable of running on the %Arcane platform.
 
-Toutes les personnes développant des modules ou services pour %Arcane
-doivent connaitre au minimum les documents \ref arcanedoc_getting_started et
-\ref arcanedoc_core_types. Ensuite, pour avoir le détail des opérations
-d'une classe, par exemple pour connaitre l'ensemble des méthodes de la
-classe Arcane::Cell, il faut consulter la documentation en ligne des
-codes sources de %Arcane.
+All people developing modules or services for %Arcane must at least know the
+documents \ref arcanedoc_getting_started and \ref arcanedoc_core_types.
+Furthermore, to get the details of a class's operations, for example to know all
+the methods of the Arcane::Cell class, you must consult the online documentation
+of the %Arcane source codes.
 
-La documentation se compose de chapitres (listés ci-dessous), composés eux-mêmes
-de sous-chapitres et/ou de pages.
+The documentation consists of chapters (listed below), which themselves consist
+of sub-chapters and/or pages.
 
-Chaque chapitre/sous-chapitre dispose d'un sommaire décrivant
-brièvement son contenu et d'une liste de ces pages.
+Each chapter/sub-chapter has a summary briefly describing its content and a list
+of its pages.
 
-Pour configurer la documentation, c'est ici : \subpage arcanedoc_doc_config
+To configure the documentation, click here: \subpage arcanedoc_doc_config
 
 <br>
 
-Les chapitres disponibles sont :
+The available chapters are:
 
 - \subpage arcanedoc_build_install <br>
-  Présente comment compiler et installer le framework %Arcane.
+  Presents how to compile and install the %Arcane framework.
 
 - \subpage arcanedoc_getting_started <br>
-  Présente brièvement les principes et les types de base de %Arcane.
+  Briefly presents the principles and basic types of %Arcane.
 
 - \subpage arcanedoc_core_types <br>
-  Présente les notions clefs de %Arcane (modules, variables, points d'entrée,
-  services et les différents types de fichiers).
+  Presents the key concepts of %Arcane (modules, variables, entry points,
+  services, and different file types).
 
 - \subpage arcanedoc_execution <br>
-  Présente les éléments à connaitre pour faire fonctionner un code %Arcane
-  (lancement d'un calcul, variables d'environnement).
+  Presents the elements you need to know to make %Arcane code run (starting a
+  calculation, environment variables).
 
 - \subpage arcanedoc_general <br>
-  Présente des éléments à savoir comme les règles de codage.
+  Presents elements that should be known, such as coding rules.
 
 - \subpage arcanedoc_examples <br>
-  Présente des exemples %Arcane.
+  Presents %Arcane examples.
 
 - \subpage arcanedoc_parallel <br>
-  Présente les différents moyens de paralléliser un code %Arcane.
+  Presents the different ways to parallelize %Arcane code.
 
 - \subpage arcanedoc_acceleratorapi <br>
-  Présente les mécanismes disponibles dans %Arcane pour pouvoir utiliser
-  les accélérateurs (GPU) dans %Arcane.
+  Presents the mechanisms available in %Arcane to use accelerators (GPU) in
+  %Arcane.
 
 - \subpage arcanedoc_materials <br>
-  Présente la partie matériau de %Arcane.
+  Presents the material part of %Arcane.
 
 - \subpage arcanedoc_io <br>
-  Présente les différents moyens d'entrer et de sortir des données.
+  Presents the different ways to input and output data.
 
 - \subpage arcanedoc_debug_perf <br>
-  Présente les divers méthodes permettant d'aider au débuggage, à l'analyse des
-  performances, au tests unitaires et à la validation de code.
+  Presents various methods to help with debugging, performance analysis, unit
+  testing, and code validation.
 
 - \subpage arcanedoc_wrapping <br>
-  Présente les autres langages avec lesquelles %Arcane peut se coupler (aujourd'hui,
-  uniquement le C#).
+  Presents the other languages with which %Arcane can be coupled (currently,
+  only C#).
 
 - \subpage arcanedoc_entities <br>
-  Présente les entités disponibles dans %Arcane (types de mailles prédéfinis, maillage,
-  connectivités des entités et description classes gérant la géométrie).
+  Presents the entities available in %Arcane (predefined mesh types, meshing,
+  entity connectivities, and description of classes managing geometry).
 
 - \subpage arcanedoc_services_modules <br>
-  Présente les services et les modules mis à disposition des utilisateurs
+  Presents the services and modules made available to users

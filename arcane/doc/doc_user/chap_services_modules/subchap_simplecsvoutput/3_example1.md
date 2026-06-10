@@ -1,81 +1,81 @@
-# Exemple n°1 {#arcanedoc_services_modules_simplecsvoutput_example1}
+﻿# Example No. 1 {#arcanedoc_services_modules_simplecsvoutput_example1}
 
 [TOC]
 
-Commençons avec l'exemple 1.  
-Cet exemple simple permet de sortir un tableau ressemblant à ça :
+Let's start with Example 1.
+This simple example allows outputting a table that looks like this:
 
+| Results_Example1 | Iteration 1 | Iteration 2 | Iteration 3 |
+|------------------|-------------|-------------|-------------|
+| Nb de Fissions   | 36          | 0           | 85          |
+| Nb de Collisions | 29          | 84          | 21          |
 
-Results_Example1|Iteration 1|Iteration 2|Iteration 3
-----------------|-----------|-----------|-----------
-Nb de Fissions  |36         |0          |85
-Nb de Collisions|29         |84         |21
+We have two rows and three columns here.
+The numbers present are generated randomly.
 
-Nous avons ici deux lignes et trois colonnes.
-Les nombres présents sont générés aléatoirement.
+## Initial entry point
 
-## Point d'entrée initial
-
-Voyons le point d'entrée `start-init` :
+Let's look at the `start-init` entry point:
 
 `SimpleTableOutputExample1Module.cc`
 \snippet SimpleTableOutputExample1Module.cc SimpleTableOutputExample1_init
 
-Dans cet exemple, on est en mode singleton. Le fichier `.axl` de cette exemple
-ne contient donc pas d'options. 
+In this example, we are in singleton mode. The `.axl` file for this example
+therefore does not contain options.
 
-En revanche, le fichier de configuration `.config` réference le singleton.
+However, the `.config` configuration file references the singleton.
 
 `csv.config` `<time-loop name="example1">`
 \snippet csv.config SimpleTableOutputExample1_config
 
 \note
-Pour pouvoir séparer plusieurs cas d'exécutions dans le même code,
-j'ai créé plusieurs `time-loop` dans le fichier `.config`.
+To be able to separate several execution cases in the same code, I created
+several `time-loop`s in the `.config` file.
 
-Revenons dans le fichier `.cc`. On ne fait que récupérer le pointeur vers le
-singleton et l'initialiser avec un nom de tableau (`Results_Example1`) et
-un nom de sous-dossier (`example1`) (et on print le tableau vide).
+Let's go back to the `.cc` file. We only retrieve the pointer to the singleton
+and initialize it with a table name (`Results_Example1`) and a subdirectory
+name (`example1`) (and we print the empty table).
 
 
-## Point d'entrée loop
+## Loop entry point
 
-Voyons le point d'entrée `compute-loop` :
+Let's look at the `compute-loop` entry point:
 
 `SimpleTableOutputExample1Module.cc`
 \snippet SimpleTableOutputExample1Module.cc SimpleTableOutputExample1_loop
 
-Ici, on a un exemple simple de l'utilisation typique imaginé au départ pour ce service.
+Here, we have a simple example of the typical usage imagined initially for this
+service.
 
-On crée une colonne nommé `Iteration X` (donc une nouvelle colonne à chaque itération),
-puis on ajoute les valeurs que l'on souhaite sur des lignes.
+We create a column named `Iteration X` (meaning a new column for each
+iteration), then we add the desired values to rows.
 
-Les lignes n'existent pas car elles n'ont pas été créées lors de l'init ? Le service
-s'occupe de les créer avant d'ajouter la valeur.
+Do the rows not exist because they were not created during init? The service
+takes care of creating them before adding the value.
 
-Dans cet exemple, les lignes seront donc créées lors de la première itération et après,
-le service se contentera de les remplir.
+In this example, the rows will therefore be created during the first iteration,
+and afterwards, the service will simply fill them.
 
 \note
-On peut interchanger `row` et `column`, le fonctionnement est identique pour les lignes et
-les colonnes (mais le résultat sera évidemment différent).
+We can interchange `row` and `column`; the functionality is identical for rows
+and columns (but the result will obviously be different).
 
-Exporter des valeurs d'un code, par exemple lors d'une session de débuggage est donc quelque chose
-qui est très simple avec ce service.
+Exporting values from code, for example during a debugging session, is therefore
+something that is very simple with this service.
 
 
-## Point d'entrée exit
+## Exit entry point
 
-Enfin, voyons le point d'entrée `exit` :
+Finally, let's look at the `exit` entry point:
 
 `SimpleTableOutputExample1Module.cc`
 \snippet SimpleTableOutputExample1Module.cc SimpleTableOutputExample1_exit
 
-Dans cette partie, on demande simplement l'écriture du fichier csv dont on a défini
-l'emplacement et le nom lors de l'init. Dans l'hypothèse où ce n'aurait pas été fait,
-il existe les méthodes \arcane{ISimpleTableOutput::setOutputDirectory()} et 
-\arcane{ISimpleTableOutput::setTableName()} pour rectifier (et sinon, le service définit
-des valeurs par défaut).
+In this part, we simply request the writing of the CSV file whose location and
+name were defined during init. If this had not been done, there are the methods
+\arcane{ISimpleTableOutput::setOutputDirectory()} and
+\arcane{ISimpleTableOutput::setTableName()} to correct it (otherwise, the
+service defines default values).
 
 
 

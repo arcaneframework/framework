@@ -1,72 +1,63 @@
-# Pool de mémoire {#arcanedoc_acceleratorapi_memorypool}
+﻿# Memory Pool {#arcanedoc_acceleratorapi_memorypool}
 
 [TOC]
 
-%Arcane dispose depuis la version 3.14.10 (novembre 2024) d'un
-mécanisme de pool mémoire permettant de conserver une partie de la
-mémoire allouée pour les accélérateurs et ainsi éviter des appels
-couteux aux fonctions d'allocations ou de désallocation.
+%Arcane has included a memory pool mechanism since version 3.14.10 (November
+2024) that allows retaining a portion of the memory allocated for accelerators,
+thereby avoiding costly calls to allocation or deallocation functions.
 
-\note Ce mécanisme est uniquement fonctionnel pour CUDA et ROCM/HIP.
-A partir de la version 4.1 de %Arcane, le gestionnaire de pool mémoire
-est activé par défaut.
+\note This mechanism is only functional for CUDA and ROCM/HIP.
+Starting from version 4.1 of %Arcane, the memory pool manager is enabled by
+default.
 
-\warning L'utilisation du pool mémoire peut changer le comportement du
-code en supprimant des synchronisations implicites effectuées sur les
-streams associées aux allocations et au désallocation. Notamment, les
-appels tels que `cudaMalloc()` ou `cudaFree()`. La page
-[CUDA implicit synchronization behavior and conditions in detail]
-(https://forums.developer.nvidia.com/t/cuda-implicit-synchronization-behavior-and-conditions-in-detail/251729)
-explique ce comportement pour CUDA.
+\warning Using the memory pool can change the code's behavior by removing
+implicit synchronizations performed on the streams associated with allocations
+and deallocations. Specifically, calls such as `cudaMalloc()` or `cudaFree()`.
+The
+page [CUDA implicit synchronization behavior and conditions in detail] (https://forums.developer.nvidia.com/t/cuda-implicit-synchronization-behavior-and-conditions-in-detail/251729)
+explains this behavior for CUDA.
 
-Il est possible d'activer et de modifier le comportement du pool
-mémoire en positionnant des variables d'environnements.
+It is possible to enable and modify the behavior of the memory pool by setting
+environment variables.
 
 <table>
-<tr><th>Variable d'environnement</th><th>Description</th></tr>
+<tr><th>Environment Variable</th><th>Description</th></tr>
 
 <tr>
 <td>ARCANE_ACCELERATOR_MEMORY_POOL</td>
 <td>
-Indique le type de mémoire pour lesquelles on souhaite activer le
-pool. Les valeeurs sont spécifiées par une combinaison de bit:
-- 1 pour la mémoire managée (\arcane{eMemoryResource::UnifiedMemory})
-- 2 pour la mémoire sur l'accélérateur (\arcane{eMemoryResource::Device})
-- 4 pour la mémoire punaisée sur l'hôte
-  (\arcane{eMemoryResource::HostPinned})
+Indicates the type of memory for which the pool should be activated. The values
+are specified by a combination of bits:
+- 1 for managed memory (\arcane{eMemoryResource::UnifiedMemory})
+- 2 for accelerator memory (\arcane{eMemoryResource::Device})
+- 4 for host-pinned memory (\arcane{eMemoryResource::HostPinned})
 
-Si la valeur de la variable d'environnement vaut `7` par exemple,
-alors le pool mémoire est actif pour ces 3 types de ressource mémoire.
-Si la valeur est `0`, alors le pool mémoire est désactivé pour toutes
-les mémoires.
+If the environment variable value is `7`, for example, the memory pool is active
+for these 3 types of memory resources.
+If the value is `0`, the memory pool is disabled for all memories.
 </td>
 </tr>
 
 <tr>
 <td>ARCANE_ACCELERATOR_MEMORY_POOL_MAX_BLOCK_SIZE</td>
 <td>
-Indique la taille maximale (en octet) des blocs qui sont conservés
-dans le pool mémoire. Une valeur élevée permet de faire moins
-d'allocations et de désallocation mais en contre-partie conserve plus
-de mémorie ce qui réduit la quantité disponible pour les allocations
-qui ne passent pas par le pool de mémoire. La valeur par défaut est de
-1Mo (1024*1024).
+Indicates the maximum size (in bytes) of the blocks kept in the memory pool. A
+high value allows for fewer allocations and deallocations but, in return,
+retains more memory, which reduces the amount available for allocations that do
+not go through the memory pool. The default value is 1MB (1024*1024).
 </td>
 </tr>
 
 <tr>
 <td>ARCANE_ACCELERATOR_MEMORY_PRINT_LEVEL</td>
 <td>
-Indique si on affiche des informations sur l'utilisation de la
-mémoire. Ces informations sont utiles pour le débug uniquement. Les
-valeurs possibles sont:
-- 0 n'affiche aucune information
-- 1 affiche des statistiques d'utilisation en fin de calcul
-- 2 idem 1 et affiche des informations lors des réallocations
-- 3 idem 2 et affiche la pile d'appel pour une réallocation pour les
-  tableaux sans nom.
-- 4 idem 3 mais affiche la pile d'appel lors de la réallocation pour
-  tous les tableaux.
+Indicates whether memory usage information is displayed. This information is
+useful for debugging only. Possible values are:
+- 0 displays no information
+- 1 displays usage statistics at the end of the calculation
+- 2 same as 1 and displays information during reallocations
+- 3 same as 2 and displays the call stack for a reallocation of unnamed arrays.
+- 4 same as 3 but displays the call stack during reallocation for all arrays.
 </td>
 </tr>
 

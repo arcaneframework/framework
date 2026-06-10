@@ -1,40 +1,39 @@
-# Manuel développeur de la plate-forme ARCANE {#arcanedoc_devmanual}
+﻿# Developer manual for the ARCANE platform {#arcanedoc_devmanual}
 
 \mainpage %Arcane
 
-\image html cea_ifpen_logo.png "Logo du CEA et logo de l'IFPEN"
+\image html cea_ifpen_logo.png "CEA logo and IFPEN logo"
 
-Cette page contient la documentation pour les développeurs de la plate-forme %Arcane.
+This page contains documentation for developers of the %Arcane platform.
 
-La page \subpage arcanedoc_news présente la liste des nouveautés de chaque version.
+The \subpage arcanedoc_news page presents the list of updates for each version.
 
-La documentation accessible depuis cette page s'adresse aux développeurs de la 
-plate-forme %Arcane. Elle contient plus de documentations de classes et est plus
-exhaustive que la documentation utilisateur. Elle est aussi plus longue à générer
-et plus volumineuse.
+The documentation accessible from this page is intended for developers of the
+%Arcane platform. It contains more class documentation and is more exhaustive
+than the user documentation. It is also longer to generate and more voluminous.
 
-La documentation utilisateur se compose de chapitres, sous-chapitres et de pages.
-La documentation développeur est plus libre et peut être composé uniquement de pages
-(même si la disposition présentée dans la page \subpage arcanedoc_doxygen est souhaitable
-dans les deux documentations).
+The user documentation consists of chapters, subchapters, and pages. The
+developer documentation is more flexible and can be composed only of pages (even
+if the layout presented in the \subpage arcanedoc_doxygen page is desirable in
+both documents).
 
-Pour configurer la documentation, c'est ici : \subpage arcanedoc_doc_config
+To configure the documentation, click here: \subpage arcanedoc_doc_config
 
 <br>
 
-Les pages/chapitres disponibles sont:
+The available pages/chapters are:
 
 - \subpage arcanedoc_build_install <br>
-  Présente comment compiler et installer le framework %Arcane.
+  Presents how to compile and install the %Arcane framework.
 
 - \ref arcanedoc_doxygen <br>
-  Présente comment contribuer à la documentation %Arcane.
+  Presents how to contribute to the %Arcane documentation.
 
 - \subpage arcanedoc_connectivity <br>
-  Présente les connectivités entre entités.
+  Presents the connectivities between entities.
 
 - \subpage arcanedoc_mesh_reader <br>
-  Présente comment écrire un lecteur de maillage pour %Arcane.
+  Presents how to write a mesh reader for %Arcane.
 
 - \subpage arcanedoc_services_modules <br>
-  Présente les services et les modules mis à disposition des développeurs
+  Presents the services and modules made available to developers

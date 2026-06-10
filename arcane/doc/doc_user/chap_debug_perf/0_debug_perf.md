@@ -1,36 +1,32 @@
-# Debug, performance et validation {#arcanedoc_debug_perf}
+﻿# Debugging, Performance, and Validation {#arcanedoc_debug_perf}
 
-Ce chapitre est dédié aux méthodes de débuggage et d'analyse
-de performance.  
-Dans %Arcane, il est possible d'utiliser divers outils pour comprendre
-les problèmes qui peuvent survenir lors du développement d'un code 
-(plantages, optimisation).  
-Et il est aussi possible de comparer les résultats obtenus afin de valider
-un code.  
-Ce chapitre présente donc les outils mis à disposition pour effectuer
-ces tâches.
+This chapter is dedicated to debugging and performance analysis methods.
+In %Arcane, it is possible to use various tools to understand problems that may
+occur during code development (crashes, optimization).
+It is also possible to compare the results obtained to validate code.
+This chapter therefore presents the tools available to perform these tasks.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 1. \subpage arcanedoc_debug_perf_check_memory <br>
-  Détection des problèmes mémoire.</br>
+  Memory issue detection.</br>
 
 2. \subpage arcanedoc_debug_perf_compare_bittobit <br>
-  Comparaison bit à bit de deux exécutions.</br>
+  Bit-by-bit comparison of two executions.</br>
 
 3. \subpage arcanedoc_debug_perf_compare_synchronization <br>
-  Décrit la comparaison des synchronisations.</br>
+  Describes synchronization comparison.</br>
 
 4. \subpage arcanedoc_debug_perf_unit_tests <br>
-  Décrit comment réaliser des tests unitaires pour les modules et services.</br>
+  Describes how to perform unit tests for modules and services.</br>
 
 5. \subpage arcanedoc_debug_perf_cupti <br>
-  Décrit l'intégration avec CUPTI (Cuda Profiling Tools Interface).</br>
+  Describes integration with CUPTI (Cuda Profiling Tools Interface).</br>
 
 6. \subpage arcanedoc_debug_perf_profiling <br>
-  Décrit les mécanismes disponibles pour l'analyse de performance.</br>
+  Describes the mechanisms available for performance analysis.</br>
 
 ____
 

@@ -1,89 +1,86 @@
-﻿# Prise en compte du parallélisme dans %Arcane {#arcanedoc_parallel_intro}
+﻿# Handling parallelism in %Arcane {#arcanedoc_parallel_intro}
 
 [TOC]
 
-<!-- présente la manière dont %Arcane prend en charge le parallèlisme par partitionnement de domaine. -->
+<!-- presents how %Arcane handles parallelism through domain partitioning. -->
 
-## Généralités {#arcanedoc_parallel_intro_general}
+## Generalities {#arcanedoc_parallel_intro_general}
 
-Dans ARCANE, le parallélisme est géré par échange de messages. Le maillage 
-est partitionné en plusieurs sous-domaines. Chaque sous-domaine est 
-éventuellement complété d'une ou plusieurs couches de mailles fantômes qui 
-représentent une duplication d'entités pour lesquelles il faudra effectuer
-une synchronisation. Chaque processeur effectue les calculs sur un sous-domaine
-et synchronise ses variables régulièrement avec les autres processeurs.
+In ARCANE, parallelism is managed by message passing. The mesh is partitioned
+into several subdomains. Each subdomain may be supplemented by one or more
+layers of ghost meshes that represent a duplication of entities for which
+synchronization will be required. Each processor performs calculations on a
+subdomain and regularly synchronizes its variables with the other processors.
 
-En règle générale, il n'y a pas de solution unique au
-problème des synchronisations :
-- pour certaines variables, il est possible soit de faire le
-  calcul sur tout le sous-domaine, c'est-à-dire à la fois sur les
-  entités fantômes et les entités propres, soit de faire le calcul
-  uniquement sur les entités propres et synchroniser ensuite les valeurs
-  calculées. Le choix de l'une ou l'autre des solutions dépend
-  globalement de deux paramètres : le temps nécessaire pour effectuer le
-  calcul et le temps nécessaire pour effectuer la synchronisation. Chacun de
-  ses paramètres dépend lui-même d'autres paramètre comme la puissance
-  du processeur, la bande passante du réseau d'interconnexion, ...;
-- lorsqu'on augmente le nombre de couches d'entités fantômes,
-  certaines variables qui ne sont utilisées que temporairement lors d'une
-  itération n'ont plus besoin d'être synchronisées. Cela permet donc de
-  réduire le nombre de synchronisations mais en contre-partie chaque
-  synchronisation concernera plus de processeurs et d'entités fantômes.
+Generally, there is no single solution to the synchronization problem:
+- for certain variables, it is possible either to perform the calculation over
+  the entire subdomain, meaning on both ghost entities and native entities, or
+  to perform the calculation only on the native entities and then synchronize
+  the calculated values. The choice between one solution or the other depends
+  generally on two parameters: the time required to perform the calculation and
+  the time required to perform the synchronization. Each of these parameters
+  depends itself on other parameters such as processor power, interconnection
+  network bandwidth, etc.;
+- when the number of ghost entity layers is increased, certain variables that
+  are only used temporarily during an iteration no longer need to be
+  synchronized. This thus allows reducing the number of synchronizations, but
+  conversely, each synchronization will involve more processors and ghost
+  entities.
 
-Afin de ne pas compliquer inutilement la prise en compte du
-parallélisme, ARCANE fonctionne aujourd'hui en utilisant une seule
-couche de maille fantômes et privilégie le calcul au détriment du
-nombre de synchronisations. Lors de la réalisation de vos modules
-numériques, il est conseillé de privilégier le même critère.
+In order not to unnecessarily complicate the handling of parallelism, ARCANE
+currently operates using a single layer of ghost meshes and favors calculation
+over the number of synchronizations. When developing your numerical modules, it
+is advisable to follow the same criterion.
 
-ARCANE possède son propre service de partitionnement parallèle. Ce service 
-utilise l'algorithme Métis. Il est utilisé pour l'équilibrage de la charge des
-processeurs.
+ARCANE has its own parallel partitioning service. This service uses the Métis
+algorithm. It is used for balancing the processor load.
 
-## Calculs séquentiels vs calculs parallèles {#arcanedoc_parallel_intro_seqvspar}
+## Sequential vs Parallel Calculations {#arcanedoc_parallel_intro_seqvspar}
 
-ARCANE utilise le même ordre de numérotation dans chaque 
-sous-domaine. Cela permet de limiter au maximum le nombre de
-synchronisations. Les mailles, les noeuds et les faces
-sont toujours décrits dans le même ordre quel que soit le
-sous-domaine et quel que soit le découpage. 
+ARCANE uses the same numbering order in each subdomain. This helps to limit the
+number of synchronizations as much as possible. The meshes, nodes, and faces are
+always described in the same order regardless of the subdomain and regardless of
+the partitioning.
 
-Si toutes les opérations se font en itérant sur un groupe de noeuds ou de
-mailles, le résultat est identique en séquentiel et en parallèle.
+If all operations are performed by iterating over a group of nodes or meshes,
+the result is identical in sequential and parallel execution.
 
-## Opérations disponibles {#arcanedoc_parallel_intro_operation}
+## Available Operations {#arcanedoc_parallel_intro_operation}
 
-Les opérations proposées par le service de parallélisme sont les suivantes :
-- barrières,
-- envois / réceptions,
-- regroupements,
-- réductions,
-- diffusion,
-- sérialisation (pack / unpack).
+The operations offered by the parallelism service are as follows:
 
-Le détail de ces opérations est disponible sur la documentation en ligne de l'interface `Arcane::IParallelMng`.
+- barriers,
+- sends / receives,
+- groupings,
+- reductions,
+- broadcasts,
+- serialization (pack / unpack).
 
-Notons que les variables du code peuvent appeler directement les opérations de parallélisme qui
-sont cohérentes pour leur type. Par exemple une variable de type `Arcane::VariableScalarReal` nommée
-`m_density_ratio_maximum` peut appeler l'opération de réduction : 
+Details of these operations are available in the online documentation for the
+`Arcane::IParallelMng` interface.
+
+Note that code variables can directly call the parallelism operations that are
+consistent with their type. For example, a variable of type
+`Arcane::VariableScalarReal` named `m_density_ratio_maximum` can call the
+reduction operation:
 
 ```cpp
 m_density_ratio_maximum.reduce(Parallel::ReduceMax);
 ``` 
 
-## Implémentation {#arcanedoc_parallel_intro_impl}
+## Implementation {#arcanedoc_parallel_intro_impl}
 
-Le parallélisme dans ARCANE est conçu comme un service (cf \ref arcanedoc_core_types_service).
-Toutes les opérations disponibles (synchronisation, réduction...) sont interfacées
-par le service. La seule implémentation de ce service développée à ce jour 
-est MPI. 
+Parallelism in ARCANE is designed as a service (see \ref
+arcanedoc_core_types_service). All available operations (synchronization,
+reduction...) are interfaced by the service. The only implementation of this
+service developed to date is MPI.
 
-Pour exécuter un code en parallèle avec MPI, la procédure à suivre dépend de l'implémentation Mpi cible.
-Par exemple, si on utilise une version de mpich2, il faut :
-- lancer le démon `mpd` dans une fenêtre xterm,
-- positionner la variable d'environnement `ARCANE_PARALLEL_SERVICE` à la valeur `Mpi`
-- exécuter votre application en tapant la commande : `mpiexec -n nb_proc nom_executable`
-
+To run code in parallel with MPI, the procedure depends on the target Mpi
+implementation. For example, if you use a version of mpich2, you must:
+- launch the `mpd` daemon in an xterm window,
+- set the environment variable `ARCANE_PARALLEL_SERVICE` to the value `Mpi`
+- execute your application by typing the command:
+  `mpiexec -n nb_proc nom_executable`
 
 ____
 

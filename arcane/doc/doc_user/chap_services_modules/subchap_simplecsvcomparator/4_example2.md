@@ -1,56 +1,56 @@
-# Exemple n°2 {#arcanedoc_services_modules_simplecsvcomparator_example2}
+﻿# Example No. 2 {#arcanedoc_services_modules_simplecsvcomparator_example2}
 
 [TOC]
 
-Cet exemple 2 est identique à l'exemple 1, sans l'utilisation de singletons.
+This Example 2 is identical to Example 1, without the use of singletons.
 
 
-## Fichier .axl -- Partie <options>
+## .axl File -- Options Part
 
-Pour commencer, voici les options du fichier axl :
+To start, here are the options for the axl file:
 
 `SimpleTableComparatorExample2.axl`
 \snippet SimpleTableComparatorExample2.axl SimpleTableComparatorExample2_options
 
-On peut constater la présence des deux services.
+We can see the presence of the two services.
 
 
-## Fichier .arc -- Partie option du module
+## .arc File -- Module Option Part
 
-Voici le `.arc` correspondant :
+Here is the corresponding .arc:
 
 `SimpleTableComparatorExample2.arc`
 \snippet SimpleTableComparatorExample2.arc SimpleTableComparatorExample2_arc
 
-Ce que l'on peut voir ici est que le comparator n'a pas d'option.
+What we can see here is that the comparator has no options.
 
 
-## Point d'entrée initial
+## Initial Entry Point
 
-Voici le point d'entrée `start-init` :
+Here is the `start-init` entry point:
 
 `SimpleTableComparatorExample2Module.cc`
 \snippet SimpleTableComparatorExample2Module.cc SimpleTableComparatorExample2_init
 
 
 
-## Point d'entrée loop
+## Loop Entry Point
 
-Le point d'entrée `compute-loop` :
+The `compute-loop` entry point:
 
 `SimpleTableComparatorExample2Module.cc`
 \snippet SimpleTableComparatorExample2Module.cc SimpleTableComparatorExample2_loop
 
 
 
-## Point d'entrée exit
+## Exit Entry Point
 
-Enfin, voici le point d'entrée `exit` :
+Finally, here is the `exit` entry point:
 
 `SimpleTableComparatorExample2Module.cc`
 \snippet SimpleTableComparatorExample2Module.cc SimpleTableComparatorExample2_exit
 
-Pas de surprises, c'est la même utilisation.
+No surprises, it is the same usage.
 
 
 ____

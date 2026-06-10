@@ -1,76 +1,71 @@
-# Optimisations de la connectivité des entités {#arcanedoc_new_optimisations_connectivity}
+﻿# Entity Connectivity Optimizations {#arcanedoc_new_optimisations_connectivity}
 
 [TOC]
 
-## Contexte
+## Context
 
-Dans la version actuelle de %Arcane (3.x), les
-connectivités des entités et des groupes d'entités sont gérés comme si
-tout était non-structuré même si le maillage est cartésien ou
-structuré. Notamment, on conserve toutes les informations de
-connectivités entre les entités ce qui consomme de la mémoire. Ce coût
-mémoire est difficilement réductible lorsque le maillage est vraiment
-non structuré, mais il pourrait l'être pour les maillages
-structurés et cartésiens. Particulièrement pour ces derniers cas, on a souvent
-beaucoup de mailles et peu de variables et proportionnellement ce cout
-mémoire de conservation des connectivités est important.
+In the current version of %Arcane (3.x), the connectivity of entities and groups
+of entities is managed as if everything were unstructured, even if the mesh is
+Cartesian or structured. Specifically, all connectivity information between
+entities is retained, which consumes memory. This memory cost is difficult to
+reduce when the mesh is truly unstructured, but it could be reduced for
+structured and Cartesian meshes. Particularly in these latter cases, we often
+have many elements and few variables, and proportionally, the memory cost of
+retaining connectivity is significant.
 
-Il a donc été décidé de modifier la gestion interne à %Arcane de ces
-informations de connectivité afin de réduire la consommation mémoire
-et de permettre des optimisations supplémentaires.
+It was therefore decided to modify the internal management of this connectivity
+information in %Arcane to reduce memory consumption and allow for further
+optimizations.
 
-Ces optimisations doivent répondre aux contraintes suivantes :
+These optimizations must meet the following constraints:
 
-- Impacter le moins possible les codes utilisant %Arcane et donc ces
-  évolutions devront être progressive pour laisser les codes faire les
-  évolutions nécessaires (comme cela a été le cas avec les nouvelles
-  connectivités pour la version 3.0).
-- le mécanisme de gestion des connectivités doit rester générique pour
-  s'appliquer à tous les types de maillage avec les mécanismes
-  actuels de boucle et d'itération.
+- Impact the codes using %Arcane as little as possible; therefore, these
+  evolutions must be progressive to allow the codes to make the necessary
+  changes (as was the case with the new connectivities for version 3.0).
+- The connectivity management mechanism must remain generic to apply to all mesh
+  types with the current looping and iteration mechanisms.
 
-## Optimisations envisagées
+## Proposed Optimizations
 
-Les optimisations envisagées partent du principe que le schéma des
-connectivités et des groupes est souvent le même pour un grand nombre
-d'entités. Les optimisations proposées se décomposent en deux groupes :
+The proposed optimizations are based on the assumption that the connectivity and
+group schema is often the same for a large number of entities. The proposed
+optimizations are divided into two groups:
 
-- les optimisations sur les connectivités (par exemple \arcane{Cell::nodes()})
-- les optimisations sur les groupes d'entités (\arcane{ItemGroup}).
+- optimizations on connectivities (e.g., \arcane{Cell::nodes()})
+- optimizations on entity groups (\arcane{ItemGroup}).
 
-### Optimisations des connectivités
+### Connectivity Optimizations
 
-Actuellement, les connectivités sont gérées par la classe
-\arcane{mesh::IncrementalItemConnectivity} et il y a trois tableaux (de \arcane{Int32})
-pour conserver la connectivité d'une entité vers une autre :
+Currently, connectivities are managed by the class
+\arcane{mesh::IncrementalItemConnectivity}, and there are three arrays (of
+\arcane{Int32}) to store the connectivity of one entity to another:
 
-1. un tableau contenant la connectivité. La taille de ce tableau est
-au moins égal à la somme des entités connectées. Par exemple si on a 40
-hexaèdres, alors sa taille est de 8x40 éléments.
-2. un tableau par entité indiquant combien elle a d'entités connectées.
-3. un tableau par entité indiquant la position dans le tableau (1) du
-premier élément connecté.
+1. an array containing the connectivity. The size of this array is at least
+   equal to the sum of the connected entities. For example, if we have 40
+   hexahedrons, its size is 8x40 elements.
+2. an array per entity indicating how many connected entities it has.
+3. an array per entity indicating the position in array (1) of the first
+   connected element.
 
-L'optimisation proposée part du principe que pour une entité donnée les `localId()`
-des entités qui lui sont connectées sont souvent les mêmes relativement au
-`localId()` de la première entité connectée. Au lieu de conserver toute
-la connectivité, on peut donc ne conserver que le schéma de la
-connectivité ainsi que le localId() de la première entité.
+The proposed optimization is based on the assumption that for a given entity,
+the `localId()` of the entities connected to it are often the same relative to
+the `localId()` of the first connected entity. Instead of retaining all
+connectivity, we can therefore only retain the connectivity schema as well as
+the `localId()` of the first entity.
 
-Pour cette optimisation, il faut donc :
-1. conserver pour chaque entité le localId() de la première entité
-connectée
-2. lors de l'accès à la i-ème entité connecté, il faut ajouter à la
-valeur conservée le localId() de la première entité connectée.
+For this optimization, we must therefore:
 
-L'opération (2) aura un cout négligeable en temps de calcul, car la
-valeur à ajouter sera conservée lors de l'itération de la même manière
-que le nombre d'entités connectées. Il reste donc pour (1) l'ajout
-d'un 'Int32' pour chaque entité, mais cela sera compensé par la
-réutilisation de la connectivité.
+1. retain the `localId()` of the first connected entity for each entity
+2. when accessing the i-th connected entity, add the `localId()` of the first
+   connected entity to the stored value.
 
-Par exemple, pour un maillage cartésien de 2 lignes et 4
-colonnes, on a actuellement la numérotation suivante :
+Operation (2) will have a negligible computational time cost, as the value to be
+added will be retained during iteration in the same way as the number of
+connected entities. So, for (1), we only have the addition of an 'Int32' for
+each entity, but this will be compensated by the reuse of the connectivity.
+
+For example, for a Cartesian mesh of 2 rows and 4 columns, we currently have the
+following numbering:
 
 ```
 10---11---12---13---14
@@ -80,8 +75,8 @@ colonnes, on a actuellement la numérotation suivante :
 0----1----2----3----4
 ```
 
-Si je prends la connectivité maille/nœuds, les trois tableaux
-contiennent les valeurs suivantes :
+If I take the cell/node connectivity, the three arrays contain the following
+values:
 
 ```
 1. 0 5 6 1 | 1 6 7 2 | 2 7 8 3 | 3 8 9 4 | 5 10 11 6 | 6 11 12 7 | 7 12 13 8 | 8 13 14 9
@@ -89,8 +84,8 @@ contiennent les valeurs suivantes :
 3. 0         4         8        12         16          20         24          28
 ```
 
-Si j'applique l'optimisation, j'ajoute le tableau suivant contenant le
-localId() de la première entité :
+If I apply the optimization, I add the following array containing the
+`localId()` of the first entity:
 
 ```
 1. 0 5 6 1 | 1 6 7 2 | 2 7 8 3 | 3 8 9 4 | 5 10 11 6 | 6 11 12 7 | 7 12 13 8 | 8 13 14 9
@@ -99,7 +94,7 @@ localId() de la première entité :
 4. 0         1         2         3         5           6           7           8
 ```
 
-Je retranche de (1) la valeur associée de (4)
+I subtract the value associated with (4) from (1)
 
 ```
 1. 0 5 6 1 | 1 6 7 2 | 2 7 8 3 | 3 8 9 4 | 5 10 11 6 | 6 11 12 7 | 7 12 13 8 | 8 13 14 9
@@ -110,8 +105,8 @@ Je retranche de (1) la valeur associée de (4)
 =  0 5 6 1   0 5 6 1   0 5 6 1   0 5 6 1   0 5  6  1   0  5  6 1   0 5  6  1   0  5  6 1
 ```
 
-On voit donc que pour ce cas (idéal), le schéma est le même. On peut donc ne le conserver
-qu'une fois et on aura les valeurs suivantes pour la connectivité :
+We can see that for this case (ideal), the schema is the same. We can therefore
+only keep it once, and we will have the following values for the connectivity:
 
 ```
 1. 0 5 6 1
@@ -120,40 +115,37 @@ qu'une fois et on aura les valeurs suivantes pour la connectivité :
 4. 0         1         2         3         5           6           7           8
 ```
 
-Si `N` est le nombre de mailles, on passe donc de d'une consommation mémoire
-de `(N*4 + N + N)` à `(4 + N + N +N)` soit de `6*N` à `3*N`. Dans le cas 3D,
-on passe de `(N*8 + N + N)` à `(8 + N + N + N)` soit `10*N` à `3*N`.
+If `N` is the number of elements, we go from a memory consumption of
+`(N*4 + N + N)` to `(4 + N + N +N)`, which is from `6*N` to `3*N`. In the 3D
+case, we go from `(N*8 + N + N)` to `(8 + N + N + N)`, which is from `10*N` to
+`3*N`.
 
-\note On pourrait aussi envisager de conserver le nombre d'entités
-connectées à une entité dans (1) ce qui permettrait de supprimer le
-tableau (2).
+\note We could also consider retaining the number of connected entities to an
+entity in (1), which would allow us to delete array (2).
 
-Dans les maillages cartésiens, le schéma pour les mailles et les
-nœuds est indépendant du nombre de mailles et de noeuds. Par contre,
-pour les faces, il y a un schéma par ligne et un par colonne. Donc par
-exemple pour un maillage 100x30x20 il y a 32x20 schémas pour les
-faces soit 640 valeurs au lieu de 60000 sans l'optimisation.
+In Cartesian meshes, the schema for cells and nodes is independent of the number
+of cells and nodes. However, for faces, there is a schema per row and one per
+column. So, for example, for a 100x30x20 mesh, there are 32x20 schemas for the
+faces, resulting in 640 values instead of 60000 without the optimization.
 
-Outre une réduction de la consommation mémoire cela permettra de mieux
-utiliser le cache.
+In addition to reducing memory consumption, this will allow for better cache
+utilization.
 
-Dans le pire des cas s'il n'y a pas de schéma récurrent, la
-connectivité consommera `N` \arcane{Int32} supplémentaires. A priori cela n'est
-le cas que pour les maillages composés de triangles (2D) ou tétraèdres
-(3D) quelconques ce qui n'est pas le cas des applications CEA et IFPEN.
+In the worst case, if there is no recurrent schema, the connectivity will
+consume an additional `N` \arcane{Int32}. This is likely only the case for
+meshes composed of arbitrary triangles (2D) or tetrahedrons (3D), which is not
+the case for CEA and IFPEN applications.
 
-Ces mécanismes peuvent aussi s'appliquer aux classes gérant
-spécifiquement le cartésien qui ont aussi des schémas d'accès
-similaires.
+These mechanisms can also be applied to classes specifically managing Cartesian
+data, which also have similar access schemas.
 
-### Démarche pour mettre en place ces optimisations
+### Approach to Implement These Optimizations
 
-Afin de pouvoir procéder à ces optimisations de manière transparente
-il faut un itérateur sur les connectivités différent de l'itérateur
-sur les entités ce qui n'est pas le cas actuellement, car les deux
-utilisent \arcane{ItemVectorView} et \arcane{ItemEnumerator} comme conteneur et
-itérateur.
-Cela permet de coder comme suit :
+In order to proceed with these optimizations transparently, we need an iterator
+over the connectivities that is different from the iterator over the entities,
+which is not the case currently, as both use \arcane{ItemVectorView} and
+\arcane{ItemEnumerator} as container and iterator.
+This allows us to code as follows:
 
 ```{cpp}
 Arcane::CellGroup cells;
@@ -164,9 +156,8 @@ ENUMERATE_(Cell,icell,cells){
 }
 ```
 
-Cela devra donc être interdit pour les connectivités. On pourra
-ajouter une macro spécifique pour énumérer sur les connectivités ou
-aussi remplacer par le `for-loop` :
+This must therefore be prohibited for connectivities. We can add a specific
+macro to enumerate over connectivities or replace it with the `for-loop`:
 
 ```{cpp}
 Arcane::CellGroup cells;
@@ -178,70 +169,62 @@ ENUMERATE_(Cell,icell,cells){
 }
 ```
 
-### Optimisations des groupes
+### Group Optimizations
 
-Le même principe que pour les connectivités peut être appliqué aux groupes.
-Actuellement, on conserve une liste d'indirection simple. Pour un
-groupe avec M éléments, il faut conserver M \arcane{Int32}.
+The same principle as for connectivities can be applied to groups.
+Currently, we retain a simple indirection list. For a group with M elements, we
+must retain M \arcane{Int32}.
 
-Il serait possible de décomposer la liste des entités en blocs et
-conserver pour chaque bloc 3 valeurs correspondantes aux tableaux (2),
-(3) et (4) des connectivités. Éventuellement le nombre d'éléments dans
-chaque bloc peut aussi être mutualisé dans la liste d'indirection.
+It would be possible to decompose the list of entities into blocks and retain 3
+values for each block corresponding to arrays (2), (3), and (4) of the
+connectivities. Optionally, the number of elements in each block can also be
+pooled in the indirection list.
 
-Avec par exemple une taille de bloc de 128, il faut conserver
-(3*M/128) valeurs pour les informations d'indirection. Mais dans le
-cas où les valeurs du tableau sont contigues, il faut juste conserver
-en plus 128 valeurs. La encore cela permet d'économiser de la mémoire
-et de mieux utiliser le cache. Ce mécanisme a aussi l'avantage d'être
-facilement utilisable sur accélérateur.
+With a block size of 128, for example, we must retain `(3*M/128)` values for the
+indirection information. But in the case where the array values are contiguous,
+we just need to retain an additional 128 values. This again allows for memory
+savings and better cache utilization. This mechanism also has the advantage of
+being easily usable on accelerators.
 
-### Démarche pour mettre en place ces optimisations
+### Approach to Implement These Optimizations
 
-Cela nécessite cependant deux modifications dans %Arcane:
-- rendre obsolète la possibilité de récupérer les `localIds()` des
-groupes
-- transformer la macro `ENUMERATE_` pour faire deux boucles : une
-boucle sur les blocs suivie d'une boucle pour chaque bloc. Cela
-nécessite donc de changer la classe \arcane{ItemEnumerator} pour gérer les
-blocs ou d'en faire une autre. Une possibilité est par exemple
-d'avoir deux nouvelles classes `ItemBlockVectorView` et
-`ItemBlockEnumerator`. Le cas actuel utilisant \arcane{ItemVectorView} et
-\arcane{ItemEnumerator} serait un cas spécifique de bloc dont le nombre de
-valeurs correspondrait au nombre d'éléments du vecteur et l'offset de
-`localId()` serait zéro.
+However, this requires two modifications in %Arcane:
+- making the ability to retrieve the `localIds()` of groups obsolete
+- transforming the `ENUMERATE_` macro to perform two loops: a loop over the
+  blocks followed by a loop for each block. This therefore requires changing the
+  \arcane{ItemEnumerator} class to manage blocks or creating another one. One
+  possibility is, for example, to have two new classes `ItemBlockVectorView` and
+  `ItemBlockEnumerator`. The current case using \arcane{ItemVectorView} and
+  \arcane{ItemEnumerator} would be a specific case of a block where the number
+  of values corresponds to the number of elements in the vector and the
+  `localId()` offset would be zero.
 
-Il doit être possible d'utiliser toujours une double boucle dans
-`ENUMERATE_` quitte à ce que la deuxième boucle soit de taille fixée à
-la compilation à 1 dans le cas des \arcane{ItemVectorView} par exemple.
+It must be possible to still use a double loop in `ENUMERATE_`, even if the
+second loop is fixed at 1 at compile time in the case of
+\arcane{ItemVectorView}, for example.
 
 ### Planning
 
-Les modifications pour changer ces connectivités commenceront dans la
-version 3.10 de %Arcane (juin 2023).
+The modifications to change these connectivities will begin in version 3.10 of
+%Arcane (June 2023).
 
-La première optimisation envisagée concernerait les connectivités des
-entités. Dans ce but, les modifications suivantes sont effectuées :
+The first optimization planned will concern entity connectivities. To this end,
+the following modifications are made:
 
-1. les méthodes permettant d'accéder aux tableaux de `localId()` des
-   connectivités seront rendues obsolètes. Cela concerne les classes
-   \arcane{ItemEnumerator}, \arcane{ItemEnumeratorBase},
-   \arcane{ItemConnectedListView}.
-2. L'utilisation de la classe \arcane{ItemInternal} devient
-   obsolète. Il faut utiliser \arcane{impl::ItemBase} à la
-   place. Toutes les méthodes qui prenaient aussi des
-   \arcane{ItemInternalArrayView}, \arcane{ItemInternalPtr} ou
-   \arcane{ItemInternalList} deviennent aussi obsolètes.
+1. the methods allowing access to the `localId()` arrays of the connectivities
+   will be made obsolete. This concerns the classes \arcane{ItemEnumerator},
+   \arcane{ItemEnumeratorBase}, \arcane{ItemConnectedListView}.
+2. The use of the \arcane{ItemInternal} class becomes obsolete.
+   \arcane{impl::ItemBase} must be used instead. All methods that also took
+   \arcane{ItemInternalArrayView}, \arcane{ItemInternalPtr}, or
+   \arcane{ItemInternalList} also become obsolete.
 
-En général les codes utilisateurs de %Arcane sont peu impactés par le
-point (1) car les structures concernées sont plutôt internes à
-Arcane. Comme il est nécessaire de supprimer ces méthodes pour mettre
-en place connectivités compressées, il est prévu de supprimer
-définitivement ces méthodes en décembre 2023.
+In general, user codes of %Arcane are minimally impacted by point (1) because
+the concerned structures are rather internal to Arcane. Since it is necessary to
+remove these methods to implement compressed connectivities, it is planned to
+permanently remove these methods in December 2023.
 
-Pour le point (2) qui concerne potentiellement plus de parties de
-code, il est prévu de supprimer les méthodes concernées en juin 2024.
+For point (2), which potentially concerns more parts of the code, it is planned
+to remove the concerned methods in June 2024.
 
-La deuxième phase d'optimisation concernant les entités des groupes
-interviendra ensuite.
-
+The second phase of optimization concerning entity groups will follow.

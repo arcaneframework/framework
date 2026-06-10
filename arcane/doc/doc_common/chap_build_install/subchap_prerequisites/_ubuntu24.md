@@ -1,15 +1,14 @@
-# Ubuntu 24.04 {#arcanedoc_build_install_prerequisites_ubuntu24}
+﻿# Ubuntu 24.04 {#arcanedoc_build_install_prerequisites_ubuntu24}
 
 [TOC]
 
-## Installation des packages nécessaires
+## Installation of necessary packages
 
-Sur Ubuntu 24.04, les versions des dépendances nécessaires pour
-compiler %Arcane (GCC, CMake, '.Net', ...) sont suffisament récentes
-pour pouvoir être installés via les packages système.
+On Ubuntu 24.04, the versions of the dependencies required to compile %Arcane
+(GCC, CMake, '.Net', ...) are recent enough to be installed via system packages.
 
-Les commandes suivantes permettent d'installer les dépendances
-nécessaires pour %Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
+The following commands allow you to install the dependencies required for
+%Arcane (as well as the optional dependencies `HDF5` and `ParMetis`):
 
 ~~~{sh}
 sudo apt update
@@ -18,27 +17,28 @@ sudo apt install -y apt-utils build-essential iputils-ping python3 \
   libparmetis-dev libunwind-dev dotnet8 cmake
 ~~~
 
-Pour compiler Alien en plus d'%Arcane, il est nécessaire d'installer un package en plus :
+To compile Alien in addition to %Arcane, it is necessary to install one
+additional package:
 ~~~{sh}
 sudo apt install -y libboost-program-options-dev
 ~~~
 
-## Installation des packages optionnels
+## Installation of optional packages
 
 ~~~{sh}
-# Pour google test:
+# For google test:
 sudo apt install -y googletest
 
-# Pour Ninja:
+# For Ninja:
 sudo apt install -y ninja-build
 
-# Pour Hypre
+# For Hypre
 sudo apt install -y libhypre-dev
 
-# Pour PETSc
+# For PETSc
 sudo apt install -y libpetsc-real-dev
 
-# Pour Trilinos
+# For Trilinos
 sudo apt install -y libtrilinos-teuchos-dev libtrilinos-epetra-dev \
   libtrilinos-tpetra-dev libtrilinos-kokkos-dev libtrilinos-ifpack2-dev \
   libtrilinos-ifpack-dev libtrilinos-amesos-dev libtrilinos-galeri-dev \
@@ -47,32 +47,32 @@ sudo apt install -y libtrilinos-teuchos-dev libtrilinos-epetra-dev \
   libtrilinos-kokkos-kernels-dev libtrilinos-rtop-dev \
   libtrilinos-isorropia-dev libtrilinos-belos-dev
 
-# Pour Zoltan
+# For Zoltan
 sudo apt install -y libtrilinos-ifpack-dev libtrilinos-anasazi-dev \
   libtrilinos-amesos2-dev libtrilinos-shards-dev libtrilinos-muelu-dev \
   libtrilinos-intrepid2-dev libtrilinos-teko-dev libtrilinos-sacado-dev \
   libtrilinos-stratimikos-dev libtrilinos-shylu-dev \
   libtrilinos-zoltan-dev libtrilinos-zoltan2-dev
 
-# Pour le wrapper C#:
+# For the C# wrapper:
 sudo apt install -y swig
 ~~~
 
 ## CUDA
 
-Aujourd'hui, pour utiliser CUDA sur Ubuntu 24.04, il faut utiliser GCC 12 ou moins.
+Currently, to use CUDA on Ubuntu 24.04, you must use GCC 12 or less.
 
-Il est donc nécessaire d'installer GCC 12 et de compiler %Arcane avec GCC 12.
+It is therefore necessary to install GCC 12 and compile %Arcane with GCC 12.
 
-Donc, pour installer GCC 12 et CUDA sur Ubuntu 24.04 :
+Thus, to install GCC 12 and CUDA on Ubuntu 24.04:
 
 ~~~{sh}
 sudo apt update
 sudo apt install g++-12 gcc-12 nvidia-cuda-toolkit
 ~~~
 
-Ensuite, pour compiler %Arcane, lors de la configuration CMake, il faudra spécifier,
-en plus des options pour CUDA, la bonne version de GCC :
+Next, to compile %Arcane, when configuring CMake, you will need to specify, in
+addition to the CUDA options, the correct GCC version:
 
 ~~~{sh}
 cmake -S /path/to/sources -B /path/to/build \
@@ -82,7 +82,7 @@ cmake -S /path/to/sources -B /path/to/build \
 -DARCCORE_CXX_STANDARD=20
 ~~~
 
-Voir la page suivante pour plus d'informations sur la compilation.
+See the following page for more information on compilation.
 
 ____
 

@@ -1,25 +1,24 @@
-# Module SayHello {#arcanedoc_examples_simple_example_module}
+﻿# Module SayHello {#arcanedoc_examples_simple_example_module}
 
 [TOC]
 
-Notre module `SayHello` est donc composé des trois fichiers ci-dessous :
-- un header (.h),
-- un fichier source (.cc),
-- un fichier contenant les options du jeu de données (.axl).
+Our SayHello module is therefore composed of the three files below:
+- a header (.h),
+- a source file (.cc),
+- a file containing the dataset options (.axl).
 
-\note Par convention, les noms des fichiers des modules suivent un schéma
-précis :
-- le nom du module est libre,
-- les `headers` portent l'extension `.h` (et non `.hh`/`.hpp`/`.hxx`/&c) et sont composés
-comme cela : `{nom_module}` `Module` `.h` (exemple : `SayHelloModule.h`),
-- les `fichiers sources` portent l'extension `.cc` (et non `.c`/`.cxx`/`.c++`/&c) et sont composés
-comme cela : `{nom_module}` `Module` `.cc` (exemple : `SayHelloModule.cc`),
-- les `fichiers de configuration de jeu de données` (fichiers `AXL`) portent l'extension `.axl` 
-et sont composés comme cela : `{nom_module}` `.axl` (exemple : `SayHello.axl`).
+\note By convention, module file names follow a precise scheme:
+- the module name is free,
+- the headers use the .h extension (and not .hh/.hpp/.hxx/etc.) and are composed
+  as follows: {module_name} Module .h (example: SayHelloModule.h),
+- the source files use the .cc extension (and not .c/.cxx/.c++etc.) and are
+  composed as follows: {module_name} Module .cc (example: SayHelloModule.cc),
+- the dataset configuration files (AXL files) use the .axl extension and are
+  composed as follows: {module_name} .axl (example: SayHello.axl).
 
 ## SayHello.axl {#arcanedoc_examples_simple_example_module_sayhelloaxl}
 
-D'abord, voyons le fichier `.axl` :
+First, let's look at the .axl file:
 
 ```xml
 <?xml version="1.0" ?>
@@ -28,18 +27,21 @@ D'abord, voyons le fichier `.axl` :
   <description>Descripteur du module SayHello</description>
 
   <variables>
-    <variable 
+    <variable
       field-name="loop_sum"
       name="LoopSum"
       data-type="integer"
       item-kind="none"
-      dim="0" />
+      dim="0"/>
   </variables>
 
   <entry-points>
-    <entry-point method-name="startInit" name="StartInit" where="start-init" property="none" />
-    <entry-point method-name="compute" name="Compute" where="compute-loop" property="none" />
-    <entry-point method-name="endModule" name="EndModule" where="exit" property="none" />
+    <entry-point method-name="startInit" name="StartInit" where="start-init"
+                 property="none"/>
+    <entry-point method-name="compute" name="Compute" where="compute-loop"
+                 property="none"/>
+    <entry-point method-name="endModule" name="EndModule" where="exit"
+                 property="none"/>
   </entry-points>
 
   <options>
@@ -50,32 +52,39 @@ D'abord, voyons le fichier `.axl` :
 
 </module>
 ```
-C'est un fichier au format `xml` qui permet de décrire le fonctionnement de
-notre module `SayHello`.
+This is an XML format file that allows describing the functionality of our
+`SayHello` module.
 
-On peut voir que ce fichier contient le nom du module (ligne 2), une description sommaire (ligne 4), des variables (lignes 6-13), des points d'entrées (lignes 15-19) et des options (lignes 21-25).
+We can see that this file contains the module name (line 2), a brief
+description (line 4), variables (lines 6-13), entry points (lines 15-19), and
+options (lines 21-25).
 
-Les variables :
-- La variable de nom "Arcane" `LoopSum` et de nom "code" `loop_sum`, de type `Integer`, attribuée à l'item `None` et de dimension `0`.
+Variables:
+- The variable named "Arcane" `LoopSum` and named "code" `loop_sum`, of type
+  `Integer`, assigned to the `None` item and with dimension `0`.
 
-Les points d'entrées :
-- Le point d'entrée de nom `StartInit`, représenté par la méthode `startInit` et s'exécutant à l'initialisation (`start-init`),
-- Le point d'entrée de nom `Compute`, représenté par la méthode `compute` et s'exécutant dans la boucle en temps (`compute-loop`).
-- Le point d'entrée de nom `EndModule`, représenté par la méthode `endModule` et s'exécutant lorsque la boucle en temps est terminée (`exit`).
+Entry points:
+- The entry point named `StartInit`, represented by the `startInit` method and
+  executed during initialization (`start-init`),
+- The entry point named `Compute`, represented by the `compute` method and
+  executed in the time loop (`compute-loop`).
+- The entry point named `EndModule`, represented by the `endModule` method and
+  executed when the time loop is finished (`exit`).
 
-Les options :
-- L'option simple de nom `nSteps`, de type `Integer` et avec une valeur par défaut égale à `10`.
+Options:
+- The simple option named `nSteps`, of type `Integer` and with a default value
+  equal to `10`.
 
-Le compilateur, à partir de ce fichier, créera automatiquement un fichier `SayHello_axl.h` qu'il faudra importer dans notre header et qui nous permettra d'utiliser :
-- L'attribut `m_loop_sum` (`m_` + le `field-name`),
-- La méthode `startInit`,
-- La méthode `compute`,
-- L'option `nStep`.
-
+The compiler, based on this file, will automatically create a `SayHello_axl.h`
+file that must be imported into our header and which will allow us to use:
+- The attribute `m_loop_sum` (`m_` + the `field-name`),
+- The `startInit` method,
+- The `compute` method,
+- The `nStep` option.
 
 ## SayHelloModule.h {#arcanedoc_examples_simple_example_module_sayhellomoduleh}
 
-Voici à quoi ressemble notre header :
+Here is what our header looks like:
 
 ```cpp
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
@@ -104,11 +113,12 @@ class SayHelloModule
 #endif
 ```
 
-Entrons dans les détails.
+Let's go into detail.
 ```cpp
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 ```
-Dans le chapitre \ref arcanedoc_general_codingrules, on nous demande de mettre cette ligne nous informant de la configuration du fichier.
+In chapter \ref arcanedoc_general_codingrules, we are asked to include this line
+informing us of the file configuration.
 
 ____
 
@@ -118,7 +128,8 @@ ____
 //...
 #endif
 ```
-Cela permet d'éviter de définir plusieurs fois la classe (si on l'inclut dans plusieurs `.cc` par exemple).
+This prevents the class from being defined multiple times (if it is included in
+several .cc files, for example).
 
 ____
 
@@ -126,15 +137,16 @@ ____
 #include <arcane/ITimeLoopMng.h>
 #include "SayHello_axl.h"
 ```
-Ce premier `#include` permet d'inclure les fonctions pour gérer la boucle en temps (par exemple `stopComputeLoop()`).
-Le second `#include` est le fichier généré avec le `.axl`.
+This first #include allows including the functions for managing the time loop
+(for example `stopComputeLoop()`).
+The second #include is the file generated from the .axl.
 
 ____
 
 ```cpp
 using namespace Arcane;
 ```
-Cela permet d'utiliser les fonctions d'%Arcane sans mettre `Arcane::` devant.
+This allows using %Arcane functions without prefixing them with `Arcane::`.
 
 ____
 
@@ -142,7 +154,10 @@ ____
 class SayHelloModule
 : public ArcaneSayHelloObject
 ```
-On définit la classe `SayHelloModule` qui sera utilisée par %Arcane et qui hérite de `ArcaneSayHelloObject`. `ArcaneSayHelloObject` est définie dans `SayHello_axl.h` et contient les méthodes que l'on pourra override et les variables/options que l'on pourra utiliser.
+We define the `SayHelloModule` class, which will be used by %Arcane and inherits
+from `ArcaneSayHelloObject`. `ArcaneSayHelloObject` is defined in
+`SayHello_axl.h` and contains the methods that can be overridden and the
+variables/options that can be used.
 
 ____
 
@@ -151,7 +166,9 @@ ____
   explicit SayHelloModule(const ModuleBuildInfo& mbi) 
   : ArcaneSayHelloObject(mbi) { }
 ```
-Constructeur de notre classe, qui appelle le constructeur de `ArcaneSayHelloObject`. `mbi` est un objet qui contiendra les infos de lancement du module (pour avoir les valeurs des options par exemple).
+Constructor of our class, which calls the constructor of `ArcaneSayHelloObject`.
+`mbi` is an object that will contain the module launch information (to get the
+option values, for example).
 
 ____
 
@@ -162,13 +179,15 @@ ____
   void endModule() override;
   VersionInfo versionInfo() const override { return VersionInfo(1, 0, 0); }
 ```
-Enfin, les quatre méthodes du `.axl` que l'on override. On peut aussi donner une version à notre module en "overridant" `versionInfo()`.
+Finally, the four methods from the .axl that we override. We can also give a
+version to our module by "overriding" `versionInfo()`.
 
 ____
 
 ## SayHelloModule.cc {#arcanedoc_examples_simple_example_module_sayhellomodulecc}
 
-Ce fichier contient simplement les implémentations des méthodes définies dans le header.
+This file simply contains the implementations of the methods defined in the
+header.
 
 ```cpp
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
@@ -213,29 +232,32 @@ ARCANE_REGISTER_MODULE_SAYHELLO(SayHelloModule);
 /*---------------------------------------------------------------------------*/
 ```
 
-Plusieurs choses sont néanmoins remarquable ici :
+Several things are noteworthy here:
 ```cpp
 info() << "Module SayHello INIT";
 ```
-`info()` permet d'écrire dans la sortie standard des informations.
+`info()` allows writing information to the standard output.
 
 ____
 
 ```cpp
 m_loop_sum = 0;
 ```
-On attribue la valeur 0 à la variable `m_loop_sum`.
+We assign the value 0 to the variable `m_loop_sum`.
 
 ____
 
 ```cpp
 m_loop_sum = m_loop_sum() + m_global_iteration();
 ```
-On calcule la somme des itérations.
+We calculate the sum of iterations.
 \note
-C'est une variable de type `Arcane::VariableScalarInt32`. Il faut donc utiliser l'opérateur `()` pour récupérer sa valeur.
+This is a variable of type `Arcane::VariableScalarInt32`. Therefore, you must
+use the `()` operator to retrieve its value.
 \warning
-On modifie la variable `m_loop_sum` à chaque itération pour l'exemple. Dans les faits, utiliser l'affectation pour une variable de type `Arcane::VariableRefScalarT` peut s'avérer coûteuse.
+We modify the `m_loop_sum` variable at each iteration for the example. In
+reality, using assignment for a variable of type `Arcane::VariableRefScalarT`
+can be costly.
 
 ____
 
@@ -243,26 +265,35 @@ ____
 if (m_global_iteration() > options()->getNStep())
   subDomain()->timeLoopMng()->stopComputeLoop(true);
 ```
-`m_global_iteration()` est une variable de la classe `CommonVariables`, dont hérite la classe `BasicModule` (dont hérite `ArcaneSayHelloObject` du fichier `SayHello_axl.h`). Cette variable contient l'itération actuellement en cours.
+`m_global_iteration()` is a variable of the `CommonVariables` class, from which
+the `BasicModule` class inherits (and `ArcaneSayHelloObject` inherits from it,
+from the `SayHello_axl.h` file). This variable contains the currently running
+iteration.
 \note
-C'est aussi une variable de type Arcane::VariableScalarInt32. Il faut donc utiliser l'opérateur `()` pour récupérer sa valeur.
+This is also a variable of type `Arcane::VariableScalarInt32`. Therefore, you
+must use the `()` operator to retrieve its value.
 
-`options()->getNStep()` permet de récupérer la valeur de l'option `nStep`. Pour définir cette valeur, il faut utiliser le jeu de données (fichier `.arc`) (voir prochaine section \ref arcanedoc_examples_simple_example_arc).
+`options()->getNStep()` allows retrieving the value of the `nStep` option. To
+define this value, you must use the dataset (the .arc file) (see the next
+section \ref arcanedoc_examples_simple_example_arc).
 
-Enfin, `subDomain()->timeLoopMng()->stopComputeLoop(true)` permet de stopper la boucle en temps.
+Finally, `subDomain()->timeLoopMng()->stopComputeLoop(true)` allows stopping the
+time loop.
 
 ____
 
 ```cpp
 ARCANE_REGISTER_MODULE_SAYHELLO(SayHelloModule);
 ```
-Ceci est une macro permettant d'enregistrer le module dans %Arcane. Cette macro est définie dans le fichier `SayHello_axl.h`.
+This is a macro that allows registering the module in %Arcane. This macro is
+defined in the `SayHello_axl.h` file.
 
 ____
 
 \remarks
-Comme vous pouvez le constater, dans les trois fichiers au-dessus, il n'y a aucune mention de l'application `HelloWorld`. 
-Les modules peuvent être placés et remplacés facilement dans d'autres applications.
+As you can see, in the three files above, there is no mention of the
+HelloWorld application.
+Modules can be easily placed and replaced in other applications.
 
 
 ____

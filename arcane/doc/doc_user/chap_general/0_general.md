@@ -1,17 +1,16 @@
-# Généralités {#arcanedoc_general}
+﻿# Generalities {#arcanedoc_general}
 
-Ce chapitre présente des généralités qu'il est intéressant de connaitre
-avant de débuter l'écriture d'un code %Arcane.
+This chapter presents general information that is useful to know before starting
+to write an %Arcane code.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 1. \subpage arcanedoc_general_codingrules <br>
-  Présente les règles de codage utilisées dans %Arcane. Pour que les
-  modules développés sur la plate-forme aient une certaine homogénéité,
-  il est intéressant de suivre ces règles.
-
+   Presents the coding rules used in %Arcane. To ensure that the modules
+   developed on the platform have a certain homogeneity, it is important to
+   follow these rules.
 
 ____
 
@@ -20,4 +19,3 @@ ____
 \ref arcanedoc_general_codingrules
 </span>
 </div>
-

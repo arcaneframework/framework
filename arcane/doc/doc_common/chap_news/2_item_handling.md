@@ -1,69 +1,63 @@
-# Modifications dans la gestions des entités {#arcanedoc_item_handling_news}
+﻿# Modifications in entity handling {#arcanedoc_item_handling_news}
 
-Cette page regroupe les modifications relatives à la gestion des connectivités
-des entités lors des différentes versions de %Arcane.
+This page groups the modifications related to managing entity connectivities
+across different versions of %Arcane.
 
 [TOC]
 
-## Modifications dans la version 3.7 {#arcanedoc_news_37}
+## Modifications in version 3.7 {#arcanedoc_news_37}
 
-La version 3.7 de %Arcane apporte plusieurs modifications dans la
-gestion des entités du maillage. Ces modifications ont pour objectif:
+Version 3.7 of %Arcane introduces several modifications to how mesh entities are
+managed. These modifications aim to:
 
-- de réduire l'empreinte mémoire
-- de pouvoir accéder sur accélérateurs à certaines informations sur
-  les entités comme par exemple Arcane::Item::owner().
-- d'améliorer les performances
+- reduce memory footprint
+- allow access to certain information about entities on accelerators, such as
+  Arcane::Item::owner().
+- improve performance
 
-Pour répondre à ces objectifs, les modifications suivantes ont été
-apportées:
+To meet these objectives, the following modifications were made:
 
-- La classe Arcane::ItemSharedInfo ne contient plus d'informations
-  spécifiques sur une entité. Il n'y a donc besoin que d'une seule
-  instance de cette classe par Arcane::IItemFamily. La méthode
-  Arcane::mesh::ItemFamily::commonItemSharedInfo() permet de récupérer
-  cette instance.
-- Comme il n'y a plus qu'une seule instance de Arcane::ItemSharedInfo,
-  l'utilisation de Arcane::ItemInternal devient optionnelle pour créer
-  une instance de Arcane::Item ou d'une des classes dérivées. Il est
-  maintenant possible de créer une instance de ces classes uniquement
-  avec un Arcane::ItemLocalId et un Arcane::ItemSharedInfo*. La classe
-  interne Arcane::ItemBaseBuildInfo est utilisée pour cela.
-- Une classe Arcane::ItemBase a été créée. Elle contient uniquement un
-  Arcane::ItemLocalId et un Arcane::ItemSharedInfo*. Elle sert de
-  classe de base à Arcane::Item et Arcane::ItemInternal. Cette classe
-  est interne à Arcane mais ne permet pas de modifier les valeurs
-  d'une entité (par exemple elle contient une méthode
-  Arcane::ItemBase::owner() mais pas de méthode `setOwner()`). Grâce à
-  cette classe, Arcane::Item ne dépend plus de Arcane::ItemInternal et
-  peut directement récupérer les informations via
-  Arcane::ItemSharedInfo ce qui éviter un niveau d'indirection pour
-  accéder aux connectivités par exemple.
-- Les itérateurs sur les entités (Arcane::ItemEnumerator) ont été
-  modifiés pour qu'ils n'utilisent plus Arcane::ItemInternal à chaque
-  incrémentation ce qui peut légèrement améliorer les performances car
-  on évite une indirection supplémentaire à chaque fois.
-- les données qui étaient portées par Arcane::ItemInternal (comme
-  `owner()`, `flags()`) sont maintenant conservées par des variables
-  tableaux (Arcane::VariableArrayInt32 ou Arcane::VariableArrayInt16)
-  gérées par la famille d'entité.
+- The Arcane::ItemSharedInfo class no longer contains specific information about
+  an entity. Therefore, only a single instance of this class is needed per
+  Arcane::IItemFamily. The method
+  Arcane::mesh::ItemFamily::commonItemSharedInfo() allows this instance to be
+  retrieved.
+- Since there is now only one instance of Arcane::ItemSharedInfo, using
+  Arcane::ItemInternal becomes optional when creating an instance of
+  Arcane::Item or one of its derived classes. It is now possible to create an
+  instance of these classes using only an Arcane::ItemLocalId and an
+  Arcane::ItemSharedInfo*. The internal class Arcane::ItemBaseBuildInfo is used
+  for this purpose.
+- An Arcane::ItemBase class was created. It contains only an Arcane::ItemLocalId
+  and an Arcane::ItemSharedInfo*. It serves as the base class for Arcane::Item
+  and Arcane::ItemInternal. This class is internal to Arcane but does not
+  allow modification of entity values (for example, it contains the method
+  Arcane::ItemBase::owner() but not the method `setOwner()`). Thanks to this
+  class, Arcane::Item no longer depends on Arcane::ItemInternal and can directly
+  retrieve information via Arcane::ItemSharedInfo, which avoids a level of
+  indirection when accessing connectivities, for example.
+- Iterators over entities (Arcane::ItemEnumerator) have been modified so that
+  they no longer use Arcane::ItemInternal during each incrementation, which can
+  slightly improve performance by avoiding an additional indirection every time.
+- The data previously carried by Arcane::ItemInternal (such as `owner()`,
+  `flags()`) is now stored in array variables (Arcane::VariableArrayInt32 or
+  Arcane::VariableArrayInt16) managed by the entity family.
 
-Avec ces modifications, à terme il sera possible de supprimer
-entièrement l'utilisation de Arcane::ItemInternal.
+With these modifications, it will eventually be possible to completely eliminate
+the use of Arcane::ItemInternal.
 
-Cependant, cette classe est souvent utilisée dans les codes donc ce
-changement doit être progressif. Notamment, la méthode
-Arcane::IItemFamily::itemsInternal() est utilisée pour récupérer une
-instance de Arcane::Item à partir d'un Arcane::ItemInternalArrayView
-(qui est le type retourné par cette méthode).
+However, this class is often used in code, so this change must be gradual.
+Notably, the method Arcane::IItemFamily::itemsInternal() is used to retrieve an 
+instance of Arcane::Item from an Arcane::ItemInternalArrayView (which is the 
+type returned by this method).
 
-Pour préparer cela et garder le code compatible, une nouvelle classe
-Arcane::ItemInfoListView (et les classes dérivées spécifiques aux
-entités comme Arcane::CellInfoListView, Arcane::DoFInfoListView)
-permet de récupérer les informations sur les entités pour lesquelles
-il fallait auparavant utiliser Arcane::IItemFamily::itemsInternal().
+To prepare for this and keep the code compatible, a new class
+Arcane::ItemInfoListView (and entity-specific derived classes like
+Arcane::CellInfoListView, Arcane::DoFInfoListView) allows retrieving information
+about entities for which Arcane::IItemFamily::itemsInternal() was previously
+used.
 
-Il est possible de modifier le code actuel comme suit:
+It is possible to modify the current code as follows:
 
 ~~~cpp
 Arcane::IItemFamily* cell_family = ...;
@@ -72,7 +66,7 @@ Arcane::Int32 my_local_id = ...;
 Arcane::Cell my_cell = cells[my_local_id];
 ~~~
 
-Ce code est à remplacer par cela:
+This code should be replaced by this:
 
 ~~~cpp
 Arcane::IItemFamily* cell_family = ...;
@@ -81,99 +75,88 @@ Arcane::Int32 my_local_id = ...;
 Arcane::Cell my_cell = cells[my_local_id];
 ~~~
 
-Par la suite, si l'instance unique de Arcane::ItemSharedInfo par famille
-est créée en mémoire unifiée, il sera possible d'accéder aux
-informations des entités sur accélérateur.
+Later, if the unique instance of Arcane::ItemSharedInfo per family is created in
+unified memory, it will be possible to access entity information on the
+accelerator.
 
-## Modifications dans la version 3.10
+## Modifications in version 3.10
 
-%Arcane utilise très souvent pour gérer les entités du maillage des
-listes de Arcane::ItemLocalId qui peuvent être ramenées à des listes
-de Arcane::Int32. C'est par exemple utilisé dans les cas suivants:
+%Arcane frequently uses lists of Arcane::ItemLocalId to manage mesh entities,
+which can be converted into lists of Arcane::Int32. This is used in the
+following cases, for example:
 
-- Liste des entités d'un groupe (Arcane::ItemGroup) ou d'un vecteur
-  d'entité (Arcane::ItemVector)
-- Liste des entités connectées à une autre entité ((par exemple
-  Arcane::Cell::nodes()))
+- List of entities in a group (Arcane::ItemGroup) or an entity vector
+  (Arcane::ItemVector)
+- List of entities connected to another entity (for example,
+  Arcane::Cell::nodes())
 
-Pour ces deux cas la structure interne est gérée de la même manière
-(via une instance de Arcane::ItemVectorView) et %Arcane maintient en
-interne des objets de type Arcane::Int32ConstArrayView qui peuvent
-être accédés directement par le développeur (par exemple via
-Arcane::ItemVectorView::localIds()).
+For these two cases, the internal structure is managed in the same way (via an
+instance of Arcane::ItemVectorView), and %Arcane internally maintains objects of
+type Arcane::Int32ConstArrayView that can be accessed directly by the developer
+(for example, via Arcane::ItemVectorView::localIds()).
 
-Pour gérer plus efficacement les connectivités, notamment dans le cas
-cartésien, et réduire l'empreinte mémoire, il est nécessaire de
-pouvoir faire évoluter la manière dont sont conservées ces listes de
-localId(). Afin de pouvoir procéder à ces évolutions, il est
-nécessaire de modifier deux choses dans %Arcane:
+To more efficiently manage connectivities, especially in the Cartesian case, and
+reduce memory footprint, it is necessary to evolve how these localId() lists are
+stored. To enable these evolutions, two things must be modified in %Arcane:
 
-1. Séparer la gestion de la connectivité des entités de celle des
-   liste d'entités d'un groupe.
-2. Masquer la structure interne utilisée pour conserver ces listes de
-   localId().
+1. Separate the management of entity connectivity from that of group entity
+   lists.
+2. Hide the internal structure used to store these localId() lists.
 
-Cela implique de changer certains mécanismes pour accéder à ces
-informations qui sont détaillés ci-dessous.
+This involves changing certain mechanisms for accessing this information, which
+are detailed below.
 
-### Séparer la gestion de la connectivité des entités de celle des liste d'entités d'un groupe
+### Separating entity connectivity management from group entity list management
 
-Cela signifie que les méthodes d'accès aux connectivités et celles
-d'accès aux entités d'un groupe ne retournent pas le même type
-d'objet. Dans la version 3.9 de %Arcane, les méthodes d'accès aux
-connectivités ont donc été modifées et retournent maintenant une
-instance de Arcane::ItemConnectedListViewT au lieu d'une instance de
+This means that the methods for accessing connectivities and those for accessing
+group entities do not return the same type of object. In version 3.9 of %Arcane,
+the connectivity access methods were therefore modified and now return an
+instance of Arcane::ItemConnectedListViewT instead of an instance of
 Arcane::ItemVectorViewT.
 
-Il existe actuellement un opérateur de conversion entre
-Arcane::ItemConnectedListViewT et Arcane::ItemVectorViewT pour rendre
-le code compatible avec l'existant.
+There is currently a conversion operator between Arcane::ItemConnectedListViewT
+and Arcane::ItemVectorViewT to make the code compatible with existing usage.
 
-Cela impacte aussi les macros telles que ENUMERATE_(),
-ENUMERATE_CELL() ou ENUMERATE_NODE() qui sont maintenant réservées aux
-itérations sur les Arcane::ItemGroup ou
-Arcane::ItemVector. Actuellement il y a plusieurs manières pour itérer
-sur les entités d'une autre connectivité. Par exemple:
+This also impacts macros such as ENUMERATE_(), ENUMERATE_CELL() or
+ENUMERATE_NODE(), which are now reserved for iterations over Arcane::ItemGroup
+or Arcane::ItemVector. Currently, there are several ways to iterate over
+entities in another connectivity. For example:
 
 ~~~cpp
 Arcane::CellGroup cell_group = ...;
 ENUMERATE_(Cell,icell,cell_group){
   Arcane::Cell cell = *icell;
-  // (1) Itération avec ItemEnumerator
+  // (1) Iteration with ItemEnumerator
   for( Arcane::NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode ){
     Arcane::Node node = *inode;
     info() << "Node uid=" << node.uniqueId();
   }
-  // (2) Itération avec ENUMERATE_
+  // (2) Iteration with ENUMERATE_
   ENUMERATE_(Node,inode,cell.nodes()){
     Arcane::Node node = *inode;
     info() << "Node uid=" << node.uniqueId();
   }
-  // (3) Itération avec 'for-range'
+  // (3) Iteration with 'for-range'
   for( Arcane::Node node : cell.nodes()){
     info() << "Node uid=" << node.uniqueId();
   }
 }
 ~~~
 
-Le mécanisme (3) est à privilégier. A terme, le mécanisme (1) va
-disparaitre car le type Arcane::ItemEnumerator sera réservé aux
-itérations sur les groupes. Le mécanisme (2) pourrait continuer à être
-disponible mais sera moins performant que le mécanisme (3).
+Mechanism (3) should be preferred. Eventually, mechanism (1) will disappear
+because the Arcane::ItemEnumerator type will be reserved for iterations over
+groups. Mechanism (2) might continue to be available but will be less performant
+than mechanism (3).
 
-Afin d'éviter aussi tout risque d'incompatibilité dans le futur, il
-est préférable de ne pas utiliser directement les types des itérateurs
-retournés mais d'utiliser le mot clé `auto` à la place.
+To also avoid any risk of future incompatibility, it is preferable not to
+directly use the returned iterator types but to use the `auto` keyword instead.
 
-### Masquer la structure interne gérant les listes de localId()
+### Hiding the internal structure managing localId() lists
 
-Pour masquer ces structures, les classes de %Arcane qui gèrent les
-listes d'entités ne retourneront plus de types tels que
-Arcane::Int32ConstArrayView. Par exemple les méthodes telles que
-Arcane::ItemVectorView::localIds() ou
-Arcane::ItemIndexArrayView::localIds() vont disparaitre. Pour être
-compatible avec l'existant, les méthodes
-Arcane::ItemVectorView::fillLocalIds() et
-Arcane::ItemIndexArrayView::fillLocalIds() ont été ajoutées pour
-permettre de remplir un tableau avec la liste des localId().
-
+To hide these structures, %Arcane classes that manage entity lists will no
+longer return types such as Arcane::Int32ConstArrayView. For example, methods
+such as Arcane::ItemVectorView::localIds() or
+Arcane::ItemIndexArrayView::localIds() will disappear. To be compatible with
+existing usage, the methods Arcane::ItemVectorView::fillLocalIds() and
+Arcane::ItemIndexArrayView::fillLocalIds() have been added to allow filling
+an array with the list of localIds().

@@ -1,85 +1,83 @@
-﻿# Passage à la version 2.0 {#arcanedoc_news_cleanup_v2}
+﻿# Transition to version 2.0 {#arcanedoc_news_cleanup_v2}
 
-Lors du passage à la version 2.0, il est prévu de supprimer
-définitivement certaines classes qui sont obsolètes depuis plusieurs
-années et de modifier quelque peu le comportement d'autres classes.
+When transitioning to version 2.0, it is planned to permanently remove certain
+classes that have been obsolete for several years and to slightly modify the
+behavior of other classes.
 
-Le tableau suivant liste les classes qui seront supprimées et
-comment les remplacer.
+The following table lists the classes that will be removed and how to replace
+them.
 
 <table>
 <tr>
 <td>ConstCString</td>
-<td>A remplacer par la classe String</td>
+<td>To be replaced by the String class</td>
 </tr>
 <tr>
 <td>CString</td>
-<td>A remplacer par la classe String</td>
+<td>To be replaced by the String class</td>
 </tr>
 <tr>
 <td>CStringAlloc</td>
-<td>A remplacer par la classe String</td>
+<td>To be replaced by the String class</td>
 </tr>
 <tr>
 <td>CStringBufT</td>
-<td>A remplacer par la classe String</td>
+<td>To be replaced by the String class</td>
 </tr>
 <tr>
 <td>OCStringStream</td>
-<td>A remplacer par la classe OStringStream</td>
+<td>To be replaced by the OStringStream class</td>
 </tr>
 <tr>
 <td>CArrayT</td>
-<td>A remplacer par la classe UniqueArray</td>
+<td>To be replaced by the UniqueArray class</td>
 </tr>
 <tr>
 <td>BufferT</td>
-<td>A remplacer par la classe UniqueArray</td>
+<td>To be replaced by the UniqueArray class</td>
 </tr>
 <tr>
 <td>CArrayBaseT</td>
-<td>A remplacer par la classe ArrayView</td>
+<td>To be replaced by the ArrayView class</td>
 </tr>
 <tr>
 <td>ConstCArrayT</td>
-<td>A remplacer par la classe ConstArrayView</td>
+<td>To be replaced by the ConstArrayView class</td>
 </tr>
 <tr>
 <td>CArray2T</td>
-<td>A remplacer par la classe UniqueArray2 ou UniqueMultiArray2</td>
+<td>To be replaced by the UniqueArray2 or UniqueMultiArray2 class</td>
 </tr>
 <tr>
 <td>CArray2BaseT</td>
-<td>A remplacer par la classe Array2View ou MultiArray2View</td>
+<td>To be replaced by the Array2View or MultiArray2View class</td>
 </tr>
 <tr>
 <td>CArrayBuilderT</td>
-<td>A remplacer par SharedArray</td>
+<td>To be replaced by SharedArray</td>
 </tr>
 <tr>
 <td>MutableArray</td>
-<td>A remplacer par SharedArray</td>
+<td>To be replaced by SharedArray</td>
 </tr>
 <tr>
 <td>ConstArray</td>
-<td>A remplacer par SharedArray</td>
+<td>To be replaced by SharedArray</td>
 </tr>
 </table>
 
-La version 2.0 comporte aussi les modifications suivantes:
-- la classe String devient non modifiable. Les opérateurs
-permettant de modifier l'instance, comme String::operator+=() sont supprimés.
-- Les classes Array et Array2 sont modifiées pour interdire les
-recopies. En effet, le comportement par défaut qui avait une
-sémantique par référence n'était pas explicite et pouvait induire en
-erreur les gens habitués aux classes standards de la STL telles que
-std::vector. Il faut donc maintenant utiliser SharedArray ou
-UniqueArray à la place de Array si on souhaite pouvoir copier le
-tableau. La classe SharedArray utilise la sémantique par référence
-et la classe UniqueArray la sémantique par valeur. Ces deux classes
-dérivent de Array et peuvent donc être utilisées lorsqu'il faut
-passer un tableau modifiable. Pour plus d'informations, la page \ref arcanedoc_core_types_array_usage décrit
-l'utilisation des classes gérant les tableaux dans %Arcane.
-- Suite à l'interdiction des recopies de Array et Array2, les
-méthodes qui utilisaient un Array ou Array2 en argument utilisent
-maintenant un Array& ou Array2&.
+Version 2.0 also includes the following changes:
+
+- The String class becomes immutable. Operators allowing modification of the
+  instance, such as String::operator+=(), are removed.
+- The Array and Array2 classes have been modified to prohibit copies. Indeed,
+  the default behavior, which had a reference semantics, was not explicit and
+  could mislead people accustomed to standard STL classes such as std::vector.
+  Therefore, you must now use SharedArray or UniqueArray instead of Array if you
+  wish to be able to copy the array. The SharedArray class uses reference
+  semantics and the UniqueArray class uses value semantics. Both these classes
+  derive from Array and can therefore be used when you need to pass a mutable
+  array. For more information, the page \ref arcanedoc_core_types_array_usage
+  describes the use of array-managing classes in %Arcane.
+- Following the prohibition of copies for Array and Array2, methods that used an
+  Array or Array2 as an argument now use an Array& or Array2&.

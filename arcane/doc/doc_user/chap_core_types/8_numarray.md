@@ -1,93 +1,84 @@
-# Utilisation de la classe NumArray {#arcanedoc_core_types_numarray}
+﻿# Usage of the NumArray class {#arcanedoc_core_types_numarray}
 
 [TOC]
 
-La classe Arcane::NumArray permet de gérer des tableaux à plusieurs
-dimensions de valeurs numériques. La version actuelle de %Arcane gère
-des tableaux jusqu'à la dimension 4. Le nombre de dimensions du
-tableau est aussi appelé le rang (Arcane::NumArray::rank()) du tableau.
+The Arcane::NumArray class allows managing multi-dimensional arrays of numerical
+values. The current version of %Arcane handles arrays up to dimension 4. The
+number of dimensions of the array is also called the rank
+(Arcane::NumArray::rank()) of the array.
 
-Cette classe est similaire à la classe `std::mdarray` prévue pour le
+This class is similar to the `std::mdarray` class planned for
 C++26: https://isocpp.org/files/papers/D1684R0.html.
 
-La sémantique est une sémantique par valeur (comme `std::vector`) et
-donc les opérateurs d'affectation provoquent une recopie des valeurs
-du tableau.
+The semantics are by value (like `std::vector`), and therefore assignment
+operators cause a copy of the array values.
 
-Le prototype est le suivant :
+The prototype is as follows:
 
 ~~~{cpp}
 template<typename DataType,typename Extents,typename LayoutPolicy>
 class NumArray;
 ~~~
 
-Avec:
-- \a DataType: le type de donnée du tableau. Il s'agit obligatoirement
-  d'un type numérique (`std::is_arithmetic<DataType>==true`) qui doit
-  être copiable trivialement
+With:
+- \a DataType: the data type of the array. It must necessarily be a numeric
+  type (`std::is_arithmetic<DataType>==true`) that must be trivially copyable
   (`std::is_trivially_copyable<DataType>==true`)
-- \a Extents: indique le nombre d'éléments (extent()) de chaque
-  dimension. La valeur peut être dynamique (Arcane::DynExtent) ou
-  statique si une valeur positive est utilisée.
-- \a LayoutPolicy: indique la politique d'agencement. Actuellement
-  deux valeurs sont possibles : Arcane::RightLayout ou
-  Arcane::LeftLayout. La valeur par défaut est Arcane::RightLayout qui
-  correspond à l'agencement classique d'un tableau C multidimensionnel.
+- \a Extents: indicates the number of elements (extent()) in each dimension. The
+  value can be dynamic (Arcane::DynExtent) or static if a positive value is
+  used.
+- \a LayoutPolicy: indicates the layout policy. Currently, two values are
+  possible: Arcane::RightLayout or Arcane::LeftLayout. The default value is
+  Arcane::RightLayout, which corresponds to the classic layout of a
+  multidimensional C array.
 
-## Création {#arcanedoc_core_types_numarray_creation}
+## Creation {#arcanedoc_core_types_numarray_creation}
 
-Les types Arcane::MDDim1, Arcane::MDDim2, Arcane::MDDim3,
-Arcane::MDDim4, permettent de spécifier des instances dont toutes les
-dimensions sont dynamiques. Par exemple :
+The types Arcane::MDDim1, Arcane::MDDim2, Arcane::MDDim3, Arcane::MDDim4, allow
+specifying instances whose dimensions are all dynamic. For example:
 
 \snippet NumArrayUnitTest.cc SampleNumArrayDeclarations
 
-Si on souhaite spécifier une ou plusieurs dimensions statiques, on
-peut faire comme cela :
+If you wish to specify one or more static dimensions, you can do so like this:
 
 \snippet NumArrayUnitTest.cc SampleNumArrayDeclarationsExtented
 
-\note Les valeurs de l'instance ne sont pas initialisées lors de la
-construction. Il faut appeler la méthode Arcane::NumArray::fill()
-(uniquement si la mémoire est accessible depuis l'hôte) si
-on souhaite remplir le tableau avec une valeur donnée.
+\note The instance values are not initialized during construction. You must call
+the Arcane::NumArray::fill() method (only if the memory is accessible from the
+host) if you wish to fill the array with a given value.
 
-Il est possible de spécifier lors de la construction ou avec le
-méthode Arcane::NumArray::resize() le nombre d'éléments de chaque
-dimension. Dans ce cas le nombre d'arguments correspond au nombre de
-dimensions dynamiques de l'instance :
+It is possible to specify the number of elements in each dimension during
+construction or using the Arcane::NumArray::resize() method. In this case, the
+number of arguments corresponds to the number of dynamic dimensions of the
+instance:
 
 \snippet NumArrayUnitTest.cc SampleNumArrayResize
 
-\warning Le redimensionnement ne conserve pas les valeurs actuelles du tableau
+\warning Resizing does not preserve the current values of the array
 
-## Gestion mémoire {#arcanedoc_core_types_numarray_memory_manager}
+## Memory Management {#arcanedoc_core_types_numarray_memory_manager}
 
-Le type Arcane::eMemoryRessource permet de spécifier dans quel espace
-mémoire le tableau sera alloué. Par défaut, on utilise
-Arcane::eMemoryRessource::UnifiedMemory ce qui permet au tableau
-d'être accessible à la fois sur l'hôte et l'accélérateur. Il est
-possible de spécifier à la construction la ressource mémoire
-associée. Si on utilise la zone mémoire
-Arcane::eMemoryRessource::Device alors les données seront uniquement
-accessibles sur accélérateur et il ne faudra pas tenter d'accéder aux
-valeurs du tableau (que ce soit en lecture ou en écriture) depuis
-l'hôte.
+The Arcane::eMemoryRessource type allows specifying in which memory space the
+array will be allocated. By default, Arcane::eMemoryRessource::UnifiedMemory is
+used, which allows the array to be accessible both on the host and the
+accelerator. It is possible to specify the associated memory resource during
+construction. If you use the Arcane::eMemoryRessource::Device memory area, the
+data will only be accessible on the accelerator, and you must not attempt to
+access the array values (either for reading or writing) from the host.
 
 \snippet NumArrayUnitTest.cc SampleNumArrayDeclarationsMemory
 
-## Indexation {#arcanedoc_core_types_numarray_indexing}
+## Indexing {#arcanedoc_core_types_numarray_indexing}
 
-L'indexation des valeurs de Arcane::NumArray se fait via l'opérateur
-Arcane::NumArray::operator(). On peut soit utiliser une instance de
-Arcane::ArrayIndex (`Arcane::ArrayIndex<N>` avec `N` le rang du
-tableau), soit utiliser une surcharge qui prend `N` valeurs en argument.
+Indexing the values of Arcane::NumArray is done via the
+Arcane::NumArray::operator(). You can either use an instance of
+Arcane::ArrayIndex (`Arcane::ArrayIndex<N>` where `N` is the rank of the array)
+or use an overload that takes `N` values as arguments.
 
-Pour chaque dimension, la valeur de l'index commence à zéro. Les
-valeurs valides vont donc de `[0,extentP()[` avec `P` la `P-ème`
-dimension.
+For each dimension, the index value starts at zero. The valid values therefore
+range from `[0,extentP()[` where `P` is the P-th dimension.
 
-Par exemple :
+For example:
 
 \snippet NumArrayUnitTest.cc SampleNumArrayDeclarationsIndexation
 

@@ -1,279 +1,306 @@
-﻿# Variables en mémoire partagée {#arcanedoc_parallel_shmem_winvariable}
+﻿# Variables in Shared Memory {#arcanedoc_parallel_shmem_winvariable}
 
 [TOC]
 
-\warning Cette fonctionnalité est expérimentale. Si des variables avec support sont allouées en mémoire partagée, il
-peut y avoir des adaptations importantes à faire pour rendre les appels de redimensionnements collectifs (risque de
-deadlocks). Ces redimensionnements sont plus lents qu'en mémoire locale. Il est recommandé d'utiliser la mémoire
-partagée uniquement pour les variables sans support. Il n'est pas recommandé d'utiliser la mémoire partagée avec des
-variables sur les particules; les appels à `endUpdate()` sont plutôt fréquents et, avec la mémoire partagée, ils
-deviennent collectifs !
+\warning This feature is experimental. If variables with support are allocated
+in shared memory, there may be significant adaptations required to make
+collective resizing calls (risk of deadlocks). These resizings are slower than
+in local memory. It is recommended to use shared memory only for variables
+without support. It is not recommended to use shared memory with variables on
+particles; calls to `endUpdate()` are rather frequent, and with shared memory,
+they become collective!
 
 ## Introduction {#arcanedoc_parallel_shmem_winvariable_intro}
 
-Les variables %Arcane utilisent habituellement l'allocateur par défaut pour allouer de la mémoire. Sans GPU, on utilise
-la mémoire locale de la machine et avec GPU, on utilise la mémoire unifiée.
+%Arcane variables usually use the default allocator to allocate memory. Without
+a GPU, local machine memory is used, and with a GPU, unified memory is used.
 
-Un nouvel allocateur mémoire (interne à %Arcane) est disponible et permet d'allouer de la mémoire en mémoire partagée
-machine.
-Pour cela, en interne, on utilise la classe présentée précédemment : Arcane::MachineShMemWin. On aura donc accès à des
-segments non-contigus.
+A new memory allocator (internal to %Arcane) is available and allows memory to
+be allocated in shared machine memory.
+To do this, internally, we use the previously presented class:
+Arcane::MachineShMemWin. We will therefore have access to non-contiguous
+segments.
 
-Ce mode est compatible avec l'ensemble des types de variables %Arcane (sauf les variables scalaires sans support
-(exemple : `VariableScalarReal`) et les variables partielles).
+This mode is compatible with all %Arcane variable types (except scalar variables
+without support (e.g., `VariableScalarReal`) and partial variables).
 
-La principale difficulté pour utiliser ce mode mémoire partagée est de s'assurer que tous les appels qui réallouent la
-mémoire soit collectifs.
+The main difficulty in using this shared memory mode is ensuring that all calls
+that reallocate memory are collective.
 
-Pour les variables redimensionnées par %Arcane, l'utilisateur n'a pas besoin de se préoccuper de ces appels collectifs,
-%Arcane s'en occupe. Exemple des variables au maillage, %Arcane s'occupe de les redimensionner si le maillage évolue.
+For variables resized by %Arcane, the user does not need to worry about these
+collective calls; %Arcane handles them. For example, with mesh variables,
+%Arcane handles resizing if the mesh evolves.
 
-\warning Pour les variables avec support, au niveau des familles, l'utilisation des variables en mémoire partagée rend
-collectif les appels agissants sur ces variables. On peut notamment citer les méthodes
-`Arcane::IItemFamily::compactItems()` et `Arcane::IItemFamily::endUpdate()`.
+\warning For variables with support, at the family level, using shared memory
+variables makes calls acting on these variables collective. We can mention the
+methods `Arcane::IItemFamily::compactItems()` and
+`Arcane::IItemFamily::endUpdate()`.
 
-En revanche, pour les variables avec lesquelles une méthode `resize()` est disponible (ou `reshape()` pour les variables
-multi-dimensionnelles), il est nécessaire de s'assurer que tous les sous-domaines de la machine fassent un appel à cette
-méthode (quitte à faire `var.resize(var.size())` pour les sous-domaines ne nécessitant pas de redimensionnement).
+Conversely, for variables for which a `resize()` method is available (or
+`reshape()` for multi-dimensional variables), it is necessary to ensure that all
+machine subdomains call this method (even if doing `var.resize(var.size())` for
+subdomains that do not require resizing).
 
-Ces appels de redimensionnement mirent de côté, l'utilisation des variables en mémoire partagée est identique à
-l'utilisation des variables en mémoire locale.
+Setting aside these resizing calls, the use of shared memory variables is
+identical to the use of local memory variables.
 
-Pour déclarer une variable en mémoire partagée, il suffit d'ajouter la propriété `IVariable::PInShMem` lors de sa
-création (dans les fichiers AXL, l'option correspondante est `in-shmem="true"`).
+To declare a variable in shared memory, simply add the `IVariable::PInShMem`
+property when creating it (in AXL files, the corresponding option is
+`in-shmem="true"`).
 
-## Accès aux segments mémoire des autres sous-domaines {#arcanedoc_parallel_shmem_winvariable_shared}
+## Accessing Memory Segments of Other Subdomains {#arcanedoc_parallel_shmem_winvariable_shared}
 
-L'utilité de mettre des variables en mémoire partagée est de pouvoir accéder aux données d'autres sous-domaines sans
-échanges de messages.
+The utility of putting variables in shared memory is to be able to access data
+from other subdomains without message exchanges.
 
-Pour accéder aux données de tous les sous-domaines, on peut utiliser les classes `MachineShMemWinVariable`.
-Une classe par type de variable %Arcane :
+To access data from all subdomains, you can use the `MachineShMemWinVariable`
+classes. One class per %Arcane variable type:
 
 <table>
   <tr>
-    <th>Type de variable<br>(`exemple`)</th>
-    <th>Classe à utiliser</th>
+    <th>Variable Type<br>(`example`)</th>
+    <th>Class to Use</th>
   </tr>
 
   <tr>
-    <td>Variable tableau 1D sans support<br>(`Arcane::VariableArrayInt32`)</td>
+    <td>1D Array Variable without support<br>(`Arcane::VariableArrayInt32`)</td>
     <td>Arcane::MachineShMemWinVariableArrayT</td>
   </tr>
 
   <tr>
-    <td>Variable scalaire au maillage<br>(`Arcane::VariableCellInt32`)</td>
+    <td>Mesh Scalar Variable<br>(`Arcane::VariableCellInt32`)</td>
     <td>Arcane::MachineShMemWinMeshVariableScalarT</td>
   </tr>
 
   <tr>
-    <td>Variable tableau 2D sans support<br>(`Arcane::VariableArray2Int32`)</td>
+    <td>2D Array Variable without support<br>(`Arcane::VariableArray2Int32`)</td>
     <td>Arcane::MachineShMemWinVariableArray2T</td>
   </tr>
 
   <tr>
-    <td>Variable tableau 1D au maillage<br>(`Arcane::VariableCellArrayInt32`)</td>
+    <td>Mesh 1D Array Variable<br>(`Arcane::VariableCellArrayInt32`)</td>
     <td>Arcane::MachineShMemWinMeshVariableArrayT</td>
   </tr>
 
   <tr>
-    <td>Variable multi-dimensionnelle scalaire<br>(`Arcane::MeshMDVariableRefT<Cell, Real, MDDim2>`)</td>
+    <td>Scalar Multi-dimensional Variable<br>(`Arcane::MeshMDVariableRefT<Cell, Real, MDDim2>`)</td>
     <td>Arcane::MachineShMemWinMeshMDVariableT</td>
   </tr>
 
   <tr>
-    <td>Variable multi-dimensionnelle vectorielle<br>(`Arcane::MeshVectorMDVariableRefT<Cell, Real, 7, MDDim2>`)</td>
+    <td>Vector Multi-dimensional Variable<br>(`Arcane::MeshVectorMDVariableRefT<Cell, Real, 7, MDDim2>`)</td>
     <td>Arcane::MachineShMemWinMeshVectorMDVariableT</td>
   </tr>
 
   <tr>
-    <td>Variable multi-dimensionnelle matricielle<br>(`Arcane::MeshMatrixMDVariableRefT<Cell, Real, 2, 5, MDDim1>`)</td>
+    <td>Matrix Multi-dimensional Variable<br>(`Arcane::MeshMatrixMDVariableRefT<Cell, Real, 2, 5, MDDim1>`)</td>
     <td>Arcane::MachineShMemWinMeshMatrixMDVariableT</td>
   </tr>
 </table>
 
-Trois méthodes sont communes pour ces classes :
+Three methods are common to these classes:
 
 - `machineRanks()`,
 - `barrier()`,
 - `updateVariable()`.
 
-Les deux premières ont déjà été brievement décrites dans la partie précedente
+The first two have already been briefly described in the previous section
 (\ref arcanedoc_parallel_shmem_winarray_var_usage).
 
-`Arcane::MachineShMemWinVariableCommon::machineRanks()` permet de récupérer les rangs des sous-domaines du noeud de
-calcul.
+`Arcane::MachineShMemWinVariableCommon::machineRanks()` allows retrieving the
+ranks of the computation node's subdomains.
 
-Par exemple, si la vue renvoyée contient `[0, 2, 4, 6]`, on sait que le noeud de calcul possède ces sous-domaines et
-que l'on a accès à leurs données via `MachineShMemWin`.<br>
-En utilisant la méthode `Arcane::IParallelMng::commSize()`, sachant que les rangs sont contigus, on peut aussi
-déterminer quels sous-domaines ne sont pas dans notre noeud de calcul.
-Par exemple, si `commSize() = 8`, alors les sous-domaines pour lesquels on devra faire des communications inter-noeuds
-sont les sous-domaines `[1, 3, 5, 7]`.
-
-<br>
-
-`Arcane::MachineShMemWinVariableCommon::barrier()` permet de faire une barrière pour tous les sous-domaines du noeud de
-calcul (donc, si on reprend l'exemple précedent, une barrière pour les sous-domaines `[0, 2, 4, 6]`).
-
-C'est utile dans le cas où les sous-domaines utilisent une fenêtre mémoire pour partager des infos, pour attendre que
-chaque sous-domaine ait écrit dans sa fenêtre avant que d'autres sous-domaines du noeud lisent ces données. Le grain est
-plus petit que `Arcane::IParallelMng::barrier()`.
+For example, if the returned view contains `[0, 2, 4, 6]`, we know that the
+computation node possesses these subdomains and that we have access to their
+data via `MachineShMemWin`.<br>
+By using the `Arcane::IParallelMng::commSize()` method, knowing that the ranks
+are contiguous, we can also determine which subdomains are not in our
+computation node.
+For example, if `commSize() = 8`, then the subdomains for which we must perform
+inter-node communications are subdomains `[1, 3, 5, 7]`.
 
 <br>
 
-La véritable différence avec la partie précédente est la méthode
+`Arcane::MachineShMemWinVariableCommon::barrier()` allows performing a barrier
+for all subdomains of the computation node (so, if we take the previous example,
+a barrier for subdomains `[0, 2, 4, 6]`).
+
+This is useful in the case where subdomains use a memory window to share
+information, to wait until each subdomain has written to its window before other
+subdomains in the node read this data. The granularity is smaller than
+`Arcane::IParallelMng::barrier()`.
+
+<br>
+
+The real difference from the previous section is the method
 `Arcane::MachineShMemWinMeshVariableArrayT::updateVariable()`.
 
-En interne, comme expliqué en introduction, on utilise un allocateur qui alloue de la mémoire en mémoire partagée et on
-utilise la classe `Arcane::MachineShMemWin` pour y accéder.<br>
-`Arcane::MachineShMemWinVariable` utilise à son tour `Arcane::MachineShMemWin` pour accéder à la mémoire partagée des
-variables.
+Internally, as explained in the introduction, we use an allocator that allocates
+memory in shared memory and we use the `Arcane::MachineShMemWin` class to access
+it.<br>
+`Arcane::MachineShMemWinVariable` in turn uses `Arcane::MachineShMemWin` to
+access the shared memory of the variables.
 
-Le problème est que la taille d'un tableau en %Arcane n'est pas forcément de la même taille que la mémoire allouée par
-celui-ci. Par conséquent, toujours en interne, on ne peut pas se baser sur la taille renvoyée par
-`Arcane::MachineShMemWin` pour construire les vues sur les variables.
+The problem is that the size of an array in %Arcane is not necessarily the same
+size as the memory allocated by it. Consequently, internally, we cannot rely on
+the size returned by `Arcane::MachineShMemWin` to build views on the variables.
 
-On doit donc récupérer les tailles des variables de chaque sous-domaine d'une autre façon. Pour cela, on utilise une
-fenêtre mémoire afin de les partager.
+We must therefore retrieve the sizes of the variables from each subdomain in
+another way. To do this, we use a memory window to share them.
 
-Lorsque l'on change la taille d'une variable (via un changement dans le maillage ou via un resize pour les variables
-tableaux), on doit mettre à jour les tailles des variables.
+When changing the size of a variable (via a change in the mesh or via a resize
+for array variables), we must update the variable sizes.
 
-Aujourd'hui, **c'est à l'utilisateur de le faire via un appel à `updateVariable()`**.
+Today, **it is up to the user to do this via a call to `updateVariable()`**.
 
-Il est aussi possible de détruire l'objet `Arcane::MachineShMemWinVariable` et de le recréer après mise à jour de la
-variable.
+It is also possible to destroy the `Arcane::MachineShMemWinVariable` object and
+recreate it after updating the variable.
 
-### Exemples {#arcanedoc_parallel_shmem_winvariable_shared_examples}
+### Examples {#arcanedoc_parallel_shmem_winvariable_shared_examples}
 
-Quelques exemples afin d'illustrer l'utilisation de ces classes :
+Some examples to illustrate the use of these classes:
 
-<div style="text-align: center;">**Exemple 1**</div>
+<div style="text-align: center;">**Example 1**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1
 
-Dans cet exemple, chaque sous-domaine possède un tableau de deux `Int32`.
+In this example, each subdomain has an array of two `Int32`.
 
-\note Le tableau pourrait être de taille différente pour chaque sous-domaine.
+\note The array could be of a different size for each subdomain.
 
-Chaque sous-domaine met son rang dans les deux cases du tableau puis chaque sous-domaine affiche la vue
-de chaque tableau (`var_sh.view(rank)` renvoie une vue de deux `Int32` du tableau de `rank`).
+Each subdomain puts its rank in the two cells of the array, and then each
+subdomain displays the view of each array (`var_sh.view(rank)` returns a view of
+two `Int32` from the `rank` array).
 
-L'appel à la méthode `updateVariable()` pourrait facilement être retiré en mettant `var.resize(2);` entre la création
-de la variable et la création du `MachineShMemWinVariable` :
+The call to the `updateVariable()` method could easily be removed by putting
+`var.resize(2);` between the creation of the variable and the creation of the
+`MachineShMemWinVariable`:
 
-<div style="text-align: center;">**Exemple 1.1**</div>
+<div style="text-align: center;">**Example 1.1**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1_1
 
-Une alternative à l'appel à `updateVariable()` est la destruction/recréation de `MachineShMemWinVariable` :
+An alternative to calling `updateVariable()` is the destruction/recreation of
+`MachineShMemWinVariable`:
 
-<div style="text-align: center;">**Exemple 1.2**</div>
+<div style="text-align: center;">**Example 1.2**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_1_2
 
 ----
 
-<div style="text-align: center;">**Exemple 2**</div>
+<div style="text-align: center;">**Example 2**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_2
 
-Pour les grandeurs au maillage, on a accès à l'opérateur `Arcane::MachineShMemWinMeshVariableScalarT::operator()()` qui
-permet d'accéder à la valeur d'un `Item` grâce à son `local_id`.
+For mesh quantities, we have access to the operator
+`Arcane::MachineShMemWinMeshVariableScalarT::operator()()` which allows
+accessing the value of an `Item` using its `local_id`.
 
-\warning Le `local_id` est local au sous-domaine ciblé. Il est donc nécessaire de le partager d'une manière ou d'une
-autre. Il ne faut pas utiliser les `local_id` d'un sous-domaine pour accéder aux `Items` d'un autre sous-domaine !
+\warning The `local_id` is local to the target subdomain. It is therefore
+necessary to share it in some way. You must not use the `local_id` of one
+subdomain to access the `Items` of another subdomain!
 
-Si plusieurs valeurs doivent être lues d'un autre sous-domaine, il est vivement conseillé de le faire en récupérant une
-vue via la méthode `Arcane::MachineShMemWinMeshVariableScalarT::view()`. Exemple :
+If multiple values need to be read from another subdomain, it is strongly
+recommended to do so by retrieving a view using the method
+`Arcane::MachineShMemWinMeshVariableScalarT::view()`. Example:
 
-<div style="text-align: center;">**Exemple 2.1**</div>
+<div style="text-align: center;">**Example 2.1**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_2_1
 
-\warning S'il y a eu suppressions d'`Items` sans compactage, le code de l'**Exemple 2.1** affichera des valeurs
-d'`Items` supprimés.
+\warning If there have been deletions of `Items` without compaction, the code in
+**Example 2.1** will display values of deleted `Items`.
 
-Dans l'**Exemple 2**, la barrière est importante, étant donné que chaque sous-domaine accédera aux données des autres
-sous-domaines.<br>
-Néanmoins, il est aussi possible de faire ceci, afin d'éviter la barrière :
+In **Example 2**, the barrier is important, given that each subdomain will
+access the data of the other subdomains.<br>
+Nevertheless, it is also possible to do this to avoid the barrier:
 
-<div style="text-align: center;">**Exemple 2.2**</div>
+<div style="text-align: center;">**Example 2.2**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_2_2
 
 ----
 
-<div style="text-align: center;">**Exemple 3**</div>
+<div style="text-align: center;">**Example 3**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_3
 
-Ici, on a un tableau 2D sans support.
+Here, we have a 2D array without support.
 
-\note Comme pour le tableau 1D, le tableau 2D pourrait être de taille différente pour chaque sous-domaine.
+\note As with the 1D array, the 2D array could be of a different size for each
+subdomain.
 
-La méthode `Arcane::MachineShMemWinVariableArray2T::view()` permet de récupérer une vue (de type Arcane::Span2) sur le
-tableau 2D d'un autre sous-domaine du noeud de calcul.
+The method `Arcane::MachineShMemWinVariableArray2T::view()` allows retrieving a
+view (of type Arcane::Span2) on the 2D array of another subdomain of the
+computation node.
 
 ----
 
-<div style="text-align: center;">**Exemple 4**</div>
+<div style="text-align: center;">**Example 4**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_4
 
-Une variable tableau 1D au maillage est un tableau 2D mais avec la première dimension qui correspond au nombre
-d'`Items`.
+A mesh 1D array variable is a 2D array but with the first dimension
+corresponding to the number of `Items`.
 
-\warning Par rapport à la variable tableau 2D sans support, la taille de la seconde dimension doit être identique pour
-chaque sous-domaine.
+\warning Compared to the 2D array variable without support, the size of the
+second dimension must be identical for each subdomain.
 
-On retrouve la méthode `Arcane::MachineShMemWinMeshVariableArrayT::view()` qui retourne une vue du tableau 2D de la
-variable d'un autre sous-domaine.
-La première dimension prend un `local_id` d'un `Item` de l'autre sous-domaine et la seconde dimension est la position
-dans le tableau de l'`Item`.
+We find the method `Arcane::MachineShMemWinMeshVariableArrayT::view()`, which
+returns a view of the 2D array of the variable from another subdomain.
+The first dimension takes a `local_id` of an `Item` from the other subdomain and
+the second dimension is the position in the array of the `Item`.
 
 ----
 
-<div style="text-align: center;">**Exemple 5**</div>
+<div style="text-align: center;">**Example 5**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_5
 
-Avec les variables multi-dimensionnelles, la méthode `Arcane::MachineShMemWinMeshMDVariableT::view()` renvoie un
-`Arcane::MDSpan` avec une dimension en plus par rapport à la dimension de la variable, la première dimension
-correspondant au support.
+With multi-dimensional variables, the method
+`Arcane::MachineShMemWinMeshMDVariableT::view()` returns an `Arcane::MDSpan`
+with one extra dimension compared to the variable's dimension, the first
+dimension corresponding to the support.
 
-L'opérateur `Arcane::MachineShMemWinMeshMDVariableT::operator()()` est aussi disponible et
-permet de récupérer une vue multi-dimensionnelle de la dimension de la variable (vu que l'on donne aussi le `local_id`).
+The operator `Arcane::MachineShMemWinMeshMDVariableT::operator()()` is also
+available and allows retrieving a multi-dimensional view of the variable's
+dimension (since the `local_id` is also provided).
 
-Comme dit précédemment, si accès à plusieurs tableaux d'`Items` pour un sous-domaine donné, il vaut mieux récupérer une
-vue complète via `Arcane::MachineShMemWinMeshMDVariableT::view()`.
+As mentioned previously, if accessing multiple `Items` arrays for a given
+subdomain, it is better to retrieve a complete view via
+`Arcane::MachineShMemWinMeshMDVariableT::view()`.
 
 ----
 
-<div style="text-align: center;">**Exemple 6**</div>
+<div style="text-align: center;">**Example 6**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_shared_examples_6
 
-Pour les variables MD vectorielles et matricielles, on retrouve les mêmes méthodes que dans l'exemple précédent.
+For MD vector and matrix variables, we find the same methods as in the previous
+example.
 
-## Protection/reprise {#arcanedoc_parallel_shmem_winvariable_checkpoints}
+## Checkpoint {#arcanedoc_parallel_shmem_winvariable_checkpoints}
 
-Les variables en mémoire partagée sont compatibles avec le mécanisme de protection/reprise.
+Shared memory variables are compatible with the checkpoint mechanism.
 
-Une propriété de variable a été ajouté afin de pouvoir ne pas sauvegarder les tableaux de sous-domaines spécifiés.
+A variable property has been added to allow not saving the specified subdomain
+arrays.
 
-Il s'agit de la propriété `IVariable::PDumpNull`. Ce n'est pas une propriété réservée aux variables en mémoire partagée.
+This is the `IVariable::PDumpNull` property. This is not a property reserved for
+shared memory variables.
 
-Cette propriété, lorsqu'elle est spécifiée sur une variable, pour un sous-domaine donné, va permettre de sauvegarder un
-tableau vide. C'est particulièrement utile en reprise pour les variables en mémoire partagée étant donné l'obligation de
-faire des opérations collectives.
+This property, when specified on a variable for a given subdomain, allows saving
+an empty array. This is particularly useful in recovery for shared memory
+variables given the obligation to perform collective operations.
 
-### Exemples {#arcanedoc_parallel_shmem_winvariable_checkpoints_examples}
+### Examples {#arcanedoc_parallel_shmem_winvariable_checkpoints_examples}
 
-<div style="text-align: center;">**Exemple 7**</div>
+<div style="text-align: center;">**Example 7**</div>
 \snippet{trimleft} VariableInShMemUnitTest.cc snippet_arcanedoc_parallel_shmem_winvariable_checkpoints_examples_7
 
-On va appeler un sous-domaine maitre du noeud de calcul, le sous-domaine ayant le plus petit rang du noeud (comme
-`machine_ranks` est trié par ordre croissant, il s'agit du premier rang du tableau).
+We will call a master subdomain of the computation node, the subdomain with the
+smallest rank of the node (since `machine_ranks` is sorted in ascending order,
+it is the first rank of the array).
 
-Dans cet exemple, à la première itération de la boucle en temps, on redimensionne la variable pour tous les
-sous-domaines.
+In this example, during the first iteration of the time loop, we resize the
+variable for all subdomains.
 
-Ensuite, on attribue la propriété `IVariable::PDumpNull` à tous les sous-domaines non-maitres.
+Then, we assign the `IVariable::PDumpNull` property to all non-master
+subdomains.
 
-Enfin, à la reprise, on vérifie que les tableaux des sous-domaines maitres ont bien été restaurés et que les autres
-tableaux sont vides.
+Finally, during recovery, we check that the master subdomains' arrays have been
+restored and that the other arrays are empty.
 
 ____
 

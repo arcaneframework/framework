@@ -1,28 +1,29 @@
-﻿# Les fenêtres mémoires en mémoire partagée en multi-processus {#arcanedoc_parallel_shmem}
+﻿# Shared Memory Windows in Multi-Process {#arcanedoc_parallel_shmem}
 
 [TOC]
 
-Cette partie va décrire comment utiliser la mémoire partagée entre les processus d'un même noeud de calcul à l'aide de
-fenêtres mémoires.
+This section will describe how to use shared memory between processes on the
+same computing node using memory windows.
 
-Une fenêtre mémoire est un espace mémoire alloué dans une partie de la mémoire accessible par tous les processus.
-Cette fenêtre sera découpée en plusieurs segments, un par processus.
+A memory window is a memory space allocated in a portion of memory accessible by
+all processes.
+This window will be divided into several segments, one per process.
 
-Deux moyens d'exploiter ces fenêtres sont disponibles :
-- via des tableaux et des vues (comme on utiliserait des Arcane::UniqueArray),
-- via des variables %Arcane.
+Two ways to exploit these windows are available:
+- via arrays and views (as one would use Arcane::UniqueArray),
+- via %Arcane variables.
 
-Pour parler de noeud de calcul, on dira, par la suite, machine.
+From now on, we will refer to a computing node as a machine.
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Table of Contents for this subsection:
 
 1. \subpage arcanedoc_parallel_shmem_winarray <br>
-   Présente les classes permettant d'utiliser la mémoire partagée comme des tableaux %Arcane.
+   Presents the classes that allow shared memory to be used as %Arcane arrays.
 
 2. \subpage arcanedoc_parallel_shmem_winvariable <br>
-   Présente comment créer et utiliser des variables %Arcane en mémoire partagée.
+   Presents how to create and use %Arcane variables in shared memory.
 
 ____
 

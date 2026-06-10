@@ -1,72 +1,73 @@
-# Fichier de configuration {#arcanedoc_examples_concret_example_config}
+﻿# Configuration File {#arcanedoc_examples_concret_example_config}
 
 [TOC]
 
-Pour commencer, voici le fichier de configuration :
+To start, here is the configuration file:
 
 ```xml
 <?xml version="1.0" ?>
- <arcane-config code-name="Quicksilver">
+<arcane-config code-name="Quicksilver">
   <time-loops>
     <time-loop name="QAMALoop">
       <title>QS</title>
-      <description>Default timeloop for code Quicksilver Arcane MiniApp</description>
+      <description>Default timeloop for code Quicksilver Arcane MiniApp
+      </description>
 
       <singleton-services>
-        <service name="SimpleCsvOutput" need="required" />
-        <service name="SimpleCsvComparator" need="required" />
-        <service name="RNG" need="required" />
+        <service name="SimpleCsvOutput" need="required"/>
+        <service name="SimpleCsvComparator" need="required"/>
+        <service name="RNG" need="required"/>
       </singleton-services>
 
       <modules>
-        <module name="QS" need="required" />
-        <module name="SamplingMC" need="required" />
-        <module name="TrackingMC" need="required" />
+        <module name="QS" need="required"/>
+        <module name="SamplingMC" need="required"/>
+        <module name="TrackingMC" need="required"/>
       </modules>
 
       <entry-points where="init">
-        <entry-point name="QS.InitModule" />
-        <entry-point name="SamplingMC.InitModule" />
-        <entry-point name="TrackingMC.InitModule" />
-        <entry-point name="QS.StartLoadBalancing" />
+        <entry-point name="QS.InitModule"/>
+        <entry-point name="SamplingMC.InitModule"/>
+        <entry-point name="TrackingMC.InitModule"/>
+        <entry-point name="QS.StartLoadBalancing"/>
       </entry-points>
 
       <entry-points where="compute-loop">
-        <entry-point name="SamplingMC.CycleSampling" />
-        <entry-point name="TrackingMC.CycleTracking" />
-        <entry-point name="QS.CycleFinalize" />
-        <entry-point name="SamplingMC.CycleFinalize" />
-        <entry-point name="TrackingMC.CycleFinalize" />
-        <entry-point name="QS.LoopLoadBalancing" />
+        <entry-point name="SamplingMC.CycleSampling"/>
+        <entry-point name="TrackingMC.CycleTracking"/>
+        <entry-point name="QS.CycleFinalize"/>
+        <entry-point name="SamplingMC.CycleFinalize"/>
+        <entry-point name="TrackingMC.CycleFinalize"/>
+        <entry-point name="QS.LoopLoadBalancing"/>
       </entry-points>
 
       <entry-points where="on-mesh-changed">
-        <entry-point name="QS.AfterLoadBalancing" />
+        <entry-point name="QS.AfterLoadBalancing"/>
       </entry-points>
 
       <entry-points where="exit">
-        <entry-point name="SamplingMC.EndModule" />
-        <entry-point name="TrackingMC.EndModule" />
-        <entry-point name="QS.CompareWithReference" />
-        <entry-point name="QS.EndModule" />
+        <entry-point name="SamplingMC.EndModule"/>
+        <entry-point name="TrackingMC.EndModule"/>
+        <entry-point name="QS.CompareWithReference"/>
+        <entry-point name="QS.EndModule"/>
       </entry-points>
 
     </time-loop>
   </time-loops>
 </arcane-config>
 ```
-Avec ce fichier, on peut déjà voir à quoi ressemble `QAMA`.
-On retrouve nos trois modules `QS`, `SamplingMC` et `TrackingMC` dans
-la partie `<modules>`.
-On retrouve aussi les trois types de points d'entrées que l'on avait vus
-dans l'exemple `HelloWorld` : `init`, `compute-loop` et `exit`
-(ici : \ref arcanedoc_examples_simple_example_module_sayhelloaxl).
+With this file, we can already see what `QAMA` looks like.
+We find our three modules `QS`, `SamplingMC`, and `TrackingMC` in the`<modules>`
+section.
+We also find the three types of entry points that we saw in the `HelloWorld`
+example: `init`, `compute-loop`, and `exit` (here:
+\ref arcanedoc_examples_simple_example_module_sayhelloaxl).
 
 \note
-Dans `HelloWorld`, il n'y avait qu'un seul point d'entrée par type de point d'entrée
-donc il n'y avait pas à s'inquiéter de l'ordre. Ici, on en a plusieurs.
-Il est donc important de noter que l'ordre des points d'entrée est important et
-pris en compte. En revanche, l'ordre des types de points d'entrées n'est pas important.
+In `HelloWorld`, there was only one entry point per entry point type, so there
+was no need to worry about the order. Here, we have several. It is therefore
+important to note that the order of entry points is important and is taken into
+account. Conversely, the order of entry point types is not important.
 ```xml
 <!-- 1) -->
 <entry-points where="compute-loop">
@@ -79,7 +80,7 @@ pris en compte. En revanche, l'ordre des types de points d'entrées n'est pas im
   <entry-point name="SamplingMC.InitModule" />
 </entry-points>
 ```
-donne la même chose que :
+gives the same result as:
 ```xml
 <!-- 2) -->
 <entry-points where="init">
@@ -92,12 +93,12 @@ donne la même chose que :
   <entry-point name="TrackingMC.CycleTracking" />
 </entry-points>
 ```
-mais est different de :
+but is different from:
 ```xml
 <!-- 3) -->
 <entry-points where="init">
-  <entry-point name="SamplingMC.InitModule" /> <!-- ici -->
-  <entry-point name="QS.InitModule" />         <!-- ici -->
+  <entry-point name="SamplingMC.InitModule"/> <!-- here -->
+  <entry-point name="QS.InitModule"/>         <!-- here -->
 </entry-points>
 
 <entry-points where="compute-loop">
@@ -109,55 +110,56 @@ mais est different de :
 
 ____
 
-Dans les nouveautés, on a d'abord la partie `<singleton-services>`.
-On retrouve le service vu dans la section précédente : `RNG`. Nous avons
-aussi deux autres services : `Arcane::SimpleCsvOutput` et `Arcane::SimpleCsvComparator`.
-Ces services sont des services inclus dans le framework %Arcane et peuvent
-donc être utilisés par n'importe quelle application.
+In the new features, we first have the `<singleton-services>` section.
+We find the service seen in the previous section: `RNG`. We also have
+two other services: `Arcane::SimpleCsvOutput` and `Arcane::SimpleCsvComparator`.
+These services are services included in the %Arcane framework and can
+therefore be used by any application.
 
-Leurs interfaces sont disponibles dans cette documentation :
-`Arcane::ISimpleTableOutput`, `Arcane::ISimpleTableComparator` et `Arcane::IRandomNumberGenerator`.
+Their interfaces are available in this documentation:
+`Arcane::ISimpleTableOutput`, `Arcane::ISimpleTableComparator`, and
+`Arcane::IRandomNumberGenerator`.
 
-Comme pour le service `RNG`, il est possible de créer une implémentation
-spécifique à notre application en utilisant l'interface de ces services.
+Like the `RNG` service, it is possible to create an implementation
+specific to our application using the interface of these services.
 
 ____
 
-Il y a deux façons d'utiliser un service : 
-- en tant que service normal, que l'on doit déclarer dans le `.axl` 
-d'un module. Dans ce cas, il y aura un objet par module l'ayant déclaré
-et il ne sera pas partagé.
-- en tant que singleton, que l'on doit déclarer dans le `.config` du projet.
-Dans ce cas, il n'y aura qu'un seul objet par projet. Les modules pourront
-récupérer un pointeur vers cet objet unique.
+There are two ways to use a service:
+- as a normal service, which must be declared in the `.axl` of a module. In
+  this case, there will be one object per module that declares it, and it will
+  not be shared.
+- as a singleton, which must be declared in the project's `.config`.
+  In this case, there will only be one object per project. Modules can
+  retrieve a pointer to this unique object.
 
-Dans QAMA, j'ai choisi la méthode singleton. Pour le service `SimpleCsvOutput`,
-il est nécessaire de partager l'objet pour générer un unique tableau CSV.
-Pour le service `RNG`, peu importe.
+In QAMA, I chose the singleton method. For the `SimpleCsvOutput` service,
+it is necessary to share the object to generate a single CSV table.
+For the `RNG` service, it doesn't matter.
 
-\warning Dans le cas du singleton, il est impossible de récupérer des données
-dans le jeu de données de manière autonome. Il est néanmoins possible de faire
-transiter les données par un des modules présents. Dans le cas de Quicksilver,
-c'est le module QSModule qui est chargé de faire cela.
-Il est possible de déterminer, pour un service, s'il est considéré comme
-un singleton avec cette ligne :
+\warning In the case of a singleton, it is impossible to retrieve data
+from the dataset autonomously. However, it is possible to pass the data through
+one of the present modules. In the case of Quicksilver,
+it is the QSModule that is responsible for doing this.
+It is possible to determine, for a service, whether it is considered a singleton
+with this line:
 ```cpp
 option() == null;
 ```
-S'il y a des options, alors on est dans un service classique ; sinon c'est
-que l'on est dans un singleton.
+If there are options, then we are in a classic service; otherwise, we are in a
+singleton.
 
 ____
 
-On a aussi un nouveau type de point d'entrée : `on-mesh-changed`.
-Ce type de point d'entrée se déclenche lorsque le maillage change,
-lors d'un repartitionnement par exemple.
-Ce point d'entrée s'exécute après les points d'entrées de type `compute-loop`.
+We also have a new type of entry point: `on-mesh-changed`.
+This type of entry point is triggered when the mesh changes,
+for example, during a redistribution.
+This entry point executes after `compute-loop` type entry points.
 \warning
-En pratique, si l'on récupère `m_global_iteration()` dans un point d'entrée
-de type `compute-loop`, on aura l'itération **i** (exemple : `QS.LoopLoadBalancing`),
-puis dans le point d'entrée suivant de type `on-mesh-changed`, on aura 
-l'itération **i+1** (exemple : `QS.AfterLoadBalancing`).
+In practice, if you retrieve `m_global_iteration()` in a `compute-loop` type
+entry point, you will get iteration **i** (example: `QS.LoopLoadBalancing`),
+then in the next `on-mesh-changed` type entry point, you will get iteration
+**i+1** (example: `QS.AfterLoadBalancing`).
 
 ____
 
