@@ -134,16 +134,16 @@ class IMesh
   virtual VariableScalarInteger connectivity() = 0;
 
   //! AMR
-  //! Group of all active meshes
+  //! Group of all active cells
   virtual CellGroup allActiveCells() = 0;
 
-  //! Group of all active meshes specific to the domain
+  //! Group of all active cells specific to the domain
   virtual CellGroup ownActiveCells() = 0;
 
-  //! Group of all meshes of level \p level
+  //! Group of all cells of level \p level
   virtual CellGroup allLevelCells(const Integer& level) = 0;
 
-  //! Group of all meshes specific to the domain of level \p level
+  //! Group of all cells specific to the domain of level \p level
   virtual CellGroup ownLevelCells(const Integer& level) = 0;
 
   //! Group of all active faces

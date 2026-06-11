@@ -119,7 +119,7 @@ void AMRUnitTest2::
 _refine(Integer nb_to_refine)
 {
   //! AMR
-  // Search for the first nb_to_refine meshes of type IT_Hexaedron8
+  // Search for the first nb_to_refine cells of type IT_Hexaedron8
   ENUMERATE_CELL (icell, ownCells()) {
     Cell cell = *icell;
     ItemInternal* iitem = cell.internal();

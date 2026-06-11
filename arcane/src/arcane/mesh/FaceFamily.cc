@@ -350,16 +350,16 @@ setBackAndFrontCells(Face face, Int32 iback_cell_lid, Int32 ifront_cell_lid)
   auto c = m_cell_connectivity->trueCustomConnectivity();
   if (c) {
     ItemLocalId face_lid(face.localId());
-    // Removes all connected meshes.
+    // Removes all connected cells.
     // TODO: optimize by not deleting if it is not necessary to avoid
     // reallocations.
     c->removeConnectedItems(face_lid);
     if (front_cell_lid == NULL_ITEM_LOCAL_ID) {
       if (back_cell_lid != NULL_ITEM_LOCAL_ID) {
-        // Only the back_cell or no mesh remains.
+        // Only the back_cell or no cell remains.
         c->IncrementalItemConnectivity::addConnectedItem(face_lid, back_cell_lid); // add the class name for the case of Face to Cell connectivity. The class is overridden to handle family dependencies but the base method must be called here.
       }
-      // Here no mesh remains, but since we deleted everything there is nothing
+      // Here no cell remains, but since we deleted everything there is nothing
       // to do.
     }
     else if (back_cell_lid == NULL_ITEM_LOCAL_ID) {
@@ -367,7 +367,7 @@ setBackAndFrontCells(Face face, Int32 iback_cell_lid, Int32 ifront_cell_lid)
       c->IncrementalItemConnectivity::addConnectedItem(face_lid, front_cell_lid);
     }
     else {
-      // There are two connected meshes. The back_cell is always the first.
+      // There are two connected cells. The back_cell is always the first.
       c->IncrementalItemConnectivity::addConnectedItem(face_lid, back_cell_lid);
       c->IncrementalItemConnectivity::addConnectedItem(face_lid, front_cell_lid);
     }
@@ -403,7 +403,7 @@ addBackCellToFace(Face face, Cell new_cell)
 
   _updateSharedInfo();
 
-  // If we already have a mesh, it is the front cell.
+  // If we already have a cell, it is the front cell.
   Int32 front_cell_lid = (nb_cell == 1) ? face.cellId(0) : NULL_ITEM_LOCAL_ID;
   setBackAndFrontCells(face, new_cell.localId(), front_cell_lid);
 }
@@ -437,7 +437,7 @@ addFrontCellToFace(Face face, Cell new_cell)
 
   _updateSharedInfo();
 
-  // If we already have a mesh, it is the back cell.
+  // If we already have a cell, it is the back cell.
   Int32 back_cell_lid = (nb_cell == 1) ? face.cellId(0) : NULL_ITEM_LOCAL_ID;
   setBackAndFrontCells(face, back_cell_lid, new_cell.localId());
 }
@@ -849,8 +849,8 @@ removeCellFromFace(Face face, ItemLocalId cell_to_remove_lid)
   Integer nb_cell_after = nb_cell - 1;
   const Int32 null_cell_lid = NULL_ITEM_LOCAL_ID;
   //! AMR
-  // force the deletion of a face between two meshes of different levels
-  // because this face is not topologically attached to the lower level mesh
+  // force the deletion of a face between two cells of different levels
+  // because this face is not topologically attached to the lower level cell
   if (nb_cell == 2) {
     if (face.backCell().level() != face.frontCell().level())
       nb_cell_after = 0;
@@ -863,8 +863,8 @@ removeCellFromFace(Face face, ItemLocalId cell_to_remove_lid)
         ItemInternal* face2 = subfaces[s];
         Int32 cell0 = face2->cellId(0);
         Int32 cell1 = face2->cellId(1);
-        // We previously had two connected meshes,
-        // so the back_cell is mesh 0, the front cell is mesh 1
+        // We previously had two connected cells,
+        // so the back_cell is cell 0, the front cell is cell 1
         if (cell0 == cell_to_remove_lid) {
           // The front cell remains
           setBackAndFrontCells(face, null_cell_lid, cell1);
@@ -881,8 +881,8 @@ removeCellFromFace(Face face, ItemLocalId cell_to_remove_lid)
   if (nb_cell_after != 0) {
     Int32 cell0 = face.cellId(0);
     Int32 cell1 = face.cellId(1);
-    // We previously had two connected meshes,
-    // so the back_cell is mesh 0, the front cell is mesh 1
+    // We previously had two connected cells,
+    // so the back_cell is cell 0, the front cell is cell 1
     if (cell0 == cell_to_remove_lid) {
       // The front cell remains
       setBackAndFrontCells(face, null_cell_lid, cell1);

@@ -70,7 +70,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
    *
    * The calculation of information to send is done by knowing the new
    * owner of each entity. This information is stored in
-   * the IItemFamily::itemsNewOwner() variable. For example, a mesh
+   * the IItemFamily::itemsNewOwner() variable. For example, a cell
    * will be migrated if the new owner is different from the current owner
    * (which is given by Item::owner()).
    *

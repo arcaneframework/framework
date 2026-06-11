@@ -59,7 +59,7 @@ class ARCANE_CORE_EXPORT IMeshUniqueIdMng
    * \brief Sets the edge numbering version.
    *
    * Valid values are 0, 1, and 2. Value 1 works regardless of
-   * the number of meshes, but the mesh must be read by
+   * the number of cells, but the mesh must be read by
    * a single processor. Value 2 only works if the maximum of the
    * node uniqueIds() does not exceed 2^31.
    *

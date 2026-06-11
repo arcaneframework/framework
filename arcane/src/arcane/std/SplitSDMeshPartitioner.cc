@@ -1347,10 +1347,10 @@ ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMa
   //   double tailleMoy = (double)Maillage->NbElements / (double)Maillage->NbDomainesMax;
   double tailleMoy = (double)Domaine->NbElements;
 
-  // we mark the phantom meshes as already seen
+  // we mark the phantom cells as already seen
   int me = InfoProc->me;
   IPrimaryMesh* mesh = this->mesh()->toPrimaryMesh();
-  CellGroup all_cells = mesh->allCells(); // elements on this processor (including phantom meshes)
+  CellGroup all_cells = mesh->allCells(); // elements on this processor (including phantom cells)
 
   ENUMERATE_CELL (i_item, all_cells) {
     Cell cell = *i_item;
@@ -1630,7 +1630,7 @@ GetMasqueDesElements(StrucInfoProc* InfoProc)
   // search for the largest id
   int maxCellLocalId = 0;
 
-  CellGroup all_cells = mesh->allCells(); // elements on this processor (including phantom meshes)
+  CellGroup all_cells = mesh->allCells(); // elements on this processor (including phantom cells)
   ENUMERATE_CELL (i_item, all_cells) {
     const Cell cell = *i_item;
     maxCellLocalId = MAX(maxCellLocalId, cell.localId());

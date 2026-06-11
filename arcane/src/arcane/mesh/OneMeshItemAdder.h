@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* OneMeshItemAdder.h                                          (C) 2000-2025 */
 /*                                                                           */
-/* Mesh creation utility                                                     */
+/* Cell creation utility                                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ONEITEMADDER_H
 #define ARCANE_MESH_ONEITEMADDER_H
@@ -48,7 +48,7 @@ class OneMeshItemAdder
  private:
 
   // Class used to make FullCellInfo data
-  // and fragmented mesh description data compatible
+  // and fragmented cell description data compatible
   class CellInfoProxy;
 
  public:

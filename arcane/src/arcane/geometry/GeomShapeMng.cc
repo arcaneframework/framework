@@ -70,7 +70,7 @@ initialize()
   // but for now this is not calculated correctly
   // during init.
   if (mesh->dimension() == 2) {
-    // In 2D, we do not have meshes containing more nodes than quads
+    // In 2D, we do not have cells containing more nodes than quads
     m_cell_shape_nodes.resize(4);
     //TODO: Check if this is necessary.
     m_cell_shape_faces.resize(4);

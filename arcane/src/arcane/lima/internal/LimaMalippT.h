@@ -1315,7 +1315,7 @@ _createGroups(IMesh* mesh, eItemKind item_kind, LimaGroupReader<LimaMaliReader>*
 
   Int64UniqueArray unique_ids;
 
-  // Creation of mesh groups
+  // Creation of cell groups
   if (is_master_io) {
     StringUniqueArray groups_name(lima_group_reader->groupsName());
     //std::vector<std::string> groups = wrapper.cellGroups();

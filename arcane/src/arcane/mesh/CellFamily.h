@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellFamily.h                                                (C) 2000-2024 */
 /*                                                                           */
-/* Mesh Family.                                                              */
+/* Cell Family.                                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_CELLFAMILY_H
 #define ARCANE_MESH_CELLFAMILY_H
@@ -37,8 +37,9 @@ class HChildCellCompactIncrementalItemConnectivity;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Mesh Family.
+ * \brief Cell Family.
  */
 class ARCANE_MESH_EXPORT CellFamily
 : public ItemFamily
@@ -72,41 +73,41 @@ class ARCANE_MESH_EXPORT CellFamily
   Cell findOrAllocOne(Int64 uid, ItemTypeId type_id, bool& is_alloc);
 
   /*!
-   * Detaches the mesh \a cell from the mesh without deleting it
+   * Remove the cell \a cell
    *
-   * @param cell the mesh to detach
+   * @param cell the cell to remove
    */
   void removeCell(Cell cell);
 
-  //! Removes the meshes whose local numbers are \a cells_local_id
+  //! Removes the cells whose local numbers are \a cells_local_id
   void removeCells(ConstArrayView<Int32> cells_local_id);
 
   /*!
-   * Detaches the mesh \a cell from the mesh without deleting it
+   * Detaches the cell \a cell from the mesh without deleting it
    *
-   * @param cell the mesh to detach
+   * @param cell the cell to detach
    */
   void detachCell(Cell cell);
 
   /*!
-   * Detaches the meshes with local identifiers \a cell_local_ids from the mesh without deleting them.
+   * Detaches the cells with local identifiers \a cell_local_ids from the mesh without deleting them.
    * Based on the dependency graph of ItemFamilyNetwork families.
    *
-   * @param cells_local_id local identifiers of the meshes to detach
+   * @param cells_local_id local identifiers of the cells to detach
    */
   void detachCells2(Int32ConstArrayView cell_local_ids);
 
   /*!
-   * Destroys the mesh \a cell that has already been detached from the mesh
+   * Destroys the cell \a cell that has already been detached from the mesh
    *
-   * @param cell the detached mesh to destroy
+   * @param cell the detached cell to destroy
    */
   void removeDetachedCell(Cell cell);
 
   /*!
    * Removes the group of entities \a local_ids
    *
-   * @param local_ids the group of meshes to remove
+   * @param local_ids the group of cells to remove
    */
   virtual void internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost = false) override;
 

@@ -68,7 +68,7 @@ namespace Arcane
  * via the setHasUniqueIdMap() method only if no entity
  * has been created. This operation is not possible on
  * node, edge, face, and cell families.
- 
+
  * When a family is modified by adding or removing entities, the
  * variables and groups relying on this family are no longer usable
  * until endUpdate() is called. For optimization reasons, it is possible to perform

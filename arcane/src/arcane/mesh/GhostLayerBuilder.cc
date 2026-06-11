@@ -338,9 +338,9 @@ _addOneGhostLayerV2()
       //info() << "NODE UID=" << node_uid;
       ranks.clear();
       cells.clear();
-      // Since we know the list of meshes connected to this node, as well as their
+      // Since we know the list of cells connected to this node, as well as their
       // owner, we take the opportunity to calculate the node's owner by considering
-      // that it is the same owner as the mesh with the smallest uniqueId()
+      // that it is the same owner as the cell with the smallest uniqueId()
       // connected to this node.
       Int32 node_new_owner = NULL_SUB_DOMAIN_ID;
       Int64 smallest_cell_uid = NULL_ITEM_UNIQUE_ID;

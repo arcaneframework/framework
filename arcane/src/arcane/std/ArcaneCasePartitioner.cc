@@ -85,7 +85,7 @@ class ArcaneInitialPartitioner
 
  private:
 
-  //! Groups meshes associated with constraints on the same process
+  //! Groups cells associated with constraints on the same process
   void _mergeConstraints(ConstArrayView<IMesh*> meshes);
 
   //! Prints statistics on the partitioning
@@ -95,7 +95,7 @@ class ArcaneInitialPartitioner
 
   ISubDomain* m_sub_domain = nullptr;
   ArcaneCasePartitioner* m_main = nullptr;
-  //! Stores for each mesh a variable indicating which partition each mesh belongs to.
+  //! Stores for each mesh a variable indicating which partition each cell belongs to.
   UniqueArray<TrueOwnerInfo> m_part_indexes;
 };
 
@@ -281,8 +281,8 @@ partitionAndDistributeMeshes(ConstArrayView<IMesh*> meshes)
     mesh->properties()->setBool("compact", compact);
   }
 
-  // Adding a second layer of meshes
-  // We should no longer call exchangeItems with the two mesh layers
+  // Adding a second layer of cells
+  // We should no longer call exchangeItems with the two cell layers
   IMesh* mesh = meshes[0];
   if (m_main->options()->nbGhostLayer() == 2)
     mesh->updateGhostLayers(false);
@@ -371,8 +371,8 @@ _partitionMesh(Int32 nb_part)
 
   // Partitions the mesh.
   // In return, \a cells_new_owner contains the number of the partition to which
-  // each mesh will belong. To save the file, all
-  // meshes of a partition must be on the same subdomain. For this,
+  // each cell will belong. To save the file, all
+  // cells of a partition must be on the same subdomain. For this,
   // we store the partition number in \a true_cells_owner, then
   // we exchange the mesh.
   VariableCellInt32 true_cells_owner(*m_init_part->m_part_indexes[0].m_true_cells_owner);
@@ -725,7 +725,7 @@ _computeGroups(IItemFamily* current_family, IItemFamily* new_family)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Adds to the mesh array the desired number of mesh layers
+ * \brief Adds to the cell array the desired number of cell layers
  */
 void ArcaneCasePartitioner::
 _addGhostLayers(CellGroup current_all_cells, Array<Cell>& cells_selected_for_new_mesh,
@@ -778,7 +778,7 @@ _addGhostLayers(CellGroup current_all_cells, Array<Cell>& cells_selected_for_new
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Adds the TOUT, LOCAL, and MF_* mesh groups based on neighbor groups
+ * \brief Adds the TOUT, LOCAL, and MF_* cell groups based on neighbor groups
  *        Also adds the LOCALN node group (but not the NF_*)
  */
 void ArcaneCasePartitioner::

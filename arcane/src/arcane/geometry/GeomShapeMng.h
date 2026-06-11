@@ -53,7 +53,7 @@ namespace Arcane::geometric
  *   info() << "Node0=" << shape_view.node(0);
  * }
  \endcode
- 
+
  * The view retrieved by GeomShapeView is constant. To retrieve a
  * mutable view, you must use mutableShapeView(). The mutable view
  * is only used to update the different
@@ -68,10 +68,10 @@ namespace Arcane::geometric
  *
  * This class only manages the data on the geometric shapes and
  * these are independent of other variables. This means
- * that if the coordinates of a mesh node change, you must explicitly
+ * that if the coordinates of a cell node change, you must explicitly
  * update the geometric shape information. %Arcane provides
  * the BarycentricGeomShapeComputer class for this, but the user
- * can calculate this information in another way than using the barycenter. 
+ * can calculate this information in another way than using the barycenter.
  *
  * All instances of this class whose name name() is identical
  * are implicitly shared and therefore provide the same GeomShapeView.

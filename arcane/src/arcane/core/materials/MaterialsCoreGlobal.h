@@ -176,10 +176,10 @@ class IArrayMeshMaterialVariable;
 class CellComponentCellEnumerator;
 template <typename ConstituentCellType> class CellComponentCellEnumeratorT;
 
-//! Enumerator over material meshes of a mesh.
+//! Enumerator over material cells of a cell.
 using CellMatCellEnumerator = CellComponentCellEnumeratorT<MatCell>;
 
-//! Enumerator over environment meshes of a mesh.
+//! Enumerator over environment cells of a cell.
 using CellEnvCellEnumerator = CellComponentCellEnumeratorT<EnvCell>;
 
 //! Index of a MatItem in a variable.

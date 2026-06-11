@@ -398,7 +398,7 @@ haveIntersection(const AMRPatchPosition& other) const
 Int32 AMRPatchPosition::
 computeOverlapLayerSize(Int32 level, Int32 higher_level, Int32 overlap_layer_size_top_level)
 {
-  // If the top level is -1, overlap meshes are disabled.
+  // If the top level is -1, overlap cells are disabled.
   if (overlap_layer_size_top_level == -1) {
     return 0;
   }

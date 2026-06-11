@@ -42,7 +42,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
 
   virtual ~ICartesianMeshPatch() {} //<! Releases resources
 
-  //! Mesh group of the patch
+  //! Cell group of the patch
   virtual CellGroup cells() = 0;
   virtual CellGroup inPatchCells() = 0;
   virtual CellGroup overlapCells() = 0;
@@ -50,10 +50,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshPatch
   //! TODO
   virtual Integer index() = 0;
 
-  //! List of meshes in direction \a dir
+  //! List of cells in direction \a dir
   virtual CellDirectionMng& cellDirection(eMeshDirection dir) = 0;
 
-  //! List of meshes in direction \a dir (0, 1 or 2)
+  //! List of cells in direction \a dir (0, 1 or 2)
   virtual CellDirectionMng& cellDirection(Integer idir) = 0;
 
   //! List of faces in direction \a dir

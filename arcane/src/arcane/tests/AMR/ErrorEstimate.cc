@@ -259,7 +259,7 @@ errorToFlagConverter(RealArray& error_per_cell, const Real& refine_frac,
   // 	    << "     refine_cutoff:  " << refine_cutoff  << "\n"
   // 	    << "     coarsen_cutoff: " << coarsen_cutoff << "\n";
 
-  // Tag the meshes for adaptation
+  // Tag the cells for adaptation
   i = 0;
   ENUMERATE_CELL (icell, mesh->ownActiveCells()) { // active cells
     Cell cell = *icell;

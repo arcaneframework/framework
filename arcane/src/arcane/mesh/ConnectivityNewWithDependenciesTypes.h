@@ -248,7 +248,7 @@ class ARCANE_MESH_EXPORT FaceToCellIncrementalItemConnectivity
     if (nb_cell >= 2)
       ARCANE_FATAL("face '{0}' already has two cells", face->uniqueId().asInt64()); // FullItemPrinter cannot be used here, the connectivities are not entirely set
 
-    // If we already have a mesh, it is the back cell.
+    // If we already have a cell, it is the back cell.
     Int32 iback_cell_lid = (nb_cell == 1) ? face->cellId(0) : NULL_ITEM_LOCAL_ID;
     ItemLocalId back_cell_lid(iback_cell_lid);
     ItemLocalId front_cell_lid(cell->localId());
@@ -281,7 +281,7 @@ class ARCANE_MESH_EXPORT FaceToCellIncrementalItemConnectivity
 
     if (nb_cell >= 2)
       ARCANE_FATAL("face '{0}' already has two cells", face->uniqueId().asInt64()); // FullItemPrinter cannot be used here, the connectivities are not entirely set
-    // If we already have a mesh, it is the front cell.
+    // If we already have a cell, it is the front cell.
     Int32 ifront_cell_lid = (nb_cell == 1) ? face->cellId(0) : NULL_ITEM_LOCAL_ID;
 
     ItemLocalId back_cell_lid(cell->localId());
@@ -294,7 +294,7 @@ class ARCANE_MESH_EXPORT FaceToCellIncrementalItemConnectivity
   void _setBackAndFrontCells(ItemInternal* face, ItemLocalId back_cell_lid, ItemLocalId front_cell_lid)
   {
     ItemLocalId face_lid(face->localId());
-    // Remove all connected meshes => the method is mutualized for additions or deletions
+    // Remove all connected cells => the method is mutualized for additions or deletions
     // TODO: optimize by not deleting if not necessary to avoid
     // reallocations.
     removeConnectedItems(face_lid);
@@ -306,7 +306,7 @@ class ARCANE_MESH_EXPORT FaceToCellIncrementalItemConnectivity
         // add flags
         mod_flags = (ItemFlags::II_Boundary | ItemFlags::II_HasBackCell | ItemFlags::II_BackCellIsFirst);
       }
-      // Here no mesh remains but since we deleted everything there is
+      // Here no cell remains but since we deleted everything there is
       // nothing to do
     }
     else if (back_cell_lid == NULL_ITEM_LOCAL_ID) {
@@ -316,7 +316,7 @@ class ARCANE_MESH_EXPORT FaceToCellIncrementalItemConnectivity
       mod_flags = (ItemFlags::II_Boundary | ItemFlags::II_HasFrontCell | ItemFlags::II_FrontCellIsFirst);
     }
     else {
-      // There are two connected meshes. The back cell is always the first.
+      // There are two connected cells. The back cell is always the first.
       IncrementalItemConnectivity::addConnectedItem(face_lid, back_cell_lid);
       IncrementalItemConnectivity::addConnectedItem(face_lid, front_cell_lid);
       // add flags
@@ -354,8 +354,8 @@ class ARCANE_MESH_EXPORT FaceToCellIncrementalItemConnectivity
     if (nb_cell_after != 0) {
       Int32 cell0 = face->cellId(0);
       Int32 cell1 = face->cellId(1);
-      // We must have had two connected meshes before,
-      // so the back cell is mesh 0, the front cell is mesh 1
+      // We must have had two connected cells before,
+      // so the back cell is cell 0, the front cell is cell 1
       if (cell0 == cell_to_remove_lid) {
         // The front cell remains
         _setBackAndFrontCells(face, ItemLocalId(null_cell_lid), ItemLocalId(cell1));

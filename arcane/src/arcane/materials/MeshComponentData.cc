@@ -196,8 +196,8 @@ checkValid()
 
   // Checks that the list of indexer->localIds() and the one
   // from the 'cells' group is the same. To do this, an array
-  // is declared which is indexed by the mesh's localId(). For each element,
-  // 1 is added if the mesh is in the group and 2 if it is in the
+  // is declared which is indexed by the cell's localId(). For each element,
+  // 1 is added if the cell is in the group and 2 if it is in the
   // component's internal structures. If the final value is not 3,
   // there is an incoherence.
   {

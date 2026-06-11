@@ -83,7 +83,7 @@ class UnitTestCartesianMeshPatchService
   void tearDown();
 
   /*
-   * Test on meshes by refinement level and their parents
+   * Test on cells by refinement level and their parents
    */
   void testCartesianMeshPatchCellsAndParents();
 
@@ -112,7 +112,7 @@ class UnitTestCartesianMeshPatchService
   // Pointer to the Cartesian mesh containing the views
   Arcane::ICartesianMesh* m_cartesian_mesh = nullptr;
 
-  // Arrays of meshes and parents by level
+  // Arrays of cells and parents by level
   std::vector<std::vector<Arcane::Int64>> m_lvl_cell_uid;
   std::vector<std::vector<Arcane::Int64>> m_lvl_cell_p_uid;
   std::vector<std::vector<Arcane::Int64>> m_lvl_cell_tp_uid;
@@ -421,7 +421,7 @@ setUpForClass()
 
   // clang-format off
 
-  // Arrays of meshes and parents by level:
+  // Arrays of cells and parents by level:
   {
     // Level 0
 		{
@@ -487,7 +487,7 @@ setUpForClass()
 		}
   }
 
-  // Tables of Cartesian views on the meshes per patch
+  // Tables of Cartesian views on the cells per patch
 	{
 		// Patch 0:
 		{

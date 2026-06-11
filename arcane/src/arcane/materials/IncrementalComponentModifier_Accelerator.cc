@@ -92,12 +92,12 @@ apply(MaterialModifierOperation* operation)
   if (nb_mat != 1) {
 
     // If it is possible to have multiple materials per environment, it must be handled
-    // for each mesh if the environment changes following the addition/removal of material.
+    // for each cell if the environment changes following the addition/removal of material.
     // The two cases are:
-    // - in case of addition, the environment changes for a mesh if there was no
-    //   material before. In this case, the environment is added to the mesh.
-    // - in case of removal, the environment changes in the mesh if there was
-    //   only 1 material before. In this case, the environment is removed from the mesh.
+    // - in case of addition, the environment changes for a cell if there was no
+    //   material before. In this case, the environment is added to the cell.
+    // - in case of removal, the environment changes in the cell if there was
+    //   only 1 material before. In this case, the environment is removed from the cell.
 
     UniqueArray<Int32>& cells_changed_in_env = m_work_info.cells_changed_in_env;
     UniqueArray<Int32>& cells_unchanged_in_env = m_work_info.cells_unchanged_in_env;
@@ -158,13 +158,13 @@ apply(MaterialModifierOperation* operation)
       flagRemovedCells(cells_unchanged_in_env, false);
     }
 
-    // Takes for \a ids only the list of meshes
+    // Takes for \a ids only the list of cells
     // that did not yet belong to the environment in which we
     // are adding the material.
     ids = cells_changed_in_env.view();
   }
 
-  // Updates the number of environments and materials for each mesh.
+  // Updates the number of environments and materials for each cell.
   // NOTE: the operation must first be performed on the environments before
   // the materials.
   {
@@ -180,9 +180,9 @@ apply(MaterialModifierOperation* operation)
     }
   }
 
-  // Since we have added/removed material meshes in the environment,
-  // we must transform pure meshes into partial meshes (in case
-  // of addition) or partial meshes into pure meshes (in case of
+  // Since we have added/removed material cells in the environment,
+  // we must transform pure cells into partial cells (in case
+  // of addition) or partial cells into pure cells (in case of
   // removal).
   info(4) << "Transform PartialPure for material name=" << true_mat->name();
   _switchCellsForMaterials(true_mat, orig_ids);
@@ -214,7 +214,7 @@ apply(MaterialModifierOperation* operation)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculates the meshes to transform when modifying the meshes
+ * \brief Calculates the cells to transform when modifying the cells
  * of an environment.
  */
 Int32 IncrementalComponentModifier::
@@ -273,7 +273,7 @@ _computeItemsToAdd(ComponentItemListBuilder& list_builder, SmallSpan<const Int32
   // We would then need to reverse the elements of the second list to have
   // the same traversal order as before going to the accelerator.
 
-  // Fills the list of pure meshes
+  // Fills the list of pure cells
   {
     auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
       return !cells_is_partial[index];
@@ -285,7 +285,7 @@ _computeItemsToAdd(ComponentItemListBuilder& list_builder, SmallSpan<const Int32
     filterer.applyWithIndex(nb_id, select_lambda, setter_lambda, A_FUNCINFO);
     nb_pure_added = filterer.nbOutputElement();
   }
-  // Fills the list of partial meshes
+  // Fills the list of partial cells
   {
     auto select_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> bool {
       return cells_is_partial[index];

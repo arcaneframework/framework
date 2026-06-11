@@ -78,7 +78,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
     return m_shared_info->_componentId(m_constituent_item_index);
   }
 
-  //! Indicates if it is the null mesh.
+  //! Indicates if it is the null cell.
   inline ARCCORE_HOST_DEVICE constexpr bool null() const
   {
     return m_constituent_item_index.isNull();
@@ -87,7 +87,7 @@ class ARCANE_CORE_EXPORT ConstituentItemBase
   /*!
    * \brief Associated component.
    *
-   * This call is only valid for material or environment meshes. If you want
+   * This call is only valid for material or environment cells. If you want
    * a valid call for all 'ComponentItem's, you must use componentId().
    */
   inline IMeshComponent* component() const

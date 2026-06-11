@@ -2175,7 +2175,7 @@ _removeGhostChildren()
   DynamicMesh* mesh = m_mesh;
   ItemInternalMap& cells_map = mesh->cellsMap();
 
-  // Removal of meshes
+  // Removal of cells
   Int32UniqueArray cells_to_remove;
   cells_to_remove.reserve(1000);
   UniqueArray<ItemInternal*> parent_cells;

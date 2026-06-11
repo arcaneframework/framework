@@ -457,7 +457,7 @@ _compute1CreateMesh()
   MeshStats stats(traceMng(), new_mesh, subDomain()->parallelMng());
   stats.dumpStats();
 
-  // If the mesh is dimension 1, check that all meshes
+  // If the mesh is dimension 1, check that all cells
   // have exactly 2 faces.
   Int32 mesh_dimension = new_mesh->dimension();
   if (mesh_dimension == 1) {

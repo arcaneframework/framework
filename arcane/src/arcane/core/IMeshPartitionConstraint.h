@@ -40,11 +40,11 @@ class IMeshPartitionConstraint
  public:
 
   /*!
-   * \brief Adds a set of constraints on the meshes.
+   * \brief Adds a set of constraints on the cells.
    *
    * Adds to the \a linked_cells array a set of pairs of
-   * uniqueId() of meshes that must remain in the same partition.
-   * For example, if meshes 25 and 23 must remain connected, it
+   * uniqueId() of cells that must remain in the same partition.
+   * For example, if cells 25 and 23 must remain connected, it
    * is enough to call:
    * \code
    * linked_cells.add(23);
@@ -52,8 +52,8 @@ class IMeshPartitionConstraint
    * \endcode
    *
    * You must always add pairs of uniqueId(), potentially repeating
-   * the meshes. For example, if one wishes
-   * that meshes 35, 37, and 39, one must do as follows:
+   * the cells. For example, if one wishes
+   * that cells 35, 37, and 39, one must do as follows:
    * \code
    * linked_cells.add(35);
    * linked_cells.add(37);

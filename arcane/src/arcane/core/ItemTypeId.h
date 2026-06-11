@@ -143,27 +143,27 @@ static constexpr ItemTypeId ITI_Pentaedron15(IT_Pentaedron15);
 static constexpr ItemTypeId ITI_Pyramid13(IT_Pyramid13);
 //@}
 
-//! Line3 Mesh. EXPERIMENTAL !
+//! Line3 Cell. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_CellLine3(IT_CellLine3);
 
 /*!
- * \brief 2D meshes in a 3D mesh.
+ * \brief 2D cells in a 3D mesh.
  * \warning These types are experimental and should not be used outside of %Arcane.
  */
 //@{
-//! Line2 Mesh in a 3D mesh. EXPERIMENTAL !
+//! Line2 Cell in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Line2(IT_Cell3D_Line2);
-//! Triangular Mesh with 3 nodes in a 3D mesh. EXPERIMENTAL !
+//! Triangular Cell with 3 nodes in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Triangle3(IT_Cell3D_Triangle3);
-//! Quadrangular Mesh with 4 nodes in a 3D mesh. EXPERIMENTAL !
+//! Quadrangular Cell with 4 nodes in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Quad4(IT_Cell3D_Quad4);
-//! Line3 Mesh in a 3D mesh. EXPERIMENTAL !
+//! Line3 Cell in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Line3(IT_Cell3D_Line3);
-//! Triangular Mesh with 6 nodes in a 3D mesh. EXPERIMENTAL !
+//! Triangular Cell with 6 nodes in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Triangle6(IT_Cell3D_Triangle6);
-//! Quadrangular Mesh with 8 nodes in a 3D mesh. EXPERIMENTAL !
+//! Quadrangular Cell with 8 nodes in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Quad8(IT_Cell3D_Quad8);
-//! Quadrangular Mesh with 9 nodes in a 3D mesh. EXPERIMENTAL !
+//! Quadrangular Cell with 9 nodes in a 3D mesh. EXPERIMENTAL !
 static constexpr ItemTypeId ITI_Cell3D_Quad9(IT_Cell3D_Quad9);
 //@}
 

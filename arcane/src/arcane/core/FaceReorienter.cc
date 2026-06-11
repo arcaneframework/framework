@@ -153,7 +153,7 @@ checkAndChangeOrientation(Face face)
   // Pair containing the back_cell and front_cell of the face.
   std::pair<Int32, Int32> face_cells(cell1_lid, cell0_lid);
   if (cell0_is_back_cell) {
-    // If we arrive here, it means mesh 0 is the back_cell
+    // If we arrive here, it means cell 0 is the back_cell
     std::swap(face_cells.first, face_cells.second);
   }
   face_topology_modifier->setBackAndFrontCells(face, CellLocalId(face_cells.first), CellLocalId(face_cells.second));
@@ -270,12 +270,12 @@ checkAndChangeOrientationAMR(Face face)
   if (cell_0) {
     Int32 cell1_lid = (face_has_two_cell) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;
     if (cell_is_back_cell) {
-      // If we arrive here, it means mesh 0 is the back_cell
+      // If we arrive here, it means cell 0 is the back_cell
       // The front cell is always cell1_lid (which may be null).
       face_cells = { face.cell(0).localId(), cell1_lid };
     }
     else {
-      // If we arrive here, it means mesh 0 is the front_cell
+      // If we arrive here, it means cell 0 is the front_cell
       // The back cell is always cell1_lid (which may be null)
       face_cells.first = cell1_lid;
       face_cells.second = (face_has_two_cell) ? cell.localId() : face.cell(0).localId();
@@ -283,7 +283,7 @@ checkAndChangeOrientationAMR(Face face)
   }
   else if (cell_1) {
     if (cell_is_back_cell) {
-      // If we arrive here, it means mesh 0 is the front_cell
+      // If we arrive here, it means cell 0 is the front_cell
       // We update the orientation info
       face_cells.second = face.cell(0).localId();
       // WARNING, if here, it means we must swap the front cell
@@ -291,7 +291,7 @@ checkAndChangeOrientationAMR(Face face)
       face_cells.first = (face_has_two_cell) ? cell.localId() : NULL_ITEM_LOCAL_ID;
     }
     else {
-      // If we arrive here, it means mesh 0 is the back_cell
+      // If we arrive here, it means cell 0 is the back_cell
       // We update the orientation info
       face_cells.first = face.cell(0).localId();
       face_cells.second = (face_has_two_cell) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;

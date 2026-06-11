@@ -308,7 +308,7 @@ class SplitSDMeshPartitioner
   /// makes the domain connected when parts are too small and not connected
   void ConnexifieDomaine(StrucInfoProc* InfoProc, StructureBlocEtendu* Domaine, StrucMaillage* Maillage, double tolConnexite);
 
-  /// searches for the neighboring domain having the max number of shared Faces with the set of meshes
+  /// searches for the neighboring domain having the max number of shared Faces with the set of cells
   int getDomVoisMaxFace(Arcane::Array<Arcane::Cell>& ListeElements, int me);
 
   /// creation of an array that serves as a mask on the LocalId of nodes

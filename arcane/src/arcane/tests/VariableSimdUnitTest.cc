@@ -432,7 +432,7 @@ initializeTest()
          << " vector_size=" << SimdReal::Length
          << " index_size=" << SimdInfo::Int32IndexSize;
 
-  // To test all configurations, the number of meshes
+  // To test all configurations, the number of cells
   // must be a prime number. This ensures that during ENUMERATE
   // we do not land on a multiple of the vector register size.
 

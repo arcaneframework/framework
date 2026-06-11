@@ -37,7 +37,7 @@ computeExtraGhostItems()
   m_trace_mng->info() << "Compute extra ghost cells";
 
   for (Integer i = 0; i < nb_builder; ++i) {
-    // Calculation of extraordinary meshes to send
+    // Calculation of extraordinary cells to send
     m_builders[i]->computeExtraItemsToSend();
   }
 
@@ -71,7 +71,7 @@ computeExtraGhostItems()
   }
   exchanger->processExchange();
 
-  // Receiving meshes
+  // Receiving cells
   for (Integer i = 0, ns = exchanger->nbReceiver(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* s = sm->serializer();

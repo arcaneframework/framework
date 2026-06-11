@@ -242,8 +242,8 @@ _computeFacesUniqueIdsParallelV1()
   ItemInternalMap& faces_map = m_mesh->facesMap();
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
 
-  // NOTE: this array is not useful on all meshes. It
-  // is enough that it contains the meshes that we need, that is to say
+  // NOTE: this array is not useful on all cells. It
+  // is enough that it contains the cells that we need, that is to say
   // ours + those connected to one of our faces. A hash table
   // would be more appropriate.
   HashTableMapT<Int64, Int64> cells_first_face_uid(m_mesh_builder->oneMeshItemAdder()->nbCell() * 2, true);
@@ -383,7 +383,7 @@ _computeFacesUniqueIdsParallelV1()
            << nb_sub_domain_boundary_face << ' ' << nb_recv_sub_domain_boundary_face;
   }
 
-  // Finds the max uniqueId of the meshes across all subdomains.
+  // Finds the max uniqueId of the cells across all subdomains.
   Int64 max_cell_uid = 0;
   Int32 max_cell_local_id = 0;
   cells_map.eachItem([&](Item cell) {
@@ -706,8 +706,8 @@ _computeFacesUniqueIdsParallelV2()
   ItemInternalMap& faces_map = m_mesh->facesMap();
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
 
-  // NOTE: this array is not useful on all meshes. It
-  // is enough that it contains the meshes we need, that is,
+  // NOTE: this array is not useful on all cells. It
+  // is enough that it contains the cells we need, that is,
   // ours + those connected to one of our faces.
   HashTableMapT<Int32, Int32> cell_first_face_uid(m_mesh_builder->oneMeshItemAdder()->nbCell() * 2, true);
 
@@ -717,9 +717,9 @@ _computeFacesUniqueIdsParallelV2()
   // Each subdomain builds its list of boundary faces, for each face:
   // - its type
   // - the list of its nodes,
-  // - the unique ID of its mesh
-  // - the owner of its mesh
-  // - its index in its mesh
+  // - the unique ID of its cell
+  // - the owner of its cell
+  // - its index in its cell
   // This list will then be sent to all subdomains.
   ItemTypeMng* itm = m_mesh->itemTypeMng();
 
@@ -923,7 +923,7 @@ _computeFacesUniqueIdsSequential()
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
 
-  // In sequential mode, the uniqueIds() of the meshes cannot exceed the
+  // In sequential mode, the uniqueIds() of the cells cannot exceed the
   // size of Integers even in 32 bits.
   Int32 max_uid = 0;
   cells_map.eachItem([&](Item cell) {

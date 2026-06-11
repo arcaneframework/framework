@@ -105,7 +105,7 @@ class IMeshChecker
    *
    * This verification is performed when calling checkValidConnectivity().
    * If it is active, we check that the nodes, edges, and
-   * faces have the same owner as one of the meshes they are
+   * faces have the same owner as one of the cells they are
    * connected to.
    *
    * This is always the case if the owners are managed by %Arcane

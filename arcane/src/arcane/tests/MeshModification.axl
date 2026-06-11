@@ -6,9 +6,9 @@
 
   <options>
     <simple name="remove-fraction" type="int32">
-      <description>Fraction of meshes to remove. If the value is
-      2, half of the meshes are removed. If the value is 3, we
-      remove one third of the meshes</description>
+      <description>Fraction of cells to remove. If the value is
+      2, half of the cells are removed. If the value is 3, we
+      remove one third of the cells</description>
     </simple>
   </options>
 

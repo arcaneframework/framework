@@ -391,7 +391,7 @@ _computeMaterialIndexesMonoMat(ComponentItemInternalData* item_internal_data, Ru
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculation for the environment material meshes and their location
+ * \brief Calculation for the environment material cells and their location
  * in the variable indexing table.
  */
 void MeshEnvironment::
@@ -400,7 +400,7 @@ computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list
   info(4) << "ComputeItemListForMaterials (V2)";
   ConstArrayView<Int16> nb_env_per_cell = connectivity_list.cellsNbEnvironment();
   const Int16 env_id = componentId();
-  // Calculation for the number of mixed meshes per material
+  // Calculation for the number of mixed cells per material
   // TODO: to be done in MeshMaterialVariableIndexer
   for (MeshMaterial* mat : m_true_materials) {
     MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
@@ -413,7 +413,7 @@ computeItemListForMaterials(const ConstituentConnectivityList& connectivity_list
     ENUMERATE_CELL (icell, cells) {
       Int32 lid = icell.itemLocalId();
       // We only take the global index if we are the only material and the only
-      // environment of the mesh. Otherwise, we take a multiple index
+      // environment of the cell. Otherwise, we take a multiple index
       if (nb_env_per_cell[lid] > 1 || connectivity_list.cellNbMaterial(icell, env_id) > 1)
         list_builder.addPartialItem(lid);
       else
@@ -440,14 +440,14 @@ notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
   // This method is called when there is mesh compaction
   // and the entity group associated with this environment has just been compacted.
   // Since there are currently no observers for the addition
-  // or removal of group meshes, it is possible
+  // or removal of group cells, it is possible
   // that when this method is called, the environment and material information
   // is not up to date (for example, the list of local_ids
   // in m_variable_indexer does not have the same values as cells().
   // For now, this is not very serious because everything is overwritten after
   // every modification to a material or an environment.
   // In the future, this will need to be taken into account when the addition
-  // or removal of material meshes is optimized.
+  // or removal of material cells is optimized.
   info(4) << "Changing (V3) local ids references env=" << name();
   info(4) << "CurrentCells name=" << cells().name()
           << " n=" << cells().view().localIds().size();
@@ -482,7 +482,7 @@ notifyLocalIdsChanged(Int32ConstArrayView old_to_new_ids)
     _changeIds(componentData(), old_to_new_ids);
   }
 
-  // Rebuild information on pure and mixed meshes.
+  // Rebuild information on pure and mixed cells.
   // This must be done once all values are updated.
   {
     RunQueue& queue = m_material_mng->_internalApi()->runQueue();

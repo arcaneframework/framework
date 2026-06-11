@@ -285,7 +285,7 @@ _beginSynchronizeMultiple2(SyncInfo& sync_info)
   IMeshMaterialSynchronizeBuffer* buf_list = sync_info.buf_list.get();
   IMeshMaterialVariableSynchronizer* mmvs = sync_info.mat_synchronizer;
   // Synchronization version that only sends material and environment values
-  // for shared meshes.
+  // for shared cells.
   // NOTE: This version requires that materials are correctly synchronized
   // between sub-domains.
 
@@ -392,7 +392,7 @@ _endSynchronizeMultiple2(SyncInfo& sync_info)
 
   pm->waitAllRequests(sync_info.requests);
 
-  // Recopy the received data into the ghost meshes.
+  // Recopy the received data into the ghost cells.
   for (Integer i = 0; i < nb_rank; ++i) {
     ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
     Integer total_ghost = ghost_matcells.size();

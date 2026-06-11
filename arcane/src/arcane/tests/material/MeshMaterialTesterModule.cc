@@ -1087,7 +1087,7 @@ compute()
     _copyPartialToGlobal(mat, *m_density_post_processing[i], m_mat_density);
   }
 
-  // Remove meshes for testing
+  // Remove cells for testing
   {
     info() << "CheckRemove: Cells in MAT1=" << m_mat1->cells().size();
     ENUMERATE_MATCELL (imatcell, m_mat1) {
@@ -1115,7 +1115,7 @@ compute()
     mesh()->modifier()->setDynamic(true);
     mesh()->modifier()->removeCells(remove_lids);
     if (parallelMng()->isParallel()) {
-      // In parallel, since we are removing meshes somewhat randomly,
+      // In parallel, since we are removing cells somewhat randomly,
       // we remove the tests until the mesh is up to date.
       // TODO: check why checkValidMesh() crashes.
       Integer check_level = mesh()->checkLevel();
@@ -1152,7 +1152,7 @@ compute()
     }
   }
   {
-    // Initializes density and internal energy in new meshes.
+    // Initializes density and internal energy in new cells.
     ENUMERATE_MAT (imat, m_material_mng) {
       Materials::IMeshMaterial* mat = *imat;
       ENUMERATE_MATCELL (icell, mat) {
@@ -1427,7 +1427,7 @@ _computeDensity()
 
   Int32UniqueArray mat_to_add_array;
   Int32UniqueArray mat_to_remove_array;
-  // Calculate the meshes where materials need to be added or removed
+  // Calculate the cells where materials need to be added or removed
   {
     Materials::MeshMaterialModifier modifier(m_material_mng);
     ENUMERATE_ENV (ienv, m_material_mng) {
@@ -1458,7 +1458,7 @@ _computeDensity()
     }
   }
   // For synchronization to work correctly,
-  // the materials must be the same in all meshes.
+  // the materials must be the same in all cells.
   m_material_mng->synchronizeMaterialsInCells();
   info() << "Synchronize density";
   m_mat_density.synchronize();
@@ -1486,12 +1486,12 @@ _copyPartialToGlobal(IMeshMaterial* mat, VariableCellReal& global_density,
  * This method is called 2 times:
  * - the first time, \a is_compute_mat is true and we
  * indicate in \a mat_to_add_array and \a mat_to_remove_array the list
- * of meshes that will be added or removed for this material.
+ * of cells that will be added or removed for this material.
  * This list is determined based on the partial density value
- * in neighboring meshes.
+ * in neighboring cells.
  * - the second time, we update the partial value. We cannot
  * do this during the first call because we cannot fill the
- * partial values in meshes that do not yet possess the
+ * partial values in cells that do not yet possess the
  * material (TODO: plan a mechanism to avoid this).
  */
 void MeshMaterialTesterModule::
@@ -1518,7 +1518,7 @@ _fillDensity(IMeshMaterial* mat, VariableCellReal& tmp_cell_mat_density,
     tmp_node_mat_density[inode] = v;
   }
 
-  // Phase 1, calculate the meshes where the material will be created or removed.
+  // Phase 1, calculate the cells where the material will be created or removed.
   // This is done based on certain (arbitrary) density values.
   if (is_compute_mat) {
     ENUMERATE_CELL (icell, allCells()) {
@@ -1543,7 +1543,7 @@ _fillDensity(IMeshMaterial* mat, VariableCellReal& tmp_cell_mat_density,
   }
   else {
     // Phase 2: update the values now that the material has been
-    // added to all meshes
+    // added to all cells
 
     ENUMERATE_CELL (icell, allCells()) {
       Cell cell = *icell;

@@ -77,7 +77,7 @@ renumber()
       faces_new_uid[f] = f.uniqueId();
   }
 
-  // For each level 0 mesh, calculate its index (i,j) in the Cartesian mesh
+  // For each level 0 cell, calculate its index (i,j) in the Cartesian mesh
 
   // For this, we assume that the mesh was created with the 'CartesianMeshGenerator'
   // (or a generator that has the same numbering) and that the uniqueId() of a cell is:
@@ -289,7 +289,7 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
     }
   }
 
-  // Renumbers the sub-meshes
+  // Renumbers the sub-cells
   // Assumes we have 4 child cells arranged as follows by cells
   // -------
   // | 2| 3|
@@ -376,7 +376,7 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
     }
   }
 
-  // Renumbers the nodes of the current mesh.
+  // Renumbers the nodes of the current cell.
   // Assumes we have 8 nodes
   // WARNING: initially, we cannot easily maintain the order
   // of uniqueIds() between the old and new numbering.
@@ -507,7 +507,7 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
     }
   }
 
-  // Renumbers the sub-meshes
+  // Renumbers the sub-cells
   // Assumes we have 8 child cells (2x2x2) arranged as follows by cells
   // -------
   // | 2| 3|

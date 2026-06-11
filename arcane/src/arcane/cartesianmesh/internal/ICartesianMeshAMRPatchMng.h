@@ -38,27 +38,27 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshAMRPatchMng
  public:
 
   /*!
-   * \brief Method allowing mesh refinement using the "II_Refine" flag.
+   * \brief Method allowing cell refinement using the "II_Refine" flag.
    */
   virtual void refine() = 0;
 
   /*!
-   * \brief Method allowing coarsening of level 0 meshes.
+   * \brief Method allowing coarsening of level 0 cells.
    *
-   * A mesh level -1 will be created with parent meshes to the level 0 meshes,
+   * A cell level -1 will be created with parent cells to the level 0 cells,
    * and then all levels will be incremented by 1. The level created
    * by this method will therefore be the new level 0.
    */
   virtual void createSubLevel() = 0;
 
   /*!
-   * \brief Method allowing removal of meshes marked with the "II_Coarsen" flag.
+   * \brief Method allowing removal of cells marked with the "II_Coarsen" flag.
    *
-   * The owners of faces and nodes having marked meshes and unmarked meshes
+   * The owners of faces and nodes having marked cells and unmarked cells
    * are likely to be updated.
    *
    * \param update_parent_flag If true, the flags of the parents will be
-   * updated. This includes activating the parent meshes.
+   * updated. This includes activating the parent cells.
    */
   virtual void coarsen(bool update_parent_flag) = 0;
 };

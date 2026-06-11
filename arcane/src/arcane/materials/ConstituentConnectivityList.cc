@@ -91,7 +91,7 @@ class ConstituentConnectivityList::ConstituentContainer
  public:
 
   /*!
-   * \brief View onto a list of mesh constituents.
+   * \brief View onto a list of cell constituents.
    */
   class View
   {
@@ -622,7 +622,7 @@ fillCellsIsPartial(SmallSpan<const Int32> cells_local_id, Int16 env_id,
     auto [i] = iter();
     Int32 local_id = cells_local_id[i];
     // We only take the global index if we are the only material and the only
-    // environment in the mesh. Otherwise, we take a multiple index
+    // environment in the cell. Otherwise, we take a multiple index
     bool is_partial = (cells_nb_env[local_id] > 1 || nb_mat_computer.cellNbMaterial(local_id, env_id) > 1);
     cells_is_partial[i] = is_partial;
   };
@@ -654,17 +654,17 @@ printConstituents(SmallSpan<const Int32> cells_local_id) const
 /*!
  * \brief Fills the constituents affected by a modification.
  *
- * The meshes affected by the modification are given by \a cells_local_id.
+ * The cells affected by the modification are given by \a cells_local_id.
  * \a modified_mat_id is the ID of the material added (if \a is_add is true)
  * or removed (if \a is_add is false).
  *
  * Sets \a is_modified_materials and \a is_modified_environments to true
- * if they are in one of the meshes in \a cells_local_id.
+ * if they are in one of the cells in \a cells_local_id.
  *
  * This method allows optimizing the calculation of constituents that will be impacted
  * by a modification by trying to determine in advance which ones will be
  * impacted. This avoids calling calculation kernels (for example, calculating the list
- * of meshes to transform for a constituent) if we know the constituent is not impacted.
+ * of cells to transform for a constituent) if we know the constituent is not impacted.
  *
  * It is possible to revert to the old mechanism and remove this optimization
  * by filling \a is_modified_materials and \a is_modified_environments with \a true for all
@@ -723,7 +723,7 @@ fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
     const Int32 local_id = cells_local_id[i];
     const Int16 nb_mat_in_modified_env = nb_mat_computer.cellNbMaterial(local_id, modified_env_id);
     const Int16 nb_env = cells_nb_environment[local_id];
-    // No environments in the mesh. This is initialization.
+    // No environments in the cell. This is initialization.
     // No material or environment other than the added one is affected.
     if (nb_env == 0)
       return;
@@ -736,7 +736,7 @@ fillModifiedConstituents(SmallSpan<const Int32> cells_local_id,
       bool do_transform = false;
       if (is_add) {
         // In case of addition, we transform if there is only one environment and it is us
-        // (this is necessarily the case, as we are in the loop of the mesh environments)
+        // (this is necessarily the case, as we are in the loop of the cell environments)
         do_transform = nb_env == 1;
       }
       else {

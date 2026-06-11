@@ -102,7 +102,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_Quad4>
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the parent mesh nodes to the child mesh nodes
+  //! transformation matrix of the parent cell nodes to the child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     return _refine_matrix[i][j][k];
@@ -144,7 +144,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_Hexaedron8>
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the parent mesh nodes to the child mesh nodes
+  //! transformation matrix of the parent cell nodes to the child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     return _refine_matrix[i][j][k];
@@ -185,7 +185,7 @@ class ARCANE_CORE_EXPORT HexRefinementPattern27Hex
 
   HexRefinementPattern27Hex() {}
 
-  //! transformation matrix of the parent mesh nodes to the child mesh nodes
+  //! transformation matrix of the parent cell nodes to the child cell nodes
   Real refine_matrix(const Integer, const Integer, const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);
@@ -219,7 +219,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_Tetraedron4> : public Refinem
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the parent mesh nodes to the child mesh nodes
+  //! transformation matrix of the parent cell nodes to the child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 2)
@@ -296,7 +296,7 @@ class ARCANE_CORE_EXPORT TetraRefinementPattern8T
 
   TetraRefinementPattern8T() {}
 
-  //! transformation matrix of the parent mesh nodes to the child mesh nodes
+  //! transformation matrix of the parent cell nodes to the child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     return _refine_matrix_1[i][j][k];
@@ -330,7 +330,7 @@ class ARCANE_CORE_EXPORT TetraRefinementPattern32T
 
   TetraRefinementPattern32T() {}
 
-  //! transformation matrix of the parent mesh nodes to the child mesh nodes
+  //! transformation matrix of the parent cell nodes to the child cell nodes
   Real refine_matrix(const Integer, const Integer, const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);
@@ -364,7 +364,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_Pentaedron6> : public Refinem
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the parent mesh nodes to the child mesh nodes
+  //! transformation matrix of the parent cell nodes to the child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 4)
@@ -417,7 +417,7 @@ class ARCANE_CORE_EXPORT PrismRefinementPattern8Pr
 
   PrismRefinementPattern8Pr() {}
 
-  //! transformation matrix of the parent mesh nodes to the child mesh nodes
+  //! transformation matrix of the parent cell nodes to the child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     return _refine_matrix_1[i][j][k];
@@ -451,7 +451,7 @@ class ARCANE_CORE_EXPORT PrismRefinementPattern27Pr
 
   PrismRefinementPattern27Pr() {}
 
-  //! transformation matrix of the parent mesh nodes to the child mesh nodes
+  //! transformation matrix of the parent cell nodes to the child cell nodes
   Real refine_matrix(const Integer, const Integer, const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);
@@ -486,7 +486,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_Pyramid5> : public Refinement
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the parent mesh nodes to the child mesh nodes
+  //! transformation matrix of the parent cell nodes to the child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 4)
@@ -538,7 +538,7 @@ class ARCANE_CORE_EXPORT PyramidRefinementPattern4Py8T
 
   PyramidRefinementPattern4Py8T() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 4)
@@ -579,7 +579,7 @@ class ARCANE_CORE_EXPORT PyramidRefinementPattern6Py4T
 
   PyramidRefinementPattern6Py4T() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 6)
@@ -617,7 +617,7 @@ class ARCANE_CORE_EXPORT PyramidRefinementPattern4Py
 
   PyramidRefinementPattern4Py() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer, const Integer, const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);
@@ -651,7 +651,7 @@ class ARCANE_CORE_EXPORT PyramidRefinementPattern19Py12T
 
   PyramidRefinementPattern19Py12T() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 19)
@@ -691,7 +691,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_HemiHexa5> : public Refinemen
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 2)
@@ -700,7 +700,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_HemiHexa5> : public Refinemen
       return _refine_matrix_2[i - 2][j][k];
     return _refine_matrix_3[i - 6][j][k];
   }
-  //! mapping of the orientations of the faces of the child meshes with the faces of the parent mesh
+  //! mapping of the orientations of the faces of the child cells with the faces of the parent cell
   Integer face_mapping(const Integer i, const Integer j) const
   {
     if (i < 2)
@@ -757,7 +757,7 @@ class ARCANE_CORE_EXPORT HemiHex5RefinementPattern3HHex5_2Pr_1HHex7
 
   HemiHex5RefinementPattern3HHex5_2Pr_1HHex7() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 3)
@@ -804,7 +804,7 @@ class ARCANE_CORE_EXPORT HemiHex5RefinementPattern7HHex5_4Pr_3HHex6_2HHex7_1Hex
 
   HemiHex5RefinementPattern7HHex5_4Pr_3HHex6_2HHex7_1Hex() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 7)
@@ -858,7 +858,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_HemiHexa6> : public Refinemen
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 4)
@@ -911,7 +911,7 @@ class ARCANE_CORE_EXPORT HemiHex6RefinementPattern4HHex5_4HHex7
 
   HemiHex6RefinementPattern4HHex5_4HHex7() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 4)
@@ -950,7 +950,7 @@ class ARCANE_CORE_EXPORT HemiHex6RefinementPattern6HHex6_12HHex5_6HHex7_1Hex
 
   HemiHex6RefinementPattern6HHex6_12HHex5_6HHex7_1Hex() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 6)
@@ -999,14 +999,14 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_HemiHexa7> : public Refinemen
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 6)
       return _refine_matrix_1[i][j][k];
     return _refine_matrix_2[i - 6][j][k];
   }
-  //! mapping of the orientations of the faces of the child meshes with the faces of the parent mesh
+  //! mapping of the orientations of the faces of the child cells with the faces of the parent cell
   Integer face_mapping(const Integer i, const Integer j) const
   {
     if (i < 6)
@@ -1053,7 +1053,7 @@ class ARCANE_CORE_EXPORT HemiHex7RefinementPattern4HHex7_4Pr_2HHex5_1Hex
 
   HemiHex7RefinementPattern4HHex7_4Pr_2HHex5_1Hex() {}
 
-  //! transformation matrix of the nodes of the parent mesh to the nodes of the child meshes
+  //! transformation matrix of the nodes of the parent cell to the nodes of the child cells
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 4)
@@ -1102,7 +1102,7 @@ class ARCANE_CORE_EXPORT HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex
 
   HemiHex7RefinementPattern8HHex7_14Pr_9HHex5_7Hex() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 8)
@@ -1151,7 +1151,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_AntiWedgeLeft6> : public Refi
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 4)
@@ -1201,7 +1201,7 @@ class ARCANE_CORE_EXPORT AntiWedgeLeft6RefinementPattern4AWL6_4Pr
 
   AntiWedgeLeft6RefinementPattern4AWL6_4Pr() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 4)
@@ -1240,7 +1240,7 @@ class ARCANE_CORE_EXPORT AntiWedgeLeft6RefinementPattern9AWL6_18Pr
 
   AntiWedgeLeft6RefinementPattern9AWL6_18Pr() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 9)
@@ -1279,7 +1279,7 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_AntiWedgeRight6> : public Ref
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 4)
@@ -1329,7 +1329,7 @@ class ARCANE_CORE_EXPORT AntiWedgeRight6RefinementPattern4AWR6_4Pr
 
   AntiWedgeRight6RefinementPattern4AWR6_4Pr() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 4)
@@ -1368,7 +1368,7 @@ class ARCANE_CORE_EXPORT AntiWedgeRight6RefinementPattern9AWR6_18Pr
 
   AntiWedgeRight6RefinementPattern9AWR6_18Pr() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 9)
@@ -1408,14 +1408,14 @@ class ARCANE_CORE_EXPORT ItemRefinementPatternT<IT_DiTetra5> : public Refinement
 
   ItemRefinementPatternT() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 2)
       return _refine_matrix_1[i][j][k];
     return _refine_matrix_2[i - 2][j][k];
   }
-  //! mapping of child mesh face orientations with parent mesh faces
+  //! mapping of child cell face orientations with parent cell faces
   Integer face_mapping(const Integer i, const Integer j) const
   {
     if (i < 2)
@@ -1460,7 +1460,7 @@ class ARCANE_CORE_EXPORT DiTetra5RefinementPattern3DT_4Py_2T
 
   DiTetra5RefinementPattern3DT_4Py_2T() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 3)
@@ -1504,7 +1504,7 @@ class ARCANE_CORE_EXPORT DiTetra5RefinementPattern7DT_2T
 
   DiTetra5RefinementPattern7DT_2T() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer i, const Integer j, const Integer k) const
   {
     if (i < 7)
@@ -1543,7 +1543,7 @@ class ARCANE_CORE_EXPORT DiTetra5RefinementPattern64T
 
   DiTetra5RefinementPattern64T() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer, const Integer, const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);
@@ -1577,7 +1577,7 @@ class ARCANE_CORE_EXPORT DiTetra5RefinementPattern32DT
 
   DiTetra5RefinementPattern32DT() {}
 
-  //! transformation matrix of the parent mesh nodes into child mesh nodes
+  //! transformation matrix of the parent cell nodes into child cell nodes
   Real refine_matrix(const Integer, const Integer, const Integer) const
   {
     throw NotSupportedException(A_FUNCINFO);

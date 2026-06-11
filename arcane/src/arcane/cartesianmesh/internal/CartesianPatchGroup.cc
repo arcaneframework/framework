@@ -1509,7 +1509,7 @@ _updatePatchFlagsOfItemsLevel(Int32 level, bool use_cell_groups)
 
   // Otherwise, a brute force method that always works.
   else {
-    // We add the flags to the patch meshes.
+    // We add the flags to the patch cells.
     ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
       bool in_overlap = false;
       bool in_patch = false;
@@ -1748,7 +1748,7 @@ _checkPatchesAndMesh()
         }
       }
 
-      // Today, we can have refined meshes but in no patch.
+      // Today, we can have refined cells but in no patch.
 
       icell->mutableItemBase().removeFlags(ItemFlags::II_UserMark1); // II_Overlap
       icell->mutableItemBase().removeFlags(ItemFlags::II_UserMark2); // II_InPatch
@@ -1847,7 +1847,7 @@ setOverlapLayerSizeTopLevel(Int32 size_of_overlap_layer_top_level)
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
   Int32 new_size_of_overlap_layer_top_level = 0;
-  // The value -1 is a special value that allows disabling overlap meshes.
+  // The value -1 is a special value that allows disabling overlap cells.
   if (size_of_overlap_layer_top_level == -1)
     new_size_of_overlap_layer_top_level = -1;
   else
@@ -2089,7 +2089,7 @@ _updateCellGroups(Integer index, bool update_flags)
 
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
-  // We add the flags to the patch meshes.
+  // We add the flags to the patch cells.
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(level)) {
     const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
 
@@ -2416,7 +2416,7 @@ _addPatch(const AMRPatchPosition& new_patch_position)
 
   auto numbering = m_cmesh->_internalApi()->cartesianMeshNumberingMngInternal();
 
-  // We add the flags to the patch meshes.
+  // We add the flags to the patch cells.
   ENUMERATE_ (Cell, icell, m_cmesh->mesh()->allLevelCells(new_patch_position.level())) {
     const CartCoord3 pos = numbering->cellUniqueIdToCoord(*icell);
 

@@ -487,7 +487,7 @@ _serializeMessage(ISerializeMessage* sm,
   // Reserves for the number of uniqueId()
   sbuf->reserveInt64(1);
   sbuf->reserveSpan(eBasicDataType::Int64, nb_item);
-  // Reserves for the uniqueIds() of the meshes where the particles are located
+  // Reserves for the uniqueIds() of the cells where the particles are located
   //sbuf->reserve(DT_Size,1);
   sbuf->reserveSpan(eBasicDataType::Int64, nb_item);
 
@@ -588,7 +588,7 @@ _deserializeMessage(ISerializeMessage* message,
     m_item_family->endUpdate();
 
     // Converts the retrieved uniqueId() to localId() and for particles
-    // populates the corresponding mesh
+    // populates the corresponding cell
     ParticleInfoListView internal_items(m_item_family);
 
     for (Integer z = 0; z < nb_item; ++z) {

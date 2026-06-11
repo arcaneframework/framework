@@ -61,7 +61,7 @@
       <description>Creation of the Correspondence file</description>
     </simple>
 
-    <!-- Number of ghost mesh layers -->
+    <!-- Number of ghost cell layers -->
     <simple
       name="nb-ghost-layer"
       type="int32"
@@ -70,7 +70,7 @@
       <name lang='fr'>nb-couches-fantomes</name>
       <userclass>User</userclass>
       <description>
-        Number of ghost mesh layers.
+        Number of ghost cell layers.
       </description>
     </simple>
 

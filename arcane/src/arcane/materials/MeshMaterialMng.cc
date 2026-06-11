@@ -693,7 +693,8 @@ forceRecompute()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Updates the structures following a modification of material or environment meshes.
+ * \brief Updates the structures following a modification of material or
+ * environment cells.
  */
 void MeshMaterialMng::
 _endUpdate()
@@ -767,7 +768,7 @@ checkValid()
         ARCANE_FATAL("Bad corresponding globalItem() in env_item");
       if (eii.level() != LEVEL_ENVIRONMENT)
         ARCANE_FATAL("Bad level '{0}' for in env_item", eii.level());
-      // If the mesh is not pure, the environment variable cannot be equivalent to
+      // If the cell is not pure, the environment variable cannot be equivalent to
       // the global variable.
       if (cell_nb_env > 1 && ec._varIndex().arrayIndex() == 0)
         ARCANE_FATAL("Global index for a partial cell env_item={0}", ec);
@@ -781,7 +782,7 @@ checkValid()
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");
         if (mci.level() != LEVEL_MATERIAL)
           ARCANE_FATAL("Bad level '{0}' for in mat_item", mci.level());
-        // If the mesh is not pure, the material variable cannot be equivalent to
+        // If the cell is not pure, the material variable cannot be equivalent to
         // the global variable.
         if ((cell_nb_env > 1 || cell_nb_mat > 1) && mc._varIndex().arrayIndex() == 0) {
           ARCANE_FATAL("Global index for a partial cell matitem={0} name={1} nb_mat={2} nb_env={3}",

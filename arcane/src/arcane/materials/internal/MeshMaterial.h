@@ -46,7 +46,7 @@ class MatItemVectorView;
  * Materials are created via IMeshMaterialMng::createMaterial().
  * Materials cannot be destroyed and all materials must
  * be created during initialization. A material may have no
- * mesh.
+ * cell.
  */
 class MeshMaterial
 : public TraceAccessor

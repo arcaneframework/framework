@@ -588,11 +588,11 @@ _searchMasterFaces(Array<ItemUniqueId>& slave_faces_to_process,
       remaining_slave_faces.add(face.uniqueId());
       break;
     default: {
-      // This case can occur if in 2D or 3D a mesh has a weld on
+      // This case can occur if in 2D or 3D a cell has a weld on
       // two connected faces. In this case, there are often several
       // possible master faces. To distinguish them, we choose
       // the master face whose orientation (the normal) is most collinear
-      // with the slave mesh. To do this, it is enough to calculate
+      // with the slave cell. To do this, it is enough to calculate
       // the dot product between the slave face and each master face
       // potential and take the largest in absolute value (to avoid
       // orientation problems).
@@ -783,7 +783,7 @@ _isInsideFace(const TiedInterfaceFace& face, Real3 point)
  * all of its nodes are marked.
  *
  * \note This algorithm can potentially return more master faces
- * than there actually are in the case where a mesh has welds
+ * than there actually are in the case where a cell has welds
  * on several sides. This is not very serious because no slave face
  * will be found for these master faces and they will be removed
  * from the group of master faces.
@@ -1461,7 +1461,7 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
   sbuf.reserveInteger(1); // for the subdomain number
   sbuf.reserveInteger(1); // for the number of nodes in the list
   sbuf.reserve(DT_Int64, unique_ids.size()); // for the unique id of the faces
-  sbuf.reserve(DT_Int64, cells_unique_ids.size()); // for the unique id of the face meshes
+  sbuf.reserve(DT_Int64, cells_unique_ids.size()); // for the unique id of the face cells
   sbuf.reserveInteger(nb_nodes.size()); // for the number of nodes
   sbuf.reserve(DT_Int64, nodes_unique_id.size()); // for the list of nodes
   sbuf.reserve(DT_Real, coords.size()); // for the center coordinates
@@ -1540,12 +1540,12 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Migrates the meshes on the links.
+ * \brief Migrates the cells on the links.
  *
- * Changes the owner of each mesh linked to a slave face
- * so that it is the same as that of the associated master mesh.
+ * Changes the owner of each cell linked to a slave face
+ * so that it is the same as that of the associated master cell.
  *
- * NOTE: what to do if a mesh has several slave faces
+ * NOTE: what to do if a cell has several slave faces
  * connected to masters that are not in the same subdomain?
  *
  * NOTE: obsolete version, because it does not work if a
@@ -1579,12 +1579,12 @@ changeOwnersOld()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Positions the links between meshes
+ * \brief Positions the links between cells
  *
- * Changes the owner of each mesh linked to a slave face
- * so that it is the same as that of the associated master mesh.
+ * Changes the owner of each cell linked to a slave face
+ * so that it is the same as that of the associated master cell.
  *
- * If a mesh has several slave faces connected to masters,
+ * If a cell has several slave faces connected to masters,
  * ensures that all these masters are in the same subdomain.
  * Adds to \a linked_cells the list of linked meshes and to
  * \a linked_owners the associated owner.
@@ -1619,7 +1619,7 @@ changeOwners(Int64Array& linked_cells, Int32Array& linked_owners)
         linked_owners.add(master_owner);
       }
       if (last_master_uid != NULL_ITEM_UNIQUE_ID) {
-        // Mesh connected to several master faces.
+        // cell connected to several master faces.
         // Checks that they are all in the same subdomain.
         Int32 last_master_owner = m_master_faces[last_master_uid].owner();
         if (last_master_owner != master_owner)
@@ -1716,10 +1716,10 @@ computeInterfaceConnections(bool allow_communication)
 /*!
  * \brief Migrates the meshes on the links.
  *
- * Changes the owner of each mesh linked to a slave face
- * so that it is the same as that of the associated master mesh.
+ * Changes the owner of each cell linked to a slave face
+ * so that it is the same as that of the associated master cell.
  *
- * NOTE: what to do if a mesh has several slave faces
+ * NOTE: what to do if a cell has several slave faces
  * connected to masters that are not in the same subdomain?
  */
 void TiedInterfaceBuilder::

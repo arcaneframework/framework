@@ -42,7 +42,7 @@ class ARCANE_CORE_EXPORT IUserMeshEnvironment
 /*!
  * \ingroup ArcaneMaterials
  * \brief Interface of a mesh environment.
- * 
+ *
  * Environments are created via IMeshEnvironmentMng::createEnvironment().
  *
  * Environments cannot be destroyed, and all environments and their
@@ -79,20 +79,20 @@ class ARCANE_CORE_EXPORT IMeshEnvironment
   virtual void setUserEnvironment(IUserMeshEnvironment* umm) = 0;
 
   /*!
-   * \brief Mesh of this environment for mesh \a c.
+   * \brief Cell of this environment for cell \a c.
    *
-   * If this environment is not present in the mesh,
-   * a null environment mesh is returned.
+   * If this environment is not present in the cell,
+   * a null environment cell is returned.
    *
    * The cost of this function is proportional to the number of materials
-   * present in the mesh.
+   * present in the cell.
    */
   virtual EnvCell findEnvCell(AllEnvCell c) const = 0;
 
   //! View associated with this environment
   virtual EnvItemVectorView envView() const = 0;
 
-  //! View of the list of pure entities (associated with the global mesh) in the environment
+  //! View of the list of pure entities (associated with the global cell) in the environment
   virtual EnvPurePartItemVectorView pureEnvItems() const = 0;
 
   //! View of the list of impure (partial) entities in the environment

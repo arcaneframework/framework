@@ -129,7 +129,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
  private:
 
   friend class MutableIndexedParticleCellConnectivityView;
-  // Only to position the mesh a particle belongs to
+  // Only to position the cell a particle belongs to
   ARCCORE_HOST_DEVICE void _setParticleCellId(ItemLocalId particle_lid, CellLocalId cell_lid) const
   {
     ARCANE_CHECK_AT(particle_lid.localId(), m_nb_item);

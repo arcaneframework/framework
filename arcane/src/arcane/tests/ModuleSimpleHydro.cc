@@ -141,7 +141,7 @@ bool SimpleHydroModuleBase::isCheckNumericalResult()
  * \brief Simplified hydrodynamics module.
  *
  * This module implements simple three-dimensional hydrodynamics,
- * parallel, with mesh pseudo-viscosity.
+ * parallel, with cell pseudo-viscosity.
  */
 class ModuleSimpleHydro
 : public ArcaneSimpleHydroObject
@@ -828,7 +828,7 @@ computeDeltaT()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculation of the resultant forces at the nodes of a hexahedral mesh.
+ * \brief Calculation of the resultant forces at the nodes of a hexahedral cell.
  *
  * The method used is that of decomposition into four triangles.
  */
@@ -914,7 +914,7 @@ computeCQs(Real3 node_coord[8], Real3 face_coord[6], const Cell& cell)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculation of the volume of the meshes, characteristic lengths
+ * \brief Calculation of the volume of the cells, characteristic lengths
  * and resultant forces at the vertices.
  */
 void ModuleSimpleHydro::
@@ -928,13 +928,13 @@ computeGeometricValues()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculation of the volume of the meshes, characteristic lengths
+ * \brief Calculation of the volume of the cells, characteristic lengths
  * and resultant forces at the vertices.
  */
 void ModuleSimpleHydro::
 _computeGeometricValues(CellVectorView cells)
 {
-  // Local copy of the vertices coordinates of a mesh
+  // Local copy of the vertices coordinates of a cell
   Real3 coord[8];
   // Coordinates of the face centers
   Real3 face_coord[6];
@@ -955,7 +955,7 @@ _computeGeometricValues(CellVectorView cells)
     face_coord[4] = ARCANE_REAL(0.25) * (coord[1] + coord[2] + coord[6] + coord[5]);
     face_coord[5] = ARCANE_REAL(0.25) * (coord[2] + coord[3] + coord[7] + coord[6]);
 
-    // Calculate the characteristic length of the mesh.
+    // Calculate the characteristic length of the cell.
     {
       Real3 median1 = face_coord[0] - face_coord[3];
       Real3 median2 = face_coord[2] - face_coord[5];
@@ -972,7 +972,7 @@ _computeGeometricValues(CellVectorView cells)
     // Calculate the resultant forces at the vertices
     computeCQs(coord, face_coord, cell);
 
-    // Calculate the volume of the mesh
+    // Calculate the volume of the cell
     {
       Real volume = 0.;
       for (Integer i_node = 0; i_node < 8; ++i_node)
@@ -1110,7 +1110,7 @@ _specialInit()
  * \brief Entry point called after a mesh change (for example
  * following a load balancing).
  *
- * In this case, the information about the mesh's owner rank is updated.
+ * In this case, the information about the cell's owner rank is updated.
  */
 void ModuleSimpleHydro::
 onMeshChanged()

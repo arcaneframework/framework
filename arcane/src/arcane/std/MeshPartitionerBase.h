@@ -79,9 +79,9 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
  public:
 
   /*! \brief Positions the new owners of nodes, edges
-   * and faces based on the meshes.
+   * and faces based on the cells.
    *
-   * Assuming the new owners of the meshes are known (and synchronized),
+   * Assuming the new owners of the cells are known (and synchronized),
    * determines the new owners of the other
    * entities.
    */
@@ -128,7 +128,7 @@ class ARCANE_STD_EXPORT MeshPartitionerBase
 
   virtual SharedArray<float> cellsSizeWithConstraints();
 
-  /* \brief Returns true if the mesh is used despite the constraints. If false, it is
+  /* \brief Returns true if the cell is used despite the constraints. If false, it is
    * necessary to pass it during an ENUMERATE_CELL */
   virtual bool cellUsedWithConstraints(Cell cell);
 

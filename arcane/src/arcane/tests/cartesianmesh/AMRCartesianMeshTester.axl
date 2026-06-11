@@ -125,11 +125,11 @@
 
     <simple name="overlap-layer-size-top-level" type="int32" default="-1">
       <description>
-        Indicates the number of overlap mesh layers for the highest level (the number
+        Indicates the number of overlap cell layers for the highest level (the number
         of layers for lower levels is calculated based on the number of layers of the level
         immediately above).
         Must be even.
-        If -1, then no overlap meshes.
+        If -1, then no overlap cells.
       </description>
     </simple>
 

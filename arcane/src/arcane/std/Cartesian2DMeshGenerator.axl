@@ -49,7 +49,7 @@
     <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded">
       <userclass>User</userclass>
       <simple name="n" type="integer">
-        <description>Number of meshes</description>
+        <description>Number of cells</description>
         <userclass>User</userclass>
       </simple>
       <simple name="length" type="real">
@@ -65,7 +65,7 @@
     <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded">
       <userclass>User</userclass>
       <simple name="n" type="integer">
-        <description>Number of meshes</description>
+        <description>Number of cells</description>
         <userclass>User</userclass>
       </simple>
       <simple name="length" type="real">

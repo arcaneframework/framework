@@ -247,7 +247,8 @@ _doTest2(Integer iteration, bool allow_no_cell_particle)
       while (particle_index < nb_created_particle) {
         for (Integer icell = 0; icell < nb_boundary_cell; ++icell) {
           Particle p = Particle(particles[particle_index]);
-          // If we do not allow particles without a cell, indicate that one
+          // If we do not allow particles without a cell,
+          // indicate that one particle / 4 is without cell
           if (allow_no_cell_particle && (icell % 4) == 0)
             pf->setParticleCell(p, Cell());
           else

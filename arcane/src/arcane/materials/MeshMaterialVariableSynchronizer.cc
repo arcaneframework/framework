@@ -90,7 +90,7 @@ ghostItems(Int32 index)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Fills \a items with the list of all MatVarIndex from the meshes of \a view.
+ * \brief Fills \a items with the list of all MatVarIndex from the cells of \a view.
  */
 void MeshMaterialVariableSynchronizer::
 _fillCells(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue)
@@ -123,7 +123,7 @@ _fillCells(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Fills \a items with the list of all MatVarIndex from the meshes of \a view.
+ * \brief Fills \a items with the list of all MatVarIndex from the cells of \a view.
  */
 void MeshMaterialVariableSynchronizer::
 _fillCellsSequential(Array<MatVarIndex>& items, AllEnvCellVectorView view)
@@ -150,7 +150,7 @@ _fillCellsSequential(Array<MatVarIndex>& items, AllEnvCellVectorView view)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Fills \a items with the list of all MatVarIndex from the meshes of \a view.
+ * \brief Fills \a items with the list of all MatVarIndex from the cells of \a view.
  */
 void MeshMaterialVariableSynchronizer::
 _fillCellsAccelerator(Array<MatVarIndex>& items, AllEnvCellVectorView view, RunQueue& queue)
@@ -241,7 +241,7 @@ recompute()
 {
   IVariableSynchronizer* var_syncer = m_variable_synchronizer;
 
-  // Calculation of synchronization information for material meshes.
+  // Calculation of synchronization information for material cells.
   // NOTE: This version requires that the materials are correctly
   // synchronized between sub-domains.
 

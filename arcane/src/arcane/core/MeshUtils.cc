@@ -886,7 +886,7 @@ writeMeshConnectivity(IMesh* mesh, const String& file_name)
       _writeSubItems(ofile, "nodes", face.nodes());
       _writeSubItems(ofile, "edges", face.edges());
       {
-        // Mesh info
+        // Cell info
         ofile << "<cells";
         Cell back_cell = face.backCell();
         if (!back_cell.null())
@@ -1096,7 +1096,7 @@ class MeshUtilsCheckConnectivity
     {
       ItemGroup all_items(m_mesh->allItems(ik));
       items_internal.resize(all_items.size());
-      
+
       Integer index = 0;
       ENUMERATE_ITEM(i,all_items){
         const Item& item = *i;

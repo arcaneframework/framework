@@ -73,7 +73,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
   /*!
    * \brief Method allowing the preparation of a new level.
    *
-   * Before refining or coarsening meshes, it is
+   * Before refining or coarsening cells, it is
    * necessary to call this method to prepare the object
    * to provide information concerning the new level.
    *
@@ -731,257 +731,257 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshNumberingMngInternal
   virtual Int32 nbFaceByCell() = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of a mesh's faces based on its coordinates.
+   * \brief Method to retrieve the uniqueIds of a cell's faces based on its coordinates.
    *
    * The order in which the uniqueIds are placed corresponds to the enumeration order of the faces
-   * of an Arcane mesh.
+   * of an Arcane cell.
    *      -2-
    * ^y   3 1
    * |    -0-
    * ->x
    *
-   * \param cell_coord The position of the mesh.
-   * \param level The level of the mesh (and thus the faces).
-   * \param uid [OUT] The uniqueIds of the mesh. The size of the ArrayView must be equal to nbFaceByCell().
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell (and thus the faces).
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbFaceByCell().
    */
   virtual void cellFaceUniqueIds(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of a mesh's faces based on its coordinates.
+   * \brief Method to retrieve the uniqueIds of a cell's faces based on its coordinates.
    *
    * The order in which the uniqueIds are placed corresponds to the enumeration order of the faces
-   * of an Arcane mesh.
+   * of an Arcane cell.
    *      -2-
    * ^y   3 1
    * |    -0-
    * ->x
    *
-   * \param cell_coord The position of the mesh.
-   * \param level The level of the mesh (and thus the faces).
-   * \param uid [OUT] The uniqueIds of the mesh. The size of the ArrayView must be equal to nbFaceByCell().
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell (and thus the faces).
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbFaceByCell().
    */
   virtual void cellFaceUniqueIds(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of a mesh's faces based on its uniqueId.
+   * \brief Method to retrieve the uniqueIds of a cell's faces based on its uniqueId.
    *
    * The order in which the uniqueIds are placed corresponds to the enumeration order of the faces
-   * of an Arcane mesh.
+   * of an Arcane cell.
    *      -2-
    * ^y   3 1
    * |    -0-
    * ->x
    *
-   * \param cell_uid The uniqueId of the mesh.
-   * \param level The level of the mesh (and thus the faces).
-   * \param uid [OUT] The uniqueIds of the mesh. The size of the ArrayView must be equal to nbFaceByCell().
+   * \param cell_uid The uniqueId of the cell.
+   * \param level The level of the cell (and thus the faces).
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbFaceByCell().
    */
   virtual void cellFaceUniqueIds(Int64 cell_uid, Int32 level, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of a mesh's faces.
+   * \brief Method to retrieve the uniqueIds of a cell's faces.
    *
    * The order in which the uniqueIds are placed corresponds to the enumeration order of the faces
-   * of an Arcane mesh.
+   * of an Arcane cell.
    *      -2-
    * ^y   3 1
    * |    -0-
    * ->x
    *
-   * \param cell The mesh.
-   * \param uid [OUT] The uniqueIds of the mesh. The size of the ArrayView must be equal to nbFaceByCell().
+   * \param cell The cell.
+   * \param uid [OUT] The uniqueIds of the cell. The size of the ArrayView must be equal to nbFaceByCell().
    */
   virtual void cellFaceUniqueIds(Cell cell, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of meshes around a mesh.
+   * \brief Method to retrieve the uniqueIds of cells around a cell.
    *
-   * If there is no mesh in an adjacent location (e.g., if we are at the edge of the mesh),
+   * If there is no cell in an adjacent location (e.g., if we are at the edge of the mesh),
    * a uniqueId of -1 is used.
    *
    * The passed view must have a size of 27.
    *
-   * \param cell_coord The position of the mesh.
-   * \param level The level of the mesh at the center.
-   * \param uid [OUT] The uniqueIds of the surrounding meshes.
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell at the center.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   virtual void cellUniqueIdsAroundCell(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of meshes around a mesh.
+   * \brief Method to retrieve the uniqueIds of cells around a cell.
    *
-   * If there is no mesh in an adjacent location (e.g., if we are at the edge of the mesh),
+   * If there is no cell in an adjacent location (e.g., if we are at the edge of the mesh),
    * a uniqueId of -1 is used.
    *
    * The passed view must have a size of 9.
    *
-   * \param cell_coord The position of the mesh.
-   * \param level The level of the mesh at the center.
-   * \param uid [OUT] The uniqueIds of the surrounding meshes.
+   * \param cell_coord The position of the cell.
+   * \param level The level of the cell at the center.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   virtual void cellUniqueIdsAroundCell(CartCoord2 cell_coord, Int32 level, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of meshes around the mesh passed as a parameter.
+   * \brief Method to retrieve the uniqueIds of cells around the cell passed as a parameter.
    *
-   * If there is no mesh in an adjacent location (e.g., if we are at the edge of the mesh),
+   * If there is no cell in an adjacent location (e.g., if we are at the edge of the mesh),
    * a uniqueId of -1 is used.
    *
    * The passed view must have a size of 9 in 2D and 27 in 3D.
    *
-   * \param cell_uid The uniqueId of the mesh at the center.
-   * \param level The level of the mesh at the center.
-   * \param uid [OUT] The uniqueIds of the surrounding meshes.
+   * \param cell_uid The uniqueId of the cell at the center.
+   * \param level The level of the cell at the center.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   virtual void cellUniqueIdsAroundCell(Int64 cell_uid, Int32 level, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of meshes around the mesh passed as a parameter.
+   * \brief Method to retrieve the uniqueIds of cells around the cell passed as a parameter.
    *
-   * If there is no mesh in an adjacent location (e.g., if we are at the edge of the mesh),
+   * If there is no cell in an adjacent location (e.g., if we are at the edge of the mesh),
    * a uniqueId of -1 is used.
    *
    * The passed view must have a size of 9 in 2D and 27 in 3D.
    *
-   * \param cell The mesh at the center.
-   * \param uid [OUT] The uniqueIds of the surrounding meshes.
+   * \param cell The cell at the center.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   virtual void cellUniqueIdsAroundCell(Cell cell, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of meshes around a node.
+   * \brief Method to retrieve the uniqueIds of cells around a node.
    *
-   * If there is no mesh in an adjacent location (e.g., if we are at the edge of the mesh),
+   * If there is no cell in an adjacent location (e.g., if we are at the edge of the mesh),
    * a uniqueId of -1 is used.
    *
    * The passed view must have a size of 8.
    *
    * \param node_coord The position of the node.
    * \param level The level of the node.
-   * \param uid [OUT] The uniqueIds of the surrounding meshes.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   virtual void cellUniqueIdsAroundNode(CartCoord3 node_coord, Int32 level, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of meshes around a node.
+   * \brief Method to retrieve the uniqueIds of cells around a node.
    *
-   * If there is no mesh in an adjacent location (e.g., if we are at the edge of the mesh),
+   * If there is no cell in an adjacent location (e.g., if we are at the edge of the mesh),
    * a uniqueId of -1 is used.
    *
    * The passed view must have a size of 4.
    *
    * \param node_coord The position of the node.
    * \param level The level of the node.
-   * \param uid [OUT] The uniqueIds of the surrounding meshes.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   virtual void cellUniqueIdsAroundNode(CartCoord2 node_coord, Int32 level, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of meshes around the node passed as a parameter.
+   * \brief Method to retrieve the uniqueIds of cells around the node passed as a parameter.
    *
-   * If there is no mesh in an adjacent location (e.g., if we are at the edge of the mesh),
+   * If there is no cell in an adjacent location (e.g., if we are at the edge of the mesh),
    * a uniqueId of -1 is used.
    *
    * The passed view must have a size of 4 in 2D or 8 in 3D.
    *
    * \param node_uid The uniqueId of the node.
    * \param level The level of the node.
-   * \param uid [OUT] The uniqueIds of the surrounding meshes.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   virtual void cellUniqueIdsAroundNode(Int64 node_uid, Int32 level, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueIds of meshes around the node passed as a parameter.
+   * \brief Method to retrieve the uniqueIds of cells around the node passed as a parameter.
    *
-   * If there is no mesh in an adjacent location (e.g., if we are at the edge of the mesh),
+   * If there is no cell in an adjacent location (e.g., if we are at the edge of the mesh),
    * a uniqueId of -1 is used.
    *
    * The passed view must have a size of 4 in 2D or 8 in 3D.
    *
    * \param node The node.
-   * \param uid [OUT] The uniqueIds of the surrounding meshes.
+   * \param uid [OUT] The uniqueIds of the surrounding cells.
    */
   virtual void cellUniqueIdsAroundNode(Node node, ArrayView<Int64> uid) = 0;
 
   /*!
-   * \brief Method to define the spatial coordinates of the nodes of child meshes of a parent mesh.
+   * \brief Method to define the spatial coordinates of the nodes of child cells of a parent cell.
    * This method must be called after calling endUpdate().
    *
-   * \param parent_cell The parent mesh.
+   * \param parent_cell The parent cell.
    */
   virtual void setChildNodeCoordinates(Cell parent_cell) = 0;
 
   /*!
-   * \brief Method to define the spatial coordinates of the nodes of a parent mesh.
+   * \brief Method to define the spatial coordinates of the nodes of a parent cell.
    * This method must be called after calling endUpdate().
    *
-   * \param parent_cell The parent mesh.
+   * \param parent_cell The parent cell.
    */
   virtual void setParentNodeCoordinates(Cell parent_cell) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueId of a mesh's parent.
+   * \brief Method to retrieve the uniqueId of a cell's parent.
    *
    * If \a do_fatal is true, a fatal error is generated if the parent does not exist; otherwise, the returned uniqueId has the value NULL_ITEM_UNIQUE_ID.
    *
-   * \param uid The uniqueId of the child mesh.
-   * \param level The level of the child mesh.
-   * \return The uniqueId of the parent mesh of the mesh passed as a parameter.
+   * \param uid The uniqueId of the child cell.
+   * \param level The level of the child cell.
+   * \return The uniqueId of the parent cell of the cell passed as a parameter.
    */
   virtual Int64 parentCellUniqueIdOfCell(Int64 uid, Int32 level, bool do_fatal = true) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueId of a mesh's parent.
+   * \brief Method to retrieve the uniqueId of a cell's parent.
    *
    * If \a do_fatal is true, a fatal error is generated if the parent does not exist; otherwise, the returned uniqueId has the value NULL_ITEM_UNIQUE_ID.
    *
-   * \param cell The child mesh.
-   * \return The uniqueId of the parent mesh of the mesh passed as a parameter.
+   * \param cell The child cell.
+   * \return The uniqueId of the parent cell of the cell passed as a parameter.
    */
   virtual Int64 parentCellUniqueIdOfCell(Cell cell, bool do_fatal = true) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueId of a child mesh of a parent mesh based on the position of the child mesh within the parent mesh.
+   * \brief Method to retrieve the uniqueId of a child cell of a parent cell based on the position of the child cell within the parent cell.
    *
-   * \param cell The parent mesh.
-   * \param child_coord_in_parent The position of the child within the parent mesh.
-   * \return The uniqueId of the requested child mesh.
+   * \param cell The parent cell.
+   * \param child_coord_in_parent The position of the child within the parent cell.
+   * \return The uniqueId of the requested child cell.
    */
   virtual Int64 childCellUniqueIdOfCell(Cell cell, CartCoord3 child_coord_in_parent) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueId of a child mesh of a parent mesh based on the position of the child mesh within the parent mesh.
+   * \brief Method to retrieve the uniqueId of a child cell of a parent cell based on the position of the child cell within the parent cell.
    *
-   * \param cell The parent mesh.
-   * \param child_coord_in_parent The position of the child within the parent mesh.
-   * \return The uniqueId of the requested child mesh.
+   * \param cell The parent cell.
+   * \param child_coord_in_parent The position of the child within the parent cell.
+   * \return The uniqueId of the requested child cell.
    */
   virtual Int64 childCellUniqueIdOfCell(Cell cell, CartCoord2 child_coord_in_parent) = 0;
 
   /*!
-   * \brief Method to retrieve the uniqueId of a child mesh of a parent mesh based on the index of the child mesh within the parent mesh.
+   * \brief Method to retrieve the uniqueId of a child cell of a parent cell based on the index of the child cell within the parent cell.
    *
-   * \param cell The parent mesh.
-   * \param child_index_in_parent The index of the child within the parent mesh.
-   * \return The uniqueId of the requested child mesh.
+   * \param cell The parent cell.
+   * \param child_index_in_parent The index of the child within the parent cell.
+   * \return The uniqueId of the requested child cell.
    */
   virtual Int64 childCellUniqueIdOfCell(Cell cell, Int32 child_index_in_parent) = 0;
 
   /*!
-   * \brief Method to retrieve a child mesh of a parent mesh based on the position of the child mesh within the parent mesh.
+   * \brief Method to retrieve a child cell of a parent cell based on the position of the child cell within the parent cell.
    *
-   * \param cell The parent mesh.
-   * \param child_coord_in_parent The position of the child within the parent mesh.
-   * \return The requested child mesh.
+   * \param cell The parent cell.
+   * \param child_coord_in_parent The position of the child within the parent cell.
+   * \return The requested child cell.
    */
   virtual Cell childCellOfCell(Cell cell, CartCoord3 child_coord_in_parent) = 0;
 
   /*!
-   * \brief Method to retrieve a child mesh of a parent mesh based on the position of the child mesh within the parent mesh.
+   * \brief Method to retrieve a child cell of a parent cell based on the position of the child cell within the parent cell.
    *
-   * \param cell The parent mesh.
-   * \param child_coord_in_parent The position of the child within the parent mesh.
-   * \return The requested child mesh.
+   * \param cell The parent cell.
+   * \param child_coord_in_parent The position of the child within the parent cell.
+   * \return The requested child cell.
    */
   virtual Cell childCellOfCell(Cell cell, CartCoord2 child_coord_in_parent) = 0;
 

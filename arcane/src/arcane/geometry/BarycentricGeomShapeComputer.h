@@ -41,24 +41,24 @@ namespace Arcane::geometric
  *
  * There are several ways to update:
  * - via computeAll(GeomShapeMng& shape_mng,VariableNodeReal3& coords,const CellGroup& cells),
- * in which case all GeomShapes of the meshes in \a cells are updated. This is
+ * in which case all GeomShapes of the cells in \a cells are updated. This is
  * the most performant method if a large number of
- * meshes must be updated.
+ * cells must be updated.
  * - via computeAll(GeomShapeMutableView elem,const VariableNodeReal3& coords,Cell cell)
- * if you wish to update mesh by mesh.
+ * if you wish to update cell by cell.
  */
 class ARCANE_GEOMETRY_EXPORT BarycentricGeomShapeComputer
 {
  public:
 
-  //! Calculates the information for the mesh \a cell
+  //! Calculates the information for the cell \a cell
   static void computeAll(GeomShapeMutableView elem, const VariableNodeReal3& coords, Cell cell);
 
-  //! Calculates the information for the meshes in the group \a cells
+  //! Calculates the information for the cells in the group \a cells
   static void computeAll(GeomShapeMng& shape_mng, VariableNodeReal3& coords, const CellGroup& cells);
 
   /*!
-   * \name Calculation of the center and face centers by mesh type
+   * \name Calculation of the center and face centers by cell type
    *
    * The coordinates of the nodes of \a elem must already have been positioned.
    */
@@ -82,7 +82,7 @@ class ARCANE_GEOMETRY_EXPORT BarycentricGeomShapeComputer
    * The coordinates of the nodes of \a elem must already have been positioned,
    * for example via the call to setNodes().
    *
-   * The call is made by specifying the mesh type as defined in ArcaneTypes.h.
+   * The call is made by specifying the cell type as defined in ArcaneTypes.h.
    * For example, for a Quad4:
    \code
    Cell cell = ...;
@@ -93,7 +93,7 @@ class ARCANE_GEOMETRY_EXPORT BarycentricGeomShapeComputer
    */
   template <GeomType ItemType> static void compute(GeomShapeMutableView elem);
 
-  //! Fills the node information of the mesh \a cell with the coordinates of \a node_coord.
+  //! Fills the node information of the cell \a cell with the coordinates of \a node_coord.
   static void setNodes(GeomShapeMutableView elem, const VariableNodeReal3& node_coord, Cell cell)
   {
     Integer nb_node = cell.nbNode();

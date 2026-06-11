@@ -42,7 +42,7 @@ namespace
 {
 // Assumes NULL_ITEM_UNIQUE_ID == (-1) and NULL_ITEM_LOCAL_ID == (-1)
 // Creates a pseudo-array that can be indexed with NULL_ITEM_LOCAL_ID
-// for the null mesh.
+// for the null cell.
 Int64 null_int64_buf[2] = { NULL_ITEM_UNIQUE_ID, NULL_ITEM_UNIQUE_ID };
 Int64ArrayView null_unique_ids(1,null_int64_buf + 1);
 

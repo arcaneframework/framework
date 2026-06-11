@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MatItemEnumerator.cc                                        (C) 2000-2026 */
 /*                                                                           */
-/* Enumerators for material meshes.                                          */
+/* Enumerators for material cells.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -27,7 +27,7 @@
  * \file MatItemEnumerator.h
  *
  * This file contains the different types of iterators and macros
- * for iterating over material and environment meshes.
+ * for iterating over material and environment cells.
  */
 
 /*---------------------------------------------------------------------------*/

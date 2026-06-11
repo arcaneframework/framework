@@ -26,8 +26,9 @@ namespace Arcane::geometric
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calculates the positions of the nodes of a quadrilateral mesh.
+ * \brief Calculates the positions of the nodes of a quadrilateral cell.
  */
 template <> void BarycentricGeomShapeComputer::
 compute<GeomType::Quad4>(GeomShapeMutableView elem)
@@ -50,7 +51,7 @@ compute<GeomType::Quad4>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calculates the positions of the nodes of a quadrilateral mesh.
+ * \brief Calculates the positions of the nodes of a quadrilateral cell.
  */
 void BarycentricGeomShapeComputer::
 computeQuad4(GeomShapeMutableView elem)
@@ -60,8 +61,9 @@ computeQuad4(GeomShapeMutableView elem)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calculates the positions of the nodes of a triangular mesh.
+ * \brief Calculates the positions of the nodes of a triangular cell.
  *
  * It is considered a degenerate quadrangle.
  */
@@ -87,7 +89,7 @@ compute<GeomType::Triangle3>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calculates the positions of the nodes of a triangular mesh.
+ * \brief Calculates the positions of the nodes of a triangular cell.
  *
  * It is considered a degenerate quadrangle.
  */
@@ -99,8 +101,9 @@ computeTriangle3(GeomShapeMutableView elem)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calculates the positions of the nodes of a hexahedral mesh.
+ * \brief Calculates the positions of the nodes of a hexahedral cell.
  */
 template <> void BarycentricGeomShapeComputer::
 compute<GeomType::Hexaedron8>(GeomShapeMutableView elem)
@@ -125,7 +128,7 @@ compute<GeomType::Hexaedron8>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calculates the positions of the nodes of a hexahedral mesh.
+ * \brief Calculates the positions of the nodes of a hexahedral cell.
  */
 void BarycentricGeomShapeComputer::
 computeHexaedron8(GeomShapeMutableView elem)
@@ -135,8 +138,9 @@ computeHexaedron8(GeomShapeMutableView elem)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calculates the positions of the nodes of a pyramidal mesh.
+ * \brief Calculates the positions of the nodes of a pyramidal cell.
  */
 template <> void BarycentricGeomShapeComputer::
 compute<GeomType::Pyramid5>(GeomShapeMutableView elem)
@@ -162,7 +166,7 @@ compute<GeomType::Pyramid5>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calculates the positions of the nodes of a pyramidal mesh.
+ * \brief Calculates the positions of the nodes of a pyramidal cell.
  */
 void BarycentricGeomShapeComputer::
 computePyramid5(GeomShapeMutableView elem)
@@ -172,8 +176,9 @@ computePyramid5(GeomShapeMutableView elem)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calculates the positions of the nodes of a pentahedral mesh.
+ * \brief Calculates the positions of the nodes of a pentahedral cell.
  */
 template <> void BarycentricGeomShapeComputer::
 compute<GeomType::Pentaedron6>(GeomShapeMutableView elem)
@@ -196,7 +201,7 @@ compute<GeomType::Pentaedron6>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calculates the positions of the nodes of a pentahedral mesh.
+ * \brief Calculates the positions of the nodes of a pentahedral cell.
  */
 void BarycentricGeomShapeComputer::
 computePentaedron6(GeomShapeMutableView elem)
@@ -206,8 +211,9 @@ computePentaedron6(GeomShapeMutableView elem)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calculates the positions of the nodes of a tetrahedral mesh.
+ * \brief Calculates the positions of the nodes of a tetrahedral cell.
  */
 template <> void BarycentricGeomShapeComputer::
 compute<GeomType::Tetraedron4>(GeomShapeMutableView elem)
@@ -230,7 +236,7 @@ compute<GeomType::Tetraedron4>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calculates the positions of the nodes of a tetrahedral mesh.
+ * \brief Calculates the positions of the nodes of a tetrahedral cell.
  */
 void BarycentricGeomShapeComputer::
 computeTetraedron4(GeomShapeMutableView elem)
@@ -240,8 +246,9 @@ computeTetraedron4(GeomShapeMutableView elem)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calculates the positions of the nodes of a prismatic mesh with a pentagonal base.
+ * \brief Calculates the positions of the nodes of a prismatic cell with a pentagonal base.
  */
 template <> void BarycentricGeomShapeComputer::
 compute<GeomType::Heptaedron10>(GeomShapeMutableView elem)
@@ -267,7 +274,7 @@ compute<GeomType::Heptaedron10>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calculates the positions of the nodes of a prismatic mesh with a pentagonal base.
+ * \brief Calculates the positions of the nodes of a prismatic cell with a pentagonal base.
  */
 void BarycentricGeomShapeComputer::
 computeHeptaedron10(GeomShapeMutableView elem)
@@ -277,8 +284,9 @@ computeHeptaedron10(GeomShapeMutableView elem)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Calculates the positions of the nodes of a prismatic mesh with a hexagonal base.
+ * \brief Calculates the positions of the nodes of a prismatic cell with a hexagonal base.
  */
 template <> void BarycentricGeomShapeComputer::
 compute<GeomType::Octaedron12>(GeomShapeMutableView elem)
@@ -305,7 +313,7 @@ compute<GeomType::Octaedron12>(GeomShapeMutableView elem)
 }
 
 /*!
- * \brief Calculates the positions of the nodes of a prismatic mesh with a hexagonal base.
+ * \brief Calculates the positions of the nodes of a prismatic cell with a hexagonal base.
  */
 void BarycentricGeomShapeComputer::
 computeOctaedron12(GeomShapeMutableView elem)

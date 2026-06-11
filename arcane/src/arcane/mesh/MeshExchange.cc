@@ -363,7 +363,7 @@ _computeMeshConnectivityInfos(Int32ConstArrayView cells_new_owner)
   ENUMERATE_CELL (icell, m_cell_family->allItems().own()) {
     Cell cell = *icell;
     Integer cell_local_id = cell.localId();
-    // We do not add to our connected mesh list
+    // We do not add to our connected cell list
     tmp_owner[m_rank] = cell_local_id;
 
     m_neighbour_cells_owner->beginIncrement(cell_local_id);
@@ -1357,7 +1357,7 @@ _markRemovableCells(Int32ConstArrayView cells_new_owner, bool use_active_cells)
 {
   // This test is no longer representative with the extraghost concept
   // Should we find an alternative ??
-  // // Checks that all cells have had their neighbors calculated
+  // Checks that all cells have had their neighbors calculated
   // ENUMERATE_CELL(icell,m_cell_family->allItems()){
   //   const Cell& cell = *icell;
   //   Integer cell_local_id = cell.localId();

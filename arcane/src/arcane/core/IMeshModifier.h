@@ -41,15 +41,15 @@ class IMeshModifier;
  *
  * The format of cellsInfos() is identical to that of the
  * IMesh::allocateCells() method. If \a cellsLocalIds() is not empty, it
- * will contain the local IDs of the created meshes.
+ * will contain the local IDs of the created cells.
  *
- * If an added mesh has the same uniqueId() as an existing mesh, the
- * existing mesh is kept as is and nothing happens.
+ * If an added cell has the same uniqueId() as an existing cell, the
+ * existing cell is kept as is and nothing happens.
  *
- * The created meshes are considered to belong to this subdomain.
+ * The created cells are considered to belong to this subdomain.
  * If this is not the case, their ownership must be modified afterwards.
  *
- * By default, when adding meshes, if the associated faces do not exist,
+ * By default, when adding cells, if the associated faces do not exist,
  * they are created automatically. This is only possible in sequential mode.
  * It is possible to disable this by calling setAllowBuildFaces().
  * In parallel, the value of isAllowBuildFaces() is ignored.
@@ -84,7 +84,7 @@ class MeshModifierAddCellsArgs
 
   Int32 m_nb_cell = 0;
   Int64ConstArrayView m_cell_infos;
-  //! Returns, list of localIds() of the created meshes
+  //! Returns, list of localIds() of the created cells
   Int32ArrayView m_cell_lids;
   bool m_is_allow_build_faces = true;
 };
@@ -162,7 +162,7 @@ class ARCANE_CORE_EXPORT IMeshModifier
    *
    * This property must be set to true if you wish to modify the mesh,
    * for example by exchanging entities via the exchangeItems() call.
-   * This only concerns nodes, edges, faces, and meshes, but not particles,
+   * This only concerns nodes, edges, faces, and cells, but not particles,
    * which can still be created and destroyed.
    *
    * By default, isDynamic() is false.
@@ -172,26 +172,26 @@ class ARCANE_CORE_EXPORT IMeshModifier
   virtual void setDynamic(bool v) = 0;
 
   /*!
-   * \brief Adds meshes.
+   * \brief Adds cells.
    *
-   * Adds meshes. The format of \a cells_infos is identical to that of
+   * Adds cells. The format of \a cells_infos is identical to that of
    * the IMesh::allocateCells() method. If \a cells_lid is not empty,
-   * it will contain the local IDs of the created meshes. It is possible
+   * it will contain the local IDs of the created cells. It is possible
    * to perform multiple successive additions. Once the additions are
-   * complete, the endUpdate() method must be called. If an added mesh
-   * has the same uniqueId() as an existing mesh, the existing mesh is
+   * complete, the endUpdate() method must be called. If an added cell
+   * has the same uniqueId() as an existing cell, the existing cell is
    * kept as is and nothing happens.
    *
-   * The created meshes are considered to belong to this subdomain.
+   * The created cells are considered to belong to this subdomain.
    * If this is not the case, their ownership must be modified afterwards.
    *
-   * This method is collective. If a subdomain does not wish to add meshes,
+   * This method is collective. If a subdomain does not wish to add cells,
    * it is possible to pass an empty array.
    */
   virtual void addCells(Integer nb_cell, Int64ConstArrayView cell_infos,
                         Int32ArrayView cells_lid = Int32ArrayView()) = 0;
 
-  //! Adds meshes
+  //! Adds cells
   virtual void addCells(const MeshModifierAddCellsArgs& args);
 
   /*!
@@ -256,9 +256,9 @@ class ARCANE_CORE_EXPORT IMeshModifier
                         Int32ArrayView nodes_lid = Int32ArrayView()) = 0;
 
   /*!
-   * \brief Removes meshes.
+   * \brief Removes cells.
    *
-   * Removes the meshes whose local IDs are provided in \a cells_local_id.
+   * Removes the cells whose local IDs are provided in \a cells_local_id.
    * It is possible to perform multiple successive removals. Once the removals
    * are complete, the endUpdate() method must be called.
    */
@@ -267,19 +267,19 @@ class ARCANE_CORE_EXPORT IMeshModifier
   virtual void removeCells(Int32ConstArrayView cells_local_id, bool update_ghost) = 0;
 
   /*!
-   * \brief Detaches meshes from the mesh.
+   * \brief Detaches cells from the mesh.
    *
-   * The detached meshes are disconnected from the mesh. The nodes, edges,
-   * and faces of these meshes no longer reference them, and the uniqueId()
-   * of these meshes can be reused. To permanently destroy these meshes, the
+   * The detached cells are disconnected from the mesh. The nodes, edges,
+   * and faces of these cells no longer reference them, and the uniqueId()
+   * of these cells can be reused. To permanently destroy these cells, the
    * removeDetachedCells() method must be called.
    */
   virtual void detachCells(Int32ConstArrayView cells_local_id) = 0;
 
   /*!
-   * \brief Removes detached meshes
+   * \brief Removes detached cells
    *
-   * Removes detached meshes via detachCells().
+   * Removes detached cells via detachCells().
    * It is possible to perform multiple successive removals. Once the removals
    * are complete, the endUpdate() method must be called.
    */
@@ -310,9 +310,9 @@ class ARCANE_CORE_EXPORT IMeshModifier
   virtual void clearItems() = 0;
 
   /*!
-   * \brief Adds meshes from the data contained in \a buffer.
+   * \brief Adds cells from the data contained in \a buffer.
    *
-   * \a buffer must contain serialized meshes, for example by
+   * \a buffer must contain serialized cells, for example by
    * calling IMesh::serializeCells().
    *
    * \deprecated Use IMesh::cellFamily()->policyMng()->createSerializer() instead.
@@ -320,11 +320,11 @@ class ARCANE_CORE_EXPORT IMeshModifier
   ARCANE_DEPRECATED_240 virtual void addCells(ISerializer* buffer) = 0;
 
   /*!
-   * \brief Adds meshes from the data contained in \a buffer.
+   * \brief Adds cells from the data contained in \a buffer.
    *
-   * \a buffer must contain serialized meshes, for example by
+   * \a buffer must contain serialized cells, for example by
    * calling IMesh::serializeCells(). In return, \a cells_local_id
-   * contains the list of localIds() of the deserialized meshes. A mesh may
+   * contains the list of localIds() of the deserialized cells. A cell may
    * appear multiple times in this list if it appears multiple times in \a buffer.
    *
    * \deprecated Use IMesh::cellFamily()->policyMng()->createSerializer() instead.
@@ -354,7 +354,7 @@ class ARCANE_CORE_EXPORT IMeshModifier
                                           Array<Int64>& ghost_cell_to_coarsen,
                                           bool remove_old_ghost) = 0;
 
-  //! addition of the "extraordinary" ghost mesh addition algorithm.
+  //! addition of the "extraordinary" ghost cells addition algorithm.
   virtual void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) = 0;
 
   //! Removes the association with the \a builder instance.

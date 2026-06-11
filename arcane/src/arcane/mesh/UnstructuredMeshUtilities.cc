@@ -831,8 +831,8 @@ partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
 
     // Only the master replica has the correct owners. It must update
     // the others from this. To do this, we synchronize
-    // the owners of the meshes and then update the other families
-    // from the mesh owners.
+    // the owners of the cells and then update the other families
+    // from the cell owners.
     {
       Int32ArrayView owners = mesh->cellFamily()->itemsNewOwner().asArray();
       rep_pm->broadcast(owners, replica_master_rank);

@@ -157,7 +157,7 @@ init()
 
   m_cartesian_mesh = ICartesianMesh::getReference(mesh());
   CartesianMeshAMRMng amr_mng(m_cartesian_mesh);
-  // We ask the AMR manager for two overlapping mesh layers for
+  // We ask the AMR manager for two overlapping cell layers for
   // the highest level.
   amr_mng.setOverlapLayerSizeTopLevel(2);
   m_cartesian_mesh->computeDirections();
@@ -195,7 +195,7 @@ compute()
   //
   // First, we initialize the adaptation by providing the maximum number of
   // levels we will need. This maximum allows calculating the number of
-  // overlapping mesh layers for each level. If this number of levels is not
+  // overlapping cell layers for each level. If this number of levels is not
   // reached, the number of layers must be adjusted during the third phase
   // (some extra calculations).
   //
@@ -205,14 +205,14 @@ compute()
   // will the patches of lower levels. The patches of higher levels will be
   // deleted to be recreated in the second phase.
   // It is important to note that it is the patches that are deleted in this
-  // first phase, not the meshes of these patches. The meshes (and the various
+  // first phase, not the cells of these patches. The cells (and the various
   // items around them), if they are no longer in any patch at the end of the
   // second phase, will be deleted in the third phase.
-  // The consequence is that if a mesh had its patch deleted, but found a patch
+  // The consequence is that if a cell had its patch deleted, but found a patch
   // again during the second phase, the variables associated with it will not
   // be reset.
-  // Finally, it must be noted that an "InPatch" mesh can become an "Overlap"
-  // mesh, and vice versa.
+  // Finally, it must be noted that an "InPatch" cell can become an "Overlap"
+  // cell, and vice versa.
   amr_mng.beginAdaptMesh(options()->getNbLevelsMax(), 0);
   for (Integer level_to_adapt = 0; level_to_adapt < options()->getNbLevelsMax() - 1; ++level_to_adapt) {
     Integer nb_cell_refine = 0;
@@ -220,7 +220,7 @@ compute()
     for (Integer p = 0; p < m_cartesian_mesh->nbPatch(); ++p) {
       auto patch = m_cartesian_mesh->amrPatch(p);
       if (patch.level() == level_to_adapt) {
-        // Here, we will assign the "II_Refine" flag to all meshes that
+        // Here, we will assign the "II_Refine" flag to all cells that
         // need to be refined.
         computeDistance(patch, center_large_circle);
         computeValue(patch);
@@ -231,7 +231,7 @@ compute()
     if (nb_cell_refine == 0) {
       break;
     }
-    // Second phase. Before calling this method, the meshes of the patches
+    // Second phase. Before calling this method, the cells of the patches
     // at the "level_to_adapt" that must be refined must have the
     // "II_Refine" flag.
     // The first argument is the level to adapt. Adaptation is done
@@ -241,9 +241,9 @@ compute()
     // patches at levels higher than "level_to_adapt" will be deleted
     // (as in the first phase).
     // The second argument allows the program to crash if the call is
-    // unnecessary (i.e., if there are no "II_Refine" meshes or if
+    // unnecessary (i.e., if there are no "II_Refine" cells or if
     // level_to_adapt is higher than the previous call + 1 (which implies
-    // there are no "II_Refine" meshes)).
+    // there are no "II_Refine" cells)).
     // Here, setting this parameter to "false" may allow the removal of the
     // "nb_cell_refine" variable, at the cost of more unnecessary calculations.
     // Once this method is called, the created patches are usable
@@ -258,10 +258,10 @@ compute()
   // }
 
   // Finally, the last phase.
-  // This phase will first adjust the number of overlapping mesh layers
+  // This phase will first adjust the number of overlapping cell layers
   // for each patch in case the maximum number of levels given during the
   // first phase was not reached.
-  // Then, it will delete all meshes that have neither the "II_InPatch" flag
+  // Then, it will delete all cells that have neither the "II_InPatch" flag
   // nor the "II_Overlap" flag.
   amr_mng.endAdaptMesh();
 
@@ -344,23 +344,23 @@ computeRefine(CartesianPatch& patch)
   Real ref_level = (m_circle_width * 0.5) / pow(10, options()->getNbLevelsMax() - patch.level() - 2);
 
   // m_circle_width is the max value (see computeDistance()).
-  // We refine meshes 50% above the max value.
+  // We refine cells 50% above the max value.
   // Real ref_level = m_circle_width * 0.5;
 
   info() << "Ref level : " << ref_level << " -- Patch level : " << patch.level();
 
   Integer nb_cell_refine = 0;
 
-  // Here, we will assign the "II_Refine" flags to meshes.
+  // Here, we will assign the "II_Refine" flags to cells.
   // Several things to note.
   // First, it is possible to use the patch directions because the
   // adaptLevel() method (second phase of mesh adaptation) calculates
   // the directions of all newly created patches; there is no need
   // to wait for endAdaptMesh().
-  // Finally, the "II_Refine" flag can only be assigned to meshes having
-  // the "InPatch" flag. It is impossible to refine purely overlap meshes
-  // (meshes having the "II_Overlap" flag AND not having the "InPatch" flag).
-  // These meshes that can be refined are grouped in the
+  // Finally, the "II_Refine" flag can only be assigned to cells having
+  // the "InPatch" flag. It is impossible to refine purely overlap cells
+  // (cells having the "II_Overlap" flag AND not having the "InPatch" flag).
+  // These cells that can be refined are grouped in the
   // "inPatchCells()" group.
   CellDirectionMng cdm_x{ patch.cellDirection(MD_DirX) };
   ENUMERATE_ (Cell, icell, cdm_x.inPatchCells()) {

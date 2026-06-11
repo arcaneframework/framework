@@ -78,7 +78,7 @@ CartesianMeshPatch::
 CellGroup CartesianMeshPatch::
 cells()
 {
-  // The mesh group of the patch is the same in all directions.
+  // The cell group of the patch is the same in all directions.
   return cellDirection(MD_DirX).allCells();
 }
 

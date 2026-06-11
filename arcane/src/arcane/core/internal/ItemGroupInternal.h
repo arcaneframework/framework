@@ -284,20 +284,20 @@ class ItemGroupInternal
   ItemGroupImpl* m_node_group = nullptr; //!< Node group
   ItemGroupImpl* m_edge_group = nullptr; //!< Edge group
   ItemGroupImpl* m_face_group = nullptr; //!< Face group
-  ItemGroupImpl* m_cell_group = nullptr; //!< Mesh group
+  ItemGroupImpl* m_cell_group = nullptr; //!< Cell group
   ItemGroupImpl* m_inner_face_group = nullptr; //!< Inner face group
   ItemGroupImpl* m_outer_face_group = nullptr; //!< Outer face group
   //! AMR
   // FIXME we can avoid storing these groups by introducing predicates
   // on the parent groups
-  ItemGroupImpl* m_active_cell_group = nullptr; //!< Active mesh group
-  ItemGroupImpl* m_own_active_cell_group = nullptr; //!< Active owned mesh group
+  ItemGroupImpl* m_active_cell_group = nullptr; //!< Active cell group
+  ItemGroupImpl* m_own_active_cell_group = nullptr; //!< Active owned cell group
   ItemGroupImpl* m_active_face_group = nullptr; //!< Active face group
   ItemGroupImpl* m_own_active_face_group = nullptr; //!< Active owned face group
   ItemGroupImpl* m_inner_active_face_group = nullptr; //!< Active inner face group
   ItemGroupImpl* m_outer_active_face_group = nullptr; //!< Active outer face group
-  std::map<Integer, ItemGroupImpl*> m_level_cell_group; //!< Level mesh group
-  std::map<Integer, ItemGroupImpl*> m_own_level_cell_group; //!< Level owned mesh group
+  std::map<Integer, ItemGroupImpl*> m_level_cell_group; //!< Level cell group
+  std::map<Integer, ItemGroupImpl*> m_own_level_cell_group; //!< Level owned cell group
 
   //@}
   std::map<String, AutoRefT<ItemGroupImpl>> m_sub_groups; //!< Set of all sub-groups

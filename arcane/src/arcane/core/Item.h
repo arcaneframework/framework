@@ -174,7 +174,7 @@ class ARCANE_CORE_EXPORT Item
   //! Null element index
   static const Int32 NULL_ELEMENT = NULL_ITEM_ID;
 
-  //! Mesh type name \a cell_type
+  //! Cell type name \a cell_type
   ARCCORE_DEPRECATED_2021("Use ItemTypeMng::typeName() instead")
   static String typeName(Int32 type);
 
@@ -243,7 +243,7 @@ class ARCANE_CORE_EXPORT Item
       arcaneCheckAt((Integer)m_local_id, m_shared_info->m_unique_ids.size());
 #endif
     // Do not use the normal accessor because this array may be used for the
-    // null mesh and in this case m_local_id equals NULL_ITEM_LOCAL_ID (which is negative)
+    // null cell and in this case m_local_id equals NULL_ITEM_LOCAL_ID (which is negative)
     // which causes an exception for array overflow.
     return ItemUniqueId(m_shared_info->m_unique_ids.data()[m_local_id]);
   }
@@ -864,7 +864,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Edge of a mesh.
+ * \brief Edge of a cell.
  *
  * Edges only exist in 3D. In 2D, you must use the 'Face' structure.
  *

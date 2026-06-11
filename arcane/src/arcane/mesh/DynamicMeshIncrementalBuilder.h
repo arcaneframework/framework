@@ -102,7 +102,7 @@ class DynamicMeshIncrementalBuilder
   //! Add to the current mesh items coming from a parent mesh
   void addParentItems(const ItemVectorView& items, const eItemKind submesh_kind);
   //! AMR
-  //! Add to the current mesh the child meshes of the parent mesh \p hParent_cell
+  //! Add to the current mesh the child cells the parent cell \p hParent_cell
   void addHChildrenCells(Cell hParent_cell, Integer nb_cell, Int64ConstArrayView cells_infos,
                          Int32 sub_domain_id, Int32ArrayView cells,
                          bool allow_build_face);

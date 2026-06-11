@@ -36,7 +36,7 @@ namespace Arcane::Materials
  * \brief Strategy for synchronizing the list of materials/media of entities.
  *
  * This abstract class determines the synchronization method between the sub-domains and the list
- * of materials/media to which a mesh belongs.
+ * of materials/media to which a cell belongs.
  *
  */
 class IMeshMaterialSynchronizerImpl
@@ -54,7 +54,7 @@ class IMeshMaterialSynchronizerImpl
    *
    * This operation is collective.
    *
-   * Returns true if meshes were added or removed from a material
+   * Returns true if cells were added or removed from a material
    * or a medium during this operation for this sub-domain.
    */
   virtual bool synchronizeMaterialsInCells() = 0;

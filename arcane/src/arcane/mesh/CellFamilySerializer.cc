@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellFamilySerializer.cc                                     (C) 2000-2024 */
 /*                                                                           */
-/* Serialization/Deserialization of mesh families.                           */
+/* Serialization/Deserialization of cell families.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -140,11 +140,11 @@ deserializeItems(ISerializer* buf, Int32Array* cells_local_id)
       if (use_flags)
         icell->setFlags(current_cell.flags());
       // Force the owners to the serialization value, because they will not be
-      // correct in the case where the mesh or one of its elements
+      // correct in the case where the cell or one of its elements
       // already existed
       icell->setOwner(current_cell.owner(), my_rank);
       if (is_check) {
-        // Checks that the unique IDs of the current elements of the mesh
+        // Checks that the unique IDs of the current elements of the cell
         // are the same as those being deserialized.
         bool has_error = false;
         Integer node_index = 0;
@@ -186,7 +186,7 @@ deserializeItems(ISerializer* buf, Int32Array* cells_local_id)
       }
 
       // TODO: check if this is useful. Probably not because the work
-      // is done during mesh deserialization.
+      // is done during cells deserialization.
       Integer node_index = 0;
       for (Node node : cell.nodes()) {
         node.mutableItemBase().setOwner(current_cell.nodeOwner(node_index), my_rank);

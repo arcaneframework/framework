@@ -491,7 +491,7 @@ _readElementsFromAsciiMshV2File(IosFile& ios_file, MeshInfo& mesh_info)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Reading elements (meshes, faces, ...)
+ * \brief Reading elements (cells, faces, ...)
  *
  * In version 4, elements are sorted by type (eItemKind)
  *
@@ -588,7 +588,7 @@ _readElementsFromAsciiMshV4File(IosFile& ios_file, MeshInfo& mesh_info)
   info() << "Computed mesh dimension = " << mesh_dimension;
 
   // We only keep blocks of our dimension
-  // to create the meshes
+  // to create the cells
   for (MeshV4ElementsBlock& block : blocks) {
     if (block.dimension != mesh_dimension)
       continue;
@@ -637,7 +637,7 @@ _allocateCells(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
   Integer nb_cell_node = mesh_info.cells_connectivity.size();
   info() << "nb_cell_node=cells_connectivity.size()=" << nb_cell_node;
 
-  // Creating the meshes
+  // Creating the cells
   info() << "Building cells, nb_cell=" << nb_elements << " nb_cell_node=" << nb_cell_node;
   // Info for cell creation
   // per cell: 1 for its unique id,

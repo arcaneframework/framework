@@ -124,7 +124,7 @@ class ItemTypeInfoBuilder
                           std::array<Int16, 2> left_and_right_face);
 
   /*!
-   * \brief Adds an edge for a 2D mesh in a 3D mesh.
+   * \brief Adds an edge for a 2D cell in a 3D mesh.
    *
    * \a n0 origin node
    * \a n1 end node

@@ -34,12 +34,13 @@ namespace Arcane::Materials
  * \brief Connectivity table from 'Cell' to its 'AllEnvCell' intended
  *        for use on accelerator.
  *
- * Class that maintains the connectivity of all meshes
- * \a Cell to all their meshes \a AllEnvCell.
+ * Class that maintains the connectivity of all cells
+ * \a Cell to all their cells \a AllEnvCell.
  *
  * An instance is created via the create() method.
  *
- * The initialization cost is high; memory must be allocated and structures filled. We iterate through all meshes and for each mesh, we call
+ * The initialization cost is high; memory must be allocated and structures
+ * filled. We iterate through all meshes and for each cell, we call
  * the CellToAllEnvCellConverter.
  *
  * Once the instance is created, it must be updated every time that
@@ -156,8 +157,8 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Macro to iterate over a group of meshes in order to iterate
- * over the allenvcells of each mesh.
+ * \brief Macro to iterate over a group of cells in order to iterate
+ * over the allenvcells of each cell.
  *
  * \note By forcing the use of CellToAllEnvCellAccessor in the macro,
  * we ensure the capture by copy of the AllCellToAllEnvCell pointer, allowing
@@ -177,14 +178,15 @@ class ARCANE_MATERIALS_EXPORT CellToAllComponentCellEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Macro to iterate over all environments within a mesh.
+ * \brief Macro to iterate over all environments within a cell.
  *        "Raw and lightweight" ENUMERATE_CELL_ENVCELL version, intended for
  *        use on accelerator, i.e. within a RUN_COMMAND...
  *
  * \param iname variable name (type MatVarIndex) allowing access to
  *              data.
- * \param cid mesh identifier (type Integer).
+ * \param cid cell identifier (type Integer).
  * \param cell_to_allenvcellaccessor cell->allenvcell connectivity (type CellToAllEnvCellAccessor)
  */
 // TODO Very likely to be moved elsewhere if this prototype is kept

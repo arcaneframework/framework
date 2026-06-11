@@ -183,7 +183,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
   debug() << "communicating sub domains my=" << nb_comm_rank
           << " max=" << max_comm_rank;
 
-  // List of ghost mesh groups.
+  // List of ghost cell groups.
   UniqueArray<SharedArray<Int32>> ghost_group_list(boundary_items.size());
 
   // Retrieves the lists of ghost entities.
@@ -205,7 +205,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
       // the number of elements in this group.
       // This array will then be gathered across all subdomains
       // (by an allGather()) so that each subdomain can iterate through it
-      // and then know who owns its shared meshes.
+      // and then know who owns its shared cells.
       Int32UniqueArray local_ghost_info(gather_size);
       Integer pos = 0;
       local_ghost_info[pos++] = nb_comm_rank; // Indicates the number of elements in the array
@@ -246,7 +246,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
     }
 
     {
-      // Created the infos concerning the ghost meshes
+      // Created the infos concerning the ghost cells
       Integer nb_send = communicating_ghost_ranks.size();
       ghost_rank_info.resize(nb_send);
       for (Integer i = 0; i < nb_send; ++i) {
@@ -263,7 +263,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
       // For synchronizations to work correctly, it is necessary that
       // 'share_rank_info' and 'ghost_rank_info' have
       // the same number of elements. If this is not the case, it means
-      // that a processor 'n' owns shared meshes with proc 'm'
+      // that a processor 'n' owns shared cells with proc 'm'
       // without this being reciprocal. If this is the case, we add
       // a reference to this subdomain in 'share_rank_info'
       // with no elements to send.
@@ -318,8 +318,8 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
     }
 
     // OK, now we know the list of subdomains that possess
-    // the shared meshes of this subdomain and conversely, the list of
-    // subdomains interested in the own meshes of this subdomain.
+    // the shared cells of this subdomain and conversely, the list of
+    // subdomains interested in the own cells of this subdomain.
     // All that remains is to send and receive the corresponding information.
     // To do this, and to avoid deadlocks, we first send the info
     // for the subdomains whose number is less than this subdomain.

@@ -105,7 +105,7 @@ readOptionsFromXml(XmlNode cartesian_node)
     ARCANE_FATAL("Element '{0}' : can not convert value '{1}' to type Real3", origine_node.xpathFullName(), origine_value);
 
   // Retrieve the block lengths, + true for throw_exception
-  // Also retrieve the number of mesh cells per block + true for throw_exception
+  // Also retrieve the number of cells per block + true for throw_exception
   // Also retrieve the geometric progressions
   // Default progressions to 1.0
   for (XmlNode& lx_node : lx_node_list) {
@@ -245,7 +245,7 @@ _readOptions()
     for (int i = 0; i < m_build_info.m_bloc_lz.size(); i += 1)
       m_bloc_oz.add(m_bloc_oz.at(i) + m_build_info.m_bloc_lz.at(i));
 
-  // Sum up the number of mesh cells per block and total
+  // Sum up the number of cells per block and total
   m_nx = m_ny = m_nz = 0;
 
   for (int i = 0; i < m_build_info.m_bloc_nx.size(); ++i)
@@ -827,8 +827,8 @@ generateMesh()
     z_obl += 1;
   }
 
-  // Mesh creation
-  // Info for mesh creation
+  // Cell creation
+  // Info for cell creation
   // per cell: 1 for its unique id,
   //           1 for its type,
   //           8 for each node
@@ -901,7 +901,7 @@ generateMesh()
     Real3 length(m_l.x, m_l.y, m_l.z);
     Real3 max_pos = origin + length;
     // TODO: Since there can be geometric progressions, we must define
-    // the middle based on the position of the offset mesh the middle
+    // the middle based on the position of the offset cell the middle
     // and not from the coordinates
     // Calculate middle_x as the middle position
     bool do_zg_and_zd = m_build_info.m_is_generate_sod_groups;

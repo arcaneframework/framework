@@ -58,7 +58,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
   /*!
    * \brief Modifier implementation.
    *
-   * This modifier allows changing the list of meshes composing a medium
+   * This modifier allows changing the list of cells composing a medium
    * or a material. This method should in principle not be called directly.
    * To modify, it is better to use an instance of MeshMaterialModifier
    * which guarantees that the update functions are called.
@@ -71,12 +71,12 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
   virtual ConstArrayView<MeshMaterialVariableIndexer*> variablesIndexer() = 0;
 
   /*!
-   * \brief Synchronizer for material and medium variables across all meshes.
+   * \brief Synchronizer for material and medium variables across all cells.
    */
   virtual IMeshMaterialVariableSynchronizer* allCellsMatEnvSynchronizer() = 0;
 
   /*!
-   * \brief Synchronizer for medium-only variables across all meshes.
+   * \brief Synchronizer for medium-only variables across all cells.
    */
   virtual IMeshMaterialVariableSynchronizer* allCellsEnvOnlySynchronizer() = 0;
 
@@ -130,9 +130,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMngInternal
   /*!
    * \brief View of the array corresponding to a selection across all entities.
    *
-   * Returns a view of an array \a v sized to the number of meshes in the mesh
+   * Returns a view of an array \a v sized to the number of cells in the mesh
    * and having `v[i] == i` for all \a i. This array is invalidated if the
-   * number of meshes changes. It is used notably for indexed selections
+   * number of cells changes. It is used notably for indexed selections
    * (via the ConstituentItemIndexedSelectionView class).
    */
   virtual SmallSpan<const Int32> identitySelectionView() const = 0;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExtraGhostParticlesBuilder.h                                (C) 2000-2024 */
 /*                                                                           */
-/* Construction of extra ghost meshes.                                       */
+/* Construction of extra ghost cells.                                        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_EXTRAGHOSTPARTICLESBUILDER_H
 #define ARCANE_MESH_EXTRAGHOSTPARTICLESBUILDER_H
@@ -41,8 +41,9 @@ class ParticleFamily;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Construction of extra ghost meshes.
+ * \brief Construction of extra ghost cells.
  */
 class ExtraGhostParticlesBuilder
 : public TraceAccessor

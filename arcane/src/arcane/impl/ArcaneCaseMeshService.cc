@@ -141,7 +141,7 @@ createMesh(const String& default_name)
 
   ARCANE_CHECK_POINTER(m_mesh_builder);
 
-  // Indicates the management of mesh dimensions
+  // Indicates the management of cell dimensions
   eMeshCellDimensionKind mesh_dim_kind = options()->cellDimensionKind();
   if (mesh_dim_kind != build_info.meshKind().meshDimensionKind()) {
     MeshKind mesh_kind = build_info.meshKind();
@@ -402,7 +402,7 @@ _setGhostLayerInfos()
   if (!gm)
     return;
 
-  // Positions the info on the ghost meshes.
+  // Positions the info on the ghost cells.
   // TODO This is done to remain compatible with the historical mode but
   // it should be possible to manage this differently (via a service for example)
   Integer nb_ghost_layer = options()->nbGhostLayer();

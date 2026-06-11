@@ -176,11 +176,11 @@ void MeshMaterialSyncUnitTest::
 _doPhase1()
 {
   // This phase is done right after initialization, so we have already created the
-  // materials but we don't have any meshes in them yet.
+  // materials but we don't have any cells in them yet.
 
-  // Add meshes to the materials.
+  // Add cells to the materials.
   // To test synchronization, we only add materials to
-  // own cells. Thus, someone must send us the
+  // proper cells. Thus, someone must send us the
   // information for ghost cells.
 
   IMeshMaterialMng* mm = m_material_mng;
@@ -222,12 +222,12 @@ _doPhase2()
   IMeshMaterialMng* mm = m_material_mng;
   Integer nb_mat = options()->nbMaterial();
   // This phase must be done after phase1 and removes
-  // meshes that were added in phase 1.
+  // cells that were added in phase 1.
 
-  // Add and remove meshes in the materials.
+  // Add and remove cells in the materials.
   // To test synchronization, we only work on
-  // the meshes we own. Thus, someone must send us the
-  // information for ghost meshes.
+  // the cells we own. Thus, someone must send us the
+  // information for ghost cells.
   {
     CellGroup cells = ownCells();
     MeshMaterialModifier mmodifier(m_material_mng);
@@ -328,7 +328,7 @@ void MeshMaterialSyncUnitTest::
 _checkVariableSync2(bool do_check, Int32 iteration)
 {
   // TODO: Also do this with materials when they are available
-  // TODO: Do not put the same value in every environment/material mesh (make a uid offset)
+  // TODO: Do not put the same value in every environment/material cell (make a uid offset)
   Arcane::Accelerator::RunQueue* queue = subDomain()->acceleratorMng()->defaultQueue();
 
   // Checks that variable synchronization works correctly

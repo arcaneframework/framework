@@ -61,15 +61,15 @@ synchronizeMaterialsInCells()
   /*
     The algorithm used is as follows:
 
-    We use a mesh variable that uses a bit for each
+    We use a cell variable that uses a bit for each
     material to indicate its presence: if this bit is set, the material
     is present, otherwise it is absent. The variable used is therefore of type
-    ArrayByte on the meshes. The _hasBit() and _setBit() methods allow
+    ArrayByte on the cells. The _hasBit() and _setBit() methods allow
     setting the bit of a given material.
 
-    1. The subdomain fills this variable for these meshes.
+    1. The subdomain fills this variable for these cells.
     2. The variable is synchronized.
-    3. The subdomain compares for each of its ghost meshes
+    3. The subdomain compares for each of its ghost cells
     this material presence array and adds/removes materials based on
     this array.
   */

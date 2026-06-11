@@ -163,11 +163,11 @@ _createConstraintsLists(Int64MultiArray2& tied_uids)
     // the list of uniqueIds for one constraint
     Int64ConstArrayView uids(tied_uids[i]);
 
-    // this same list in localId, knowing that some meshes are not local
+    // this same list in localId, knowing that some cells are not local
     Int32UniqueArray lids(uids.size());
     cellFamily->itemsUniqueIdToLocalId(lids, uids, false);
 
-    // the local list in localId (without the ids of meshes on other procs)
+    // the local list in localId (without the ids of cells on other procs)
     Int32UniqueArray lids_loc;
     lids_loc.reserve(lids.size());
     for (Integer j = 0, js = lids.size(); j < js; ++j) {
@@ -176,7 +176,7 @@ _createConstraintsLists(Int64MultiArray2& tied_uids)
         lids_loc.add(lid);
     }
 
-    // the array with the meshes of this constraint
+    // the array with the cells of this constraint
     ItemVectorView items_view = cellFamily->view(lids_loc);
     SharedArray<Cell> cells;
     for (Integer j = 0, js = items_view.size(); j < js; j++)
@@ -213,10 +213,10 @@ _initArrayCellsWithConstraints()
   if (!m_mesh->partitionConstraintMng())
     return;
 
-  // here we must retrieve the lists of lists of meshes
+  // here we must retrieve the lists of lists of cells
   // with the constraint of not being separated during repartitioning
 
-  // a 2D array with the uniqueIds of the meshes
+  // a 2D array with the uniqueIds of the cells
   Int64MultiArray2 tied_uids;
 
   // Compute tied_uids first because we cannot use this after redistribution
@@ -299,8 +299,8 @@ _initUidRef()
   _checkCreateVar();
   VariableCellInt64 uids_ref(*m_unique_id_reference);
   // Setting up an indirection array between cells and a reference uniqueId
-  // allows knowing the uid of the first mesh of each constraint
-  // including for ghost meshes
+  // allows knowing the uid of the first cell of each constraint
+  // including for ghost cells
   ENUMERATE_CELL (icell, m_mesh->allCells()) {
     uids_ref[icell] = icell->uniqueId();
   }
@@ -323,8 +323,8 @@ _initUidRef(VariableCellInteger& cell_renum_uid)
   VariableCellInt64 uids_ref(*m_unique_id_reference);
 
   // Setting up an indirection array between cells and a reference uniqueId
-  // allows knowing the uid of the first mesh of each constraint
-  // including for ghost meshes
+  // allows knowing the uid of the first cell of each constraint
+  // including for ghost cells
   ENUMERATE_CELL (icell, m_mesh->allCells()) {
     uids_ref[icell] = cell_renum_uid[icell];
   }
@@ -343,8 +343,8 @@ _initUidRef(VariableCellInteger& cell_renum_uid)
 void MeshPartitionerBase::
 _initLid2LidCompacted()
 {
-  // Construction of the indirection array between the local numbering for all meshes
-  // and a numbering without ghost meshes or grouped meshes
+  // Construction of the indirection array between the local numbering for all cells
+  // and a numbering without ghost cells or grouped cells
   Integer index = 0;
   m_local_id_2_local_id_compacted.resize(m_mesh->cellFamily()->maxLocalId());
   m_check.resize(m_mesh->cellFamily()->maxLocalId());
@@ -374,7 +374,7 @@ _initLid2LidCompacted()
 void MeshPartitionerBase::
 _initNbCellsWithConstraints()
 {
-  // Calculate the number of internal meshes taking into account the grouping according to constraints
+  // Calculate the number of internal cells taking into account the grouping according to constraints
   m_nb_cells_with_constraints = m_mesh->ownCells().size();
   for (Integer i = 0; i < m_cells_with_constraints.size(); ++i) {
     m_nb_cells_with_constraints -= (m_cells_with_constraints[i].size() - 1);
@@ -440,7 +440,7 @@ _addNgb(const Cell& cell, const Face& face,
   Real hg_contrib = 0;
   const VariableItemReal& commCost = m_lb_mng_internal->commCost(m_mesh);
   const float face_comm_cost = static_cast<float>(commCost[face]);
-  // Traditional mesh, we can add
+  // Traditional cell, we can add
   if ((!special) && (m_filter_lid_cells[cell.localId()] == eCellClassical))
     toAdd = true;
   else {
@@ -524,13 +524,13 @@ getNeighbourCellsUidWithConstraints(Cell cell, Int64Array& neighbourcells,
 
   if (m_filter_lid_cells[cell.localId()] == eCellClassical) {
     if (m_is_non_manifold_mesh && cell.hasFlags(ItemFlags::II_HasEdgeFor1DItems)) {
-      // In the case of a non-manifold mesh, the mesh may contain
+      // In the case of a non-manifold mesh, the cell may contain
       // edges instead of faces. If so, we use the edges
       // to determine neighbors.
       // In this case, we only consider neighbors that also have
       // 'ItemFlags::II_HasEdgeFro1DItems' positioned.
       for (Edge sub_edge : cell.edges()) {
-        // only consider edges that have a neighboring mesh
+        // only consider edges that have a neighboring cell
         if (sub_edge.nbCell() >= 2) {
           for (Cell sub_cell : sub_edge.cells()) {
             if (sub_cell != cell && sub_cell.hasFlags(ItemFlags::II_HasEdgeFor1DItems)) {
@@ -547,9 +547,9 @@ getNeighbourCellsUidWithConstraints(Cell cell, Int64Array& neighbourcells,
     else {
       for (Integer z = 0; z < cell.nbFace(); ++z) {
         Face face = cell.face(z);
-        // only consider faces that have a neighboring mesh
+        // only consider faces that have a neighboring cell
         if (face.nbCell() == 2) {
-          // search for the external mesh
+          // search for the external cell
           Cell opposite_cell = (face.cell(0) != cell ? face.cell(0) : face.cell(1));
           hg_contrib += _addNgb(opposite_cell, face, neighbourcells, contrib, difficultNgb,
                                 ptrcommWeights, offset, lids);
@@ -574,9 +574,9 @@ getNeighbourCellsUidWithConstraints(Cell cell, Int64Array& neighbourcells,
       // memUsed[j] = hg_contrib;
       for (Integer z = 0; z < listCell[j].nbFace(); ++z) {
         const Face& face = listCell[j].face(z);
-        // only consider faces that have a mesh not marked as eCellInAConstraint and with a neighboring mesh
+        // only consider faces that have a cell not marked as eCellInAConstraint and with a neighboring cell
         if ((face.nbCell() == 2) && (m_filter_lid_cells[face.cell(0).localId()] != eCellInAConstraint || m_filter_lid_cells[face.cell(1).localId()] != eCellInAConstraint)) {
-          // search for the external mesh
+          // search for the external cell
           const Cell& opposite_cell = (m_filter_lid_cells[face.cell(0).localId()] != eCellInAConstraint ? face.cell(0) : face.cell(1));
           hg_contrib += _addNgb(opposite_cell, face, neighbourcells, contrib, difficultNgb,
                                 ptrcommWeights, offset, lids, true);

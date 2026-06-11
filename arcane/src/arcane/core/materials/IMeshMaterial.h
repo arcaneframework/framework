@@ -48,7 +48,7 @@ class ARCANE_CORE_EXPORT IUserMeshMaterial
  * \brief Interface of a mesh material.
  *
  * A material belongs to an environment (IMeshEnvironment). It is possible
- * to retrieve the list of meshes for this material via cells().
+ * to retrieve the list of cells for this material via cells().
  */
 class ARCANE_CORE_EXPORT IMeshMaterial
 : public IMeshComponent
@@ -72,20 +72,20 @@ class ARCANE_CORE_EXPORT IMeshMaterial
   virtual void setUserMaterial(IUserMeshMaterial* umm) = 0;
 
   /*!
-   * \brief Mesh of this material for mesh \a c.
+   * \brief Cell of this material for cell \a c.
    *
-   * If this material is not present in the mesh,
-   * a null material mesh is returned.
+   * If this material is not present in the cell,
+   * a null material cell is returned.
    *
    * The cost of this function is proportional to the number of materials
-   * present in the mesh.
+   * present in the cell.
    */
   virtual MatCell findMatCell(AllEnvCell c) const = 0;
 
   //! View associated with this material
   virtual MatItemVectorView matView() const = 0;
 
-  //! View on the list of pure entities (associated with the global mesh) of the material
+  //! View on the list of pure entities (associated with the global cell) of the material
   virtual MatPurePartItemVectorView pureMatItems() const = 0;
 
   //! View on the list of impure (partial) entities of the material

@@ -102,7 +102,7 @@ class ARCANE_CORE_EXPORT ComponentPartItemVectorView
   //! List of valueIndex() of the part
   Int32ConstArrayView m_value_indexes;
 
-  //! List of indices into \a m_items_internal for each material mesh.
+  //! List of indices into \a m_items_internal for each material cell.
   Int32ConstArrayView m_item_indexes;
 
   //! List of ComponentItemInternal* for this constituent.

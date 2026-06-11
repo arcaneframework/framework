@@ -147,11 +147,11 @@ computeFacesUniqueIdAndOwner()
     CartesianGridDimension::CellUniqueIdComputer2D cell_uid_computer(0, nb_cell.x);
     CartesianGridDimension::FaceUniqueIdComputer2D face_uid_computer(grid_dimension.getFaceComputer2D(0));
 
-    // The meshes are quadrangles
+    // The cells are quadrangles
     std::array<Int64, 4> face_uids;
     std::array<Int64, 4> face_uids2;
     cells_map.eachItem([&](Cell cell) {
-      // Retrieves the index (I,J) of the mesh
+      // Retrieves the index (I,J) of the cell
       Int64 uid = cell.uniqueId();
       const Int64 y2 = uid / nb_cell.x;
       const Int64 x2 = uid % nb_cell.x;
@@ -209,11 +209,11 @@ computeFacesUniqueIdAndOwner()
     info() << "PreviousRank X=" << previous_rank_x << " Y=" << previous_rank_y << " Z=" << previous_rank_z;
     CartesianGridDimension::CellUniqueIdComputer3D cell_uid_computer(0, nb_cell.x, nb_cell_xy);
     CartesianGridDimension::FaceUniqueIdComputer3D face_uid_computer(grid_dimension.getFaceComputer3D(0));
-    // The meshes are hexahedrons
+    // The cells are hexahedrons
     std::array<Int64, 6> face_uids;
     std::array<Int64, 6> face_uids2;
     cells_map.eachItem([&](Cell cell) {
-      // Retrieves the index (I,J) of the mesh
+      // Retrieves the index (I,J) of the cell
       Int64 uid = cell.uniqueId();
       Int64 z2 = uid / nb_cell_xy;
       Int64 v2 = uid - (z2 * nb_cell_xy);

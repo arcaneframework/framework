@@ -478,9 +478,9 @@ _computeDeltat()
 /*!
  * \brief Updates the conservative variables via HLLC fluxes.
  *
- * Uses a "cell-loop over faces" approach: each mesh iterates over its faces
+ * Uses a "cell-loop over faces" approach: each cell iterates over its faces
  * and accumulates the flux contribution in local accumulators (no atomic
- * operation). Internal faces are treated twice (once by each adjacent mesh),
+ * operation). Internal faces are treated twice (once by each adjacent cell),
  * which is correct because the contribution is symmetric in sign.
  *
  * Slippery wall boundary conditions are handled directly in the face loop

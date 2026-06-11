@@ -54,7 +54,7 @@ class ITiedInterface
    */
   virtual FaceGroup masterInterface() const = 0;
 
-  //! Name of the group containing the master meshes
+  //! Name of the group containing the master cells
   virtual String masterInterfaceName() const = 0;
 
   /*!
@@ -65,7 +65,7 @@ class ITiedInterface
    */
   virtual FaceGroup slaveInterface() const = 0;
 
-  //! Name of the group containing the slave meshes
+  //! Name of the group containing the slave cells
   virtual String slaveInterfaceName() const = 0;
 
   //! List of information about the slave nodes of a master face

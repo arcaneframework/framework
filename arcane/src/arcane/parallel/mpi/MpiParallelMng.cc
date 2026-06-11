@@ -311,7 +311,7 @@ class MpiParallelMngUtilsFactory
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
     ITraceMng* tm = pm->traceMng();
     Ref<IDataSynchronizeImplementationFactory> generic_factory;
-    // Only displays information for the group of all meshes to avoid displaying
+    // Only displays information for the group of all cells to avoid displaying
     // the same message multiple times.
     bool do_print = (group.isAllItems() && group.itemKind() == IK_Cell);
     if (m_synchronizer_version == 2) {

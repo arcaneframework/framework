@@ -56,7 +56,7 @@ void HydroAdditionalTestModule::
 init()
 {
   // Created a node->node connectivity containing for each node the
-  // nodes of the meshes connected to this node as well as itself.
+  // nodes of the cells connected to this node as well as itself.
   IItemFamily* node_family = mesh()->nodeFamily();
   NodeGroup nodes = node_family->allItems();
   // NOTE: the object is automatically destroyed by the mesh

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellMerger.cc                                               (C) 2000-2025 */
 /*                                                                           */
-/* Merges two meshes.                                                        */
+/* Merges two cells.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -455,7 +455,7 @@ class Faces2DToMergeFinder
   /**
    * Access the number in mesh 1 of the @a i-th face to be merged.
    *
-   * @param i number in the list of faces to be merged
+   * @param i number in the list of cells to be merged
    *
    * @return the number of the @a i-th face to be merged
    */
@@ -467,7 +467,7 @@ class Faces2DToMergeFinder
   /**
    * Access the number in mesh 2 of the @a i-th face to be merged.
    *
-   * @param i number in the list of faces to be merged
+   * @param i number in the list of cells to be merged
    *
    * @return the number of the @a i-th face to be merged
    */
@@ -479,8 +479,8 @@ class Faces2DToMergeFinder
   /**
    * Constructs the different data structures.
    *
-   * @param i_cell_1 the first mesh
-   * @param i_cell_2 the second mesh
+   * @param i_cell_1 the first cell
+   * @param i_cell_2 the second cell
    * @param common_face the information on the common face
    */
   Faces2DToMergeFinder(Cell cell1, Cell cell2,
@@ -505,16 +505,17 @@ class Faces2DToMergeFinder
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief This function-class searches for faces to merge when
- * merging two meshes
+ * merging two cells
  */
 class FacesToMergeFinder
 {
  public:
 
   /**
-   * Access the number of common faces between the two meshes
+   * Access the number of common faces between the two cells
    *
    * @return m_cell1_edge_face_list.size()
    */
@@ -524,11 +525,11 @@ class FacesToMergeFinder
   }
 
   /**
-   * Access the @a i-th face number in mesh 1
+   * Access the @a i-th face number in cell 1
    *
    * @param i the number in the list of common faces
    *
-   * @return the number in mesh 1 of the @a i-th common face
+   * @return the number in cell 1 of the @a i-th common face
    */
   Integer cell1FaceNumber(Integer i) const
   {
@@ -536,11 +537,11 @@ class FacesToMergeFinder
   }
 
   /**
-   * Access the @a i-th face number in mesh 2
+   * Access the @a i-th face number in cell 2
    *
    * @param i the number in the list of common faces
    *
-   * @return the number in mesh 2 of the @a i-th common face
+   * @return the number in cell 2 of the @a i-th common face
    */
   Integer cell2FaceNumber(Integer i) const
   {
@@ -550,8 +551,8 @@ class FacesToMergeFinder
   /**
    * Constructs the different data structures
    *
-   * @param cell1 the first mesh
-   * @param cell2 the second mesh
+   * @param cell1 the first cell
+   * @param cell2 the second cell
    * @param common_face the information of the common face
    */
   FacesToMergeFinder(Cell cell1, Cell cell2,
@@ -571,7 +572,7 @@ class FacesToMergeFinder
   //@{
   /**
    * These lists containing the numbers of the common faces of the two
-   * meshes are constructed such that the face
+   * cells are constructed such that the face
    * m_cell1_edge_face_list[i] is to be merged with the face
    * m_cell2_edge_face_list[i]
    */
@@ -589,12 +590,12 @@ class FacesToMergeFinder
 
 /**
  * Determines the faces to merge by considering the edges that
- * are supported by the common vertices between the meshes. For this,
+ * are supported by the common vertices between the cells. For this,
  * the faces are sorted according to the edges supported by common vertices.
  *
- * @param i_cell the mesh studied
+ * @param i_cell the cell studied
  * @param edge_face_list the list of face numbers
- * @param common_face_number the number of the common face in mesh @a i_cell
+ * @param common_face_number the number of the common face in cell @a i_cell
  * @param common_face_nodes the localIds of the nodes of the common face
  */
 void FacesToMergeFinder::
@@ -661,7 +662,7 @@ class FaceToQuadrilateralMerger
 
   IntegerUniqueArray m_face_1_common_node_numbers; /**< Numbers in face 1 of the common vertices with face 2 */
   IntegerUniqueArray m_face_2_common_node_numbers; /**< Numbers in face 1 of the common vertices with face 2 */
-  IntegerUniqueArray m_face_2_exchanged_node_numbers; /**< Numbers in face 2 of the vertices that will define the merged mesh */
+  IntegerUniqueArray m_face_2_exchanged_node_numbers; /**< Numbers in face 2 of the vertices that will define the merged cell */
 
   static const Integer m_quad_node_neighbors[4][2]; /**< List of neighboring nodes by edge in a quadrangle */
 
@@ -793,11 +794,11 @@ class CellToQuadrilateralMerger
 {
  private:
 
-  //! Numbers in mesh 1 of the common vertices with mesh 2
+  //! Numbers in cell 1 of the common vertices with cell 2
   IntegerUniqueArray m_cell_1_common_node_numbers;
-  //! Numbers in mesh 2 of the common vertices with mesh 1
+  //! Numbers in cell 2 of the common vertices with cell 1
   IntegerUniqueArray m_cell_2_common_node_numbers;
-  //! Numbers in mesh 2 of the vertices that will define the merged mesh
+  //! Numbers in cell 2 of the vertices that will define the merged cell
   IntegerUniqueArray m_cell_2_exchanged_node_numbers;
 
   //! List of neighboring nodes by edge in a quadrangle
@@ -807,8 +808,8 @@ class CellToQuadrilateralMerger
    * Initializes the quantities m_cell_1_common_node_numbers m_cell_2_common_node_numbers and
    * m_cell_2_exchanged_node_numbers
    *
-   * @param i_cell_1 the first mesh
-   * @param i_cell_2 the second mesh
+   * @param i_cell_1 the first cell
+   * @param i_cell_2 the second cell
    */
   void _setCellsNodeNumbers(Cell i_cell_1, Cell i_cell_2);
 
@@ -817,8 +818,8 @@ class CellToQuadrilateralMerger
   /**
    * Constructor
    *
-   * @param cell1 the retained mesh
-   * @param cell2 the abandoned mesh [MUST BE A QUADANGLE]
+   * @param cell1 the retained cell
+   * @param cell2 the abandoned cell [MUST BE A QUADANGLE]
    */
   CellToQuadrilateralMerger(ItemSwapperUtils* swap_utils, Cell cell1, Cell cell2);
 };
@@ -898,7 +899,7 @@ CellToQuadrilateralMerger(ItemSwapperUtils* swap_utils, Cell cell1, Cell cell2)
 
   this->_setCellsNodeNumbers(cell1, cell2);
 
-  // Fusion of side meshes
+  // Fusion of side cells
   Faces2DToMergeFinder faces_to_merge(cell1, cell2, common_face);
   for (Integer i = 0; i < faces_to_merge.getNumber(); ++i) {
     Faces2DMerger(swap_utils,
@@ -911,7 +912,7 @@ CellToQuadrilateralMerger(ItemSwapperUtils* swap_utils, Cell cell1, Cell cell2)
                             common_face.cell1LocalNumber(),
                             (common_face.cell2LocalNumber() + 2) % 4); // opposite face
 
-  // Mesh vertex exchange
+  // cell vertex exchange
   for (Integer i = 0, n = m_cell_1_common_node_numbers.size(); i < n; ++i) {
     swap_utils->swapCellNodes(cell1, cell2,
                               m_cell_1_common_node_numbers[i],
@@ -928,17 +929,18 @@ const Integer CellToQuadrilateralMerger::m_quad_node_neighbors[4][2] = { { 1, 3 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief This function-class aims to merge two meshes
+ * \brief This function-class aims to merge two cells
  * where the second one is necessarily a hexahedron
  */
 class CellToHexahedronMerger
 {
  private:
 
-  IntegerUniqueArray m_cell_1_common_node_numbers; /**< Numbers in mesh 1 of vertices common with mesh 2 */
-  IntegerUniqueArray m_cell_2_common_node_numbers; /**< Numbers in mesh 2 of vertices common with mesh 1 */
-  IntegerUniqueArray m_cell_2_exchanged_node_numbers; /**< Numbers in mesh 2 of vertices that will define the merged mesh */
+  IntegerUniqueArray m_cell_1_common_node_numbers; /**< Numbers in cell 1 of vertices common with cell 2 */
+  IntegerUniqueArray m_cell_2_common_node_numbers; /**< Numbers in cell 2 of vertices common with cell 1 */
+  IntegerUniqueArray m_cell_2_exchanged_node_numbers; /**< Numbers in cell 2 of vertices that will define the merged cell */
 
   static const Integer m_hexa_node_neighbors[8][3]; /**< List of neighboring nodes by edge in a hexahedron */
 
@@ -946,8 +948,8 @@ class CellToHexahedronMerger
    * Initialization of m_cell_1_common_node_numbers m_cell_2_common_node_numbers and
    * m_cell_2_exchanged_node_numbers
    *
-   * @param cell1 mesh 1
-   * @param cell2 mesh 2
+   * @param cell1 cell 1
+   * @param cell2 cell 2
    */
   void _setCellsNodeNumbers(Cell cell1, Cell cell2);
 
@@ -956,8 +958,8 @@ class CellToHexahedronMerger
   /**
    * Constructor
    *
-   * @param cell1 the mesh to keep
-   * @param cell2 the discarded mesh [MUST BE A HEXAEDRON]
+   * @param cell1 the cell to keep
+   * @param cell2 the discarded cell [MUST BE A HEXAEDRON]
    */
   CellToHexahedronMerger(ItemSwapperUtils* swap_utils, Cell cell1, Cell cell2);
 };
@@ -972,17 +974,17 @@ _setCellsNodeNumbers(Cell cell1, Cell cell2)
   LocalIDToLocalNumber cell1_node_localId;
   LocalIDToLocalNumber cell2_node_localId;
 
-  // We associate the numbers (in the mesh) of the nodes with their
+  // We associate the numbers (in the cell) of the nodes with their
   // localId. These lists are sorted by localId!
   {
-    // first for mesh 1
+    // first for cell 1
     Integer n = 0;
     for (NodeEnumerator i_node(cell1.nodes()); i_node(); ++i_node) {
       cell1_node_localId[i_node->localId()] = n++;
     }
   }
   {
-    // then for mesh 2
+    // then for cell 2
     Integer n = 0;
     for (NodeEnumerator i_node(cell2.nodes()); i_node(); ++i_node) {
       cell2_node_localId[i_node->localId()] = n++;
@@ -990,7 +992,7 @@ _setCellsNodeNumbers(Cell cell1, Cell cell2)
   }
 
   // We then determine the set of common nodes between the two
-  // meshes
+  // cells
   std::set<Integer> cell2_common_edge_node_number;
   for (LocalIDToLocalNumber::const_iterator
        i = cell1_node_localId.begin(),
@@ -1000,11 +1002,11 @@ _setCellsNodeNumbers(Cell cell1, Cell cell2)
     Integer node2_localId = j->first;
     if (node1_localId == node2_localId) { // if the nodes are the same
       // we store the numbers in the meshes of these vertices
-      m_cell_1_common_node_numbers.add(i->second); // for mesh 1
-      m_cell_2_common_node_numbers.add(j->second); // for mesh 2
+      m_cell_1_common_node_numbers.add(i->second); // for cell 1
+      m_cell_2_common_node_numbers.add(j->second); // for cell 2
 
       // and we create the ordered set of common nodes in the
-      // second mesh
+      // second cell
       cell2_common_edge_node_number.insert(j->second);
       ++i;
       ++j;
@@ -1023,9 +1025,9 @@ _setCellsNodeNumbers(Cell cell1, Cell cell2)
                 ("Bad number of shared vertices"));
 
   // We are now looking for the neighbors of the common nodes
-  // belonging to the second mesh and which are not exchanged vertices.
-  // These are the vertices that will form the new mesh
-  // by substitution with the common vertices of the first mesh.
+  // belonging to the second cell and which are not exchanged vertices.
+  // These are the vertices that will form the new cell
+  // by substitution with the common vertices of the first cell.
   m_cell_2_exchanged_node_numbers.reserve(4);
   for (Integer i = 0; i < m_cell_2_common_node_numbers.size(); ++i) {
     const Integer& node_number = m_cell_2_common_node_numbers[i];
@@ -1053,7 +1055,7 @@ CellToHexahedronMerger(ItemSwapperUtils* swap_utils, Cell cell1, Cell cell2)
 
   this->_setCellsNodeNumbers(cell1, cell2);
 
-  // Fusion of side meshes
+  // Fusion of side cells
   FacesToMergeFinder faces_to_merge(cell1, cell2, common_face);
   for (Integer i = 0; i < faces_to_merge.getNumber(); ++i) {
     FaceToQuadrilateralMerger(swap_utils,
@@ -1066,7 +1068,7 @@ CellToHexahedronMerger(ItemSwapperUtils* swap_utils, Cell cell1, Cell cell2)
                             common_face.cell1LocalNumber(),
                             (common_face.cell2LocalNumber() + 3) % 6); // opposite face
 
-  // Mesh vertex exchange
+  // Cell vertex exchange
   for (Integer i = 0, n = m_cell_1_common_node_numbers.size(); i < n; ++i) {
     swap_utils->swapCellNodes(cell1, cell2,
                               m_cell_1_common_node_numbers[i],

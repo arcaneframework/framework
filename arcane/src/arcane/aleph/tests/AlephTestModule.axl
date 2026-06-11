@@ -56,12 +56,12 @@
       <description>Pas de temps utilisé pour le schéma</description>
     </simple>
 
-    <!-- Initial temperature of the meshes -->
+    <!-- Initial temperature of the cells -->
     <simple name="init-temperature" type="real" default="200">
       <description>Température initiale dans tout le maillage</description>
     </simple>
 
-    <!-- Ratio of the number of meshes to AMR -->
+    <!-- Ratio of the number of cells to AMR -->
     <simple name="init-amr" type="real" default="0.0">
       <description>Ratio du nombre de mailles initiales à raffiner</description>
     </simple>

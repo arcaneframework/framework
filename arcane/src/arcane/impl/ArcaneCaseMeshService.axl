@@ -63,7 +63,7 @@
     >
       <userclass>User</userclass>
       <description>
-        Number of ghost mesh layers to add to the mesh in case of partitioning.
+        Number of ghost cell layers to add to the mesh in case of partitioning.
       </description>
     </simple>
 
@@ -72,7 +72,7 @@
             default="3"
     >
       <description>
-        Version of the ghost mesh manager to use.
+        Version of the ghost cell manager to use.
 
         This option is internal to Arcane.
       </description>
@@ -108,7 +108,7 @@
     >
       <description>
         Indicates whether the mesh is 'non-manifold' or multi-dimensional. A mesh
-        of this type contains meshes of different dimensions.
+        of this type contains cells of different dimensions.
 
         WARNING: This mode is experimental. Do not use outside of %Arcane.
       </description>
@@ -142,7 +142,7 @@
     >
       <userclass>User</userclass>
       <description>
-        Service allowing the subdivision of mesh elements.
+        Service allowing the subdivision of cells.
       </description>
     </service-instance>
 

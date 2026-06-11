@@ -31,11 +31,11 @@ namespace Arcane::Materials
  * \brief Object allowing modification of materials or media.
  *
  * This class provides methods to modify the list of
- * meshes composing a material or a medium.
+ * cells composing a material or a medium.
  *
  * Modifications are made directly on the materials. The corresponding media
  * are automatically updated. It is possible
- * either to add meshes to a material (addCells())
+ * either to add cells to a material (addCells())
  * or to remove them (removeCells()). The modifications are not
  * taken into account until endUpdate() is called. This last method
  * does not need to be called explicitly: it is called automatically
@@ -52,12 +52,12 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialModifier
  public:
 
   /*!
-   * \brief Adds the meshes with local indices \a ids to the material \a mat.
+   * \brief Adds the cells with local indices \a ids to the material \a mat.
    */
   void addCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
 
   /*!
-   * \brief Removes the meshes with local indices \a ids from the material \a mat.
+   * \brief Removes the cells with local indices \a ids from the material \a mat.
    */
   void removeCells(IMeshMaterial* mat, SmallSpan<const Int32> ids);
 
@@ -70,18 +70,18 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialModifier
 
   /*!
    * \brief Indicates whether values are copied between pure and partial states when
-   * a change in the mesh state occurs.
+   * a change in the cell state occurs.
    *
    * If true (the default), the partial value
-   * of a mesh is copied into the pure value when the partial mesh
-   * transitions to a pure mesh.
+   * of a cell is copied into the pure value when the partial cell
+   * transitions to a pure cell.
    */
   void setDoCopyBetweenPartialAndPure(bool v);
 
   /*!
-   * \brief Indicates whether newly created material or media meshes are initialized.
+   * \brief Indicates whether newly created material or environment cells are initialized.
    *
-   * If true (the default), the newly created constituent meshes
+   * If true (the default), the newly created constituent cells
    * are initialized. The value used for initialization depends on
    * IMeshMaterialMng::isDataInitialisationWithZero().
    */

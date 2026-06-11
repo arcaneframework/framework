@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ConstituentItem.h                                           (C) 2000-2025 */
 /*                                                                           */
-/* Entity representing a constituent of a multi-material mesh.               */
+/* Entity representing a constituent of a multi-material cell.               */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_CONSTITUENTITEM_H
 #define ARCANE_CORE_MATERIALS_CONSTITUENTITEM_H
@@ -29,9 +29,9 @@ namespace Arcane::Materials
 
 /*!
  * \ingroup ArcaneMaterials
- * \brief Represents a component of a multi-material mesh.
+ * \brief Represents a component of a multi-material cell.
  *
- * This object represents a component of a multi-material mesh. By
+ * This object represents a component of a multi-material cell. By
  * component, we mean a material (MatCell), an environment (EnvCell), or
  * an allenvcell (AllEnvCell).
  *
@@ -40,13 +40,13 @@ namespace Arcane::Materials
  * superCell(). To iterate over lower-level elements, it is possible to
  * use the macro ENUMERATE_CELL_COMPONENTCELL()
  *
- * There is a special mesh, called the null mesh, for which
- * null() is true and which represents an invalid mesh. In the case of
- * the invalid mesh, no other methods of the class should be called
+ * There is a special cell, called the null cell, for which
+ * null() is true and which represents an invalid cell. In the case of
+ * the invalid cell, no other methods of the class should be called
  * under penalty of causing a crash.
  *
- * \warning These meshes are invalidated as soon as the list of meshes of
- * a material or an environment changes. Therefore, a mesh of this type
+ * \warning These meshes are invalidated as soon as the list of cells of
+ * a material or an environment changes. Therefore, a cell of this type
  * should not be kept between two changes to this list.
  */
 class ARCANE_CORE_EXPORT ConstituentItem
@@ -96,10 +96,10 @@ class ARCANE_CORE_EXPORT ConstituentItem
   //! Component identifier in the list of components of this type.
   ARCCORE_HOST_DEVICE Int32 componentId() const { return m_shared_info->_componentId(m_constituent_item_index); }
 
-  //! Indicates if it is the null mesh
+  //! Indicates if it is the null cell
   ARCCORE_HOST_DEVICE bool null() const { return m_constituent_item_index.isNull(); }
 
-  //! Higher-level mesh in the hierarchy
+  //! Higher-level cell in the hierarchy
   ARCCORE_HOST_DEVICE ComponentCell superCell() const { return ComponentCell(_superItemBase()); }
 
   //! Hierarchical level of the entity
@@ -108,13 +108,13 @@ class ARCANE_CORE_EXPORT ConstituentItem
   //! Number of sub-elements
   ARCCORE_HOST_DEVICE Int32 nbSubItem() const { return m_shared_info->_nbSubConstituent(m_constituent_item_index); }
 
-  //! Global mesh
+  //! Global cell
   Cell globalCell() const
   {
     return Cell(m_shared_info->_globalItemBase(m_constituent_item_index));
   }
 
-  //! localId() of the global mesh
+  //! localId() of the global cell
   ARCCORE_HOST_DEVICE CellLocalId globalCellId() const
   {
     return CellLocalId(m_shared_info->_globalItemId(m_constituent_item_index));
@@ -123,9 +123,9 @@ class ARCANE_CORE_EXPORT ConstituentItem
   /*!
    * \brief Unique number of the constituent entity.
    *
-   * This number is unique for each constituent of each mesh.
+   * This number is unique for each constituent of each cell.
    *
-   * \warning This unique number is not the same as that of the associated global mesh.
+   * \warning This unique number is not the same as that of the associated global cell.
    */
   Int64 componentUniqueId() const { return m_shared_info->_componentUniqueId(m_constituent_item_index); }
 
@@ -182,7 +182,7 @@ class ARCANE_CORE_EXPORT ConstituentItem
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Enumerator over the constituents of a mesh.
+ * \brief Enumerator over the constituents of a cell.
  */
 class ARCANE_CORE_EXPORT CellComponentCellEnumerator
 {
@@ -319,7 +319,7 @@ class ARCANE_CORE_EXPORT CellComponentCellEnumerator
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Typed enumerator over the component meshes of a mesh.
+ * \brief Typed enumerator over the component cells of a cell.
  */
 template <typename ComponentCellType> class CellComponentCellEnumeratorT
 : public CellComponentCellEnumerator

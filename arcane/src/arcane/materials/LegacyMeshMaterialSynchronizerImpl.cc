@@ -90,16 +90,16 @@ synchronizeMaterialsInCells()
   /*
     The algorithm used is as follows:
 
-    We use a mesh variable that uses a bit for each material to indicate its
+    We use a cell variable that uses a bit for each material to indicate its
     presence: if this bit is set, the material is present; otherwise, it is
-    absent. The variable used is therefore of type ArrayByte per mesh. The
+    absent. The variable used is therefore of type ArrayByte per cell. The
     _hasBit() and _setBit() methods allow positioning the bit for a given
     material.
 
-    1. The subdomain fills this variable for these meshes.
+    1. The subdomain fills this variable for these cells.
     2. The variable is synchronized.
     3. The subdomain compares this material presence table for each of its
-    ghost meshes and adds/removes materials based on this table.
+    ghost cells and adds/removes materials based on this table.
   */
   IMesh* mesh = m_material_mng->mesh();
   if (!mesh->parallelMng()->isParallel())
@@ -130,7 +130,7 @@ synchronizeMaterialsInCells()
     UniqueArray<UniqueArray<Int32>> to_remove(nb_mat);
     ENUMERATE_CELL (icell, mesh->allCells()) {
       Cell cell = *icell;
-      // Only processes ghost meshes.
+      // Only processes ghost cells.
       if (cell.isOwn())
         continue;
       Int32 cell_lid = cell.localId();
@@ -138,7 +138,7 @@ synchronizeMaterialsInCells()
       before_presence.fill(0);
       _fillPresence(all_env_cell, before_presence);
       ByteConstArrayView after_presence = mat_presence[cell];
-      // Adds/Removes this mesh from materials if necessary.
+      // Adds/Removes this cell from materials if necessary.
       for (Integer imat = 0; imat < nb_mat; ++imat) {
         bool has_before = _hasBit(before_presence, imat);
         bool has_after = _hasBit(after_presence, imat);

@@ -277,7 +277,7 @@ _partitionMesh(bool initial_partition, Int32 nb_part)
       //      info() << "METIS VTKDIST " << (i+1) << ' ' << metis_vtkdist[i+1];
     }
   }
-  // Does not call Parmetis if there are no meshes because otherwise it causes an error.
+  // Does not call Parmetis if there are no cells because otherwise it causes an error.
   info() << "Total nb_cell=" << total_nb_cell << " nb_empty_partition=" << nb_empty_part;
   if (total_nb_cell == 0) {
     info() << "INFO: mesh '" << mesh->name() << " has no cell. No partitioning is needed";
@@ -296,7 +296,7 @@ _partitionMesh(bool initial_partition, Int32 nb_part)
 
   // Maximum number of neighboring cells connected to the cells
   // assuming the cells are connected only by faces
-  // (or edges for a 2D mesh in a 3D mesh)
+  // (or edges for a 2D cell in a 3D mesh)
   // This value is used to pre-allocate memory for the list of neighboring cells
   Integer nb_max_face_neighbour_cell = 0;
   {

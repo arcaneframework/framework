@@ -125,7 +125,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    * refinement levels that will occur during this refinement phase (\a max_nb_levels).
    *
    * It is recommended to specify the exact number of levels to avoid
-   * adjustment of the number of overlap layers during
+   * adjustment of the number of overlap cell layers during
    * the call to the third method, which is computationally expensive.
    *
    *
@@ -237,7 +237,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    *
    * If the highest level refined with the second method does not correspond
    * to the \a max_nb_levels parameter of the first method, there will be
-   * an adjustment of the number of overlap layers.
+   * an adjustment of the number of overlap cell layers.
    *
    * This operation is collective.
    */
@@ -258,7 +258,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
   void clearRefineRelatedFlags() const;
 
   /*!
-   * \brief Method to modify the number of overlap layers on the highest refinement level.
+   * \brief Method to modify the number of overlap cell layers on the highest refinement level.
    *
    * A call to this method will trigger the adjustment of the number of layers
    * for all existing patches.
@@ -266,12 +266,12 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshAMRMng
    * The parameter \a new_size must be an even number (otherwise, it will be modified
    * to the next highest even number).
    *
-   * \param new_size The new number of overlap layers.
+   * \param new_size The new number of overlap cell layers.
    */
   void setOverlapLayerSizeTopLevel(Int32 new_size) const;
 
   /*!
-   * \brief Method to disable overlap layers (and destroy them if present).
+   * \brief Method to disable overlap cell layers (and destroy them if present).
    *
    * \warning Without this layer, there may be more than one level of
    * refinement between two cells. It is up to the user to manage

@@ -324,7 +324,7 @@ class BinaryTree
  * is N=log2(P) and it would be possible to perform all partitions
  * of rank 1 to N simultaneously.
  *
- * Currently, the algorithm used applies to meshes, but only
+ * Currently, the algorithm used applies to cells, but only
  * coordinates are used, which would allow it to be applied without
  * mesh elements. This could be useful for an initial partitioning
  * such as the one used in the parallel MSH reader.

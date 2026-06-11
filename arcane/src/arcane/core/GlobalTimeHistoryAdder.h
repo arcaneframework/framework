@@ -41,9 +41,9 @@ namespace Arcane
  * Example: several curves of pressure averages (let's call them
  * "avg_pressure") and two subdomains (0 and 1). One value per iteration.
  * - An "avg_pressure" curve linked to subdomain 0. Each value is the
- *   average of the pressures of each element in subdomain 0.
+ *   average of the pressures of each cell in subdomain 0.
  * - An "avg_pressure" curve linked to subdomain 1. Each value is the
- *   average of the pressures of each element in subdomain 1.
+ *   average of the pressures of each cell in subdomain 1.
  * - An "avg_pressure" curve linked to the complete domain. Each value is the
  *   average of the pressures of each subdomain.
  *

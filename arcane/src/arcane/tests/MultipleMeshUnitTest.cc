@@ -122,11 +122,11 @@ _testMesh(const String& mesh_name, bool do_output)
   VariableNodeReal3 mesh_coords(current_mesh->nodesCoordinates());
 
   // Creation of a new mesh containing only the first half
-  // of the initial mesh.
+  // of cells of the initial mesh.
 
-  // To test the performance of incremental mesh addition,
+  // To test the performance of incremental cell addition,
   // we disable checks, compaction, and sorting and call endUpdate()
-  // for each added mesh.
+  // for each added cell.
   new_mesh->setDimension(mesh()->dimension());
   new_mesh->properties()->setBool("compact", false);
   new_mesh->properties()->setBool("sort", false);

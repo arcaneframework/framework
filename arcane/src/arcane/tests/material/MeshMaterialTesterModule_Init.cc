@@ -162,7 +162,7 @@ buildInit()
       }
     }
 
-    // Creation of block BLOCK1 on the group of all meshes
+    // Creation of block BLOCK1 on the group of all cells
     // and containing environments ENV1 and ENV2
     m_block1 = mm->createBlock(mbbi);
 
@@ -259,14 +259,14 @@ startInit()
       sub_group_indexes.add(icell.itemLocalId());
   }
 
-  // Add meshes of environment 1
+  // Add cells of environment 1
   {
     Materials::MeshMaterialModifier modifier(m_material_mng);
     modifier.setDoCopyBetweenPartialAndPure(false);
     modifier.setDoInitNewItems(false);
     modifier.setPersistantWorkBuffer(false);
     Materials::IMeshEnvironment* env = m_mat1->environment();
-    // Add meshes of the environment
+    // Add cells of the environment
     //modifier.addCells(env,env1_indexes);
     Int32UniqueArray mat1_indexes;
     Int32UniqueArray mat2_indexes;
@@ -280,7 +280,7 @@ startInit()
       if (add_to_mat2)
         mat2_indexes.add(env1_indexes[z]);
     }
-    // Add meshes of material 1
+    // Add cells of material 1
     modifier.addCells(m_mat1, mat1_indexes);
     Integer nb_mat = env->nbMaterial();
     if (nb_mat > 1)

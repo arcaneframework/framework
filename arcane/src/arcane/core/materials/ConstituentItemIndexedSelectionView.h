@@ -210,10 +210,10 @@ class ConstituentItemIndexedSelectionView
 
  public:
 
-  // total number of medium meshes
+  // total number of medium cells
   ARCCORE_HOST_DEVICE Int32 sourceSize() const { return TraitsType::size(m_container_view); }
 
-  // view over the original EnvCell vector (all medium meshes)
+  // view over the original EnvCell vector (all medium cells)
   ItemVecView sourceView() const { return m_container_view; }
 
   // List of selection indices.

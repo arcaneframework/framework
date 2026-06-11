@@ -350,9 +350,10 @@ detachCells2(Int32ConstArrayView cells_local_id)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Removes mesh sub-entities that are not connected
- * to any mesh.
+ * \brief Removes cell sub-entities that are not connected
+ * to any cell.
  */
 void CellFamily::
 _removeNotConnectedSubItems(Cell cell)
@@ -360,15 +361,15 @@ _removeNotConnectedSubItems(Cell cell)
   // The order (faces, then edges then nodes) is important.
   // Do not change.
 
-  // Remove faces from the mesh that are no longer connected
+  // Remove faces from the cell that are no longer connected
   for (Face face : cell.faces())
     m_face_family->removeFaceIfNotConnected(face);
 
-  // Remove edges from the mesh that are no longer connected
+  // Remove edges from the cell that are no longer connected
   for (Edge edge : cell.edges())
     m_edge_family->removeEdgeIfNotConnected(edge);
 
-  // remove nodes from the mesh that are no longer connected
+  // remove nodes from the cell that are no longer connected
   for (Node node : cell.nodes())
     m_node_family->removeNodeIfNotConnected(node);
 }
@@ -399,8 +400,9 @@ internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Replaces the node at index \a index of the mesh \a cell with
+ * \brief Replaces the node at index \a index of the cell \a cell with
  * that of localId() \a node.
  */
 void CellFamily::
@@ -411,8 +413,9 @@ replaceNode(ItemLocalId cell, Integer index, ItemLocalId node)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Replaces the edge at index \a index of the mesh \a cell with
+ * \brief Replaces the edge at index \a index of the cell \a cell with
  * that of localId() \a edge.
  */
 void CellFamily::
@@ -423,8 +426,9 @@ replaceEdge(ItemLocalId cell, Integer index, ItemLocalId edge)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Replaces the face at index \a index of the mesh \a cell with
+ * \brief Replaces the face at index \a index of the cell \a cell with
  * that of localId() \a face.
  */
 void CellFamily::

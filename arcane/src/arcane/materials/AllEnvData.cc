@@ -391,7 +391,8 @@ _computeInfosForEnvCells(RecomputeConstituentCellInfos& work_info)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Checks the coherence of variableIndexer().localIds() * with the global mesh associated with the environment.
+ * \brief Checks the coherence of variableIndexer().localIds()
+ * with the global cell associated with the environment.
  */
 void AllEnvData::
 _checkLocalIdsCoherency() const
@@ -416,7 +417,7 @@ _checkLocalIdsCoherency() const
 
 /*!
  * \brief Updates structures following a modification of material or
- * environment meshes.
+ * environment cells.
  *
  * This method reconstructs information only from the entity groups associated
  * with materials and environments. Material variables are not taken into

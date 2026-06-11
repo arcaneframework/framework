@@ -43,7 +43,7 @@ namespace Arcane
  * - creation of a sub-mesh of an existing mesh. In this case, it is necessary
  *   to position the group via addItemGroup(). The
  *   associated IParallelMng must be that of the parent mesh. The
- *   created sub-mesh will include the meshes of this group.
+ *   created sub-mesh will include the cells of this group.
  */
 class ARCANE_CORE_EXPORT MeshBuildInfo
 {
@@ -60,7 +60,7 @@ class ARCANE_CORE_EXPORT MeshBuildInfo
   MeshBuildInfo& addFactoryName(const String& factory_name);
   //! Sets the parallelism manager to create the mesh
   MeshBuildInfo& addParallelMng(Ref<IParallelMng> pm);
-  //! Sets the mesh group for a sub-mesh
+  //! Sets the cell group for a sub-mesh
   MeshBuildInfo& addParentGroup(const ItemGroup& parent_group);
   /*!
   * \brief Indicates whether the generator needs to call a partitioner.

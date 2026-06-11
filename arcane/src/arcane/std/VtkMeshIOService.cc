@@ -1021,7 +1021,7 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Read meshes and their connectivity.
+ * \brief Read cells and their connectivity.
  *
  * Returns by filling \a cells_nb_node, \a cells_type, and \a cells_connectivity.
  *
@@ -1254,7 +1254,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
     debug() << "Lecture _readNodesUnstructuredGrid OK";
     nb_node = node_coords.size();
 
-    // Read mesh info
+    // Read cell info
     // Read connectivity
     UniqueArray<Int32> cells_nb_node;
     UniqueArray<Int64> cells_connectivity;
@@ -1266,7 +1266,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
     nb_cell_node = cells_connectivity.size();
     cells_local_id.resize(nb_cell);
 
-    // Mesh creation
+    // Cell creation
     mesh_build_info.preAllocate(nb_cell, nb_cell_node);
 
     {
@@ -1286,7 +1286,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
         connectivity_index += current_cell_nb_node;
       }
     }
-    // Check that there are no meshes of different dimensions
+    // Check that there are no cells of different dimensions
     Int32 nb_different_dim = 0;
     for (Int32 i = 0; i < 4; ++i)
       if (nb_cell_by_dimension[i] != 0) {
@@ -1857,7 +1857,7 @@ ARCANE_REGISTER_SERVICE(VtkLegacyMeshWriter,
 /*!
  * \brief Writing the mesh to VTK.
  *
- * To save both mesh and face information along with their corresponding groups,
+ * To save both cell and face information along with their corresponding groups,
  * two files are created. The first contains connectivity and cell groups, the
  * second contains the same information but for faces.
  *
@@ -1884,7 +1884,7 @@ writeMeshToFile(IMesh* mesh, const String& file_name)
 /*!
  * \brief Writes the mesh in VTK format.
  *
- * \a cell_kind indicates the type of entities to save as meshes.
+ * \a cell_kind indicates the type of entities to save as cells.
  * This can be IK_Cell or IK_Face.
  */
 void VtkLegacyMeshWriter::

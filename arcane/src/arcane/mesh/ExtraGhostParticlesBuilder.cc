@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ExtraGhostParticlesBuilder.cc                               (C) 2000-2024 */
 /*                                                                           */
-/* Construction of extra ghost meshes.                                       */
+/* Construction of extra ghost cells.                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -154,8 +154,8 @@ _computeForFamily(ParticleFamily* particle_family)
     if (!sbuf)
       ARCANE_FATAL("buffer has to have type 'SerializeBuffer'");
 
-    // Saves the uids of the meshes where the particles are located
-    // It is possible that a particle does not belong to a mesh.
+    // Saves the uids of the cells where the particles are located
+    // It is possible that a particle does not belong to a cell.
     Int64UniqueArray particles_cell_uid(nb_item);
     for (Integer z = 0; z < nb_item; ++z) {
       Particle item(items_internal[dest_items_local_id[z]]);
@@ -167,7 +167,7 @@ _computeForFamily(ParticleFamily* particle_family)
     sbuf->setMode(ISerializer::ModeReserve);
     sbuf->reserve(DT_Int64, 1); // For the number of particles
     sbuf->reserveArray(dest_items_unique_id); // For the uniqueId() of the particles. NOTE: To be deleted
-    sbuf->reserveArray(particles_cell_uid); // For the uniqueId() of the meshes where the particles are located
+    sbuf->reserveArray(particles_cell_uid); // For the uniqueId() of the cells where the particles are located
 
     sbuf->allocateBuffer();
     sbuf->setMode(ISerializer::ModePut);

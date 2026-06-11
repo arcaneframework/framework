@@ -169,7 +169,7 @@ class ARCANE_IMPL_EXPORT DataSynchronizeBufferBase
   BufferInfo m_ghost_buffer_info;
   //! Buffer for all data of shared entities used for sending
   BufferInfo m_share_buffer_info;
-  //! Buffer for testing if synchronization modified the values of ghost meshes
+  //! Buffer for testing if synchronization modified the values of ghost cells
   BufferInfo m_compare_sync_buffer_info;
 
  protected:

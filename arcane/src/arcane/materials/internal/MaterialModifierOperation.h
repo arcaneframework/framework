@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MaterialModifierOperation.h                                 (C) 2000-2024 */
 /*                                                                           */
-/* Operation to add/remove meshes from a material.                           */
+/* Operation to add/remove cells from a material.                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_INTERNAL_MATERIALMODIFIEROPERATION_H
 #define ARCANE_MATERIALS_INTERNAL_MATERIALMODIFIEROPERATION_H
@@ -30,7 +30,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Operation to add or remove meshes from a material.
+ * \brief Operation to add or remove cells from a material.
  */
 class MaterialModifierOperation
 {
@@ -55,19 +55,19 @@ class MaterialModifierOperation
 
  public:
 
-  //! Indicates whether the operation is to add or remove meshes from the material
+  //! Indicates whether the operation is to add or remove cells from the material
   bool isAdd() const { return m_is_add; }
 
-  //! The material for which meshes are to be added/removed
+  //! The material for which cells are to be added/removed
   IMeshMaterial* material() const { return m_mat; }
 
-  //! List of localId() of meshes to add/remove
+  //! List of localId() of cells to add/remove
   SmallSpan<const Int32> ids() const { return m_ids.view(); }
 
  public:
 
   /*!
-   * \brief Filters the mesh IDs.
+   * \brief Filters the cell IDs.
    *
    * If isAdd() is true, filters the IDs to remove those that are already in
    * the material. If isAdd() is false, filters the IDs to remove those that

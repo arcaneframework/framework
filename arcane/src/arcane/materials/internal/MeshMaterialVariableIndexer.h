@@ -119,7 +119,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableIndexer
   //! Name of the material or environment
   String m_name;
 
-  //! List of meshes for this indexer
+  //! List of cells for this indexer
   CellGroup m_cells;
 
   //! List of indices for material variables.

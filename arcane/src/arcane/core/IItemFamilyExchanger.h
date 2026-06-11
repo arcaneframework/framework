@@ -40,12 +40,12 @@ class ParallelExchangerOptions;
 /*!
  * \internal
  * \brief Exchange of entities and their characteristics for a given family
- 
+
  This class manages the exchange of entities between sub-domains. It is
  used, for example, during a redistribution. Generally, this class
  is not used directly (except to specify the entities to exchange)
  but via the IMeshExchanger interface.
- 
+
  The user of this class must start by specifying the list of entities to
  send to each sub-domain via the setExchangeItems() method.
 
@@ -56,7 +56,7 @@ class ParallelExchangerOptions;
  Indeed, it is necessary to know the groups to deserialize the variables, and
  to know the entities to deserialize the groups.
 
- When meshes or particles are sent, you must call the readAndAllocItems()
+ When cells or particles are sent, you must call the readAndAllocItems()
  method to create them, before calling readGroups() and then readVariables().
 */
 class ARCANE_CORE_EXPORT IItemFamilyExchanger
@@ -99,7 +99,7 @@ class ARCANE_CORE_EXPORT IItemFamilyExchanger
   /*!
    * \brief After receiving messages, reads and creates the transferred entities.
    *
-   * This method does nothing for entities other than meshes and particles,
+   * This method does nothing for entities other than cells and particles,
    * for legacy management.
    * With the ItemFamilyNetwork family graph, this method creates the items and
    * their dependencies (i.e., descendant connectivities).
@@ -126,7 +126,7 @@ class ARCANE_CORE_EXPORT IItemFamilyExchanger
    *
    * This operation must only be performed for entities that do not depend on
    * another entity. For example, it is impossible to directly delete nodes,
-   * because certain meshes that are not sent may rely on them.
+   * because certain cells that are not sent may rely on them.
    *
    * \warning This operation is only valid for particles without the concept of
    * ghost particles.

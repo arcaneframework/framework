@@ -649,7 +649,7 @@ readMesh(IPrimaryMesh* mesh, const String& filename, const String& dir_name,
     if (ret)
       return IMeshReader::RTError;
 
-    // To be done if there are multiple ghost mesh layers
+    // To be done if there are multiple ghost cell layers
     {
       Integer nb_ghost_layer = mesh->ghostLayerMng()->nbGhostLayer();
       if (nb_ghost_layer > 1)
@@ -726,7 +726,7 @@ _readMesh(Lima::Maillage& lima, IPrimaryMesh* mesh, const String& file_name,
   }
 
   // ------------------------------------------------------------
-  //    -------------------------------- Mesh creation
+  //    -------------------------------- Cell creation
   // ------------------------------------------------------------
 
   // Reads the unique IDs of the entities (in parallel)
@@ -822,7 +822,7 @@ _readMesh(Lima::Maillage& lima, IPrimaryMesh* mesh, const String& file_name,
     mesh_nb_cell_node += CheckedConvert::toInteger(m_wrapper.cell(cells_filter[j]).nb_noeuds());
   }
 
-  // Array containing mesh info (see IMesh::allocateMesh())
+  // Array containing cell info (see IMesh::allocateMesh())
   UniqueArray<Int64> cells_infos(mesh_nb_cell_node + cells_filter.size() * 2);
 
   // Fills the array containing mesh info
@@ -835,10 +835,10 @@ _readMesh(Lima::Maillage& lima, IPrimaryMesh* mesh, const String& file_name,
     Integer ct = ReaderWrapper::cellToType(n);
     if (ct == IT_NullType)
       throw UnknownItemTypeException("Lima::readFile: Cell", n, cell_indirect_id);
-    // Stores the mesh type
+    // Stores the cell type
     cells_infos[cells_infos_index] = ct;
     ++cells_infos_index;
-    // Stores the unique ID of the mesh
+    // Stores the unique ID of the cell
     cells_infos[cells_infos_index] = cells_unique_id[cell_indirect_id];
     ++cells_infos_index;
 
@@ -1507,7 +1507,7 @@ writeMeshToFile(IMesh* mesh, const String& file_name)
       }
     }
 
-    // Save mesh groups
+    // Save cell groups
     for (ItemGroupCollection::Enumerator i(cell_family->groups()); ++i;) {
       ItemGroup group = *i;
       if (group.isAllItems())

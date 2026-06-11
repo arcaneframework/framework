@@ -113,7 +113,7 @@ updateValues(IMeshMaterialMng* material_mng,
     AllEnvCell all_env_cell = all_env_cell_converter[cid];
     Integer offset = cid * max_nb_env;
     Int32 nb_env = all_env_cell.nbEnvironment();
-    // Initialize the indices of my mesh's 'mem_pools' to zero.
+    // Initialize the indices of my cell's 'mem_pools' to zero.
     for (Int32 x = 0; x < max_nb_env; ++x)
       mem_pool[offset + x] = ComponentItemLocalId();
     if (nb_env != 0) {

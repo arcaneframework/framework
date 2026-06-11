@@ -126,12 +126,12 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
   MatVarSpace space() const { return m_material_variable->space(); }
 
   /*!
-   * \brief Fills partial values with the super mesh value.
+   * \brief Fills partial values with the super cell value.
    * If \a level is LEVEL_MATERIAL, copies material values with those of the environment.
    * If \a level is LEVEL_ENVIRONMENT, copies environment values with
-   * those of the global mesh.
+   * those of the global cell.
    * If \a level is LEVEL_ALLENVIRONMENT, fills all partial values
-   * with those of the global mesh (this makes this method equivalent to
+   * with those of the global cell (this makes this method equivalent to
    * fillGlobalValuesWithGlobalValues().
    */
   void fillPartialValuesWithSuperValues(Int32 level)
@@ -213,9 +213,9 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableRef
 
 /*!
  * \ingroup ArcaneMaterials
- * \brief Scalar variable on the meshes of a mesh material.
+ * \brief Scalar variable on the cells of a mesh material.
  *
- * For now, this class is only instantiated for meshes
+ * For now, this class is only instantiated for cells
  */
 template <typename DataType_>
 class CellMaterialVariableScalarRef
@@ -274,13 +274,13 @@ class CellMaterialVariableScalarRef
 
  public:
 
-  //! Partial value of the variable for the material mesh \a mc
+  //! Partial value of the variable for the material cell \a mc
   DataType operator[](ComponentItemLocalId mc) const
   {
     return this->operator[](mc.localId());
   }
 
-  //! Partial value of the variable for the material mesh \a mc
+  //! Partial value of the variable for the material cell \a mc
   DataType& operator[](ComponentItemLocalId mc)
   {
     return this->operator[](mc.localId());

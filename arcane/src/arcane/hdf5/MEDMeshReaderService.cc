@@ -109,7 +109,7 @@ class MEDMeshReader
    *
    * For each group, we can provide either the list of uniqueId()
    * of the entities inside, or the list of localId().
-   * The first case is used by meshes and the second
+   * The first case is used by cells and the second
    * by faces and nodes
    */
   class MEDGroupInfo
@@ -267,7 +267,7 @@ _initMEDToArcaneTypes()
   _addTypeInfo(3, 20, MED_HEXA20, ITI_Hexaedron20);
   _addTypeInfo(3, 27, MED_HEXA27, ITI_NullType); // Not supported
 
-  // Meshes whose geometry has variable connectivity.
+  // Cells whose geometry has variable connectivity.
   // For now, we do not support any of these types in Arcane.
   // We still process these elements to display an error if they are
   // present in the mesh. By setting the node count to (0), we signal to _readItems()
@@ -277,7 +277,7 @@ _initMEDToArcaneTypes()
   _addTypeInfo(2, 0, MED_POLYGON2, ITI_NullType);
   _addTypeInfo(3, 0, MED_POLYHEDRON, ITI_NullType);
 
-  // Meshes whose geometry is dynamic (model discovery in the file)
+  // Cells whose geometry is dynamic (model discovery in the file)
   // TODO: check how to process them
   //#define MED_STRUCT_GEO_INTERNAL 600
   //#define MED_STRUCT_GEO_SUP_INTERNAL 700
@@ -408,17 +408,17 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   }
   // The IPrimaryMesh::endAllocate() method is collective, so everyone
   // must call it even if ranks other than rank 0
-  // do not have meshes.
+  // do not have cells.
   mesh->endAllocate();
 
-  // List of names of created mesh groups
+  // List of names of created cell groups
   // It will be used to transfer the list of groups to all ranks.
   UniqueArray<String> cell_group_names;
   IItemFamily* cell_family = mesh->cellFamily();
   if (is_read_items) {
-    // Now that all meshes have been created, we create the corresponding groups
+    // Now that all cells have been created, we create the corresponding groups
     // To do this, we iterate through all instances of 'm_med_groups' and if one has entities
-    // then they are meshes to be added to a group.
+    // then they are cells to be added to a group.
     // ATTENTION ATTENTION:
     // NOTE: The groups must be common to all ranks. They must be broadcasted
     UniqueArray<Int32> cell_local_ids;
@@ -524,8 +524,8 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
   _clearItemsInGroups();
 
   // As a matter of principle, there is no uniqueId() for entities in MED (TODO: to verify)
-  // So we number the meshes starting from zero and increment for each
-  // mesh created.
+  // So we number the cells starting from zero and increment for each
+  // cell created.
   Int64 cell_unique_id = 0;
 
   UniqueArray<Int16> polygon_nb_nodes;
@@ -533,7 +533,7 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
   UniqueArray<med_int> med_family_values;
 
   ItemTypeMng* itm = mesh->itemTypeMng();
-  // Allocates meshes type by type.
+  // Allocates cells type by type.
   // Iterates through the available types and processes those that match the dimension
   // of the mesh.
   for (med_int geotype : m_med_geotypes_in_mesh) {
@@ -786,7 +786,7 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
  * \brief Reads information about entities of a given type.
  *
  * Reads information about entities whose type is given by \a iinfo.
- * The entities are meshes in the MED sense, i.e., Edge, Face, or Cell.
+ * The entities are cells in the MED sense, i.e., Edge, Face, or Cell.
  * Returns the number of entities read.
  * \a connectivity will contain the connectivities for the entities read and
  * \a family_values the array for each entity of the family it belongs to. Note
@@ -832,7 +832,7 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
     if (nb_connectivity < 0)
       ARCANE_FATAL("Can not get connectivity size for MED_POLYGON err={0}", nb_connectivity);
 
-    // The table \a indexes contains for each mesh the index of its first
+    // The table \a indexes contains for each cell the index of its first
     // node in the connectivity. The number of nodes of the i-th entity
     // is therefore equal to (indexes[i+1]-indexes[i]).
     UniqueArray<med_int> indexes(nb_index);

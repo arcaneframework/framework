@@ -87,7 +87,7 @@ class MeshBlock
   //! Material name
   String m_name;
 
-  //! List of meshes for this material
+  //! List of cells for this material
   CellGroup m_cells;
 
   //! List of materials/environments in this block.

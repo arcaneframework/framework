@@ -497,7 +497,7 @@ class ARCANE_CORE_EXPORT ItemBase
       arcaneCheckAt((Integer)m_local_id, m_shared_info->m_unique_ids.size());
 #endif
     // Do not use the normal accessor because this array can be used for the
-    // null mesh and in this case m_local_id equals NULL_ITEM_LOCAL_ID (which is negative)
+    // null cell and in this case m_local_id equals NULL_ITEM_LOCAL_ID (which is negative)
     // which causes an array overflow exception.
     return ItemUniqueId(m_shared_info->m_unique_ids.data()[m_local_id]);
   }
@@ -954,10 +954,10 @@ class ARCANE_CORE_EXPORT ItemInternal
 
   // You must use the corresponding method from ItemBase
 
-  //! Connected mesh to the entity if the entity is a boundary entity (0 if none)
+  //! Connected cell to the entity if the entity is a boundary entity (0 if none)
   ARCANE_DEPRECATED_REASON("Y2023: use ItemBase::boundaryCell() instead.")
   ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? _internalCell(0) : nullItem(); }
-  //! Mesh behind the entity (nullItem() if none)
+  //! Cell behind the entity (nullItem() if none)
   ARCANE_DEPRECATED_REASON("Y2023: use ItemBase::backCell() instead.")
   ItemInternal* backCell() const
   {
@@ -965,7 +965,7 @@ class ARCANE_CORE_EXPORT ItemInternal
       return _internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
     return nullItem();
   }
-  //! Mesh in front of the entity (nullItem() if none)
+  //! Cell in front of the entity (nullItem() if none)
   ARCANE_DEPRECATED_REASON("Y2023: use ItemBase::frontCell() instead.")
   ItemInternal* frontCell() const
   {

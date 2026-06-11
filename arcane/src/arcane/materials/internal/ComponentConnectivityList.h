@@ -71,7 +71,7 @@ class ConstituentConnectivityList
   ConstArrayView<Int16> cellsNbEnvironment() const;
   ConstArrayView<Int16> cellsNbMaterial() const;
 
-  //! Number of materials of the mesh \a cell_id for environment index \a env_id
+  //! Number of materials of the cell \a cell_id for environment index \a env_id
   Int16 cellNbMaterial(CellLocalId cell_id, Int16 env_id);
 
  public:

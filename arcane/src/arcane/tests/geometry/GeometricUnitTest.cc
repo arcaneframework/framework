@@ -133,7 +133,7 @@ executeTest()
     m_shape_mng.initShape(shape_view, *icell);
     Cell shape_cell = shape_view.cell();
 
-    // Checks mesh OK.
+    // Checks cell OK.
     if (shape_cell != cell)
       ARCANE_FATAL("Invalid cell for shape '{0}'", cell.uniqueId());
     info() << "Cell type=" << cell.typeInfo()->typeName();

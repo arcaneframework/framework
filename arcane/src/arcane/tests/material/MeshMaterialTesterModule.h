@@ -95,7 +95,7 @@ class MeshMaterialTesterModule
   MaterialVariableCellInt32 m_mat_int32;
   //! Variable to test the correct handling of setUsed(false)
   MaterialVariableCellReal m_mat_not_used_real;
-  VariableScalarInt64 m_nb_starting_cell; //<! Number of meshes at startup
+  VariableScalarInt64 m_nb_starting_cell; //<! Number of cells at startup
   IMeshMaterial* m_mat1 = nullptr;
   IMeshMaterial* m_mat2 = nullptr;
   IMeshBlock* m_block1 = nullptr;

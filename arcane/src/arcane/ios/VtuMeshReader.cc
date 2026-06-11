@@ -317,13 +317,13 @@ readMeshFromVtuFile(IMesh* mesh, const String& file_name,
   for (Integer i = 0; i < nbOfCells; ++i)
     cells_filter[i] = i;
 
-  // Calculate the number of mesh_nb_cell_node
+  // Calculate the number of cells/nodes
   vtkIdType mesh_nb_cell_node = 0;
   for (Integer j = 0, js = cells_filter.size(); j < js; ++j)
     mesh_nb_cell_node += unstructuredGrid->GetCell(j)->GetNumberOfPoints();
   m_trace_mng->info() << "Number of mesh_nb_cell_node = " << mesh_nb_cell_node;
 
-  // Table containing the info for the meshes (see IMesh::allocateMesh())
+  // Table containing the info for the cells (see IMesh::allocateMesh())
   Int64UniqueArray cells_infos(mesh_nb_cell_node + cells_filter.size() * 2);
   Integer cells_infos_index = 0;
 
@@ -506,10 +506,10 @@ readMeshFromVtuFile(IMesh* mesh, const String& file_name,
     }
     auto nNodes = cell->GetNumberOfPoints(); // Return the number of points in the cell
 
-    // First is cell's TYPE Stores the mesh type
+    // First is cell's TYPE Stores the cell type
     cells_infos[cells_infos_index++] = arcItemType;
 
-    // Then comes its UniqueID Stores the unique mesh ID
+    // Then comes its UniqueID Stores the cell unique ID
     Integer cell_indirect_id = cells_filter[i_cell];
     cells_infos[cells_infos_index++] = cellsUidArray->GetValue(cell_indirect_id);
 

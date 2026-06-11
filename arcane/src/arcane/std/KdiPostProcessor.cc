@@ -243,7 +243,7 @@ beginWrite(const VariableCollection& vars)
   }
 
   // For connectivity, the array size is equal
-  // to the number of meshes plus 1.
+  // to the number of cells plus 1.
   UniqueArray<Int64> cells_connectivity(total_nb_connected_node);
   UniqueArray<Int64> cells_offset(nb_cell + 1);
   UniqueArray<unsigned char> cells_ghost_type(nb_cell);

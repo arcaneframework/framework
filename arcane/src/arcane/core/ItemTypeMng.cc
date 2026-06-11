@@ -161,9 +161,9 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_Vertex] = type;
 
     type->setInfos(this, IT_Vertex, "Vertex", Dimension::Dim0, 0, 0, 0);
-    // TODO check if this type is allowed for meshes.
+    // TODO check if this type is allowed for cells.
     // If not, a type should be defined
-    // for 0D meshes that are equivalent to points.
+    // for 0D cells that are equivalent to points.
   }
 
   // FaceVertex (face for 1D meshes)
@@ -204,7 +204,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->setIsValidForCell(false);
   }
 
-  // CellLine2 (meshes for 1D meshes)
+  // CellLine2 (cells for 1D meshes)
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_CellLine2] = type;
@@ -939,7 +939,7 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     type->setInfos(this, IT_Cell3D_Line2, "Cell3D_Line2", Dimension::Dim1, 2, 0, 0);
   }
 
-  // CellLine3 (order 2 mesh for 1D meshes)
+  // CellLine3 (order 2 cell for 1D meshes)
   {
     ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
     m_types[IT_CellLine3] = type;

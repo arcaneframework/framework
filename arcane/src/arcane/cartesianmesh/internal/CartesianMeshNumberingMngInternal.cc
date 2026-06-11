@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CartesianMeshNumberingMngInternal.cc                        (C) 2000-2026 */
 /*                                                                           */
-/* Cartesian mesh numbering manager. Mesh and node numbering is quite        */
+/* Cartesian mesh numbering manager. Cell and node numbering is quite        */
 /* standard, face numbering is explained (among others) in the methods       */
 /* 'faceUniqueId()' and 'cellFaceUniqueIds()'.                               */
 /*---------------------------------------------------------------------------*/
@@ -922,7 +922,7 @@ faceUniqueIdToCoordX(Int64 uid, Int32 level)
   // faces with uids [12, 23], and faces with uids [24, 35].
   // We retrieve these intervals using the face3DNumberingThreeParts() method.
 
-  // For the interval [0, 11], we notice that the origin in X is always 0 and that the meshes
+  // For the interval [0, 11], we notice that the origin in X is always 0 and that the cells
   // containing a face are on even X coordinates.
   // Finally, we have "nb_face_x" faces in X.
   if (uid < three_parts_numbering.x) {
@@ -938,7 +938,7 @@ faceUniqueIdToCoordX(Int64 uid, Int32 level)
     return static_cast<CartCoord>((uid % nb_face_x) * 2);
   }
 
-  // For the interval [12, 23], we notice that the origin in X is always 1 and that the meshes
+  // For the interval [12, 23], we notice that the origin in X is always 1 and that the cells
   // containing a face are on odd X coordinates.
   // Finally, we have "nb_cell_x" faces in X.
   if (uid < three_parts_numbering.x + three_parts_numbering.y) {
@@ -954,7 +954,7 @@ faceUniqueIdToCoordX(Int64 uid, Int32 level)
     return static_cast<CartCoord>((uid % nb_cell_x) * 2 + 1);
   }
 
-  // For the interval [24, 35], we notice that the origin in X is always 1 and that the meshes
+  // For the interval [24, 35], we notice that the origin in X is always 1 and that the cells
   // containing a face are on odd X coordinates.
   // Finally, we have "nb_cell_x" faces in X.
   uid -= three_parts_numbering.x + three_parts_numbering.y;
@@ -1525,7 +1525,7 @@ cellFaceUniqueIds(CartCoord3 cell_coord, Int32 level, ArrayView<Int64> uid)
   //         └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘ │ └──┴──┴──┴──┴──┘
   //                          │                  │                  │                  │
   //
-  // (in this view, the meshes are located at odd X, Y, and Z coordinates
+  // (in this view, the cells are located at odd X, Y, and Z coordinates
   // (so here, [1, 1, 1], [3, 1, 1], [1, 3, 1], etc)).
   //
   // We have a cube decomposed into eight cells (2x2x2).

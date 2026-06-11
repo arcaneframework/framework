@@ -168,7 +168,7 @@ _checkGenerateFaceUniqueId(Int64 uid, ConstArrayView<Int64> nodes_uid)
  * \brief Adds a face.
  *
  * This method is called when one wishes to directly create a face
- * that may not necessarily be connected to a mesh. Generally, faces
+ * that may not necessarily be connected to a cell. Generally, faces
  * are created automatically when meshes are added.
  *
  * Adds a face by providing the face's unique_id and the unique_ids
@@ -187,7 +187,7 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 owner_rank, Int64ConstArray
   //m_work_face_orig_nodes_uid[z] = nodes_uid[z];
   m_face_reorderer.reorder(type_id, nodes_uid);
   ConstArrayView<Int64> face_sorted_nodes = m_face_reorderer.sortedNodes();
-  // TODO: in the case where the face will be orphaned (not connected to a mesh),
+  // TODO: in the case where the face will be orphaned (not connected to a cell),
   // check if the face needs reorientation because this risks introducing
   // an inconsistency if one later wishes to calculate a normal.
   //MeshUtils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
@@ -366,6 +366,7 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Adds a cell.
  *
@@ -838,7 +839,7 @@ addOneParentItem(const Item& item, const eItemKind submesh_kind, const bool fata
   if (MeshToMeshTransposer::kindTranspose(submesh_kind, m_mesh, m_mesh->parentMesh()) != kind)
     ARCANE_FATAL("Incompatible kind/sub-kind");
 
-  // Checks if the mesh already exists
+  // Checks if the cell already exists
   bool is_add; // this flag is always correctly set via findOrAllocOne
   Item new_item;
 
@@ -1100,8 +1101,9 @@ addOneParentItem(const Item& item, const eItemKind submesh_kind, const bool fata
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Adds the nodes \a nodes_uid to the mesh \a cell
+ * \brief Adds the nodes \a nodes_uid to the cell \a cell
  */
 template <typename CellInfo>
 inline void OneMeshItemAdder::

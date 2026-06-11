@@ -32,10 +32,14 @@ namespace Arcane::mesh
 // messages, we apply the following:
 // - each sub-domain is responsible for determining the new
 // owner of nodes, faces, edges, dual nodes, and links belonging to it.
-// - for nodes and edges, the new owner is the new owner of the mesh connected to this node whose uniqueId() is the smallest.
-// - for faces, the new owner is the new owner of the mesh behind this face if it is an internal face, and the connected mesh if it is a boundary face.
-// - for dual nodes, the new owner is the new owner of the mesh connected to the dual element
-// - for links, the new owner is the new owner of the mesh connected to the first dual node, that is, the owner of the link's first dual node.
+// - for nodes and edges, the new owner is the new owner of the cell
+// connected to this node whose uniqueId() is the smallest.
+// - for faces, the new owner is the new owner of the cell behind this face
+// if it is an internal face, and the connected mesh if it is a boundary face.
+// - for dual nodes, the new owner is the new owner of the cell connected to
+// the dual element
+// - for links, the new owner is the new owner of the cell connected to the
+// first dual node, that is, the owner of the link's first dual node.
 
 class NewItemOwnerBuilder
 {
@@ -43,12 +47,12 @@ class NewItemOwnerBuilder
 
   NewItemOwnerBuilder() {}
 
-  // Determines the mesh connected to the item
+  // Determines the cell connected to the item
   template <typename T>
   inline Cell connectedCellOfItem(const T& item) const;
 
   // Determines the owner of the item, that is,
-  // the owner of the mesh connected to the item
+  // the owner of the cell connected to the item
   template <typename T>
   inline Integer ownerOfItem(const T& item) const
   {
@@ -57,7 +61,7 @@ class NewItemOwnerBuilder
 
  private:
 
-  // Finds the mesh with the smallest uniqueId() of an item
+  // Finds the cell with the smallest uniqueId() of an item
   // Static polymorphism: only item types with a
   // cell() method are accepted
   template <typename T>
@@ -72,21 +76,21 @@ class NewItemOwnerBuilder
   }
 };
 
-// For nodes, the connected mesh is the one with the smallest uniqueId().
+// For nodes, the connected cell is the one with the smallest uniqueId().
 template <>
 inline Cell NewItemOwnerBuilder::connectedCellOfItem<Node>(const Node& node) const
 {
   return _minimumUniqueIdCellOfItem(node);
 }
 
-// For edges, the connected mesh is the one with the smallest uniqueId().
+// For edges, the connected cell is the one with the smallest uniqueId().
 template <>
 inline Cell NewItemOwnerBuilder::connectedCellOfItem<Edge>(const Edge& edge) const
 {
   return _minimumUniqueIdCellOfItem(edge);
 }
 
-// For faces, the connected mesh is backCell() if it exists, otherwise frontCell()
+// For faces, the connected cell is backCell() if it exists, otherwise frontCell()
 template <>
 inline Cell NewItemOwnerBuilder::connectedCellOfItem<Face>(const Face& face) const
 {

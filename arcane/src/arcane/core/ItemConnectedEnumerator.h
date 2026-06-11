@@ -135,7 +135,7 @@ class ItemConnectedEnumeratorT
  * \param item name of the entity whose connectivities are desired
  * \param connectivity_func method of \a item to retrieve the connectivity.
  *
- * Example for iterating over the mesh nodes:
+ * Example for iterating over the cell nodes:
  * \code
  * Arcane::Cell cell = ...;
  * ENUMERATE_CONNECTED_(Node,inode,cell,nodes()){

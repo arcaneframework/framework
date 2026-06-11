@@ -165,7 +165,7 @@ class ParticleFamilyTester
   void addParticles()
   {
     //TODO: add a JDD option for choosing particle_per_cell
-    //TODO: do not put the same number of particles in every mesh
+    //TODO: do not put the same number of particles in every cell
     Integer particle_per_cell = 12;
     info() << " BuildParticleFamily increment=" << particle_per_cell
            << " nb_particle=" << m_family->nbItem();

@@ -51,7 +51,7 @@ class ARCANE_CORE_EXPORT IMeshComponent
   virtual String name() const = 0;
 
   /*!
-   * \brief Group of meshes for this material.
+   * \brief Group of cells for this material.
    *
    * \warning This group must not be modified. To change
    * the number of elements of a material, you must go through
@@ -71,13 +71,13 @@ class ARCANE_CORE_EXPORT IMeshComponent
   virtual Int32 id() const = 0;
 
   /*!
-   * \brief Mesh of this component for mesh \a c.
+   * \brief Cell of this component for cell \a c.
    *
-   * If the component is not present in the mesh,
-   * the null mesh is returned.
+   * If the component is not present in the cell,
+   * the null cell is returned.
    *
    * The cost of this function is proportional to the number of components
-   * present in the mesh.
+   * present in the cell.
    */
   virtual ComponentCell findComponentCell(AllEnvCell c) const = 0;
 
@@ -96,7 +96,7 @@ class ARCANE_CORE_EXPORT IMeshComponent
   //! Indicates if the component is defined for space \a space
   virtual bool hasSpace(MatVarSpace space) const = 0;
 
-  //! View on the list of pure entities (associated with the global mesh) of the component
+  //! View on the list of pure entities (associated with the global cell) of the component
   virtual ComponentPurePartItemVectorView pureItems() const = 0;
 
   //! View on the list of impure (partial) entities of the component

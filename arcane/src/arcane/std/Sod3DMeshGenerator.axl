@@ -9,15 +9,15 @@
 
   <options>
     <simple name="x" type="integer" >
-      <description>Number of meshes in X</description>
+      <description>Number of cells in X</description>
       <userclass>User</userclass>
     </simple>
     <simple name="y" type="integer" >
-      <description>Number of meshes in Y</description>
+      <description>Number of cells in Y</description>
       <userclass>User</userclass>
     </simple>
     <simple name="z" type="integer" >
-      <description>Number of meshes in Z</description>
+      <description>Number of cells in Z</description>
       <userclass>User</userclass>
     </simple>
 

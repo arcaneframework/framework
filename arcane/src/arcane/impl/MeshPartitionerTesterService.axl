@@ -14,7 +14,7 @@
       <userclass>User</userclass>
       <description>
         Divider for the number of ranks for partitioning. If strictly
-        positive, each subdomain distributes its meshes across a number
+        positive, each subdomain distributes its cells across a number
         of subdomains equal to the number of ranks divided by the value
         of this option.
       </description>

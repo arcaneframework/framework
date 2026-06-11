@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* VtkCellTypes.h                                              (C) 2000-2025 */
 /*                                                                           */
-/* Definitions of VTK mesh types.                                            */
+/* Definitions of VTK cell types.                                            */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_INTERNAL_VTKCELLTYPES_H
 #define ARCANE_CORE_INTERNAL_VTKCELLTYPES_H

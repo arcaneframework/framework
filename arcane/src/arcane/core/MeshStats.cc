@@ -365,7 +365,7 @@ void MeshStats::
 _dumpCommunicatingRanks()
 {
   // Displays statistics on the number of subdomains we communicate with.
-  // We take neighbors from the mesh list.
+  // We take neighbors from the cell list.
   IItemFamily* cell_family = m_mesh->cellFamily();
   IVariableSynchronizer* sync_info = cell_family->allItemsSynchronizer();
   Int64 nb_comm_local = sync_info->communicatingRanks().size();

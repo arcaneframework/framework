@@ -36,7 +36,7 @@ using namespace Arcane;
  * \brief Simplified hydrodynamic module.
  *
  * This module implements simple three-dimensional hydrodynamics,
- * parallel, with mesh pseudo-viscosity.
+ * parallel, with cell pseudo-viscosity.
  */
 class ExternalPluginTesterModule
 : public ArcaneExternalPluginTesterObject

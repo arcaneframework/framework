@@ -1578,11 +1578,19 @@ printStats(Int32 level)
 /*!
   \brief Calculates the unique IDs for each face.
 
-  The algorithm must work in a way that gives the same face numbering sequentially and in parallel regardless of the decomposition, to facilitate debugging.
+  The algorithm must work in a way that gives the same face numbering
+  sequentially and in parallel regardless of the decomposition, to facilitate
+  debugging.
 
-  The numbering principle is as follows: we traverse the meshes in increasing order of their unique_id, and for each mesh, we traverse the list of faces. A face is numbered if and only if its backCell() is the current mesh or if its frontCell() is the current mesh but it is a boundary face (nbCell()==1). When numbering the faces of the current mesh, we first number the faces for which it is the backCell(), then the faces for which it is the frontCell().
+  The numbering principle is as follows: we traverse the cells in increasing
+  order of their unique_id, and for each cell, we traverse the list of faces.
+  A face is numbered if and only if its backCell() is the current cell or if
+  its frontCell() is the current cell but it is a boundary face (nbCell()==1).
+  When numbering the faces of the current cell, we first number the faces for
+  which it is the backCell(), then the faces for which it is the frontCell().
 
-  This small detail is explained to simplify the determination of numbering in the parallel case (todo: explain why...)
+  This small detail is explained to simplify the determination of numbering in
+  the parallel case (todo: explain why...)
 
   \warning This method should only be called during the initial mesh creation.
 */
@@ -1703,7 +1711,7 @@ removeNeedRemoveMarkedItems()
       }
     }
 
-    // Suppression of meshes
+    // Suppression of cells
     CellFamily& cell_family = m_mesh->trueCellFamily();
     UniqueArray<Int32> cells_to_remove;
     cells_to_remove.reserve(1000);

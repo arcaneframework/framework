@@ -90,9 +90,9 @@ finalize()
  * \brief Transforms entities for an environment.
  *
  * Iterates over the environment \a env and
- * converts pure meshes to partial meshes or
+ * converts pure cells to partial cells or
  * vice versa. After conversion, the values corresponding to the
- * modified meshes are updated for each variable.
+ * modified cells are updated for each variable.
  *
  * If \a is_add is true, it transforms from pure to partial
  * (material addition); otherwise, it transforms from partial to pure
@@ -159,9 +159,9 @@ _switchCellsForMaterials(const MeshMaterial* modified_mat,
  * \brief Transforms entities for environments.
  *
  * Iterates over environments, except the modified environment \a modified_env, and
- * for each one converts pure meshes to partial meshes or
+ * for each one converts pure cells to partial cells or
  * vice versa. After conversion, the values corresponding to the
- * modified meshes are updated for each variable.
+ * modified cells are updated for each variable.
  *
  * If \a is_add is true, it transforms from pure to partial
  * (in the case of material addition); otherwise, it transforms from partial to pure
@@ -176,7 +176,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
   SmallSpan<const bool> is_environments_modified = m_work_info.m_is_environments_modified.view(false);
 
   // Do not copy partial values from environments to global values
-  // in case of mesh removal, because this will be done with the material value
+  // in case of cell removal, because this will be done with the material value
   // corresponding to it. This allows the same behavior as without
   // optimization. This is not active by default for compatibility with existing code.
   const bool is_copy = is_add || !(m_material_mng->isUseMaterialValueWhenRemovingPartialValue());
@@ -235,7 +235,7 @@ _switchCellsForEnvironments(const IMeshEnvironment* modified_env,
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculates the meshes to transform for material \at mat.
+ * \brief Calculates the cells to transform for material \at mat.
  */
 Int32 IncrementalComponentModifier::
 _computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int32> ids)
@@ -253,16 +253,16 @@ _computeCellsToTransformForMaterial(const MeshMaterial* mat, SmallSpan<const Int
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Removes meshes of a material from the environment.
+ * \brief Removes cells of a material from the environment.
  *
- * Removes the meshes provided by \a local_ids from material \a mat
+ * Removes the cells provided by \a local_ids from material \a mat
  * in the environment. The material indexer is updated, and if \a update_env_indexer
  * is true, the environment indexer is also updated (which means the environment disappears
- * from the meshes \a local_ids).
+ * from the cells \a local_ids).
  *
- * TODO: optimize this by not iterating over all
+ * TODO: optimize this by not iterating over all cells
  * materials of the environment (removed_local_ids_filter must be removed).
- * If we know the index of each mesh in the MatVarIndex
+ * If we know the index of each cell in the MatVarIndex
  * from the indexer, we can directly access it.
  */
 void IncrementalComponentModifier::
@@ -291,12 +291,12 @@ _removeItemsFromEnvironment(MeshEnvironment* env, MeshMaterial* mat,
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Adds the meshes of an environment material.
+ * \brief Adds the cells of an environment material.
  *
- * Adds the meshes given by \a local_ids to the environment material \a mat
+ * Adds the cells given by \a local_ids to the environment material \a mat
  * of the environment. The material indexer is updated, and if \a update_env_indexer
  * is true, the environment's indexer is also updated (meaning the environment appears
- * in the meshes \a local_ids).
+ * in the cells \a local_ids).
  */
 void IncrementalComponentModifier::
 _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
@@ -308,7 +308,7 @@ _addItemsToEnvironment(MeshEnvironment* env, MeshMaterial* mat,
   MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
   const Int32 nb_to_add = local_ids.size();
 
-  // Updates the number of materials per mesh and the total number of material meshes.
+  // Updates the number of materials per cell and the total number of material cells.
   env->addToTotalNbCellMat(nb_to_add);
 
   const Int16 env_id = env->componentId();
@@ -479,7 +479,7 @@ _copyBetweenPartialsAndGlobals(const CopyBetweenPartialAndGlobalArgs& args)
   const bool is_add_operation = args.m_is_global_to_partial;
   RunQueue queue(args.m_queue);
   RunQueue::ScopedAsync sc(&queue);
-  // Since we modified meshes, we must update the corresponding values
+  // Since we modified cells, we must update the corresponding values
   // for each variable.
   //info(4) << "NB_TRANSFORM=" << nb_transform << " name=" << e->name();
   //Integer indexer_index = indexer->index();

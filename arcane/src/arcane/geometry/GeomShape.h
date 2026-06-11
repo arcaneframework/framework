@@ -30,7 +30,7 @@ namespace Arcane::geometric
  * \brief Geometric shape.
  *
  * This class is only used to create a temporary geometric shape.
- * For a geometric shape derived from a mesh, you must go through the
+ * For a geometric shape derived from a cell, you must go through the
  * GeomShapeMng.
  *
  * An instance of this class allows storing the information

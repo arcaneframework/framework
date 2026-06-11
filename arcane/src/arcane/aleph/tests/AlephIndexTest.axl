@@ -33,7 +33,7 @@
  		<description>Time step used for the scheme</description>
 	 </simple>
 
-	 <!-- Initial temperature of the meshes -->
+	 <!-- Initial temperature of the cells -->
 	 <simple name="init-temperature" type="real" default="200">
 		<description>Initial temperature throughout the mesh</description>
 	 </simple>
