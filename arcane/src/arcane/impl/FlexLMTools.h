@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FlexLMTools.h                                               (C) 2000-2025 */
+/* FlexLMTools.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* FlexLM Protection Management.                                             */
 /*---------------------------------------------------------------------------*/
@@ -190,39 +190,6 @@ class FlexLMTools
     const Real version = FeatureModel::getVersion(feature);
     return FlexLMMng::instance()->featureInfo(name, version);
   }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ArcaneFeatureModel
-{
- public:
-
-  typedef enum
-  {
-#ifndef ARCANE_TEST_RLM
-    ArcaneCore = 0, //<! Core feature (related to execution)
-#else
-    Arcane = 0, //<! Core feature (related to execution)
-#endif
-  } eFeature;
-
-  static String getName(eFeature feature)
-  {
-    return m_arcane_feature_name[feature];
-  }
-
-  static Real getVersion(eFeature feature)
-  {
-    ARCANE_UNUSED(feature);
-    // Writes a numerically comparable version; e.g., 1.0610 (instead of 1.6.1)
-    return (Real)ARCANE_VERSION_MAJOR + (Real)ARCANE_VERSION_MINOR / 100 + (Real)ARCANE_VERSION_RELEASE / 1000 + (Real)ARCANE_VERSION_BETA / 10000;
-  }
-
- private:
-
-  static const String m_arcane_feature_name[];
 };
 
 /*---------------------------------------------------------------------------*/
