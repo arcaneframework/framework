@@ -1,100 +1,98 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 // -*- C++ -*-
 /*!
-  \page tutorialsample3 L'application "MicroHydro"
+  \page tutorialsample3 The "MicroHydro" Application
 
 
-  Le troisième exemple de cette formation permet le développement d'un module
-  hydrodynamique lagrangienne très simplifié :
-  - le seul type de maille supporté est l'hexaèdre,
-  - pas de pseudo viscosité supportée,
-  - le seul type de calcul de longueur caractéristique supporté est celui utilisant les médianes,
-  - le seul type de condition aux limites supporté est d'imposer une composante de la vitesse sur une surface,
-  - la masse nodale est supposée constante et n'est pas recalculée à chaque itération,
-  - aucun test de cohérence des valeurs (pression positive, volume positif, ...)  n'est effectué.
+  The third example of this tutorial allows the development of a module
+  for very simplified Lagrangian hydrodynamics:
+  - the only supported cell type is the hexahedron,
+  - no pseudo viscosity supported,
+  - the only supported characteristic length calculation type is the one using medians,
+  - the only supported boundary condition type is imposing a velocity component on a surface,
+  - the nodal mass is assumed constant and is not recalculated at each iteration,
+  - no value consistency test (positive pressure, positive volume, ...) is performed.
 
-  La liste des opérations effectuées par le module est la suivante :
-  - calcul des forces de pression,
-  - calcul de l'impulsion,
-  - prise en compte des conditions aux limites,
-  - déplacement des noeuds,
-  - calcul des nouvelles valeurs géométriques : volume des mailles, longueur caractéristique des mailles,
-    resultantes aux sommets de chaque maille,
-  - calcul de la densité,
-  - calcul de la pression et de l'énergie par l'équation d'état. Ce calcul est effectué par un service
-    ARCANE. Deux implémentations sont disponibles pour le service : gaz parfait, et "stiffened" gaz.
-  - calcul du nouveau pas de temps.
+  The list of operations performed by the module is as follows:
+  - calculation of pressure forces,
+  - calculation of momentum,
+  - taking into account boundary conditions,
+  - node displacement,
+  - calculation of new geometric values: cell volume, characteristic cell length,
+    results at the vertices of each cell,
+  - calculation of density,
+  - calculation of pressure and energy using the equation of state. This calculation is performed by a service
+    ARCANE. Two implementations are available for the service: perfect gas, and "stiffened" gas.
+  - calculation of the new time step.
 
-  La liste des valeurs manipulées par le module est la suivante :
+  The list of values manipulated by the module is as follows:
 
 <center>
 <small>
 <table>
-<tr><td><b>Nom</b></td><td><b>Elément</b></td><td><b>Type</b></td><td><b>Description</b></td></tr>
-<tr><td>Density </td><td> Maille </td><td> Réel </td><td> Densité par maille </td></tr>
-<tr><td>Pressure </td><td> Maille </td><td> Réel </td><td> Pression par maille </td></tr>
-<tr><td>CellMass </td><td> Maille </td><td> Réel </td><td> Masse par maille </td></tr>
-<tr><td>InternalEnergy </td><td> Maille </td><td> Réel </td><td> Energie interne par maille </td></tr>
-<tr><td>CellVolume </td><td> Maille </td><td> Réel </td><td> Volume de la maille </td></tr>
-<tr><td>OldCellVolume </td><td> Maille </td><td> Réel </td><td> Volume de la maille à l'itération précédente </td></tr>
-<tr><td>Force </td><td> Noeud </td><td> Coordonnée </td><td> Force aux noeuds </td></tr>
-<tr><td>Velocity </td><td> Noeud </td><td> Coordonnée </td><td> Vitesse aux noeuds </td></tr>
-<tr><td>NodeMass </td><td> Noeud </td><td> Réel  </td><td> Masse nodale </td></tr>
-<tr><td>AdiabaticCst </td><td> Maille </td><td> Réel  </td><td> Constante adiabatique par maille </td></tr>
-<tr><td>CaracteristicLength </td><td> Maille </td><td> Réel </td><td> Longueur caractéristique par maille </td></tr>
-<tr><td>SoundSpeed </td><td> Maille </td><td> Réel </td><td> Vitesse du son dans la maille </td></tr>
-<tr><td>NodeCoord </td><td> Noeud </td><td> Coordonnée </td><td> Coordonnées des noeuds </td></tr>
-<tr><td>CellCQs </td><td> Maille </td><td> Tableau de coordonnées</td><td> Résultante aux sommets</td></tr>
+<tr><td><b>Name</b></td><td><b>Element</b></td><td><b>Type</b></td><td><b>Description</b></td></tr>
+<tr><td>Density </td><td> Cell </td><td> Real </td><td> Density per cell </td></tr>
+<tr><td>Pressure </td><td> Cell </td><td> Real </td><td> Pressure per cell </td></tr>
+<tr><td>CellMass </td><td> Cell </td><td> Real </td><td> Mass per cell </td></tr>
+<tr><td>InternalEnergy </td><td> Cell </td><td> Real </td><td> Internal energy per cell </td></tr>
+<tr><td>CellVolume </td><td> Cell </td><td> Real </td><td> Volume of the cell </td></tr>
+<tr><td>OldCellVolume </td><td> Cell </td><td> Real </td><td> Volume of the cell at the previous iteration </td></tr>
+<tr><td>Force </td><td> Node </td><td> Coordinate </td><td> Force at the nodes </td></tr>
+<tr><td>Velocity </td><td> Node </td><td> Coordinate </td><td> Velocity at the nodes </td></tr>
+<tr><td>NodeMass </td><td> Node </td><td> Real  </td><td> Nodal mass </td></tr>
+<tr><td>AdiabaticCst </td><td> Cell </td><td> Real  </td><td> Adiabatic constant per cell </td></tr>
+<tr><td>CaracteristicLength </td><td> Cell </td><td> Real </td><td> Characteristic length per cell </td></tr>
+<tr><td>SoundSpeed </td><td> Cell </td><td> Real </td><td> Speed of sound in the cell </td></tr>
+<tr><td>NodeCoord </td><td> Node </td><td> Coordinate </td><td> Coordinates of the nodes </td></tr>
+<tr><td>CellCQs </td><td> Cell </td><td> Array of coordinates</td><td> Resultant at the vertices</td></tr>
 </table>
 </small>
 </center>
 
-  \section tutorialsample2_conception Conception de l'application
-  \par Prérequis
-  - Avoir fait les deux premiers exemples de ce didacticiel : \ref tutorialsample1 et \ref tutorialsample2.
-  \par Actions à réaliser
-  A partir de l'énoncé de l'exercice et de la documentation des méthodes de la classe \c MicroHydroModule :
-  - Ecrire le descripteur du module :
-    - Fournir la liste des points d'entrée. Chaque opération citée précédemment devient un point d'entrée et un point
-      d'entrée d'initialisation est ajouté,
-    - Fournir la liste des variables,
-    - Compléter les options de configuration pour les conditions aux limites conformément au jeu de données \c MicroHydro.arc
-  - Décrire ensuite l'enchainement des points d'entrée dans le fichier de configuration
-    de l'application \c MicroHydro.config.
+  \section tutorialsample2_conception Application Design
+  \par Prerequisites
+  - Having completed the first two examples of this tutorial: \ref tutorialsample1 and \ref tutorialsample2.
+  \par Actions to perform
+  Based on the exercise statement and the documentation of the methods of the \c MicroHydroModule class:
+  - Write the module descriptor:
+    - Provide the list of entry points. Each previously mentioned operation becomes an entry point and an initialization entry point is added,
+    - Provide the list of variables,
+    - Complete the configuration options for boundary conditions according to the \c MicroHydro.arc dataset
+  - Then describe the sequence of entry points in the configuration file
+    of the \c MicroHydro.config application.
 
-  \section tutorialsample2_service Service d'équation d'état
-  \par Prérequis
-  - Lire la section \ref arcanedoc_core_types_service.
-  \par Actions à réaliser
-  Faire un service capable de calculer l'équation d'état pour un groupe de mailles donné :
-  - Regarder l'interface du service dans le fichier \c IEquationOfState et les implémentations
-    <em>perfect gas</em> et <em>stiffened gas</em>,
-  - Enregistrer les 2 implémentations dans ARCANE à l'aide à la macro,
-  - Dans le descripteur du module (\c MicroHydro.axl), saisir les options de configuration
-    pour le service d'équation d'état conformément au jeu de données \c MicroHydro.arc,
-  - Ecrire le code pour le service d'équation d'état du gaz parfait dans le fichier \c PerfectGasEOSService.cc.
-    Les formules sont : \f[P = (\gamma - 1) \rho e\f] \f[s = \sqrt{\gamma P / \rho} \f]
-    avec \f$P\f$ = pression, \f$e\f$ = énergie interne, \f$s\f$ = vitesse du son, \f$\gamma\f$ = constante adiabatique, et \f$\rho\f$ = densité
-  - Ecrire le code pour le service d'équation d'état "stiffened gas" dans le fichier \c StiffenedGasEOSService.cc.
-    Les formules sont : \f[P = ((\gamma - 1) \rho e) - (\gamma P_0)\f] \f[s = \sqrt{(\gamma / \rho)(P+P_0)} \f]
-    avec \f$P\f$ = pression, \f$P_0\f$ = tension limite, \f$e\f$ = énergie interne, \f$s\f$ = vitesse du son, 
-    \f$\gamma\f$ = constante adiabatique, et \f$\rho\f$ = densité
-  - Compléter les appels au service d'équation d'état dans le fichier \c MicroHydroModule.cc
-  - Compiler
-  - Choisir le service d'équation d'état voulu dans le jeu de données \c MicroHydro.arc. 
-    Ne pas oublier de préciser la tension limite dans le cas du service "stiffened gas".
-  - Exécuter en séquentiel et en parallèle et regarder les résultats.
+  \section tutorialsample2_service Equation of State Service
+  \par Prerequisites
+  - Read the section \ref arcanedoc_core_types_service.
+  \par Actions to perform
+  Create a service capable of calculating the equation of state for a given group of cells:
+  - Look at the service interface in the \c IEquationOfState file and the <em>perfect gas</em>
+    and <em>stiffened gas</em> implementations,
+  - Register the 2 implementations in ARCANE using the macro,
+  - In the module descriptor (\c MicroHydro.axl), enter the configuration options
+    for the equation of state service according to the \c MicroHydro.arc dataset,
+  - Write the code for the perfect gas equation of state service in the \c PerfectGasEOSService.cc file.
+    The formulas are: \f[P = (\gamma - 1) \rho e\f] \f[s = \sqrt{\gamma P / \rho} \f]
+    with \f$P\f$ = pressure, \f$e\f$ = internal energy, \f$s\f$ = speed of sound, \f$\gamma\f$ = adiabatic constant, and \f$\rho\f$ = density
+  - Write the code for the "stiffened gas" equation of state service in the \c StiffenedGasEOSService.cc file.
+    The formulas are: \f[P = ((\gamma - 1) \rho e) - (\gamma P_0)\f] \f[s = \sqrt{(\gamma / \rho)(P+P_0)} \f]
+    with \f$P\f$ = pressure, \f$P_0\f$ = limiting tension, \f$e\f$ = internal energy, \f$s\f$ = speed of sound, 
+    \f$\gamma\f$ = adiabatic constant, and \f$\rho\f$ = density
+  - Complete the calls to the equation of state service in the \c MicroHydroModule.cc file
+  - Compile
+  - Choose the desired equation of state service in the \c MicroHydro.arc dataset. 
+    Don't forget to specify the limiting tension in the case of the "stiffened gas" service.
+  - Run sequentially and in parallel and observe the results.
 
-  \section tutorialsample2_protrep Prise en compte des protections/reprises
-  \par Prérequis
-   Ce module n'utilisant pas de structure de données interne autre que
-   les variables, il n'a rien à faire pour prendre en compte les
-   protections reprises.
-  \par Actions à réaliser
-   - Editer le fichier  \c MicroHydro.config et ajouter le module \c ArcaneCheckpoint permettant d'écrire des protections.
-   - Exécuter le code pendant 100 itérations : option <tt>-arcane_opt max_iteration 100</tt>.
-   - Reprendre l'exécution : option <tt>-arcane_opt continue</tt>.
-   - Ne plus sauvegarder le volume des mailles et ajouter un nouveau point d'entrée d'initialisation de reprise permettant de 
-     calculer le volume des mailles à partir de la position des noeuds.
+  \section tutorialsample2_protrep Handling Checkpoints/Resumptions
+  \par Prerequisites
+   This module, not using any internal data structure other than
+   variables, has nothing to do to account for the
+   saved checkpoints.
+  \par Actions to perform
+   - Edit the \c MicroHydro.config file and add the \c ArcaneCheckpoint module allowing checkpoints to be written.
+   - Run the code for 100 iterations: option <tt>-arcane_opt max_iteration 100</tt>.
+   - Resume execution: option <tt>-arcane_opt continue</tt>.
+   - No longer save the cell volume and add a new initialization entry point for resumption allowing the
+     calculation of the cell volume from the node positions.
 */
-

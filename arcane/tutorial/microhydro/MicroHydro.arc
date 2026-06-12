@@ -1,7 +1,7 @@
-<?xml version='1.0' encoding='ISO-8859-1'?>
+ï»¿<?xml version='1.0'?>
 <case codeversion="1.0" codename="MicroHydro" xml:lang="en">
 	<arcane>
-		<title>Exemple Arcane d'un module Hydro très, très simplifié</title>
+		<title>Exemple Arcane d'un module Hydro trÃ¨s, trÃ¨s simplifiÃ©</title>
 		<timeloop>MicroHydroLoop</timeloop>
 	</arcane>
 
@@ -32,7 +32,7 @@
 
 	<module-main></module-main>
 
-	<!-- Configuration du module hydrodynamique -->
+	<!-- Configuration of the hydrodynamic module -->
 	<micro-hydro>
 		<deltat-init>0.001</deltat-init>
 		<deltat-min>0.00001</deltat-min>
@@ -70,7 +70,7 @@
 			<value>0.</value>
 		</boundary-condition>
 		
-		<!-- Choisir le service d'équation d'état désiré -->
+		<!-- Choose the desired equation of state service -->
 		<!-- <eos-model name="PerfectGas"/> -->
                 <!-- <eos-model name="StiffenedGas">
                        <limit-tension>0.01</limit-tension>
