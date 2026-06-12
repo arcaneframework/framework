@@ -8,9 +8,9 @@ using namespace Arcane;
 
 void PerfectGasEOSService::initEOS(const CellGroup & group)
 {
-  // Initialise l'énergie et la vitesse du son en fonction de la pression,
-  // et de la densité
-  // à compléter
+  // Initializes the energy and the speed of sound based on the pressure,
+  // and the density
+  // to be completed
 }
 
 /*---------------------------------------------------------------------------*/
@@ -18,11 +18,11 @@ void PerfectGasEOSService::initEOS(const CellGroup & group)
 
 void PerfectGasEOSService::applyEOS(const CellGroup & group)
 {
-  // Calcule la pression et la vitesse du son en fonction de 
-  // l'énergie interne et de la densité
-  // à compléter
+  // Calculates the pressure and the speed of sound based on 
+  // the internal energy and the density
+  // to be completed
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Compléter avec la macro permettant d'enregistrer le service dans ARCANE
+// Complete with the macro allowing the service to be registered in ARCANE

@@ -12,17 +12,17 @@ using namespace Arcane;
 
 void MicroHydroModule::hydroStartInit()
 {
-  // Dimensionne les variables tableaux
+  // Resize the array variables
   m_cell_cqs.resize(8);
 
-    // Initialise le delta-t
+    // Initialize delta-t
   Real deltat_init = options()->deltatInit();
   m_global_deltat = deltat_init;
 
-  // Initialise les données géométriques: volume, cqs, longueurs caractéristiques
+  // Initialize geometric data: volume, cqs, characteristic lengths
   computeGeometricValues();
 
-  // Initialisation de la masses des mailles et des masses nodale
+  // Initialization of cell masses and node masses
   ENUMERATE_CELL(icell, allCells())
     {
       const Cell & cell = * icell;
@@ -37,8 +37,8 @@ void MicroHydroModule::hydroStartInit()
 
   m_node_mass.synchronize();
 
-  // Initialise l'énergie et la vitesse du son
-  // Compléter ici l'appel au service d'équation d'état
+  // Initialize energy and sound speed
+  // Complete the call to the equation of state service here
 }
 
 
@@ -47,11 +47,11 @@ void MicroHydroModule::hydroStartInit()
 
 void MicroHydroModule::computePressureForce()
 {
-  // Remise à zéro du vecteur des forces.
+  // Zeroing the force vector.
   m_force.fill(Real3::null());
 
-  // Calcul pour chaque noeud de chaque maille la contribution
-  // des forces de pression
+  // Calculation for each node of each cell the contribution
+  // of pressure forces
   ENUMERATE_CELL(icell, allCells())
     {
       const Cell & cell = * icell;
@@ -66,7 +66,7 @@ void MicroHydroModule::computePressureForce()
 
 void MicroHydroModule::computeVelocity()
 {
-  // Calcule l'impulsion aux noeuds
+  // Calculates momentum at nodes
   ENUMERATE_NODE(inode, ownNodes())
     {
       Real node_mass = m_node_mass[inode];
@@ -91,13 +91,13 @@ void MicroHydroModule::applyBoundaryCondition()
       Real value = options()->boundaryCondition[i]->value();
       TypesMicroHydro::eBoundaryCondition type = options()->boundaryCondition[i]->type();
 
-      // boucle sur les faces de la surface
+      // loop over the faces of the surface
       ENUMERATE_FACE(j, face_group)
         {
           const Face & face = * j;
           Integer nb_node = face.nbNode();
 
-          // boucle sur les noeuds de la face
+          // loop over the nodes of the face
           for (Integer k = 0; k < nb_node; ++k)
             {
               const Node & node = face.node(k);
@@ -142,20 +142,20 @@ void MicroHydroModule::computeGeometricValues()
 {
   m_old_cell_volume.copy(m_cell_volume);
 
-  // Copie locale des coordonnées des sommets d'une maille
+  // Local copy of the coordinates of a cell's corners
   Real3 coord[8];
-  // Coordonnées des centres des faces
+  // Coordinates of the face centers
   Real3 face_coord[6];
 
   ENUMERATE_CELL(icell, allCells())
     {
       const Cell & cell = * icell;
 
-      // Recopie les coordonnées locales (pour le cache)
+      // Re-copy the local coordinates (for the cache)
       for (NodeEnumerator inode(cell.nodes()); inode.index() < 8; ++inode) 
         coord[inode.index()] = m_node_coord[inode];
 
-      // Calcul les coordonnées des centres des faces
+      // Calculates the coordinates of the face centers
       face_coord[0] = 0.25 * (coord[0] + coord[3] + coord[2] + coord[1]);
       face_coord[1] = 0.25 * (coord[0] + coord[4] + coord[7] + coord[3]);
       face_coord[2] = 0.25 * (coord[0] + coord[1] + coord[5] + coord[4]);
@@ -163,7 +163,7 @@ void MicroHydroModule::computeGeometricValues()
       face_coord[4] = 0.25 * (coord[1] + coord[2] + coord[6] + coord[5]);
       face_coord[5] = 0.25 * (coord[2] + coord[3] + coord[7] + coord[6]);
 
-      // Calcule la longueur caractéristique de la maille.
+      // Calculates the characteristic length of the cell.
       {
         Real3 median1 = face_coord[0] - face_coord[3];
         Real3 median2 = face_coord[2] - face_coord[5];
@@ -177,10 +177,10 @@ void MicroHydroModule::computeGeometricValues()
         m_caracteristic_length[icell] = dx_numerator / dx_denominator;
       }
 
-      // Calcule les résultantes aux sommets
+      // Calculates the resultant forces at the corners
       computeCQs(coord, face_coord, cell);
 
-      // Calcule le volume de la maille
+      // Calculates the cell volume
       {
         Real volume = 0.;
         for (Integer inode = 0; inode < 8; ++inode) 
@@ -214,7 +214,7 @@ void MicroHydroModule::updateDensity()
 
 void MicroHydroModule::applyEquationOfState()
 {
-    // Calcul de l'énergie interne
+    // Calculation of internal energy
     ENUMERATE_CELL(icell, allCells())
     {
         Real adiabatic_cst = m_adiabatic_cst[icell];
@@ -226,8 +226,8 @@ void MicroHydroModule::applyEquationOfState()
         m_internal_energy[icell] *= numer_accrois_nrj / denom_accrois_nrj;
     }
 
-    // Calcul de la pression et de la vitesse du son
-    // Compléter ici l'appel au service d'équation d'état
+    // Calculation of pressure and sound speed
+    // Complete the call to the equation of state service here
 }
 
 /*---------------------------------------------------------------------------*/
@@ -237,7 +237,7 @@ void MicroHydroModule::computeDeltaT()
 {
   const Real old_dt = m_global_deltat();
 
-  // Calcul du pas de temps pour le respect du critère de CFL
+  // Calculation of the time step for respecting the CFL criterion
 
   Real minimum_aux = float_info < Real >::maxValue();
   Real new_dt = float_info < Real >::maxValue();
@@ -258,13 +258,13 @@ void MicroHydroModule::computeDeltaT()
 
   Real density_ratio_dt = new_dt;
 
-  // respect des valeurs min et max imposées par le fichier de données .plt
+  // respecting the min and max values imposed by the .arc data file
   new_dt = math::min(new_dt, options()->deltatMax());
   new_dt = math::max(new_dt, options()->deltatMin());
 
   Real data_min_max_dt = new_dt;
 
-  // Le dernier calcul se fait exactement au temps stopTime()
+  // The last calculation is done exactly at the stopTime()
   Real stop_time  = options()->finalTime();
   bool not_yet_finish = (m_global_time() < stop_time);
   bool too_much = ((m_global_time()+new_dt) > stop_time);
@@ -275,7 +275,7 @@ void MicroHydroModule::computeDeltaT()
       subDomain()->timeLoopMng()->stopComputeLoop(true);
     }
 
-  // Mise à jour du pas de temps
+  // Update the time step
   m_global_deltat = new_dt;
 }
 
@@ -291,43 +291,43 @@ inline void MicroHydroModule::computeCQs(Real3 node_coord[8], Real3 face_coord[6
   const Real3 c4 = face_coord[4];
   const Real3 c5 = face_coord[5];
 
-  // Calcul des normales face 1 :
+  // Calculation of face 1 normals:
   const Real3 n1a04 = 0.5 * math::vecMul(node_coord[0] - c0, node_coord[3] - c0);
   const Real3 n1a03 = 0.5 * math::vecMul(node_coord[3] - c0, node_coord[2] - c0);
   const Real3 n1a02 = 0.5 * math::vecMul(node_coord[2] - c0, node_coord[1] - c0);
   const Real3 n1a01 = 0.5 * math::vecMul(node_coord[1] - c0, node_coord[0] - c0);
 
-  // Calcul des normales face 2 :
+  // Calculation of face 2 normals:
   const Real3 n2a05 = 0.5 * math::vecMul(node_coord[0] - c1, node_coord[4] - c1);
   const Real3 n2a12 = 0.5 * math::vecMul(node_coord[4] - c1, node_coord[7] - c1);
   const Real3 n2a08 = 0.5 * math::vecMul(node_coord[7] - c1, node_coord[3] - c1);
   const Real3 n2a04 = 0.5 * math::vecMul(node_coord[3] - c1, node_coord[0] - c1);
 
-  // Calcul des normales face 3 :
+  // Calculation of face 3 normals:
   const Real3 n3a01 = 0.5 * math::vecMul(node_coord[0] - c2, node_coord[1] - c2);
   const Real3 n3a06 = 0.5 * math::vecMul(node_coord[1] - c2, node_coord[5] - c2);
   const Real3 n3a09 = 0.5 * math::vecMul(node_coord[5] - c2, node_coord[4] - c2);
   const Real3 n3a05 = 0.5 * math::vecMul(node_coord[4] - c2, node_coord[0] - c2);
 
-  // Calcul des normales face 4 :
+  // Calculation of face 4 normals:
   const Real3 n4a09 = 0.5 * math::vecMul(node_coord[4] - c3, node_coord[5] - c3);
   const Real3 n4a10 = 0.5 * math::vecMul(node_coord[5] - c3, node_coord[6] - c3);
   const Real3 n4a11 = 0.5 * math::vecMul(node_coord[6] - c3, node_coord[7] - c3);
   const Real3 n4a12 = 0.5 * math::vecMul(node_coord[7] - c3, node_coord[4] - c3);
 
-  // Calcul des normales face 5 :
+  // Calculation of face 5 normals:
   const Real3 n5a02 = 0.5 * math::vecMul(node_coord[1] - c4, node_coord[2] - c4);
   const Real3 n5a07 = 0.5 * math::vecMul(node_coord[2] - c4, node_coord[6] - c4);
   const Real3 n5a10 = 0.5 * math::vecMul(node_coord[6] - c4, node_coord[5] - c4);
   const Real3 n5a06 = 0.5 * math::vecMul(node_coord[5] - c4, node_coord[1] - c4);
 
-  // Calcul des normales face 6 :
+  // Calculation of face 6 normals:
   const Real3 n6a03 = 0.5 * math::vecMul(node_coord[2] - c5, node_coord[3] - c5);
   const Real3 n6a08 = 0.5 * math::vecMul(node_coord[3] - c5, node_coord[7] - c5);
   const Real3 n6a11 = 0.5 * math::vecMul(node_coord[7] - c5, node_coord[6] - c5);
   const Real3 n6a07 = 0.5 * math::vecMul(node_coord[6] - c5, node_coord[2] - c5);
 
-  // Calcul des résultantes aux sommets :
+  // Calculation of resultant forces at the corners:
   m_cell_cqs[cell] [0] = (5. * (n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
                           (n1a02 + n1a03 + n2a08 + n2a12 + n3a06 + n3a09)) * (1. / 12.);
   m_cell_cqs[cell] [1] = (5. * (n1a01 + n1a02 + n3a01 + n3a06 + n5a06 + n5a02) +

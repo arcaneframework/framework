@@ -8,10 +8,10 @@ struct TypesMicroHydro
 {
     enum eBoundaryCondition
     {
-        VelocityX, //!< Vitesse X fixée
-        VelocityY, //!< Vitesse Y fixée
-        VelocityZ, //!< Vitesse Z fixée
-        Unknown //!< Type inconnu
+        VelocityX, //!< Fixed X Velocity
+        VelocityY, //!< Fixed Y Velocity
+        VelocityZ, //!< Fixed Z Velocity
+        Unknown //!< Unknown type
     };
 };
 

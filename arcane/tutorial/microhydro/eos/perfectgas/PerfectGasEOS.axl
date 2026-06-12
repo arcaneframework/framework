@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+ï»¿<?xml version="1.0" ?>
 <service name="PerfectGasEOS" parent-path="arcane" parent-name="BasicService">
 
-	<description>Jeu de données du service PerfectGasEOS</description>
+	<description>PerfectGasEOS service dataset</description>
 
 	<variables>
 		<!-- DENSITY -->
@@ -22,7 +22,7 @@
 			dim="0"
 			dump="true"
 			need-sync="true" />
-		<!-- INTERNAL ENERGY	 -->
+		<!-- INTERNAL ENERGY -->
 		<variable
 			field-name="internal_energy"
 			name="InternalEnergy"
@@ -31,7 +31,7 @@
 			dim="0"
 			dump="true"
 			need-sync="true" />
-		<!-- CELL VOLUME	 -->
+		<!-- CELL VOLUME -->
 		<variable
 			field-name="cell_volume"
 			name="CellVolume"
@@ -40,7 +40,7 @@
 			dim="0"
 			dump="true"
 			need-sync="true" />
-		<!-- OLD CELL VOLUME	 -->
+		<!-- OLD CELL VOLUME -->
 		<variable
 			field-name="old_cell_volume"
 			name="OldCellVolume"
@@ -49,7 +49,7 @@
 			dim="0"
 			dump="true"
 			need-sync="true" />
-		<!-- 	NODE MASS	 -->
+		<!-- NODE MASS -->
 		<variable
 			field-name="node_mass"
 			name="NodeMass"
@@ -58,7 +58,7 @@
 			dim="0"
 			dump="true"
 			need-sync="true" />
-		<!-- 	ADIABATIC CONSTANT	 -->
+		<!-- ADIABATIC CONSTANT -->
 		<variable
 			field-name="adiabatic_cst"
 			name="AdiabaticCst"
@@ -67,7 +67,7 @@
 			dim="0"
 			dump="true"
 			need-sync="true" />
-		<!-- 	CARACTERISTIC LENGTH	 -->
+		<!-- CHARACTERISTIC LENGTH -->
 		<variable
 			field-name="caracteristic_length"
 			name="CaracteristicLength"
@@ -76,7 +76,7 @@
 			dim="0"
 			dump="true"
 			need-sync="true" />
-		<!-- 	SOUND SPEED	 -->
+		<!-- SOUND SPEED -->
 		<variable
 			field-name="sound_speed"
 			name="SoundSpeed"
