@@ -109,21 +109,20 @@ using namespace Arcane::Accelerator;
 class MyModule
 : public Arcane::BasicModule
 {
-public:
-void myEntryPoint()
-{
-RunQueue* queue = acceleratorMng()->defaultQueue();
-// Loop over cells offloaded to accelerator
-auto command1 = makeCommand(queue);
-command1 << RUNCOMMAND_ENUMERATE(Cell,vi,allCells()){
-};
-
+ public:
+  void myEntryPoint()
+  {
+    RunQueue* queue = acceleratorMng()->defaultQueue();
+    // Loop over cells offloaded to accelerator
+    auto command1 = makeCommand(queue);
+    command1 << RUNCOMMAND_ENUMERATE(Cell,vi,allCells()){
+    };
+  
     // Classic 1D loop offloaded to accelerator
     auto command2 = makeCommand(queue)
     command2 << RUNCOMMAND_LOOP1(iter,5){
     };
-
-}
+  }
 };
 ```
 

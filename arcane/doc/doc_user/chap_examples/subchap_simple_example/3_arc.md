@@ -74,7 +74,7 @@ ____
 This part allows calling the `Cartesian2DMeshGenerator` service (developer
 documentation only), which allows creating a 2D Cartesian mesh. In this example,
 we generate a mesh of 20x20 cells, with a total size of 2.0x2.0 (so each cell
-is (0.5, 0.5)) with an origin at (0.0, 0.0) and a subdivision into 1x1
+is (0.1, 0.1)) with an origin at (0.0, 0.0) and a subdivision into 1x1
 subdomains (so there is 1x1=1 subdomain).
 
 It is possible to specify a mesh file whose format is recognized by %Arcane. In

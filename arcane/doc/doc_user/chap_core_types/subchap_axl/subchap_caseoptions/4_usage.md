@@ -55,11 +55,11 @@ other things, a class equivalent to this one:
 ```cpp
 class CaseOptionsTest
 {
-  public:
-   ...
-   double simpleReal() { ... }
-   eBoundaryCondition boundaryCondition() { ... }
-   ...
+ public:
+  ...
+  double simpleReal() { ... }
+  eBoundaryCondition boundaryCondition() { ... }
+  ...
 };
 ```
 
