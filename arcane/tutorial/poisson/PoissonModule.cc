@@ -12,13 +12,13 @@ using namespace Arcane;
 
 void PoissonModule::initTemperatures()
 {
-    // pour que les dépouillement ne se superpose pas
+    // so that the extractions do not overlap
     m_global_deltat = 1;
 
-    // initialisation de la temperature sur toutes les mailles
+    // initialization of temperature on all cells
     // ...
 
-    // application de la temperature aux limites
+    // application of temperature at the boundaries
     applyBoundaryConditions();
 }
 
@@ -29,33 +29,33 @@ void PoissonModule::propagateTemperatures()
 {
     Real max_delta_cell_t = 0;
 
-    // mise a jour de la temperature aux mailles
+    // update of temperature on cells
     // ...
     {
-        // calcul de la nouvelle temperature
+        // calculation of the new temperature
         // ...
         // new_cell_t
         // ...
 
-	// on observe l'ecart
+	// we observe the difference
         Real delta_cell_t = math::abs(new_cell_t - m_cell_temperature[icell]);
         max_delta_cell_t = math::max(max_delta_cell_t, delta_cell_t);
 
-	// mise a jour de la temperature
+	// update of temperature
         m_cell_temperature[icell] = new_cell_t;
     }
 	
-    // mise a jour de la temperature aux noeuds
+    // update of temperature at nodes
     // ...
 
-    // Vu le calcul, la syncronisation de la temperature aux mailles est inutile
-    // syncronisation de la temperature aux noeuds et réduction de l'écart
+    // Given the calculation, synchronization of temperature on cells is unnecessary
+    // synchronization of temperature at nodes and reduction of the difference
     // ...
 	
-    // application des conditions aux limites
+    // application of boundary conditions
     applyBoundaryConditions();
 	
-    // test d'arret de la boucle en temps
+    // test for stopping the time loop
     if (max_delta_cell_t < 0.2) subDomain()->timeLoopMng()->stopComputeLoop(true);
 }
 
@@ -64,7 +64,7 @@ void PoissonModule::propagateTemperatures()
 
 void PoissonModule::applyBoundaryConditions()
 {
-    // boucle sur les conditions aux limites
+    // loop over boundary conditions
     int nb_boundary_condition = options()->boundaryCondition.size();
     for (int i = 0; i < nb_boundary_condition; ++i)
     {
@@ -72,13 +72,13 @@ void PoissonModule::applyBoundaryConditions()
         Real temperature = options()->boundaryCondition[i]->value();
         TypesPoisson::eBoundaryCondition type = options()->boundaryCondition[i]->type();
 
-        // boucle sur les faces de la surface
+        // loop over faces of the surface
         ENUMERATE_FACE(iface, face_group)
         {
             const Face & face = * iface;
             Integer nb_node = face.nbNode();
 
-            // boucle sur les noeuds de la face
+            // loop over nodes of the face
             for (NodeEnumerator inode(face.nodes()); inode(); ++inode)
             {
                 switch (type)

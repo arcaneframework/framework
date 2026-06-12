@@ -7,156 +7,145 @@
 using namespace Arcane;
 
 /**
- * Représente un module d'hydrodynamique lagrangienne très simplifié :
- *   - le seul type de maille supporté est l'hexaèdre,
- *   - pas de pseudo viscosité supportée,
- *   - le seul type de calcul de longueur caractéristique supporté est celui utilisant les médianes,
- *   - le seul type de condition aux limites supporté est d'imposer une composante de la vitesse sur une surface,
- *   - la masse nodale est supposée constante et n'est pas recalculée à chaque itération,
- *   - aucun test de cohérence des valeurs (pression positive, volume positif, ...)  n'est effectué.
+ * Represents a highly simplified Lagrangian hydrodynamics module:
+ *   - the only supported cell type is the hexahedron,
+ *   - no pseudo-viscosity supported,
+ *   - the only supported characteristic length calculation type is the one using medians,
+ *   - the only supported boundary condition type is imposing a velocity component on a surface,
+ *   - the nodal mass is assumed constant and is not recalculated at each iteration,
+ *   - no value consistency test (positive pressure, positive volume, ...) is performed.
  *  
- * La liste des opérations effectuées par le module est la suivante :
- *   - calcul des forces de pression,
- *   - calcul de l'impulsion,
- *   - prise en compte des conditions aux limites,
- *   - déplacement des noeuds,
- *   - calcul des nouvelles valeurs géométriques : volume des mailles, longueur caractéristique des mailles,
- *     resultantes aux sommets de chaque maille,
- *   - calcul de la densité,
- *   - calcul de la pression et de l'énergie par l'équation d'état. Ce calcul est effectué par un service
- *     ARCANE. Deux implémentations sont disponibles pour le service : gaz parfait, et "stiffened" gaz.
- *   - calcul du nouveau pas de temps.
+ * The list of operations performed by the module is as follows:
+ *   - calculation of pressure forces,
+ *   - calculation of momentum,
+ *   - taking into account boundary conditions,
+ *   - node displacement,
+ *   - calculation of new geometric values: cell volume, cell characteristic length, resultant forces at the vertices of each cell,
+ *   - calculation of density,
+ *   - calculation of pressure and energy using the equation of state. This calculation is performed by an ARCANE service.
+ *     Two implementations are available for the service: perfect gas, and "stiffened" gas.
+ *   - calculation of the new time step.
  * 
  */
 class MicroHydroModule
 : public ArcaneMicroHydroObject
 {
  public:
-  /** Constructeur de la classe */
+  /** Class constructor */
   MicroHydroModule(const ModuleBuildInfo& mbi)
     : ArcaneMicroHydroObject(mbi) {}
-  /** Destructeur de la classe */
+  /** Class destructor */
   ~MicroHydroModule() {}
   
  public:
   /** 
-   *  Initialise le module. 
-   *  L'initialisation comporte deux parties distinctes:
-   *  - la première partie où il faut indiquer la taille des variables
-   *    tableaux. Dans notre cas, il s'agit de \c m_cell_cqs et
-   *    \c m_viscosity_force, qui sont toutes deux des variables
-   *    aux mailles possédant une valeur pour chaque noeud de chaque
-   *    maille. Comme on ne supporte que les héxaèdres, il y a 8 valeurs 
-   *    par maille,
-   *  - la deuxième partie qui consiste à initialiser les variables avec
-   *    leur valeur de départ. Pour les variables \c Pressure, \c Density et
-   *    \c AdiabaticCst, c'est ARCANE qui les initialisent directement
-   *    à partir du jeu de donnée. La variable \c NodeCoord est aussi
-   *    initialisée par l'architecture lors de la lecture du maillage. Les
-   *    autres variables sont calculées comme suit :
-   *    - le pas de temps initial est donné par le jeu de donnée,
-   *    - les valeurs géométriques (longueur caractéristique, volume et
-   *      résultantes aux sommets) sont calculées à partir des coordonnées des
-   *      noeuds,
-   *    - la masse des mailles est calculée à partir de sa densité et de
-   *      son volume,
-   *    - la masse des mailles et la masse nodale. La masse d'une maille
-   *      est calculée à partir de sa densité et de son volume,
-   *    - la masse nodale est calculée en ajoutant les contributions de
-   *      chaque maille connecté à un noeud donné. Chaque maille
-   *      contribue pour 1/8ème de sa masse à la masse nodale de chacun de ses
-   *      sommets,
-   *    - l'énergie interne et la vitesse du son sont calculées en fonction 
-   *      de l' équation d'état.
+   *  Initializes the module. 
+   *  The initialization consists of two distinct parts:
+   *  - the first part where the size of the array variables must be specified.
+   *    In our case, these are \c m_cell_cqs and
+   *    \c m_viscosity_force, both of which are cell variables possessing a
+   *    value for every node of every cell. Since we only support hexahedrons, there
+   *    are 8 values per cell,
+   *  - the second part which consists of initializing the variables with
+   *    their starting value. For the variables \c Pressure, \c Density, and
+   *    \c AdiabaticCst, ARCANE initializes them directly
+   *    from the dataset. The \c NodeCoord variable is also
+   *    initialized by the architecture when reading the mesh. The
+   *    other variables are calculated as follows:
+   *    - the initial time step is given by the dataset,
+   *    - the geometric values (characteristic length, volume, and
+   *      resultant forces at the vertices) are calculated from the node coordinates,
+   *    - the cell mass is calculated from its density andvolume,
+   *    - the cell mass and nodal mass. A cell's mass is calculated from its density and volume,
+   *    - the nodal mass is calculated by adding the contributions of
+   *      each cell connected to a given node. Each cell
+   *      contributes 1/8th of its mass to the nodal mass of each of its
+   *      vertices,
+   *    - the internal energy and the speed of sound are calculated based on the equation of state.
    */
   virtual void hydroStartInit();
   
   /** 
-   * Calcule la contribution des forces de pression par
-   * noeud au temps courant \f$t^{n}\f$. Pour chaque noeud de chaque maille, 
-   * il s'agit de la pression multipliée par la résultante en ce noeud.
-   * Calcule les forces de pression au temps courant \f$t^{n}\f$.
+   * Calculates the contribution of pressure forces per node at the current
+   * time \f$t^{n}\f$. For each node of each cell,
+   * this is the pressure multiplied by the resultant force at that node.
+   * Calculates the pressure forces at the current time \f$t^{n}\f$.
    */
   virtual void computePressureForce();
 		
   /**
-   * Calcule la force (\c m_force) qui s'applique aux noeuds en
-   * ajoutant l'éventuelle contribution de la pseudo-viscosité. Calcule 
-   * ensuite la nouvelle vitesse (\c m_velocity) aux noeuds. 
+   * Calculates the force (\c m_force) applied to the nodes by adding the
+   * possible contribution of pseudo-viscosity. Then calculates the new
+   * velocity (\c m_velocity) at the nodes.
    */
   virtual void computeVelocity();
 		
   /**
-   * Applique les conditions aux limites.
-   * Les conditions aux limites dépendent des options du
-   * jeu de données. Dans cette implémentation, une condition aux limites
-   * possède les propriétés suivantes :
-   * - un type: trois types sont supportés: contraindre la composante
-   * \f$x\f$ du vecteur vitesse, contraindre la composante \f$y\f$ du vecteur
-   * vitesse ou contraindre la composante \f$z\f$ du vecteur vitesse,
-   * - une valeur: il s'agit d'un réel indiquant la valeur de la
-   * contrainte,
-   * - une surface: il s'agit de la surface sur laquelle s'applique la
-   * contrainte.
+   * Applies the boundary conditions.
+   * Boundary conditions depend on the dataset options. In this implementation,
+   * a boundary condition has the following properties:
+   * - a type: three types are supported: constraining the \f$x\f$ component
+   *   of the velocity vector, constraining the \f$y\f$ component of the velocity
+   *   vector, or constraining the \f$z\f$ component of the velocity vector,
+   * - a value: this is a real number indicating the value of the constraint,
+   * - a surface: this is the surface on which the constraint applies.
    * 
-   * Appliquer les conditions aux limites consiste donc à fixer une
-   * composante d'un vecteur vitesse pour chaque noeud de chaque face de
-   * chaque surface sur laquelle on impose une condition aux limites.
+   * Applying boundary conditions therefore consists of fixing a component of a
+   * velocity vector for every node of every face of every surface on which a
+   * boundary condition is imposed.
    */		
   virtual void applyBoundaryCondition();
 		
   /**
-   * Modifie les coordonnées (\c m_node_coord)
-   * des noeuds d'après la valeur du vecteur vitesse et du pas de temps.
+   * Modifies the coordinates (\c m_node_coord) of the nodes based on the
+   * velocity vector and the time step.
    */
   virtual void moveNodes();
 		
   /**
-   * Ce point d'entrée regroupe l'ensemble des calculs géométriques
-   * utiles pour le schéma. Dans notre cas, il s'agit pour chaque maille :
-   * - de calculer sa longueur caractéristique,
-   * - de calculer les résultantes à ses sommets,
-   * - de calculer son volume.
+   * This entry point groups all the geometric calculations useful for the
+   * scheme. In our case, this involves for each cell:
+   * - calculating its characteristic length,
+   * - calculating the resultant forces at its vertices,
+   * - calculating its volume.
    
-   * Pour optimiser le calcul (utilisation du cache), à chaque itération 
-   * sur une maille, sont stockées localement les coordonnées de ses noeuds 
-   * et celles du centre de ses faces.
+   * To optimize the calculation (cache usage), during each iteration on a cell,
+   * the coordinates of its nodes and those of the center of its faces are stored locally.
    */
   virtual void computeGeometricValues();
   
   /**
-   * Calcule la nouvelle valeur de la densité des
-   * mailles, en considérant que la masse d'une maille est constante au
-   * cours du temps. Dans ce cas, la nouvelle densité est égale à la masse
-   * divisée par le nouveau volume.
+   * Calculates the new value of the cell density, assuming that the mass
+   * of a cell is constant over time. In this case, the new density is equal
+   * to the mass divided by the new volume.
    */
   virtual void updateDensity();
 		
   /**
-   * Ce point d'entrée calcule l'énergie interne, la pression et la vitesse
-   * du son dans la maille en faisant appel au service d'équation d'état.
+   * This entry point calculates the internal energy, pressure, and speed of
+   * sound within the cell by calling the equation of state service.
    */
   virtual void applyEquationOfState();
 		
   /**
-   * Détermine la valeur du pas de temps pour l'itération suivante. 
-   * Le pas de temps est contraint par :
-   * - la valeur de la CFL,
-   * - les valeurs \c deltatMin() et \c deltatMax() du jeu de données,
-   * - la valeur du temps final. Lors de la dernière itération, le pas
-   *   de temps doit être tel qu'on s'arrête exactement au temps spécifié
-   *   dans le jeu de données (\c finalTime()).
+   * Determines the time step value for the next iteration. 
+   * The time step is constrained by:
+   * - the CFL value,
+   * - the \c deltatMin() and \c deltatMax() values of the dataset,
+   * - the final time value. During the last iteration, the time step must
+   *   be such that we stop exactly at the time specified in the dataset
+   *   (\c finalTime()).
    */
   virtual void computeDeltaT();
 
-  /** Retourne le numéro de version du module */
+  /** Returns the version number of the module */
   virtual VersionInfo versionInfo() const { return VersionInfo(1,0,0); }
   
  private:
   /**
-   * Calcule les résultantes aux noeuds d'une maille hexaédrique.
-   * La méthode utilisée est celle du découpage en quatre triangles.
-   * Méthode appelée par le point d'entrée \c computeGeometricValues()
+   * Calculates the resultant forces at the nodes of a hexahedral cell.
+   * The method used is that of dividing into four triangles.
+   * Method called by the \c computeGeometricValues() entry point
    */
   inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],const Cell& cell);
 };

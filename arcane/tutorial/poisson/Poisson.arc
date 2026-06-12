@@ -1,7 +1,7 @@
-<?xml version='1.0' encoding='ISO-8859-1'?>
+ï»¿<?xml version='1.0'?>
 <case codeversion="1.0" codename="Poisson" xml:lang="en">
 	<arcane>
-		<title>Exemple Arcane de l'équation de Poisson</title>
+		<title>Example Arcane of the Poisson equation</title>
 		<timeloop>PoissonLoop</timeloop>
 
 	</arcane>

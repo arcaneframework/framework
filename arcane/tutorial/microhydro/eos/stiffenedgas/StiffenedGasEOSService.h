@@ -8,29 +8,29 @@
 using namespace Arcane;
 
 /**
- * Représente le modèle d'équation d'état <em>Stiffened Gas</em>
+ * Represents the <em>Stiffened Gas</em> equation of state model.
  */
 class StiffenedGasEOSService 
 : public ArcaneStiffenedGasEOSObject
 , public IEquationOfState
 {
 public:
-  /** Constructeur de la classe */
+  /** Constructor for the class */
   StiffenedGasEOSService(const ServiceBuildInfo & sbi)
     : ArcaneStiffenedGasEOSObject(sbi) {}
   
-  /** Destructeur de la classe */
+  /** Destructor for the class */
   virtual ~StiffenedGasEOSService() {};
   
 public:
   /** 
-   *  Initialise l'équation d'état au groupe de mailles passé en argument
-   *  et calcule la vitesse du son et l'énergie interne. 
+   *  Initializes the equation of state for the cell group passed as an argument
+   *  and calculates the speed of sound and internal energy. 
    */
   virtual void initEOS(const CellGroup & group);
   /** 
-   *  Applique l'équation d'état au groupe de mailles passé en argument
-   *  et calcule la vitesse du son et la pression. 
+   *  Applies the equation of state to the cell group passed as an argument
+   *  and calculates the speed of sound and pressure. 
    */
   virtual void applyEOS(const CellGroup & group);
 };

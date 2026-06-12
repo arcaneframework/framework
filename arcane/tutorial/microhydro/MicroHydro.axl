@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+ï»¿<?xml version="1.0" ?>
 
 <module name="MicroHydro" parent-path="arcane" parent-name="BasicModule">
 
-	<description>Descripteur du module MicroHydro</description>
+	<description>MicroHydro module descriptor</description>
 
 	<variables>
 		<!-- DENSITY -->
@@ -23,16 +23,15 @@
 
 		<!-- NODE MASS -->
 
-		<!-- ADIABATIC CONSTANT	-->
+		<!-- ADIABATIC CONSTANT -->
 
-		<!-- CARACTERISTIC LENGTH -->
+		<!-- CHARACTERISTIC LENGTH -->
 
 		<!-- SOUND SPEED -->
 
-		<!-- NODE COORD	-->
+		<!-- NODE COORD -->
 
 		<!-- CELL CQS -->
-
 	</variables>
 
 	<entry-points>
@@ -59,27 +58,28 @@
 		<!-- - - - - - deltat-min - - - - -->
 		<simple name="deltat-min" type="real">
 			<description>
-				Valeur minimale que peut prendre le
+				Minimum value that the
 				<em>deltat</em>
-				entre deux itérations.
+				can take between two iterations.
 			</description>
 		</simple>
 
 		<!-- - - - - - deltat-max - - - - -->
 		<simple name="deltat-max" type="real">
 			<description>
-				Valeur maximale que peut prendre le
+				Maximum value that the
 				<em>deltat</em>
-				entre deux itérations. Si le deltat calculé est supérieur à cette valeur, il est ramené à cette valeur.
+				can take between two iterations. If the calculated deltat is greater
+				than this value, it is reduced to this value.
 			</description>
 		</simple>
 
 		<!-- - - - - - deltat-init - - - - -->
 		<simple name="deltat-init" type="real">
 			<description>
-				Valeur du
+				Value of the
 				<em>deltat</em>
-				au moment du démarrage.
+				at the start.
 			</description>
 		</simple>
 
@@ -87,37 +87,38 @@
 		<simple name="final-time" type="real">
 			<name lang="fr">temps-final</name>
 			<description>
-				Temps auquel on stoppe la simulation. Le code s'arrête dès que le temps courant est
-				<strong>strictement</strong>
-				supérieur à ce temps.
+				Time at which the simulation is stopped. The code stops as soon as
+				the current time is
+				<strong>strictly</strong>
+				greater than this time.
 			</description>
 		</simple>
 
 		<!-- - - - - - cfl - - - - -->
 		<simple name="cfl" type="real" default="0.3">
-			<description>Définition de la CFL</description>
+			<description>Definition of the CFL</description>
 		</simple>
 
 		<!-- - - - - - boundary-condition - - - - -->
 		<complex name="boundary-condition" type="BoundaryCondition" minOccurs="0" maxOccurs="unbounded">
-			<description>Condition aux limites</description>
+			<description>Boundary condition</description>
 
 			<enumeration>
-				<!-- à compléter -->
+				<!-- To be completed -->
 			</enumeration>
 
 			<extended>
-				<!-- à compléter -->
+				<!-- To be completed -->
 			</extended>
 
 			<simple>
-				<!-- à compléter -->
+				<!-- To be completed -->
 			</simple>
 		</complex>
 		
 		<!-- - - - - - equation of state - - - - -->
 		<service-instance>
-				<!-- à compléter -->
+				<!-- To be completed -->
 		</service-instance>
 	</options>
 </module>
