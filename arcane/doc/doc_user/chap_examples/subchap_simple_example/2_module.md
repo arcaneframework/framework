@@ -80,7 +80,7 @@ file that must be imported into our header and which will allow us to use:
 - The attribute `m_loop_sum` (`m_` + the `field-name`),
 - The `startInit` method,
 - The `compute` method,
-- The `nStep` option.
+- The `nSteps` option.
 
 ## SayHelloModule.h {#arcanedoc_examples_simple_example_module_sayhellomoduleh}
 
@@ -213,7 +213,7 @@ compute()
 
   m_loop_sum = m_loop_sum() + m_global_iteration();
 
-  if (m_global_iteration() > options()->getNStep())
+  if (m_global_iteration() > options()->getNSteps())
     subDomain()->timeLoopMng()->stopComputeLoop(true);
 }
 
@@ -262,7 +262,7 @@ can be costly.
 ____
 
 ```cpp
-if (m_global_iteration() > options()->getNStep())
+if (m_global_iteration() > options()->getNSteps())
   subDomain()->timeLoopMng()->stopComputeLoop(true);
 ```
 `m_global_iteration()` is a variable of the `CommonVariables` class, from which
@@ -273,7 +273,7 @@ iteration.
 This is also a variable of type `Arcane::VariableScalarInt32`. Therefore, you
 must use the `()` operator to retrieve its value.
 
-`options()->getNStep()` allows retrieving the value of the `nStep` option. To
+`options()->getNSteps()` allows retrieving the value of the `nSteps` option. To
 define this value, you must use the dataset (the .arc file) (see the next
 section \ref arcanedoc_examples_simple_example_arc).
 

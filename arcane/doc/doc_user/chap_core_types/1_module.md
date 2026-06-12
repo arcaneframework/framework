@@ -38,7 +38,8 @@ characteristics of the module:
 
 For example, the file \c Hydro.axl above presents the module named **Hydro**,
 whose base class is \c HydroModule (general case).
-<strong>TODO: add reference doc on other module attributes.</strong>
+
+\todo add reference doc on other module attributes.
 
 The variables, entry points, and options will be described in chapter
 \ref arcanedoc_core_types_axl.

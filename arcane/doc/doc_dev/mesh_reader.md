@@ -36,15 +36,15 @@ class SampleMeshReader
 : public BasicService
 , public IMeshReader
 {
-public:
-SampleMeshReader(const ServiceBuildInfo& sbi);
-public:
-virtual bool allowExtension(const String& str);
-virtual eReturnType readMeshFromFile(IMesh* mesh,
-                                     const XmlNode& mesh_element,
-                                     const String& file_name,
-																		 const String& dir_name,
-																		 bool use_internal_partition);
+ public:
+  SampleMeshReader(const ServiceBuildInfo& sbi);
+ public:
+  virtual bool allowExtension(const String& str);
+  virtual eReturnType readMeshFromFile(IMesh* mesh,
+                                       const XmlNode& mesh_element,
+                                       const String& file_name,
+                                       const String& dir_name,
+                                       bool use_internal_partition);
 };
 
 ARCANE_REGISTER_SUB_DOMAIN_FACTORY(SampleMeshReader,IMeshReader,SampleMeshReaderService);
