@@ -70,12 +70,12 @@ class ConstituentConnectivityList
   void addCellsToMaterial(Int16 mat_id, SmallSpan<const Int32> cell_ids, RunQueue& queue);
   void removeCellsToMaterial(Int16 mat_id, SmallSpan<const Int32> cell_ids, RunQueue& queue);
 
-  //! Arrays of the total number of environments per mesh element (indexed by localId())
+  //! Arrays of the total number of environments per cell (indexed by localId())
   ConstArrayView<Int16> cellsNbEnvironment() const;
-  //! Arrays of the total number of materials per mesh element (indexed by localId())
+  //! Arrays of the total number of materials per cell (indexed by localId())
   ConstArrayView<Int16> cellsNbMaterial() const;
 
-  //! Number of materials of mesh element \a cell_id for environment index \a env_id
+  //! Number of materials of cell \a cell_id for environment index \a env_id
   Int16 cellNbMaterial(CellLocalId cell_id, Int16 env_id) const;
 
   //! Removes all connected entities
@@ -89,16 +89,16 @@ class ConstituentConnectivityList
                            SmallSpan<Int16> cells_nb_material, RunQueue& queue);
 
   /*!
-   * \brief Fills \a cells_do_transform indicating if the mesh transitions from
+   * \brief Fills \a cells_do_transform indicating if the cell transitions from
    * pure to partial.
    *
-   * Returns the number of transformed meshes
+   * Returns the number of transformed cells
    */
   Int32 fillCellsToTransform(SmallSpan<const Int32> cells_local_id, Int16 env_id,
                              SmallSpan<bool> cells_do_transform, bool is_add, RunQueue& queue);
 
   /*!
-   * \brief Fills \a cells_is_partial indicating if the mesh is partial for
+   * \brief Fills \a cells_is_partial indicating if the cell is partial for
    * environment \a env_id
    */
   void fillCellsIsPartial(SmallSpan<const Int32> cells_local_id, Int16 env_id,

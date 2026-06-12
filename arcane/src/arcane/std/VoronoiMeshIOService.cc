@@ -328,7 +328,7 @@ _readNodesHybridGrid(IMesh* mesh, VoronoiFile& voronoi_file, Array<Real3>& node_
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Reading of meshes and their connectivity.
+ * \brief Reading of cells and their connectivity.
  *
  * It fills \a cells_nb_node, \a cells_type, and \a cells_connectivity.
  */
@@ -412,7 +412,7 @@ _readHybridGrid(IPrimaryMesh* mesh, VoronoiFile& voronoi_file, bool use_internal
     _readNodesHybridGrid(mesh, voronoi_file, node_coords);
     //nb_node = node_coords.size();
 
-    // Reading mesh info
+    // Reading cell info
     // Reading connectivity
     UniqueArray<Integer> cells_nb_node;
     UniqueArray<Int64> cells_connectivity;
@@ -422,8 +422,8 @@ _readHybridGrid(IPrimaryMesh* mesh, VoronoiFile& voronoi_file, bool use_internal
     nb_cell_node = cells_connectivity.size();
     cells_local_id.resize(nb_cell);
 
-    // Mesh creation
-    // Info for mesh creation
+    // Cell creation
+    // Info for cell creation
     // per cell: 1 for its unique id,
     //             1 for its type,
     //             1 for each node

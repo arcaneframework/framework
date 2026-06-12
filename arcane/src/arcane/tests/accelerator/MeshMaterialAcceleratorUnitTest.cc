@@ -219,7 +219,7 @@ initializeTest()
     Integer nb_cell = allCells().size();
     Int64 total_nb_cell = nb_cell;
     ENUMERATE_CELL (icell, allCells()) {
-      if (icell.itemLocalId() != 0) { // we don't want the first mesh to test a twisted case in //
+      if (icell.itemLocalId() != 0) { // we don't want the first cell to test a twisted case in //
         Cell cell = *icell;
         Int64 cell_index = cell.uniqueId();
         if (cell_index < ((2 * total_nb_cell) / 3)) {
@@ -233,11 +233,11 @@ initializeTest()
       }
     }
 
-    // Adds the meshes of environment 1
+    // Adds the cells of environment 1
     {
       Materials::MeshMaterialModifier modifier(m_mm_mng);
       Materials::IMeshEnvironment* env = mat1->environment();
-      // Adds the meshes of the environment
+      // Adds the cells of the environment
       //modifier.addCells(env,env1_indexes);
       Int32UniqueArray mat1_indexes;
       Int32UniqueArray mat2_indexes;
@@ -251,14 +251,14 @@ initializeTest()
         if (add_to_mat2)
           mat2_indexes.add(env1_indexes[z]);
       }
-      // Adds the meshes of material 1
+      // Adds the cells of material 1
       modifier.addCells(mat1, mat1_indexes);
       Integer nb_mat = env->nbMaterial();
       if (nb_mat > 1)
-        // Adds the meshes of material 2
+        // Adds the cells of material 2
         modifier.addCells(m_mm_mng->environments()[0]->materials()[1], mat2_indexes);
     }
-    // Adds the meshes of environment 2
+    // Adds the cells of environment 2
     if (mat2) {
       Materials::MeshMaterialModifier modifier(m_mm_mng);
       //modifier.addCells(m_mat2->environment(),mat2_indexes);
@@ -276,7 +276,7 @@ initializeTest()
     info() << "** ** NB_PURE=" << nb_pure_env;
   }
 
-  // Created a group containing a subset of meshes for EnvCellVector test
+  // Created a group containing a subset of cells for EnvCellVector test
   {
     UniqueArray<Int32> sub_indexes;
     ENUMERATE_ (Cell, icell, allCells()) {
@@ -698,8 +698,8 @@ _executeTest3(Integer nb_z)
 
 /*!
  * \brief Test of RUNCOMMAND_ENUMERATE_CELL_ALLENVCELL(...
- * Test that loops over meshes and then over env/mat cells
- * of each mesh.
+ * Test that loops over cells and then over env/mat cells
+ * of each cell.
  */
 void MeshMaterialAcceleratorUnitTest::
 _executeTest4(Integer nb_z, bool use_new_impl)
@@ -931,8 +931,8 @@ _executeTest6()
     {
       EnvAndGlobalCellIteratorValue evi = iter; // Iterator value
       auto [iter_mvi, iter_cid] = evi();
-      EnvCellLocalId mvi = iter_mvi; // Local ID of the middle mesh
-      Arcane::CellLocalId cid = iter_cid; // Global ID of the current middle mesh
+      EnvCellLocalId mvi = iter_mvi; // Local ID of the middle cell
+      Arcane::CellLocalId cid = iter_cid; // Global ID of the current middle cell
       Int32 iter_index = evi.index(); // Iteration index
       cells_local_id_view[iter_index] = cid;
       out_mat_a[mvi] = 1.2;
@@ -963,7 +963,7 @@ _executeTest7(RunQueue& queue)
 {
   ValueChecker vc(A_FUNCINFO);
 
-  // Create a CellVector containing a mesh on 2
+  // Create a CellVector containing a cell on 2
   IItemFamily* cell_family = mesh()->cellFamily();
   const Int32 nb_cell_to_add = cell_family->maxLocalId() / 2;
   CellVector cell_vector1;
@@ -972,7 +972,7 @@ _executeTest7(RunQueue& queue)
     auto cmd = makeCommand(queue);
     ids_to_use.resize(nb_cell_to_add);
     auto out_c = ids_to_use.smallSpan();
-    // Take a mesh on 2 for the vector.
+    // Take a cell on 2 for the vector.
     cmd << RUNCOMMAND_LOOP1(iter, nb_cell_to_add)
     {
       auto [i] = iter();
@@ -1192,7 +1192,7 @@ _testSelection()
   info() << "TOTAL0=" << total;
   // We run 3 loops on the partial selection, 1 on the full selection
   // and we start at 1 for all values.
-  // So we have the value 5 on all meshes in 'partial_env_cells' and
+  // So we have the value 5 on all cells in 'partial_env_cells' and
   // the value 2 on the others.
   Int64 ref0 = (2 * nb_env_cell) + (partial_env_cells.size() * 3);
   if (ref0 != total)

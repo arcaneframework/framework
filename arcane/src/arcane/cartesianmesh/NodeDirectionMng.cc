@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NodeDirectionMng.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Information about the meshes in an X, Y, or Z direction of a structured   */
+/* Information about the cells in an X, Y, or Z direction of a structured    */
 /* mesh.                                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

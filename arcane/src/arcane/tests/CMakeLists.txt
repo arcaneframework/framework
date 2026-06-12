@@ -1,4 +1,4 @@
-﻿set(TEST_DIRS . anyitem dof inout)
+set(TEST_DIRS . anyitem dof inout)
 
 set(TEST_LIBS ${ARCANE_ADDITIONNAL_TEST_LIBRARIES})
 if (TARGET arcane_aleph_tests)
@@ -755,7 +755,7 @@ if (MEDFile_FOUND)
   arcane_add_test(mesh_hexa20_med testMesh-med3.arc)
   arcane_add_test(mesh_polygonal_med testMesh-med-polygonal.arc)
 endif ()
-# Temporarily disables reading quadratic meshes with VTK because
+# Temporarily disables reading quadratic cells with VTK because
 # the mesh is not correct.
 arcane_add_test(mesh_quadratic3d_vtk testMesh-quadratic3d-vtk.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1" "-We,ARCANE_METIS_DUMP_GRAPH,1")
 arcane_add_test(mesh_tied_interface_2d_1_vtk42 testMesh-tied_interface_2d_1-vtk42.arc)

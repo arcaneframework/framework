@@ -468,7 +468,7 @@ _createParticles()
   IParticleFamily* pfamily = m_particle_family->toParticleFamily();
   ParticleVectorView particles = pfamily->addParticles(uids, particles_lid);
   //ItemVectorView particles(m_particle_family->view(particles_lid));
-  // It is necessary to assign a mesh to each particle
+  // It is necessary to assign a cell to each particle
   {
     Integer index = 0;
     ENUMERATE_CELL (icell, ownCells()) {

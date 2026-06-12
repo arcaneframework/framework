@@ -216,7 +216,7 @@ computeExchangeInfos()
   IItemFamily* cell_family = m_mesh->cellFamily();
   IItemFamilyExchanger* cell_exchanger = findExchanger(cell_family);
 
-  // First determine the info to exchange on the meshes because if there are no meshes
+  // First determine the info to exchange on the cells because if there are no cells
   // to exchange, the partitioning stops.
   // NOTE GG: we need to see if this remains true with links and dual nodes.
   cell_exchanger->setExchangeItems(mesh_exchange.getItemsToSend(cell_family));
@@ -251,7 +251,7 @@ computeExchangeInfos()
   // is consistent with the corresponding variable
 
   // WARNING: It is absolutely necessary that the owner() of the ItemInternal
-  // are correct before sending the meshes that belonged to us
+  // are correct before sending the cells that belonged to us
   // to the sub-domains to which they will then belong.
 
   // Note that we cannot merge this loop with the previous one because
@@ -339,9 +339,9 @@ allocateReceivedItems()
   {
     info() << "AllocItems date=" << platform::getCurrentDateTime();
     Timer::Action ts_action1(m_time_stats, "ReadAndAllocItems", true);
-    // We must first perform the mesh exchange
+    // We must first perform the cell exchange
     // This is guaranteed by the fact that the first element of family_exchangers
-    // is the mesh family.
+    // is the cell family.
     for (IItemFamilyExchanger* e : m_family_exchangers) {
       e->readAndAllocItems(); // Caution, no longer proceeds on different sub-meshes
     }

@@ -219,7 +219,7 @@ _buildCells2()
   Real2 u2(0.5 * pitch * math::sqrt(3.0), 0.5 * pitch);
   Real2 u3(pitch * 0.0, pitch * 1.0);
 
-  // Meshes above the center
+  // Cells above the center
   for (Integer i = (-nb_ring + 1); i < 1; ++i) {
     Real x0 = u3[0] * i - u1[0] * (nb_ring - 1);
     Real y0 = u3[1] * i - u1[1] * (nb_ring - 1);
@@ -229,7 +229,7 @@ _buildCells2()
     cells_line_info.add(CellLineInfo(pos, nb_cell_in_line));
   }
 
-  // Meshes below the center
+  // Cells below the center
   for (Integer i = 1; i < nb_ring; ++i) {
     Real x0{ u2[0] * i - u1[0] * (nb_ring - 1) };
     Real y0{ u2[1] * i - u1[1] * (nb_ring - 1) };
@@ -407,7 +407,7 @@ _buildCells2()
   Real2 u3(pitch * 0.0, pitch * 1.0);
 
   for (Integer zz = 0; zz < (nb_height - 1); ++zz) {
-    // Meshes above the center
+    // Cells above the center
     for (Integer i = (-nb_ring + 1); i < 1; ++i) {
       Real x0 = u3[0] * i - u1[0] * (nb_ring - 1);
       Real y0 = u3[1] * i - u1[1] * (nb_ring - 1);
@@ -417,7 +417,7 @@ _buildCells2()
       cells_line_info.add(CellLineInfo(pos, m_heights[zz], m_heights[zz + 1], nb_cell_in_line));
     }
 
-    // Meshes below the center
+    // Cells below the center
     for (Integer i = 1; i < nb_ring; ++i) {
       Real x0{ u2[0] * i - u1[0] * (nb_ring - 1) };
       Real y0{ u2[1] * i - u1[1] * (nb_ring - 1) };

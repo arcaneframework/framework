@@ -141,7 +141,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
 
   /*!
    * \brief Positions the new owners of nodes, edges, and faces based
-   * on the cells (meshes).
+   * on the cells.
    *
    * Assuming the new owners of the cells are known (and synchronized),
    * it determines the new owners of other entities and synchronizes them.
@@ -158,7 +158,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
   /*!
    * \brief Determines the owners of the nodes.
    *
-   * The determination is based on the owners of the cells (meshes).
+   * The determination is based on the owners of the cells.
    * There must be no ghost cell layers.
    *
    * This operation is collective.
@@ -169,7 +169,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
   /*!
    * \brief Determines the owners of the edges.
    *
-   * The determination is based on the owners of the cells (meshes).
+   * The determination is based on the owners of the cells.
    * There must be no ghost cell layers.
    *
    * This operation is collective.
@@ -180,7 +180,7 @@ class ARCANE_CORE_EXPORT IMeshUtilities
   /*!
    * \brief Determines the owners of the faces.
    *
-   * The determination is based on the owners of the cells (meshes).
+   * The determination is based on the owners of the cells.
    * There must be no ghost cell layers.
    *
    * This operation is collective.

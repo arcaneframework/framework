@@ -54,7 +54,7 @@
         <userclass>User</userclass>
         <description>
           Redistributes the graph onto one processor per node. This often helps improve
-          performance by avoiding having few meshes per process. The "run-to-run"
+          performance by avoiding having few cells per process. The "run-to-run"
           repeatability of the partitioning is not guaranteed. When there is only one
           node, all processors on the node are used (no graph grouping).
         </description>
@@ -105,11 +105,11 @@
         <userclass>User</userclass>
         <description>
           Attempts to remove empty partitions by having the subdomain with the most
-          meshes give one of its meshes to an empty partition. This is the historical
+          cells give one of its cells to an empty partition. This is the historical
           algorithm used up to version 2.18 of Arcane. This algorithm works well except
-          in the case where there are more empty partitions than meshes in the largest
+          in the case where there are more empty partitions than cells in the largest
           subdomain, as it leaves empty partitions. Note that this case only occurs if
-          there are few meshes, many subdomains, and a significant imbalance.
+          there are few cells, many subdomains, and a significant imbalance.
         </description>
       </enumvalue>
       <enumvalue name="take-from-biggest-partition-v2"

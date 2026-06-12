@@ -62,7 +62,7 @@
 // TODO: handle 2D variables
 
 // TODO: outside of HDF5, implement a mechanism that groups several parts
-// of the mesh into one. This will allow reducing the number of ghost meshes
+// of the cell into one. This will allow reducing the number of ghost cells
 // and using MPI/IO in hybrid mode.
 
 /*---------------------------------------------------------------------------*/
@@ -1269,8 +1269,8 @@ _initializeOffsets()
 {
   // There are 5 offset values used:
   //
-  // - offset on the number of meshes (CellOffsets). This offset has a number of elements
-  //   equal to the number of saved time steps and is increased at each mesh output. This offset
+  // - offset on the number of cells (CellOffsets). This offset has a number of elements
+  //   equal to the number of saved time steps and is increased at each number of cells output. This offset
   //   is also used for cell variables
   // - offset on the number of nodes (PointOffsets). It is equivalent to 'CellOffsets' but
   //   for nodes.
@@ -1280,9 +1280,9 @@ _initializeOffsets()
   //   NbPart * NbTimeStep in this offset field.
   // - offset for the "Connectivity" field, which is called "ConnectivityIdOffsets".
   //   This offset has a number of elements equal to the number of saved time steps.
-  // - offset for the "Offsets" field. "Offset" contains for each mesh the offset in
-  //   "Connectivity" of the mesh node connectivity. This offset is not saved,
-  //   but since this field has a number of values equal to the number of meshes plus one it is possible
+  // - offset for the "Offsets" field. "Offset" contains for each cell the offset in
+  //   "Connectivity" of the cell node connectivity. This offset is not saved,
+  //   but since this field has a number of values equal to the number of cells plus one it is possible
   //   to deduce it from "CellOffsets" (it equals "CellOffsets" plus the current time index).
 
   m_cell_offset_info = DatasetInfo(m_steps_group, "CellOffsets");

@@ -82,7 +82,7 @@ build()
 
   _buildConnectivitySelectors();
 
-  // Pre-allocates a mesh per particle.
+  // Pre-allocates a cell per particle.
   m_cell_connectivity->setPreAllocatedSize(1);
 
   _setSharedInfo();
@@ -297,7 +297,7 @@ internalRemoveItems(Int32ConstArrayView local_ids, bool keep_ghost)
   // Note that this loop is not useful for the moment if we
   // are not using the new connectivities.
   // It will be if we want to have inverse connectivities
-  // mesh->particle.
+  // cell->particle.
   bool want_nullify_cell = (policy != InternalConnectivityPolicy::Legacy);
   ItemLocalId null_item_lid(NULL_ITEM_LOCAL_ID);
 

@@ -30,7 +30,7 @@ namespace Arcane
  * \brief Class for creating standard groups for a Sod shock tube.
  *
  * The created groups are the face groups corresponding to the sides of the
- * meshes (XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX), the left mesh groups (ZG)
+ * meshes (XMIN,XMAX,YMIN,YMAX,ZMIN,ZMAX), the left cell groups (ZG)
  * and right (ZD) along the X-axis, and for the right group
  * the top part (ZD_HAUT) and the bottom part (ZD_BAS).
  *

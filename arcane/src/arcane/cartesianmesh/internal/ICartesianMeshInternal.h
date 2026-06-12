@@ -52,10 +52,10 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMeshInternal
   virtual Ref<CartesianMeshCoarsening2> createCartesianMeshCoarsening2() = 0;
 
   /*!
-   * \brief Creates a patch with all children of the meshes \a parent_cells_local_id
+   * \brief Creates a patch with all children of the cells \a parent_cells_local_id
    *
-   * \a parent_cells_local_id is the list of localIds() of the parent meshes.
-   * The child meshes of \a parent_cells must have already been created.
+   * \a parent_cells_local_id is the list of localIds() of the parent cells.
+   * The child cells of \a parent_cells must have already been created.
    */
   virtual void addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id) = 0;
 

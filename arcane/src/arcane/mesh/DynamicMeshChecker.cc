@@ -85,7 +85,7 @@ checkValidMesh()
   }
   mesh_utils::checkMeshProperties(m_mesh, false, false, true);
 
-  // Store in a mesh variable the list of faces and
+  // Store in a cell variable the list of faces and
   // nodes that compose it.
   // This is only useful for checks
   // NOTE: currently set to false because it crashes if
@@ -202,8 +202,9 @@ checkValidMeshFull()
  *
  * The checks cover the following points:
  * - no mesh entities having a null index.
- * - for faces, checks that at least one frontCell or backCell exists. Furthermore, if it has two meshes, the backCell must always be the first.
- * - nodes and faces must have the same owner as one of the adjacent meshes.
+ * - for faces, checks that at least one frontCell or backCell exists.
+ *   Furthermore, if it has two cells, the backCell must always be the first.
+ * - nodes and faces must have the same owner as one of the adjacent cells.
  * - checks that faces are correctly ordered and oriented
  */
 void DynamicMeshChecker::
@@ -231,7 +232,7 @@ checkValidConnectivity()
     }
   }
 
-  // Checks that the mesh<->node connectivity
+  // Checks that the cell<->node connectivity
   // is reciprocal
   ENUMERATE_NODE (inode, m_mesh->allNodes()) {
     Node node = *inode;
@@ -255,7 +256,7 @@ checkValidConnectivity()
   // TODO : extend checks for AMR
   //! AMR
   if (!m_mesh->isAmrActivated()) {
-    // Checks that the mesh<->edge connectivity
+    // Checks that the cell<->edge connectivity
     // is reciprocal
     ENUMERATE_EDGE (iedge, m_mesh->allEdges()) {
       Edge edge = *iedge;
@@ -275,7 +276,7 @@ checkValidConnectivity()
       }
     }
   }
-  // Checks that the mesh<->face connectivity
+  // Checks that the cell<->face connectivity
   // is reciprocal
   ENUMERATE_FACE (iface, m_mesh->allFaces()) {
     Face face = *iface;
@@ -316,7 +317,7 @@ checkValidConnectivity()
     Cell front_cell = face.frontCell();
     if ((back_cell.null() || front_cell.null()) && nb_cell == 2)
       ARCANE_FATAL("Face uid='{0}' bad number of cells face", ItemPrinter(face));
-    // If we have two connected meshes, then the back cell must be the first
+    // If we have two connected cells, then the back cell must be the first
     if (nb_cell == 2 && back_cell != face.cell(0))
       ARCANE_FATAL("Bad face face.backCell()!=face.cell(0) face={0} back_cell={1} from_cell={2} cell0={3}",
                    ItemPrinter(face), ItemPrinter(back_cell), ItemPrinter(front_cell), ItemPrinter(face.cell(0)));
@@ -398,7 +399,7 @@ updateAMRFaceOrientation()
     Cell front_cell = face.frontCell();
     if ((back_cell.null() || front_cell.null()) && nb_cell == 2)
       ARCANE_FATAL("Bad number of cells for face={0}", ItemPrinter(face));
-    // If we have two connected meshes, then the back cell must be the first
+    // If we have two connected cells, then the back cell must be the first
     if (nb_cell == 2 && back_cell != face.cell(0))
       ARCANE_FATAL("Bad face face.backCell()!=face.cell(0) face={0} back_cell={1} from_cell={2} cell0={3}",
                    ItemPrinter(face), ItemPrinter(back_cell), ItemPrinter(front_cell), ItemPrinter(face.cell(0)));
@@ -549,7 +550,7 @@ _checkValidItemOwner(IItemFamily* family)
   // For non-sub-meshes, every sub-item
   // (Node, Edge or Face) must have an adjacent cell with the same owner,
   // unless orphan entities are allowed and the entity is not
-  // connected to any mesh.
+  // connected to any cell.
   // For sub-meshes, furthermore, every item must have the same owner
   // as its parent.
   bool allow_orphan_items = m_mesh->meshKind().isNonManifold();
@@ -659,8 +660,8 @@ checkItemGroupsSynchronization()
  * \brief Checks that the ghost cell layer is correct.
  *
  * Checks that all ghost cells are properly connected to
- * a mesh of this sub-domain (case where there is only one layer of ghost cells).
- * \todo Check that no boundary mesh belongs to this sub-domain
+ * a cell of this sub-domain (case where there is only one layer of ghost cells).
+ * \todo Check that no boundary cell belongs to this sub-domain
  * \todo Support multiple layers of ghost cells.
  */
 void DynamicMeshChecker::

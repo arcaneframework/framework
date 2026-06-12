@@ -62,7 +62,7 @@ _init(ConstArrayView<KeyType> keys)
 
   Int32 rank = m_parallel_mng->commRank();
 
-  // The values of the tab grid variable are stored
+  // The values of the tab cell variable are stored
   // in the m_key array
   for (Integer i = 0; i < m_init_size; ++i) {
     m_keys[i] = keys[i];
@@ -88,7 +88,7 @@ _init(ConstArrayView<KeyType> keys)
 
   Upon exiting the call, the key variable is entirely sorted
   in ascending order: the first elements are located
-  in ascending order on processor 0, the following on 
+  in ascending order on processor 0, the following on
   processor 1, etc...
   The sorting is done 'in place', so that the size
   of the arrays on the different processors is not modified.
@@ -156,7 +156,7 @@ sort(ConstArrayView<KeyType> keys)
 
   Upon exiting the call, the key variable is entirely sorted
   in ascending order: the first elements are located
-  in ascending order on processor 0, the following on 
+  in ascending order on processor 0, the following on
   processor 1, etc...
   The sorting is done 'in place', so that the size
   of the arrays on the different processors is not modified.
@@ -203,7 +203,7 @@ _separator(Int32 begin, Int32 size)
  \param iproc1 processor with lower ID whose list is merged
  \param iproc2 processor with higher ID whose list is merged
 
- * This operation is the elementary building block of 
+ * This operation is the elementary building block of
  * the bitonic merge sort algorithm. On input, it
  * takes the numbers of two processors with iproc1<iproc2.
  * On output, the m_key arrays of these two processors

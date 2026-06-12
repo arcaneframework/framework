@@ -355,24 +355,24 @@ static const Int16 IT_Pentaedron15 = 37;
 static const Int16 IT_CellLine3 = 38;
 
 /*!
- * \brief 2D meshes in a 3D mesh.
+ * \brief 2D cells in a 3D mesh.
  * \warning These types are experimental and should not
  * be used outside of %Arcane.
  */
 //@{
-//! Line2 Mesh in a 3D mesh. EXPERIMENTAL!
+//! Line2 Cell in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Line2 = 39;
-//! Triangular Mesh with 3 nodes in a 3D mesh. EXPERIMENTAL!
+//! Triangular Cell with 3 nodes in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Triangle3 = 40;
-//! Quadrangular Mesh with 4 nodes in a 3D mesh. EXPERIMENTAL!
+//! Quadrangular Cell with 4 nodes in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Quad4 = 41;
-//! Line3 Mesh in a 3D mesh. EXPERIMENTAL!
+//! Line3 Cell in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Line3 = 42;
-//! Triangular Mesh with 6 nodes in a 3D mesh. EXPERIMENTAL!
+//! Triangular Cell with 6 nodes in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Triangle6 = 43;
-//! Quadrangular Mesh with 8 nodes in a 3D mesh. EXPERIMENTAL!
+//! Quadrangular Cell with 8 nodes in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Quad8 = 44;
-//! Quadrangular Mesh with 9 nodes in a 3D mesh. EXPERIMENTAL!
+//! Quadrangular Cell with 9 nodes in a 3D mesh. EXPERIMENTAL!
 static const Int16 IT_Cell3D_Quad9 = 45;
 //@}
 

@@ -30,10 +30,11 @@ class ItemsOwnerBuilderImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Generic class for calculating entity owners.
  *
- * For all methods, it is assumed that the mesh owners
+ * For all methods, it is assumed that the cell owners
  * are correctly valid and synchronized.
  */
 class ARCANE_MESH_EXPORT ItemsOwnerBuilder

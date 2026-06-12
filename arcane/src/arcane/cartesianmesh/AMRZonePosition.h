@@ -87,18 +87,18 @@ class ARCANE_CARTESIANMESH_EXPORT AMRZonePosition
   }
 
   /*!
-   * \brief Method allowing retrieval of the meshes included in the zone.
+   * \brief Method allowing retrieval of the cells included in the zone.
    * \param mesh The mesh.
-   * \param cells_local_id The array that will contain the localIds of the zone's meshes.
+   * \param cells_local_id The array that will contain the localIds of the zone's cells.
    *                       Note: the array will first be cleared.
    */
   void cellsInPatch(IMesh* mesh, UniqueArray<Int32>& cells_local_id) const;
 
   /*!
-   * \brief Method allowing retrieval of the meshes included in the zone.
+   * \brief Method allowing retrieval of the cells included in the zone.
    * An AMRPatchPosition object designating the patch position is also filled.
    * \param mesh The mesh.
-   * \param cells_local_id The array that will contain the localIds of the zone's meshes.
+   * \param cells_local_id The array that will contain the localIds of the zone's cells.
    *                       Note: the array will first be cleared.
    * \param position [OUT] The patch position.
    */
@@ -108,7 +108,7 @@ class ARCANE_CARTESIANMESH_EXPORT AMRZonePosition
    * \brief Method allowing conversion of this AMRZonePosition into
    * AMRPatchPosition.
    *
-   * \warning The size of the overlap mesh layer is not
+   * \warning The size of the overlap cell layer is not
    * correctly defined! This must be done after calling this method.
    *
    * \param mesh The Cartesian mesh.

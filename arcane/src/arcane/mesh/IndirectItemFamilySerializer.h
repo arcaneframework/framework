@@ -33,8 +33,9 @@ namespace Arcane::mesh
  * \brief Indirect serialization/deserialization of entity families.
  *
  * Serialization/deserialization is indirect if it is done
- * indirectly by another family. This is the case, for example, for nodes, edges, and faces because their serialization/deserialization
- * is done via the associated mesh family.
+ * indirectly by another family. This is the case, for example, for nodes,
+ * edges, and faces because their serialization/deserialization
+ * is done via the associated cell family.
  *
  * The only role of this instance is then to serialize the uniqueId()
  * of the entities and associate the localId() of the

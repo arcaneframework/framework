@@ -88,7 +88,7 @@ class ARCANE_MESH_EXPORT FaceFamily
 
   //! Adds a back cell to the face
   void addBackCellToFace(Face face, Cell new_cell);
-  //! Adds a front edge to the face
+  //! Adds a front cell to the face
   void addFrontCellToFace(Face face, Cell new_cell);
   //! Removes a cell from the face
   void removeCellFromFace(Face face, ItemLocalId cell_to_remove_lid);

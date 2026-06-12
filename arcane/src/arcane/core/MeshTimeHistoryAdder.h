@@ -45,16 +45,16 @@ namespace Arcane
  * "avg_pressure"), two subdomains (0 and 1) and two meshes (mesh0 and mesh1).
  * One value per iteration.
  * - An "avg_pressure" curve linked to subdomain 0 and mesh 0. Each
- *   value is the average of the pressures of each element of mesh 0 and
+ *   value is the average of the pressures of each cell of mesh 0 and
  *   of subdomain 0.
  * - An "avg_pressure" curve linked to subdomain 0 and mesh 1. Each
- *   value is the average of the pressures of each element of mesh 1 and
+ *   value is the average of the pressures of each cell of mesh 1 and
  *   of subdomain 0.
  * - An "avg_pressure" curve linked to subdomain 1 and mesh 0. Each
- *   value is the average of the pressures of each element of mesh 0 and
+ *   value is the average of the pressures of each cell of mesh 0 and
  *   of subdomain 1.
  * - An "avg_pressure" curve linked to subdomain 1 and mesh 1. Each
- *   value is the average of the pressures of each element of mesh 1 and
+ *   value is the average of the pressures of each cell of mesh 1 and
  *   of subdomain 1.
  * - An "avg_pressure" curve linked to the entire domain and mesh 0.
  *   Each value is the average of the pressures of mesh 0 across each

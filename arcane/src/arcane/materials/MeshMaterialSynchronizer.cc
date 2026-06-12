@@ -71,19 +71,19 @@ synchronizeMaterialsInCells()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Checks that material meshes are consistent between subdomains.
+ * \brief Checks that material cells are consistent between subdomains.
  * This method is collective
  */
 void MeshMaterialSynchronizer::
 checkMaterialsInCells(Integer max_print)
 {
   /*
-    To do this, we use a mesh variable and apply
+    To do this, we use a cell variable and apply
     the following algorithm for each material:
     - the owning subdomain fills this variable
     with the material index
     - the variable is synchronized.
-    - each subdomain then checks for every mesh
+    - each subdomain then checks for every cell
     that if the variable has the material index, then
     this material is present.
   */

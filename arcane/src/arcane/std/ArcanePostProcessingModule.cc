@@ -199,7 +199,7 @@ _readConfig()
     //m_group_list.resize(index);
   }
   else {
-    // If no group is specified, only save the entire mesh.
+    // If no group is specified, only save the entire cell.
     //m_groups.resize(1);
 
     //! AMR

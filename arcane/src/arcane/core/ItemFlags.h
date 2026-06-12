@@ -67,7 +67,7 @@ class ARCANE_CORE_EXPORT ItemFlags
     /*
      * \brief The entity uses edges instead of faces.
      *
-     * This is only used for 2D meshes of non-manifold meshes. If set, it means that
+     * This is only used for 2D cells of non-manifold meshes. If set, it means that
      * 1D entities are of type Edge and not of type Face.
      */
     II_HasEdgeFor1DItems = 1 << 17,

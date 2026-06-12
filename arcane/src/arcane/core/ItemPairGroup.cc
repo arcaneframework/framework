@@ -36,7 +36,7 @@ namespace Arcane
  *
  * This class allows managing a list of entities associated with each entity
  * of an entity group (ItemGroup). For example, for every node in a group, the set
- * of meshes connected to this node by faces.
+ * of cells connected to this node by faces.
  *
  * This class has a reference semantics in the same way as the
  * ItemGroup class.
@@ -51,12 +51,12 @@ namespace Arcane
  \code
  * CellGroup cells1;
  * CellGroup cells2;
- * // g1 contains for each mesh in \a cells1 the meshes that are
+ * // g1 contains for each cell in \a cells1 the cells that are
  * // connected to it by nodes and belong to the group \a cells2
  * CellCellGroup g1(cells1,cells2,IK_Node);
  * ENUMERATE_ITEMPAIR(Cell,Cell,iitem,ad_list){
  *   Cell cell = *iitem;
- *   // Iterates over meshes connected to 'cell'
+ *   // Iterates over cells connected to 'cell'
  *   ENUMERATE_SUB_ITEM(Cell,isubitem,iitem){
  *     Cell sub_cell = *iitem;
  *     ...
@@ -71,8 +71,8 @@ namespace Arcane
  * \warning The functor passed as an argument must be allocated by
  * the new operator and will be destroyed at the same time as the associated ItemPairGroup.
  *
- * Here is a complete example that calculates the meshes
- * connected to the meshes via faces:
+ * Here is a complete example that calculates the cells
+ * connected to the cells via faces:
  *
  \code
  * auto f = [](ItemPairGroupBuilder& builder)
@@ -91,7 +91,7 @@ namespace Arcane
  *     Int32Array local_ids;
  *     local_ids.reserve(8);
 
- *     // List of entities already processed for the current mesh
+ *     // List of entities already processed for the current cell
  *     std::set<Int32> already_in_list;
  *     ENUMERATE_CELL(icell,items){
  *       Cell cell = *icell;
@@ -106,13 +106,13 @@ namespace Arcane
  *         Face face = *iface;
  *         for( CellEnumerator isubcell(face.cells()); isubcell.hasNext(); ++isubcell ){
  *           const Int32 sub_local_id = isubcell.itemLocalId();
- *          // Checks if we are in the list of allowed meshes and if we
+ *          // Checks if we are in the list of allowed cells and if we
  *           // have not yet been processed.
  *           if (allowed_ids.find(sub_local_id)==allowed_ids.end())
  *             continue;
  *           if (already_in_list.find(sub_local_id)!=already_in_list.end())
  *             continue;
- *           // This mesh must be added. We mark it so as not to
+ *           // This cell must be added. We mark it so as not to
  *           // iterate over it and we add it to the list.
  *           already_in_list.insert(sub_local_id);
  *           local_ids.add(sub_local_id);
@@ -122,7 +122,7 @@ namespace Arcane
  *     }
  *   };
  *
- * // Creates a group that calculates connectivities over all meshes.
+ * // Creates a group that calculates connectivities over all cells.
  * ItemPairGroupT<Cell,Cell> ad_list(allCells(),allCells(),functor::makePointer(f));
  \endcode
  */

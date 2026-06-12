@@ -51,18 +51,20 @@ class ItemFamilyVariableSerializer;
 /*!
  * \brief Information for exchanging entities of a given family
  * and their characteristics.
- 
+
  An instance of this class contains all the information to
  exchange the mesh entities \a m_mesh linked to the family \a item_family.
- 
+
  The exchange of entities behaves differently depending on the kind (eItemKind)
- of the entity. For meshes, the complete description of the connectivity
+ of the entity. For cells, the complete description of the connectivity
  is sent to the receiving sub-domain. For nodes (Node), edges (Edge)
  and faces (Face), the connectivity is not sent because it is given
- by the meshes. It is therefore not possible to serialize these three
- types of entities independently of the meshes (which would not be consistent anyway). For particles, the mesh number to which each particle belongs is also sent.
+ by the cells. It is therefore not possible to serialize these three
+ types of entities independently of the cells (which would not be consistent
+ anyway). For particles, the cell number to which each particle belongs is
+ also sent.
 
- When meshes or particles are sent, it is necessary
+ When cells or particles are sent, it is necessary
  to call the readAndAllocItems() method to create them, before
  calling readGroups() then readVariables().
 
@@ -99,7 +101,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
    * \brief After receiving messages, reads and creates the transferred entities.
    *
    * This method does nothing for entities other
-   * than meshes and particles.
+   * than cells and particles.
    *
    * \warning Before calling this method, it must be certain
    * that the entities no longer belonging to this sub-domain have been
@@ -120,7 +122,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
    *
    * This operation must only be performed for entities which
    * do not depend on another entity. For example, it is impossible
-   * to directly delete nodes, because some meshes which
+   * to directly delete nodes, because some cells which
    * are not sent may rely on them.
    *
    * In practice, this operation is only useful for particles.

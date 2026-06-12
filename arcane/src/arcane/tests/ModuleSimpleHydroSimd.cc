@@ -645,7 +645,7 @@ computeDeltaT()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculates the results at the nodes of a hexahedral mesh.
+ * \brief Calculates the results at the nodes of a hexahedral cell.
  *
  * The method used is the four-triangle decomposition.
  */
@@ -730,7 +730,7 @@ computeCQsSimd(SimdReal3 node_coord[8], SimdReal3 face_coord[6], SimdReal3 cqs[8
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculates the volume of the meshes, characteristic lengths
+ * \brief Calculates the volume of the cells, characteristic lengths
  * and results at the vertices.
  */
 void SimpleHydroSimdService::
@@ -766,7 +766,7 @@ computeGeometricValues()
       face_coord[4] = ARCANE_REAL(0.25) * (coord[1] + coord[2] + coord[6] + coord[5]);
       face_coord[5] = ARCANE_REAL(0.25) * (coord[2] + coord[3] + coord[7] + coord[6]);
 
-      // Calculate the characteristic length of the mesh.
+      // Calculate the characteristic length of the cell.
       SimdReal3 median1 = face_coord[0] - face_coord[3];
       SimdReal3 median2 = face_coord[2] - face_coord[5];
       SimdReal3 median3 = face_coord[1] - face_coord[4];
@@ -799,7 +799,7 @@ computeGeometricValues()
           }
           }*/
 
-      // Calculate the volume of the mesh
+      // Calculate the volume of the cell
       for (CellEnumerator si(ivecitem.enumerator()); si.hasNext(); ++si) {
         Cell cell(*si);
         Integer sidx(si.index());

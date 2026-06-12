@@ -202,7 +202,7 @@ processGroup(ItemGroup group, Int32 base_entity_index)
   ItemTypeMng* item_type_mng = mesh->itemTypeMng();
   ITraceMng* tm = family->traceMng();
 
-  // For GMSH, meshes must be sorted by their type (Triangle, Quadrangle, ...)
+  // For GMSH, cells must be sorted by their type (Triangle, Quadrangle, ...)
   // We create an MSH entity per Arcane entity type.
 
   ENUMERATE_ (Item, iitem, group) {
@@ -282,7 +282,7 @@ _addGroupsToProcess(IItemFamily* family, Array<ItemGroup>& items_groups)
     has_group = true;
   }
   // If there are no groups in the family, we take the all items group
-  // if the family is the mesh family.
+  // if the family is the cell family.
   if (!has_group && (family->itemKind() == IK_Cell))
     items_groups.add(family->allItems());
 
@@ -347,9 +347,9 @@ writeMesh(const String& file_name)
   }
 
   // For GMSH, we must start with 'Entities'.
-  // We need one entity per mesh type.
-  // We therefore start by calculating the mesh types.
-  // For non-manifold meshes, the meshes can be of different dimensions
+  // We need one entity per cell type.
+  // We therefore start by calculating the cell types.
+  // For non-manifold meshes, the cells can be of different dimensions
 
   // Calculates the total number of elements.
   // All entities that are not dimension 0 are elements.
@@ -563,7 +563,7 @@ _writeElements(std::ostream& ofile, Int64 total_nb_cell)
   //   ...
   // $EndElements
 
-  // Block containing the meshes
+  // Block containing the cells
   ofile << "$Elements\n";
 
   Int32 nb_existing_type = m_nb_entities_by_dim[1] + m_nb_entities_by_dim[2] + m_nb_entities_by_dim[3];

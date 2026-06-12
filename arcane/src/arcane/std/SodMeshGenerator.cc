@@ -233,7 +233,7 @@ generateMesh(IPrimaryMesh* mesh)
   info() << "nb x=" << nb_cell_x << " y=" << nb_cell_y << " z=" << nb_cell_z;
 
   // Positions properties on the mesh so that it can know
-  // the number of meshes in each direction. This is used
+  // the number of cells in each direction. This is used
   // notably by CartesianMesh.
   Properties* mesh_properties = mesh->properties();
   mesh_properties->setInt64("GlobalNbCellX", nb_cell_x);
@@ -419,9 +419,9 @@ generateMesh(IPrimaryMesh* mesh)
     nb_node_local_id = node_local_id;
   }
 
-  // Mesh creation
+  // Cell creation
 
-  // Info for mesh creation
+  // Info for cell creation
   // per cell: 1 for its unique id,
   //             1 for its type,
   //             8 for each node

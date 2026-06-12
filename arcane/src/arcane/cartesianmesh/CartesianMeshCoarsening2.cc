@@ -94,7 +94,7 @@ _writeMeshSVG(const String& name)
 /*!
  * \brief Doubles the ghost layer of the initial mesh.
  *
- * This will then allow for the correct ghost layer value for the final coarse mesh.
+ * This will then allow for the correct cell ghost layer value for the final coarse mesh.
  */
 void CartesianMeshCoarsening2::
 _doDoubleGhostLayers()
@@ -103,7 +103,7 @@ _doDoubleGhostLayers()
   IMeshModifier* mesh_modifier = mesh->modifier();
   IGhostLayerMng* gm = mesh->ghostLayerMng();
   // We must at least use version 3 to support
-  // multiple ghost layers
+  // multiple cell ghost layers
   Int32 version = gm->builderVersion();
   if (version < 3)
     gm->setBuilderVersion(3);
@@ -379,7 +379,7 @@ _createCoarseCells2D()
 
   IItemFamily* cell_family = mesh->cellFamily();
 
-  // Now that the coarse meshes are created, we must indicate
+  // Now that the coarse cells are created, we must indicate
   // that they are parent cells.
   using mesh::CellFamily;
   CellInfoListView cells(mesh->cellFamily());
@@ -390,7 +390,7 @@ _createCoarseCells2D()
     Int32 coarse_cell_lid = cells_local_ids[i];
     Cell coarse_cell = cells[coarse_cell_lid];
     Cell first_child_cell = first_child_cells[i];
-    // Starting from the first sub-mesh, we can know the other 3
+    // Starting from the first sub-cell, we can know the other 3
     // because they are respectively to the right, upper right, and upper.
     sub_cell_lids[0] = first_child_cell.localId();
     sub_cell_lids[1] = cdm_x[first_child_cell].next().localId();
@@ -408,7 +408,7 @@ _createCoarseCells2D()
     true_cell_family->_addChildrenCellsToCell(coarse_cell, sub_cell_lids);
   }
 
-  // Positions the owners of the new meshes and faces
+  // Positions the owners of the new cells and faces
   {
     IItemFamily* face_family = mesh->faceFamily();
     Int32 index = 0;
@@ -452,17 +452,17 @@ _createCoarseCells3D()
   CartesianGridDimension::CellUniqueIdComputer3D coarse_cell_uid_computer(coarse_grid_dim.getCellComputer3D(m_first_own_cell_unique_id_offset));
   CartesianGridDimension::FaceUniqueIdComputer3D coarse_face_uid_computer(coarse_grid_dim.getFaceComputer3D(m_first_own_cell_unique_id_offset));
 
-  // For the coarse meshes and faces, the nodes already exist
+  // For the coarse cells and faces, the nodes already exist
   // Therefore, we cannot use the Cartesian connectivity of the coarse grid
   // for them (we can do that when AMR by patch with duplication is active)
   // For now, we use the numbering of the refined grid.
 
-  // TODO: Calculate the number of faces and meshes in advance and allocate accordingly.
+  // TODO: Calculate the number of faces and cells in advance and allocate accordingly.
   UniqueArray<Int64> faces_infos;
   UniqueArray<Int64> cells_infos;
   Int32 nb_coarse_face = 0;
   Int32 nb_coarse_cell = 0;
-  //! List of the first child of each coarse mesh
+  //! List of the first child of each coarse cell
   UniqueArray<Cell> first_child_cells;
 
   UniqueArray<Int64> refined_cells_lids;
@@ -485,10 +485,10 @@ _createCoarseCells3D()
     const Int64 cell_x = cell_xyz.x;
     const Int64 cell_y = cell_xyz.y;
     const Int64 cell_z = cell_xyz.z;
-    // Necessary for ghost mesh recalculation. We consider these
-    // meshes as if they have just been refined.
+    // Necessary for ghost cells recalculation. We consider these
+    // cells as if they have just been refined.
     cell.mutableItemBase().addFlags(ItemFlags::II_JustRefined);
-    // Since we refine by 2, only take meshes whose topological coordinates
+    // Since we refine by 2, only take cells whose topological coordinates
     // are even
     if ((cell_x % 2) != 0 || (cell_y % 2) != 0 || (cell_z % 2) != 0)
       continue;
@@ -527,7 +527,7 @@ _createCoarseCells3D()
       ++nb_coarse_face;
     }
 
-    // Add the mesh
+    // Add the cell
     {
       cells_infos.add(IT_Hexaedron8);
       Int64 coarse_cell_uid = coarse_cell_uid_computer.compute(coarse_cell_x, coarse_cell_y, coarse_cell_z);
@@ -541,16 +541,16 @@ _createCoarseCells3D()
       first_child_cells.add(cell);
     }
 
-    // Starting from the first sub-mesh, we can know the other 7
+    // Starting from the first sub-cell, we can know the other 7
     // because they are respectively to the right, upper right, and upper,
     // above, above right, above upper right and .
     {
       std::array<Int32, const_cell_nb_sub_cell> sub_cell_lids_container;
       ArrayView<Int32> sub_lids(sub_cell_lids_container);
       Cell cell1 = cdm_x[cell].next();
-      // Checks the validity of the sub-meshes.
+      // Checks the validity of the sub-cells.
       // Normally there should be no problems unless the
-      // number of meshes in each direction of the sub-domain
+      // number of cells in each direction of the sub-domain
       // is not an even number.
       if (cell1.null())
         ARCANE_FATAL("Bad right cell for cell {0}", ItemPrinter(cell));
@@ -604,7 +604,7 @@ _createCoarseCells3D()
   UniqueArray<Int32> faces_local_ids(nb_coarse_face);
   mesh->modifier()->addFaces(nb_coarse_face, faces_infos, faces_local_ids);
 
-  // Constructs the meshes
+  // Constructs the cells
   // Indicates that we do not have the right to build faces on the fly.
   // Normally they have all been added via addFaces();
   UniqueArray<Int32> cells_local_ids(nb_coarse_cell);
@@ -614,7 +614,7 @@ _createCoarseCells3D()
 
   IItemFamily* cell_family = mesh->cellFamily();
 
-  // Now that the coarse meshes are created, we must indicate
+  // Now that the coarse cells are created, we must indicate
   // that they are parent cells.
   using mesh::CellFamily;
   CellInfoListView cells(mesh->cellFamily());
@@ -625,7 +625,7 @@ _createCoarseCells3D()
     Int32 coarse_cell_lid = cells_local_ids[i];
     Cell coarse_cell = cells[coarse_cell_lid];
     Cell first_child_cell = first_child_cells[i];
-    // Starting from the first sub-mesh, we can know the other 3
+    // Starting from the first sub-cell, we can know the other 3
     // because they are respectively to the right, upper right, and upper.
     sub_cell_lids[0] = first_child_cell.localId();
     sub_cell_lids[1] = cdm_x[first_child_cell].next().localId();
@@ -650,7 +650,7 @@ _createCoarseCells3D()
     true_cell_family->_addChildrenCellsToCell(coarse_cell, sub_cell_lids);
   }
 
-  // Positions the owners of the new meshes and faces
+  // Positions the owners of the new cells and faces
   {
     IItemFamily* face_family = mesh->faceFamily();
     Int32 index = 0;
@@ -671,8 +671,9 @@ _createCoarseCells3D()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Recalculates the information about the number of meshes per direction.
+ * \brief Recalculates the information about the number of cells per direction.
  */
 void CartesianMeshCoarsening2::
 _recomputeMeshGenerationInfo()
@@ -721,7 +722,7 @@ removeRefinedCells()
   if (is_verbose)
     info() << "CoarseCells=" << m_coarse_cells_uid;
 
-  // Remove all refined meshes as well as all ghost meshes
+  // Remove all refined cells as well as all ghost cells
   {
     std::unordered_set<Int64> coarse_cells_set;
     for (Int64 cell_uid : m_coarse_cells_uid)
@@ -739,7 +740,7 @@ removeRefinedCells()
     mesh_modifier->endUpdate();
   }
 
-  // Reconstruct ghost meshes
+  // Reconstruct ghost cells
   mesh_modifier->setDynamic(true);
   mesh_modifier->updateGhostLayers();
 

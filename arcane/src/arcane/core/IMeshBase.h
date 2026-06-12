@@ -82,8 +82,8 @@ class IMeshBase
   /*!
    * \brief Mesh dimension (1D, 2D, or 3D).
    *
-   * The dimension corresponds to the dimension of the mesh elements (Cell).
-   * If mesh elements of multiple dimensions are present, the highest dimension
+   * The dimension corresponds to the dimension of the cells.
+   * If cells of multiple dimensions are present, the highest dimension
    * is returned.
    * If the dimension has not yet been set, returns -1;
    */

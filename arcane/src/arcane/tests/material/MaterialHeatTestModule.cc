@@ -142,13 +142,13 @@ class MaterialHeatTestModule
 
    public:
 
-    //! List of temperature values in meshes to add
+    //! List of temperature values in cells to add
     UniqueArray<Real> mat_cells_to_add_value;
-    //! List of meshes to add
+    //! List of cells to add
     UniqueArray<Int32> mat_cells_to_add;
-    //! List of meshes to remove
+    //! List of cells to remove
     UniqueArray<Int32> mat_cells_to_remove;
-    //! Filter of meshes to remove
+    //! Filter of cells to remove
     NumArray<bool, MDDim1> mat_cells_remove_filter;
   };
 
@@ -466,7 +466,7 @@ _compute()
         modifier.removeCells(mat, remove_ids);
       }
 
-      // Adds the necessary material meshes
+      // Adds the necessary material cells
       ConstArrayView<Int32> add_ids(wa.mat_cells_to_add.constView());
       if (!add_ids.empty()) {
         info() << "MAT_MODIF: Add n=" << add_ids.size() << " cells to material=" << mat->name();
@@ -475,7 +475,7 @@ _compute()
     }
   }
 
-  // Displays the values for the modified meshes
+  // Displays the values for the modified cells
   if (options()->verbosityLevel() > 0) {
     for (const HeatObject& ho : m_heat_objects) {
       _printCellsTemperature(work_arrays[ho.index].mat_cells_to_add.constView());
@@ -629,7 +629,7 @@ _addHeat(const HeatObject& heat_object)
   auto inout_mat_temperature = viewInOut(command, m_mat_temperature);
   auto out_mat_device_temperature = viewInOut(command, m_mat_device_temperature);
 
-  //! Heats the meshes already present in the material
+  //! Heats the cells already present in the material
   command << RUNCOMMAND_MAT_ENUMERATE(MatAndGlobalCell, iter, current_mat)
   {
     auto [matcell, cell] = iter();
@@ -677,7 +677,7 @@ _computeCellsToAdd(const HeatObject& heat_object, MaterialWorkArray& wa)
       if (distance2 < heat_radius_norm) {
         MatCell mc = _getMatCell(all_env_cell, mat_id);
         // If 'mc' is null it means that this material is
-        // not present in the mesh. It must therefore be added.
+        // not present in the cell. It must therefore be added.
         // We keep the value to be added so as not to recalculate it
         return mc.null();
       }
@@ -710,8 +710,8 @@ _computeCellsToRemove(const HeatObject& heat_object, MaterialWorkArray& wa)
   const bool is_verbose = false;
   const Real cold_value = 300.0;
 
-  // Cools down each material mesh by a fixed amount.
-  // If the temperature drops below zero, the mesh is removed
+  // Cools down each material cell by a fixed amount.
+  // If the temperature drops below zero, the cell is removed
   // from this material.
   if (is_verbose)
     info() << "MAT_BEFORE: " << current_mat->matView()._internalLocalIds();
@@ -815,7 +815,7 @@ _computeTotalTemperature(const HeatObject& heat_object, bool do_check)
 void MaterialHeatTestModule::
 _computeCellsCenter()
 {
-  // Calculates the center of the meshes
+  // Calculates the center of the cells
   VariableNodeReal3& node_coord = defaultMesh()->nodesCoordinates();
   ENUMERATE_ (Cell, icell, allCells()) {
     Cell cell = *icell;

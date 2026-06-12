@@ -50,7 +50,7 @@ class ARCANE_MATERIALS_EXPORT MeshBlockBuildInfo
 {
  public:
 
-  //! Creates the information for a block named \a name on the meshes \a cells.
+  //! Creates the information for a block named \a name on the cells \a cells.
   MeshBlockBuildInfo(const String& name, const CellGroup& cells);
   ~MeshBlockBuildInfo();
 

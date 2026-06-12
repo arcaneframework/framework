@@ -294,7 +294,7 @@ init(void)
 
   // Time step initialization
   m_global_deltat = options()->deltaT;
-  // Initialization of mesh and outer face temperatures
+  // Initialization of cell and outer face temperatures
   m_cell_temperature.fill(options()->iniTemperature());
 
   ENUMERATE_FACE (iFace, outerFaces()) {

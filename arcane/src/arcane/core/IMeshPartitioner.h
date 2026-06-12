@@ -72,7 +72,7 @@ class ARCANE_CORE_EXPORT IMeshPartitioner
 
   /*! \brief Computation time of this subdomain.
    * The first element indicates the computation time of the subdomain
-   * corresponding to calculations whose cost is proportional to the mesh.
+   * corresponding to calculations whose cost is proportional to the cells.
    * The following must be associated with a variable (to be done).
    */
   virtual ARCANE_DEPRECATED_116 void setComputationTimes(RealConstArrayView v) = 0;

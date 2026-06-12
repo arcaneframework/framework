@@ -30,9 +30,10 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Info on the mesh before and after a face along a direction.
+ * \brief Info on the cell before and after a face along a direction.
  *
  * Instances of this class are temporary and constructed via
  * FaceDirectionMng::face().
@@ -50,13 +51,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirFace
 
  public:
 
-  //! Previous mesh
+  //! Previous cell
   Cell previousCell() const { return m_previous; }
-  //! Previous mesh
+  //! Previous cell
   CellLocalId previousCellId() const { return m_previous.itemLocalId(); }
-  //! Next mesh
+  //! Next cell
   Cell nextCell() const { return m_next; }
-  //! Next mesh
+  //! Next cell
   CellLocalId nextCellId() const { return m_next.itemLocalId(); }
 
  private:
@@ -67,9 +68,10 @@ class ARCANE_CARTESIANMESH_EXPORT DirFace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Info on the mesh before and after a face along a direction.
+ * \brief Info on the cell before and after a face along a direction.
  *
  * Instances of this class are temporary and constructed via
  * FaceDirectionMng::dirFaceId().
@@ -87,13 +89,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirFaceLocalId
 
  public:
 
-  //! Previous mesh
+  //! Previous cell
   ARCCORE_HOST_DEVICE CellLocalId previousCell() const { return m_previous; }
-  //! Previous mesh
+  //! Previous cell
   ARCCORE_HOST_DEVICE CellLocalId previousCellId() const { return m_previous; }
-  //! Next mesh
+  //! Next cell
   ARCCORE_HOST_DEVICE CellLocalId nextCell() const { return m_next; }
-  //! Next mesh
+  //! Next cell
   ARCCORE_HOST_DEVICE CellLocalId nextCellId() const { return m_next; }
 
  private:
@@ -153,7 +155,7 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   /*!
    * \brief Group of all overlap faces in the direction.
    *
-   * These are all faces that have two overlap meshes around them.
+   * These are all faces that have two overlap cells around them.
    *
    *   0   1  2  3  4
    * ┌───┬──┬──┬──┬──┐
@@ -163,12 +165,12 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
    * └───┴──┴──┴──┴──┘
    *
    * 0 : level -1
-   * 1 and 2 : Overlap meshes (overlapCells)
-   * 3 : Outer meshes (outerCells)
-   * 4 : Inner meshes (innerCells)
+   * 1 and 2 : Overlap cells (overlapCells)
+   * 3 : Outer cells (outerCells)
+   * 4 : Inner cells (innerCells)
    *
-   * The layer of overlap meshes refers to the layer of meshes of the same
-   * level around the patch. These meshes may belong to one or more
+   * The layer of overlap cells refers to the layer of cells of the same
+   * level around the patch. These cells may belong to one or more
    * patches.
    */
   FaceGroup overlapFaces() const;
@@ -176,12 +178,12 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   /*!
    * \brief Group of all faces within the patch in the direction.
    *
-   * These are all faces that do not have two overlap meshes.
+   * These are all faces that do not have two overlap cells.
    * (`innerFaces() + outerFaces()` or simply `!overlapFaces()`)
    *
    * \warning Faces at the domain boundary (thus having only one
-   * "outer" mesh) are included in this group. Therefore, one must not assume
-   * that there are two meshes around every face in this group (for that,
+   * "outer" cell) are included in this group. Therefore, one must not assume
+   * that there are two cells around every face in this group (for that,
    * one must stick with the innerFaces() group).
    */
   FaceGroup inPatchFaces() const;
@@ -189,17 +191,17 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   /*!
    * \brief Group of all internal faces in the direction.
    *
-   * A face is considered internal if its mesh
-   * in front and behind is not null and is not an overlap mesh.
+   * A face is considered internal if its cell
+   * in front and behind is not null and is not an overlap cell.
    */
   FaceGroup innerFaces() const;
 
   /*!
    * \brief Group of all external faces in the direction.
    *
-   * A face is considered external if its mesh
-   * in front or behind is an overlap mesh or is null (if at the domain
-   * boundary or if there are no layers of overlap meshes).
+   * A face is considered external if its cell
+   * in front or behind is an overlap cell or is null (if at the domain
+   * boundary or if there are no layers of overlap cells).
    *
    * \note Faces between patches are not duplicated. Therefore, some faces
    * in this group may also be in an outerFaces() of another patch.
@@ -250,7 +252,7 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
 
   /*!
    * \internal
-   * \brief Calculates the information on faces associated with the meshes
+   * \brief Calculates the information on faces associated with the cells
    * in the direction \a cell_dm.
    * Assumes that _internalInit() has been called.
    */

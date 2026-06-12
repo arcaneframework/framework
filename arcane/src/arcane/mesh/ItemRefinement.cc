@@ -193,7 +193,7 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
       m_mesh->modifier()->addFaces(m_nb_face_to_add, m_faces_infos, m_faces_lid);
     }
 
-    // Created the meshes
+    // Created the cells
     {
       m_cells_lid.resize(m_nb_cell_to_add);
       m_mesh->modifier()->addHChildrenCells(item, m_nb_cell_to_add, m_cells_infos, m_cells_lid);

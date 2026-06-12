@@ -76,7 +76,7 @@
               dump="true"
               need-sync="true"/>
 
-    <!-- Volume flux for projection (dVol for S1F). Mixed mesh table -->
+    <!-- Volume flux for projection (dVol for S1F). Mixed cell table -->
     <variable field-name="volume_flux_left"
               name="VolumeFluxLeft"
               data-type="real"
@@ -85,7 +85,7 @@
               dump="true"
               need-sync="true"/>
 
-    <!-- Volume flux for projection (dVol for S1F). Mixed mesh table -->
+    <!-- Volume flux for projection (dVol for S1F). Mixed cell table -->
     <variable field-name="volume_flux_right"
               name="VolumeFluxRight"
               data-type="real"
@@ -94,7 +94,7 @@
               dump="true"
               need-sync="true"/>
 
-    <!-- Mass flux for projection (dm for S1F). Mixed mesh table -->
+    <!-- Mass flux for projection (dm for S1F). Mixed cell table -->
     <variable field-name="mass_flux_left"
               name="MassFluxLeft"
               data-type="real"
@@ -103,7 +103,7 @@
               dump="true"
               need-sync="true"/>
 
-    <!-- Mass flux for projection (dm for S1F). Mixed mesh table -->
+    <!-- Mass flux for projection (dm for S1F). Mixed cell table -->
     <variable field-name="mass_flux_right"
               name="MassFluxRight"
               data-type="real"
@@ -151,7 +151,7 @@
               need-sync="true"/>
 
 
-    <!-- Directional projected volume. Mixed mesh table -->
+    <!-- Directional projected volume. Mixed cell table -->
     <variable field-name="directional_projected_volume"
               name="DirectionalProjectedVolume"
               data-type="real"
@@ -168,7 +168,7 @@
               dump="true"
               need-sync="true"/>
 
-    <!-- Mass flux for projection (dm for S1F). Mixed mesh table -->
+    <!-- Mass flux for projection (dm for S1F). Mixed cell table -->
     <variable field-name="directional_internal_energy"
               name="DirectionalInternalEnergy"
               data-type="real"

@@ -83,7 +83,7 @@ class ARCANE_MATERIALS_EXPORT ARCANE_ALIGNAS(64) SimdMatVarIndex
 
 /*!
  * \brief SIMD enumerator on a sub-part (pure or partial) of a
- * subset of the meshes of a component (material or medium)
+ * subset of the cells of a component (material or medium)
  */
 class ARCANE_MATERIALS_EXPORT ComponentPartSimdCellEnumerator
 : public SimdEnumeratorBase

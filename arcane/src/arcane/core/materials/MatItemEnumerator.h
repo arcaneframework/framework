@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MatItemEnumerator.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Enumerators for material meshes.                                          */
+/* Enumerators for material cells.                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_MATITEMENUMERATOR_H
 #define ARCANE_CORE_MATERIALS_MATITEMENUMERATOR_H
@@ -66,7 +66,7 @@ template <typename T> class ComponentItemEnumeratorTraitsT;
 
 /*!
  * \internal
- * \brief View over a list of meshes with environment information.
+ * \brief View over a list of cells with environment information.
  *
  * Like any view, this object is only valid as long as the container
  * associated (generally a CellGroup) is not modified.
@@ -89,13 +89,13 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
   //! Number of elements.
   constexpr ARCCORE_HOST_DEVICE Integer size() const { return m_local_ids.size(); }
 
-  // i-th mesh of the vector
+  // i-th cell of the vector
   ARCCORE_HOST_DEVICE AllEnvCell operator[](Integer index) const
   {
     return AllEnvCell(m_shared_info->_item(ConstituentItemIndex(m_local_ids[index])));
   }
 
-  // localId() of the i-th mesh of the vector
+  // localId() of the i-th cell of the vector
   ARCCORE_HOST_DEVICE Int32 localId(Integer index) const { return m_local_ids[index]; }
 
  private:
@@ -108,7 +108,7 @@ class ARCANE_CORE_EXPORT AllEnvCellVectorView
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Enumerator over a part of the meshes of a component (material or environment)
+ * \brief Enumerator over a part of the cells of a component (material or environment)
  */
 class ARCANE_CORE_EXPORT ComponentCellEnumerator
 {
@@ -191,7 +191,7 @@ class ARCANE_CORE_EXPORT ComponentCellEnumerator
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Enumerator over a part of the meshes of a single material.
+ * \brief Enumerator over a part of the cells of a single material.
  */
 class ARCANE_CORE_EXPORT MatCellEnumerator
 : public ComponentCellEnumerator
@@ -226,7 +226,7 @@ class ARCANE_CORE_EXPORT MatCellEnumerator
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Enumerator over the meshes of an environment
+ * \brief Enumerator over the cells of an environment
  */
 class ARCANE_CORE_EXPORT EnvCellEnumerator
 : public ComponentCellEnumerator
@@ -260,7 +260,7 @@ class ARCANE_CORE_EXPORT EnvCellEnumerator
 
 /*!
  * \brief Enumerator over a sub-part (pure or partial) of a
- * subset of the meshes of a component (material or environment)
+ * subset of the cells of a component (material or environment)
  */
 class ARCANE_CORE_EXPORT ComponentPartCellEnumerator
 {
@@ -368,7 +368,7 @@ class ARCANE_CORE_EXPORT EnvPartCellEnumerator
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Enumerator over the meshes of an environment
+ * \brief Enumerator over the cells of an environment
  */
 class ARCANE_CORE_EXPORT CellGenericEnumerator
 {
@@ -390,7 +390,7 @@ class ARCANE_CORE_EXPORT CellGenericEnumerator
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Enumerator over all environment meshes
+ * \brief Enumerator over all environment cells
  */
 class ARCANE_CORE_EXPORT AllEnvCellEnumerator
 {
@@ -568,13 +568,13 @@ arcaneImplCreateConstituentEnumerator(AllEnvCell, AllEnvCellVectorView items)
 {
   return AllEnvCellEnumerator::create(items);
 }
-//! Enumerator over AllEnvCell of meshes in \a group
+//! Enumerator over AllEnvCell of cells in \a group
 inline AllEnvCellEnumerator
 arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshMaterialMng* mng, const CellGroup& group)
 {
   return AllEnvCellEnumerator::create(mng, group);
 }
-//! Enumerator over AllEnvCell of meshes in \a view
+//! Enumerator over AllEnvCell of cells in \a view
 inline AllEnvCellEnumerator
 arcaneImplCreateConstituentEnumerator(AllEnvCell, IMeshMaterialMng* mng, const CellVectorView& view)
 {
@@ -749,20 +749,20 @@ namespace Impl
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Macro to iterate over all AllEnvCell meshes of a group.
+ * \brief Macro to iterate over all AllEnvCell cells of a group.
  *
  * There are two ways to use this macro. The first
  * is obsolete and uses the IMeshMaterialMng::view() method. The second
  * uses three arguments:
  * \param iname name of the iterator, of type \a AllEnvCellEnumerator.
  * \param matmng material manager of type \a IMeshMaterialMng.
- * \param igroup mesh group, of type \a CellGroup.
+ * \param igroup cell group, of type \a CellGroup.
  */
 #define ENUMERATE_ALLENVCELL(iname, ...) \
   for (A_TRACE_COMPONENT(AllEnvCellEnumerator) iname(::Arcane::Materials::AllEnvCellEnumerator::create(__VA_ARGS__)); iname.hasNext(); ++iname)
 
 /*!
- * \brief Macro to iterate over all MatCell meshes of a material.
+ * \brief Macro to iterate over all MatCell cells of a material.
  *
  * \param iname name of the iterator, of type MatCellEnumerator.
  * \param mat material, of type IMeshMaterial*, MatCellVector, MatVectorView
@@ -771,7 +771,7 @@ namespace Impl
   A_ENUMERATE_COMPONENTCELL(Arcane::Materials::MatCell, iname, mat)
 
 /*!
- * \brief Macro to iterate over all EnvCell meshes of an environment.
+ * \brief Macro to iterate over all EnvCell cells of an environment.
  *
  * \param iname name of the iterator, of type EnvCellEnumerator.
  * \param env environment, of type IMeshEnvironment*, EnvCellVector,
@@ -781,7 +781,7 @@ namespace Impl
   A_ENUMERATE_COMPONENTCELL(Arcane::Materials::EnvCell, iname, env)
 
 /*!
- * \brief Macro to iterate over all ComponentCell meshes of a component.
+ * \brief Macro to iterate over all ComponentCell cells of a component.
  *
  * \param iname name of the iterator, of type EnvCellEnumerator.
  * \param component component, of type IMeshComponent*
@@ -824,28 +824,28 @@ namespace Impl
   A_ENUMERATE_COMPONENT(EnvEnumerator, ienv, container)
 
 /*!
- * \brief Macro to iterate over all ComponentCell meshes of a mesh.
+ * \brief Macro to iterate over all ComponentCell cells of a cell.
  *
  * \param iname name of the iterator, of type CellComponentCellEnumerator.
- * \param component_cell mesh component, of type ComponentCell.
+ * \param component_cell cell component, of type ComponentCell.
  */
 #define ENUMERATE_CELL_COMPONENTCELL(iname, component_cell) \
   A_ENUMERATE_CELL_COMPONENTCELL(CellComponentCellEnumerator, iname, component_cell)
 
 /*!
- * \brief Macro to iterate over all MatCell meshes of a mesh.
+ * \brief Macro to iterate over all MatCell cells of a cell.
  *
  * \param iname name of the iterator, of type CellMatCellEnumerator.
- * \param env_cell mesh environment, of type EnvCell.
+ * \param env_cell cell environment, of type EnvCell.
  */
 #define ENUMERATE_CELL_MATCELL(iname, env_cell) \
   A_ENUMERATE_CELL_COMPONENTCELL(CellMatCellEnumerator, iname, env_cell)
 
 /*!
- * \brief Macro to iterate over all EnvCell meshes of a mesh.
+ * \brief Macro to iterate over all EnvCell cells of a cell.
  *
  * \param iname name of the iterator, of type CellEnvCellEnumerator.
- * \param all_env_cell mesh with environment info, of type AllEnvCell.
+ * \param all_env_cell cell with environment info, of type AllEnvCell.
  */
 #define ENUMERATE_CELL_ENVCELL(iname, all_env_cell) \
   A_ENUMERATE_CELL_COMPONENTCELL(CellEnvCellEnumerator, iname, all_env_cell)
@@ -855,7 +855,7 @@ namespace Impl
 
 /*!
  * \brief Macro for generically iterating over materials,
- * environments, or meshes
+ * environments, or cells
  *
  * \param iname name of the iterator, of type CellEnvCellEnumerator.
  * \param mat_or_env_or_group an object that can be passed as an argument to

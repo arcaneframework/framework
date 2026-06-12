@@ -249,13 +249,13 @@ Nodes
 Edge order
 (3) -2- (2)
  |       |
- 3       1 
+ 3       1
  |       |
 (0) -0- (1)
 New nodes
 (3) -6- (2)
  |       |
- 7   8   5 
+ 7   8   5
  |       |
 (0) -4- (1)
 New nodes with new edge order
@@ -266,15 +266,15 @@ New nodes with new edge order
 (7) -1- (8) -9- (5)
 |        |       |
 0        2       10
-|        |       | 
+|        |       |
 (0) -3- (4) -11- (1)
   ---   ---
 |     |     |
 |     |     |
-  ---   ---  
+  ---   ---
 |     |     |
-|     |     | 
-  ---   --- 
+|     |     |
+  ---   ---
 */
 MeshSubdivider::Pattern PatternBuilder::
 quadtoquad()
@@ -325,17 +325,17 @@ quadtoquad()
  * |     |
  * |     |
  * 0 --- 1
- * 
+ *
  * 3 --> 2
  * |   / |
  * | /   |
  * 0 <-- 1
- * 
+ *
  * 3 --- 4 --- 5
  * |     |     |
  * |     |     |
- * 0 --- 1 --- 2 
- * Here we add a single arcane face (0,2). 
+ * 0 --- 1 --- 2
+ * Here we add a single arcane face (0,2).
 */
 MeshSubdivider::Pattern PatternBuilder::
 quadtotri()
@@ -367,13 +367,13 @@ quadtotri()
    0 --- 3 --- 1
 
   Edge numbering
-           2 
+           2
           / \
-         6   7 
+         6   7
         /     \
        + --8-- +
       / \     / \
-     1   2   5   3    
+     1   2   5   3
     /     \ /     \
    + --0-- + --4-- +
   */
@@ -1076,46 +1076,46 @@ _generatePattern3D(IPrimaryMesh* mesh)
 /*---------------------------------------------------------------------------*/
 
 /*void ArcaneBasicMeshSubdividerService::_getArcaneOrder(IPrimaryMesh* mesh){
-  Tritotri generate faces 
-  
+  Tritotri generate faces
+
   _generateOneTri(mesh);
   pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
   _refineOnce(mesh,pattern_manager);
-  
-  
+
+
    Quadtoquad generate faces
-  
+
   _generateOneQuad(mesh);
   _refineWithArcaneFaces(mesh,PatternBuilder::quadtoquad());
   pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
   _refineOnce(mesh,pattern_manager);
-  
-  
+
+
    Tettotet generate faces
-  
+
   _generateOneTetra(mesh);
   _refineWithArcaneFaces(mesh,PatternBuilder::tettotet());
-  
-  
-  
-  _faceOrderArcane(mesh); 
+
+
+
+  _faceOrderArcane(mesh);
   mesh_utils::writeMeshInfos(mesh,"meshInSubdivide");
   pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
   _refineOnce(mesh,pattern_manager);
   mesh_utils::writeMeshInfos(mesh,"meshOutSubdivide");
-  
+
 
   Tettohex generate faces input one tet
-  
+
   _generateOneTetra(mesh);
   _refineWithArcaneFaces(mesh,PatternBuilder::tettohex());
-  
-  Hextohex generate faces input one hex 
+
+  Hextohex generate faces input one hex
   _refineWithArcaneFaces(mesh,PatternBuilder::hextotet());
-  
+
   pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet();
   _refineOnce(mesh,pattern_manager);
-  
+
 }*/
 
 /*---------------------------------------------------------------------------*/
@@ -1311,7 +1311,7 @@ _refineOnce(IPrimaryMesh* mesh, std::unordered_map<Arccore::Int16, MeshSubdivide
 
     // Assignment of nodes to owner
     // Assignment of faces to owner
-    // Addition of initial mesh layer count
+    // Addition of initial cell layer count
 
     const Cell& cell = *icell;
 

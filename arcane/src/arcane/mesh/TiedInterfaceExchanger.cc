@@ -291,7 +291,7 @@ initialize()
   // - this call must be made before face.owner() new contains
   // the new owners because in this case ENUMERATE_FACE
   // will not work correctly since it is a group
-  // of own meshes and it is updated when owners
+  // of own cells and it is updated when owners
   // change.
   // - slave faces and their master face must have the same owner
 
@@ -331,7 +331,7 @@ initialize()
 /*!
  * \brief Serializes the faces into the buffer \a buf.
  *
- * The faces are created at the same time as the meshes.
+ * The faces are created at the same time as the cells.
  * This serialization therefore does not need to create them. We only manage
  * the data concerning the tied interfaces.
  * It is important to be careful to only send the faces that will

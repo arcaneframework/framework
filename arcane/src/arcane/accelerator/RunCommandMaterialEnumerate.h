@@ -40,7 +40,7 @@ namespace Arcane::Materials
  * \brief Index of an accelerator loop over materials or media.
  *
  * This class allows retrieving an EnvItemLocalId (for a medium) or
- * a MatItemLocalId (for a material) as well as the global mesh's CellLocalId.
+ * a MatItemLocalId (for a material) as well as the global cell's CellLocalId.
  */
 template <typename ConstituentItemLocalIdType_>
 class ConstituentAndGlobalCellIteratorValue
@@ -590,7 +590,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Specialization for a view on an environment and the associated global mesh
+//! Specialization for a view on an environment and the associated global cell
 inline Accelerator::Impl::EnvAndGlobalCellRunCommandContainer
 arcaneCreateRunCommandMaterialContainer(Arcane::Materials::EnvAndGlobalCell, Arcane::Materials::IMeshEnvironment* env)
 {
@@ -605,7 +605,7 @@ arcaneCreateRunCommandMaterialContainer(Arcane::Materials::EnvAndGlobalCell, Arc
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Specialization for a view on a material and the associated global mesh
+//! Specialization for a view on a material and the associated global cell
 inline Accelerator::Impl::MatAndGlobalCellRunCommandContainer
 arcaneCreateRunCommandMaterialContainer(MatAndGlobalCell, IMeshMaterial* mat)
 {

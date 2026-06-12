@@ -830,13 +830,13 @@ partitionMesh(bool initial_partition, Int32 nb_part)
     info() << "numExport = " << numExport;
     for (Integer i = 0; i < nb_export; ++i) {
       Item item = items_internal[localIdWithConstraints(export_local_ids[i])];
-      // change for the mesh or the whole group if necessary
+      // change for the cell or the whole group if necessary
       changeCellOwner(item, cells_new_owner, export_partitions[i]);
       if (dump_infos) // these infos do not take groups/constraints into account
         ofile << "EXPORT: uid=" << ItemPrinter(item) << " OLD=" << item.owner()
               << " NEW=" << cells_new_owner[item] << " PROC=" << exportProcs[i] << '\n';
     }
-    //     pinfo() << "Proc " << my_rank << " number of meshes changing domain: "
+    //     pinfo() << "Proc " << my_rank << " number of cells changing domain: "
     //             << nb_export << " changes=" << changes
     //             << " ZoltanMem=" << Zoltan_Memory_Usage(ZOLTAN_MEM_STAT_MAXIMUM);
   }

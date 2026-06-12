@@ -32,18 +32,18 @@ namespace Arcane::Materials
 
 /*!
  * \ingroup ArcaneMaterials
- * \brief Represents a material in a multi-material mesh.
+ * \brief Represents a material in a multi-material cell.
  *
- * This object represents a material in a multi-material mesh.
+ * This object represents a material in a multi-material cell.
  *
- * There is a special mesh, called the null mesh, for which
- * null() is true and which represents an invalid mesh. In the
- * case of the invalid mesh, none of the other
+ * There is a special cell, called the null cell, for which
+ * null() is true and which represents an invalid cell. In the
+ * case of the invalid cell, none of the other
  * class methods should be called, under penalty of causing a crash.
  *
  * \warning These meshes are invalidated as soon as the list of meshes of a
  * material or environment changes. Therefore, one must not
- * keep a mesh of this type between two changes of this list.
+ * keep a cell of this type between two changes of this list.
  */
 class MatCell
 : public ComponentCell
@@ -67,7 +67,7 @@ class MatCell
 
  public:
 
-  //! Environment mesh to which this material mesh belongs.
+  //! Environment cell to which this material cell belongs.
   ARCCORE_HOST_DEVICE inline EnvCell envCell() const;
 
   //! Associated material
@@ -86,21 +86,22 @@ class MatCell
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneMaterials
- * \brief Arcane mesh of an environment.
+ * \brief Arcane cell of an environment.
  *
- * Such a mesh contains information about the materials
- * of an environment for a given mesh.
+ * Such a cell contains information about the materials
+ * of an environment for a given cell.
  *
- * There is a special mesh, called the null mesh, for which
- * null() is true and which represents an invalid mesh. In the
- * case of the invalid mesh, none of the other
+ * There is a special cell, called the null cell, for which
+ * null() is true and which represents an invalid cell. In the
+ * case of the invalid cell, none of the other
  * class methods should be called, under penalty of causing a crash.
  *
  * \warning These meshes are invalidated as soon as the list of meshes of a
  * material or environment changes. Therefore, one must not
- * keep a mesh of this type between two changes of this list.
+ * keep a cell of this type between two changes of this list.
  */
 class EnvCell
 : public ComponentCell
@@ -122,13 +123,13 @@ class EnvCell
 
  public:
 
-  // Number of environment materials present in the mesh
+  // Number of environment materials present in the cell
   ARCCORE_HOST_DEVICE Int32 nbMaterial() const { return nbSubItem(); }
 
-  //! Mesh containing information about all environments
+  //! Cell containing information about all environments
   ARCCORE_HOST_DEVICE inline AllEnvCell allEnvCell() const;
 
-  //! i-th material mesh of this mesh
+  //! i-th material cell of this cell
   ARCCORE_HOST_DEVICE inline MatCell cell(Integer i) const { return _subItemBase(i); }
 
   //! Associated environment
@@ -137,7 +138,7 @@ class EnvCell
   //! Environment identifier
   ARCCORE_HOST_DEVICE Int32 environmentId() const { return componentId(); }
 
-  //! Enumerator over the material meshes of this mesh
+  //! Enumerator over the material cells of this cell
   ARCCORE_HOST_DEVICE CellMatCellEnumerator subMatItems() const
   {
     return CellMatCellEnumerator(*this);
@@ -153,15 +154,15 @@ class EnvCell
 
 /*!
  * \ingroup ArcaneMaterials
- * \brief Arcane mesh with material and environment information.
+ * \brief Arcane cell with material and environment information.
  *
- * Such a mesh contains information about the environments
- * for a given mesh. It allows, for example, knowing the number
+ * Such a cell contains information about the environments
+ * for a given cell. It allows, for example, knowing the number
  * of environments and for each the list of materials.
  *
  * \warning These meshes are invalidated as soon as the list of meshes of a
  * material or environment changes. Therefore, one must not
- * keep a mesh of this type between two changes of this list.
+ * keep a cell of this type between two changes of this list.
  */
 class AllEnvCell
 : public ComponentCell
@@ -185,13 +186,13 @@ class AllEnvCell
 
  public:
 
-  //! Number of environments present in the mesh
+  //! Number of environments present in the cell
   ARCCORE_HOST_DEVICE Int32 nbEnvironment() const { return nbSubItem(); }
 
-  //! i-th environment mesh
+  //! i-th environment cell
   EnvCell cell(Int32 i) const { return EnvCell(_subItemBase(i)); }
 
-  //! Enumerator over the environment meshes of this mesh
+  //! Enumerator over the environment cells of this cell
   ARCCORE_HOST_DEVICE CellEnvCellEnumerator subEnvItems() const
   {
     return CellEnvCellEnumerator(*this);

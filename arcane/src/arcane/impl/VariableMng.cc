@@ -771,7 +771,7 @@ dumpStats(std::ostream& ostr, bool is_verbose)
     nb_var[i] = 0;
   }
 
-  // Get the number of meshes to calculate statistics on average memory per mesh.
+  // Get the number of cells to calculate statistics on average memory per cell.
   Integer nb_cell = 1;
   if (subDomain()->defaultMesh())
     nb_cell = subDomain()->defaultMesh()->allCells().size();

@@ -346,8 +346,8 @@ partitionMesh([[maybe_unused]] bool initial_partition)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * Iterates over all parts that intersect the mesh \a cell and sends
- * this mesh as a ghost cell.
+ * Iterates over all parts that intersect the cell \a cell and sends
+ * this cell as a ghost cell.
  */
 void SimpleGridMeshPartitioner::
 _addCellToIntersectedParts(Cell cell, std::array<Int32, 3> min_part, std::array<Int32, 3> nb_part)
@@ -390,7 +390,7 @@ _computeSpecificGhostLayer()
     std::array<Int32, 3> max_part = { -1, -1, -1 };
     std::array<Int32, 3> nb_node_part = { 1, 1, 1 };
 
-    // Determine the bounding box of the mesh
+    // Determine the bounding box of the cell
     Real max_value = FloatInfo<Real>::maxValue();
     Real min_value = -max_value;
     Real3 min_box(max_value, max_value, max_value);

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* FullItemInfo.h                                              (C) 2000-2022 */
 /*                                                                           */
-/* Serialization information for a mesh.                                     */
+/* Serialization information for a cell.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_FULLCELLINFO_H
 #define ARCANE_MESH_FULLCELLINFO_H
@@ -29,9 +29,10 @@ namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Info to create/serialize a mesh knowing
- * the uniqueId() and owner() of all these sub-entities (cells, edges, and faces).
+ * \brief Info to create/serialize a cell knowing the uniqueId() and owner()
+ * of all these sub-entities (cells, edges, and faces).
  */
 class FullCellInfo
 {
@@ -48,7 +49,7 @@ class FullCellInfo
  public:
 
   /*!
-   * \brief References the info of a mesh.
+   * \brief References the info of a cell.
    *
    * The cells_infos array must remain valid as long as the instance exists.
    */

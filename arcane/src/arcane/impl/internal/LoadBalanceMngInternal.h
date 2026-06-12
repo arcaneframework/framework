@@ -159,7 +159,7 @@ class PartitionerMemoryInfo
   }
 
   // Calculates the memory consumption for each entity type.
-  // The meshes then benefit from the contributions of other adjacent entities.
+  // The cells then benefit from the contributions of other adjacent entities.
   void computeMemory(IVariableMng* varMng)
   {
     Int32 length = m_family_names.size();
@@ -264,7 +264,7 @@ class PartitionerMemoryInfo
     return -1;
   }
 
-  // For meshes, we calculate the memory contribution of nodes, edges, and faces.
+  // For cells, we calculate the memory contribution of nodes, edges, and faces.
   void _computeMemCell(Cell cell)
   {
     Real contrib;
@@ -287,7 +287,7 @@ class PartitionerMemoryInfo
     m_buffer.resident_memory += contrib * m_resident_memory[IK_Edge];
   }
 
-  //! Calculates the contribution of an entity to adjacent meshes.
+  //! Calculates the contribution of an entity to adjacent cells.
   template <typename ItemKind>
   Real _computeMemContrib(ItemConnectedListViewTypeT<ItemKind> list)
   {
@@ -303,7 +303,7 @@ class PartitionerMemoryInfo
   UniqueArray<Int32> m_overall_memory;
   UniqueArray<Int32> m_resident_memory;
 
-  //! Cache system for accessing memory related to a mesh.
+  //! Cache system for accessing memory related to a cell.
   struct MemInfo
   {
     Int32 id = -1;

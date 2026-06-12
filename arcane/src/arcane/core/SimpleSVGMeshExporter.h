@@ -32,7 +32,7 @@ namespace Arcane
  *
  * This class only works for 2D meshes. Only the `x` and `y` components
  * are considered. After creating an instance, it is possible
- * to call the writeGroup() method to export the entities associated with the mesh
+ * to call the writeGroup() method to export the entities associated with the cell
  * group (nodes, faces, and cells).
  */
 class ARCANE_CORE_EXPORT SimpleSVGMeshExporter

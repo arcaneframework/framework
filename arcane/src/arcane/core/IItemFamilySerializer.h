@@ -42,7 +42,7 @@ class ARCANE_CORE_EXPORT IItemFamilySerializer
   /*!
    * \brief Serializes the entities of the family \a family() into \a buf.
    *
-   * In 'Put' or 'Reserve' mode, \a items contains the local mesh numbers.
+   * In 'Put' or 'Reserve' mode, \a items contains the local cell numbers.
    * In 'Get' mode, it calls \a deserializeItems() and \a items is unused.
    */
   virtual void serializeItems(ISerializer* buf, Int32ConstArrayView items) = 0;
@@ -51,14 +51,14 @@ class ARCANE_CORE_EXPORT IItemFamilySerializer
    * \brief Deserializes the entities of the family \a family() from \a buf.
    *
    * If \a items_lid is not null, it contains the local numbers
-   * of the deserialized meshes in return.
+   * of the deserialized cells in return.
    */
   virtual void deserializeItems(ISerializer* buf, Int32Array* items_lid) = 0;
 
   /*!
    * \brief Serializes the relations of the entities of the family \a family() into \a buf.
    *
-   * In 'Put' or 'Reserve' mode, \a items contains the local mesh numbers.
+   * In 'Put' or 'Reserve' mode, \a items contains the local cell numbers.
    * In 'Get' mode, it calls \a deserializeItemRelations() and \a items is unused.
    */
   virtual void serializeItemRelations(ISerializer* buf, Int32ConstArrayView items) = 0;
@@ -67,7 +67,7 @@ class ARCANE_CORE_EXPORT IItemFamilySerializer
    * \brief Deserializes the relations of the entities of the family \a family() from \a buf.
    *
    * If \a items_lid is not null, it contains the local numbers
-   * of the meshes whose relations have been deserialized in return.
+   * of the cells whose relations have been deserialized in return.
    */
   virtual void deserializeItemRelations(ISerializer* buf, Int32Array* items_lid) = 0;
 

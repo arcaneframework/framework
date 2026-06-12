@@ -79,11 +79,11 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshRenumberingInfo
   /*!
    * \brief Parent patch number for renumbering.
    *
-   * Parent patch for renumbering. For renumbering, the child meshes of this patch
+   * Parent patch for renumbering. For renumbering, the child cells of this patch
    * are recursively traversed and renumbered, as well as the entities
-   * associated with these meshes (nodes and faces).
+   * associated with these cells (nodes and faces).
    *
-   * The entities of this patch (meshes, nodes, and faces) are not renumbered.
+   * The entities of this patch (cells, nodes, and faces) are not renumbered.
    *
    * If not specified, the implementation will use patch 0 as the parent patch.
    *

@@ -896,7 +896,7 @@ output(NumArray3Type& state, double etime)
   // Does nothing because we are not connected with 'NetCDF'.
 }
 
-// Displays the sum of variables over the grids.
+// Displays the sum of variables over the cells variables.
 // This is useful for validation
 template <typename LayoutType>
 void MiniWeatherArray<LayoutType>::

@@ -1,4 +1,4 @@
-﻿set(ARCANE_TEST_CASEPATH ${TEST_PATH}/material)
+set(ARCANE_TEST_CASEPATH ${TEST_PATH}/material)
 
 arcane_add_test_sequential(material1_simd1 testMaterialSimd-1.arc)
 
@@ -144,7 +144,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
   endif ()
   arcane_add_test_sequential_task(material1 testMaterial-1.arc 4 "-m 10")
 
-  # The following three tests must run the same number of iterations and have the same number of meshes (for testing)
+  # The following three tests must run the same number of iterations and have the same number of cells (for testing)
   ARCANE_ADD_TEST(material2 testMaterial-2.arc "-m 13")
   ARCANE_ADD_TEST(material2_opt1 testMaterial-2-opt1.arc "-m 13")
   ARCANE_ADD_TEST(material2_opt3 testMaterial-2-opt3.arc "-m 13")
@@ -163,7 +163,7 @@ if (ARCANE_HAS_ACCELERATOR_API)
 
 
   ARCANE_ADD_TEST(material3 testMaterial-3.arc "-m 20")
-  # NOTE Adds optimization test only in sequential because currently this does not work in parallel due to mesh suppression.
+  # NOTE Adds optimization test only in sequential because currently this does not work in parallel due to cell suppression.
   ARCANE_ADD_TEST_SEQUENTIAL(material3_opt1 testMaterial-3-opt1.arc "-m 20")
   ARCANE_ADD_TEST_SEQUENTIAL(material3_opt3 testMaterial-3-opt3.arc "-m 20")
   ARCANE_ADD_TEST_SEQUENTIAL(material3_opt5 testMaterial-3-opt5.arc "-m 20")

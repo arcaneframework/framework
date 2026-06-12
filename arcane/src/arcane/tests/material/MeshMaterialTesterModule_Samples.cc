@@ -267,7 +267,7 @@ class Sample
       ENUMERATE_CELL_COMPONENTCELL (icc, cc2) {
       }
 
-      // Returns the AllEnvCell of the environment:
+      // Returns the AllEnvCell cell of the environment:
       Arcane::Materials::ComponentCell cc3 = cc2.superCell();
       // Iterates over the environment cells of the cell.
       ENUMERATE_CELL_COMPONENTCELL (icc, cc3) {

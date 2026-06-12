@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellConnectivity.h                                          (C) 2000-2026 */
 /*                                                                           */
-/* Information on the connectivity of a mesh.                                */
+/* Information on the connectivity of a cell.                                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_GEOMETRIC_CELLCONNECTIVITY_H
 #define ARCANE_GEOMETRIC_CELLCONNECTIVITY_H
@@ -30,9 +30,10 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneGeometric
- * \brief Information on the connectivity of a mesh.
+ * \brief Information on the connectivity of a cell.
  */
 class CellConnectivity
 {
@@ -61,7 +62,7 @@ class CellConnectivity
   const EdgeConnectic* edgeConnectic() const { return m_edge_connectic; }
   const FaceConnectic* faceConnectic() const { return m_face_connectic; }
   const SVCFaceConnectic* SCVFaceConnectic() const { return m_svc_face_connectic; }
-  //! Mesh type (GeomType::Quad4, GeomType::Hexaedron8, ...)
+  //! Cell type (GeomType::Quad4, GeomType::Hexaedron8, ...)
   GeomType cellType() const { return m_cell_type; }
 
  protected:

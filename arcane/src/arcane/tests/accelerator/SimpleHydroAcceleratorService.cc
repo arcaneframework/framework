@@ -844,7 +844,7 @@ computeDeltaT()
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculation of resultant forces at the nodes of a hexahedral mesh.
+ * \brief Calculation of resultant forces at the nodes of a hexahedral cell.
  *
  * The method used is the one of dividing into four triangles.
  */
@@ -930,7 +930,7 @@ computeCQs(Real3 node_coord[8], Real3 face_coord[6], Span<Real3> cqs)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculation of mesh volumes, characteristic lengths
+ * \brief Calculation of cell volumes, characteristic lengths
  * and resultant forces at the vertices.
  */
 void SimpleHydroAcceleratorService::
@@ -951,7 +951,7 @@ computeGeometricValues()
   {
     auto nodes = cnc.nodes(cid);
 
-    // Local copy of the coordinates of a mesh's vertices
+    // Local copy of the coordinates of a cell's vertices
     Real3 coord[8] = {
       in_node_coord[nodes[0]], in_node_coord[nodes[1]],
       in_node_coord[nodes[2]], in_node_coord[nodes[3]],
@@ -969,7 +969,7 @@ computeGeometricValues()
       0.25 * (coord[2] + coord[3] + coord[7] + coord[6]),
     };
 
-    // Calculates the characteristic length of the mesh.
+    // Calculates the characteristic length of the cell.
     {
       Real3 median1 = face_coord[0] - face_coord[3];
       Real3 median2 = face_coord[2] - face_coord[5];
@@ -986,7 +986,7 @@ computeGeometricValues()
     // Calculates the resultant forces at the vertices
     computeCQs(coord, face_coord, in_out_cell_cqs[cid]);
 
-    // Calculates the volume of the mesh
+    // Calculates the volume of the cell
     {
       SmallSpan<const Real3> in_cqs(in_out_cell_cqs[cid]);
       Real volume = 0.0;
@@ -1023,9 +1023,9 @@ void SimpleHydroAcceleratorService::
 _computeNodeIndexInCells()
 {
   info() << "ComputeNodeIndexInCells with accelerator";
-  // A node is connected to a maximum of MAX_NODE_CELL meshes
+  // A node is connected to a maximum of MAX_NODE_CELL cells
   // Calculates for each node its index in each of the
-  // meshes it is connected to.
+  // cells it is connected to.
   NodeGroup nodes = allNodes();
   Integer nb_node = nodes.size();
   m_node_index_in_cells.resize(MAX_NODE_CELL * nb_node);

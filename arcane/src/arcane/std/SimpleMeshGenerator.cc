@@ -264,7 +264,7 @@ _fillHexaedronCoordinates(ItemTypeId type_id, ArrayView<Real3> coords, Real x0, 
     coords[24] = _center(coords, 0, 3, 2, 1);
     coords[25] = _center(coords, 4, 5, 6, 7);
 
-    // Adds the mesh center
+    // Adds the cell center
     Real3 center;
     for (Int32 i = 0; i < 8; ++i)
       center += coords[i];

@@ -274,7 +274,7 @@ _refineCells()
   UniqueArray<Real3> nodes_to_add_coords;
   VariableNodeReal3& nodes_coords = mesh()->nodesCoordinates();
   ENUMERATE_CELL (cell, all_cells) {
-    //TODO: test if the mesh is a hexahedron
+    //TODO: test if the cell is a hexahedron
     //if (c.
     ++index;
     if ((index % 3) == 0) {
@@ -282,8 +282,8 @@ _refineCells()
 
       to_add_cells.add(8); // For a pyramid
       //to_add_cells.Add(max_cell_uid + index); // For the UID
-      to_add_cells.add(cell->uniqueId().asInt64() + max_cell_uid); // For the UID, reuse that of the deleted mesh
-      //to_add_cells.Add(c.UniqueId); // For the UID, reuse that of the deleted mesh
+      to_add_cells.add(cell->uniqueId().asInt64() + max_cell_uid); // For the UID, reuse that of the deleted cell
+      //to_add_cells.Add(c.UniqueId); // For the UID, reuse that of the deleted cell
       to_add_cells.add(cell->node(0).uniqueId().asInt64());
       to_add_cells.add(cell->node(1).uniqueId().asInt64());
       to_add_cells.add(cell->node(2).uniqueId().asInt64());
@@ -329,7 +329,7 @@ _refineCells()
   }
   info() << ".";
 
-  // Before adding new meshes, the old ones must be detached
+  // Before adding new cells, the old ones must be detached
   modifier->detachCells(cells_to_detach.constView());
   modifier->addCells(nb_cell_to_add, to_add_cells.constView());
   modifier->removeDetachedCells(cells_to_detach.constView());

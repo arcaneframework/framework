@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MaterialModifierOperation.cc                                (C) 2000-2024 */
 /*                                                                           */
-/* Operation for adding/removing meshes from a material.                     */
+/* Operation for adding/removing cells from a material.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -58,11 +58,11 @@ MaterialModifierOperation(IMeshMaterial* mat, SmallSpan<const Int32> ids, bool i
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Checks if the meshes \a ids are already in the material \a mat.
+ * \brief Checks if the cells \a ids are already in the material \a mat.
  *
- * If \a operation==eOperation::Add, checks that the meshes of \a ids
+ * If \a operation==eOperation::Add, checks that the cells of \a ids
  * are not already in the material and if \a operation==eOperation::Remove, checks
- * that the meshes of \a ids are in the material.
+ * that the cells of \a ids are in the material.
  *
  * Also checks that an element is present only once in the list \a ids.
  *
@@ -123,7 +123,7 @@ _checkMaterialPresence(MaterialModifierOperation* operation)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Filters the array of meshes \a ids so that it is valid.
+ * \brief Filters the array of cells \a ids so that it is valid.
  *
  * This method allows filtering the values of \a ids so that
  * only valid values remain so that they can be added

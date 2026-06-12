@@ -97,8 +97,8 @@ computeNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivity_name)
   ARCANE_CHECK_POINTER(mesh);
   NodeNodeConnectivityHelper helper(mesh, connectivity_name);
 
-  // To create the connectivity, iterate over all connected meshes
-  // nodes and then the set of edges of this mesh.
+  // To create the connectivity, iterate over all connected cells
+  // nodes and then the set of edges of this cell.
   // If one of the two nodes of the edge is my node, add it
   // to the connectivity.
   ENUMERATE_ (Node, inode, helper.node_family->allItems()) {
@@ -142,8 +142,8 @@ computeBoundaryNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivi
     Int32 nb_cell = face.nbCell();
     if (nb_cell == 2) {
       Int32 nb_own = 0;
-      // If two connected meshes, only one of the owners
-      // of these two meshes is mine (otherwise it is an internal face and thus we
+      // If two connected cells, only one of the owners
+      // of these two cells is mine (otherwise it is an internal face and thus we
       // do not process it).
       if (face.cell(0).owner() == my_rank)
         ++nb_own;
@@ -152,14 +152,14 @@ computeBoundaryNodeNodeViaEdgeConnectivity(IMesh* mesh, const String& connectivi
       if (nb_own != 1)
         continue;
     }
-    // If only one mesh, the face must belong to me.
+    // If only one cell, the face must belong to me.
     if (!face.isOwn())
       continue;
     for (NodeLocalId node_id : face.nodeIds())
       boundary_node_map.add(node_id, true);
   }
   // Now, iterate over the boundary nodes.
-  // For each one, iterate over the edges of the meshes connected to this node
+  // For each one, iterate over the edges of the cells connected to this node
   // and add the corresponding node if it is also on the boundary
   // (in this case, it is also in boundary_node_map).
   NodeLocalIdToNodeConverter nodes(helper.node_family);

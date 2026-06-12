@@ -272,26 +272,27 @@ class GhostLayerBuilder2::BoundaryNodeToSendInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Adds ghost mesh layers.
+ * \brief Adds ghost cell layers.
  *
  * This version uses sorting to determine the info
  *
- * Before calling this function, there should be no ghost meshes: all meshes
+ * Before calling this function, there should be no ghost cells: all cells
  * in the mesh must belong to this sub-domain.
  * (TODO: add test for this).
  *
- * If multiple ghost mesh layers are requested, we proceed in multiple
+ * If multiple ghost cell layers are requested, we proceed in multiple
  * steps for the same algorithm. First, we send the first layer, then the first
  * and the second, then three layers, and so on. This is probably not
  * optimal in terms of communication but allows processing all cases,
  * especially the case where multiple sub-domains must be crossed to
- * add ghost mesh layers.
- * 
+ * add ghost cell layers.
+ *
  * \todo: implement the optimizations specified in the comments
  * in this function.
- * \todo: ensure that we only work with the mesh/node connectivity.
- * 
+ * \todo: ensure that we only work with the cell/node connectivity.
+ *
  */
 void GhostLayerBuilder2::
 addGhostLayers()
@@ -306,7 +307,7 @@ addGhostLayers()
   UniqueArray<Integer> node_layer(m_mesh->nodeFamily()->maxLocalId(), -1);
 
   // Mark boundary items
-  // We do this even if we do not want ghost mesh layers
+  // We do this even if we do not want ghost cell layers
   _markBoundaryItems(node_layer);
 
   if (nb_ghost_layer == 0)
@@ -322,7 +323,7 @@ addGhostLayers()
 
   Integer boundary_nodes_uid_count = 0;
 
-  // Check that there are no ghost meshes with version 3.
+  // Check that there are no ghost cells with version 3.
   // If so, display a warning and indicate to use version 4.
   if (m_version == 3) {
     Integer nb_ghost = 0;
@@ -336,7 +337,7 @@ addGhostLayers()
                 << " may be wrong. Use version 4 of ghost layer builder if you want to handle this case";
   }
 
-  // Ghost layer to which the mesh belongs.
+  // Ghost layer to which the cell belongs.
   UniqueArray<Integer> cell_layer(m_mesh->cellFamily()->maxLocalId(), -1);
 
   if (m_version >= 4) {

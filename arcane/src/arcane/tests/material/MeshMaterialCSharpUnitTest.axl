@@ -6,7 +6,7 @@
 
   <options>
     <!-- <simple name="remove-fraction" type="int32">
-      <description>Fraction of meshes to delete. If the value is 2, half of the meshes are deleted. If the value is 3, one third of the meshes are deleted</description>
+      <description>Fraction of cells to delete. If the value is 2, half of the cells are deleted. If the value is 3, one third of the cells are deleted</description>
     </simple> -->
   </options>
 

@@ -33,9 +33,9 @@ namespace Arcane::Materials
  * \ingroup ArcaneMaterials
  * \brief Conversion of 'Cell' to 'AllEnvCell'.
 
- Instances of this class allow converting a \a Cell mesh
- into an \a AllEnvCell mesh to obtain material information.
- 
+ Instances of this class allow converting a cell \a Cell
+ into an \a AllEnvCell cell to obtain material information.
+
  An instance is created via the material manager:
  \code
  * IMeshMaterialMng* mm = ...;
@@ -48,7 +48,7 @@ namespace Arcane::Materials
 
  Once the instance is created, it is then possible to use
  the [] operator (operator[]()) to perform the conversion:
- 
+
  \code
  * CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
  * Cell cell = ...;
@@ -59,9 +59,9 @@ namespace Arcane::Materials
  *   info() << "nb env=" << back_all_env_cell.nbEnvironment();
  * }
  \endcode
- 
+
  \warning Instances of this class are invalidated if the list of
- material or environment meshes changes. In this case, the object must be rebuilt:
+ material or environment cells changes. In this case, the object must be rebuilt:
 
  \code
  * all_env_cell_converter = CellToAllEnvCellConverter(m_material_mng);
@@ -87,13 +87,13 @@ class CellToAllEnvCellConverter
 
  public:
 
-  //! Converts a \a Cell mesh to an \a AllEnvCell mesh
+  //! Converts a \a Cell cell to an \a AllEnvCell cell
   AllEnvCell operator[](Cell c)
   {
     return operator[](CellLocalId(c));
   }
 
-  //! Converts a \a CellLocalId mesh to an \a AllEnvCell mesh
+  //! Converts a \a CellLocalId cell to an \a AllEnvCell cell
   ARCCORE_HOST_DEVICE AllEnvCell operator[](CellLocalId c) const
   {
     return AllEnvCell(m_shared_info->_item(ConstituentItemIndex(c.localId())));

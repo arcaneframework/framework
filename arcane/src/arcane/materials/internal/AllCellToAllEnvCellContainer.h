@@ -37,12 +37,13 @@ namespace Arcane::Materials
  * \brief Connectivity table of 'Cell' to its 'AllEnvCell' intended
  *        for use on accelerator.
  *
- * Class that maintains the connectivity of all meshes
- * \a Cell to all their meshes \a AllEnvCell.
+ * Class that maintains the connectivity of all cells
+ * \a Cell to all their cells \a AllEnvCell.
  *
  * An instance is created via the create() method.
  *
- * The initialization cost is high; memory must be allocated and structures filled. We iterate through all meshes and for each mesh we call
+ * The initialization cost is high; memory must be allocated and structures
+ * filled. We iterate through all cells and for each cell we call
  * the CellToAllEnvCellConverter.
  *
  * Once the instance is created, it must be updated every time that
@@ -79,7 +80,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
    * The difference lies in memory management.
    * Here, a compromise is applied to the size of the cid -> envcells table
    * where the size of the array for storing the envcells of a cell is equal to the size
-   * max of the number of environments present at time t in a mesh.
+   * max of the number of environments present at time t in a cell.
    * This allows avoiding memory allocations in the internal loop and
    * in a systematic way.
    * => Performance gain to be evaluated.
@@ -88,7 +89,7 @@ class ARCANE_MATERIALS_EXPORT AllCellToAllEnvCellContainer
 
   /*!
    * \brief Method to provide the maximum number of environments
-   * present on a mesh at time t.
+   * present on a cell at time t.
    *
    * Performing this operation at a given moment allows
    * having a max value <= the total number of environments present

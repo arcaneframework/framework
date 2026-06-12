@@ -142,7 +142,7 @@ computeTiedInterfaces(const XmlNode& mesh_node)
   Integer nb_interface = interfaces_group.size();
   IItemFamily* cell_family = m_mesh->cellFamily();
   if (nb_interface != 0) {
-    // In parallel, meshes must be migrated so that the meshes
+    // In parallel, cells must be migrated so that the cells
     // on both sides of an interface face are in the same subdomain.
     // In parallel, first recalculate the owners, perform
     // the exchange, and finally calculate the projections

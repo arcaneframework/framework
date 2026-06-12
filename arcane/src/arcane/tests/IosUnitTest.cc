@@ -179,7 +179,7 @@ executeTest()
       ARCANE_FATAL("Error in >vtk< test");
   }
 
-  // For testing, display the coordinates of the nodes of the first 10 meshes
+  // For testing, display the coordinates of the nodes of the first 10 cells
   {
     VariableNodeReal3& nodes_coord_var(mesh()->nodesCoordinates());
     ENUMERATE_ (Cell, icell, allCells()) {

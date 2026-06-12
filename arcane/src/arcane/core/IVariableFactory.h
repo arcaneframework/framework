@@ -35,7 +35,7 @@ namespace Arcane
 
  The fullTypeName() operation contains the complete type name, obtained in the
  following way: dataType().itemKind().dimension().multiTag. For example, for a
- real scalar variable on the meshes, the complete type is: \a "Real.Cell.0.0".
+ real scalar variable on the cells, the complete type is: \a "Real.Cell.0.0".
  */
 class IVariableFactory
 {

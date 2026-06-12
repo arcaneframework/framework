@@ -852,8 +852,8 @@ _doInitialPartition()
     if (!is_mesh_allocated)
       continue;
     // Since 'parmetis' does not like repartitioning a mesh if one of the sub-domains
-    // is empty (which is the case if only one processor created the meshes),
-    // we must first use the basic partitioner which distributes the meshes
+    // is empty (which is the case if only one processor created the cells),
+    // we must first use the basic partitioner which distributes the cells
     // among the sub-domains, and then 'parmetis' if it is present
     if (m_legacy_mesh_builder->m_use_partitioner_tester) {
       Int64 nb_cell = mesh->nbCell();

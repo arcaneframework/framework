@@ -32,11 +32,11 @@ namespace Arcane
 /*!
  * \brief Class for managing patch signatures.
  *
- * The signature of a patch in one dimension corresponds to the number of meshes
+ * The signature of a patch in one dimension corresponds to the number of cells
  * to refine in the other dimension (or in the other two dimensions in
  * 3D).
  * Example: for the X signature, for each Xn, for all Yn and for all Zn,
- * we count the number of meshes to refine at (Xn, Yn, Zn).
+ * we count the number of cells to refine at (Xn, Yn, Zn).
  */
 class AMRPatchPositionSignature
 {

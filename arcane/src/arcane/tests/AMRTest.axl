@@ -22,7 +22,7 @@
      </description>
    </service-instance>
    <simple name="amr-ratio" type="real" default="1.0">
-     <description>Ratio (between 0.0 and 1.0) of the number of meshes to refine</description>
+     <description>Ratio (between 0.0 and 1.0) of the number of cells to refine</description>
    </simple>
  </options>
 </module>

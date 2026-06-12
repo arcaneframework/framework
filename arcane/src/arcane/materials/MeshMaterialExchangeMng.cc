@@ -72,12 +72,12 @@ class MeshMaterialExchangeMng::ExchangeCellStep
     if (args.action() == eAction::AC_BeginReceive) {
       // Before deserializing, update the materials because the groups associated
       // with materials and media have changed during the exchange phase:
-      // some meshes have been deleted and others added.
+      // some cells have been deleted and others added.
       // Normally after this phase, the materials and media are
-      // correct and the variable values are OK for the meshes
+      // correct and the variable values are OK for the cells
       // that were present in this sub-domain before the exchange.
       // We still need to update the variable values for
-      // the meshes that have just been added. This is done during
+      // the cells that have just been added. This is done during
       // deserialization.
       info() << "NOTIFY_ACTION BEGIN_RECEIVE";
       m_indirect_modifier->endUpdate();

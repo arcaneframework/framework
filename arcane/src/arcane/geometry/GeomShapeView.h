@@ -49,9 +49,9 @@ class GeomShapeConnectivity;
  *
  * This class manages a view on a geometric shape. There are two
  * ways to initialize a view:
- * - by retrieving the view associated with a mesh element via the call
+ * - by retrieving the view associated with a mesh cell via the call
  * to GeomShapeMng::initShape(). In this case, it is possible to
- * retrieve the associated mesh element via the cell() method.
+ * retrieve the associated cell via the cell() method.
  * - from a temporary instance of GeomShape
  * via one of the two methods initFromHexa() or initFromQuad().
  *
@@ -135,7 +135,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
 
   //! Associated entity (null if none)
   Item item() const { return Item(m_item_internal); }
-  //! Associated mesh element (null if none)
+  //! Associated cell (null if none)
   Cell cell() const { return Cell(m_item_internal); }
   //! Associated face (null if none)
   Face face() const { return Face(m_item_internal); }

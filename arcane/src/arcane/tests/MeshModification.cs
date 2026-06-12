@@ -169,14 +169,14 @@ public class MeshModificationService
   }
 
   /*!
-   * \brief Refines certain meshes into pyramids.
+   * \brief Refines certain cells into pyramids.
    *
    * Takes every third hexahedron:
    * - creates a node at the center of this hexahedron
    * - detaches the hexahedron
    * - creates a pyramid (using the uniqueId() of the original hexahedron), taking as base
    * the first face of the hexahedron and the created node as the pyramid's apex.
-   * - deletes the detached meshes.
+   * - deletes the detached cells.
    */
   void _RefineCells()
   {
@@ -194,7 +194,7 @@ public class MeshModificationService
     List<Real3> nodes_to_add_coords = new List<Real3>();
     VariableNodeReal3 nodes_coords = mesh.NodesCoordinates();
     foreach(Cell c in all_cells){
-      //TODO: test if the mesh is a hexahedron
+      //TODO: test if the cell is a hexahedron
       //if (c.
       ++index;
       if ((index % 3) == 0){
@@ -202,8 +202,8 @@ public class MeshModificationService
 
         to_add_cells.Add(8); // For a pyramid
         //to_add_cells.Add(max_cell_uid + index); // For the uid
-        to_add_cells.Add(c.UniqueId + max_cell_uid); // For the uid, reuses the ID of the deleted mesh
-        //to_add_cells.Add(c.UniqueId); // For the uid, reuses the ID of the deleted mesh
+        to_add_cells.Add(c.UniqueId + max_cell_uid); // For the uid, reuses the ID of the deleted cell
+        //to_add_cells.Add(c.UniqueId); // For the uid, reuses the ID of the deleted cell
         to_add_cells.Add(c.Node(0).UniqueId);
         to_add_cells.Add(c.Node(1).UniqueId);
         to_add_cells.Add(c.Node(2).UniqueId);
@@ -259,7 +259,7 @@ public class MeshModificationService
     }
     Console.WriteLine(".");
 
-    //Before adding the new meshes, the old ones must be detached
+    //Before adding the new cells, the old ones must be detached
     modifier.DetachCells(cells_to_detach.ConstView);
     modifier.AddCells(nb_cell_to_add,to_add_cells.ConstView);
     modifier.RemoveDetachedCells(cells_to_detach.ConstView);

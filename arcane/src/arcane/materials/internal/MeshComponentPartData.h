@@ -89,7 +89,7 @@ class MeshComponentPartData
   //! List of valueIndex() for each part
   FixedArray<UniqueArray<Int32>, 2> m_value_indexes;
 
-  //! List of indices in \a m_items_internal for each material mesh.
+  //! List of indices in \a m_items_internal for each material cell.
   FixedArray<UniqueArray<Int32>, 2> m_items_internal_indexes;
 
   //! List of ComponentItems for this constituent.

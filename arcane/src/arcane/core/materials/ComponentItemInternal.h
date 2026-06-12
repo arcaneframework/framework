@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ComponentItemInternal.h                                     (C) 2000-2024 */
 /*                                                                           */
-/* Internal part of a multi-material mesh.                                   */
+/* Internal part of a multi-material cell.                                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_MATERIALS_COMPONENTITEMINTERNAL_H
 #define ARCANE_CORE_MATERIALS_COMPONENTITEMINTERNAL_H

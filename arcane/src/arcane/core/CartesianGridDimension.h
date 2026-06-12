@@ -41,7 +41,7 @@ namespace mesh
 /*!
  * \brief Information about the dimensions of a Cartesian grid.
  *
- * This class allows obtaining, based on the number of meshes in
+ * This class allows obtaining, based on the number of cells in
  * each direction, the various information about the dimensions
  * of the mesh.
  */
@@ -142,7 +142,7 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
 
    public:
 
-    //! Calculates the uniqueIds() of the 4 faces of the topological coordinate mesh (x,y)
+    //! Calculates the uniqueIds() of the 4 faces of the topological coordinate cell (x,y)
     std::array<Int64, 4> computeForCell(Int64 x, Int64 y)
     {
       std::array<Int64, 4> face_uids;
@@ -267,7 +267,7 @@ class ARCANE_CORE_EXPORT CartesianGridDimension
 
    public:
 
-    //! Calculates the uniqueIds() of the 6 faces of the topological coordinate mesh (x,y,z)
+    //! Calculates the uniqueIds() of the 6 faces of the topological coordinate cell (x,y,z)
     std::array<Int64, 6> computeForCell(Int64 x, Int64 y, Int64 z)
     {
       std::array<Int64, 6> face_uids;

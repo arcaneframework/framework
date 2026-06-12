@@ -755,7 +755,7 @@ void MeshUnitTest::
 _testItemAdjacency3()
 {
   // Tests the functors for calculating ItemPairGroup info.
-  // The functor calculates neighboring meshes to meshes by faces
+  // The functor calculates neighboring cells to cells by faces
   // and compares the result with the equivalent ItemPairGroup calculated by
   // Arcane.
   auto f = [](ItemPairGroupBuilder& builder) {
@@ -773,7 +773,7 @@ _testItemAdjacency3()
     Int32UniqueArray local_ids;
     local_ids.reserve(8);
 
-    // List of entities already processed for the current mesh
+    // List of entities already processed for the current cell
     std::set<Int32> already_in_list;
     ENUMERATE_CELL (icell, items) {
       Cell cell = *icell;
@@ -788,13 +788,13 @@ _testItemAdjacency3()
         Face face = *iface;
         for (CellEnumerator isubcell(face.cells()); isubcell.hasNext(); ++isubcell) {
           const Int32 sub_local_id = isubcell.itemLocalId();
-          // Checks if we are in the list of allowed meshes and if we
+          // Checks if we are in the list of allowed cells and if we
           // have not yet been processed.
           if (allowed_ids.find(sub_local_id) == allowed_ids.end())
             continue;
           if (already_in_list.find(sub_local_id) != already_in_list.end())
             continue;
-          // This mesh must be added. We mark it so we don't
+          // This cell must be added. We mark it so we don't
           // traverse it and we add it to the list.
           already_in_list.insert(sub_local_id);
           local_ids.add(sub_local_id);
@@ -1329,7 +1329,7 @@ void MeshUnitTest::
 _testSharedItems()
 {
   info() << "Checking if shared items are marked";
-  // Should contain how many subdomains the mesh belongs to.
+  // Should contain how many subdomains the cell belongs to.
   VariableCellInt32 var_counter(VariableBuildInfo(mesh(), "CellCounter"));
   var_counter.fill(1);
   IItemFamily* cell_family = mesh()->cellFamily();
@@ -1396,9 +1396,9 @@ _testAdditionnalConnectivity()
   info() << A_FUNCINFO;
   ValueChecker vc(A_FUNCINFO);
 
-  // Creates a mesh <-> face connectivity containing for each mesh the list
+  // Creates a cell <-> face connectivity containing for each cell the list
   // of faces that are not on the boundary: these are faces that have
-  // two connected meshes.
+  // two connected cells.
   IItemFamily* cell_family = mesh()->cellFamily();
   IItemFamily* face_family = mesh()->faceFamily();
   CellGroup cells = cell_family->allItems();

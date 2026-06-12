@@ -123,7 +123,7 @@ MaterialVariableScalarTraits<DataType>::
 resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
 {
   // To avoid reallocating every time there is an increase in
-  // the number of material meshes, allocate a little more than necessary.
+  // the number of material cells, allocate a little more than necessary.
   // By default, we allocate 5% more.
   Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);
   var->_internalApi()->resize(VariableResizeArgs(dim1_size, nb_add, true));
@@ -423,7 +423,7 @@ _synchronizeV1()
   // but it will be with the final algorithm. For this test, it is enough to put
   // a special value in the global variable for each synchronization
   // (for example MIN_FLOAT) and after synchronization, check for each
-  // mesh whose value is different from MIN_FLOAT
+  // cell whose value is different from MIN_FLOAT
   // if it is indeed in our material
   IMeshMaterialMng* material_mng = m_p->materialMng();
   IMesh* mesh = material_mng->mesh();
@@ -525,7 +525,7 @@ _synchronizeV2()
   // but it will be with the final algorithm. For this test, it is enough to put
   // a special value in the global variable for each synchronization
   // (for example MIN_FLOAT) and after synchronization, check for each
-  // mesh whose value is different from MIN_FLOAT
+  // cell whose value is different from MIN_FLOAT
   // if it is indeed in our material
   IMeshMaterialMng* material_mng = m_p->materialMng();
   IMesh* mesh = material_mng->mesh();
@@ -586,7 +586,7 @@ ItemMaterialVariableScalar<DataType>::
 _synchronizeV5()
 {
   // Synchronization version that sends only
-  // the values of materials and environments for shared meshes.
+  // the values of materials and environments for shared cells.
   // NOTE: This version requires that the materials are correctly
   // synchronized between subdomains.
 
@@ -645,7 +645,7 @@ _synchronizeV5()
 
     pm->waitAllRequests(requests);
 
-    // Copy the received data into the ghost meshes.
+    // Copy the received data into the ghost cells.
     for (Integer i = 0; i < nb_rank; ++i) {
       ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
       Integer total = ghost_matcells.size();

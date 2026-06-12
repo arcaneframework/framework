@@ -45,14 +45,14 @@ class IGhostLayerMng
   virtual Integer nbGhostLayer() const = 0;
 
   /*!
-   * \brief Sets the version of the ghost mesh builder.
+   * \brief Sets the version of the ghost cell builder.
    * For now (version 3.3), the possible values are 2, 3, or 4.
    * The default value is 2. Values 3 and 4 allow support
-   * of multiple ghost mesh layers.
+   * of multiple ghost cell layers.
    */
   virtual void setBuilderVersion(Integer n) = 0;
 
-  //! Ghost mesh builder version.
+  //! Ghost cell builder version.
   virtual Integer builderVersion() const = 0;
 };
 

@@ -26,7 +26,7 @@
         Allows defining another cell type after subdivision. Only works for triangles,
         quadrangles, tetrahedrons, and hexahedrons. For example, consider an initial
         mesh with quadrilateral elements; if this option is different from zero, the
-        new meshes will be triangles.
+        new cells will be triangles.
       </description>
     </simple>
 

@@ -83,7 +83,7 @@ _initBuilderVersion()
   // Version 1 no longer exists.
   // Version 3 is operational and more extensible than 2.
   // Version 4 is like version 3 but allows being called
-  // even if there are already ghost mesh layers.
+  // even if there are already ghost cell layers.
   // If OK for IFP, the default version should be set to 3 or 4. However,
   // the case of AMR meshes still needs to be handled
   Integer default_version = 2;

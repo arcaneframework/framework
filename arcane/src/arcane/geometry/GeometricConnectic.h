@@ -37,10 +37,10 @@ namespace Arcane::geometric
 /*!
  * \brief Local connectivity structure
  *
- * These three arrays allow locating the neighbors of the base mesh elements
+ * These three arrays allow locating the neighbors of the cell base mesh elements
  * for local numbering.
  *
- * For a quadrilateral mesh:
+ * For a quadrilateral cell:
  * -----------------------------
  *
  * Definition of NodeConnectic2D
@@ -56,11 +56,11 @@ namespace Arcane::geometric
  *	-> face 1 is composed of vertices 0,4
  *
  *	the order of vertices defines the direction of the normal
- *	external to the mesh through the face.
+ *	external to the cell through the face.
  *
  * Definition of SVCFaceConnectic2D
  *
- *      -> the internal face of the control volume sub-domain is composed 
+ *      -> the internal face of the control volume sub-domain is composed
  *         of the center, the center of a face
  *         It contributes positively to one node and negatively to another
  */
@@ -68,13 +68,14 @@ namespace Arcane::geometric
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief	Local mesh connectivity structures 
+ * \brief	Local cell connectivity structures
  *
- *	returns the local number in the mesh of the face vertices
+ *	returns the local number in the cell of the face vertices
  *
  *	the vertices are numbered such that they define the
- *	normal external to the mesh.
+ *	normal external to the cell.
  *
  */
 struct FaceConnectic
@@ -151,16 +152,17 @@ struct FaceConnectic
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Local mesh connectivity structures.
+ * \brief Local cell connectivity structures.
  *
- * returns the local number in the mesh of the edge vertices
- * and the local number of the mesh faces supported by the edge.
+ * returns the local number in the cell of the edge vertices
+ * and the local number of the cell faces supported by the edge.
  *
  * the face numbering is such that the surface defined by
  * (c1,m,c2,bQ) --- where c1 and c2 represent the midpoints of the
  * first and second face, m the midpoint of the edge, and bQ
- * the barycenter of the mesh --- is oriented positively from s1
+ * the barycenter of the cell --- is oriented positively from s1
  * to s2.
  */
 struct EdgeConnectic
@@ -200,9 +202,9 @@ struct EdgeConnectic
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Local mesh connectivity structures
+ * \brief Local cell connectivity structures
  *
- *	returns the local number in the mesh of the 3 edges and 3 faces
+ *	returns the local number in the cell of the 3 edges and 3 faces
  *	connected to the vertex and the definition of the associated triad (n0,n1,n2,n3)
  */
 struct NodeConnectic
@@ -257,11 +259,12 @@ struct NodeConnectic
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Local mesh and svc connectivity structures
+ * \brief Local cell and svc connectivity structures
  *
  * Returns the definition of an internal face (faces of the svc(s) not
- * contained in the faces of the mesh) as well as the two nodes
+ * contained in the faces of the cell) as well as the two nodes
  * separated by this face
  */
 struct SVCFaceConnectic
@@ -654,7 +657,7 @@ const SVCFaceConnectic triangle_svc_face_connectic[4] ARCANE_UNUSED_ATTRIBUTE = 
 
 /*!
  * \brief Table of 12 real-type elements. Used for weighting
- *        the nodes of the meshes (the largest having 12 nodes)
+ *        the nodes of the cells (the largest having 12 nodes)
  */
 struct LocalCellNodeReal
 {

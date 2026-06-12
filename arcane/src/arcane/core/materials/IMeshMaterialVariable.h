@@ -111,7 +111,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
   /*!
    * \brief Synchronizes the variable.
    *
-   * Synchronization is performed across all materials of the mesh.
+   * Synchronization is performed across all materials of the cell.
    * It is essential that all ghost cells already have the correct
    * number of materials.
    */
@@ -130,17 +130,17 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
   virtual void dumpValues(std::ostream& ostr, AllEnvCellVectorView view) = 0;
 
   /*!
-   * \brief Fills partial values with the value of the associated global mesh.
+   * \brief Fills partial values with the value of the associated global cell.
    */
   virtual void fillPartialValuesWithGlobalValues() = 0;
 
   /*!
-   * \brief Fills partial values with the value of the super mesh.
+   * \brief Fills partial values with the value of the super cell.
    * If level equals LEVEL_MATERIAL, it copies material values with the middle one.
    * If level equals LEVEL_ENVIRONMENT, it copies environment values with
-   * the global mesh's.
+   * the global cell's.
    * If level equals LEVEL_ALLENVIRONMENT, it fills all partial values
-   * with the global mesh's value (this makes this method equivalent to
+   * with the global cell's value (this makes this method equivalent to
    * fillGlobalValuesWithGlobalValues()).
    */
   virtual void fillPartialValuesWithSuperValues(Int32 level) = 0;

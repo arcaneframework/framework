@@ -406,7 +406,7 @@ _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
   sbuf.reserveInteger(1); // for the sub-domain number
   sbuf.reserveInteger(1); // for the number of nodes in the list
   sbuf.reserveArray(unique_ids); // for the unique id of the faces
-  sbuf.reserveArray(cells_unique_ids); // for the unique id of the face meshes
+  sbuf.reserveArray(cells_unique_ids); // for the unique id of the face cells
   sbuf.reserveArray(nodes_unique_id); // for the list of nodes
   sbuf.reserveArray(coords); // for the center coordinates
   sbuf.reserveArray(nodes_coords); // for the node coordinates

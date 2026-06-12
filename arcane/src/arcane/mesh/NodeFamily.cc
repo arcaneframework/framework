@@ -267,8 +267,9 @@ _removeNode(Node node)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Replaces the mesh index \a index of the node \a node with
+ * \brief Replaces the cell index \a index of the node \a node with
  * that of localId() \a node_lid.
  */
 void NodeFamily::

@@ -110,8 +110,9 @@ class FaceUniqueIdBuilder2
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Stores info about a face of a mesh cell.
+ * \brief Stores info about a face of a cell.
 
  * This structure is used during face sorting. Since the sort
  * is parallel and to limit the size of the messages sent,
@@ -196,8 +197,9 @@ class FaceUniqueIdBuilder2::NarrowCellFaceInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Stores info about a face of a mesh cell.
+ * \brief Stores info about a face of a cell.
  */
 class FaceUniqueIdBuilder2::WideCellFaceInfo
 {
@@ -408,14 +410,16 @@ class FaceUniqueIdBuilder2::BoundaryFaceBitonicSortTraits
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Functor for sorting AnyFaceInfo using bitonic sort.
  *
- * The goal is to sort the list so that the meshes with the smallest
- * uniqueId() come first, and for the same mesh, the smallest \a face_local_index comes first.
+ * The goal is to sort the list so that the cells with the smallest
+ * uniqueId() come first, and for the same cell, the smallest
+ * \a face_local_index comes first.
  *
- * Only the information from the first mesh of AnyFaceInfo is used
- * for sorting (the second mesh only serves to send the information
+ * Only the information from the first cell of AnyFaceInfo is used
+ * for sorting (the second cell only serves to send the information
  * to the concerned processors).
  */
 class FaceUniqueIdBuilder2::AnyFaceBitonicSortTraits
@@ -530,7 +534,7 @@ _computeSequential()
   Integer nb_cell = cells_map.count();
   UniqueArray<Cell> cells;
   cells.reserve(nb_cell);
-  // First, the meshes must be sorted by their uniqueId()
+  // First, the cells must be sorted by their uniqueId()
   // in ascending order
   cells_map.eachItem([&](Cell item) {
     cells.add(item);
@@ -575,8 +579,8 @@ _computeParallel()
   // Here, the boundary faces are sorted based on their nodes.
   // Normally, in this list, 2 consecutive BoundaryFaceInfo elements that
   // have the same nodes represent the same face. In this case, we generate
-  // an AnyFaceInfo with the information of the two meshes from these two elements of
-  // the list, being careful to put the mesh with the smaller uniqueId() first.
+  // an AnyFaceInfo with the information of the two cells from these two elements of
+  // the list, being careful to put the cell with the smaller uniqueId() first.
   // If two consecutive elements of the list do not have the same nodes, it
   // means that the face is on the edge of the global domain.
   // We must still handle the case of two consecutive elements of the list
@@ -593,7 +597,7 @@ _computeParallel()
       const BoundaryFaceInfo& fsi = all_fsi[i];
       Int64 cell_uid0 = fsi.m_cell_uid;
       bool is_inside = false;
-      //TODO: handle the case if the previous mesh is on another proc
+      //TODO: handle the case if the previous cell is on another proc
       // For this, it is necessary to retrieve the last value of the previous proc
       // and check if it corresponds to our first value
       is_inside = ((i + 1) != n && fsi.hasSameNodes(all_fsi[i + 1]));
@@ -633,7 +637,7 @@ _computeParallel()
   }
 
   // Add the faces belonging to our sub-domain.
-  // These are all faces that have 2 connected meshes.
+  // These are all faces that have 2 connected cells.
   cells_map.eachItem([&](Cell cell) {
     Integer cell_nb_face = cell.nbFace();
     Int64 cell_uid = cell.uniqueId();
@@ -645,11 +649,11 @@ _computeParallel()
       Cell cell1 = face.cell(1);
       Cell next_cell = (cell0 == cell) ? cell1 : cell0;
       Int64 next_cell_uid = next_cell.uniqueId();
-      // Only record if I am the mesh with the smaller uid
+      // Only record if I am the cell with the smaller uid
       if (cell_uid < next_cell_uid) {
         AnyFaceInfo csi;
         csi.m_cell0.setValue(cell_uid, my_rank, z);
-        // The face_local_index of mesh 1 will not be used
+        // The face_local_index of cell 1 will not be used
         csi.m_cell1.setValue(next_cell_uid, my_rank, -1);
         all_face_list.add(csi);
       }
@@ -864,7 +868,7 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
   // face of this process.
   Int64UniqueArray all_first_face_uid(nb_rank);
   {
-    // Each process retrieves the number of meshes in the list.
+    // Each process retrieves the number of cells in the list.
     // Since this list will be sorted, this corresponds to the uid of the first
     // face of this process.
     Int64 nb_cell_to_sort = all_csi.size();
@@ -902,7 +906,7 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
       if (csi.m_cell1.isValid() && rank1 != rank0) {
         ResendCellInfo& rci1 = resend_infos[nb_info_to_send_indexes[rank1]];
         rci1.m_cell_uid = csi.m_cell1.cellUid();
-        // Even if I am mesh 1, the owner of the face will be mesh 0.
+        // Even if I am cell 1, the owner of the face will be cell 0.
         rci1.m_face_local_index_and_owner_rank = (csi.m_cell1.faceLocalIndex() * nb_rank) + rank0;
         rci1.m_index_in_rank_list = i;
         ++nb_info_to_send_indexes[rank1];

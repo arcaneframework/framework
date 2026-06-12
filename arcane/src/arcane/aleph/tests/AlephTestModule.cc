@@ -64,7 +64,7 @@ init()
   m_aleph_rhs.resize(options()->alephNumberOfSolvers);
   m_aleph_sol.resize(options()->alephNumberOfSolvers);
 
-  // We retrieve the number of meshes
+  // We retrieve the number of cells
   m_local_nb_cell = MESH_OWN_ACTIVE_CELLS(mesh()).size();
   m_total_nb_cell = subDomain()->parallelMng()->reduce(Parallel::ReduceSum, m_local_nb_cell);
   debug() << "\33[37m[AlephTestModule::init] m_total_nb_cell=" << m_total_nb_cell
@@ -88,7 +88,7 @@ init()
   // initialization of temperature at boundaries
   options()->schema()->boundaries(options());
 
-  // We refine the mesh ratio from the dataset
+  // We refine the cell ratio from the dataset
   if ((options()->initAmr() < 0) || (options()->initAmr() > 1.0))
     throw FatalErrorException("AlephTestModule::init()", "AMR ratio out of range");
 
@@ -99,7 +99,7 @@ init()
 }
 
 /***************************************************************************
- *   
+ *
  ***************************************************************************/
 
 void AlephTestModule::

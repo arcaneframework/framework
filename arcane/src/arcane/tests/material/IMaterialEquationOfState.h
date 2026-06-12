@@ -37,7 +37,7 @@ class IMaterialEquationOfState
  public:
 
   /*!
-   *  Initializes the equation of state for the mesh group passed as argument
+   *  Initializes the equation of state for the cell group passed as argument
    *  and calculates the sound speed and internal energy.
    */
   virtual void initEOS(IMeshMaterial* mat,
@@ -46,7 +46,7 @@ class IMaterialEquationOfState
                        MaterialVariableCellReal& internal_energy,
                        MaterialVariableCellReal& sound_speed) = 0;
   /*!
-   *  Applies the equation of state to the mesh group passed as argument
+   *  Applies the equation of state to the cell group passed as argument
    *  and calculates the sound speed and pressure.
    */
   virtual void applyEOS(IMeshMaterial* mat,

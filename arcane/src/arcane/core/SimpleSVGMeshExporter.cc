@@ -97,7 +97,7 @@ write(const CellGroup& cells)
   const Real max_val = std::numeric_limits<Real>::max();
   Real2 min_bbox(max_val, max_val);
   Real2 max_bbox(min_val, min_val);
-  // Calculates the center of the meshes and the bounding box of the mesh group.
+  // Calculates the center of the cells and the bounding box of the cell group.
   std::map<Int32, Real2> cells_center;
   ENUMERATE_CELL (icell, cells) {
     Cell cell = *icell;
@@ -136,7 +136,7 @@ write(const CellGroup& cells)
   //ofile << "<g transform='translate(" << min_bbox.x << "," << -min_bbox.y << ")'>\n";
   ofile << "<g>\n";
 
-  // Displays the contour and uniqueId() for each mesh.
+  // Displays the contour and uniqueId() for each cell.
   ENUMERATE_CELL (icell, cells) {
     Cell cell = *icell;
     Real2 cell_pos = cells_center[cell.localId()];

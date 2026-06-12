@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* HyodaMixedCellsUnitTest.cc                                  (C) 2000-2026 */
 /*                                                                           */
-/* Service for testing the display of mixed meshes.                          */
+/* Service for testing the display of mixed cells.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -152,14 +152,14 @@ class HyodaMixedCellsUnitTest : public ArcaneHyodaMixedCellsUnitTestObject
       //if (iMat2!=iMat0) ids[iEnv][iMat2].add(cell.itemLocalId());
     }
 
-    // We manually add meshes 1 and 4
+    // We manually add cells 1 and 4
     ids[0][1].add(1);
     ids[0][1].add(4);
 
     // Once materials and environments are created, it is possible to add or
-    // remove meshes for a material. It is not necessary to
-    // modify the meshes by environment: Arcane automatically recalculates
-    // the list of meshes for an environment based on those of its materials.
+    // remove cells for a material. It is not necessary to
+    // modify the cells by environment: Arcane automatically recalculates
+    // the list of cells for an environment based on those of its materials.
     for (Integer i = 0, n = options()->environment().size(); i < n; ++i) {
       IMeshEnvironment* env = m_material_mng->environments()[i];
       info() << "[EnvInit] " << env->name() << ", nbMaterial=" << env->nbMaterial();
@@ -171,7 +171,7 @@ class HyodaMixedCellsUnitTest : public ArcaneHyodaMixedCellsUnitTestObject
     }
 
     // Iterating over all environments, then all materials and
-    // all meshes of that material
+    // all cells of that material
     ENUMERATE_ENV (ienv, m_material_mng) {
       IMeshEnvironment* env = *ienv;
       ENUMERATE_MAT (imat, env) {

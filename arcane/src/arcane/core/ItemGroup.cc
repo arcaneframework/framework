@@ -35,7 +35,7 @@ namespace Arcane
 
 /*!
  * \class ItemGroup
- 
+
  A mesh entity group is a list of entities of the same family (IItemFamily).
 
  An entity can only appear once in a group.
@@ -44,7 +44,7 @@ namespace Arcane
  this reference, it is possible to know the type (itemKind(), the name (name()),
  and the number of elements (size()) of the group and to iterate generically
  over the elements that compose it. To iterate over derived elements
- (meshes, nodes, ...), it must first be converted into a reference to a
+ (cells, nodes, ...), it must first be converted into a reference to a
  specific group (NodeGroup, FaceGroup, EdgeGroup, or CellGroup). For example:
  \code
  ItemGroup group = subDomain()->defaultMesh()->findGroup("Surface");
@@ -111,9 +111,9 @@ namespace Arcane
  belonging to the group must be consistent across subdomains. That is, if
  an entity \a x is present in several subdomains (whether as a local or
  ghost entity), it must be in this group for all subdomains or in none of
- the groups. For example, if the mesh with uniqueId() 238 is present in
- subdomains 1, 4, and 8, and for subdomain 4 it is in the mesh group
- 'TOTO', then it must also be in this mesh group 'TOTO' for subdomains 1 and 8.
+ the groups. For example, if the cell with uniqueId() 238 is present in
+ subdomains 1, 4, and 8, and for subdomain 4 it is in the cell group
+ 'TOTO', then it must also be in this cell group 'TOTO' for subdomains 1 and 8.
 */
 
 /*---------------------------------------------------------------------------*/

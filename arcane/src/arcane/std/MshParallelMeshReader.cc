@@ -134,7 +134,7 @@ class MshParallelMeshReader
     Int32 dimension = -1; //!< Dimension of the entity
     Int32 item_nb_node = 0; //!< Number of nodes of the entity.
     Int64 entity_tag = -1;
-    bool is_built_as_cells = false; //!< Indicates if the entities in the block are meshes
+    bool is_built_as_cells = false; //!< Indicates if the entities in the block are cells
     //! If not empty, contains the indirections for renumbering
     SmallSpan<const Int16> reorder_infos;
     UniqueArray<Int64> uids; //! < List of uniqueId() of the block
@@ -512,7 +512,7 @@ _goToNextLine()
 void MshParallelMeshReader::
 _computeNodesPartition()
 {
-  // Determines the mesh bounding box
+  // Determines the cell bounding box
   Real max_value = FloatInfo<Real>::maxValue();
   Real min_value = -max_value;
   Real3 min_box(max_value, max_value, max_value);
@@ -833,7 +833,7 @@ _readOneElementBlock(MshElementBlock& block)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Reading of elements (meshes, faces, ...)
+ * \brief Reading of elements (cells, faces, ...)
  *
  * Here is the format description:
  *
@@ -981,20 +981,20 @@ _readElementsFromFile()
     if (block_dim == mesh_dimension)
       _computeOwnItems(block, m_mesh_allocate_info.cells_infos, false);
     else if (allow_multi_dim_cell) {
-      // Check if we can create meshes of dimensions lower than those
+      // Check if we can create cells of dimensions lower than those
       // of the mesh.
       bool use_sub_dim_cell = false;
       if (mesh_dimension == 3 && (block_dim == 2 || block_dim == 1))
-        // 1D or 2D mesh in a 3D mesh
+        // 1D or 2D cell in a 3D mesh
         use_sub_dim_cell = true;
       else if (mesh_dimension == 2 && block_dim == 1)
-        // 1D mesh in a 2D mesh
+        // 1D cell in a 2D mesh
         use_sub_dim_cell = true;
       if (!use_experimental_type_for_cell)
         use_sub_dim_cell = false;
       if (use_sub_dim_cell) {
-        // Here we will create 2D meshes in a 3D mesh.
-        // We convert the base type into an equivalent type for the meshes.
+        // Here we will create 2D cells in a 3D mesh.
+        // We convert the base type into an equivalent type for the cells.
         if (mesh_dimension == 3) {
           if (block.item_type == IT_Triangle3)
             block.item_type = ItemTypeId(IT_Cell3D_Triangle3);
@@ -1101,7 +1101,7 @@ _computeOwnItems(MshElementBlock& block, MshItemKindInfo& item_kind_info, bool i
     arcane_reordered_uids.resize(item_nb_node);
   for (Int32 i_part = 0; i_part < nb_part; ++i_part) {
     const Int32 dest_rank = m_parts_rank[i_part];
-    // Broadcast the i_part-th part of the mesh uids and connectivities
+    // Broadcast the i_part-th part of the cell uids and connectivities
     ArrayView<Int64> connectivities_view = _broadcastArray(pm, block.connectivities.view(), connectivities, dest_rank);
     ArrayView<Int64> uids_view = _broadcastArray(pm, block.uids.view(), uids, dest_rank);
 
@@ -1111,7 +1111,7 @@ _computeOwnItems(MshElementBlock& block, MshItemKindInfo& item_kind_info, bool i
 
     // Iterate through the entities. Each entity will belong to the rank
     // of its first node. If this part corresponds to my rank, then
-    // we keep the mesh.
+    // we keep the cell.
     for (Int32 i = 0; i < nb_item; ++i) {
       Int64 first_node_uid = connectivities_view[i * item_nb_node];
       auto x = m_mesh_allocate_info.nodes_rank_map.find(first_node_uid);
@@ -1204,7 +1204,7 @@ _allocateCells()
   Integer nb_cell_node = m_mesh_allocate_info.cells_infos.items_infos.size();
   info() << "nb_cell_node=cells_connectivity.size()=" << nb_cell_node;
 
-  // Creating meshes
+  // Creating cells
   info() << "Building cells, nb_cell=" << nb_elements << " nb_cell_node=" << nb_cell_node;
   IPrimaryMesh* pmesh = mesh->toPrimaryMesh();
   info() << "## Allocating ##";
@@ -1451,7 +1451,7 @@ _addCellOrNodeGroupOnePart(ConstArrayView<Int64> uids, const String& group_name,
   // In parallel, it is possible that some entities of the group are not
   // in our subdomain. They must be filtered.
   // Similarly, if it is a group derived from a $Entity node, it is possible
-  // that the node does not exist if it is not attached to a mesh
+  // that the node does not exist if it is not attached to a cell
   // (TODO: to verify with sod3d-misc.msh)
   if (m_is_parallel || filter_invalid) {
     auto items_begin = items_lid.begin();

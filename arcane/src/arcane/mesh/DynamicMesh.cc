@@ -443,7 +443,7 @@ build()
       else if (m_amr_type == eMeshAMRKind::PatchCartesianMeshOnly) {
         // The AMR PatchCartesianMeshOnly is not handled by MeshRefinement().
         // See in CartesianMesh.cc.
-        // TODO: CartesianMeshAMRPatchMng needs it for ghost meshes.
+        // TODO: CartesianMeshAMRPatchMng needs it for ghost cells.
         //        See to remove or replace the call to the method
         //        updateGhostLayerFromParent().
         m_mesh_refinement = new MeshRefinement(this);
@@ -631,7 +631,7 @@ _computeFamilySynchronizeInfos()
     family->computeSynchronizeInfos();
   }
 
-  // Writes the topology for mesh synchronization
+  // Writes the topology for cell synchronization
   if (!platform::getEnvironmentVariable("ARCANE_DUMP_VARIABLE_SYNCHRONIZER_TOPOLOGY").null()) {
     auto* var_syncer = cellFamily()->allItemsSynchronizer();
     Int32 iteration = subDomain()->commonVariables().globalIteration();
@@ -1781,7 +1781,8 @@ _exchangeItems(bool do_compact)
 {
   String nb_exchange_str = platform::getEnvironmentVariable("ARCANE_NB_EXCHANGE");
   // It would be necessary to calculate the default value taking into account the number
-  // of exchanged meshes and the number of variables and their memory usage. Be careful that all procs use the same value.
+  // of exchanged cells and the number of variables and their memory usage.
+  // Be careful that all procs use the same value.
   // In practice, it is better not to exceed 3 or 4 exchanges because this
   // increases the time consumed and does not reduce memory enough.
   Integer nb_exchange = 1;
@@ -1805,7 +1806,7 @@ _exchangeItems(bool do_compact)
   else
     _exchangeItemsNew();
   // Currently, the exchangeItemsNew() method only takes into account
-  // one layer of ghost meshes. If we request more, we must
+  // one layer of ghost cells. If we request more, we must
   // add them now. This call is not optimal but allows
   // for correctly processing all cases (I hope).
   if (ghostLayerMng()->nbGhostLayer() > 1 && !m_use_mesh_item_family_dependencies) // many ghost already handled in MeshExchange with ItemFamilyNetwork
@@ -1830,18 +1831,18 @@ _exchangeItems(bool do_compact)
  *
  * There are two versions for this mechanism:
  * 1. Version 1, which is the historical version. For this algorithm,
- *    we divide the number of meshes to send into \a nb_exchange parts,
- *    each part having (nb_cell / nb_exchange) meshes. This algorithm
+ *    we divide the number of cells to send into \a nb_exchange parts,
+ *    each part having (nb_cell / nb_exchange) cells. This algorithm
  *    allows limiting the size of messages but not the number of messages
  *    in flight.
- * 2. Version 2, which separates the list of meshes to send based on
+ * 2. Version 2, which separates the list of cells to send based on
  *    the rank of each part. This is useful for limiting the number of
  *    messages sent simultaneously but will not decrease the size of the message
  *    sent to a given rank. Assuming that consecutive ranks
  *    are on the same node of a computer, we separate the exchange into
  *    \a nb_exchange using the following algorithm:
  *    - we denote 'i' as the i-th exchange (numbered from 0 to (nb_exchange-1)),
- *    - for exchange 'i', we only process the meshes whose new
+ *    - for exchange 'i', we only process the cells whose new
  *      owner modulo (nb_exchange) equals 'i'.
  *
  * We optimize slightly by only performing the optional compaction
@@ -1849,10 +1850,10 @@ _exchangeItems(bool do_compact)
  *
  * TODO: optimize even better with a special function
  * instead of calling _exchangeItems();
- * TODO: instead of dividing the list of meshes into \a nb_exchange
+ * TODO: instead of dividing the list of cells into \a nb_exchange
  * arbitrary parts, it would be necessary to do it by taking
- * adjacent meshes to avoid having too many exchanges
- * of ghost meshes if the meshes are distributed randomly.
+ * adjacent cells to avoid having too many exchanges
+ * of ghost cells if the cells are distributed randomly.
  */
 void DynamicMesh::
 _multipleExchangeItems(Integer nb_exchange, Integer version, bool do_compact)
@@ -1884,14 +1885,14 @@ _multipleExchangeItems(Integer nb_exchange, Integer version, bool do_compact)
     cells_to_exchange_uid[phase].add(cell.uniqueId().asInt64());
   }
 
-  // Sets it as if the mesh did not change owner to
+  // Sets it as if the cell did not change owner to
   ENUMERATE_CELL (icell, ownCells()) {
     Cell cell = *icell;
     cells_new_owner[icell] = cell.owner();
   }
 
   // From here, cells_new_owner is identical to cell.owner()
-  // for each mesh.
+  // for each cell.
   Int32UniqueArray uids_to_lids;
   for (Integer i = 0; i < nb_exchange; ++i) {
     Int32ConstArrayView new_owners = cells_to_exchange_new_owner[i];
@@ -1901,7 +1902,7 @@ _multipleExchangeItems(Integer nb_exchange, Integer version, bool do_compact)
     uids_to_lids.resize(nb_cell);
     cell_family->itemsUniqueIdToLocalId(uids_to_lids, new_uids);
     ItemInternalList cells = cell_family->itemsInternal();
-    // For each mesh in the current exchange part, sets the new_owner
+    // For each cell in the current exchange part, sets the new_owner
     // to the correct value
     for (Integer z = 0; z < nb_cell; ++z)
       cells_new_owner[cells[uids_to_lids[z]]] = new_owners[z];
@@ -1964,7 +1965,7 @@ _exchangeItemsNew()
   // The algorithm used here is not recursive with submeshes.
   // All communications are grouped and the different levels of modifications
   // will be popped here. This implementation does not allow having
-  // more than one submesh level per mesh.
+  // more than one submesh level per cell.
 
   Trace::Setter mci(traceMng(), _className());
 
@@ -2071,9 +2072,9 @@ _exchangeItemsNew()
   // TODO: ensure this call in case of an exception.
   m_mesh_exchange_mng->endExchange();
 
-  // Now, the mesh is updated but the extraordinary ghost meshes
+  // Now, the mesh is updated but the extraordinary ghost cells
   // have been potentially removed. We replace them in the mesh.
-  // Non-optimized version. Ideally, extraordinary meshes
+  // Non-optimized version. Ideally, extraordinary cells
   // should be managed in MeshExchange.
   // endUpdate() must be called in all cases to ensure
   // that the variables and groups are properly sized.
@@ -2145,9 +2146,9 @@ _removeGhostItems()
 {
   const Int32 sid = meshRank();
 
-  // Removal of ghost meshes.
+  // Removal of ghost cells.
   // We must use an intermediate array, because deleting
-  // meshes invalidates the iterators on 'cells_map'.
+  // cells invalidates the iterators on 'cells_map'.
   UniqueArray<Int32> cells_to_remove;
   cells_to_remove.reserve(1000);
 
@@ -2219,7 +2220,7 @@ _removeGhostChildItems()
 {
   const Int32 sid = meshRank();
 
-  // Removal of meshes
+  // Removal of cells
   UniqueArray<Int32> cells_to_remove;
   cells_to_remove.reserve(1000);
 
@@ -2969,7 +2970,7 @@ _setDimension(Integer dim)
       adder->setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(v);
   }
   // In 3D, with non-manifold meshes, it is mandatory to create edges.
-  // They will be used instead of faces for 2D meshes.
+  // They will be used instead of faces for 2D cells.
   if (dim == 3 && is_non_manifold) {
     Connectivity c(m_mesh_connectivity);
     if (!c.hasConnectivity(Connectivity::CT_HasEdge)) {
@@ -3071,19 +3072,20 @@ sharedNodesCoordinates()
 void DynamicMesh::
 _setOwnersFromCells()
 {
-  // We assume we know the new owners of the meshes, which
+  // We assume we know the new owners of the cells, which
   // are found in cells_owner. We must now determine the new owners of the nodes and
   // faces. Until we have an algorithm that better balances
   // the messages, we apply the following:
   // - each sub-domain is responsible for determining the new
   // owner of the nodes and faces belonging to it.
-  // - for nodes and edges, the new owner is the new owner of the mesh connected to this node whose uniqueId() is the smallest.
+  // - for nodes and edges, the new owner is the new owner of the cell
+  // connected to this node whose uniqueId() is the smallest.
   // - for faces, the new owner is the new owner
-  // of the mesh behind this face if it is an internal face, and of the connected mesh if it is a boundary face.
+  // of the cell behind this face if it is an internal face, and of the connected cell if it is a boundary face.
   // - for dual nodes, the new owner is the new owner
-  // of the mesh connected to the dual element
+  // of the cell connected to the dual element
   // - for links, the new owner is the new owner
-  // of the mesh connected to the first dual node, i.e., the owner
+  // of the cell connected to the first dual node, i.e., the owner
   // of the first dual node of the link
 
   VariableItemInt32& nodes_owner(nodeFamily()->itemsNewOwner());
@@ -3168,7 +3170,7 @@ outerFaces()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Group of all active meshes
+//! Group of all active cells
 CellGroup DynamicMesh::
 allActiveCells()
 {
@@ -3176,7 +3178,7 @@ allActiveCells()
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Group of all active and domain-specific meshes
+//! Group of all active and domain-specific cells
 CellGroup DynamicMesh::
 ownActiveCells()
 {
@@ -3184,7 +3186,7 @@ ownActiveCells()
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Group of all meshes of level \p level
+//! Group of all cells of level \p level
 CellGroup DynamicMesh::
 allLevelCells(const Integer& level)
 {
@@ -3192,7 +3194,7 @@ allLevelCells(const Integer& level)
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Group of all own meshes of level \p level
+//! Group of all own cells of level \p level
 CellGroup DynamicMesh::
 ownLevelCells(const Integer& level)
 {

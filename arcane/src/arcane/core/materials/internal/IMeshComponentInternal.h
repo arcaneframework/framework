@@ -40,7 +40,7 @@ class ARCANE_CORE_EXPORT IMeshComponentInternal
   //! Indexer to access partial variables.
   virtual MeshMaterialVariableIndexer* variableIndexer() const = 0;
 
-  //! View of the constituent meshes.
+  //! View of the constituent cells.
   virtual ConstituentItemLocalIdListView constituentItemListView() const = 0;
 
   //! Index to access partial variables.

@@ -20,13 +20,13 @@
 //  Adaptive loop:
 // 1- calculation of the analytical solution
 // 2- calculation of the error grid and projection of the solution to the new grid
-// 3- marking of meshes for adaptation based on the estimated error
+// 3- marking of cells for adaptation based on the estimated error
 // 4- Perform mesh adaptation.
 // 5- projection of variables (here solution)
 // In the axl file, the parameter
 // "max_adapt_iters" controls the number of adaptation loops,
 // "max_level" controls the maximum refinement level, and
-// "refine_percentage" / "coarsen_percentage" determine the number of meshes
+// "refine_percentage" / "coarsen_percentage" determine the number of cells
 // to refine/coarsen in each adaptation iteration.
 
 /*---------------------------------------------------------------------------*/

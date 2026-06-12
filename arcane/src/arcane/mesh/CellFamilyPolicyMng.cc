@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellFamilyPolicyMng.cc                                      (C) 2000-2018 */
 /*                                                                           */
-/* Mesh family policy manager.                                               */
+/* Cell family policy manager.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,7 +30,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Mesh family policy manager.
+ * \brief Cell family policy manager.
  */
 class ARCANE_MESH_EXPORT CellFamilyPolicyMng
 : public ItemFamilyPolicyMng

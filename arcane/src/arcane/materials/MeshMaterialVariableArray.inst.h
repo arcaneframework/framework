@@ -86,7 +86,7 @@ template <typename DataType> void
 MaterialVariableArrayTraits<DataType>::
 resizeWithReserve(PrivatePartType* var, Integer dim1_size, Real reserve_ratio)
 {
-  // To avoid reallocating every time the number of material meshes increases,
+  // To avoid reallocating every time the number of material cells increases,
   // allocate a little more than necessary.
   // By default, we allocate 5% more.
   Int32 nb_add = static_cast<Int32>(dim1_size * reserve_ratio);

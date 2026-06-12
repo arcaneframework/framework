@@ -122,7 +122,7 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 
  public:
 
-  //! List of pure entities (associated with the global mesh) of the constituent
+  //! List of pure entities (associated with the global cell) of the constituent
   ComponentPurePartItemVectorView pureItems() const;
 
   //! List of impure (partial) entities of the constituent

@@ -40,7 +40,7 @@ namespace Arcane::geometric
  * The class \a OperationFunction must provide an apply() method for each shape
  * geometric type (Hexaedron8ShapeView, Quad4ShapeView, ...)
  *
- * The call is then made with a group of meshes (CellGroup) by calling
+ * The call is then made with a group of cells (CellGroup) by calling
  * the ItemGroup::applyOperation() method with this instance as an argument:
  *
  \code

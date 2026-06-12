@@ -59,8 +59,9 @@ class SimpleHTMLMeshAMRPatchExporter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Mesh node position by direction for Cartesian meshes.
+ * \brief Cell node position by direction for Cartesian meshes.
  */
 enum eCellNodePosition
 {

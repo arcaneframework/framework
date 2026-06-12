@@ -122,7 +122,7 @@ setItems(ConstituentItemVectorImpl* vector_impl, ConstituentGetterLambda constit
 
   const Int32 nb_id = local_ids.size();
 
-  // No need to keep information for meshes where
+  // No need to keep information for cells where
   // the constituent is absent.
   auto setter_unselected = [=] ARCCORE_HOST_DEVICE(Int32, Int32) {
   };
@@ -136,14 +136,14 @@ setItems(ConstituentItemVectorImpl* vector_impl, ConstituentGetterLambda constit
 
   // Implementation using the accelerator API
   if (m_use_new_impl) {
-    // Lambda to select pure meshes
+    // Lambda to select pure cells
     auto select_pure = [=] ARCCORE_HOST_DEVICE(Int32 index) {
       ComponentCell cc = constituent_getter_lambda(index);
       if (cc.null())
         return false;
       return (cc._varIndex().arrayIndex() == 0);
     };
-    // Lambda to select impure meshes
+    // Lambda to select impure cells
     auto select_impure = [=] ARCCORE_HOST_DEVICE(Int32 index) {
       ComponentCell cc = constituent_getter_lambda(index);
       if (cc.null())
@@ -233,11 +233,11 @@ _setItems(SmallSpan<const Int32> local_ids)
   const Int32 nb_impure = m_nb_impure;
   const Int32 total_nb_pure_and_impure = nb_pure + nb_impure;
 
-  // Array that will contain the indices of pure and impure meshes.
+  // Array that will contain the indices of pure and impure cells.
   // The first part from 0 to nb_pure will contain the pure part.
-  // The second part from nb_pure to (nb_pure+nb_impure) will contain the impure meshes.
+  // The second part from nb_pure to (nb_pure+nb_impure) will contain the impure cells.
   // Note that (nb_pure + nb_impure) may be different from local_ids.size()
-  // if some meshes in local_ids do not have the constituent.
+  // if some cells in local_ids do not have the constituent.
   m_constituent_list->resize(total_nb_pure_and_impure);
 
   // TODO: Do not systematically update // 'm_items_local_id' but only
@@ -250,7 +250,7 @@ _setItems(SmallSpan<const Int32> local_ids)
   AllEnvCellVectorView all_env_cell_view = m_material_mng->view(local_ids);
   const Int32 component_id = m_component->id();
 
-  // Lambda to retrieve the environment associated with the mesh
+  // Lambda to retrieve the environment associated with the cell
   auto env_component_getter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> ComponentCell {
     AllEnvCell all_env_cell = all_env_cell_view[index];
     for (EnvCell ec : all_env_cell.subEnvItems()) {
@@ -260,7 +260,7 @@ _setItems(SmallSpan<const Int32> local_ids)
     return {};
   };
 
-  // Lambda to retrieve the material associated with the mesh
+  // Lambda to retrieve the material associated with the cell
   auto mat_component_getter_lambda = [=] ARCCORE_HOST_DEVICE(Int32 index) -> ComponentCell {
     AllEnvCell all_env_cell = all_env_cell_view[index];
     for (EnvCell ec : all_env_cell.subEnvItems()) {
@@ -302,7 +302,7 @@ _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue)
   Accelerator::ReducerSum2<Int32> nb_pure(command);
   Accelerator::ReducerSum2<Int32> nb_impure(command);
 
-  // Calculates the number of pure and impure meshes
+  // Calculates the number of pure and impure cells
   if (is_env) {
     command << RUNCOMMAND_MAT_ENUMERATE(AllEnvCell, all_env_cell, all_env_cell_view, nb_pure, nb_impure)
     {
@@ -342,7 +342,7 @@ _computeNbPureAndImpure(SmallSpan<const Int32> local_ids, RunQueue& queue)
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Calculates the number of pure and impure meshes without the accelerator API.
+ * \brief Calculates the number of pure and impure cells without the accelerator API.
  */
 void ConstituentItemVectorImpl::
 _computeNbPureAndImpureLegacy(SmallSpan<const Int32> local_ids)
@@ -355,7 +355,7 @@ _computeNbPureAndImpureLegacy(SmallSpan<const Int32> local_ids)
   Int32 nb_pure = 0;
   Int32 nb_impure = 0;
 
-  // Calculates the number of pure and impure meshes
+  // Calculates the number of pure and impure cells
   if (is_env) {
     ENUMERATE_ALLENVCELL (iallenvcell, all_env_cell_view) {
       AllEnvCell all_env_cell = *iallenvcell;

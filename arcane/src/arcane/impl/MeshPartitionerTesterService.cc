@@ -47,9 +47,9 @@ namespace Arcane
  * \brief Mesh repartitioning test class.
  *
  * This class is used only to test mesh repartitioning.
- * It simply changes the owner of the meshes based
+ * It simply changes the owner of the cells based
  * on the numbering and without taking into account potential imbalances
- * during computation time. 
+ * during computation time.
  */
 class MeshPartitionerTester
 : public ArcaneMeshPartitionerTesterServiceObject

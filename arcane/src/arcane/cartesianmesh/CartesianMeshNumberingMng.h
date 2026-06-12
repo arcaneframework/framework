@@ -205,7 +205,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    *        ┌──┬──┬──┬──┬──┐
    * y = -1 │ 0│  │ 2│  │ 4│
    *        ┌──┬──┬──┬──┬──┐
-   * y  │  │ 1│  │ 3│  │
+   * y      │  │ 1│  │ 3│  │
    *        ├──┼──┼──┼──┼──┤
    * y = 1  │ 5│  │ 7│  │ 9│
    *        ├──┼──┼──┼──┼──┤
@@ -222,7 +222,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianMeshNumberingMng
    * \warning To start the numbering at 0, in methods returning a 2D face unique ID, we use FaceUID-1.
    *
    * And in 3D (for a 2x2x2 cell mesh):
-   *         z            │ z = 1            │ z = 2            │ z = 3            │ z = 4
+   *             z            │ z = 1            │ z = 2            │ z = 3            │ z = 4
    *      x =  0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4  │   0  1  2  3  4
    *         ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐ │ ┌──┬──┬──┬──┬──┐
    *  y      │  │  │  │  │  │ │ │  │24│  │25│  │ │ │  │  │  │  │  │ │ │  │30│  │31│  │ │ │  │  │  │  │  │

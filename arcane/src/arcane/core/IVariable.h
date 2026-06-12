@@ -65,7 +65,7 @@ class ARCANE_CORE_EXPORT IVariable
      * \brief Indicates that the variable is not necessarily synchronized.
      *
      * This means it is normal for the variable values to be different from
-     * one processor to another on ghost meshes
+     * one processor to another on ghost cells
      */
     PNoNeedSync = (1 << 1),
 
@@ -339,7 +339,7 @@ class ARCANE_CORE_EXPORT IVariable
    * This operation is only usable with mesh variables.
 	 *
    * \param group_name group. It must correspond to an existing group
-   * of the variable's type (e.g., CellGroup for a mesh variable).
+   * of the variable's type (e.g., CellGroup for a cell variable).
    * \param value initialization value. The string must be convertible
    * to the variable's type.
    *
@@ -358,7 +358,7 @@ class ARCANE_CORE_EXPORT IVariable
    * across all subdomains, both on owned elements and ghost elements.
    *
    * For each unsynchronized element, a message is displayed.
-   * 
+   *
    * \param max_print maximum number of messages to display.
    * If 0, no element is displayed. If positive, display at most
    * \a max_print elements. If negative, all elements are displayed.
@@ -533,11 +533,11 @@ class ARCANE_CORE_EXPORT IVariable
   /*!
    * \brief Copies the values of entities numbered @a source into entities
    * numbered @a destination
-   * 
+   *
    * @note This operation is internal to Arcane and must be done in
    * conjunction with the entity family corresponding to this
    * variable.
-   * 
+   *
    * @param source list of @b source localIds
    * @param destination list of @b destination localIds
    */
@@ -547,7 +547,7 @@ class ARCANE_CORE_EXPORT IVariable
    * \brief Copies the mean values of entities numbered
    * @a first_source and @a second_source into entities numbered
    * @a destination
-   * 
+   *
    * @param first_source list of @b localIds of the 1st source
    * @param second_source list of @b localIds of the 2nd source
    * @param destination list of @b destination localIds
@@ -660,7 +660,7 @@ class ARCANE_CORE_EXPORT IVariable
    *
    * The observers registered in this observable are called
    * when the number of elements of the variable changes.
-   * This is the case, for example, after a remeshing for a mesh variable
+   * This is the case, for example, after a remeshing for a cell variable
    */
   virtual IObservable* onSizeChangedObservable() = 0;
   //@}

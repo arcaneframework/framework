@@ -223,7 +223,7 @@ class CartesianMeshImpl
  private:
 
   InternalApi m_internal_api;
-  //! Index in the local numbering of the mesh, of the face in
+  //! Index in the local numbering of the cell, of the face in
   // the X, Y or Z direction
   Int32 m_local_face_direction[3] = { -1, -1, -1 };
   IMesh* m_mesh = nullptr;
@@ -233,7 +233,7 @@ class CartesianMeshImpl
   UniqueArray<CartesianConnectivity::Index> m_cells_to_node_storage;
   UniqueArray<CartesianConnectivity::Permutation> m_permutation_storage;
   bool m_is_amr = false;
-  //! Group of meshes for each AMR patch.
+  //! Group of cells for each AMR patch.
   CartesianPatchGroup m_patch_group;
   ScopedPtrT<Properties> m_properties;
 
@@ -454,8 +454,8 @@ computeDirections()
 
   bool is_3d = m_mesh->dimension() == 3;
 
-  // We assume that all meshes have the same numbering direction in the mesh.
-  // For example, for all meshes, face index 0 is the top one, face
+  // We assume that all cells have the same numbering direction in the mesh.
+  // For example, for all cells, face index 0 is the top one, face
   // index 1 is the right one.
   if (is_3d) {
     Real max_x = -1;
@@ -597,7 +597,7 @@ _buildPatchGroups(const CellGroup& cells, Integer patch_level)
   // is that of the entities' uniqueId()
   // TODO: eventually, the traversal order should be the same as
   // that of the Cartesian mesh. To do this, either the uniqueId()
-  // of the created meshes/nodes are in the same order as the Cartesian mesh,
+  // of the created cells/nodes are in the same order as the Cartesian mesh,
   // or that the sorting function is specific to this type of mesh.
   NodeGroup nodes = cells.nodeGroup();
   IItemFamily* cell_family = cells.itemFamily();
@@ -605,7 +605,7 @@ _buildPatchGroups(const CellGroup& cells, Integer patch_level)
 
   String cell_group_name = String("AMRPatchCells") + patch_level;
   CellGroup patch_cells = cell_family->createGroup(cell_group_name, Int32ConstArrayView(), true);
-  // Sets the same meshes as \a cells but forces the sort
+  // Sets the same cells as \a cells but forces the sort
   patch_cells.setItems(cells.view().localIds(), true);
 
   String node_group_name = String("AMRPatchNodes") + patch_level;
@@ -655,14 +655,14 @@ _computeMeshDirection(CartesianMeshPatch& cdi, eMeshDirection dir, VariableCellR
 
   cell_dm._internalSetLocalFaceIndex(next_local_face, prev_local_face);
 
-  // Position the faces before and after for each mesh in the direction.
+  // Position the faces before and after for each cell in the direction.
   // We ensure that these entities are in the group of entities for the corresponding direction
   std::set<Int32> cells_set;
   ENUMERATE_CELL (icell, all_cells) {
     cells_set.insert(icell.itemLocalId());
   }
 
-  // Calculate the front/back meshes. In the case of an AMR patch, these two meshes
+  // Calculate the front/back cells. In the case of an AMR patch, these two cells
   // must be of the same level
   ENUMERATE_CELL (icell, all_cells) {
     Cell cell = *icell;
@@ -806,14 +806,14 @@ _computeMeshDirectionV2(CartesianMeshPatch& cdi, eMeshDirection dir, CellGroup a
 
   cell_dm._internalSetLocalFaceIndex(next_local_face, prev_local_face);
 
-  // Position the faces before and after for each mesh in the direction.
+  // Position the faces before and after for each cell in the direction.
   // We ensure that these entities are in the group of entities for the corresponding direction
   std::set<Int32> cells_set;
   ENUMERATE_ (Cell, icell, all_cells) {
     cells_set.insert(icell.itemLocalId());
   }
 
-  // Calculate the front/back meshes. In the case of an AMR patch, these two meshes
+  // Calculate the front/back cells. In the case of an AMR patch, these two cells
   // must be of the same level
   ENUMERATE_ (Cell, icell, all_cells) {
     Cell cell = *icell;
@@ -907,7 +907,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
     ARCANE_FATAL("You cannot reduce number of ghost layer of level 0 with this method");
   }
 
-  // Maximum number of ghost mesh layers. Meh; needs modification.
+  // Maximum number of ghost cell layers. Meh; needs modification.
   const Int32 max_nb_layer = 128;
   Int32 level_max = 0;
 
@@ -931,7 +931,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
 
   //debug() << "NbGhostLayers level " << level << " : " << nb_ghost_layer;
 
-  // We assume there are always 2*2 child meshes (2*2*2 in 3D).
+  // We assume there are always 2*2 child cells (2*2*2 in 3D).
   if (target_nb_ghost_layers % 2 != 0) {
     target_nb_ghost_layers++;
   }
@@ -959,7 +959,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
     }
   };
 
-  // Algorithm for numbering ghost mesh layers.
+  // Algorithm for numbering ghost cell layers.
   {
     VariableNodeInt32 level_node{ VariableBuildInfo{ m_mesh, "LevelNode" } };
     level_node.fill(-1);
@@ -1006,7 +1006,7 @@ reduceNbGhostLayers(Integer level, Integer target_nb_ghost_layers)
           continue;
         }
 
-        // Mesh without nodes already processed.
+        // Cell without nodes already processed.
         if (min == max_nb_layer && max == -1) {
           continue;
         }
@@ -1071,8 +1071,8 @@ _addPatchFromExistingChildren(ConstArrayView<Int32> parent_cells_local_id)
 void CartesianMeshImpl::
 _addPatch(ConstArrayView<Int32> parent_cells)
 {
-  // Create the group containing the AMR meshes
-  // These are the child meshes of \a parent_cells
+  // Create the group containing the AMR cells
+  // These are the child cells of \a parent_cells
 
   UniqueArray<Int32> children_local_id;
   CellInfoListView cells(m_mesh->cellFamily());

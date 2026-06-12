@@ -309,7 +309,7 @@ init()
   // Initialize density.
   // We set a density of 1.0 inside
   // and add a density of 5.0 for each direction in the
-  // boundary meshes.
+  // boundary cells.
   m_density.fill(1.0);
   for (Integer idir = 0, nb_dir = dimension; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
@@ -320,20 +320,20 @@ init()
       Cell next = cc.next();
       Cell prev = cc.previous();
       if (next.null() || prev.null()) {
-        // Mesh at the boundary. I add density.
+        // Cell at the boundary. I add density.
         // Should not happen since we are on innerCells()
         ++nb_boundary1;
         m_density[icell] += 5.0;
       }
     }
-    // Iterate over boundary meshes for the direction
+    // Iterate over boundary cells for the direction
     ENUMERATE_CELL (icell, cdm.outerCells()) {
       DirCell cc(cdm[icell]);
       if (icell.index() < 5)
         info() << "CELL: cell=" << ItemPrinter(*icell)
                << " next=" << ItemPrinter(cc.next())
                << " previous=" << ItemPrinter(cc.previous());
-      // Mesh at the boundary. I add density.
+      // Cell at the boundary. I add density.
       ++nb_boundary2;
       m_density[icell] += 5.0;
     }
@@ -576,7 +576,7 @@ _initAMR()
       }
     }
   }
-  // Iterates through active meshes and adds to the list of meshes
+  // Iterates through active cells and adds to the list of cells
   // to refine those contained in the bounding box
   // specified in the dataset.
   Int32 dim = defaultMesh()->dimension();
@@ -969,13 +969,13 @@ _checkDirectionUniqueIdsHashCollective(ArrayView<Int64> own_items_uid_around, In
 }
 
 /*!
- * \brief Method allowing retrieval of an array containing the meshes
- * around the meshes.
+ * \brief Method allowing retrieval of an array containing the cells
+ * around the cells.
  *
  * The array will be in the form: {uid_cell, uid_cell_dir0_pred, uid_cell_dir0_succ, uid_cell_dir1_pred, ...}
  *
  * \param own_cells_uid_around_cells [OUT] An empty array
- * \return The number of meshes around each mesh (4 in 2D and 6 in 3D).
+ * \return The number of cells around each cell (4 in 2D and 6 in 3D).
  */
 Integer AMRCartesianMeshTesterModule::
 _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
@@ -1021,8 +1021,8 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
         Integer pos_final = i + 1 + (dir * nb_items_per_dir);
         Integer pos_pred = pos_final + ipred;
         Integer pos_succ = pos_final + isucc;
-        // In classic AMR, there cannot be a mesh in two
-        // different patches (no overlapping meshes).
+        // In classic AMR, there cannot be a cell in two
+        // different patches (no overlapping cells).
         if (m_cartesian_mesh->mesh()->meshKind().meshAMRKind() == eMeshAMRKind::Cell) {
           if (own_cells_uid_around_cells[pos_pred] != -1 && own_cells_uid_around_cells[pos_pred] != uid_pred) {
             ARCANE_FATAL("Consistency problem between patches (uid={0} -- old_uid_pred={1} -- new_uid_pred={2})", uid, own_cells_uid_around_cells[pos_pred], uid_pred);
@@ -1033,7 +1033,7 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
           own_cells_uid_around_cells[pos_pred] = uid_pred;
           own_cells_uid_around_cells[pos_succ] = uid_succ;
         }
-        // In patch AMR, an II_Overlap mesh does not necessarily have the same
+        // In patch AMR, an II_Overlap cell does not necessarily have the same
         // neighbors for one patch or another.
         // We remove the checks (for now) (if modified, hash changes!).
         else {
@@ -1072,13 +1072,13 @@ _cellsUidAroundCells(UniqueArray<Int64>& own_cells_uid_around_cells)
 }
 
 /*!
- * \brief Method allowing retrieval of an array containing the meshes
+ * \brief Method allowing retrieval of an array containing the cells
  * around the faces.
  *
  * The array will be in the form: {uid_face, uid_cell_pred, uid_cell_succ, ...}
  *
  * \param own_cells_uid_around_faces [OUT] An empty array
- * \return The number of meshes around each face (=2).
+ * \return The number of cells around each face (=2).
  */
 Integer AMRCartesianMeshTesterModule::
 _cellsUidAroundFaces(UniqueArray<Int64>& own_cells_uid_around_faces)
@@ -1293,7 +1293,7 @@ _checkSync()
 void AMRCartesianMeshTesterModule::
 _cellsInPatch(Real3 position, Real3 length, bool is_3d, Int32 level, UniqueArray<Int32>& cells_in_patch)
 {
-  // Iterates over active meshes and adds to the list of meshes
+  // Iterates over active cells and adds to the list of cells
   // to refine that are contained within the bounding box
   // specified in the dataset.
   Real3 min_pos = position;

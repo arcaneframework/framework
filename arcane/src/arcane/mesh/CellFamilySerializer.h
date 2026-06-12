@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellFamilySerializer.h                                      (C) 2000-2024 */
 /*                                                                           */
-/* Serialization/Deserialization of mesh families.                           */
+/* Serialization/Deserialization of cell families.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_CELLFAMILYSERIALIZER_H
 #define ARCANE_MESH_CELLFAMILYSERIALIZER_H
@@ -32,8 +32,9 @@ class CellFamily;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
- * \brief Serialization/Deserialization of mesh families.
+ * \brief Serialization/Deserialization of cell families.
  */
 class ARCANE_MESH_EXPORT CellFamilySerializer
 : public TraceAccessor

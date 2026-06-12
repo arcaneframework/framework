@@ -364,9 +364,10 @@ readAndAllocItems()
 {
   info(4) << "ItemsExchangeInfo2::readAndAllocItems() " << itemFamily()->name();
 
-  // The organization of the loops and the switch is not identical here to prepareToSend; for readability, they should be made similar.
+  // The organization of the loops and the switch is not identical here to
+  // prepareToSend; for readability, they should be made similar.
 
-  // Retrieves the info of the meshes of each receiver and creates the entities.
+  // Retrieves the info of the cells of each receiver and creates the entities.
   for (Integer i = 0, is = m_exchanger->nbReceiver(); i < is; ++i) {
     ISerializeMessage* comm = m_exchanger->messageToReceive(i);
     ISerializer* sbuf = comm->serializer();
@@ -413,9 +414,10 @@ readAndAllocItemRelations()
 {
   info(4) << "ItemsExchangeInfo2::readAndAllocItemRelations() " << itemFamily()->name();
 
-  // The organization of the loops and the switch is not identical here to prepareToSend; for readability, they should be made similar.
+  // The organization of the loops and the switch is not identical here to
+  // prepareToSend; for readability, they should be made similar.
 
-  // Retrieves the info of the meshes of each receiver and creates the entities.
+  // Retrieves the info of the cells of each receiver and creates the entities.
   for (Integer i = 0, is = m_exchanger->nbReceiver(); i < is; ++i) {
     ISerializeMessage* comm = m_exchanger->messageToReceive(i);
     ISerializer* sbuf = comm->serializer();

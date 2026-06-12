@@ -66,7 +66,7 @@ namespace Arcane
 
 /*!
  \brief Writes in Ensight7 format.
- 
+
  The writing is done in Ensight case format and in ASCII.
 
  There are two saving mechanisms depending on whether the temporal aspect is
@@ -80,7 +80,7 @@ namespace Arcane
 
  In both cases, #m_base_directory contains the path and directory where the
  variables will be saved.
- 
+
  The case format uses one file to describe the case (.case), one file to
  describe the geometry (.geo), and one file per variable.
  In the case of a temporal save, there is one geometry and one variable file
@@ -353,12 +353,12 @@ class DumpWEnsight7
 
   /*!
    * \brief Functor for writing a variable.
- 
+
    This is the base class of functors allowing a variable to be saved
    on the elements of a given group. Derived classes must define the
    operator() with the element identifier as the only parameter.
- 
-   For example, if we have a mesh group containing 3 meshes with
+
+   For example, if we have a cell group containing 3 cells with
    IDs 2, 5, and 9, the functor will be called three times with each
    of its indices.
 
@@ -886,7 +886,7 @@ DumpWEnsight7::
  * to the part number (part) in ensight.
  *
  * Next, determine for each of its groups the number of elements of
- * each Ensight subtype. For example, for a mesh group, determine
+ * each Ensight subtype. For example, for a cell group, determine
  * the number of \e hexa8, the number of \e pyramid5, ...
  */
 void DumpWEnsight7::
@@ -975,7 +975,7 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Saves the connectivity of elements in a group.
- 
+
  \relates DumpWEnsight7
 
  Saves the connectivity of the elements in group \a ensight_grp. The difficulty
@@ -983,7 +983,7 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
  type, that is, hexa on one side, tetra on the other, and so on.
  \a ensight_grp.m_nb_sub_part[] contains the number of elements
  for each ensight type. Therefore, we iterate through the list of elements of the group
-autant de fois qu'il y a de possible Ensight types (4 for meshes,
+autant de fois qu'il y a de possible Ensight types (4 for cells,
 2 for faces), and in each pass, we only save elements that are
 of the correct type. It is a bit tedious, but it avoids having to manage a
 list for each subtype.
@@ -1036,9 +1036,9 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
 #endif
 
     if (type_name == "nfaced") {
-      // Special handling for non-standard meshes
+      // Special handling for non-standard cells
       // Since our faces are not oriented relative to a
-      // mesh, we use the local connectivity of each face.
+      // cell, we use the local connectivity of each face.
       // 1. Save the number of faces for each element
       {
         if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
@@ -1557,7 +1557,7 @@ beginWrite()
     IMesh* mesh = m_mesh;
     NodeGroup all_nodes = mesh->allNodes();
 
-    // This array is used for each mesh entity, face, or edge to
+    // This array is used for each cell entity, face, or edge to
     // reference its nodes relative to the coordinate array
     // used by Ensight. The first element of this array has index 1
     UniqueArray<Integer> all_nodes_index(mesh->itemFamily(IK_Node)->maxLocalId());
@@ -1760,7 +1760,7 @@ _isValidVariable(IVariable& v) const
  *
  Constructs the filename in which a variable or
  mesh named \a name will be saved. The filename is returned in \a filename.
- 
+
  The protection number is inserted at the end of the file in the form of a number
  formatted with #m_max_prots_digit \a characters. For example, for 'Pressure'
  at iteration 4 with #m_max_prot_digit equal to 6, we will get the
@@ -1825,7 +1825,7 @@ _isSameKindOfGroup(const ItemGroup& group, eItemKind item_kind)
  'bloc000004'.
 
  the block number is inserted in the form of a number
- formatted with #m_max_prots_digit \a characters. 
+ formatted with #m_max_prots_digit \a characters.
 */
 void DumpWEnsight7::
 _buildPartDirectory()

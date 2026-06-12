@@ -54,10 +54,10 @@ class IPrimaryMesh
   /*!
    * \brief Positions the mesh dimension (1D, 2D, or 3D).
    *
-   * The dimension corresponds to the dimension of the mesh elements (Cell).
-   * If meshes of multiple dimensions are present, the highest dimension must be indicated.
+   * The dimension corresponds to the dimension of the cell elements.
+   * If cells of multiple dimensions are present, the highest dimension must be indicated.
    *
-   * The dimension must be set before allocating meshes if one
+   * The dimension must be set before allocating cells if one
    * uses allocateCells(), and must not be modified afterward.
    */
   virtual void setDimension(Integer dim) = 0;
@@ -71,7 +71,7 @@ class IPrimaryMesh
   virtual void allocateCells(Integer nb_cell, Int64ConstArrayView cells_infos, bool one_alloc = true) = 0;
 
   /*!
-   * \brief Indicates the end of mesh allocation.
+   * \brief Indicates the end of cell allocation.
    *
    * As long as this method has not been called, it is not valid to use this
    * instance, except for allocating the mesh (allocateCells()).
@@ -111,7 +111,7 @@ class IPrimaryMesh
    *
    Returns the variable containing the identifier of the owning subdomain
    of entities of the given kind.
-   
+
    \warning This variable is used for generating synchronization messages
    between subdomains and must not
    be modified.
@@ -125,10 +125,10 @@ class IPrimaryMesh
 
   /*!
    * \internal
-   * \brief Positions entity owners based on the mesh owner.
+   * \brief Positions entity owners based on the cell owner.
    *
-   Positions the owners of entities other than meshes (Node, Edge, and Face)
-   based on the mesh owner. This operation is only useful
+   Positions the owners of entities other than cells (Node, Edge, and Face)
+   based on the cell owner. This operation is only useful
    in parallel and must only be called during initialization after
    the endAllocate() method.
    *

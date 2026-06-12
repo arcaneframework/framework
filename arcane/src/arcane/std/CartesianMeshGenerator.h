@@ -38,9 +38,9 @@ class CartesianMeshGeneratorBuildInfo
   RealUniqueArray m_bloc_lx; // lengths in x
   RealUniqueArray m_bloc_ly; // lengths in y
   RealUniqueArray m_bloc_lz; // lengths in z
-  Int32UniqueArray m_bloc_nx; // number of meshes per block in x
-  Int32UniqueArray m_bloc_ny; // number of meshes per block in y
-  Int32UniqueArray m_bloc_nz; // number of meshes per block in z
+  Int32UniqueArray m_bloc_nx; // number of cells per block in x
+  Int32UniqueArray m_bloc_ny; // number of cells per block in y
+  Int32UniqueArray m_bloc_nz; // number of cells per block in z
   RealUniqueArray m_bloc_px; // progressions per block in x
   RealUniqueArray m_bloc_py; // progressions per block in y
   RealUniqueArray m_bloc_pz; // progressions per block in z
@@ -128,9 +128,9 @@ class CartesianMeshGenerator
   RealUniqueArray m_bloc_oy; // block origin lengths in y
   RealUniqueArray m_bloc_oz; // block origin lengths in z
   Real3 m_l; // lengths in x, y, and z
-  Integer m_nx = 0; // number of meshes in x
-  Integer m_ny = 0; // number of meshes in y
-  Integer m_nz = 0; // number of meshes in z
+  Integer m_nx = 0; // number of cells in x
+  Integer m_ny = 0; // number of cells in y
+  Integer m_nz = 0; // number of cells in z
 
  private:
 

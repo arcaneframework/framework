@@ -50,12 +50,12 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
  public:
 
   /*!
-   * \brief List of pure mesh elements of a constituent
+   * \brief List of pure cells of a constituent
    * added/removed by the current operation.
    */
   DualUniqueArray<Int32> pure_local_ids;
   /*!
-   * \brief List of partial mesh elements of a constituent
+   * \brief List of partial cells of a constituent
    * added/removed by the current operation.
    */
   DualUniqueArray<Int32> partial_indexes;
@@ -71,20 +71,20 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
   DualUniqueArray<bool> m_is_environments_modified;
   bool is_verbose = false;
 
-  //! List of mesh elements of an environment that will be added or removed during an operation
+  //! List of cells of an environment that will be added or removed during an operation
   UniqueArray<Int32> cells_changed_in_env;
-  //! List of mesh elements of an environment that are already present in an environment during an operation
+  //! List of cells of an environment that are already present in an environment during an operation
   UniqueArray<Int32> cells_unchanged_in_env;
 
-  //! List of MatVarIndex and LocalId to save when deleting material mesh elements
+  //! List of MatVarIndex and LocalId to save when deleting material cells
   DualUniqueArray<MatVarIndex> m_saved_matvar_indexes;
   DualUniqueArray<Int32> m_saved_local_ids;
 
   //! Number of materials for the environment currently being evaluated
   UniqueArray<Int16> m_cells_current_nb_material;
 
-  // Filter indicating if a mesh element will be partial after addition.
-  // This array is dimensioned by the number of mesh elements added during the current transformation.
+  // Filter indicating if a cell will be partial after addition.
+  // This array is dimensioned by the number of cells added during the current transformation.
   NumArray<bool, MDDim1> m_cells_is_partial;
 
   ComponentItemListBuilder list_builder;
@@ -102,34 +102,34 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 
  public:
 
-  //! Indicates if the mesh element \a local_id is transformed during the current operation.
+  //! Indicates if the cell \a local_id is transformed during the current operation.
   bool isTransformedCell(CellLocalId local_id) const
   {
     return m_cells_to_transform[local_id.localId()];
   }
 
-  //! Sets the transformation status of the mesh element \a local_id for the current operation
+  //! Sets the transformation status of the cell \a local_id for the current operation
   void setTransformedCell(CellLocalId local_id, bool v)
   {
     m_cells_to_transform[local_id.localId()] = v;
   }
 
-  //! Sets the transformation status of the mesh element \a local_id for the current operation
+  //! Sets the transformation status of the cell \a local_id for the current operation
   void resetTransformedCells(ConstArrayView<Int32> local_ids)
   {
     for (Int32 x : local_ids)
       m_cells_to_transform[x] = false;
   }
-  //! Indicates if the mesh element \a local_id is removed from the material for the current operation.
+  //! Indicates if the cell \a local_id is removed from the material for the current operation.
   bool isRemovedCell(Int32 local_id) const { return m_removed_local_ids_filter[local_id]; }
 
-  //! Sets the 'Removed' status of the mesh elements \a local_ids to \a value
+  //! Sets the 'Removed' status of the cells \a local_ids to \a value
   void setRemovedCells(ConstArrayView<Int32> local_ids, bool value);
 
   //! Sets the current operation
   void setCurrentOperation(MaterialModifierOperation* operation);
 
-  //! Indicates if the current operation is an addition (true) or a removal (false) of mesh elements
+  //! Indicates if the current operation is an addition (true) or a removal (false) of cells
   bool isAdd() const { return m_is_add; }
 
   SmallSpan<const bool> transformedCells() const { return m_cells_to_transform.to1DSmallSpan(); }
@@ -139,12 +139,12 @@ class ARCANE_MATERIALS_EXPORT ConstituentModifierWorkInfo
 
  private:
 
-  //! Filter indicating the mesh elements that are removed from the constituent
-  // This array is dimensioned by the number of mesh elements.
+  //! Filter indicating the cells that are removed from the constituent
+  // This array is dimensioned by the number of cells.
   NumArray<bool, MDDim1> m_removed_local_ids_filter;
 
-  //! Filter indicating the mesh elements that must change status (Pure<->Partial)
-  // This array is dimensioned by the number of mesh elements.
+  //! Filter indicating the cells that must change status (Pure<->Partial)
+  // This array is dimensioned by the number of cells.
   NumArray<bool, MDDim1> m_cells_to_transform;
 
   bool m_is_add = false;

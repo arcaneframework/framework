@@ -43,12 +43,12 @@ class MeshMaterialModifierImpl;
  * \brief Synchronization strategy for the list of materials/media of entities on the accelerator.
  *
  * This class allows synchronization between subdomains of the list
- * of materials/media to which a mesh belongs.
+ * of materials/environment to which a cell belongs.
  *
- * The ghost meshes of this subdomain will retrieve the list of materials/media
- * from the owned meshes. These ghost meshes will then possibly have
- * materials and media added or removed to be consistent
- * with this list from the owned meshes.
+ * The ghost cells of this subdomain will retrieve the list of materials/environment
+ * from the owned cells. These ghost cells will then possibly have
+ * materials and environment added or removed to be consistent
+ * with this list from the owned cells.
  */
 class AcceleratorMeshMaterialSynchronizerImpl
 : public TraceAccessor
@@ -65,7 +65,7 @@ class AcceleratorMeshMaterialSynchronizerImpl
    *
    * This operation is collective.
    *
-   * Returns true if meshes were added or removed from a material
+   * Returns true if cells were added or removed from a material
    * or a medium during this operation for this subdomain.
    */
   bool synchronizeMaterialsInCells();

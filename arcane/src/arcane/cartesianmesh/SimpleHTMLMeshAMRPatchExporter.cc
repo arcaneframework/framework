@@ -185,7 +185,7 @@ _writeHeaderSvg(const CartesianPatch& ground_patch)
   const Real max_val = std::numeric_limits<Real>::max();
   Real2 min_bbox(max_val, max_val);
   Real2 max_bbox(min_val, min_val);
-  // Calculate the center of the meshes and the bounding box of the mesh group.
+  // Calculate the center of the cells and the bounding box of the cell group.
   std::map<Int32, Real2> cells_center;
   ENUMERATE_CELL (icell, cells) {
     Cell cell = *icell;
@@ -281,7 +281,7 @@ _writePatch(const CartesianPatch& patch)
   Real2 min_bbox(max_val, max_val);
   Real2 max_bbox(min_val, min_val);
 
-  // Calculate the center of the meshes and the bounding box of the mesh group.
+  // Calculate the center of the cells and the bounding box of the cell group.
   std::map<Int32, Real2> cells_center;
   ENUMERATE_CELL (icell, cells) {
     Cell cell = *icell;
@@ -301,7 +301,7 @@ _writePatch(const CartesianPatch& patch)
     cells_center[cell.localId()] = center_2d;
   }
 
-  // Display the contour and uniqueId() for each mesh.
+  // Display the contour and uniqueId() for each cell.
   ENUMERATE_CELL (icell, cells) {
     Cell cell = *icell;
     Real2 cell_pos = cells_center[cell.localId()];

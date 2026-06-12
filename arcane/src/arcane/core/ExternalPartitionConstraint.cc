@@ -41,16 +41,16 @@ addLinkedCells(Int64Array& linked_cells, Int32Array& linked_owners)
   filtre_cell.fill(marque);
 
   for (ItemGroup& group : m_constraints) {
-    // Array containing the list of meshes to keep together
+    // Array containing the list of cells to keep together
     // This list is distributed across the processors
-    // and includes ghost meshes as common elements
+    // and includes ghost cells as common elements
     UniqueArray<Cell> cells;
     if (group.itemKind() == IK_Cell) {
       ENUMERATE_CELL (icell, group.cellGroup()) {
         cells.add(*icell);
       }
     }
-    // This method allows retrieving the meshes in the case of semi-conformity
+    // This method allows retrieving the cells in the case of semi-conformity
     // We filter the cells to select them only once
     else if (group.itemKind() == IK_Face) {
       marque++;
@@ -76,7 +76,7 @@ addLinkedCells(Int64Array& linked_cells, Int32Array& linked_owners)
     if (cells.size() == 0)
       continue;
 
-    // We populate the constraints in the form of pairs of meshes
+    // We populate the constraints in the form of pairs of cells
     Cell cell0 = cells[0];
     Int32 owner0 = cell0.owner();
     ItemUniqueId uid0 = cell0.uniqueId();

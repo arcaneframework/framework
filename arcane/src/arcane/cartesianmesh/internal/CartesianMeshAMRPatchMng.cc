@@ -97,22 +97,22 @@ refine()
   UniqueArray<Int64> face_uid_change_owner_only;
 
   // Two arrays allowing the retrieval of unique IDs of nodes and faces
-  // from each child mesh upon calling getNodeUids()/getFaceUids().
+  // from each child cell upon calling getNodeUids()/getFaceUids().
   UniqueArray<Int64> child_nodes_uids(m_num_mng->nbNodeByCell());
   UniqueArray<Int64> child_faces_uids(m_num_mng->nbFaceByCell());
 
-  // We must record the parent meshes of each child mesh to update connectivities
-  // when creating the meshes.
+  // We must record the parent cells of each child cell to update connectivities
+  // when creating the cells.
   UniqueArray<Int32> parent_cells;
 
-  // Maps replacing ghost meshes.
+  // Maps replacing ghost cells.
   std::unordered_map<Int64, Int32> around_parent_cells_uid_to_owner;
   std::unordered_map<Int64, Int32> around_parent_cells_uid_to_flags;
 
   {
-    // We only need these two flags for surrounding meshes.
-    // (II_Refine to know if surrounding meshes are in the same patch)
-    // (II_Inactive to know if surrounding meshes are already refined)
+    // We only need these two flags for surrounding cells.
+    // (II_Refine to know if surrounding cells are in the same patch)
+    // (II_Inactive to know if surrounding cells are already refined)
     Int32 useful_flags = ItemFlags::II_Refine + ItemFlags::II_Inactive;
     _shareInfosOfCellsAroundPatch(cell_to_refine_internals, around_parent_cells_uid_to_owner, around_parent_cells_uid_to_flags, useful_flags);
   }
@@ -121,24 +121,24 @@ refine()
 
     // Masks for "child neighbors" and "parent neighbors in the same patch" cases.
     // These masks determine whether a node should be created based on
-    // the surrounding meshes.
-    // For example, if we are studying a child mesh and there is
-    // a child mesh to the left, we should not create nodes 0 and 3 (mask_node_if_cell_left[]) (because
-    // they have already been created by the mesh on the left).
-    // The same applies to neighboring parent meshes: if we are on a child mesh located
-    // on the left side of the parent mesh (child meshes 0 and 2 in the case of a
-    // refinement pattern = 2), and there is a parent mesh to the left and that parent mesh
+    // the surrounding cells.
+    // For example, if we are studying a child cell and there is
+    // a child cell to the left, we should not create nodes 0 and 3 (mask_node_if_cell_left[]) (because
+    // they have already been created by the cell on the left).
+    // The same applies to neighboring parent cells: if we are on a child cell located
+    // on the left side of the parent cell (child cells 0 and 2 in the case of a
+    // refinement pattern = 2), and there is a parent cell to the left and that parent cell
     // is currently ((being refined and in our subdomain) or (is inactive)), we apply
     // the mask_node_if_cell_left[] rule because the nodes were created by it and we want to avoid
     // duplicate nodes.
     // These masks also allow us to determine the owner of the nodes in
     // the case of multiple subdomains.
-    // For example, if we are on a child mesh located
-    // on the left side of the parent mesh (child meshes 0 and 2 in the case of a
-    // refinement pattern = 2), and there is a parent mesh to the left and that mesh
+    // For example, if we are on a child cell located
+    // on the left side of the parent cell (child cells 0 and 2 in the case of a
+    // refinement pattern = 2), and there is a parent cell to the left and that cell
     // (belongs to another subdomain) and (is currently being refined),
     // we create this node but assign the process that owns
-    // the parent mesh on the left as the owner.
+    // the parent cell on the left as the owner.
     constexpr bool mask_node_if_cell_left[] = { false, true, true, false };
     constexpr bool mask_node_if_cell_bottom[] = { false, false, true, true };
 
@@ -152,9 +152,9 @@ refine()
     constexpr bool mask_face_if_cell_top[] = { true, true, false, true };
 
     // For sizing:
-    // - we have "cell_to_refine_internals.size() * 4" child meshes,
-    // - for each mesh, we have 2 pieces of info (mesh type and mesh uniqueId)
-    // - for each mesh, we have "m_num_mng->getNbNode()" uniqueIds (the uniqueIds of each node in the mesh).
+    // - we have "cell_to_refine_internals.size() * 4" child cells,
+    // - for each cell, we have 2 pieces of info (cell type and cell uniqueId)
+    // - for each cell, we have "m_num_mng->getNbNode()" uniqueIds (the uniqueIds of each node in the cell).
     cells_infos.reserve((cell_to_refine_internals.size() * 4) * (2 + m_num_mng->nbNodeByCell()));
 
     // For sizing, maximum:
@@ -188,8 +188,8 @@ refine()
 
       for (Int32 i = 0; i < 9; ++i) {
         const Int64 uid_cell = uid_cells_around_parent_cell_1d[i];
-        // If uid_cell != -1, there might be a mesh (but we don't know if it is actually present).
-        // If around_parent_cells_uid_to_owner[uid_cell] != -1, there is indeed a mesh.
+        // If uid_cell != -1, there might be a cell (but we don't know if it is actually present).
+        // If around_parent_cells_uid_to_owner[uid_cell] != -1, there is indeed a cell.
         if (uid_cell != -1 && around_parent_cells_uid_to_owner[uid_cell] != -1) {
           owner_cells_around_parent_cell_1d[i] = around_parent_cells_uid_to_owner[uid_cell];
           flags_cells_around_parent_cell_1d[i] = around_parent_cells_uid_to_flags[uid_cell];
@@ -224,42 +224,42 @@ refine()
 
       // #arcane_order_to_around_2d
       // Note for 2D Cartesian meshes:
-      // The face iterators iterate in the order (for mesh 4 here):
+      // The face iterators iterate in the order (for cell 4 here):
       //  0. Face between [4, 1],
       //  1. Face between [4, 5],
       //  2. Face between [4, 7],
       //  3. Face between [4, 3],
       //
-      // The node iterators iterate in the order (for mesh 4 here):
+      // The node iterators iterate in the order (for cell 4 here):
       //  0. Node between [4, 0]
       //  1. Node between [4, 2]
       //  2. Node between [4, 8]
       //  3. Node between [4, 6]
 
-      // Each number designates a parent mesh and a priority (0 being the highest priority).
+      // Each number designates a parent cell and a priority (0 being the highest priority).
       // 4 = parent_cell ("us")
 
       // Example 1:
-      // We are looking to refine level 0 meshes (i.e., create level 1 meshes).
-      // At the bottom, there are no meshes.
-      // On the left (priority 3), there is a mesh that is already refined (flag "II_Inactive").
+      // We are looking to refine level 0 cells (i.e., create level 1 cells).
+      // At the bottom, there are no cells.
+      // On the left (priority 3), there is a cell that is already refined (flag "II_Inactive").
       // We are priority 4, so we are prioritized. Therefore, the nodes and faces we share
       // belong to it.
 
       // Example 2:
-      // We are looking to refine level 0 meshes (i.e., create level 1 meshes).
-      // At the top, there are already refined meshes (flag "II_Inactive").
+      // We are looking to refine level 0 cells (i.e., create level 1 cells).
+      // At the top, there are already refined cells (flag "II_Inactive").
       // We are prioritized over them, so we recover the ownership of the nodes and faces we share. This change of ownership must be signaled to them.
 
       // We simplify using a boolean array.
       // If true, we must apply the ownership priority.
-      // If false, we consider that there is no mesh at the defined position.
+      // If false, we consider that there is no cell at the defined position.
       FixedArray<FixedArray<bool, 3>, 3> is_cell_around_parent_cell_present_and_useful;
 
-      // For meshes that prioritize us, we must look at both flags.
-      // If a mesh has the "II_Refine" flag, we do not exist for it, so it takes ownership
+      // For cells that prioritize us, we must look at both flags.
+      // If a cell has the "II_Refine" flag, we do not exist for it, so it takes ownership
       // of the faces and nodes we share.
-      // If a mesh has the "II_Inactive" flag, it already has the correct owners.
+      // If a cell has the "II_Inactive" flag, it already has the correct owners.
       // In any case, if true, the faces and nodes we share belong to them.
       is_cell_around_parent_cell_present_and_useful[0][0] = ((uid_cells_around_parent_cell(0, 0) != -1) && (flags_cells_around_parent_cell(0, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
       is_cell_around_parent_cell_present_and_useful[0][1] = ((uid_cells_around_parent_cell(0, 1) != -1) && (flags_cells_around_parent_cell(0, 1) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
@@ -268,10 +268,10 @@ refine()
       is_cell_around_parent_cell_present_and_useful[1][0] = ((uid_cells_around_parent_cell(1, 0) != -1) && (flags_cells_around_parent_cell(1, 0) & (ItemFlags::II_Refine | ItemFlags::II_Inactive)));
       // is_cell_around_parent_cell_present_and_useful[1][1] = parent_cell;
 
-      // For non-prioritized meshes, we must look at only one flag.
-      // If a mesh has the "II_Inactive" flag, it must be notified that we are taking ownership
+      // For non-prioritized cells, we must look at only one flag.
+      // If a cell has the "II_Inactive" flag, it must be notified that we are taking ownership
       // of the nodes and faces we share.
-      // We do not look at the "II_Refine" flag because, if these meshes are also being refined,
+      // We do not look at the "II_Refine" flag because, if these cells are also being refined,
       // they know that we exist and that we obtain the ownership of the nodes and faces we share.
       // In summary, if true, the faces and nodes we share belong to us.
       is_cell_around_parent_cell_present_and_useful[1][2] = ((uid_cells_around_parent_cell(1, 2) != -1) && (flags_cells_around_parent_cell(1, 2) & ItemFlags::II_Inactive));
@@ -280,23 +280,23 @@ refine()
       is_cell_around_parent_cell_present_and_useful[2][1] = ((uid_cells_around_parent_cell(2, 1) != -1) && (flags_cells_around_parent_cell(2, 1) & ItemFlags::II_Inactive));
       is_cell_around_parent_cell_present_and_useful[2][2] = ((uid_cells_around_parent_cell(2, 2) != -1) && (flags_cells_around_parent_cell(2, 2) & ItemFlags::II_Inactive));
 
-      // In addition to checking if each parent mesh around our parent mesh exists and possesses (II_Inactive) or will possess (II_Refine) children...
-      // ... we check if each parent mesh is present in our subdomain, whether it is a ghost mesh or not.
+      // In addition to checking if each parent cell around our parent cell exists and possesses (II_Inactive) or will possess (II_Refine) children...
+      // ... we check if each parent cell is present in our subdomain, whether it is a ghost cell or not.
       auto is_cell_around_parent_cell_in_subdomain = [&](const Integer y, const Integer x) {
         return is_cell_around_parent_cell_present_and_useful[y][x] && (flags_cells_around_parent_cell(y, x) & ItemFlags::II_UserMark1);
       };
 
-      // ... we check if each parent mesh is owned by the same owner as our parent mesh.
+      // ... we check if each parent cell is owned by the same owner as our parent cell.
       auto is_cell_around_parent_cell_same_owner = [&](const Integer y, const Integer x) {
         return is_cell_around_parent_cell_present_and_useful[y][x] && (owner_cells_around_parent_cell(y, x) == owner_cells_around_parent_cell(1, 1));
       };
 
-      // ... we check if each parent mesh has a different owner compared to our parent mesh.
+      // ... we check if each parent cell has a different owner compared to our parent cell.
       auto is_cell_around_parent_cell_different_owner = [&](const Integer y, const Integer x) {
         return is_cell_around_parent_cell_present_and_useful[y][x] && (owner_cells_around_parent_cell(y, x) != owner_cells_around_parent_cell(1, 1));
       };
 
-      // We iterate over all child meshes.
+      // We iterate over all child cells.
       for (CartCoord j = child_coord_y; j < child_coord_y + pattern; ++j) {
         for (CartCoord i = child_coord_x; i < child_coord_x + pattern; ++i) {
           parent_cells.add(parent_cell.localId());
@@ -325,14 +325,14 @@ refine()
 
             // Two parts:
             // First, we check if we should create face l. To do this, we must check if it is present on the
-            // adjacent mesh.
-            // For left/bottom, the principle is the same. If the child mesh is entirely to the left/bottom of the parent mesh, we check
-            // if there is a parent mesh to the left/bottom. Otherwise, we create the face. If yes, we check the mask to know if we
+            // adjacent cell.
+            // For left/bottom, the principle is the same. If the child cell is entirely to the left/bottom of the parent cell, we check
+            // if there is a parent cell to the left/bottom. Otherwise, we create the face. If yes, we check the mask to know if we
             // should create the face.
             // For right/top, the principle is different from left/bottom. We only follow the mask if we are entirely to the right/top
-            // of the parent mesh. Otherwise, we always create the right/top faces.
-            // Finally, we use the "is_cell_around_parent_cell_in_subdomain" array. If the adjacent parent mesh is in
-            // our subdomain, the faces shared with our parent mesh may already exist; in this case,
+            // of the parent cell. Otherwise, we always create the right/top faces.
+            // Finally, we use the "is_cell_around_parent_cell_in_subdomain" array. If the adjacent parent cell is in
+            // our subdomain, the faces shared with our parent cell may already exist; in this case,
             // there is no duplicate.
             if (
             ((i == child_coord_x && !is_cell_around_parent_cell_in_subdomain(1, 0)) || (mask_face_if_cell_left[l])) &&
@@ -358,20 +358,20 @@ refine()
             // We must now find the correct owner for the face. Aside from the "is_cell_around_parent_cell_same_owner" array,
             // the condition is identical to the one above.
             // The change of array is important because from here on, we are sure that the face we are interested in exists.
-            // The new array allows us to know if the adjacent mesh is also ours or not. If not, then
+            // The new array allows us to know if the adjacent cell is also ours or not. If not, then
             // an ownership change is possible, according to the priorities defined above. We do not need to know
-            // if the mesh is present in the subdomain.
+            // if the cell is present in the subdomain.
             if (
             ((i == child_coord_x && !is_cell_around_parent_cell_same_owner(1, 0)) || (mask_face_if_cell_left[l])) &&
             ((i != (child_coord_x + pattern - 1) || !is_cell_around_parent_cell_same_owner(1, 2)) || mask_face_if_cell_right[l]) &&
             ((j == child_coord_y && !is_cell_around_parent_cell_same_owner(0, 1)) || (mask_face_if_cell_bottom[l])) &&
             ((j != (child_coord_y + pattern - 1) || !is_cell_around_parent_cell_same_owner(2, 1)) || mask_face_if_cell_top[l])) {
               // Here, the condition construction is the same every time.
-              // The first boolean (i == child_coord_x) checks if the child is on the correct side of the parent mesh.
+              // The first boolean (i == child_coord_x) checks if the child is on the correct side of the parent cell.
               // The second boolean (!mask_face_if_cell_left[l]) tells us if face l is indeed
-              // the shared face with the adjacent parent mesh.
+              // the shared face with the adjacent parent cell.
               // The third boolean (is_cell_around_parent_cell_different_owner(1, 0)) checks if there is an
-              // adjacent mesh that takes ownership of the face or to whom we take ownership.
+              // adjacent cell that takes ownership of the face or to whom we take ownership.
 
               // Furthermore, there are two different cases depending on the priorities defined above:
               // - either we are not prioritized, so we assign the priority owner to our face,
@@ -436,14 +436,14 @@ refine()
 
             // Two parts:
             // First, we check if we should create node l. To do this, we must check if it is present on the
-            // adjacent mesh.
-            // For left/bottom, the principle is the same. If the child mesh is entirely to the left/bottom of the parent mesh, we check
-            // if there is a parent mesh to the left/bottom. Otherwise, we create the node. If yes, we check the mask to know if we
+            // adjacent cell.
+            // For left/bottom, the principle is the same. If the child cell is entirely to the left/bottom of the parent cell, we check
+            // if there is a parent cell to the left/bottom. Otherwise, we create the node. If yes, we check the mask to know if we
             // should create the node.
-            // For right/top, the principle is different from left/bottom. We only follow the mask if the child mesh is entirely to the right/top
-            // of the parent mesh. Otherwise, we always create the right/top nodes.
-            // Finally, we use the "is_cell_around_parent_cell_in_subdomain" array. If the adjacent parent mesh is in
-            // our subdomain, the nodes shared with our parent mesh may already exist; in this case,
+            // For right/top, the principle is different from left/bottom. We only follow the mask if the child cell is entirely to the right/top
+            // of the parent cell. Otherwise, we always create the right/top nodes.
+            // Finally, we use the "is_cell_around_parent_cell_in_subdomain" array. If the adjacent parent cell is in
+            // our subdomain, the nodes shared with our parent cell may already exist; in this case,
             // there is no duplicate.
             if (
             ((i == child_coord_x && !is_cell_around_parent_cell_in_subdomain(1, 0)) || (mask_node_if_cell_left[l])) &&
@@ -1858,20 +1858,20 @@ createSubLevel()
   // at 0.
   m_num_mng->prepareLevel(-1);
 
-  // We create one or more layers of ghost meshes
-  // to prevent a parent mesh from not having the same
-  // number of child meshes.
+  // We create one or more layers of ghost cells
+  // to prevent a parent cell from not having the same
+  // number of child cells.
   // ----------
   // CartesianMeshCoarsening2::_doDoubleGhostLayers()
   IMeshModifier* mesh_modifier = m_mesh->modifier();
   IGhostLayerMng* gm = m_mesh->ghostLayerMng();
   // We must use version 3 at least to support
-  // multiple layers of ghost meshes
+  // multiple layers of ghost cells
   Int32 version = gm->builderVersion();
   if (version < 3)
     gm->setBuilderVersion(3);
   Int32 nb_ghost_layer = gm->nbGhostLayer();
-  // TODO AH: This line would allow for fewer ghost meshes and
+  // TODO AH: This line would allow for fewer ghost cells and
   // prevent their deletion if unnecessary. But the behavior
   // would be different from the historical AMR.
   //gm->setNbGhostLayer(nb_ghost_layer + (nb_ghost_layer % m_num_mng->pattern()));
@@ -1893,8 +1893,8 @@ createSubLevel()
     // We avoid duplicates.
     if (!cell_uid_to_create.contains(parent_uid)) {
       cell_uid_to_create.add(parent_uid);
-      // We take the opportunity to save the owners of the future meshes
-      // which will be the same owners as the child meshes.
+      // We take the opportunity to save the owners of the future cells
+      // which will be the same owners as the child cells.
       around_parent_cells_uid_to_owner[parent_uid] = cell.owner();
       around_parent_cells_uid_is_in_subdomain[parent_uid] = true;
     }
@@ -1927,25 +1927,25 @@ createSubLevel()
   Integer total_nb_faces = 0;
 
   // Two arrays allowing retrieval of the unique IDs of nodes and faces
-  // for each parent mesh upon every call to getNodeUids()/getFaceUids().
+  // for each parent cell upon every call to getNodeUids()/getFaceUids().
   UniqueArray<Int64> parent_nodes_uids(m_num_mng->nbNodeByCell());
   UniqueArray<Int64> parent_faces_uids(m_num_mng->nbFaceByCell());
 
-  // Part exchanging information about meshes around the patch
-  // (to replace ghost meshes).
+  // Part exchanging information about cells around the patch
+  // (to replace ghost cells).
   {
-    // Array that will contain the uids of the meshes whose information we need.
+    // Array that will contain the uids of the cells whose information we need.
     UniqueArray<Int64> uid_of_cells_needed;
     {
       UniqueArray<Int64> cell_uids_around((m_mesh->dimension() == 2) ? 9 : 27);
       for (Int64 parent_cell : cell_uid_to_create) {
         m_num_mng->cellUniqueIdsAroundCell(parent_cell, -1, cell_uids_around);
         for (Int64 cell_uid : cell_uids_around) {
-          // If -1 then there are no meshes at this position.
+          // If -1 then there are no cells at this position.
           if (cell_uid == -1)
             continue;
 
-          // IF we have the mesh, we do not need to request information.
+          // IF we have the cell, we do not need to request information.
           if (around_parent_cells_uid_to_owner.contains(cell_uid))
             continue;
 
@@ -1955,7 +1955,7 @@ createSubLevel()
 
             // If we need the information, it means we don't possess it :-)
             // We take the opportunity to record this information to distinguish between
-            // ghost meshes for which we possess the items (faces/nodes) and those for which
+            // ghost cells for which we possess the items (faces/nodes) and those for which
             // we possess nothing.
             around_parent_cells_uid_is_in_subdomain[cell_uid] = false;
           }
@@ -1970,7 +1970,7 @@ createSubLevel()
     UniqueArray<Int32> owner_of_cells_needed_all_procs(uid_of_cells_needed_all_procs.size());
 
     {
-      // We record the owner of the meshes that we possess.
+      // We record the owner of the cells that we possess.
       for (Integer i = 0; i < uid_of_cells_needed_all_procs.size(); ++i) {
         if (around_parent_cells_uid_to_owner.contains(uid_of_cells_needed_all_procs[i])) {
           owner_of_cells_needed_all_procs[i] = around_parent_cells_uid_to_owner[uid_of_cells_needed_all_procs[i]];
@@ -1982,10 +1982,10 @@ createSubLevel()
       }
     }
 
-    // We retrieve the owners of all necessary meshes.
+    // We retrieve the owners of all necessary cells.
     pm->reduce(Parallel::eReduceType::ReduceMax, owner_of_cells_needed_all_procs);
 
-    // We only process the owners of the necessary meshes for us.
+    // We only process the owners of the necessary cells for us.
     {
       Integer size_uid_of_cells_needed = uid_of_cells_needed.size();
       Integer my_pos_in_all_procs_arrays = 0;
@@ -1993,7 +1993,7 @@ createSubLevel()
       ArrayView<Integer> av(1, &size_uid_of_cells_needed);
       pm->allGather(av, size_uid_of_cells_needed_per_proc);
 
-      // We skip the meshes from all procs before us.
+      // We skip the cells from all procs before us.
       for (Integer i = 0; i < my_rank; ++i) {
         my_pos_in_all_procs_arrays += size_uid_of_cells_needed_per_proc[i];
       }
@@ -2015,7 +2015,7 @@ createSubLevel()
   if (m_mesh->dimension() == 2) {
 
     // Masks allowing us to know if we should create a face/node (true)
-    // or if we should look at the adjacent mesh first (false).
+    // or if we should look at the adjacent cell first (false).
     // Reminder that Arcane's face traversal is in the NumPad order {2, 6, 8, 4}.
     constexpr bool mask_face_if_cell_left[] = { true, true, true, false };
     constexpr bool mask_face_if_cell_bottom[] = { false, true, true, true };
@@ -2028,8 +2028,8 @@ createSubLevel()
     FixedArray<Int32, 9> owner_cells_around_parent_cell_1d;
     FixedArray<bool, 9> is_not_in_subdomain_cells_around_parent_cell_1d;
 
-    // For refinement, we would traverse the existing parent meshes.
-    // Here, the parent meshes do not exist yet, so we traverse the uids.
+    // For refinement, we would traverse the existing parent cells.
+    // Here, the parent cells do not exist yet, so we traverse the uids.
     for (Int64 parent_cell_uid : cell_uid_to_create) {
 
       m_num_mng->cellUniqueIdsAroundCell(parent_cell_uid, -1, cells_uid_around.view());
@@ -2040,8 +2040,8 @@ createSubLevel()
 
       for (Integer i = 0; i < 9; ++i) {
         Int64 uid_cell = cells_uid_around[i];
-        // If uid_cell != -1 then there might be a mesh (but we don't know if it is actually present).
-        // If around_parent_cells_uid_to_owner[uid_cell] != -1 then there is indeed a mesh.
+        // If uid_cell != -1 then there might be a cell (but we don't know if it is actually present).
+        // If around_parent_cells_uid_to_owner[uid_cell] != -1 then there is indeed a cell.
         if (uid_cell != -1 && around_parent_cells_uid_to_owner[uid_cell] != -1) {
           owner_cells_around_parent_cell_1d[i] = around_parent_cells_uid_to_owner[uid_cell];
           is_not_in_subdomain_cells_around_parent_cell_1d[i] = !around_parent_cells_uid_is_in_subdomain[uid_cell];
@@ -2088,9 +2088,9 @@ createSubLevel()
       // Face Part.
       for (Integer l = 0; l < m_num_mng->nbFaceByCell(); ++l) {
         // We check if we should process the face.
-        // If mask_face_if_cell_left[l] == false, we must check if the mesh to the left is ours or not
-        // or if the mesh to the left is in our subdomain or not.
-        // If this mesh is not ours and/or is not in our subdomain,
+        // If mask_face_if_cell_left[l] == false, we must check if the cell to the left is ours or not
+        // or if the cell to the left is in our subdomain or not.
+        // If this cell is not ours and/or is not in our subdomain,
         // we must create the face as a ghost face.
         if (
         (mask_face_if_cell_left[l] || is_cell_around_parent_cell_different_owner(1, 0) || is_not_in_subdomain_cells_around_parent_cell(1, 0)) &&
@@ -2189,7 +2189,7 @@ createSubLevel()
   else if (m_mesh->dimension() == 3) {
 
     // Masks allowing us to know if we should create a face/node (true)
-    // or if we should look at the adjacent mesh first (false).
+    // or if we should look at the adjacent cell first (false).
     constexpr bool mask_node_if_cell_left[] = { false, true, true, false, false, true, true, false };
     constexpr bool mask_node_if_cell_bottom[] = { false, false, true, true, false, false, true, true };
     constexpr bool mask_node_if_cell_rear[] = { false, false, false, false, true, true, true, true };
@@ -2217,8 +2217,8 @@ createSubLevel()
     FixedArray<Int32, 27> owner_cells_around_parent_cell_1d;
     FixedArray<bool, 27> is_not_in_subdomain_cells_around_parent_cell_1d;
 
-    // For refinement, we would traverse the existing parent meshes.
-    // Here, the parent meshes do not exist yet, so we traverse the uids.
+    // For refinement, we would traverse the existing parent cells.
+    // Here, the parent cells do not exist yet, so we traverse the uids.
     for (Int64 parent_cell_uid : cell_uid_to_create) {
 
       m_num_mng->cellUniqueIdsAroundCell(parent_cell_uid, -1, cells_uid_around.view());
@@ -2229,8 +2229,8 @@ createSubLevel()
 
       for (Integer i = 0; i < 27; ++i) {
         Int64 uid_cell = cells_uid_around[i];
-        // If uid_cell != -1 then there might be a mesh (but we don't know if it is actually present).
-        // If around_parent_cells_uid_to_owner[uid_cell] != -1 then there is indeed a mesh.
+        // If uid_cell != -1 then there might be a cell (but we don't know if it is actually present).
+        // If around_parent_cells_uid_to_owner[uid_cell] != -1 then there is indeed a cell.
         if (uid_cell != -1 && around_parent_cells_uid_to_owner[uid_cell] != -1) {
           owner_cells_around_parent_cell_1d[i] = around_parent_cells_uid_to_owner[uid_cell];
           is_not_in_subdomain_cells_around_parent_cell_1d[i] = !around_parent_cells_uid_is_in_subdomain[uid_cell];

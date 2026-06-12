@@ -71,7 +71,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
         m_adiabatic_cst[cell] = 1.4;
       }
     }
-    
+
     Trace.Info("FIND GROUP ZD");
     ItemGroup g2 = m_mesh.FindGroup("ZD");
     if (g2.IsNull())
@@ -100,7 +100,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     Trace.Info("COMPUTE GEOM");
     // Initializes geometric data: volume, cqs, characteristic lengths
     ComputeGeometricValues();
-    
+
     Trace.Info("FILL");
     m_node_mass.Fill(0.0);
     m_velocity.Fill(Real3.Zero);
@@ -267,7 +267,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
 
       Real3 old_velocity = m_velocity[node];
       Real3 new_velocity = old_velocity + (m_delta_t_n / node_mass) * m_force[node];
-      
+
       m_velocity[node] = new_velocity;
     }
     m_velocity.Synchronize();
@@ -284,7 +284,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
       m_cell_viscosity_work[cell] = work;
     }
   }
-  
+
   public override void ApplyBoundaryCondition()
   {
     for( Integer i=0, nb=Options.BoundaryCondition.Length; i<nb; ++i){
@@ -335,7 +335,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
       if (density_ratio_maximum<density_ratio)
         density_ratio_maximum = density_ratio;
     }
-    
+
     m_density_ratio_maximum = density_ratio_maximum;
     m_density_ratio_maximum = ParallelMng().Reduce(Arcane.eReduceType.ReduceMax,m_density_ratio_maximum);
 
@@ -346,7 +346,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
   public override void ApplyEquationOfState()
   {
     Real deltatf = m_delta_t_f;
-  
+
     bool add_viscosity_force = (Options.Viscosity!=TypesSimpleHydro.eViscosity.ViscosityNo);
 
     // Calculation of internal energy
@@ -362,8 +362,8 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
         << " inv=" << (1.0/volume_ratio) << " x=" << x
         << " denom2=" << denom2 << " denom3=" << denom3 << " denom4=" << denom4;*/
       m_internal_energy[cell] *= numer_accrois_nrj/denom_accrois_nrj;
-  
-      // Taking into account the work done by viscosity forces 
+
+      // Taking into account the work done by viscosity forces
       if (add_viscosity_force)
         m_internal_energy[cell] -= deltatf*m_cell_viscosity_work[cell] /  (m_cell_mass[cell]*denom_accrois_nrj);
     }
@@ -381,7 +381,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     Real old_dt = m_global_deltat.Value;
 
     // Calculation of the time step to respect the CFL criterion
-    
+
     Real minimum_aux = 1.0e100; //FloatInfo<Real>::maxValue();
     Real new_dt = 1.0e100; //FloatInfo<Real>::maxValue();
 
@@ -421,19 +421,19 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     new_dt = Math.Max(new_dt,Options.DeltatMin);
 
     //Real data_min_max_dt = new_dt;
-    
+
     // The last calculation is done exactly at stopTime()
     {
       Real stop_time  = Options.FinalTime;
       bool not_yet_finish = ( m_global_time.Value < stop_time);
       bool too_much = ( (m_global_time.Value+new_dt) > stop_time);
-      
+
       if ( not_yet_finish && too_much ){
         new_dt = stop_time - m_global_time.Value;
         SubDomain().TimeLoopMng().StopComputeLoop(true);
       }
     }
-    
+
     // Update variables
     m_old_dt_f = old_dt;
     m_delta_t_n = 0.5*(old_dt+new_dt);
@@ -441,7 +441,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     m_global_deltat.Value = new_dt;
     //Trace.Info("END COMPUTE DELTAT @!!!!!!!!!!!!!");
   }
-  
+
   public void computeCQs(Real3ConstArrayView node_coord,Real3ConstArrayView face_coord,Cell cell)
   {
     Real3 c0 = face_coord[0];
@@ -477,13 +477,13 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
     Real3 n4a10 = demi * Math.VecMul(node_coord[5] - c3 , node_coord[6] - c3);
     Real3 n4a11 = demi * Math.VecMul(node_coord[6] - c3 , node_coord[7] - c3);
     Real3 n4a12 = demi * Math.VecMul(node_coord[7] - c3 , node_coord[4] - c3);
-	
+
     // Calculation of face 5 normals:
     Real3 n5a02 = demi * Math.VecMul(node_coord[1] - c4 , node_coord[2] - c4);
     Real3 n5a07 = demi * Math.VecMul(node_coord[2] - c4 , node_coord[6] - c4);
     Real3 n5a10 = demi * Math.VecMul(node_coord[6] - c4 , node_coord[5] - c4);
     Real3 n5a06 = demi * Math.VecMul(node_coord[5] - c4 , node_coord[1] - c4);
-      
+
     // Calculation of face 6 normals:
     Real3 n6a03 = demi * Math.VecMul(node_coord[2] - c5 , node_coord[3] - c5);
     Real3 n6a08 = demi * Math.VecMul(node_coord[3] - c5 , node_coord[7] - c5);
@@ -519,7 +519,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
 
     Real3Array tmp_coord = new Real3Array(8+6);
     Real3ArrayView tmp_coord_view = tmp_coord.View;
-    // Local copy of the mesh vertex coordinates
+    // Local copy of the cell vertex coordinates
     Real3ArrayView coord = tmp_coord_view.SubView(0,8);
     // Face center coordinates
     Real3ArrayView face_coord = tmp_coord_view.SubView(8,6);
@@ -541,7 +541,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
       face_coord[4] = 0.25 * ( coord[1] + coord[2] + coord[6] + coord[5] );
       face_coord[5] = 0.25 * ( coord[2] + coord[3] + coord[7] + coord[6] );
 
-      // Calculate the characteristic length of the mesh.
+      // Calculate the characteristic length of the cell.
       {
         Real3 median1 = face_coord[0]-face_coord[3];
         Real3 median2 = face_coord[2]-face_coord[5];
@@ -558,7 +558,7 @@ class SimpleHydroModule : ArcaneSimpleHydroCSObject
       // Calculate vertex results
       computeCQs(coord.ConstView,face_coord.ConstView,cell);
 
-      // Calculate the volume of the mesh
+      // Calculate the volume of the cell
       {
         Real volume = 0.0;
         for( Integer i_node=0; i_node<8; ++i_node )

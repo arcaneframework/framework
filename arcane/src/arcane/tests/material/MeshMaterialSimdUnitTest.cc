@@ -131,7 +131,7 @@ namespace
 
 /*!
  * \brief Enumerator over a sub-part (pure or partial) of a
- * subset of meshes of a component (material or environment)
+ * subset of cells of a component (material or environment)
  */
 class FullComponentPartCellEnumerator
 {
@@ -918,7 +918,7 @@ simple_env_loop2(ComponentPartItemVectorView pure_items,
     Int32ConstArrayView item_indexes = view.valueIndexes();
     PRAGMA_IVDEP
     for (Integer i = 0; i < nb_item; ++i) {
-      // For this test, we know that the partial meshes are contiguous
+      // For this test, we know that the partial cells are contiguous
       // and item_indexes[i] == i.
       //MatVarIndex mvi(cpi,item_indexes[i]);
       ComponentItemLocalId mvi(MatVarIndex(cpi, item_indexes[i]));

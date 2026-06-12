@@ -30,8 +30,8 @@
     </simple>
     <simple name="heights" type="real[]">
       <description>
-        List of mesh heights. This array must have at least 2 values.
-        The values must be increasing. The number of mesh layers in height is
+        List of cell heights. This array must have at least 2 values.
+        The values must be increasing. The number of cell layers in height is
         equal to the number of elements in this array minus 1.
       </description>
       <userclass>User</userclass>

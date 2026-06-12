@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* IExtraGhostParticlesBuilder.h                               (C) 2000-2025 */
 /*                                                                           */
-/* Interface of a builder for "extraordinary" ghost meshes                   */
+/* Interface of a builder for "extraordinary" ghost cells                    */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CORE_IEXTRAGHOSTPARTICLESBUILDER_H
 #define ARCANE_CORE_IEXTRAGHOSTPARTICLESBUILDER_H
@@ -26,11 +26,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Interface of a builder for "extraordinary" ghost meshes.
+ * \brief Interface of a builder for "extraordinary" ghost cells.
  *
- * An "extraordinary" ghost mesh is a ghost mesh added to the
- * ghost meshes defined by the mesh connectivity. Specifically,
- * the calculation of extraordinary ghost meshes is performed during every
+ * An "extraordinary" ghost cell is a ghost cell added to the
+ * ghost cells defined by the mesh connectivity. Specifically,
+ * the calculation of extraordinary ghost cells is performed during every
  * mesh update or load balancing.
  *
  * \note makes the \a remove_old_ghost parameter of the IMesh::endUpdate()
@@ -46,17 +46,17 @@ class IExtraGhostParticlesBuilder
  public:
 
   /*!
-   * \brief Calculation of "extraordinary" meshes to send.
+   * \brief Calculation of "extraordinary" cells to send.
    *
-   * Performs the calculation of "extraordinary" meshes following
+   * Performs the calculation of "extraordinary" cells following
    * a construction algorithm.
    */
   virtual void computeExtraParticlesToSend() = 0;
 
   /*!
-   * \brief Local indices of "extraordinary" meshes for sending
+   * \brief Local indices of "extraordinary" cells for sending
    *
-   * Retrieves the array of "extraordinary" meshes destined for
+   * Retrieves the array of "extraordinary" cells destined for
    * the sub-domain \a rank.
    */
   virtual Int32ConstArrayView extraParticlesToSend(const String& family_name, Int32 rank) const = 0;

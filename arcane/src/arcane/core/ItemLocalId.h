@@ -221,7 +221,7 @@ class FaceLocalIdToFaceConverter
   using ItemLocalIdToItemConverterT<Face>::ItemLocalIdToItemConverterT;
 };
 
-//! Class to convert a CellLocalId to a mesh.
+//! Class to convert a CellLocalId to a cell.
 class CellLocalIdToCellConverter
 : public ItemLocalIdToItemConverterT<Cell>
 {

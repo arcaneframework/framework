@@ -99,7 +99,7 @@ init(void)
   // Set our time step
   m_global_deltat = 1.0;
 
-  // initialization of temperature on all meshes and faces
+  // initialization of temperature on all cells and faces
   m_cell_temperature.fill(options()->initTemperature());
   m_face_temperature.fill(options()->initTemperature());
 

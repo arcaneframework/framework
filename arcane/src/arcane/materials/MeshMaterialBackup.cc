@@ -255,7 +255,7 @@ _restore()
     info(4) << "RESTORE using uniqueIds()";
     IItemFamily* cell_family = m_material_mng->mesh()->cellFamily();
     // If uniqueIds() are used, the m_unique_ids_array
-    // contains the uniqueId() values of the meshes. It must
+    // contains the uniqueId() values of the cells. It must
     // then be converted to localId().
     for (const auto& iter : m_unique_ids_array) {
       IMeshComponent* component = iter.first;
@@ -279,7 +279,7 @@ void MeshMaterialBackup::
 _restoreV1()
 {
   // If uniqueIds() are used, then localIds() may be null
-  // if meshes have been deleted.
+  // if cells have been deleted.
   bool allow_null_id = m_use_unique_ids;
 
   ENUMERATE_COMPONENT (ic, m_material_mng->components()) {
@@ -303,7 +303,7 @@ void MeshMaterialBackup::
 _restoreV2()
 {
   // If uniqueIds() are used, then localIds() may be null
-  // if meshes have been deleted.
+  // if cells have been deleted.
   bool allow_null_id = m_use_unique_ids;
 
   auto components = m_material_mng->components();

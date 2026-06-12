@@ -128,7 +128,7 @@ class MeshRefinement
                  const Integer max_level = -1);
 
   /*!
-   * \brief Passing the error committed by the mesh to the refinement flag.
+   * \brief Passing the error committed by the cell to the refinement flag.
    *
    * This method could be implemented in different ways:
    * 1- current implementation: the user performs the transformation themselves
@@ -164,14 +164,14 @@ class MeshRefinement
   bool coarsenItems(const bool maintain_level_one = true);
 
   /*!
-   * \brief Method allowing the removal of meshes marked with the
+   * \brief Method allowing the removal of cells marked with the
    * flag "II_Coarsen".
    *
-   * The owners of faces and nodes having marked meshes
-   * and unmarked meshes are likely to be updated.
+   * The owners of faces and nodes having marked cells
+   * and unmarked cells are likely to be updated.
    *
    * \param update_parent_flag If true, the parent flags will be
-   * updated. This includes activating parent meshes.
+   * updated. This includes activating parent cells.
    *
    * \return true if the mesh has changed.
    */
@@ -238,11 +238,11 @@ class MeshRefinement
   void _updateMaxUid(ArrayView<ItemInternal*> cells_to_refine);
 
   /*!
-   * Returns the refinement pattern associated with the mesh type.
+   * Returns the refinement pattern associated with the cell type.
    */
   template <int typeID> const ItemRefinementPatternT<typeID>& getRefinementPattern() const;
   /*!
-   * Determination of non-conforming connections of refined meshes.
+   * Determination of non-conforming connections of refined cells.
    */
   void populateBackFrontCellsFromChildrenFaces(Cell parent_cell);
   void populateBackFrontCellsFromParentFaces(Cell parent_cell);
@@ -276,8 +276,9 @@ class MeshRefinement
   bool& coarsenByParents();
 
   /*!
-   * If Face_level_mismatch_limit is set to a non-zero value, then   * refinement and coarsening will produce meshes where
-   * the refinement level of two neighboring meshes per face will not differ by more than
+   * If Face_level_mismatch_limit is set to a non-zero value, then
+   * refinement and coarsening will produce meshes where
+   * the refinement level of two neighboring cells per face will not differ by more than
    * this limit. If Face_level_mismatch_limit is 0, then level differences
    * will be unlimited.
    *
@@ -294,10 +295,10 @@ class MeshRefinement
    */
   bool _contract();
 
-  //! Interpolation of data on the child meshes
+  //! Interpolation of data on the child cells
   void _interpolateData(const Int64Array& cells_to_refine);
 
-  //! Upscaling of data on the parent meshes
+  //! Upscaling of data on the parent cells
   void _upscaleData(Array<ItemInternal*>& parent_cells);
 
  private:
@@ -322,7 +323,7 @@ class MeshRefinement
    */
   bool _refineItems(Int64Array& cells_to_refine);
 
-  // Updates the owners of items from the meshes
+  // Updates the owners of items from the cells
   void _updateItemOwner(Int32ArrayView cell_to_remove);
   void _updateItemOwner2();
   //!
@@ -359,7 +360,7 @@ class MeshRefinement
   bool _makeFlagParallelConsistent2();
 
   /**
-   * Determination of non-conforming connections of refined meshes
+   * Determination of non-conforming connections of refined cells
    */
   template <int typeID>
   void _populateBackFrontCellsFromParentFaces(Cell parent_cell);

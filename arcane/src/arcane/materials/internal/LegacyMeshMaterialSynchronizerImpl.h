@@ -39,12 +39,12 @@ class MeshMaterialModifierImpl;
  * \brief Strategy for synchronizing the list of materials/media of entities.
  *
  * This class allows synchronizing the list
- * of materials/media to which a mesh belongs between subdomains.
+ * of materials/media to which a cell belongs between subdomains.
  *
- * The ghost meshes of this subdomain will retrieve the meshes
- * of the proper meshes. These ghost meshes will then potentially
- * be added or removed from the current materials and media to be consistent
- * with this list derived from the proper meshes.
+ * The ghost cells of this subdomain will retrieve the cells
+ * of the proper cells. These ghost cells will then potentially
+ * be added or removed from the current materials and environment to be consistent
+ * with this list derived from the proper cells.
  */
 class LegacyMeshMaterialSynchronizerImpl
 : public TraceAccessor
@@ -62,7 +62,7 @@ class LegacyMeshMaterialSynchronizerImpl
    *
    * This operation is collective.
    *
-   * Returns \a true if meshes have been added or removed from a material
+   * Returns \a true if cells have been added or removed from a material
    * or a medium during this operation for this subdomain.
    */
   bool synchronizeMaterialsInCells();

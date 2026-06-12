@@ -50,9 +50,15 @@ namespace Arcane::mesh
  *
  * In parallel, if an entity is on the boundary of a subdomain, it is not
  * possible to know all the cells connected to it.
- * To solve this problem, we create a list of boundary entities containing for each connected cell a triplet (entity uniqueId(), connected cell uniqueId(), owner() of the connected cell).
- * This list is then sorted in parallel (via BitonicSort) by the entity uniqueId(), then by the cell uniqueId().
- * To determine the owner of an entity, it is enough to take the owner of the cell associated with the first occurrence of the entity in this sorted list. Once this is done, this information is sent to the ranks that possess this entity.
+ * To solve this problem, we create a list of boundary entities containing for
+ * each connected cell a triplet (entity uniqueId(), connected cell uniqueId(),
+ * owner() of the connected cell).
+ * This list is then sorted in parallel (via BitonicSort) by the entity
+ * uniqueId(), then by the cell uniqueId().
+ * To determine the owner of an entity, it is enough to take the owner of the
+ * cell associated with the first occurrence of the entity in this sorted list.
+ * Once this is done, this information is sent to the ranks that possess this
+ * entity.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -116,7 +122,9 @@ class ItemsOwnerBuilderImpl
   /*!
    * \brief Indicates how to perform the sort.
    *
-   * If true, the cell with the smallest uniqueId() is used for sorting. Otherwise, it is the smallest rank. This will be used to determine who will be the owner of an entity.
+   * If true, the cell with the smallest uniqueId() is used for sorting.
+   * Otherwise, it is the smallest rank. This will be used to determine
+   * who will be the owner of an entity.
    */
   bool m_use_cell_uid_to_sort = true;
 
@@ -246,7 +254,8 @@ computeFacesOwner()
   info() << "** BEGIN ComputeFacesOwner nb_face=" << faces_map.count();
 
   // Iterates over all faces.
-  // Only keeps those that are boundary or whose owners of the two cells on either side are different from our subdomain.
+  // Only keeps those that are boundary or whose owners of the two cells on
+  // either side are different from our subdomain.
   UniqueArray<Int32> faces_to_add;
   UniqueArray<Int64> faces_to_add_uid;
   faces_map.eachItem([&](Face face) {
@@ -297,11 +306,13 @@ computeEdgesOwner()
   info() << "** BEGIN ComputeEdgesOwner nb_edge=" << edges_map.count();
 
   // Iterates over all edges.
-  // Only keeps those that are boundary or whose owners of at least one of the connected cells are different from our subdomain.
+  // Only keeps those that are boundary or whose owners of at least one of the
+  // connected cells are different from our subdomain.
   UniqueArray<Int32> edges_to_add;
   UniqueArray<Int64> edges_to_add_uid;
   // Brute force adds all edges.
-  // This ensures that the owners are calculated correctly, even if we cannot determine the boundary edges.
+  // This ensures that the owners are calculated correctly, even if we cannot
+  // determine the boundary edges.
   // This is not optimal, because we also send our internal edges
   // even though we are certain that we are their owner.
   bool do_brute_force = true;
@@ -364,8 +375,8 @@ computeNodesOwner()
 
   // Iterates over all boundary faces and adds their nodes
   // to the list of nodes to process (nodes_to_add). Boundary faces are
-  // those connected to only one mesh.
-  // connected to only one mesh.
+  // those connected to only one cell.
+  // connected to only one cell.
   const Int32 verbose_level = m_verbose_level;
 
   // List of nodes to process
@@ -396,9 +407,9 @@ computeNodesOwner()
     // In the case of multi-dimension meshing, there is currently
     // no simple way to detect boundary nodes. We therefore process all
     // nodes even if it is not optimal.
-    // NOTE: Detection is difficult only for nodes connected to meshes
-    // of dimension 1 or 2. For 3D meshes, we could only add
-    // nodes connected to a face having only one mesh.
+    // NOTE: Detection is difficult only for nodes connected to cells
+    // of dimension 1 or 2. For 3D cells, we could only add
+    // nodes connected to a face having only one cell.
     ENUMERATE_ (Node, inode, m_mesh->allNodes()) {
       nodes_to_add.add(inode.itemLocalId());
     }
@@ -526,8 +537,8 @@ _processSortedInfos(ItemInternalMap& items_map)
 
   // Iterates over the list of entities received.
   // Each entity is present multiple times in the list: at least
-  // once per mesh connected to this entity. Since this list is sorted
-  // by increasing uniqueId() of these meshes, and the mesh with the smallest
+  // once per cell connected to this entity. Since this list is sorted
+  // by increasing uniqueId() of these cells, and the cell with the smallest
   // uniqueId() determines the owner of the entity, the owner is that of the first
   // element in this list.
   // This new owner is then sent to all ranks that own this entity.

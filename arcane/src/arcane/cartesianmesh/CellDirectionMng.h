@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* CellDirectionMng.cc                                         (C) 2000-2026 */
 /*                                                                           */
-/* Info on the meshes in an X, Y, or Z direction of a structured mesh.       */
+/* Info on the cells in an X, Y, or Z direction of a structured mesh.        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_CARTESIANMESH_CELLDIRECTIONMNG_H
 #define ARCANE_CARTESIANMESH_CELLDIRECTIONMNG_H
@@ -34,7 +34,7 @@ namespace Arcane
 
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Mesh before and after a mesh along a direction.
+ * \brief Cell before and after a cell along a direction.
  *
  * Instances of this class are temporary and constructed via
  * CellDirectionMng::cell().
@@ -50,13 +50,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirCell
 
  public:
 
-  //! Previous mesh
+  //! Previous cell
   Cell previous() const { return m_previous; }
-  //! Previous mesh
+  //! Previous cell
   CellLocalId previousId() const { return CellLocalId(m_previous.localId()); }
-  //! Next mesh
+  //! Next cell
   Cell next() const { return m_next; }
-  //! Next mesh
+  //! Next cell
   CellLocalId nextId() const { return CellLocalId(m_next.localId()); }
 
  private:
@@ -69,7 +69,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirCell
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Mesh before and after a mesh along a direction.
+ * \brief Cell before and after a cell along a direction.
  *
  * Instances of this class are temporary and constructed via
  * CellDirectionMng::cellLocalId().
@@ -85,13 +85,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellLocalId
 
  public:
 
-  //! Previous mesh
+  //! Previous cell
   constexpr ARCCORE_HOST_DEVICE CellLocalId previous() const { return m_previous; }
-  //! Previous mesh
+  //! Previous cell
   constexpr ARCCORE_HOST_DEVICE CellLocalId previousId() const { return m_previous; }
-  //! Next mesh
+  //! Next cell
   constexpr ARCCORE_HOST_DEVICE CellLocalId next() const { return m_next; }
-  //! Next mesh
+  //! Next cell
   constexpr ARCCORE_HOST_DEVICE CellLocalId nextId() const { return m_next; }
 
  private:
@@ -104,7 +104,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellLocalId
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Mesh with directional node information.
+ * \brief Cell with directional node information.
  *
  * Instances of this class are temporary and constructed via
  * CellDirectionMng::cellNode().
@@ -123,9 +123,9 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNode
 
  public:
 
-  //! Associated mesh
+  //! Associated cell
   Cell cell() const { return m_cell; }
-  //! Associated mesh
+  //! Associated cell
   CellLocalId cellId() const { return CellLocalId(m_cell.localId()); }
 
   //! Node forward left in the direction
@@ -174,7 +174,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNode
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Mesh with directional node information.
+ * \brief Cell with directional node information.
  *
  * Instances of this class are temporary and constructed via
  * CellDirectionMng::cellNode().
@@ -194,7 +194,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNodeLocalId
 
  public:
 
-  //! Associated mesh
+  //! Associated cell
   ARCCORE_HOST_DEVICE CellLocalId cellId() const { return m_cell; }
 
   //! Node forward left in the direction
@@ -226,7 +226,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNodeLocalId
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Mesh with directional face information.
+ * \brief Cell with directional face information.
  *
  * Instances of this class are temporary and constructed via
  * CellDirectionMng::cellFace().
@@ -246,25 +246,25 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellFace
 
  public:
 
-  //! Associated mesh
+  //! Associated cell
   Cell cell() const { return m_cell; }
-  //! Associated mesh
+  //! Associated cell
   CellLocalId cellId() const { return m_cell.itemLocalId(); }
 
-  //! Face connected to the mesh after the current mesh in the direction
+  //! Face connected to the cell after the current cell in the direction
   Face next() const { return m_cell.face(m_next_face_index); }
-  //! Face connected to the mesh after the current mesh in the direction
+  //! Face connected to the cell after the current cell in the direction
   FaceLocalId nextId() const { return m_cell.faceId(m_next_face_index); }
 
-  //! Face connected to the mesh before the current mesh in the direction
+  //! Face connected to the cell before the current cell in the direction
   Face previous() const { return m_cell.face(m_previous_face_index); }
-  //! Face connected to the mesh before the current mesh in the direction
+  //! Face connected to the cell before the current cell in the direction
   FaceLocalId previousId() const { return m_cell.faceId(m_previous_face_index); }
 
-  //! Local index in the face of the next() mesh
+  //! Local index in the face of the next() cell
   Int32 nextLocalIndex() const { return m_next_face_index; }
 
-  //! Local index in the face of the previous() mesh
+  //! Local index in the face of the previous() cell
   Int32 previousLocalIndex() const { return m_previous_face_index; }
 
  private:
@@ -278,7 +278,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellFace
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Mesh with directional face information.
+ * \brief Cell with directional face information.
  *
  * Instances of this class are temporary and constructed via
  * CellDirectionMng::cellFace().
@@ -301,25 +301,25 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellFaceLocalId
 
  public:
 
-  //! Associated mesh
+  //! Associated cell
   ARCCORE_HOST_DEVICE CellLocalId cell() const { return m_cell; }
-  //! Associated mesh
+  //! Associated cell
   ARCCORE_HOST_DEVICE CellLocalId cellId() const { return m_cell; }
 
-  //! Face connected to the mesh after the current mesh in the direction
+  //! Face connected to the cell after the current cell in the direction
   ARCCORE_HOST_DEVICE FaceLocalId next() const { return m_view.faceId(m_cell, m_next_face_index); }
-  //! Face connected to the mesh after the current mesh in the direction
+  //! Face connected to the cell after the current cell in the direction
   ARCCORE_HOST_DEVICE FaceLocalId nextId() const { return m_view.faceId(m_cell, m_next_face_index); }
 
-  //! Face connected to the mesh before the current mesh in the direction
+  //! Face connected to the cell before the current cell in the direction
   ARCCORE_HOST_DEVICE FaceLocalId previous() const { return m_view.faceId(m_cell, m_previous_face_index); }
-  //! Face connected to the mesh before the current mesh in the direction
+  //! Face connected to the cell before the current cell in the direction
   ARCCORE_HOST_DEVICE FaceLocalId previousId() const { return m_view.faceId(m_cell, m_previous_face_index); }
 
-  //! Local index in the face of the next() mesh
+  //! Local index in the face of the next() cell
   ARCCORE_HOST_DEVICE Int32 nextLocalIndex() const { return m_next_face_index; }
 
-  //! Local index in the face of the previous() mesh
+  //! Local index in the face of the previous() cell
   ARCCORE_HOST_DEVICE Int32 previousLocalIndex() const { return m_previous_face_index; }
 
  private:
@@ -332,12 +332,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellFaceLocalId
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup ArcaneCartesianMesh
- * \brief Info about the meshes in a specific X, Y, or Z direction of a structured mesh.
+ * \brief Info about the cells in a specific X, Y, or Z direction of a structured mesh.
  *
  * This class contains the information needed to return the list
- * of meshes in a given direction and to know the mesh before and after
+ * of cells in a given direction and to know the cell before and after
  * within that direction.
  *
  * Instances of this class are managed by an ICartesianMesh and are
@@ -346,8 +347,8 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellFaceLocalId
  *
  * This class has a reference semantics.
  *
- * For example, to iterate over the meshes in the X direction:
- 
+ * For example, to iterate over the cells in the X direction:
+
  \code
  * ICartesianMesh* cartesian_mesh = ...;
  * CellDirectionMng cdm(cartesian_mesh->cellDirection(MD_DirX));
@@ -382,73 +383,73 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
 
  public:
 
-  //! Directional mesh corresponding to mesh \a c.
+  //! Directional cell corresponding to cell \a c.
   DirCell cell(Cell c) const
   {
     return _cell(c.localId());
   }
-  //! Directional mesh corresponding to mesh \a c.
+  //! Directional cell corresponding to cell \a c.
   DirCell cell(CellLocalId c) const
   {
     return _cell(c.localId());
   }
-  //! Directional mesh corresponding to mesh \a c.
+  //! Directional cell corresponding to cell \a c.
   DirCell dirCell(CellLocalId c) const
   {
     return _cell(c.localId());
   }
-  //! Directional mesh corresponding to mesh \a c.
+  //! Directional cell corresponding to cell \a c.
   ARCCORE_HOST_DEVICE DirCellLocalId dirCellId(CellLocalId c) const
   {
     return _dirCellId(c);
   }
 
-  //! Mesh with directional info at nodes corresponding to mesh \a c.
+  //! cell with directional info at nodes corresponding to cell \a c.
   DirCellNode cellNode(Cell c) const
   {
     return DirCellNode(c, m_nodes_indirection);
   }
 
-  //! Mesh with directional info at nodes corresponding to mesh \a c.
+  //! cell with directional info at nodes corresponding to cell \a c.
   DirCellNode cellNode(CellLocalId c) const
   {
     return DirCellNode(m_cells[c.localId()], m_nodes_indirection);
   }
 
-  //! Mesh with directional info at nodes corresponding to mesh \a c.
+  //! cell with directional info at nodes corresponding to cell \a c.
   DirCellNode dirCellNode(CellLocalId c) const
   {
     return DirCellNode(m_cells[c.localId()], m_nodes_indirection);
   }
 
-  //! Mesh with directional info at nodes corresponding to mesh \a c.
+  //! cell with directional info at nodes corresponding to cell \a c.
   ARCCORE_HOST_DEVICE DirCellNodeLocalId dirCellNodeId(CellLocalId c) const
   {
     return DirCellNodeLocalId(c, m_nodes_indirection, m_cell_node_view);
   }
 
-  //! Mesh with directional info at faces corresponding to mesh \a c.
+  //! cell with directional info at faces corresponding to cell \a c.
   DirCellFace cellFace(Cell c) const
   {
     return DirCellFace(c, m_next_face_index, m_previous_face_index);
   }
-  //! Mesh with directional info at faces corresponding to mesh \a c.
+  //! cell with directional info at faces corresponding to cell \a c.
   DirCellFace cellFace(CellLocalId c) const
   {
     return DirCellFace(m_cells[c.localId()], m_next_face_index, m_previous_face_index);
   }
 
-  //! Mesh with directional info at faces corresponding to mesh \a c.
+  //! cell with directional info at faces corresponding to cell \a c.
   ARCCORE_HOST_DEVICE DirCellFaceLocalId dirCellFaceId(CellLocalId c) const
   {
     return DirCellFaceLocalId(c, m_next_face_index, m_previous_face_index, m_cell_face_view);
   }
 
-  //! Group of all meshes in the direction.
+  //! Group of all cells in the direction.
   CellGroup allCells() const;
 
   /*!
-   * \brief Group of all overlap meshes in the direction.
+   * \brief Group of all overlap cells in the direction.
    *
    *   0   1  2  3  4
    * ┌───┬──┬──┬──┬──┐
@@ -458,61 +459,61 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * └───┴──┴──┴──┴──┘
    *
    * 0 : level -1
-   * 1 and 2 : Overlap meshes (overlapCells)
-   * 3 : Outer meshes (outerCells)
-   * 4 : Inner meshes (innerCells)
+   * 1 and 2 : Overlap cells (overlapCells)
+   * 3 : Outer cells (outerCells)
+   * 4 : Inner cells (innerCells)
    *
-   * The overlap mesh layer designates the layer of meshes of the same
-   * level around the patch. These meshes may belong to one or more
+   * The overlap cell layer designates the layer of cells of the same
+   * level around the patch. These cells may belong to one or more
    * patches.
    */
   CellGroup overlapCells() const;
 
   /*!
-   * \brief Group of all patch meshes in the direction.
+   * \brief Group of all patch cells in the direction.
    *
-   * Groups all meshes that are neither overlap nor ghost.
+   * Groups all cells that are neither overlap nor ghost.
    * (`innerCells() + outerCells()` or simply `!overlapCells()`)
    */
   CellGroup inPatchCells() const;
 
   /*!
-   * \brief Group of all inner meshes in the direction.
+   * \brief Group of all inner cells in the direction.
    *
-   * A mesh is considered inner if its mesh
-   * before or after is not null and is not an overlap mesh.
+   * A cell is considered inner if its cell
+   * before or after is not null and is not an overlap cell.
    */
   CellGroup innerCells() const;
 
   /*!
-   * \brief Group of all outer meshes in the direction.
+   * \brief Group of all outer cells in the direction.
    *
-   * A mesh is considered outer if its mesh
-   * before or after is an overlap mesh or is null (if it is at the edge of the
-   * domain or if there are no overlap mesh layers).
+   * A cell is considered outer if its cell
+   * before or after is an overlap cell or is null (if it is at the edge of the
+   * domain or if there are no overlap cell layers).
    */
   CellGroup outerCells() const;
 
-  //! Directional mesh corresponding to mesh \a c.
+  //! Directional cell corresponding to cell \a c.
   DirCell operator[](Cell c) const
   {
     return _cell(c.localId());
   }
 
-  //! Directional mesh corresponding to mesh \a c.
+  //! Directional cell corresponding to cell \a c.
   DirCell operator[](CellLocalId c) const
   {
     return _cell(c.localId());
   }
 
-  //! Directional mesh corresponding to the iterator of mesh \a icell.
+  //! Directional cell corresponding to the iterator of cell \a icell.
   DirCell operator[](CellEnumerator icell) const
   {
     return _cell(icell.itemLocalId());
   }
 
   /*!
-   * \brief Global number of meshes in this direction.
+   * \brief Global number of cells in this direction.
    *
    * \note The returned value is only valid if the
    * mesh was created with a specific generator, such as
@@ -521,7 +522,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   Int64 globalNbCell() const;
 
   /*!
-   * \brief Number of own meshes in this direction.
+   * \brief Number of own cells in this direction.
    *
    * \note The returned value is only valid if the
    * mesh was created with a specific generator, such as
@@ -540,7 +541,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * \warning Using this method assumes that each
    * subdomain is parallelepiped (in 3D) or rectangular (in 2D)
    * which is not necessarily the case, especially with
-   * mesh migration load balancing mechanisms.
+   * cell migration load balancing mechanisms.
    *
    * \note The returned value is only valid if the
    * mesh was created with a specific generator, such as
@@ -549,17 +550,17 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   Int32 subDomainOffset() const;
 
   /*!
-   * \brief Offset of the first own mesh of this subdomain in this direction.
+   * \brief Offset of the first own cell of this subdomain in this direction.
    *
    * Assuming the global Cartesian mesh is divided into
    * several rectangular subdomains that form a grid,
    * this method returns the position of the first
-   * own mesh of this subdomain in this grid for this direction.
+   * own cell of this subdomain in this grid for this direction.
    *
    * \warning Using this method assumes that each
    * subdomain is parallelepiped (in 3D) or rectangular (in 2D)
    * which is not necessarily the case, especially with
-   * mesh migration load balancing mechanisms.
+   * cell migration load balancing mechanisms.
    *
    * \note The returned value is only valid if the
    * mesh was created with a specific generator, such as
@@ -569,14 +570,14 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
 
  private:
 
-  //! Directional mesh corresponding to local mesh number \a local_id
+  //! Directional cell corresponding to local cell number \a local_id
   DirCell _cell(Int32 local_id) const
   {
     ItemDirectionInfo d = m_infos_view[local_id];
     return DirCell(m_cells[d.m_next_lid], m_cells[d.m_previous_lid]);
   }
 
-  //! Directional mesh corresponding to local mesh number \a local_id
+  //! Directional cell corresponding to local cell number \a local_id
   ARCCORE_HOST_DEVICE DirCellLocalId _dirCellId(Int32 local_id) const
   {
     ItemDirectionInfo d = m_infos_view[local_id];
@@ -609,7 +610,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
 
   /*!
    * \internal
-   * Positions the local face indices to the next and previous mesh.
+   * Positions the local face indices to the next and previous cell.
    */
   void _internalSetLocalFaceIndex(Int32 next_index, Int32 previous_index)
   {

@@ -318,7 +318,7 @@ _addEdgeBoundaryInfo(Edge edge)
 /*---------------------------------------------------------------------------*/
 /*!
   \brief Calculates the unique IDs for every edge in parallel.
-  
+
   NEW VERSION.
 
   NOTE: June 22, 2022
@@ -354,8 +354,8 @@ compute()
   ItemInternalMap& edges_map = m_mesh->edgesMap();
   ItemInternalMap& faces_map = m_mesh->facesMap(); // used to detect the boundary
 
-  // NOTE: this array is not useful on all meshes. It
-  // is enough that it contains the meshes we need, that is
+  // NOTE: this array is not useful on all cells. It
+  // is enough that it contains the cells we need, that is
   // ours + those connected to one of our edges.
   HashTableMapT<Int32, Int32> cell_first_edge_uid(m_mesh_builder->oneMeshItemAdder()->nbCell() * 2, true);
 
@@ -366,9 +366,9 @@ compute()
   // edge:
   //  - its type,
   //  - the list of its nodes,
-  //  - the unique number of its mesh,
-  //  - the owner of its mesh,
-  //  - its index in its mesh,
+  //  - the unique number of its cell,
+  //  - the owner of its cell,
+  //  - its index in its cell,
   // This list will then be sent to all sub-domains.
 
   IItemFamily* node_family = m_mesh->nodeFamily();
@@ -376,7 +376,7 @@ compute()
 
   // Marks all boundary nodes, because these are the ones that need to be sent
   // A node is considered boundary if it belongs to a face that has only one
-  // connected mesh.
+  // connected cell.
   faces_map.eachItem([&](Face face) {
     Integer face_nb_cell = face.nbCell();
     if (face_nb_cell == 1) {
@@ -595,7 +595,7 @@ _sendInfosToOtherRanks()
 /*---------------------------------------------------------------------------*/
 /*!
   \brief Calculates the unique IDs for every edge sequentially.
-  
+
   \sa computeEdgesUniqueIds()
 */
 void EdgeUniqueIdBuilder::
@@ -606,7 +606,7 @@ _computeEdgesUniqueIdsSequential()
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
 
-  // In sequential mode, the uniqueId() of the meshes cannot exceed
+  // In sequential mode, the uniqueId() of the cells cannot exceed
   // the size of Integers even in 32 bits.
   Int32 max_uid = 0;
   cells_map.eachItem([&](Item cell) {

@@ -73,7 +73,7 @@ preFetchNumElementsForEachRow(IntegerArray& rows_nb_element,
   rows_nb_element.fill(1);
 
   // And add the face couplings
-  // Note: We must iterate over all meshes and filter ghost faces
+  // Note: We must iterate over all cells and filter ghost faces
   ENUMERATE_FACE (iFace, INNER_ACTIVE_FACE_GROUP(allCells())) {
     if (iFace->backCell().isOwn())
       rows_nb_element[m_cell_matrix_idx[iFace->backCell()] - rank_row_offset] += 1;
@@ -217,7 +217,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
   Int32UniqueArray faces_to_attach;
   Int32UniqueArray lids_to_be_attached;
 
-  // Scan over all meshes, active AND inactive
+  // Scan over all cells, active AND inactive
   ENUMERATE_CELL (iCell, allCells()) {
     Cell cell = *iCell;
     //onst Real Tp=m_cell_temperature[iCell];
@@ -231,7 +231,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
       continue; // Avoid working on leaves
 
     if (!CELL_HAS_H_CHILDREN(cell))
-      continue; // Avoid meshes that do not have children
+      continue; // Avoid cells that do not have children
 
     // Check if all children are active
     for (Integer j = 0, js = CELL_NB_H_CHILDREN(cell); j < js; ++j)
@@ -265,7 +265,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
     (*iCell).mutableItemBase().removeFlags(ItemInternal::II_CoarsenInactive);
     ARCANE_ASSERT(((*iCell).isActive()), ("Parent not active!"));
 
-    // Set the new value of the mesh
+    // Set the new value of the cell
     m_cell_temperature[iCell] = sumTs / 4.0;
 
     // Add the children's lids to remove them later
@@ -356,7 +356,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
   CellInfoListView cells_view(mesh()->cellFamily());
   FaceInfoListView faces_view(mesh()->faceFamily());
 
-  // Remove the meshes
+  // Remove the cells
   for (Integer j = 0, js = children_to_coarsen_lid.size(); j < js; ++j) {
     //const Cell &cell=cellFamily()->itemsInternal()[children_to_coarsen_lid[j]];
     //debug()<<"\t\t[FaceAmrCoarsen] REMOVING CELL_"<<children_to_coarsen_lid[j];

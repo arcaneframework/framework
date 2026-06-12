@@ -417,7 +417,7 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
   //   level_i_nb_cell_z /= 2;
   // }
 
-  // Renumbers the mesh.
+  // Renumbers the cell.
   {
     Int64 new_uid = (coord_i + coord_j * current_level_nb_cell_x + coord_k * current_level_nb_cell_x * current_level_nb_cell_y) + cell_adder;
     if (new_uids.cells[cell] < 0) {
@@ -428,7 +428,7 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
     }
   }
 
-  // Renumbers the nodes of the current mesh.
+  // Renumbers the nodes of the current cell.
   // Assumes we have 8 nodes
   // WARNING: initially, we cannot easily preserve the order
   // of uniqueIds() between the old and new numbering.
@@ -474,7 +474,7 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
    y▼12   13   14 │y▼ ┌────┬────┐
       │ 26 │ 27 │ │   │ 24 │ 25 │
       └────┴────┘ │   0    4    8
-     15   16   17 │              
+     15   16   17 │
       │ 28 │ 29 │ │   │    │    │
       └────┴────┘ │   2    5    9
    z=0            │              x=0
@@ -483,7 +483,7 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
      18   19   20 │   ┌────┬────┐
       │ 32 │ 33 │ │   │ 30 │ 31 │
       └────┴────┘ │   1    6   10
-     21   22   23 │              
+     21   22   23 │
       │ 34 │ 35 │ │   │    │    │
       └────┴────┘ │   3    7   11
                   │
@@ -559,8 +559,8 @@ _applyChildrenCell3D(Cell cell, NewUniqueIdList& new_uids,
     }
   }
 
-  // Renumbers the sub-meshes
-  // Assumes we have 8 child meshes (2x2x2) as follows by meshes
+  // Renumbers the sub-cells
+  // Assumes we have 8 child cells (2x2x2) as follows by cells
   // -------
   // | 2| 3|
   // -------
@@ -628,7 +628,7 @@ _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
   Int64x3 grid_nb_node = grid.nbNode();
   Int64x3 grid_nb_face = grid.nbFace();
 
-  // Renumbers the mesh.
+  // Renumbers the cell.
   {
     Int64 new_uid = cell_uid_computer.compute(coord_i, coord_j, coord_k);
     if (new_uids.cells[cell] < 0) {
@@ -640,7 +640,7 @@ _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
   }
 
   static constexpr Int32 const_cell_nb_node = 8;
-  // Renumbers the nodes of the current mesh.
+  // Renumbers the nodes of the current cell.
   {
     std::array<Int64, const_cell_nb_node> node_uids = node_uid_computer.computeForCell(coord_i, coord_j, coord_k);
 
@@ -670,7 +670,7 @@ _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
    y▼12   13   14 │y▼ ┌────┬────┐
       │ 26 │ 27 │ │   │ 24 │ 25 │
       └────┴────┘ │   0    4    8
-     15   16   17 │              
+     15   16   17 │
       │ 28 │ 29 │ │   │    │    │
       └────┴────┘ │   2    5    9
    z=0            │              x=0
@@ -679,7 +679,7 @@ _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
      18   19   20 │   ┌────┬────┐
       │ 32 │ 33 │ │   │ 30 │ 31 │
       └────┴────┘ │   1    6   10
-     21   22   23 │              
+     21   22   23 │
       │ 34 │ 35 │ │   │    │    │
       └────┴────┘ │   3    7   11
                   │
@@ -719,8 +719,8 @@ _applyChildrenCell3DV2(Cell cell, NewUniqueIdList& new_uids,
     }
   }
 
-  // Renumbers the sub-meshes
-  // Assumes we have 8 child meshes (2x2x2) as follows by meshes
+  // Renumbers the sub-cells
+  // Assumes we have 8 child cells (2x2x2) as follows by cells
   // -------
   // | 2| 3|
   // -------
