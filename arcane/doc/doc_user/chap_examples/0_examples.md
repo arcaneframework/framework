@@ -1,28 +1,28 @@
-# Exemples et didacticiel {#arcanedoc_examples}
+﻿# Examples and tutorial {#arcanedoc_examples}
 
-Ce chapitre contient les exemples utilisant %Arcane.  
-Il permet de mieux comprendre les chapitres précédents.
+This chapter contains examples using %Arcane.
+It helps better understand the previous chapters.
 
-Pour comprendre les exemples présentés ici, il est nécessaire d'avoir 
-au moins lu et compris les chapitres \ref arcanedoc_getting_started et
+To understand the examples presented here, it is necessary to have at least read
+and understood the chapters \ref arcanedoc_getting_started and
 \ref arcanedoc_core_types.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 1. \subpage arcanedoc_examples_simple_example <br>
-  Présente un exemple simple de code %Arcane (HelloWorld).
+   Presents a simple example of %Arcane code (HelloWorld).
 
 2. \subpage arcanedoc_examples_concret_example <br>
-  Présente un exemple plus complet de code %Arcane (QAMA) (Nécéssite d'avoir lu
-  la partie 'HelloWorld' avant).
+   Presents a more complete example of %Arcane code (QAMA) (Requires having read
+   the 'HelloWorld' section before).
 
 3. \subpage arcanedoc_tutorial <br>
-  Présente le didacticiel %Arcane.
+   Presents the %Arcane tutorial.
 
 4. \subpage arcanedoc_samples_directory <br>
-  Liste des exemples du répertoire `samples`.
+   List of examples from the `samples` directory.
 
 ____
 

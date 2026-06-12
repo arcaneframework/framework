@@ -1,71 +1,69 @@
-# Descripteur de module/service (.AXL) {#arcanedoc_core_types_axl}
+﻿# Module/Service Descriptor (.AXL) {#arcanedoc_core_types_axl}
 
-Comme expliqué précédemment, le descripteur de module/service est un fichier
-ayant l'extension `.axl` qui accompagne les modules et les services et qui
-décrit les éléments suivants :
-- là où les interfaces qu'il implémente (**service uniquement**),
-- ses variables,
-- ses points d'entrée (**module uniquement**),
-- ses options de configuration.
+As previously explained, the module/service descriptor is a file
+with the `.axl` extension that accompanies modules and services and describes
+the following elements:
+- where the interfaces it implements (**service only**),
+- its variables,
+- its entry points (**module only**),
+- its configuration options.
 
-Ce sous-chapitre va donc rentrer dans les détails et expliquer ces trois
-principes essentiels dans %Arcane.
+This subsection will therefore go into detail and explain these three
+essential principles in %Arcane.
 
-Pour rappel, un descripteur de module ressemble à ça :
+As a reminder, a module descriptor looks like this:
 
 ```xml
 <?xml version="1.0"?>
 <module name="Hydro" version="1.0">
-	<description>Descripteur du module Hydro</description>
+  <description>Hydro module descriptor</description>
 
-	<variables>
-    <!-- Voir partie "Variable". -->
-	</variables>
-	<entry-points>
-    <!-- Voir partie "Point d'entrée". -->
-	</entry-points>
-	<options>
-    <!-- Service de type IEquationOfState. -->
-    <!-- Voir partie "Options". -->
-	</options>
+  <variables>
+    <!-- See "Variable" section. -->
+  </variables>
+  <entry-points>
+    <!-- See "Entry Point" section. -->
+  </entry-points>
+  <options>
+    <!-- Service of type IEquationOfState. -->
+    <!-- See "Options" section. -->
+  </options>
 </module>
 ```
 
-Et un descripteur de service ressemble à ça :
+And a service descriptor looks like this:
 
 ```xml
 <?xml version="1.0"?>
 <service name="PerfectGasEOS" version="1.0">
-  <description>Descripteur du service PerfectGasEOSService</description>
+  <description>PerfectGasEOSService descriptor</description>
 
-  <interface name="IEquationOfState" />
+  <interface name="IEquationOfState"/>
 
-	<variables>
-    <!-- Voir partie "Variable". -->
-	</variables>
-	<options>
-    <!-- Voir partie "Options". -->
-	</options>
+  <variables>
+    <!-- See "Variable" section. -->
+  </variables>
+  <options>
+    <!-- See "Options" section. -->
+  </options>
 </service>
 ```
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Table of Contents for this subsection:
 
 1. \subpage arcanedoc_core_types_axl_variable <br>
-  Présente la notion de variable dans %Arcane.
+   Presents the concept of variables in %Arcane.
 
 2. \subpage arcanedoc_core_types_axl_entrypoint <br>
-  Présente la notion de point d'entrée dans %Arcane.
+   Presents the concept of entry points in %Arcane.
 
 3. \subpage arcanedoc_core_types_axl_caseoptions <br>
-  Explique comment paramétrer les modules avec des options utilisateurs fournies 
-  dans le jeu de données.
+   Explains how to configure modules with user options provided in the dataset.
 
 4. \subpage arcanedoc_core_types_axl_others <br>
-  Présente les détails qui n'apparaissent pas dans les
-  autres sous-chapitres.
+   Presents details that do not appear in other sub-chapters.
 
 ____
 

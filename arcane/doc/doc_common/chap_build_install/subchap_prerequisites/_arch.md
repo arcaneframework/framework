@@ -1,9 +1,10 @@
-# ArchLinux {#arcanedoc_build_install_prerequisites_arch}
+﻿# ArchLinux {#arcanedoc_build_install_prerequisites_arch}
 
 [TOC]
 
-Les commandes suivantes permettent d'installer CMake, .Net et les dépendances
-nécessaires pour %Arcane (ainsi que les dépendances optionnelles `TBB`, `HDF5` et `ParMetis`):
+The following commands allow you to install CMake, .Net, and the dependencies
+required for %Arcane (as well as the optional dependencies `TBB`, `HDF5`, and
+`ParMetis`):
 
 ~~~{sh}
 sudo pacman -Syu

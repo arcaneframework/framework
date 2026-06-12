@@ -1,89 +1,90 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 // -*- C++ -*-
 /*!
-  \page arcanedoc_core_types_axl_variable_depends Variables et dépendances
-	
-  Arcane dispose d'un mécanisme de gestion des dépendances entre variables
-  permettant de mettre automatiquement à jour une variable ci nécessaire.
-  Ce mécanisme est optionnel et il n'est pas nécessaire de l'utiliser.
+\page arcanedoc_core_types_axl_variable_depends Variables and Dependencies
 
-  Le principe est le suivant:
-  - chaque variable contient une liste des variables dont elle dépend
-  - chaque variable possède une fonction de calcul, qui sera appelée
-  automatiquement par Arcane pour recalculer la variable si
-  nécessaire. Cette fonction de calcul doit appeler la méthode
-  VariableRef::setUpToDate() pour la ou les variables qu'elle a mise à jour.
-  - la méthode VariableRef::update() est appelée lorsqu'on souhaite mettre
-  à jour la valeur d'une variable. Cette méthode suit la chaîne de
-  dépendance et met à jour toutes les variables nécessaires en
-  appelant leur fonction de calcul.
+Arcane has a mechanism for managing dependencies between variables
+allowing a variable to be automatically updated if necessary.
+This mechanism is optional and does not need to be used.
 
-  <h3>Ajout des dépendances</h3>
+The principle is as follows:
 
-  La gestion des dépendances est la clé de la bonne mise à jour des
-  variables. Il faut faire attention de ne pas faire de boucles dans
-  les dépendances (deux variables qui dépendent l'une de l'autre
-  directement ou indirectement), ce qui provoquerait des récursions
-  infinies. De même, il ne faut pas oublier une dépendance, ce qui
-  produirait des calculs faux car certaines variables ne serait pas
-  mises à jour au bon moment.
+- each variable contains a list of variables it depends on
+- each variable has a calculation function, which will be called
+  automatically by Arcane to recalculate the variable if
+  necessary. This calculation function must call the method
+  VariableRef::setUpToDate() for the variable or variables it has updated.
+- the VariableRef::update() method is called when you want to update
+  the value of a variable. This method follows the dependency chain
+  and updates all necessary variables by
+  calling their calculation function.
 
-  Il existe deux types de dépendances:
-  - dépendance d'une autre variable au même temps physique. Pour
-  ajouter une dépendance de ce type, il faut appeler la méthode
+<h3>Adding Dependencies</h3>
+
+Dependency management is key to the correct updating of
+variables. You must be careful not to create loops in
+the dependencies (two variables that depend on each other
+directly or indirectly), which would cause infinite recursions. Likewise, you
+must not forget a dependency, which would
+produce incorrect calculations because certain variables would not be
+updated at the right time.
+
+There are two types of dependencies:
+- dependency on another variable at the same physical time. To
+  add a dependency of this type, you must call the method
   VariableRef::addDependCurrentTime()
-  - dépendance d'une autre variable au temps physique précédent. Pour
-  ajouter une dépendance de ce type, il faut appeler la méthode
+- dependency on another variable at the previous physical time. To
+  add a dependency of this type, you must call the method
   VariableRef::addDependPreviousTime()
-  
-  Dans le module hydro simplifiée du didacticiel, le calcul de la
-  vitesse lagrangienne (vitesse avant l'application des conditions aux
-  limites) dépend de la force au temps courant et de la masse aux
-  noeuds du temps précendent, soit:
 
-  \code
-  * m_lagrangian_velocity.addDependPreviousTime(m_node_mass);
-  * m_lagrangian_velocity.addDependCurrentTime(m_force);
-  \endcode
+In the simplified hydro module of the tutorial, the calculation of the
+Lagrangian velocity (velocity before applying boundary conditions)
+depends on the force at the current time and the mass at the
+previous time nodes, i.e.:
 
-  <h3>Fonction de calcul</h3>
-  
-  Chaque variable qui possède des dépendances doit fournir une
-  fonction de calcul, qui est une méthode d'une instance de
-  classe. La méthode VariableRef::setComputeFunction() positionne
-  cette fonction. Par exemple:
+\code
+* m_lagrangian_velocity.addDependPreviousTime(m_node_mass);
+* m_lagrangian_velocity.addDependCurrentTime(m_force);
+\endcode
 
-  \code
-  m_lagrangian_velocity.setComputeFunction(this,&ModuleSimpleHydroDepend::computeLagrangianVelocity);
-  \endcode
+<h3>Calculation Function</h3>
 
-  Une fonction de calcul doit mettre à jour la variable qui lui est
-  associée mais peut aussi mettre à jour d'autres variables. La seule
-  condition est que pour toutes les variables mises à jour, il faut
-  appeler la méthode VariableRef::setUpToDate().
+Each variable that has dependencies must provide a
+calculation function, which is a method of a class instance. The
+VariableRef::setComputeFunction() method sets this function. For example:
 
-  Par exemple, la fonction de calcul de vitesse langrangienne:
-  \code
-  *void ModuleSimpleHydroDepend::
-  *computeLagrangianVelocity()
-  *{
-  *  ENUMERATE_NODE(i_node,ownNodes()){
-  *    Node node = *i_node;
-  *    Real node_mass  = m_node_mass[i_node];
-  *
-  *    Real3 old_velocity = m_velocity[i_node];
-  *    Real3 new_velocity = old_velocity + (m_delta_t_n() / node_mass) * m_force[i_node];
-  *
-  *    m_lagrangian_velocity[i_node] = new_velocity;
-  *  }
-  *
-  *  m_lagrangian_velocity.setUpToDate();
-  *  m_lagrangian_velocity.synchronize();
+\code
+m_lagrangian_velocity.setComputeFunction(this,&ModuleSimpleHydroDepend::computeLagrangianVelocity);
+\endcode
+
+A calculation function must update the variable it is associated with but can
+also update other variables. The only
+condition is that for all updated variables, you must
+call the VariableRef::setUpToDate() method.
+
+For example, the Lagrangian velocity calculation function:
+\code
+*void ModuleSimpleHydroDepend::
+*computeLagrangianVelocity()
+*{
+
+*  ENUMERATE_NODE(i_node,ownNodes()){
+*    Node node = *i_node;
+*    Real node_mass = m_node_mass[i_node];
+*
+*    Real3 old_velocity = m_velocity[i_node];
+*    Real3 new_velocity = old_velocity + (m_delta_t_n() / node_mass) * m_force[i_node];
+*
+*    m_lagrangian_velocity[i_node] = new_velocity;
+*  }
+*
+*  m_lagrangian_velocity.setUpToDate();
+*  m_lagrangian_velocity.synchronize();
   *}
   \endcode
 
-  <h3>Exemple complet</h3>
+<h3>Complete Example</h3>
 
-  Pour un exemple complet de code utilisant des dépendances, se
-  reporter au fichier arcane/tests/ModuleSimpleHydroDepend.cc
+For a complete code example using dependencies, refer to
+the file arcane/tests/ModuleSimpleHydroDepend.cc
 */

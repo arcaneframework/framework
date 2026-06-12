@@ -1,34 +1,33 @@
-# Les types de mailles {#arcanedoc_entities_itemtype}
+﻿# Cell types {#arcanedoc_entities_itemtype}
 
-%Arcane utilise la même convention de numérotation des mailles que la
-bibliothèque [VTK]. Les pages suivantes montrent des exemples de ces
-connectivités:
+%Arcane uses the same cell numbering convention as the [VTK] library. The
+following pages show examples of these connectivities:
 - [Exemple1](https://examples.vtk.org/site/Cxx/GeometricObjects/IsoparametricCellsDemo/)
 - [Exemple2](https://examples.vtk.org/site/VTKBook/08Chapter8)
 
-Les types prédéfinis suivants existent pour les mailles 3D :
+The following predefined types exist for 3D cells:
 
-Le tétraèdre :
+The tetrahedron:
 
 \image html mesh_tetra.png
 
-La pyramide :
+The pyramid:
 
 \image html mesh_pyramid.png
 
-Le prisme à base triangulaire :
+The triangular prism:
 
 \image html mesh_wedge.png
 
-L'héxaèdre :
+The hexahedron:
 
 \image html mesh_hexa.png
 
-Le prisme à base pentagonale :
+The pentagonal prism:
 
 \image html mesh_wedge7.png
 
-Le prisme à base héxagonale :
+The hexagonal prism:
 
 \image html mesh_wedge8.png
 

@@ -1,28 +1,28 @@
-# Service {#arcanedoc_core_types_service}
+﻿# Service {#arcanedoc_core_types_service}
 
 [TOC]
 
-Un service présente les mêmes caractéristiques qu'un module,
-sauf qu'il ne possède pas de point d'entrée. Tout comme le module, 
-il peut donc posséder des variables et des options de configuration.
+A service has the same characteristics as a module, except that it does not have
+an entry point. Like the module, it can therefore have variables and
+configuration options.
 
-Le service est représenté par une classe et 
-un fichier XML appelé *descripteur de service*.
+The service is represented by a class and an XML file called a
+*service descriptor*.
 
-Les services sont généralement utilisés :
-- pour capitaliser du code entre plusieurs modules. Par exemple, 
-  on peut créer un service de schéma numérique utilisé par plusieurs 
-  modules numériques comme la thermique et l'hydrodynamique.
-- pour paramétrer un module avec plusieurs algorithmes. Par exemple,
-  on peut faire un service chargé d'appliquer une équation d'état
-  pour le module d'hydrodynamique. On définit alors 2 implémentations
-  `gaz parfait` et `stiffened gaz` et on paramètre le module, via
-  son jeu de données, avec l'une ou l'autre des implémentations.
+Services are generally used:
+- to capitalize code across multiple modules. For example, a numerical scheme
+  service can be created and used by several numerical modules such as thermal
+  and hydrodynamics.
+- to parameterize a module with multiple algorithms. For example, a service can
+  be created to apply an equation of state for the hydrodynamics module. Two
+  implementations, `perfect gas` and `stiffened gas`, are then defined, and the
+  module is parameterized, via its dataset, with one or the other
+  implementation.
 
-Du point de vue de la conception, cela implique :
-- de déclarer une interface qui va être le contrat du service.
-  Par exemple, voici l'interface d'un service pour la résolution d'une équation
-  d'état sur un groupe de mailles passé en argument :
+From a design perspective, this implies:
+- declaring an interface that will be the service contract. For example, here is
+  the interface of a service for solving an equation of state on a group of
+  cells passed as an argument:
 
 ```cpp
 class IEquationOfState
@@ -32,81 +32,79 @@ class IEquationOfState
 };
 ```
 
-- de créer une ou plusieurs implémentations de cette interface.
+- creating one or more implementations of this interface.
 
-Une instance de service est créé lors de la lecture du jeu de données
-du module qui utilise ce service. Les méthodes du service peuvent alors être 
-appelées directement depuis le module.
+A service instance is created when the dataset of the module that uses this
+service is read. The service methods can then be called directly from the
+module.
 
 \note
-Les options de configuration du module, notamment celle permettant de
-référencer un service, sont présentées dans le document 
+The module's configuration options, particularly those allowing a service
+to be referenced, are presented in the document
 \ref arcanedoc_core_types_axl_caseoptions.
-  
-## Descripteur de service {#arcanedoc_core_types_service_desc}
 
-Comme pour le module, le descripteur de service est un fichier XML ayant 
-l'extension ".axl". Il présente les caractéristiques du service :
-- là où les interfaces qu'il implémente,
-- ses options de configuration,
-- ses variables.
+## Service Descriptor {#arcanedoc_core_types_service_desc}
 
-Contrairement au module, un service n'a pas de points d'entrée.
+Like the module, the service descriptor is an XML file with the ".axl"
+extension. It presents the characteristics of the service:
+- the interfaces it implements,
+- its configuration options,
+- its variables.
 
-L'exemple suivant définit un descripteur de service pour la résolution
-d'une équation d'état de type "gaz parfait" :
+Unlike the module, a service does not have entry points.
+
+The following example defines a service descriptor for solving a "perfect gas"
+equation of state:
 
 ```xml
 <?xml version="1.0"?>
 <service name="PerfectGasEOS" version="1.0">
-  <description>Jeu de données du service PerfectGasEOS</description>
-  <interface name="IEquationOfState" />
+  <description>Dataset PerfectGasEOS service</description>
+  <interface name="IEquationOfState"/>
 
-  <options> ... Liste des options ... </options>
-  <variables> ... Liste des variables ... </variables>
+  <options>... Options ...</options>
+  <variables>... Variables ...</variables>
 </service>
 ```
-  
-L'exemple suivant définit un descripteur de service utilisé pour la résolution
-d'une équation d'état de type "stiffened gaz" :
+
+The following example defines a service descriptor used for solving a "stiffened
+gas" equation of state:
 
 ```xml
 <?xml version="1.0"?>
 <service name="StiffenedGasEOS" version="1.0" type="caseoption">
-  <description>Jeu de données du service StiffenedGasEOS</description>
-  <interface name="IEquationOfState" />
+  <description>Dataset StiffenedGasEOS service</description>
+  <interface name="IEquationOfState"/>
 
-	<options> ... Liste des options ... </options>
-  <variables> ... Liste des variables ... </variables>
+  <options>... Options ...</options>
+  <variables>... Variables ...</variables>
 </service>
 ```
 
 `type="caseoption"`  
-L'attribut *type* valant *caseoption* indique qu'il s'agit d'un
-service pouvant être référencé dans un jeu de données.
+The *type* attribute set to *caseoption* indicates that it is a service that can
+be referenced in a dataset.
 
 `singleton="true"`  
-Il est aussi possible de spécifier un attribut *singleton* ayant
-comme valeur un booléen indiquant si le service peut être singleton.
+It is also possible to specify a *singleton* attribute with a boolean value
+indicating whether the service can be a singleton.
 
-\note Un service utilisé en tant que singleton n'a pas d'accès direct
-aux données du jeu de données.
+\note A service used as a singleton does not have direct access to the dataset
+data.
 
-\remark Un service utilisé en tant que singleton n'a pas à être déclaré
-dans le descripteur de module (fichier .axl) mais dans la configuration
-du code (fichier .config) étant donné que le principe du singleton est 
-d'avoir une seule instance pour tout le code.
+\remark A service used as a singleton does not need to be declared in the module
+descriptor (file .axl) but in the code configuration (file .config), given that
+the principle of the singleton is to have only one instance for all the code.
 
-## Classe représentant le service {#arcanedoc_core_types_service_class}
+## Class Representing the Service {#arcanedoc_core_types_service_class}
 
-Comme pour le module, la compilation des fichiers \c PerfectGasEOS.axl 
-et \c StiffenedGasEOS.axl avec l'utilitaire \c axl2cc génère respectiment
-les fichiers PerfectGasEOS_axl.h et StiffenedGasEOS_axl.h contenant les classes 
-\c ArcanePerfectGasEOSObject et \c ArcaneStiffenedGasEOSObject, classes de 
-base des services.
+Like the module, compiling the files \c PerfectGasEOS.axl and
+\c StiffenedGasEOS.axl with the \c axl2cc utility generates the files
+PerfectGasEOS_axl.h and StiffenedGasEOS_axl.h, containing the classes
+\c ArcanePerfectGasEOSObject and \c ArcaneStiffenedGasEOSObject, which are base
+classes for services.
 
-Voici les classes pour les services définis précédemment dans les
-descripteurs :
+Here are the classes for the services defined previously in the descriptors:
 
 ```cpp
 class PerfectGasEOSService 
@@ -140,39 +138,37 @@ class StiffenedGasEOSService
 };
 ```
 
-L'exemple précédent montre que %Arcane impose que le constructeur d'un service 
-prenne un objet de type \c ServiceBuildInfo en paramètre pour le transmettre
-à sa classe de base. On peut également constater que le service hérite
-de l'interface définissant le contrat du service.
+The previous example shows that %Arcane requires the service constructor to take
+an object of type \c ServiceBuildInfo as a parameter to pass to its base class.
+It can also be seen that the service inherits the interface defining the service
+contract.
 
-## Connexion du service à Arcane {#arcanedoc_core_types_service_connectarcane}
+## Connecting the Service to Arcane {#arcanedoc_core_types_service_connectarcane}
 
-Une instance du service est construite par l'architecture lorsque un module
-référence le service dans son jeu de données. 
+A service instance is constructed by the architecture when a module references
+the service in its dataset.
 
-L'utilisateur doit donc fournir une fonction pour créer une instance 
-de la classe du service. %Arcane fournit une macro permettant de définir
-une fonction générique de création. Cette macro doit être écrite dans 
-le fichier source où est défini le service.
+The user must therefore provide a function to create an instance of the service
+class. %Arcane provides a macro to define a generic creation function. This
+macro must be written in the source file where the service is defined.
 
-Voici cette macro pour les exemples précédents :
+Here is this macro for the previous examples:
 
 ```cpp
 ARCANE_REGISTER_SERVICE_PERFECTGASEOS(PerfectGasEOS, PerfectGasEOSService);
 ARCANE_REGISTER_SERVICE_STIFFENEDGASEOS(StiffenedGasEOS, StiffenedGasEOSService);
 ```
 
-*PerfectGasEOS* et *StiffenedGasEOS* correspondent aux noms 
-d'enregistrement dans %Arcane et donc aux noms par 
-lesquels les services seront référencés dans le jeu de données des modules.
-*PerfectGasEOSService* et *StiffenedGasEOSService* correspondent aux noms 
-des classes C++ et les noms qui suivent **ARCANE_REGISTER_SERVICE_**
-permettent de définir la fonction de création.
+*PerfectGasEOS* and *StiffenedGasEOS* correspond to the registration names in
+%Arcane and thus to the names by which the services will be referenced in the
+modules' dataset. *PerfectGasEOSService* and *StiffenedGasEOSService* correspond
+to the C++ class names, and the names following **ARCANE_REGISTER_SERVICE_**
+allow the creation function to be defined.
 
-Il est toutefois possible d'enregistrer un service même si celui-ci ne possède pas
-de fichier axl. Cela se fait par la macro ARCANE_REGISTER_SERVICE(). Par exemple,
-pour enregistrer la class *MyClass* comme un service de sous-domaine de nom 'Toto', qui
-implémente l'interface 'IToto', on écrira :
+However, it is possible to register a service even if it does not have an axl
+file. This is done using the ARCANE_REGISTER_SERVICE() macro. For example, to
+register the class *MyClass* as a service in the 'Toto' sub-domain, which
+implements the 'IToto' interface, you would write:
 
 ```cpp
 ARCANE_REGISTER_SERVICE(MyClass,

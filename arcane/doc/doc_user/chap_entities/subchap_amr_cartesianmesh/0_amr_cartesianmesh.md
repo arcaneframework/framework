@@ -1,66 +1,68 @@
-﻿# AMR pour les maillages cartésiens {#arcanedoc_entities_amr_cartesianmesh}
+﻿# AMR for Cartesian Meshes {#arcanedoc_entities_amr_cartesianmesh}
 
 [TOC]
 
-Ce sous-chapitre explique la partie AMR de %Arcane pour les maillages cartésiens.
+This subsection explains the AMR part of %Arcane for Cartesian Meshes.
 
 ## Introduction {#arcanedoc_entities_amr_cartesianmesh_intro}
 
-Deux types d'AMR sont disponibles dans %Arcane :
+Two types of AMR are available in %Arcane:
 
-- AMR par maille pour les maillages non-structurées (et cartésiens) (amr-type=1),
-- AMR par patch pour les maillages cartésiens (amr-type=3).
+- Cell-based AMR for unstructured (and Cartesian) meshes (amr-type=1),
+- Patch-based AMR for Cartesian meshes (amr-type=3).
 
-L'AMR type 1 permet de raffiner une ou plusieurs mailles en fournissant un tableau de localId.
+AMR type 1 allows refining one or more cells by providing an array of localIds.
 
 ```cpp
 mesh()->modifier()->flagCellToRefine(cells_local_id);
 mesh()->modifier()->adapt();
 ```
-Pour les maillages cartésiens, plusieurs méthodes sont disponibles pour encapsuler les méthodes de l'AMR non-structuré
-et permettant de créer des patchs.
+For Cartesian meshes, several methods are available to encapsulate the
+non-structured AMR methods and allow for the creation of patches.
 
-\note Les noeuds des mailles communs entre les niveaux ne sont pas dupliqué en AMR type 1. Ils le sont en AMR type 3.
+\note Nodes of cells common between levels are not duplicated in AMR type 1.
+They are in AMR type 3.
 
 \image html amr_0.webp
 
-Pour les maillages cartésiens, l'AMR type 3 est aussi disponible et apporte une nouvelle API.
-L'utilisateur marque des mailles à raffiner puis %Arcane s'occupe de déterminer des patchs réguliers ainsi que les
-mailles de recouvrement.
-Le fonctionnement est plus guidé.
+For Cartesian meshes, AMR type 3 is also available and introduces a new API.
+The user marks cells to refine, and then %Arcane handles determining regular
+patches as well as overlap cells.
+The operation is more guided.
 
-Pour utiliser l'AMR type 3, la numérotation des faces doit être changé. Aujourd'hui, le changement est effectué lors du
-premier appel à `Arcane::ICartesianMesh::computeDirections()`. De plus, la numérotation des patchs peut être gérée par
-la classe `Arcane::CartesianMeshNumberingMng`.
+To use AMR type 3, the face numbering must be changed. Currently, the change is
+made during the first call to `Arcane::ICartesianMesh::computeDirections()`.
+Furthermore, patch numbering can be managed by the class
+`Arcane::CartesianMeshNumberingMng`.
 
-Le choix du type d'AMR à utiliser se fait dans le jeu de données :
+The choice of AMR type to use is made in the dataset:
 
 ```xml
 
 <mesh amr-type="3">
-   <meshgenerator>
-      <cartesian>
-         <nsd>2 2</nsd>
-         <origine>0.0 0.0</origine>
-         <lx nx='16'>64.0</lx>
-         <ly ny='16'>64.0</ly>
-      </cartesian>
-   </meshgenerator>
+  <meshgenerator>
+    <cartesian>
+      <nsd>2 2</nsd>
+      <origine>0.0 0.0</origine>
+      <lx nx='16'>64.0</lx>
+      <ly ny='16'>64.0</ly>
+    </cartesian>
+  </meshgenerator>
 </mesh>
 ```
 
-\note Il n'est pas encore possible de spécifier le type d'AMR avec la nouvelle version du générateur de maillage
-cartésien.
+\note It is not yet possible to specify the AMR type with the new version of the
+Cartesian mesh generator.
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Table of Contents for this subsection:
 
 1. \subpage arcanedoc_entities_amr_cartesianmesh_notions <br>
-   Explication de quelques notions apportées par l'AMR.</br>
+   Explanation of some concepts provided by AMR.</br>
 
 2. \subpage arcanedoc_entities_amr_cartesianmesh_working <br>
-   Explication du fonctionnement de l'AMR dans %Arcane.</br>
+   Explanation of how AMR works in %Arcane.</br>
 
 
 

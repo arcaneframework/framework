@@ -1,26 +1,24 @@
-# Utilisation pour les matériaux {#arcanedoc_acceleratorapi_materials}
+﻿# Usage for materials {#arcanedoc_acceleratorapi_materials}
 
 [TOC]
 
-Il est possible d'utiliser l'API accélérateur de %Arcane pour gérer
-les constituants. Les instances du gestionnaire de matériaux
-\arcanemat{IMeshMaterialMng} utilisent le gestionnaire d'exécution
-(\arcaneacc{Runner}) associé au sous-domaine dont est issu le
-maillage. La gestion des constituants se fera donc automatiquement
-avec le même environnement d'exécution que les opérations sur les
-entités classiques du maillage.
+It is possible to use the %Arcane accelerator API to manage constituents.
+Instances of the material manager \arcanemat{IMeshMaterialMng} use the execution
+manager (\arcaneacc{Runner}) associated with the subdomain from which the mesh
+originates. Constituent management will therefore be handled automatically using
+the same execution environment as operations on classic mesh entities.
 
-L'utilisation de l'API accélérateur pour les matériaux est similaire à
-l'utilisation sur les entités du maillage. La macro
-RUNCOMMAND_MAT_ENUMERATE() permet d'itérer sur un milieu
-\arcanemat{IMeshEnvironment} ou un matériau \arcanemat{IMeshMaterial}.
+Using the accelerator API for materials is similar to using it for mesh
+entities. The macro RUNCOMMAND_MAT_ENUMERATE() allows iteration over an
+environment \arcanemat{IMeshEnvironment} or a material
+\arcanemat{IMeshMaterial}.
 
-Les valeurs possibles pour cette macro sont:
+The possible values for this macro are:
 
 <table>
 <tr>
-<th>Type d'itération</th><th>Valeur de l'itérateur</th>
-<th>Type du conteneur</th><th>Description</th>
+<th>Iteration Type</th><th>Iterator Value</th>
+<th>Container Type</th><th>Description</th>
 </tr>
 
 <tr>
@@ -28,73 +26,70 @@ Les valeurs possibles pour cette macro sont:
 <td>\arcanemat{EnvAndGlobalCellIteratorValue}</td>
 <td>\arcanemat{IMeshEnvironment} <br></br>
 \arcanemat{EnvCellVectorView}</td>
-<td>Itération sur un milieu permettant de récupérer pour chaque itération
-le numéro local de la maille milieu, l'index de l'itération et le
-numéro local de la maille globale associée</td>
+<td>Iteration over an environment allowing the retrieval of the local cell
+number of the environment, the iteration index, and the associated global cell
+number for each iteration.</td>
 </tr>
 
 <tr>
 <td>MatAndGlobalCell</td>
 <td>\arcanemat{MatAndGlobalCellIteratorValue}</td>
 <td>\arcanemat{IMeshMaterial} <br></br> \arcanemat{MatCellVectorView}</td>
-<td>Itération sur un matériau permettant de récupérer pour chaque itération
-le numéro local de la maille matériau, l'index de l'itération et le
-numéro local de la maille globale associée</td>
+<td>Iteration over a material allowing the retrieval of the local cell number of
+the material, the iteration index, and the associated global cell number for
+each iteration.</td>
 </tr>
 
 <tr>
 <td>AllEnvCell</td>
 <td>\arcanemat{AllEnvCell}</td>
 <td>\arcanemat{AllEnvCellVectorView}</td>
-<td>Itération sur les AllEnvCell</td>
+<td>Iteration over the AllEnvCell</td>
 </tr>
 
 <tr>
 <td>EnvCell</td>
 <td>\arcanemat{EnvCellLocalId}</td>
 <td>\arcanemat{IMeshEnvironment} <br></br> \arcanemat{EnvCellVectorView}</td>
-<td>Itération sur un milieu permettant de récupérer pour chaque itération
-uniquement le numéro local de la maille milieu</td>
+<td>Iteration over an environment allowing the retrieval of only the local cell
+number of the environment for each iteration.</td>
 </tr>
 
 <tr>
 <td>MatCell</td>
 <td>\arcanemat{MatCellLocalId}</td>
 <td>\arcanemat{IMeshMaterial} <br></br> \arcanemat{MatCellVectorView}</td>
-<td>Itération sur un matériau permettant de récupérer pour chaque itération
-uniquement le numéro local de la maille matériau</td>
+<td>Iteration over a material allowing the retrieval of only the local cell
+number of the material for each iteration.</td>
 </tr>
 
 </table>
 
-Si on souhaite uniquement accéder aux numéros locaux des mailles
-matériaux ou milieux il est préférable pour des raisons de performance
-d'utiliser la version avec `EnvCell` ou `MatCell` comme type
-d'itérateur.
+If you only want to access the local numbers of material or environment cells,
+it is preferable for performance reasons to use the version with `EnvCell` or
+`MatCell` as the iterator type.
 
-Voici un exemple de code pour itérer sur une maille milieu avec
-l'information de l'index de l'itération et de la maille globale associée
+Here is a code example for iterating over an environment cell with the
+information of the iteration index and the associated global cell.
 
 \snippet MeshMaterialAcceleratorUnitTest.cc SampleEnvAndGlobalCell
 
-Voici un autre exemple pour itérer sur les \arcanemat{AllEnvCell} et
-récupérer les informations sur les milieux et matériaux présents dans
-chaque \arcanemat{AllEnvCell}
+Here is another example for iterating over the \arcanemat{AllEnvCell} and
+retrieving information about the environments and materials present in each
+\arcanemat{AllEnvCell}.
 
 \snippet MeshMaterialAcceleratorUnitTest.cc SampleAllEnvCell
 
-La classe \arcanemat{ComponentCellVector} et les classes qui en
-dérivent (\arcanemat{MatCellVector} et \arcanemat{EnvCellVector}) sont
-supportées par l'API accélérateur et leur création ou modification
-utilise l'environnement d'exécution par défaut.
+The class \arcanemat{ComponentCellVector} and its derived classes
+(\arcanemat{MatCellVector} and \arcanemat{EnvCellVector}) are supported by the
+accelerator API, and their creation or modification uses the default execution
+environment.
 
-A partir de la version 3.16 de %Arcane, si l'environnement d'exécution
-par défaut est un accélérateur, il est possible de spécifier
-une politique d'exécution sur l'hôte via la méthode
-\arcanemat{IMeshComponent::setSpecificExecutionPolicy()}. Cette
-politique sera utilisée pour créer et modifier les instances de
-\arcanemat{ComponentCellVector}, \arcanemat{MatCellVector} et
-\arcanemat{EnvCellVector}.
+Starting from version 3.16 of %Arcane, if the default execution environment is
+an accelerator, it is possible to specify a host execution policy via the method
+\arcanemat{IMeshComponent::setSpecificExecutionPolicy()}. This policy will be
+used to create and modify instances of \arcanemat{ComponentCellVector},
+\arcanemat{MatCellVector}, and \arcanemat{EnvCellVector}.
 ____
 
 <div class="section_buttons">

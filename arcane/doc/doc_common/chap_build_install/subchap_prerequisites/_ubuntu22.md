@@ -1,14 +1,14 @@
-# Ubuntu 22.04 {#arcanedoc_build_install_prerequisites_ubuntu22}
+﻿# Ubuntu 22.04 {#arcanedoc_build_install_prerequisites_ubuntu22}
 
 [TOC]
 
-## Installation des packages nécessaires
+## Installation of necessary packages
 
-Sur Ubuntu 22.04, les versions de CMake et de '.Net' sont suffisamment
-récentes pour pouvoir être installés via les packages système.
+On Ubuntu 22.04, the versions of CMake and '.Net' are recent enough to be
+installed via system packages.
 
-Les commandes suivantes permettent d'installer les dépendances
-nécessaires pour %Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
+The following commands install the dependencies required for %Arcane (as well as
+the optional dependencies `HDF5`and `ParMetis`):
 
 ~~~{sh}
 sudo apt update
@@ -17,32 +17,33 @@ sudo apt install apt-utils build-essential iputils-ping python3 \
   libparmetis-dev libunwind-dev dotnet6 cmake
 ~~~
 
-\note Si TBB est installé via `apt`, il s'agit de la version 2020 qui n'est plus compatible avec %Arcane.
-Il est donc nécessaire, soit d'installer une version plus récente de TBB (2021+), soit de compiler %Arcane avec
-l'option :
+\note If TBB is installed via `apt`, it is version 2020, which is no longer
+compatible with %Arcane.
+It is therefore necessary either to install a more recent version of TBB (2021+)
+or to compile %Arcane with the option:
 ```sh
  -DARCCORE_ENABLE_TBB=FALSE
 ```
 
-## Installation des packages optionnels
+## Installation of optional packages
 
 ~~~{sh}
-# Pour google test:
+# For google test:
 sudo apt install googletest
 
-# Pour Ninja:
+# For Ninja:
 sudo apt install ninja-build
 
-# Pour le wrapper C#:
+# For the C# wrapper:
 sudo apt install swig4.0
 
-# Pour Hypre
+# For Hypre
 sudo apt install libhypre-dev
 
-# Pour PETSc
+# For PETSc
 sudo apt install libpetsc-real-dev
 
-# Pour Trilinos
+# For Trilinos
 sudo apt install libtrilinos-teuchos-dev libtrilinos-epetra-dev \
   libtrilinos-tpetra-dev libtrilinos-kokkos-dev libtrilinos-ifpack2-dev \
   libtrilinos-ifpack-dev libtrilinos-amesos-dev libtrilinos-galeri-dev \
@@ -51,7 +52,7 @@ sudo apt install libtrilinos-teuchos-dev libtrilinos-epetra-dev \
   libtrilinos-kokkos-kernels-dev libtrilinos-rtop-dev \
   libtrilinos-isorropia-dev libtrilinos-belos-dev \
 
-# Pour Zoltan
+# For Zoltan
 sudo apt install libtrilinos-ifpack-dev libtrilinos-anasazi-dev \
   libtrilinos-amesos2-dev libtrilinos-shards-dev libtrilinos-muelu-dev \
   libtrilinos-intrepid2-dev libtrilinos-teko-dev libtrilinos-sacado-dev \
@@ -61,16 +62,16 @@ sudo apt install libtrilinos-ifpack-dev libtrilinos-anasazi-dev \
 
 ## CUDA
 
-Pour le support de CUDA, il faut au moins la version 3.26 de CMake.
+For CUDA support, at least version 3.26 of CMake is required.
 
 \snippet{doc} _cmake.md snippet_build_install_prerequisites_cmake
 
-Vous pouvez aussi installer directement CMake via [snap](https://snapcraft.io/):
+You can also install CMake directly via [snap](https://snapcraft.io/):
 ~~~{sh}
 sudo snap install --classic cmake
 ~~~
 
-Ensuite, pour installer CUDA :
+Next, to install CUDA:
 ~~~{sh}
 cd /tmp
 wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb

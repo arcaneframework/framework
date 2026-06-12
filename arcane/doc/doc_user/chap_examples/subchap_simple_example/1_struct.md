@@ -1,37 +1,39 @@
-# Structure générale {#arcanedoc_examples_simple_example_struct}
+﻿# General Structure {#arcanedoc_examples_simple_example_struct}
 
 [TOC]
 
 ## HelloWorld {#arcanedoc_examples_simple_example_struct_helloworld}
 
-Voici un schéma représentant la structure de notre Hello World :
+Here is a diagram representing the structure of our Hello World:
 
 \image html HW_schema.svg
 
-Dans cette application, nous avons un module appelé `SayHello`
-contenant trois fichiers :
-- un header (.h),
-- un fichier source (.cc),
-- un fichier contenant les options du jeu de données (.axl).
+In this application, we have a module called `SayHello` containing three files:
+- a header (.h),
+- a source file (.cc),
+- a file containing the dataset options (.axl).
 
-Et hors du module, nous avons quatre fichiers :
-- un fichier `main.cc` permettant de lancer notre application,
-- un fichier `CMakeLists.txt` permettant de compiler notre application,
-- un fichier `.config` permettant de configurer notre application,
-- un fichier `.arc` contenant un jeu de données pour notre application.
+And outside the module, we have four files:
+- a `main.cc` file allowing us to run our application,
+- a `CMakeLists.txt` file allowing us to compile our application,
+- a `.config` file allowing us to configure our application,
+- a `.arc` file containing a dataset for our application.
 
-Tous ces élements constituent notre application `HelloWorld`.
+All these elements constitute our `HelloWorld` application.
 
 \note
-Il est possible de générer un template d'application avec le programme `arcane-template`.
-Pour générer un template de notre `HelloWorld` avec `arcane-template`, voici la commande :
+It is possible to generate an application template using the
+`arcane-template` program.
+To generate a template for our `HelloWorld` using `arcane-template`, here is the
+command:
 ```sh
 ./arcane_templates generate-application -code-name HelloWorld --module-name SayHello --output-directory ~/HelloWorld
 ```
-Ce programme est trouvable dans le dossier `bin` du répertoire d'installation de %Arcane : `arcane_install/bin/`.
+This program can be found in the `bin` folder of the %Arcane installation
+directory: `arcane_install/bin/`.
 
 
-Dans la section suivante, nous allons voir le module `SayHello`.
+In the following section, we will look at the `SayHello` module.
 
 ____
 

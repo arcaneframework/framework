@@ -1,19 +1,19 @@
-# Service RNG {#arcanedoc_examples_concret_example_rng}
+﻿# RNG Service {#arcanedoc_examples_concret_example_rng}
 
 [TOC]
 
-Dans ce sous-chapitre, nous n'allons pas parler des modules
-puisque la majeure partie de ce qu'il y avait à dire
-a été abordé dans le sous-chapitre \ref arcanedoc_examples_simple_example.
+In this subsection, we will not talk about modules
+since most of what needed to be said
+was covered in subsection \ref arcanedoc_examples_simple_example.
 
-Ici, nous allons parler service, et plus précisément du service
-RNG. Nous n'allons pas parler de l'implémentation des différentes
-méthodes de l'interface, ce n'est pas le but de ce sous-chapitre.
-Donc, le fichier `RNGService.cc` sera volontairement omis.
+Here, we will talk about services, and more specifically the RNG service. We
+will not talk about the implementation of the different interface methods; that
+is not the purpose of this subsection.
+Therefore, the file `RNGService.cc` will be intentionally omitted.
 
 ## IRandomNumberGenerator.h {#arcanedoc_examples_concret_example_rng_irandomnumbergeneratorh}
 
-Voici l'interface utilisée par ce service :
+This is the interface used by this service:
 ```cpp
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ Voici l'interface utilisée par ce service :
 /*---------------------------------------------------------------------------*/
 /* IRandomNumberGenerator.h                                    (C) 2000-2022 */
 /*                                                                           */
-/* Interface pour générateur de nombres aléatoires.                          */
+/* Interface for random number generator.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -61,32 +61,30 @@ class ARCANE_CORE_EXPORT IRandomNumberGenerator
 #endif
 
 ```
-Il n'y a pas grand-chose à dire ici, c'est une interface assez
-classique. On a les premières lignes avec la licence et
-une courte description de l'interface (lignes 1-12).
-Ensuite, on a une classe avec des méthodes virtuelles égales à 0, ce qui
-en fait des méthodes virtuelles pures que l'on doit implémenter dans une
-implémentation.
+There isn't much to say here; it is a fairly classic interface. We have the
+first lines with the license and a short description of the interface (lines
+1-12).
+Then, we have a class with virtual methods equal to 0, which makes them pure
+virtual methods that must be implemented in an implementation.
 
-\`A noter cependant que les graines sont représentées par des tableaux de Bytes
-(ByteUniqueArray) et sont manipulées par des vues (ByteArrayView).
-Cela permet de rendre l'application indépendante de l'implémentation de
-`Arcane::IRandomNumberGenerator`.
+Note however that the seeds are represented by byte arrays (ByteUniqueArray)
+and are manipulated by views (ByteArrayView). This allows the application to be
+independent of the implementation of `Arcane::IRandomNumberGenerator`.
 
-En effet, l'implémentation présente dans notre mini-app utilise des graines
-sur 64 bits (donc 8 octets) mais il se pourrait qu'une autre implémentation
-utilise des graines sur 32 bits. Donc on utilise des tableaux de tailles
-définis lors de l'exécution (le choix de l'implémentation étant faite dans
-le jeu de données, impossible de connaitre la taille d'une graine à la compilation).
+Indeed, the implementation in our mini-app uses 64-bit seeds (i.e., 8 bytes),
+but another implementation might use 32-bit seeds. Therefore, we use arrays
+whose sizes are defined at runtime (the choice of implementation is made in the
+dataset, making it impossible to know the size of a seed at compilation).
 
 ## RNG.axl {#arcanedoc_examples_concret_example_rng_rngaxl}
-Voyons maintenant le `.axl` :
+
+Now let's look at the `.axl`:
 ```xml
 <?xml version="1.0"?>
 <service name="RNG" version="1.0" singleton="true">
 
-  <description>Jeu de données du service RNG</description>
-  <interface name="IRandomNumberGenerator" />
+  <description>RNG service dataset</description>
+  <interface name="IRandomNumberGenerator"/>
 
   <variables>
   </variables>
@@ -95,27 +93,27 @@ Voyons maintenant le `.axl` :
   </options>
 </service>
 ```
-On peut voir que ça ressemble fortement à un `.axl` de module.
+We can see that it strongly resembles a module's `.axl`.
 ```xml
 <service name="RNG" version="1.0" singleton="true">
 ```
-Ici, on a une nouveauté : `singleton="true"`. Cette partie
-nous dit qu'il est possible d'utiliser ce service en tant que
-singleton.
+Here, there is a new feature: `singleton="true"`. This part tells us that it is
+possible to use this service as a singleton.
 
 ____
 
 ```xml
-<interface name="IRandomNumberGenerator" />
+<interface name="IRandomNumberGenerator"/>
 ```
-On donne à %Arcane l'interface du service.
-En effet, comme on le verra après, la classe `RNGService` n'hérite pas
-directement de l'interface `Arcane::IRandomNumberGenerator`. C'est géré par le
-fichier généré `RNG_axl.h`.
+We give %Arcane the service interface.
+Indeed, as we will see later, the `RNGService` class does not directly inherit
+from the `Arcane::IRandomNumberGenerator` interface. This is handled by the
+generated file `RNG_axl.h`.
 
 ## RNGService.h {#arcanedoc_examples_concret_example_rng_rngserviceh}
 
-Voici le header du service RNG :
+Here is the RNG service header:
+
 ```cpp
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
@@ -126,12 +124,12 @@ Voici le header du service RNG :
 /*---------------------------------------------------------------------------*/
 /* RNGService.hh                                               (C) 2000-2022 */
 /*                                                                           */
-/* Implémentation d'un générateur de nombres aléatoires.                     */
-/* Basé sur le générateur de Quicksilver (LLNL).                             */
+/* Implementation of a random number generator.                              */
+/* Based on the Quicksilver generator (LLNL).                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <arcane/IRandomNumberGenerator.h>
+#include <arcane/core/IRandomNumberGenerator.h>
 #include "rng/RNG_axl.h"
 
 using namespace Arcane;
@@ -178,21 +176,21 @@ protected:
 
 ARCANE_REGISTER_SERVICE_RNG(RNG, RNGService);
 ```
-Là aussi, c'est très semblable à un module.
-La plus grosse différence est au niveau des méthodes override.
-En effet, dans un module, on override les points d'entrées que l'on a 
-défini dans le `.axl`. Ici, dans ce service, on override les méthodes
-virtuelles de notre interface.
-Les services ne peuvent pas avoir de points d'entrées.
+This is also very similar to a module.
+The biggest difference is at the level of the `override` methods.
+Indeed, in a module, we override the entry points that we defined in the `.axl`.
+Here, in this service, we override the virtual methods of our interface.
+Services cannot have entry points.
 
-\note Au niveau des `includes`, il faut s'assurer que l'interface
-déclarée dans le `.axl` soit accessible par le `.h` généré à partir du
-`.axl`. Par exemple, ici, l'ordre des `includes` est très important.
-Dans le `.axl`, on déclare ceci :
+\note Regarding the `includes`, you must ensure that the interface declared in
+the `.axl` is accessible by the `.h` generated from the `.axl`. For example,
+here, the order of the `includes` is very important.
+In the `.axl`, we declare this:
+
 ```xml
-<interface name="IRandomNumberGenerator" />
+<interface name="IRandomNumberGenerator"/>
 ```
-Dans le fichier `RNG_axl.h` qui sera généré, on obtiendra cela :
+In the file `RNG_axl.h` that will be generated, we will obtain this:
 ```cpp
 //[...]
 class ArcaneRNGObject
@@ -201,9 +199,9 @@ class ArcaneRNGObject
 {
 //[...]
 ```
-Il faut donc inclure l'interface avant ce fichier :
+Therefore, we must include the interface before this file:
 ```cpp
-#include <arcane/IRandomNumberGenerator.h>
+#include <arcane/core/IRandomNumberGenerator.h>
 #include "rng/RNG_axl.h"
 ```
 

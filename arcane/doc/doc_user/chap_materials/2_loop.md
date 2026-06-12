@@ -1,70 +1,65 @@
-# Boucles sur les entités des matériaux et des milieux {#arcanedoc_materials_loop}
+﻿# Loops over material and environment entities {#arcanedoc_materials_loop}
 
 [TOC]
 
-Cette page décrit la gestion des boucles sur les entités des matériaux et des milieux.
+This page describes the management of loops over material and environment
+entities.
 
-Dans le reste de cette page, on utilise le terme générique \a
-composant pour décrire un matériau ou un milieu.
+In the rest of this page, the generic term \a component is used to describe a
+material or an environment.
 
-Les entités d'un composant peuvent se répartir en deux parties : les
-entités pures et les entités impures. Par définition, les entités qui
-ne sont pas pures sont impures. La notion de pure varie suivant le
-type du composant :
-- pour un milieu, une entité est pure s'il n'y a qu'un milieu dans
-cette entité.
-- pour un matériau, une entité est pure s'il n'y a qu'un
-seul matériau <b>ET</b> qu'un seul milieu.
+A component's entities can be divided into two parts: pure entities and impure
+entities. By definition, entities that are not pure are impure. The notion of
+purity varies depending on the component type:
+- for an environment, an entity is pure if there is only one environment in that
+  entity.
+- for a material, an entity is pure if there is only one material <b>AND</b>
+  only one environment.
 
-Au niveau du rangement mémoire pour une variable donnée, accéder à
-une entité pure revient à accéder à la valeur globale de cette
-variable.
+At the memory storage level for a given variable, accessing a pure entity is
+equivalent to accessing the global value of that variable.
 
-## Généralisation des boucles {#arcanedoc_materials_loop_loop}
+## Loop Generalization {#arcanedoc_materials_loop_loop}
 
-Depuis la version 2.7.0 de %Arcane, La macro générique
-ENUMERATE_COMPONENTITEM() permet d'itérer sur les entités d'un
-composant de manière globale ou par partie (pure/impure). Elle peut remplacer les
-macros ENUMERATE_COMPONENTCELL(),
-ENUMERATE_MATCELL() et ENUMERATE_ENVCELL().
+Since version 2.7.0 of %Arcane, the generic macro ENUMERATE_COMPONENTITEM()
+allows iteration over a component's entities globally or by part (pure/impure).
+It can replace the macros ENUMERATE_COMPONENTCELL(), ENUMERATE_MATCELL(), and
+ENUMERATE_ENVCELL().
 
-Les valeurs suivantes sont disponibles pour l'itération :
+The following values are available for iteration:
 
-ENUMERATE_COMPONENTITEM(MatCell,icell,container) avec container de
-type IMeshMaterial* ou MatCellVector.
+ENUMERATE_COMPONENTITEM(MatCell,icell,container) with container of type
+IMeshMaterial* or MatCellVector.
 
 
-Il est possible d'itérer uniquement sur la partie pure ou impure d'un
-composant.
+It is possible to iterate only over the pure or impure part of a component.
 
-\note Actuellement, l'ordre de parcours des boucles par partie pure
-ou impure n'est pas défini et pourra évoluer par la suite. Cela
-signifie que s'il y a des dépendances entre les itérations de la
-boucle le résultat peut varier d'une exécution à l'autre.
+\note Currently, the traversal order of loops by pure or impure part is not
+defined and may evolve later. This means that if there are dependencies between
+loop iterations, the result may vary from one execution to another.
 
-Les exemples suivants montrent les différentes variantes de la macro
-ENUMERATE_COMPONENTITEM()
+The following examples show the different variants of the
+ENUMERATE_COMPONENTITEM() macro
 
-### Boucles sur les milieux {#arcanedoc_materials_loop_envloop}
+### Loops over environments {#arcanedoc_materials_loop_envloop}
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleEnumerateComponentItemEnv
 
-### Boucles sur les matériaux {#arcanedoc_materials_loop_matloop}
+### Loops over materials {#arcanedoc_materials_loop_matloop}
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleEnumerateComponentItemMat
 
-### Boucles génériques sur les composants {#arcanedoc_materials_loop_componentloop}
+### Generic loops over components {#arcanedoc_materials_loop_componentloop}
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleEnumerateComponentItemComponent
 
-## Boucles vectorielles sur les composants {#arcanedoc_materials_loop_simdloop}
+## Vector loops over components {#arcanedoc_materials_loop_simdloop}
 
-\note Dans la version actuelle de %Arcane (2.7.0), les boucles
-vectorielles ne sont supportées que sur les milieux (mais pas encore sur les
-matériaux).
+\note In the current version of %Arcane (2.7.0), vector loops are only supported
+for environments (but not yet for materials).
 
-Pour pouvoir utiliser la vectorisation sur les composants, il faut
-inclure le fichier suivant :
+To be able to use vectorization on components, you must include the following
+file:
 
 ```cpp
 #include <arcane/materials/ComponentSimd.h>
@@ -72,42 +67,37 @@ inclure le fichier suivant :
 using namespace Arcane::Materials;
 ```
 
-Il est nécessaire d'utiliser le mécanisme des lambda du C++11 pour
-itérer sur les composants via des itérateurs vectoriels. Cela se fait
-via la macro suivante :
+It is necessary to use the C++11 lambda mechanism to iterate over components via
+vector iterators. This is done using the following macro:
 
 ```cpp
 ENUMERATE_COMPONENTITEM_LAMBDA(){
 };
 ```
 
-\warning Il ne faut surtout pas oublier le point virgule ';'
-final. Pour plus d'informations, se reporter à la documentation de
-cette macro.
+\warning Do not forget the final semicolon ';'. For more information, refer to
+the documentation for this macro.
 
-\note Ce mécanisme est expérimental et pourra évoluer par la suite.
+\note This mechanism is experimental and may evolve later.
 
-Par exemple, avec les déclarations suivantes des variables :
+For example, with the following variable declarations:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleEnumerateVariableDeclaration
 
-Il est possible d'utiliser les boucles vectorielles comme suit :
+It is possible to use vector loops as follows:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleEnumerateSimdComponentItem
 
-\warning Pour des raisons de performance, l'ordre des itérations peut
-être quelconque. Il est donc indispensable qu'il n'y ait pas de
-relations entre les itérations. En particulier, si des opérations non
-associatives telles que des sommes sur des réels sont utilisées,
-alors le résultat peut varier entre deux exécutions.
+\warning For performance reasons, the order of iterations may be arbitrary. It
+is therefore essential that there are no relationships between the iterations.
+In particular, if non-associative operations such as sums on real numbers are
+used, the result may vary between two executions.
 
-\note L'implémentation actuelle comporte plusieurs limitations :
-- Il n'est pas encore possible d'utiliser ces énumérateurs avec
-les boucles concurrentes (voir page \ref arcanedoc_materials_manage_concurrency).
-- Pour le SIMD, il faut obligatoirement utiliser les vues.
-- Pour l'instant les vues ne sont disponibles que pour les
-variables scalaires.
-*/
+\note The current implementation has several limitations:
+- It is not yet possible to use these enumerators with concurrent loops (see
+  page \ref arcanedoc_materials_manage_concurrency).
+- For SIMD, views must be used.
+- For now, views are only available for scalar variables.
 
 
 ____

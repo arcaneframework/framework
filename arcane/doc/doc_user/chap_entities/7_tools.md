@@ -1,18 +1,17 @@
-# Outils externes de gestion de maillage {#arcanedoc_entities_tools}
+﻿# External Mesh Management Tools {#arcanedoc_entities_tools}
 
 [TOC]
 
-%Arcane propose deux outils pour convertir ou partitionner un maillage.
+%Arcane offers two tools for converting or partitioning a mesh.
 
-## Outil de partitionnement {#arcanedoc_entities_tools_arcane_partition_mesh}
+## Mesh Partitioning Tool {#arcanedoc_entities_tools_arcane_partition_mesh}
 
-L'outil `arcane_partition_mesh` permet de partitionner un maillage
-existant et de générer un fichier de maillage par partie. Il s'agit
-d'un outil parallèle qui utilise par défaut `ParMetis` pour réaliser
-le partitionnement. Cet outil est installé dans le répertoire `bin`
-de l'installation de %Arcane.
+The `arcane_partition_mesh` tool allows you to partition an existing mesh and
+generate a mesh file per partition. It is a parallel tool that uses `ParMetis`
+by default to perform the partitioning. This tool is installed in the `bin`
+directory of the %Arcane installation.
 
-L'usage est le suivant:
+Usage is as follows:
 
 ```
 ${ARCANE_INSTALL_ROOT}/bin/arcane_partition_mesh
@@ -24,63 +23,58 @@ ${ARCANE_INSTALL_ROOT}/bin/arcane_partition_mesh
   mesh_file_name
 ```
 
-Les valeurs possibles pour `writer_service_name` sont des services qui
-implémentent \arcane{IMeshWriter}. Par exemple:
+Possible values for `writer_service_name` are services that implement
+\arcane{IMeshWriter}. For example:
 
-- `MshMeshWriter` (le défaut)
+- `MshMeshWriter` (the default)
 - `LimaMeshWriter`
-- `VtkLegacyMeshWriter` : uniquement pour visualiser le résultat. Les
-  fichiers générés ne pourront pas être utilisés en lecture du code.
+- `VtkLegacyMeshWriter`: only for visualizing the result. The generated files
+  cannot be used for code reading.
 
-Le fichier de maillage d'entrée (`mesh_file_name`) peut être au format MSH (extension
-`.msh`), au format VTK history (extension `.vtk`) ou un format
-supporté par `Lima` (extension `.mli2`, `.mli`, `.unf`).
-Lorsque le maillage d'entrée est au format MSH, il n'est pas possible
-de savoir à priori si le maillage est non-manifold. Par défaut %Arcane
-suppose qu'il s'agit d'un maillage manifold. Si ce n'est pas le cas il
-faut spécifier l'option `--manifold-` dans la ligne de commande.
+The input mesh file (`mesh_file_name`) can be in MSH format (extension `.msh`),
+VTK history format (extension `.vtk`), or a format supported by `Lima`
+(extension `.mli2`, `.mli`, `.unf`). When the input mesh is in MSH format, it is
+not possible to know beforehand if the mesh is non-manifold. By default, %Arcane
+assumes it is a manifold mesh. If this is not the case, you must specify the
+`--manifold-` option in the command line.
 
-Le partitionneur se lancera sur `nb_proc` processus (via MPI) et va
-générer `nb_part` partitions. Le nombre de partitions doit être un
-multiple du nombre de processus utilisés. En sortie, il y a aura un
-fichier par partie. Les fichiers de sortie seront de la
-forme `CPU00000`, `CPU00001`, ... avec l'extension correspondante au
-format du maillage (par exemple `.msh` pour le format MSH).
+The partitioner will run on `nb_proc` processes (via MPI) and will generate
+`nb_part` partitions. The number of partitions must be a multiple of the number
+of processes used. In the output, there will be one file per partition. The
+output files will be in the form `CPU00000`, `CPU00001`, ... with the extension
+corresponding to the mesh format (for example, `.msh` for the MSH format).
 
-L'option `-Wp` permet de fournir des arguments pour le lanceur
-parallèle (`mpiexec` ou `srun` en général). Par exemple, la valeur
-`-Wp,-c,4` permet d'ajouter `-c 4` au lanceur parallèle.
+The `-Wp` option allows you to provide arguments for the parallel launcher
+(`mpiexec` or `srun` in general). For example, the value `-Wp,-c,4` allows
+adding `-c 4` to the parallel launcher.
 
-### Gestion du format MSH
+### Mesh Format MSH Handling
 
-\warning La lecture et la sortie au format MSH est expérimental depuis
-la version 3.16.0 de %Arcane et comporte actuellement un certain nombre de
-limitations.
+\warning Reading and writing in MSH format has been experimental since version
+3.16.0 of %Arcane and currently has a number of limitations.
 
-Si le format d'entrée et de sortie est MSH, chaque fichier contiendra les mêmes
-`$Entities` que le format d'origine ainsi que les informations de
-périodicité (`$Periodics`) pour la partie concernée.
-Il y a actuellement les limitations suivantes:
+If the input and output format is MSH, each file will contain the same
+`$Entities` as the original format, as well as the periodicity information
+(`$Periodics`) for the partition concerned.
+The following limitations currently exist:
 
-- Seules les entités d'ordre 1 sont gérées
-- Les informations de périodicité autre que les couples de noeuds
-  (maitre,esclave) sont cohérentes. Les informations affines ou sur
-  les entités ne sont pas significatives. Pour les couples
-  (maitre,esclave), le couple sera présent dans le fichier si un des
-  deux noeuds est présent dans la partie.
-- les informations sur les boîtes englobantes pour les `$Entities` ne
-  sont pas gérées
-- les blocs d'origine du format MSH ne sont pas forcément sauvegardés
-  et les numéros des `$Entities` d'origine ne sont pas conservés.
+- Only order 1 entities are managed
+- Periodicity information other than node pairs (master, slave) is consistent.
+  Affine or entity information is not meaningful. For (master, slave) pairs, the
+  pair will be present in the file if one of the two nodes is present in the
+  partition.
+- Information about bounding boxes for `$Entities` is not managed
+- The original blocks of the MSH format are not necessarily saved, and the
+  original `$Entities` numbers are not preserved.
 
-### Utilisation des fichiers pré-découpés
+### Using Pre-cut Files
 
 TODO
 
-### Exemples d'utilisation
+### Usage Examples
 
-L'exemple suivant utilise 2 processeurs pour découper le maillage `onesphere.msh` en 4
-parties. Le fichier de sortie sera au format VTK.
+The following example uses 2 processors to cut the `onesphere.msh` mesh into 4
+partitions. The output file will be in VTK format.
 
 ```
 ./bin/arcane_partition_mesh -n 2 -p 4 --writer VtkLegacyMeshWriter onesphere.msh
@@ -91,10 +85,9 @@ CPU00002.vtk
 CPU00003.vtk
 ```
 
-L'exemple suivant utilise 4 processeurs pour découper le maillage
-`mesh_with_loose_items.msh` en 12 parties. Le fichier de sortie sera
-au format MSH. Le maillage d'entrée étant non-manifold, on utilise
-l'option `--manifold-` pour le spécifier.
+The following example uses 4 processors to cut the `mesh_with_loose_items.msh`
+mesh into 12 partitions. The output file will be in MSH format. Since the input
+mesh is non-manifold, the `--manifold-` option is used to specify this.
 
 ```
 ./bin/arcane_partition_mesh -n 4 -p 12 --writer MshMeshWriter --manifold- mesh_with_loose_items.msh
@@ -107,10 +100,10 @@ CPU00011.msh
 CPU00012.msh
 ```
 
-## Outils de conversion de maillage {#arcanedoc_entities_tools_arcane_convert_mesh}
+## Mesh Conversion Tools {#arcanedoc_entities_tools_arcane_convert_mesh}
 
-L'outil `arcane_convert_mesh` permet de convertir un fichier de
-maillage d'un format vers un autre.
+The `arcane_convert_mesh` tool allows you to convert a mesh file from one format
+to another.
 
 ____
 

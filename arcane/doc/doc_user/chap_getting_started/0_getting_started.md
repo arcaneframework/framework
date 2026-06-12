@@ -1,19 +1,19 @@
-# Débuter avec %Arcane {#arcanedoc_getting_started}
+﻿# Getting Started with %Arcane {#arcanedoc_getting_started}
 
-Vous débutez sur %Arcane ? Ce chapitre devrait vous donner les notions de base.
+Are you new to %Arcane? This chapter should give you the basics.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 1. \subpage arcanedoc_getting_started_about <br>
-  Description de la plateforme %Arcane.
+  Description of the %Arcane platform.
 
 2. \subpage arcanedoc_getting_started_basicstruct <br>
-  Présente les structures et les types de base de %Arcane.
+  Presents the basic structures and types of %Arcane.
 
 3. \subpage arcanedoc_getting_started_iteration <br>
-  Présente les différentes façons d'itérer dans un code %Arcane.
+  Presents the different ways to iterate in %Arcane code.
 
 
 

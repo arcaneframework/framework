@@ -1,33 +1,33 @@
-# Exemple d'utilisation de fonctions C# pour le jeu de données {#arcanedoc_sample_userfunction}
+﻿# Example of using C# functions for the dataset {#arcanedoc_sample_userfunction}
 
 [TOC]
 
 \include{doc} user_function/README.md
 
-Fichier CMakeLists.txt
+CMakeLists.txt File
 
 \include user_function/CMakeLists.txt
 
-Fichier ExternalFunctions.cs
+ExternalFunctions.cs File
 
 \include user_function/ExternalFunctions.cs
 
-Fichier main.cc
+main.cc File
 
 \include user_function/main.cc
 
-Fichier UserFunction.arc
+UserFunction.arc File
 
 \include user_function/UserFunction.arc
 
-Fichier UserFunction.axl
+UserFunction.axl File
 
 \include user_function/UserFunction.axl
 
-Fichier UserFunction.config
+UserFunction.config File
 
 \include user_function/UserFunction.config
 
-Fichier UserFunctionModule.cc
+UserFunctionModule.cc File
 
 \include user_function/UserFunctionModule.cc

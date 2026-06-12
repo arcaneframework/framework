@@ -1,80 +1,78 @@
-# Exemple n°1 {#arcanedoc_services_modules_simplecsvcomparator_example1}
+﻿# Example No. 1 {#arcanedoc_services_modules_simplecsvcomparator_example1}
 
 [TOC]
 
-Dans ce premier exemple, on va réutiliser l'exemple 1 du sous-chapitre précédent
-(\ref arcanedoc_services_modules_simplecsvoutput_example1) mais en modifiant
-le point d'entrée `exit`.
+In this first example, we will reuse example 1 from the previous subsection
+(\ref arcanedoc_services_modules_simplecsvoutput_example1) but by modifying the
+`exit` entry point.
 
-On va utiliser les deux services en tant que singleton ici.
+We will use both services as singletons here.
 
-## Fichier .config
+## .config File
 
-Pour commencer, voyons le `.config` :
+To start, let's look at the `.config`:
 
 `csv.config` `<time-loop name="example1">`
 \snippet stc.config SimpleTableComparatorExample1_config
 
-Ici, on voit les deux singletons que l'on va utiliser.
+Here, we see the two singletons that we will use.
 
-## Point d'entrée initial
+## Initial Entry Point
 
-Voici le point d'entrée `start-init` :
+Here is the `start-init` entry point:
 
 `SimpleTableComparatorExample1Module.cc`
 \snippet SimpleTableComparatorExample1Module.cc SimpleTableComparatorExample1_init
 
 
-## Point d'entrée loop
+## Loop Entry Point
 
-Le point d'entrée `compute-loop` :
+The `compute-loop` entry point:
 
 `SimpleTableComparatorExample1Module.cc`
 \snippet SimpleTableComparatorExample1Module.cc SimpleTableComparatorExample1_loop
 
 
-## Point d'entrée exit
+## Exit Entry Point
 
-Enfin, voyons le point d'entrée `exit` :
+Finally, let's look at the `exit` entry point:
 
 `SimpleTableComparatorExample1Module.cc`
 \snippet SimpleTableComparatorExample1Module.cc SimpleTableComparatorExample1_exit
 
-On peut voir un exemple minimal d'utilisation du comparator.
-On commence par récupérer le pointeur vers le singleton puis on initialise
-le comparator en lui donnant un pointeur vers un objet ayant comme interface 
-\arcane{ISimpleTableOutput}.
+We can see a minimal example of using the comparator.
+We start by retrieving the pointer to the singleton, then we initialize the
+comparator by giving it a pointer to an object implementing the
+\arcane{ISimpleTableOutput} interface.
 
-Ensuite, on regarde si un fichier de référence existe.
-S'il n'y en a pas, on le crée avec les valeurs de `table`.  
-En effet, le service `SimpleCsvComparator` est aussi capable d'écrire des 
-fichiers. Il va utiliser les informations du \arcane{ISimpleTableOutput}
-pour trouver le chemin.
+Next, we check if a reference file exists.
+If there isn't one, we create it using the values from `table`. Indeed, the
+`SimpleCsvComparator` service is also capable of writing files. It will use the
+information from \arcane{ISimpleTableOutput} to find the path.
 
-Si on regarde dans le point d'entrée `init`, on peut voir l'initialisation
-du service `SimpleCsvOutput` :
+If we look at the `init` entry point, we can see the initialization of the
+`SimpleCsvOutput` service:
 
 ```cpp
 table->init("Results_Example1", "example1");
 ```
 
-`SimpleCsvComparator` va utiliser ces informations pour écrire le fichier
-de référence. Dans cet exemple, il va aller écrire le fichier ici :
+`SimpleCsvComparator` will use this information to write the reference file. In
+this example, it will write the file here:
 ```sh
 ./output/csv_refs/example1/Results_Example1.csv
 ```
 
-Si le fichier de référence existe déjà, le comparator va le comparer avec les
-valeurs de l'objet `table`.  
-Si les valeurs sont identiques, on aura le message `Mêmes valeurs !!!`
-dans la sortie, sinon on aura `Valeurs différentes :(` (et un code d'erreur
+If the reference file already exists, the comparator will compare it with the
+values of the `table` object.
+If the values are identical, we will have the message `Mêmes valeurs !!!` in the
+output; otherwise, we will have `Valeurs différentes :(` (and an error code
 `1`).
 
-À la fin, le service `SimpleCsvOutput` écrit son fichier, comme d'habitude.
+Finally, the `SimpleCsvOutput` service writes its file, as usual.
 
 \remark
-Vous l'aurez compris, il faut lancer l'exemple deux fois pour voir ce qu'il
-se passe.
+As you have understood, you must run the example twice to see what happens.
 
 
 ____

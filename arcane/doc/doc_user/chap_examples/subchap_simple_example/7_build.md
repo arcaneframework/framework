@@ -1,12 +1,10 @@
-# Compilation et lancement {#arcanedoc_examples_simple_example_build}
+﻿# Compilation and Launch {#arcanedoc_examples_simple_example_build}
 
 [TOC]
 
-Pour compiler notre application HelloWorld, nous allons donc
-utiliser CMake.
+To compile our HelloWorld application, we will use CMake.
 
-Voici la liste des commandes à compléter pour compiler
-et lancer notre application :
+Here is the list of commands to complete to compile and launch our application:
 
 ```sh
 ARCANE_INSTALL_PATH=#A compléter
@@ -29,17 +27,15 @@ cmake --build ${HW_BUILD_DIR}
 
 ${HW_EXE} ${HW_ARC}
 ```
-Au début de cette liste, nous définissons des variables
-pour rendre le tout plus lisible et plus facilement
-modifiable.
+At the beginning of this list, we define variables to make everything more
+readable and easily modifiable.
 
 ```sh
 ARCANE_INSTALL_PATH=# A compléter
 ```
-Cette ligne nous permet de définir le répertoire d'installation
-de %Arcane.
+This line allows us to define the installation directory of %Arcane.
 \note
-Exemple de ligne :
+Example line:
 ```sh
 ARCANE_INSTALL_PATH=~/install_arcane
 ```
@@ -49,10 +45,10 @@ ____
 ```sh
 HW_SOURCE_DIR=# A compléter
 ```
-Cette ligne nous permet de définir le répertoire contenant les sources
-de notre HelloWorld.
+This line allows us to define the directory containing the sources for our
+HelloWorld.
 \note
-Exemple de ligne :
+Example line:
 ```sh
 HW_SOURCE_DIR=~/src_helloworld
 ```
@@ -62,9 +58,10 @@ ____
 ```sh
 HW_BUILD_DIR=# A compléter
 ```
-Cette ligne nous permet de définir le répertoire où sera compilé notre application.
+This line allows us to define the directory where our application will be
+compiled.
 \note
-Exemple de ligne :
+Example line:
 ```sh
 HW_BUILD_DIR=~/build_hw
 ```
@@ -74,15 +71,12 @@ ____
 ```sh
 HW_BUILD_TYPE=Release
 ```
-Cette ligne nous permet de définir le type de build
-que l'on souhaite.
-On a le choix entre `Debug`, `Check` et `Release`.
-`Debug` nous permet d'avoir des informations supplémentaire
-pour pouvoir débugger avec un débuggeur.
-`Check` permet de rajouter des vérifications supplémentaires
-pour éviter les problèmes de dépassement de tableau par exemple.
+This line allows us to define the desired build type.
+We have the choice between `Debug`, `Check`, and `Release`.
+`Debug` allows us to have additional information to debug with a debugger.
+`Check` allows us to add extra checks to prevent problems like array overflow.
 
-\note `Debug` inclut automatiquement `Check`.
+\note `Debug` automatically includes `Check`.
 
 ____
 
@@ -92,13 +86,11 @@ HW_ARC=${HW_SOURCE_DIR}/HelloWorld.arc
 
 cd ${HW_BUILD_DIR}
 ```
-À l'aide des informations que nous avons donné précédement,
-on peut déduire l'emplacement de l'exécutable (`HW_EXE`)
-et l'emplacement de notre jeu de données (`HW_ARC`).
+Using the information we provided previously, we can deduce the location of the
+executable (`HW_EXE`) and the location of our dataset (`HW_ARC`).
 
-Personnellement, je préfère me situer dans le dossier de build
-pour les commandes ci-après, donc j'effectue un `cd ${HW_BUILD_DIR}`,
-mais ça reste facultatif.
+Personally, I prefer to be in the build folder for the following commands, so I
+execute a `cd ${HW_BUILD_DIR}`, but this remains optional.
 
 ____
 
@@ -109,42 +101,39 @@ cmake \
   -DCMAKE_PREFIX_PATH=${ARCANE_INSTALL_PATH} \
   -DCMAKE_BUILD_TYPE=${HW_BUILD_TYPE}
 ```
-On demande à CMake de configurer le dossier de build
-grâce à/aux CMakeLists.txt pour que Make puisse compiler
-notre projet. Cette commande ne modifiera pas le répertoire
-contenant les sources de notre projet (c'est le cas pour toutes les
-commandes présentées ici d'ailleurs).
+We ask CMake to configure the build directory using the CMakeLists.txt files so
+that Make can compile our project. This command will not modify the directory
+containing our project sources (this is true for all the commands presented
+here, by the way).
 
 ____
 
 ```sh
 cmake --build ${HW_BUILD_DIR}
 ```
-On demande à CMake d'appeler Make pour compiler notre projet.
-On pourrait utiliser directement la commande `make` mais
-si un jour, on veut utiliser un autre programme que Make
-(comme Ninja), il faudra changer cette commande. Alors que là, 
-c'est CMake qui gère selon la configuration faite précédemment.
+We ask CMake to call Make to compile our project.
+We could use the `make` command directly, but if one day we want to use a
+program other than Make (like Ninja), we will have to change this command.
+Currently, CMake handles it according to the configuration made previously.
 
 ____
 
 ```sh
 ${HW_EXE} ${HW_ARC}
 ```
-Enfin, on peut lancer notre HelloWorld !
-On doit aussi préciser la position de notre jeu de données.
-Si l'on a plusieurs jeux de données, il suffit de changer
-la variable `${HW_ARC}` et de relancer HelloWorld sans
-avoir besoin de recompiler.
+Finally, we can launch our HelloWorld!
+We must also specify the location of our dataset.
+If we have multiple datasets, we just need to change the `${HW_ARC}` variable
+and relaunch HelloWorld without needing to recompile.
 
 ____
 
-Voilà pour ce sous-chapitre dédié à la construction d'un hello world avec
-%Arcane. Les bases sont présentées ici. Néanmoins, pour aller plus loin,
-il est conseillé de lire tous les chapitres de cette documentation.
+That concludes this subsection dedicated to building a hello world with %Arcane.
+The basics are presented here. Nevertheless, to go further, it is recommended to
+read all chapters of this documentation.
 
-Si un problème est présent dans ce sous-chapitre, vous pouvez ouvrir une
-issue dans le GitHub d'%Arcane.
+If there is a problem in this subsection, you can open an issue on the %Arcane
+GitHub.
 
 ____
 
