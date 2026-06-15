@@ -15,8 +15,13 @@ if (ARCANE_HAS_ACCELERATOR_API)
   arcane_add_accelerator_test_parallel(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
   arcane_add_accelerator_test_parallel(material_sync2_v8 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,8)
   arcane_add_accelerator_test_parallel(material_sync2_vacc testMaterial-sync-2.arc 4 -We,ARCANE_ACC_MAT_SYNCHRONIZER,1)
-  arcane_add_accelerator_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
-  arcane_add_accelerator_test_parallel_thread(material_sync2_vacc testMaterial-sync-2.arc 4 -We,ARCANE_ACC_MAT_SYNCHRONIZER,1)
+  # We do not use Device memory pool for these two multi-thread tests
+  # because the MemoryPool does not yet work when using multiple devices
+  # in the same processus (NOTE: it should work when using only one device
+  # but we can not detect at configure if we will run on one or several devices
+  # so we always disable memory pool)
+  arcane_add_accelerator_test_parallel_thread(material_sync2_v7 testMaterial-sync-2.arc 4 "-We,ARCANE_ACCELERATOR_MEMORY_POOL,5" -We,ARCANE_MATSYNCHRONIZE_VERSION,7)
+  arcane_add_accelerator_test_parallel_thread(material_sync2_vacc testMaterial-sync-2.arc 4 "-We,ARCANE_ACCELERATOR_MEMORY_POOL,5" -We,ARCANE_ACC_MAT_SYNCHRONIZER,1)
 endif ()
 
 arcane_add_test(material_sync3 testMaterial-sync-3.arc)
