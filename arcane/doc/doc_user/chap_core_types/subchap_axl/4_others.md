@@ -1,10 +1,10 @@
-# Autres élements {#arcanedoc_core_types_axl_others}
+﻿# Other elements {#arcanedoc_core_types_axl_others}
 
 [TOC]
 
-## La documentation {#arcanedoc_core_types_axl_others_doc}
+## The documentation {#arcanedoc_core_types_axl_others_doc}
 
-Prenons cet exemple :
+Let's take this example:
 ```xml
 <module name="Test" version="1.0">
   <name lang="fr">Test</name>
@@ -14,21 +14,23 @@ Prenons cet exemple :
   </description>
 
   <variables>
-    <variable field-name="pressure" name="Pressure" data-type="real" item-kind="cell" dim="0" dump="true" need-sync="true">
+    <variable field-name="pressure" name="Pressure" data-type="real"
+              item-kind="cell" dim="0" dump="true" need-sync="true">
       <userclass>User</userclass>
       <description>Descripteur de la variable pressure</description>
     </variable>
   </variables>
 
   <entry-points>
-    <entry-point method-name="testPressureSync" name="TestPressureSync" where="compute-loop" property="none">
+    <entry-point method-name="testPressureSync" name="TestPressureSync"
+                 where="compute-loop" property="none">
       <userclass>User</userclass>
       <description>Descripteur du point d''entrée TestPressureSync</description>
     </entry-point>
   </entry-points>
 
   <options>
-    <simple name = "simple-real" type = "real">
+    <simple name="simple-real" type="real">
       <name lang='fr'>reel-simple</name>
       <userclass>User</userclass>
       <description>Réel simple</description>
@@ -36,64 +38,66 @@ Prenons cet exemple :
   </options>
 </module>
 ```
-Ceci est valable pour les modules et les services.
+This is valid for modules and services.
 
-### Balises <userclass>
+### <userclass> Tags
 
-Les balises `<userclass>` sont disponibles et permettent de choisir dans quelle version
-de la documentation faire apparaitre chaque élément, avec la description correspondante.
+The <userclass> tags are available and allow you to choose which documentation
+version each element appears in, along with the corresponding description.
 
-Les valeurs possibles sont `User` et `Dev`.
+The possible values are `User` and `Dev`.
 
-### Balises <description>
+### <description> Tags
 
-Les balises `<description>` sont disponibles pour chaque élément de l'`axl`.
-En plus de décrire l'élément pour ceux qui lisent le fichier `axl`, ce champ permet
-de générer une documentation pour ce module/service. La génération sera effectuée
-par le programme `axldoc`.
+The <description> tags are available for every element in the `axl`. In addition
+to describing the element for those who read the `axl` file, this field allows
+generating documentation for this module/service. The generation will be
+performed by the `axldoc` program.
 
-Ce programme va générer (entre autres) une page listant tous les services et modules
-disponibles (`axldoc_casemainpage.md`, disponible ici : \ref axldoc_casemainpage)
-et une page pour le service/module.
+This program will generate (among others) a page listing all available services
+and modules (`axldoc_casemainpage.md`, available here: \ref axldoc_casemainpage)
+and a page for the service/module.
 
-\todo Peut-être faire une page pour expliquer comment générer cette documentation
-pour un projet utilisant %Arcane.
+\todo Maybe create a page to explain how to generate this documentation for a
+project using %Arcane.
 
-### Spécificités des balises <userclass> et <description> entre les balises <module> (ou <service>) 
-<em>(lignes 3-6 de l'exemple)</em>
+### Specifics of <userclass> and <description> tags between <module> (or <service>) tags <em>(lines 3-6 of the example)</em>
 
-Admettons que nous générons la documentation `User`.
-Pour que notre module apparaisse dans la liste des modules, il est nécessaire d'ajouter
-`<userclass>User</userclass>` entre les balises `<module>` (ou `<service>`).
+Let's assume we are generating the `User` documentation.
+For our module to appear in the list of modules, it is necessary to add
+`<userclass>User</userclass>` between the `<module>` (or `<service>`) tags.
 
-Sur la page \ref axldoc_casemainpage "axldoc_casemainpage.md", il est possible de voir qu'il y a
-des descriptions pour chaque module et service. Il est désormais possible de contrôler la génération
-de cette description. Trois attributs sont disponibles pour la balise `<description>` :
+On the page \ref axldoc_casemainpage "axldoc_casemainpage.md", it is possible to
+see that there are descriptions for each module and service. It is now possible
+to control the generation of this description. Three attributes are available
+for the `<description>` tag:
 
 
 <details>
-  <summary>Attribut doc-brief-max-nb-of-char</summary>
+  <summary>Attribute doc-brief-max-nb-of-char</summary>
   ```xml
   <description doc-brief-max-nb-of-char="120"></description>
   ```
-  Attribut permettant de limiter le nombre de caractères max de la courte description.
-  Par défaut, la limite est définie à `120`. Mettre la valeur `-1` permet
-  de désactiver cette limite.
+    Attribute allowing you to limit the maximum number of characters in the
+short description.
+  By default, the limit is set to `120`. Setting the value to `-1` allows you to
+disable this limit.
 </details>
 
 <details>
-  <summary>Attribut doc-brief-force-close-cmds</summary>
+  <summary>Attribute doc-brief-force-close-cmds</summary>
   ```xml
   <description doc-brief-force-close-cmds="true"></description>
   ```
-  Attribut permettant de forcer `axldoc` à ne pas couper la description lorsque la limite de caractères
-  est atteinte dans une commande Doxygen avant la fin de cette commande. C'est un attribut assez utile
-  pour, par exemple, ne pas découper une formule LaTeX en plein milieu.
+  Attribute allowing you to force `axldoc` not to cut the description when the
+  character limit is reached in a Doxygen command before the end of that command.
+  This is a very useful attribute, for example, to prevent cutting a LaTeX formula
+  in the middle.
 
-  En revanche, `axldoc` garantie que les balises compatibles sont bien refermées et les referment si 
-  ce n'est pas fait.
+  However, `axldoc` guarantees that compatible tags are properly closed and closes
+  them if they are not.
 
-  Les balises compatibles sont :
+  The compatible tags are:
   - `\verbatim \endverbatim`
   - `\code \endcode`
   - `\f$ \f$`
@@ -101,9 +105,9 @@ de cette description. Trois attributs sont disponibles pour la balise `<descript
   - `\f[ \f]`
   - `\f{ \f}`
 
-  Par défaut, cet attribut est défini à `false`.
+  By default, this attribute is set to `false`.
 
-  Exemple :
+  Example:
   ```xml
   <description doc-brief-force-close-cmds="false" doc-brief-max-nb-of-char="120">
    Ma description
@@ -119,7 +123,7 @@ de cette description. Trois attributs sont disponibles pour la balise `<descript
      \f]
   </description>
   ```
-  donne :
+  yields:
 
   Ma description
   \f[
@@ -131,7 +135,7 @@ de cette description. Trois attributs sont disponibles pour la balise `<descript
   \int_{a}^\theta c(\xi)u_t(\xi,t)\,d\xi 
   \f]
 
-  alors que :
+  whereas:
   ```xml
   <description doc-brief-force-close-cmds="true" doc-brief-max-nb-of-char="120">
     Ma description
@@ -147,7 +151,7 @@ de cette description. Trois attributs sont disponibles pour la balise `<descript
     \f]
   </description>
   ```
-  donne :
+  yields:
 
   Ma description
   \f[
@@ -160,18 +164,18 @@ de cette description. Trois attributs sont disponibles pour la balise `<descript
   \right\} dt
   \right|
   \f]
-  
+
 </details>
 
 
 <details>
-  <summary>Attribut doc-brief-stop-at-dot</summary>
+  <summary>Attribute doc-brief-stop-at-dot</summary>
   ```xml
   <description doc-brief-stop-at-dot="true"></description>
   ```
-  Attribut permettant de limiter le nombre de caractères en coupant la courte description
-  au premier point trouvé.
-  Par défaut, cet attribut est défini à `true`.
+  Attribute allowing you to limit the number of characters by cutting the
+  short description at the first found period.
+  By default, this attribute is set to `true`.
 </details>
 
 ____

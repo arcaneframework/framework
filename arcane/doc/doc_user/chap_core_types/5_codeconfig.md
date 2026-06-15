@@ -1,173 +1,162 @@
-﻿# Configuration du code (.CONFIG) {#arcanedoc_core_types_codeconfig}
+﻿# Code Configuration (.CONFIG) {#arcanedoc_core_types_codeconfig}
 
 [TOC]
 
 ## Introduction {#arcanedoc_core_types_codeconfig_intro}
 
-<!-- présente le fichier de configuration d'un exécutable -->
-<!-- réalisé avec la plate-forme %Arcane. Ce fichier contient entre autre la description des -->
-<!-- boucles en temps disponibles. -->
+<!-- presents the configuration file of an executable -->
+<!-- created with the %Arcane platform. This file contains, among other things,
+the description of the available time loops. -->
 
-La configuration du code est décrite dans un fichier externe,
-dont le nom est CODE.config, avec \a CODE le nom du code.
-  
-Ce fichier décrit l'ensemble des boucles en temps
-(voir \ref arcanedoc_core_types_timeloop) disponibles pour
-le code, ainsi que leur configuration.
+Code configuration is described in an external file, named CODE.config, where
+\a CODE is the name of the code.
 
-## Structure du fichier {#arcanedoc_core_types_codeconfig_struct}
+This file describes all the time loops (see \ref arcanedoc_core_types_timeloop)
+available for the code, as well as their configuration.
 
-Ce fichier de configuration de l'application est au format XML.
-Voici un exemple d'un tel fichier pour un module <em>MicroHydro</em> qui
-se trouve dans le répertoire des exemples de ARCANE (\c samples):
+## File Structure {#arcanedoc_core_types_codeconfig_struct}
+
+This application configuration file is in XML format.
+Here is an example of such a file for a <em>MicroHydro</em> module located in
+the ARCANE examples directory (\c samples):
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <arcane-config code-name="MicroHydro">
- <time-loops>
-  <time-loop name="MicroHydroLoop">
-   <title>MicroHydro</title>
-   <description>Boucle en temps de l'exemple Arcane MicroHydro</description>
+  <time-loops>
+    <time-loop name="MicroHydroLoop">
+      <title>MicroHydro</title>
+      <description>Time loop of the Arcane MicroHydro example</description>
 
-   <modules>
-    <module name="MicroHydro" need="required" />
-    <module name="ArcanePostProcessing" need="required" />
-   </modules>
+      <modules>
+        <module name="MicroHydro" need="required"/>
+        <module name="ArcanePostProcessing" need="required"/>
+      </modules>
 
-   <singleton-services>
-   </singleton-services>
+      <singleton-services>
+      </singleton-services>
 
-   <entry-points where="init">
-    <entry-point name="MicroHydro.HydroStartInit" />
-   </entry-points>
+      <entry-points where="init">
+        <entry-point name="MicroHydro.HydroStartInit"/>
+      </entry-points>
 
-   <entry-points where="compute-loop">
-    <entry-point name="MicroHydro.ComputePressureForce" />
-    <entry-point name="MicroHydro.ComputeVelocity" />
-    <entry-point name="MicroHydro.ApplyBoundaryCondition" />
-    <entry-point name="MicroHydro.MoveNodes" />
-    <entry-point name="MicroHydro.ComputeGeometricValues" />
-    <entry-point name="MicroHydro.UpdateDensity" />
-    <entry-point name="MicroHydro.ApplyEquationOfState" />
-    <entry-point name="MicroHydro.ComputeDeltaT" />
-   </entry-points>
+      <entry-points where="compute-loop">
+        <entry-point name="MicroHydro.ComputePressureForce"/>
+        <entry-point name="MicroHydro.ComputeVelocity"/>
+        <entry-point name="MicroHydro.ApplyBoundaryCondition"/>
+        <entry-point name="MicroHydro.MoveNodes"/>
+        <entry-point name="MicroHydro.ComputeGeometricValues"/>
+        <entry-point name="MicroHydro.UpdateDensity"/>
+        <entry-point name="MicroHydro.ApplyEquationOfState"/>
+        <entry-point name="MicroHydro.ComputeDeltaT"/>
+      </entry-points>
 
-  </time-loop>
- </time-loops>
+    </time-loop>
+  </time-loops>
 </arcane-config>
 ```
 
-## L'élément <time-loops>  {#arcanedoc_core_types_codeconfig_timeloop}
+## The <time-loops> Element {#arcanedoc_core_types_codeconfig_timeloop}
 
-L'ensemble des boucles en temps est décrit dans l'élément
-`<time-loops>`. Chaque boucle en temps est représentée
-par l'élément `<time-loop>` et identifiée par son nom (attribut
-`name`). Le fichier précédent décrit donc une seule boucle en temps 
-nommée <em>MicroHydroLoop</em>.
-  
-Outre le titre et la description de la boucle, on remarque 3 éléments :
-`<modules>`, `<singleton-services>` et `<entry-points>`.
+The set of time loops is described in the `<time-loops>` element. Each time loop
+is represented by the `<time-loop>` element and identified by its name (the
+`name` attribute). The previous file therefore describes a single time loop
+named <em>MicroHydroLoop</em>.
 
-### L'élément <modules> {#arcanedoc_core_types_codeconfig_modules}
+In addition to the loop's title and description, there are 3 elements:
+`<modules>`, `<singleton-services>`, and `<entry-points>`.
 
-Cet élément décrit l'ensemble des modules du code nécessaire à
-l'exécution de la boucle en temps. L'attribut `name` identifie
-le module par son nom et l'attribut `need` (valant **required**
-ou **optional**) indique si le module doit obligatoirement être
-présent ou non. Si le module n'est pas obligatoire et qu'il
-n'est pas fourni à l'exécution (absence de la bibliothèque
-du module), ses points d'entrée seront ignorés. Cela permet
-de construire des variantes d'une même boucle en temps.
+### The <modules> Element {#arcanedoc_core_types_codeconfig_modules}
 
-### L'élément <singleton-services> {#arcanedoc_core_types_codeconfig_singletonservices}
+This element describes all the modules of the code necessary for the execution
+of the time loop. The `name` attribute identifies the module by its name, and
+the `need` attribute (valued **required** or **optional**) indicates whether the
+module must be present or not. If the module is not mandatory and is not
+provided during execution (absence of the module library), its entry points will
+be ignored. This allows for the construction of variants of the same time loop.
 
-Cet élément est assez similaire à `<modules>` et décrit
-l'ensemble des services singletons du code utilisés lors
-de l'exécution. Un service singleton est un service pour lequel il
-n'existe qu'une seule instance qui est créée lors de
-l'initialisation du code. Un tel service peut avoir des options dans
-le jeu de données. La spécification des services singletons se fait
-comme suit :
+### The <singleton-services> Element {#arcanedoc_core_types_codeconfig_singletonservices}
+
+This element is quite similar to `<modules>` and describes all the singleton
+services of the code used during execution. A singleton service is a service for
+which only one instance exists, created during the code's initialization. Such a
+service may have options in the dataset. The specification of singleton services
+is done as follows:
 
 ```xml
 <singleton-services>
- <service name="Toto" need="required">
- <service name="Tutu" need="optional">
+  <service name="Toto" need="required">
+  <service name="Tutu" need="optional">
 </singleton-services>
 ```
-  
-Comme pour le module, il y a deux attributs `name`
-et `need`. Si le service est optionnel et qu'il n'est pas trouvé,
-il ne sera pas instantié. Dans le code, il est possible de
-récupérer un service singleton dont on connait l'interface, via
-la classe ServiceBuilder. Exemple :
+
+Like the module, there are two attributes, `name` and `need`. If the service is
+optional and not found, it will not be instantiated. In the code, it is possible
+to retrieve a singleton service whose interface is known, via the ServiceBuilder
+class. Example:
 
 ```cpp
 m_toto = ServiceBuilder<IToto>(subDomain()).getSingleton();
 ```
 
-Avec Toto implémentant l'interface IToto.
+With Toto implementing the IToto interface.
 
-### L'élément <entry-points> {#arcanedoc_core_types_codeconfig_entrypoints}
+### The <entry-points> Element {#arcanedoc_core_types_codeconfig_entrypoints}
 
-Cet élément contient l'attribut `where` précisant
-l'endroit d'appel des différents points d'entrée. Les valeurs possibles
-sont décrites dans le tableau ci-dessous :
+This element contains the `where` attribute specifying the location where the
+different entry points are called. The possible values are described in the
+table below:
 
 <table>
 
 <tr>
-<th>Valeur</th>
+<th>Value</th>
 <th>Description</th>
 </tr>
 
 <tr>
 <td> **build** </td>
-<td>Appel du point d'entrée à la création du module. Lors
-de la création du module, le maillage n'est pas encore chargé et il
-ne doit donc pas être utilisé.</td>
+<td>Entry point called when the module is created. When the module is created,
+the mesh has not yet been loaded and therefore should not be used.</td>
 </tr>
 
 <tr>
 <td> **init** </td>
-<td>Appel du point d'entrée lors de l'initialisation du code.</td>
+<td>Entry point called during the code's initialization.</td>
 </tr>
 
 <tr>
 <td> **compute-loop** </td>
-<td>Appel du point d'entrée dans la boucle des itérations.</td>
+<td>Entry point called in the iteration loop.</td>
 </tr>
 
 <tr>
 <td> **restore** </td>
-<td>Appel du point d'entrée lors d'un retour arrière.</td>
+<td>Entry point called during a rollback.</td>
 </tr>
 
 <tr>
 <td> **on-mesh-changed** </td>
-<td>Appel du point d'entrée lors d'un changement 
-de la structure de maillage (partitionnement, abandon de
-mailles...).</td>
+<td>Entry point called when the mesh structure changes (partitioning, cell
+abandonment...).</td>
 </tr>
 
 <tr>
 <td> **exit** </td>
-<td>Appel du point d'entrée avant la sortie
-du code : fin de simulation, arrêt avant reprise...</td>
+<td>Entry point called before the code exits: end of simulation, stop before
+restart...</td>
 </tr>
 
 </table>
 
-L'élément `<entry-points>` contient une liste de points d'entrée
-nommés *nom_du_module.nom_du_point_d'entrée*. La valeur de l'attribut
-`where` de chaque point d'entrée (faite dans \ref
-arcanedoc_core_types_module_desc "le descripteur de module") doit être compatible
-avec celle de l'attribut `where` du bloc `<entry-points>`. Dans un
-bloc *init* ne peuvent être présent que des points d'entrée dont
-l'attribut `where` vaut **init**, **start-init**,
-**continue-init**. Pour les autres blocs (**compute-loop**,
-**restore**, **on-mesh-changed**, **exit**), les valeurs des 2
-attributs `where` doivent être identiques.
+The `<entry-points>` element contains a list of entry points named
+*module_name.entry_point_name*. The value of the `where` attribute of each entry
+point (defined in \ref arcanedoc_core_types_module_desc "the module descriptor")
+must be compatible with the value of the `where` attribute of the
+`<entry-points>` block. In an *init* block, only entry points whose `where`
+attribute equals **init**, **start-init**, or **continue-init** can be present.
+For other blocks (**compute-loop**, **restore**, **on-mesh-changed**, **exit**),
+the values of the two `where` attributes must be identical.
 
 
 ____

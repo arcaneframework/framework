@@ -1,128 +1,119 @@
-# Itération {#arcanedoc_getting_started_iteration}
+﻿# Iteration {#arcanedoc_getting_started_iteration}
 
 [TOC]
 
-Avant de pouvoir coder une opération, il
-faut bien comprendre comment s'écrit une boucle sur une liste
- d'entités de maillage telles que les mailles ou les noeuds. En effet, pratiquement toutes les opérations
-que l'on effectue se font sur un ensemble d'entités et donc
-comportent une boucle sur une liste d'entités. Par exemple, calculer
-la masse des mailles consiste à boucler sur l'ensemble des mailles et
-pour chacune d'elle effectuer le produit de son volume par sa
-densité. Conventionnellement, cela peut s'écrire de la manière
-suivante :
+Before being able to code an operation, you must understand how a loop over a
+list of mesh entities, such as cells or nodes, is written. Indeed, almost all
+operations performed are done on a set of entities and therefore involve a loop
+over a list of entities. For example, calculating the mass of the cells consists
+of looping over all the cells and performing the product of its volume by its
+density for each one. Conventionally, this can be written as follows:
 
 ```cpp
 for( Integer i=0; i<nbCell(); ++i )
   m_cell_mass[i] = m_density[i] * m_volume[i];
 ```
 
-La boucle *for* comprend trois parties séparées par un
-point-virgule. La première est l'initialisation, la seconde est le
-test de sortie de boucle et la troisième est l'opération effectuée
-entre deux itérations.
+The *for* loop consists of three parts separated by a semicolon. The first is
+the initialization, the second is the loop exit test, and the third is the
+operation performed between two iterations.
 
-L'écriture précédente a plusieurs inconvénients :
-- elle fait apparaître la structure de donnée sous-jacente, à
-  savoir un tableau ;
-- elle utilise un indice de type entier pour accéder aux éléments.
-  Ce typage faible est source d'erreur car il ne permet pas, entre autre,
-  de tenir compte du genre de la variable. Par exemple, on pourrait
-  écrire \c m_velocity[i] avec \c i étant un numéro de maille et
-  \c m_velocity une variable aux noeuds ;
-- elle oblige à ce que la numérotation des entités soit contigüe.
+The previous writing has several disadvantages:
+- it exposes the underlying data structure, namely an array;
+- it uses an integer type index to access elements. This weak typing is a source
+  of error because it does not allow, among other things, to account for the
+  type of the variable. For example, one could write `m_velocity[i]` with `i`
+  being a cell number and `m_velocity` being a node variable;
+- it requires that the numbering of the entities be contiguous.
 
-En considérant qu'on parcourt toujours la liste des entités dans le
-même ordre, il est possible de modéliser le comportement précédent par
-quatre opérations :
+Considering that the list of entities is always traversed in the same order, it
+is possible to model the previous behavior using four operations:
 
-- initialiser un compteur au début du tableau ;
-- incrémenter le compteur ;
-- regarder si le compteur est à la fin du tableau ;
-- retourner l'élément correspondant au compteur.
+- initialize a counter at the beginning of the array;
+- increment the counter;
+- check if the counter is at the end of the array;
+- return the element corresponding to the counter.
 
-Le mécanisme est alors général et indépendant du type du conteneur :
-l'ensemble des entités pourrait être implémenté sous forme de
-tableau ou de liste sans changer ce formalisme. Dans l'architecture,
-le compteur ci-dessus est appelé un *itérateur* et itérer sur
-l'ensemble des éléments se fait en fournissant un itérateur de début
-et de fin, autrement appelé un *énumérateur*
+The mechanism is then general and independent of the container type: the set of
+entities could be implemented as an array or a list without changing this
+formalism. In the architecture, the counter above is called an *iterator* and
+iterating over the set of elements is done by providing a start and end
+iterator, otherwise called an *enumerator*.
 
-Dans %Arcane, cet énumérateur dérive de la classe de base
-\arcane{ItemEnumerator} et possède les méthodes suivantes:
+In %Arcane, this enumerator derives from the base class \arcane{ItemEnumerator}
+and has the following methods:
 
-- un constructeur prenant en argument un groupe d'entité du maillage ;
-- *operator++()* : pour accéder à l'élément suivant ;
-- *hasNext()* : pour tester si on se trouve à la fin de l'itération ;
-- _operator*()_ : qui retourne l'élément courant.
+- a constructor taking a mesh entity group as an argument;
+- *operator++()*: to access the next element;
+- *hasNext()*: to test if we are at the end of the iteration;
+- _operator*(): which returns the current element.
 
-Afin d'ajouter un niveau d'abstraction supplémentaire et de
-permettre d'instrumenter le code, %Arcane fournit une fonction
-sous forme de macro pour chaque type d'énumérateur. Il n'est donc pas
-nécessaire d'utiliser les méthodes de \arcane{ItemEnumerator}. Cette fonction
-possède le prototype suivant :
+To add an additional level of abstraction and to allow code instrumentation,
+%Arcane provides a function in the form of a macro for each enumerator type. It
+is therefore not necessary to use the methods of \arcane{ItemEnumerator}. This
+function has the following prototype:
 
 ```cpp
 ENUMERATE_(kind, nom_iterateur, nom_groupe )
 ```
 
-avec:
-- **kind** le genre de l'entité (\arcane{Node}, \arcane{Cell}, ...),
-- **nom_iterateur** le nom de l'itérateur
-- **nom_groupe** le nom du groupe (\arcane{ItemGroup}) sur lequel on itère.
+with:
+- **kind** the type of the entity (\arcane{Node}, \arcane{Cell}, ...),
+- **nom_iterateur** the name of the iterator
+- **nom_groupe** the name of the group (\arcane{ItemGroup}) over which we
+  iterate.
 
-Lorsqu'on se trouve dans un module (dont la classe de base est \arcane{BasicModule})
-ou un service (dont la classe de base est \arcane{BasicService}), %Arcane
-fournit des méthodes pour accéder au groupe contenant toute les entités d'un genre
-d'entité donné. Par exemple la méthode \arcane{BasicModule::allCells()} permet
-de récupérer le groupe de toutes les mailles. Ainsi, pour itérer sur toutes les
-mailles, avec **i** le nom de l'itérateur, on peut faire comme cela :
+When you are in a module (whose base class is \arcane{BasicModule}) or a
+service (whose base class is \arcane{BasicService}), %Arcane provides methods to
+access the group containing all entities of a given entity type. For example,
+the method \arcane{BasicModule::allCells()} allows retrieving the group of all
+cells. Thus, to iterate over all cells, with **i** as the name of the iterator,
+you can do this:
 
 ```cpp
-ENUMERATE_(Cell,i,allCells())
+ENUMERATE_(Cell, i, allCells())
 ```
 
-La boucle de calcul de la masse décrite précédemment devient alors :
+The mass calculation loop described previously then becomes:
 
 ```cpp
-ENUMERATE_(Cell,i,allCells()){
+ENUMERATE_(Cell, i, allCells()){
   m_cell_mass[i] = m_density[i] * m_volume[i];
 }
 ```
 
-Le type d'un énumérateur dépend du genre de l'élément de maillage : un
-énumérateur sur un groupe de noeuds n'est pas du même type qu'un
-énumérateur sur un groupe de mailles et ils sont donc
-incompatibles. Par exemple, si la vitesse est une variable aux noeuds,
-l'exemple suivant provoque une erreur de compilation :
+The type of an enumerator depends on the type of the mesh element: an enumerator
+over a group of nodes is not the same type as an enumerator over a group of
+cells, and they are therefore incompatible. For example, if velocity is a node
+variable, the following example causes a compilation error:
 
 ```cpp
 cout << m_velocity[i]; // Erreur!
 ```
 
-De même, il est impossible d'écrire :
+Similarly, it is impossible to write:
 
 ```cpp
-ENUMERATE_(Cell,i,allNodes()) // Erreur!
+ENUMERATE_(Cell, i, allNodes()) // Erreur!
 ```
 
-car \arcane{BasicModule::allNodes()} est un groupe de noeud et **i** un énumérateur sur un
-groupe de mailles.
+because \arcane{BasicModule::allNodes()} is a group of nodes and **i** is an
+enumerator over a group of cells.
 
-Notons que l'opérateur '*' de l'énumérateur permet d'accéder à l'élément courant :
+Note that the enumerator's '*' operator allows access to the current element:
 ```cpp
-ENUMERATE_(Cell,icell,allCells()){
+ENUMERATE_(Cell, icell, allCells()){
   Cell cell = *icell;
 }
 ```
 
-Il est possible d'utiliser l'entité elle-même pour récupérer la valeur d'une variable
-mais, pour des raisons de performances, il faut privilégier l'accès par l'itérateur :
+It is possible to use the entity itself to retrieve the value of a variable, but
+for performance reasons, you must prioritize access via the iterator:
 ```cpp
-ENUMERATE_(Cell,icell,allCells()){
+ENUMERATE_(Cell, icell, allCells()){
   Cell cell = *icell;
-  m_cell_mass[cell] = m_density[cell] * m_volume[cell]; // moins performant
-  m_cell_mass[icell] = m_density[icell] * m_volume[icell]; // plus performant
+  m_cell_mass[cell] = m_density[cell] * m_volume[cell]; // less performant
+  m_cell_mass[icell] = m_density[icell] * m_volume[icell]; // more performant
 }
 ```
 

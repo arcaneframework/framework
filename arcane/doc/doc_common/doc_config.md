@@ -1,44 +1,35 @@
-# Personnalisation de la doc {#arcanedoc_doc_config}
+﻿# Documentation Customization {#arcanedoc_doc_config}
 
 [TOC]
 
-Cette page contient plusieurs options permettant de personnaliser
-le thème de la documentation.
+This page contains several options for customizing the documentation theme.
 
-Ce nouveau thème est assez différent de l'ancien thème
-(le thème par défaut de Doxygen) donc cette page permet
-de régler certains éléments de sorte d'avoir une documentation
-plus agréable à lire.
+This new theme is quite different from the old theme (the default Doxygen
+theme), so this page allows you to adjust certain elements to have a more
+pleasant documentation experience.
 
-Chaque partie de cette page est dédiée à une option.
-Globalement, il y a trois éléments par partie :
-un texte permettant de savoir si une option est activé
-ou non, un bouton "Activer"/"Désactiver" permettant
-d'activer ou de désactiver une option et un bouton "Tester l'option"
-permettant de voir directement l'effet de l'option.
+Each section of this page is dedicated to one option. Generally, there are three
+elements per section: text indicating whether an option is active or not, an
+"Enable"/"Disable" button allowing you to activate or deactivate an option, and
+a "Test Option" button allowing you to see the option's effect directly.
 
-Cette page possède une autre particularité : elle n'appelle
-pas les options déjà activées. Cela permet de pouvoir remettre
-une option par défaut s'il y a un problème. Le seul moyen de
-voir l'effet d'une option sur cette page est de cliquer sur les
-boutons "Tester l'option".
+This page has another particularity: it does not call the already activated
+options. This allows you to revert an option to default if there is a problem.
+The only way to see the effect of an option on this page is to click the "Test
+Option" buttons.
 
 \note
-Certaines de ces options sont expérimentales et peuvent
-avoir des effets indésirables (effets qui sont néanmoins
-précisés lorsqu'il y en a).
+Some of these options are experimental and may have undesirable effects
+(effects which are nevertheless specified when they exist).
 
+## Expand Selected Item {#arcanedoc_doc_config_expand_current}
 
-## Étendre l'élément séléctionné {#arcanedoc_doc_config_expand_current}
+This option allows you to expand the sub-pages of the visited item. If you press
+the "Test Option" button, you will see the option's effect in the left
+navigation bar.
 
-Cette option permet d'étendre les sous-pages de l'élément
-visité.
-Si vous appuyez sur le bouton "Tester l'option", vous verrez l'effet
-de l'option dans la barre de navigation à gauche.
-
-Une fois activée, cette option étendra à chaque fois l'élément
-visité, permettant d'avoir une visibilité sur le contenu d'un
-chapitre directement depuis la barre de navigation.
+Once activated, this option will expand the visited item every time, allowing
+you to view the content of a chapter directly from the navigation bar.
 
 \htmlonly
 <br>
@@ -50,22 +41,19 @@ chapitre directement depuis la barre de navigation.
 </center>
 \endhtmlonly
 
-## Table des matières toujours devant (Doxygen 1.13.0 et avant) {#arcanedoc_doc_config_toc_above_all}
+## Table of Contents Always Above (Doxygen 1.13.0 and earlier) {#arcanedoc_doc_config_toc_above_all}
 
-Cette option permet d'afficher la table des matières
-par dessus le texte.
-Ça permet de gagner de la place à droite, place qui est réservée
-par défaut pour la table des matières.
+This option allows you to display the table of contents above the text. This
+saves space on the right, which is reserved by default for the table of
+contents.
 
 \warning
-Si la table des matières est très grande, une partie du texte sera
-caché en permanance.
+If the table of contents is very large, part of the text will be
+permanently hidden.
 
-\note
-Si les options \ref arcanedoc_doc_config_toc_above_all et
-\ref arcanedoc_doc_config_apply_old_toc sont activées ensembles,
-c'est l'option \ref arcanedoc_doc_config_apply_old_toc qui
-sera prise en compte.
+\note If the options \ref arcanedoc_doc_config_toc_above_all and
+\ref arcanedoc_doc_config_apply_old_toc are activated together, the option
+\ref arcanedoc_doc_config_apply_old_toc will be taken into account.
 
 \htmlonly
 <br>
@@ -77,17 +65,16 @@ sera prise en compte.
 </center>
 \endhtmlonly
 
-## Ancien emplacement de la table des matières (Doxygen 1.13.0 et avant) {#arcanedoc_doc_config_apply_old_toc}
+## Old Table of Contents Location (Doxygen 1.13.0 and earlier) {#arcanedoc_doc_config_apply_old_toc}
 
-Avant la mise à jour du thème, la table des matières était fixée
-en haut de la page. Cette option permet de restaurer l'emplacement
-d'origine de la table des matières.
+Before the theme update, the table of contents was fixed at the top of the page.
+This option allows you to restore the original location of the table of
+contents.
 
 \note
-Si les options \ref arcanedoc_doc_config_toc_above_all et
-\ref arcanedoc_doc_config_apply_old_toc sont activées ensembles,
-c'est l'option \ref arcanedoc_doc_config_apply_old_toc qui
-sera prise en compte.
+If the options \ref arcanedoc_doc_config_toc_above_all and
+\ref arcanedoc_doc_config_apply_old_toc are activated together, the option
+\ref arcanedoc_doc_config_apply_old_toc will be taken into account.
 
 \htmlonly
 <br>
@@ -99,24 +86,19 @@ sera prise en compte.
 </center>
 \endhtmlonly
 
+## Page Text Width {#arcanedoc_doc_config_edit_max_width}
 
-## Largeur du texte des pages {#arcanedoc_doc_config_edit_max_width}
+This option allows you to modify the width dedicated to displaying the text.
+This new theme adopts the principles of modern web pages and therefore sets the
+maximum width a page can take on a large screen. Since this new display mode
+does not suit everyone, this option allows you to change that.
 
-Cette option permet de modifier la largeur dédiée à l'affichage du texte.
-Ce nouveau thème reprend les principes des pages web d'aujourd'hui et
-donc fixe la largeur maximale que peut prendre une page sur grand écran.  
-Comme ce nouveau mode d'affichage ne convient pas à tout le monde,
-cette option permet de modifier cela.
-
-Les auteurs du thèmes ont fixé la largeur à 1050px (pixels).
-Le curseur ci-dessous permet de modifier cette valeur.
-Après modification de la largeur, le bouton "Tester l'option" permet de voir
-ce que ça donne.  
-Le bouton "Mémoriser la largeur" permet d'enregistrer
-la modification dans la mémoire du navigateur.  
-Le bouton "Largeur 100% de l'écran (ancien thème)" permet
-de définir la largeur à "100%", ce qui permet de retrouver le format
-du thème d'origine.
+The theme authors set the width to 1050px (pixels). The slider below allows you
+to modify this value. After modifying the width, the "Test Option" button allows
+you to see what it looks like. The "Save Width" button allows you to save the
+modification in the browser's memory. The "100% Screen Width (old theme)" button
+allows you to set the width to "100%", which allows you to recover the format of
+the original theme.
 
 \htmlonly
 <br>
@@ -136,11 +118,10 @@ du thème d'origine.
 
 
 
+## Button to Expand Menu {#arcanedoc_doc_config_expand_level_two}
 
-## Bouton pour étendre le menu {#arcanedoc_doc_config_expand_level_two}
-
-Cette option permet d'ajouter un autre bouton à côté du bouton rond
-en bas du menu à gauche :
+This option allows you to add another button next to the round button at the
+bottom of the left menu:
 
 \htmlonly
 <center>
@@ -148,12 +129,12 @@ en bas du menu à gauche :
 </center>
 \endhtmlonly
 
-Ce bouton, après activation de l'option, permet d'étendre le menu.
-Cela permet d'avoir une vision de l'ensemble des chapitres.
+This button, after activating the option, allows you to expand the menu. This
+allows you to get an overview of all the chapters.
 
 \note
-Ce bouton n'apparaîtra pas sur cette page, il faut aller sur une autre page pour
-qu'il apparaisse (si l'option est activée). 
+This button will not appear on this page; you must go to another page for
+it to appear (if the option is activated).
 
 \htmlonly
 <br>
@@ -171,7 +152,7 @@ qu'il apparaisse (si l'option est activée).
 \htmlonly
 <script type="text/javascript">
   updateConfigWithCookies();
-  // Dans cette page, la personnalisation est désactivée.
+  // On this page, customization is disabled.
   no_custom_theme = true;
 </script>
 \endhtmlonly

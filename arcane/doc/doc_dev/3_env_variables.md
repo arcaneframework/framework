@@ -1,7 +1,6 @@
-﻿# Variables d'environnement {#arcanedoc_execution_env_variables}
+﻿# Environment Variables {#arcanedoc_execution_env_variables}
 
-Les variables d'environnement suivantes permettent de modifier le
-comportement à l'exécution:
+The following environment variables allow you to modify the runtime behavior:
 
 <table>
 <tr>
@@ -11,19 +10,18 @@ comportement à l'exécution:
 
 <tr>
   <td>
-    ARCANE_PARALLEL_SERVICE (obsolète)
+    ARCANE_PARALLEL_SERVICE (obsolete)
   </td>
   <td>
-    Nom du service utilisé pour gérer le parallélisme. Cette variable
-    doit être positionnée si on souhaite un modèle d'exécution
-    parallèle spécifique. Les valeurs possibles sont: `Mpi` ou `Sequential`. Le mode
-    `Mpi` provoque l'appel à MPI_Init() et il faut donc que le programme
-    soit lancé par le lanceur mpi de la plateforme (par exemple `mpiexec`,
-    `mpirun`, `prun`, ...).
-    Cette variable ne doit plus être utilisée car %Arcane détecte
-    automatiquement le lancement avec MPI. Si on souhaite surchargé le
-    service de parallélisme, il faut le spécifier dans les arguments de
-    la ligne de commande (voir \ref arcanedoc_execution_launcher)
+    Name of the service used to manage parallelism. This variable
+    must be set if you want a specific parallel execution model. Possible
+    values are: `Mpi` or `Sequential`. The `Mpi` mode triggers the call
+    to MPI_Init() and therefore the program must be launched by the
+    platform's mpi launcher (e.g., `mpiexec`, `mpirun`, `prun`, ...).
+    This variable should no longer be used because %Arcane automatically
+    detects MPI launching. If you want to override the parallelism
+    service, you must specify it in the command line arguments (see
+    \ref arcanedoc_execution_launcher)
   </td>
 </tr>
 <tr>
@@ -31,12 +29,12 @@ comportement à l'exécution:
     ARCANE_CHECK
   </td>
   <td>
-    Si définie, ajoute des tests de vérification de la validité des
-    opérations effectuées. Cela est utile si le code plante dans une
-    méthode Arcane. Il est possible de relancer le code avec cette
-    variable pour espérer détecter la cause de l'erreur. La version
-    'check' de %Arcane inclut automatiquement ces tests ainsi que d'autres
-    tests plus coûteux comme les débordements de tableau.
+    If set, it adds verification tests for the validity of the
+    operations performed. This is useful if the code crashes within an
+    Arcane method. You can rerun the code with this variable in hopes of
+    detecting the cause of the error. The 'check' version of %Arcane
+    automatically includes these tests as well as other more costly
+    tests like array overflows.
   </td>
 </tr>
 <tr>
@@ -44,8 +42,8 @@ comportement à l'exécution:
     ARCANE_PAUSE_ON_ERROR
   </td>
   <td>
-    Si définie, met le code en pause en cas d'erreur détectée par
-    %Arcane, comme une exception fatale ou un débordement de tableau.
+    If set, it pauses the code when an error is detected by
+    %Arcane, such as a fatal exception or an array overflow.
   </td>
 </tr>
 <tr>
@@ -53,12 +51,12 @@ comportement à l'exécution:
     ARCANE_PROFILING
   </td>
   <td>
-    Nom du service utiliser pour avoir des informations de
-    profiling. Positionner cette option active le profiling. Cela permet
-    en fin d'exécution d'avoir les temps passés dans chaque fonction.
-    Les deux valeurs supportées sont 'Papi' et 'Prof'. Pour
-    'Papi', la bibliothèque 'papi' doit avoir être installée et le noyau
-    linux compatible. 'Prof' utilise les signaux du systeme.
+    Name of the service to use for profiling information. Setting this
+    option activates profiling. This allows you to see the time spent
+    in each function at the end of execution. The two supported values
+    are 'Papi' and 'Prof'. For 'Papi', the 'papi' library must be
+    installed and the Linux kernel must be compatible. 'Prof' uses
+    system signals.
   </td>
 </tr>
 <tr>
@@ -66,10 +64,10 @@ comportement à l'exécution:
     ARCANE_PROFILING_PERIOD
   </td>
   <td>
-    Nombre de cycles CPU entre deux échantillons de profiling. Cette
-    variable n'est utilisée que si le profiling est actif avec
-    'Papi'. Une valeur correcte est 500000, ce qui sur une machine à 3Ghz
-    fait environ 6000 évènements par seconde.
+    Number of CPU cycles between two profiling samples. This
+    variable is only used if profiling is active with 'Papi'. A correct
+    value is 500000, which on a 3GHz machine results in about 6000
+    events per second.
   </td>
 </tr>
 <tr>
@@ -77,12 +75,12 @@ comportement à l'exécution:
     ARCANE_PROFILING_ONLYFLOPS
   </td>
   <td>
-    Si vrai, utilise uniquement le profiling pour déterminer le
-    nombre d'opérations flottantes effectuées. Il faut bien noter qu'il
-    s'agit du nombre d'instructions et pas du nombre d'opérations. Sur
-    certaines machines comme les Itaniums, une instruction peut effectuer
-    deux opérations (multiplication+addition). Cette option n'est
-    disponible que si le profiling est actif avec l'option 'Papi'.
+    If true, it uses profiling only to determine the number of
+    floating-point operations performed. It should be noted that this
+    is the number of instructions, not the number of operations. On
+    certain machines like Itaniums, one instruction can perform
+    two operations (multiplication+addition). This option is only
+    available if profiling is active with the 'Papi' option.
   </td>
 </tr>
 <tr>
@@ -90,18 +88,18 @@ comportement à l'exécution:
     ARCANE_MESSAGE_PASSING_PROFILING
   </td>
   <td>
-    Permet d'activer le profiling interne pour les opérations de
-    message passing. Les valeurs possibles sont:
-    - **JSON**: utilise le service de prise
-      de trace au format du même nom. Celui-ci contient des informations
-      sur le temps passé dans chaque fonctions MPI. Les informations sont
-      regroupées par itération et par point d'entrée de la boucle en temps.
-    - **OTF2**, utilise le service de prise de trace au format du
-      même nom. Une fois ouvert avec un outil adéquat (par exemple Vampir)
-      le détail des communications MPI peut être analysé. Les informations
-      permettent notamment d'identifier les fonctions MPI mises en oeuvre
-      dans chaque point d'entrée de la boucle en temps ainsi que celle
-      invoquées par les opérations de synchronisation de variables %Arcane.
+    Allows activation of internal profiling for message passing
+    operations. Possible values are:
+    - **JSON**: uses the tracing service in the same format. This
+      contains information about the time spent in each MPI function.
+      The information is grouped by iteration and by time loop entry
+      point.
+    - **OTF2**, uses the tracing service in the same format. Once
+      opened with an appropriate tool (e.g., Vampir), the details of
+      MPI communications can be analyzed. The information allows
+      identifying the MPI functions implemented at each time loop
+      entry point, as well as those invoked by %Arcane variable
+      synchronization operations.
   </td>
 </tr>
 <tr>
@@ -109,11 +107,11 @@ comportement à l'exécution:
     ARCANE_REDIRECT_SIGNALS
   </td>
   <td>
-    Active (TRUE) ou désactive (FALSE) la redirection des signaux par
-    Arcane. Cette redirection est active par défaut dans Arcane et permet
-    d'afficher la pile d'appel notamment en cas de plantage. Neammoins,
-    cela peut interférer avec d'autres bibliothèques et il est donc
-    possible de désactiver la redirection des signaux.
+    Activates (TRUE) or deactivates (FALSE) signal redirection by
+    Arcane. This redirection is active by default in Arcane and
+    allows displaying the call stack, especially in case of a crash.
+    However, this can interfere with other libraries, so it is
+    possible to disable signal redirection.
   </td>
 </tr>
 <tr>
@@ -121,10 +119,10 @@ comportement à l'exécution:
     ARCANE_PARALLEL_OUTPUT
   </td>
   <td>
-    Active (TRUE) ou désactive (FALSE) les sorties listings de tous
-    les sous-domaines en parallèle. Chaque sous-domaine écrira les
-    informations de listing dans le fichier 'output#x' avec #x le numéro
-    du sous-domaine.
+    Activates (TRUE) or deactivates (FALSE) parallel listing outputs
+    from all subdomains. Each subdomain will write the listing
+    information to the file 'output#x', where #x is the subdomain
+    number.
   </td>
 </tr>
 <tr>
@@ -132,11 +130,10 @@ comportement à l'exécution:
     ARCANE_TRACE_VARIABLE_CREATION
   </td>
   <td>
-    Si définie, récupère la pile d'appel de chaque création de
-    référence à une variable. Ces informations sont ensuite affichées en
-    fin d'exécution afin de connaître les variables qui n'ont pas été
-    désallouées. A noter que cela peut ralentir sensiblement une
-    exécution.
+    If set, it retrieves the call stack for every variable reference
+    creation. This information is then displayed at the end of
+    execution to identify variables that were not deallocated. Note
+    that this can significantly slow down execution.
   </td>
 </tr>
 <tr>
@@ -144,7 +141,7 @@ comportement à l'exécution:
     STDENV_VERIF, STDENV_VERIF_ENTRYPOINT, STDENV_VERIF_PATH, STDENV_VERIF_SKIP_GHOSTS
   </td>
   <td>
-    Voir la rubrique \ref arcanedoc_debug_perf_compare_bittobit
+    See section \ref arcanedoc_debug_perf_compare_bittobit
   </td>
 </tr>
 <tr>
@@ -152,7 +149,7 @@ comportement à l'exécution:
     ARCANE_CHECK_MEMORY, ARCANE_CHECK_MEMORY_BLOCK_SIZE
   </td>
   <td>
-    Voir la rubrique \ref arcanedoc_debug_perf_check_memory
+    See section \ref arcanedoc_debug_perf_check_memory
   </td>
 </tr>
 <tr>
@@ -160,17 +157,17 @@ comportement à l'exécution:
     ARCANE_DATA_INIT_POLICY
   </td>
   <td>
-    Permet de spécifier la politique d'initialisation des
-    variables. L'utilisation de cette variable revient à appeler la
-    méthode Arcane::setGlobalDataInitialisationPolicy(). Les valeurs possibles sont:
-    - **NONE**: pas d'initialisation
-    - **DEFAULT**: valeur par défaut du type, soit 0 pour les entiers et
-      0.0 pour les réels
-    - **NAN** : initialise les réels avec la valeur NotANumber ce qui
-      permet si on active les exceptions flottantes d'arrêter le code si
-      on utilise une variables non initialisée explicitement.
-    - **LEGACY** : mode antérieur à la version 2.0 de %Arcane. Il ne doit
-      plus être utilisé (voir Arcane::DIP_Legacy).
+    Allows specifying the variable initialization policy. Using this
+    variable is equivalent to calling the method
+    Arcane::setGlobalDataInitialisationPolicy(). Possible values are:
+    - **NONE**: no initialization
+    - **DEFAULT**: default type value, which is 0 for integers and
+      0.0 for reals
+    - **NAN**: initializes reals with the NotANumber value, which
+      allows stopping the code if you activate floating-point
+      exceptions and use a variable not explicitly initialized.
+    - **LEGACY**: mode prior to version 2.0 of %Arcane. It should
+      no longer be used (see Arcane::DIP_Legacy).
   </td>
 </tr>
 <tr>
@@ -178,8 +175,8 @@ comportement à l'exécution:
     ARCANE_TEST_CLEANUP_AFTER_RUN
   </td>
   <td>
-    Variable d'environnement permettant de supprimer les fichiers générés par chaque test.
-    Variable utilisée par `arcane_test_driver`.
+    Environment variable allowing the deletion of files generated by
+    each test. Variable used by `arcane_test_driver`.
   </td>
 </tr>
 <tr>
@@ -203,14 +200,14 @@ comportement à l'exécution:
     ARCANE_ENABLE_NON_IO_MASTER_CURVES
   </td>
   <td>
-    Variable d'environnement permettant d'autoriser plusieurs processus à écrire des courbes.
-    Avec l'API historique (Arcane::ITimeHistoryMng), tous les processus écrivent les courbes
-    et avec les écrivains disponibles dans %Arcane, ces processus écrivent dans le même fichier.
-    Un écrivain personnalisé doit donc gérer cela.
-    Avec les nouvelles APIs (Arcane::GlobalTimeHistoryAdder et Arcane::MeshTimeHistoryAdder),
-    l'écriture de courbes par plusieurs processus est géré correctement. Cette variable
-    d'environnement reste nécessaire pour activer cette fonctionnalité (pour l'instant).
-    Voir la page \ref arcanedoc_io_timehistory_howto
+    Environment variable allowing multiple processes to write curves.
+    With the historical API (Arcane::ITimeHistoryMng), all processes write
+    the curves, and with the writers available in %Arcane, these processes
+    write to the same file. A custom writer must therefore handle this.
+    With the new APIs (Arcane::GlobalTimeHistoryAdder and Arcane::MeshTimeHistoryAdder),
+    curve writing by multiple processes is handled correctly. This variable
+    environment remains necessary to activate this feature (for now).
+    See page \ref arcanedoc_io_timehistory_howto
   </td>
 </tr>
 <tr>
@@ -218,8 +215,8 @@ comportement à l'exécution:
     ARCANE_ENABLE_ALL_REPLICATS_WRITE_CURVES
   </td>
   <td>
-    Variable d'environnement utile lors de l'utilisation de réplicats et permettant d'autoriser
-    tous les processus à écrire des courbes.
+    Environment variable useful when using replicas and allowing all
+    processes to write curves.
   </td>
 </tr>
 <tr>
@@ -227,9 +224,8 @@ comportement à l'exécution:
     ARCANE_REPLACE_SYMBOLS_IN_DATASET
   </td>
   <td>
-    Variable d'environnement permettant d'activer le remplacement des symboles dans
-    le jeu de données à partir des arguments de la ligne de commande.
-    Voir la page \ref arcanedoc_execution_commandlineargs
+    Environment variable allowing symbol replacement in the dataset
+    from command line arguments. See page \ref arcanedoc_execution_commandlineargs
   </td>
 </tr>
 <tr>
@@ -237,7 +233,7 @@ comportement à l'exécution:
     ARCANE_PARTICLE_NO_UNIQUE_ID_MAP
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -245,7 +241,7 @@ comportement à l'exécution:
     ARCANE_OLD_EXCHANGE
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -253,7 +249,7 @@ comportement à l'exécution:
     ARCANE_OLD_VARIABLE_SYNC
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -261,7 +257,7 @@ comportement à l'exécution:
     ARCANE_CHANGE_OWNER_ON_INIT
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -269,7 +265,7 @@ comportement à l'exécution:
     ARCANE_NB_EXCHANGE
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -277,7 +273,7 @@ comportement à l'exécution:
     ARCANE_CHECK_EXCHANGE
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -285,7 +281,7 @@ comportement à l'exécution:
     ARCANE_DEBUG_TIED_INTERFACE
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -293,7 +289,7 @@ comportement à l'exécution:
     ARCANE_THREAD_IMPLEMENTATION
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -301,7 +297,7 @@ comportement à l'exécution:
     ARCANE_LISTENER_TIMEOUT
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -309,7 +305,7 @@ comportement à l'exécution:
     ARCANE_VERIF_PARALLEL
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -317,7 +313,7 @@ comportement à l'exécution:
     ARCANE_FORCE_PREPARE_DUMP
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -325,7 +321,7 @@ comportement à l'exécution:
     ARCANE_SERIALIZE_USE_DERIVED_TYPE
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -333,7 +329,7 @@ comportement à l'exécution:
     ARCANE_TRACE_MPI
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -341,7 +337,7 @@ comportement à l'exécution:
     ARCANE_PARALLEL_CHECK_SYNC
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 <tr>
@@ -349,7 +345,7 @@ comportement à l'exécution:
     ARCANE_TRACE_FUNCTION
   </td>
   <td>
-    Usage interne à %Arcane
+    Internal use by %Arcane
   </td>
 </tr>
 

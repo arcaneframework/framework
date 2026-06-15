@@ -1,9 +1,10 @@
-[//]: # (Il faut mettre le chemin du dossier dans EXAMPLE_PATH du doxyfile)
+﻿[//]: # (You must put the folder path in the doxyfile's EXAMPLE_PATH)
 
 //![snippet_build_install_prerequisites_cmake]
 
-La commande suivante permet d'installer la version 3.27.8 dans `/usr/local`.
-Il faudra ensuite ajouter le chemin correspondant dans la variable d'environnement `PATH`.
+The following command allows installing version 3.27.8 in /usr/local.
+You will then need to add the corresponding path to the `PATH` environment
+variable.
 
 ~~~{sh}
 # Install CMake 3.27.8 in /usr/local/cmake

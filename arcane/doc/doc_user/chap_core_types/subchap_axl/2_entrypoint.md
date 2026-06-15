@@ -1,116 +1,115 @@
-# Point d'entrée {#arcanedoc_core_types_axl_entrypoint}
+﻿# Entrypoint {#arcanedoc_core_types_axl_entrypoint}
 
 [TOC]
 
-Un point d'entrée est une méthode d'un module qui est référencée par %Arcane
-et qui sert d'interface pour le module avec la boucle en temps. Un point d'entrée est décrit par
-la classe interface \c IEntryPoint. Un point d'entrée est une méthode dont la signature est la
-suivante, <b>T</b> étant le type de la classe du module :
+An entrypoint is a module method that is referenced by %Arcane and serves as an
+interface for the module with the time loop. An entrypoint is described by the
+interface class \c IEntryPoint. An entrypoint is a method with the following
+signature, where <b>T</b> is the type of the module class:
 
 ```cpp
 void T::func();
 ```
 
-Un point d'entrée est caractérisé par :
-- un nom
-- une méthode de la classe associée.
-- l'endroit où il peut être appelé (initialisation, boucle de calcul, ...).
-Par défaut, un point d'entrée est appelé dans la boucle de calcul.
+An entrypoint is characterized by:
+- a name
+- a method of the associated class.
+- the location where it can be called (initialization, computation loop, ...).
+  By default, an entrypoint is called in the computation loop.
 
-Les points d'entrée sont déclarés dans le descripteur de module. Par exemple, pour le 
-module \c Test, on déclare 2 points d'entrée pouvant ensuite être appelés dans 
-la boucle en temps par les noms <b>DumpConnection</b> ou <b>TestPressureSync</b> :
+Entrypoints are declared in the module descriptor. For example, for the \c Test
+module, 2 entrypoints are declared which can then be called in the time loop by
+the names <b>DumpConnection</b> or <b>TestPressureSync</b>:
 
 ```xml
 <module name="Test" version="1.0">
-	<name lang="fr">Test</name>
+  <name lang="fr">Test</name>
 
-	<description>Descripteur du module Test</description>
+  <description>Descripteur du module Test</description>
 
-	<variables>
-	  <!-- .... cf chapitre sur les variables .... -->
+  <variables>
+    <!-- .... cf chapitre sur les variables .... -->
   </variables>
 
-	<entry-points>
-		<entry-point method-name="testPressureSync" name="TestPressureSync" where="compute-loop" property="none" />
-		<entry-point method-name="dumpConnection" name="DumpConnection" where="compute-loop" property="none" />
-	</entry-points>
+  <entry-points>
+    <entry-point method-name="testPressureSync" name="TestPressureSync"
+                 where="compute-loop" property="none"/>
+    <entry-point method-name="dumpConnection" name="DumpConnection"
+                 where="compute-loop" property="none"/>
+  </entry-points>
 
-	<options>
-	</options>
+  <options>
+  </options>
 </module>
 ```
 
-La signification des attributs de l'élément **entry-point** est la suivante :
-- **method-name** définit le nom de la méthode C++ correspondant au point d'entrée,
-- **name** est le nom d'enregistrement du point d'entrée dans %Arcane,
-- **property** donne le type de point d'entrée :
-  - **none** : point d'entrée "traditionnel"
-  - **auto-load-begin** : signifie que le module de ce point d'entrée 
-    sera chargé automatiquement et que le point d'entrée sera appelé
-    au début de la boucle en temps,
-  - **auto-load-end** : signifie que le module de ce point d'entrée 
-    sera chargé automatiquement et que le point d'entrée sera appelé
-    à la fin de la boucle en temps
-- **where** est l'endroit où le point d'entrée va être appelé. Les valeurs
-  possibles sont :
+The meaning of the attributes of the **entry-point** element is as follows:
+- **method-name** defines the name of the C++ method corresponding to the
+  entrypoint,
+- **name** is the registration name of the entrypoint in %Arcane,
+- **property** gives the type of entrypoint:
+  - **none**: "traditional" entrypoint
+  - **auto-load-begin**: means that the module for this entrypoint will be
+    automatically loaded and the entrypoint will be called at the beginning of
+    the time loop,
+  - **auto-load-end**: means that the module for this entrypoint will be
+    automatically loaded and the entrypoint will be called at the end of the
+    time loop
+- **where** is the location where the entrypoint will be called. Possible values
+  are:
 
 <table>
 <tr>
 <td> **compute-loop**</td>
-<td> appel du point d'entrée tant que l'on itère,</td>
+<td> entrypoint called during loop iteration</td>
 </tr>
 <tr>
 <td> **init** </td>
-<td>sert à initialiser les structures de données du module qui
-ne sont pas conservées lors d'une protection. \`A ce stade de
-l'initialisation, le jeu de données et le maillage ont déjà été lus.
-L'initialisation sert également à vérifier certaines valeurs,
-calculer des valeurs initiales...</td>
+<td> used to initialize the module's data structures that are not preserved
+during a checkpoint. At this stage of initialization, the dataset and the mesh
+have already been read. Initialization is also used to check certain values,
+calculate initial values...</td>
 </tr>
 <tr>
 <td> **start-init** </td>
-<td>sert à initialiser les variables et les valeurs uniquement lors du
-démarrage du cas (t=0),</td>
+<td> used to initialize variables and values only when the case starts (t=0),
+</td>
 </tr>
 <tr>
 <td> **continue-init** </td>
-<td>sert à initialiser des structures spécifiques au mode reprise. A
-priori, un module ne devrait pas avoir à faire d'opérations
-spécifiques dans ce cas,</td>
+<td> used to initialize structures specific to the restart mode. In principle,
+a module should not have to perform specific operations in this case,</td>
 </tr>
 <tr>
 <td> **build** </td>
-<td>appel du point d'entrée avant l'initialisation ; le jeu de données
-n'est pas encore lu. Ce point d'entrée sert généralement à construire
-certains objets utiles au module mais est peu utilisé par les modules
-numériques.</td>
+<td> entrypoint called before initialization; the dataset has not yet been read.
+This entrypoint is generally used to build certain objects useful to the module
+but is rarely used by numerical modules.</td>
 </tr>
 <tr>
 <td> **on-mesh-changed** </td>
-<td>sert à initialiser des variables et des valeurs lors d'un
-changement de la structure de maillage (partitionnement, abandon de
-mailles...). <strong>Attention</strong> : la taille des variables du
-code définies sur des entités du maillage est automatiquement mise à
-jour par %Arcane.</td>
+<td> used to initialize variables and values during a change in the mesh
+structure (partitioning, cell abandonment...). <strong>Attention</strong>: the
+size of the code variables defined on mesh entities is automatically updated by
+%Arcane.</td>
 </tr>
 <tr>
 <td> **restore** </td>
-<td>sert à initialiser des structures spécifiques lors d'un retour arrière,</td>
+<td> used to initialize specific structures during a rollback,</td>
 </tr>
 <tr>
 <td> **exit** </td>
-<td> sert, par exemple, à désallouer des structures de
-données lors de la sortie du code : fin de simulation, arrêt avant
-reprise...</td>
+<td> entrypoint called at the end of execution. It is used for
+example, used to deallocate data structures when the code exits: end
+of simulation, stop before restart...</td>
 </tr>
 </table>
 
-Lors de la compilation du descripteur de module par %Arcane (avec **axl2cc** - cf précédemment), 
-les points d'entrée sont enregistrés au sein de la base de données de l'architecture.
+When the module descriptor is compiled by %Arcane (using **axl2cc** - see
+previously), the entrypoints are registered within the architecture database.
 
-Il faut déclarer les points d'entrée au niveau de la classe du module (sinon une erreur
-se produit à la compilation) :
+Entrypoints must be declared at the module class level (otherwise an error
+occurs during compilation):
 
 ```cpp
 class TestModule
@@ -119,21 +118,19 @@ class TestModule
 
  public:
 
-   virtual void testPressureSync();
-   virtual void dumpConnection();
+   void testPressureSync() override;
+   void dumpConnection() override;
    ...
 };
 ```
-	
+
 ## Construction {#arcanedoc_core_types_axl_entrypoint_build}
 
-Les points d'entrée sont définis dans le fichier de définition
-du module, dans notre cas \c TestModule.cc.
+Entrypoints are defined in the module definition file, in our case `TestModule.cc`.
 
-Pour exemple, voici le point d'entrée \c testPressureSync
-appelé à chaque itération de la boucle de calcul. 
-Ce point d'entrée effectue une
-moyenne des pressions des mailles au cours du temps :
+For example, here is the `testPressureSync` entrypoint called at each iteration
+of the computation loop. This entrypoint calculates the average of the cell
+pressures over time:
 
 ```cpp
 using namespace Arcane;
@@ -147,41 +144,41 @@ testPressureSync()
   m_global_deltat = options()->deltatInit();
   m_node_pressure.fill(0.0);
 
-  // Ajoute à chaque noeud la pression de chaque maille auquel il appartient
-  ENUMERATE_CELL(i,allCells()){
+  // Adds to each node the pressure of each cell it belongs to
+  ENUMERATE_(Cell, i, allCells()){
     Cell cell = *i;
     Real cell_pressure = m_pressure[i];
-    for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
-      m_node_pressure[inode] += pressure;
+    for( Node node : cell.nodes() )
+      m_node_pressure[node] += pressure;
   }
 
-  // Calcule la pression moyenne.
-  ENUMERATE_NODE(i,allNodes()){
+  // Calculates the average pressure.
+  ENUMERATE_(Node, i, allNodes()){
     Node node = *i;
     m_node_pressure[i] /= node.nbCell();
   }
 
-  // Affecte à chaque maille la pression moyenne des noeuds qui la compose
-  ENUMERATE_CELL(i,allCells()){
+  // Assigns to each cell the average pressure of the nodes that compose it
+  ENUMERATE_(Cell, i, allCells()){
     Cell cell = *i;
     Integer nb_node = cell.nbNode();
     Real cell_pressure = 0.;
-    for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
-      cell_pressure += m_node_pressure[inode];
+    for( Node node : cell.nodes())
+      cell_pressure += m_node_pressure[node];
     cell_pressure /= nb_node;
     m_pressure[i] = cell_pressure;
   }
 
-  // Synchronise la pression (pour une exécution parallèle)
+  // Synchronizes the pressure (for parallel execution)
   m_pressure.synchronize();
 
- // Calcule la pression minimale, maximale et moyenne sur l'ensemble des
- // domaines
+ // Calculates the minimum, maximum, and average pressure over all
+ // domains
  Real min_pressure = 1.0e10;
  Real max_pressure = 0.0;
  Real sum_pressure = 0.0;
 
- ENUMERATE_CELL(i,ownCells()){
+ ENUMERATE_(Cell, i, ownCells()){
    Real pressure = m_pressure[i];
    sum_pressure += pressure;
    if (pressure<min_pressure)

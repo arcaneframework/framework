@@ -1,15 +1,16 @@
-# Entrées / sorties (IO) {#arcanedoc_io}
+﻿# Inputs / Outputs (IO) {#arcanedoc_io}
 
-Ce chapitre décrit les différents moyens pour effectuer des entrées et des sorties dans %Arcane.
+This chapter describes the different ways to perform inputs and outputs in
+%Arcane.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
-Les sorties :
+Outputs:
 
 1. \subpage arcanedoc_io_timehistory <br>
-  Présente l'utilisation des structures TimeHistory pour sortir des valeurs chaque itération.
+   Presents the use of TimeHistory structures to output values each iteration.
 
 
 

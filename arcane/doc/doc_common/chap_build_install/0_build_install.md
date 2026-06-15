@@ -1,31 +1,30 @@
-# Compilation et installation {#arcanedoc_build_install}
+﻿# Compilation and installation {#arcanedoc_build_install}
 
-Ce chapitre montre comment compiler et installer le framework %Arcane.
+This chapter shows how to compile and install the %Arcane framework.
 
-Il y a différentes façons d'installer %Arcane. La façon classique qui consiste
-à installer les packages nécessaires, de compiler et d'installer %Arcane.
+There are different ways to install %Arcane. The classic way involves installing
+the necessary packages, compiling, and installing %Arcane.
 
-Des images Docker sont aussi disponibles (en version AMD64 et en version ARM64)
-et facilite l'utilisation d'%Arcane en évitant l'installation de tous les packages
-nécessaires.
+Docker images are also available (in AMD64 and ARM64 versions) and facilitate
+the use of %Arcane by avoiding the installation of all necessary packages.
 
-Enfin, des recettes Spack sont disponibles.
+Finally, Spack recipes are available.
 
-À la main :
+Manually:
 - \subpage arcanedoc_build_install_prerequisites <br>
-  Présente les prérequis nécessaires pour compiler et installer %Arcane.
+  Presents the prerequisites necessary to compile and install %Arcane.
 
 - \subpage arcanedoc_build_install_build <br>
-  Présente les instructions pour compiler et installer %Arcane.
+  Presents the instructions for compiling and installing %Arcane.
 
-Les images Docker :
+Docker images:
 - \subpage arcanedoc_build_install_docker <br>
-  Présente les images Docker contenant %Arcane et les images Docker
-  avec les dépendances nécessaires pour compiler %Arcane.
+  Presents the Docker images containing %Arcane and the Docker images with the
+  necessary dependencies to compile %Arcane.
 
-Spack :
+Spack:
 - \subpage arcanedoc_build_install_spack <br>
-  Présente les instructions pour compiler et installer %Arcane avec Spack.
+  Presents the instructions for compiling and installing %Arcane with Spack.
 
 ____
 

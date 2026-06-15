@@ -1,16 +1,15 @@
-# Fichier CMakeLists.txt {#arcanedoc_examples_simple_example_cmake}
+﻿# Fichier CMakeLists.txt {#arcanedoc_examples_simple_example_cmake}
 
 [TOC]
 
-Le `CMakeLists.txt` est le dernier fichier que l'on va étudier.
-Pour expliquer toutes les possibilités offertes par CMake,
-il faudrait un tutoriel dédié, donc ici, on va juste faire un résumé
-pour bien commencer.
+The `CMakeLists.txt` is the last file we will study.
+To explain all the possibilities offered by CMake, a dedicated tutorial would be
+needed, so here, we will just provide a summary to get started.
 
-CMake permet (entre autres choses) de générer un makefile utilisable par `Make`. 
-`Make` est un outil permettant d'automatiser la compilation de projet en C/C++.
+CMake allows (among other things) generating a Makefile usable by `Make`.
+`Make` is a tool that allows automating the compilation of C/C++ projects.
 
-Voici un exemple de Makefile écrit à la main :
+Here is an example of a Makefile written by hand:
 ```makefile
 # https://github.com/AlexlHer/CMolecule
 MAKEDIR = build
@@ -46,46 +45,43 @@ $(OTHER_OUTPUT) : $(OTHER_INPUT)
 	mkdir -p $(MAKEDIR)
 	cp $(OTHER_INPUT) $(MAKEDIR)
 ```
-On peut définir des variables (par exemple `LEX_INPUT = analyse.l`)
-puis définir des travaux à faire.
+We can define variables (for example `LEX_INPUT = analyse.l`) and then define
+tasks to be performed.
 
-Par exemple :
+For example:
 ```makefile
 $(YACC_OUTPUT) : $(YACC_INPUT)
 	mkdir -p $(MAKEDIR)
 	bison -d $(YACC_INPUT) -o $(YACC_OUTPUT)
 ```
-On a un travail qui va générer un fichier appelé `$(YACC_OUTPUT)`.
-Ce travail dépend du fichier `$(YACC_INPUT)`. Si ce fichier
-a été modifié en deux lancement de make, alors le travail
-sera lancé.
-Le travail à effectuer est constitué de deux lignes de commandes
-(juste en dessous : mkdir et bison).
+We have a task that will generate a file called `$(YACC_OUTPUT)`.
+This task depends on the file `$(YACC_INPUT)`. If this file has been modified in
+two runs of make, then the task will be launched.
+The task consists of two lines of commands (just below: mkdir and bison).
 
-Tout ceci représente un graphe de dépendance avec comme racine
-le premier travail :
+All of this represents a dependency graph with the first task as the root:
 ```makefile
 $(GCC_OUTPUT) : $(LEX_OUTPUT) $(YACC_OUTPUT) $(OTHER_OUTPUT)
 	g++ $(MAKEDIR)/* -ll -ly -fopenmp -O2 -o $(GCC_OUTPUT)
 ```
-Ce travail génère le fichier `$(GCC_OUTPUT)`.
-Ce travail dépend des fichiers `$(LEX_OUTPUT)`, `$(YACC_OUTPUT)` et `$(OTHER_OUTPUT)`.
+This task generates the file `$(GCC_OUTPUT)`.
+This task depends on the files `$(LEX_OUTPUT)`, `$(YACC_OUTPUT)`, and
+`$(OTHER_OUTPUT)`.
 
-Pour résumer, on peut représenter ce makefile comme ceci :
+To summarize, we can represent this makefile as follows:
 
 \image html MF_schema.svg
 
-Sur un projet de quelques fichiers, c'est faisable d'écrire le `makefile`
-à la main mais pour un projet comme %Arcane, il est nécessaire
-d'utiliser un outil tier comme CMake.
+For a project with a few files, it is possible to write the `makefile` by hand,
+but for a project like %Arcane, it is necessary to use a third-party tool like
+CMake.
 
-CMake va, lui, utiliser des `CMakeLists.txt` pour générer
-des `makefiles`. `CMakeLists.txt` contient les informations
-nécessaires pour construire ce `makefile`.
+CMake, in turn, will use `CMakeLists.txt` files to generate `makefiles`.
+`CMakeLists.txt` contains the necessary information to build this `makefile`.
 
 ## CMakeLists.txt {#arcanedoc_examples_simple_example_cmake_cmakeliststxt}
 
-Voici le CMakeLists.txt fournie par `arcane_template` :
+Here is the CMakeLists.txt provided by `arcane_template`:
 ```cmake
 cmake_minimum_required(VERSION 3.16)
 project(HelloWorld LANGUAGES CXX)
@@ -99,68 +95,70 @@ arcane_add_arcane_libraries_to_target(HelloWorld)
 target_include_directories(HelloWorld PUBLIC . ${CMAKE_CURRENT_BINARY_DIR})
 configure_file(HelloWorld.config ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 ```
-Commençons :
+Let's start:
 ```cmake
 cmake_minimum_required(VERSION 3.16)
 ```
-Cette première ligne demande la présence de la version 3.16 ou plus de CMake.
-Ça permet de s'assurer que CMake pourra reconnaitre toutes les commandes
-qu'on lui donne.
+This first line requests the presence of CMake version 3.16 or higher.
+This ensures that CMake can recognize all the commands we give it.
 
 ____
 
 ```cmake
 project(HelloWorld LANGUAGES CXX)
 ```
-On donne le nom du projet et le langage dans lequel
-il est écrit (`CXX` = `C++`).
+We give the name of the project and the language it is written in (`CXX` =
+`C++`).
 
 ____
 
 ```cmake
 find_package(Arcane REQUIRED)
 ```
-Notre projet a besoin de %Arcane d'installé (voir la prochaine section
-pour dire à CMake où est installé %Arcane).
+Our project needs %Arcane installed (see the next section to tell CMake where
+%Arcane is installed).
 
 ____
 
 ```cmake
 add_executable(HelloWorld SayHelloModule.cc main.cc SayHello_axl.h)
 ```
-On donne aussi les différents fichiers qui composeront notre exécutable.
+We also give the different files that will compose our executable.
 \note
-Pas besoin de mettre `SayHelloModule.hh` vu qu'il est importé par `SayHelloModule.cc`.
+No need to include `SayHelloModule.hh` since it is imported by
+`SayHelloModule.cc`.
 
 ____
 
 ```cmake
 arcane_generate_axl(SayHello)
 ```
-On demande à CMake de générer le fichier `SayHello_axl.h`.
-On donne la position du fichier `SayHello.axl` en argument (sans l'extension `.axl`).
-Ici, `SayHello.axl` est à la racine de notre projet donc on doit juste mettre `SayHello`.
+We ask CMake to generate the file `SayHello_axl.h`.
+We provide the position of the file `SayHello.axl` as an argument (without the
+`.axl` extension).
+Here, `SayHello.axl` is in the root of our project, so we just need to put
+`SayHello`.
 
 ____
 
 ```cmake
 arcane_add_arcane_libraries_to_target(HelloWorld)
 ```
-On ajoute les librairies %Arcane pour notre projet.
+We add the %Arcane libraries for our project.
 
 ____
 
 ```cmake
 target_include_directories(HelloWorld PUBLIC . ${CMAKE_CURRENT_BINARY_DIR})
 ```
-On inclut tous les fichiers sources.
+We include all the source files.
 
 ____
 
 ```cmake
 configure_file(HelloWorld.config ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 ```
-On copie le `.config` dans le dossier de build.
+We copy the `.config` into the build directory.
 
 
 

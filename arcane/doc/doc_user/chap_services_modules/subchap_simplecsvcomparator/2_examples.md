@@ -1,18 +1,20 @@
-# Exemples : généralités {#arcanedoc_services_modules_simplecsvcomparator_examples}
+﻿# Examples: Generalities {#arcanedoc_services_modules_simplecsvcomparator_examples}
 
 [TOC]
 
-Dans les chapitres suivants, quelques exemples simples vous seront présentés.
+In the following chapters, some simple examples will be presented to you.
 
-Les 3 exemples présentés dans ce sous-chapitre sont fonctionnels et se trouvent dans le dossier :
-`framework/arcane/samples_build/samples/simple_csv_comparator/`.
+The 3 examples presented in this subsection are functional and are located in
+the folder: `framework/arcane/samples_build/samples/simple_csv_comparator/`.
 
-À noter également que ces exemples fonctionneront quelque soit l'implémentation de \arcane{ISimpleTableComparator}
-(juste à changer l'implémentation dans `.config` (pour le mode singleton) ou dans les `.arc`).
+It should also be noted that these examples will work regardless of the
+implementation of \arcane{ISimpleTableComparator} (just change the
+implementation in `.config` (for singleton mode) or in the `.arc` files).
 
-Ces exemples ont des structures en communs : trois points d'entrée (`initModule`, `loopModule`, `endModule`) représentant
-trois types de points d'entrée (`start-init`, `compute-loop`, `exit`) (au cas où : \ref arcanedoc_core_types_axl_entrypoint)
-et aucunes variables.
+These examples share common structures: three entry points (`initModule`,
+`loopModule`, `endModule`) representing three types of entry points
+(`start-init`, `compute-loop`, `exit`) (in case:
+\ref arcanedoc_core_types_axl_entrypoint) and no variables.
 
 ____
 

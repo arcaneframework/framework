@@ -1,52 +1,53 @@
-# Types fondamentaux {#arcanedoc_core_types}
+﻿# Fundamental Types {#arcanedoc_core_types}
 
-Il existe 4 types fondamentaux dans %Arcane, qui correspondent aux
-notions de **Module**, **Service**, **Variable** et **Point d'entrée**.  
-Ces 4 types fondamentaux sont présents dans trois types de fichiers propres
-à %Arcane : **Fichier AXL** (Descripteur de module/service), **Fichier ARC** 
-(Jeu de données) et **Fichier config**.
+There are 4 fundamental types in %Arcane, which correspond to the concepts of
+**Module**, **Service**, **Variable**, and **Entry Point**.
+These 4 fundamental types are present in three types of files specific to
+%Arcane: **AXL File** (Module/Service Descriptor), **ARC File** (Data Set), and
+**Config File**.
 
-Pour une description sommaire de ces notions, se reporter au chapitre \ref arcanedoc_getting_started.
+For a brief description of these concepts, refer to the chapter
+\ref arcanedoc_getting_started.
 
-Voici un schéma de code %Arcane simple, avec un module et deux services. Les deux services partageant
-une interface commune.
+Here is a simple %Arcane code schema, with one module and two services. The two
+services share a common interface.
 
 \image html code_schema.svg
 
-Les différentes parties de ce chapitre devrait vous permettre de comprendre ce schéma
-(mis à part les fichiers main.cc et CMakeLists.txt qui sont expliqués dans le chapitre 
+The different parts of this chapter should allow you to understand this schema
+(apart from the main.cc and CMakeLists.txt files, which are explained in chapter
 \ref arcanedoc_execution).
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 1. \subpage arcanedoc_core_types_module <br>
-  Présente la notion de module dans %Arcane.
+  Presents the concept of a module in %Arcane.
 
 2. \subpage arcanedoc_core_types_service <br>
-  Présente la notion de service dans %Arcane.
+  Presents the concept of a service in %Arcane.
 
 3. \subpage arcanedoc_core_types_axl <br>
-  Présente tout ce qu'il y a à savoir des descripteurs de module/service 
-  (représentés par les fichiers ayant l'extension .axl).
-  C'est dans ce sous-chapitre que sont présentés les notions de \ref arcanedoc_core_types_axl_variable
-  et de \ref arcanedoc_core_types_axl_entrypoint.
+  Presents everything you need to know about module/service descriptors
+  (represented by files with the .axl extension). This subsection presents the
+  concepts of \ref arcanedoc_core_types_axl_variable and
+  \ref arcanedoc_core_types_axl_entrypoint.
 
 4. \subpage arcanedoc_core_types_casefile <br>
-  Présente la syntaxe du jeu de données
-  (représenté par les fichiers ayant l'extension .arc).
+  Presents the syntax of the data set (represented by files with the .arc
+  extension).
 
 5. \subpage arcanedoc_core_types_codeconfig <br>
-  Présente le fichier de configuration global du code.
+  Presents the global code configuration file.
 
 6. \subpage arcanedoc_core_types_timeloop <br>
-  Décrit la notion de boucle en temps.
+  Describes the concept of a time loop.
 
 7. \subpage arcanedoc_core_types_array_usage <br>
-  Décrit l'utilisation des types tableaux.
+  Describes the use of array types.
 
 8. \subpage arcanedoc_core_types_numarray <br>
-  Décrit l'utilisation de la classe NumArray et des types associés.
+  Describes the use of the NumArray class and associated types.
 
 ____
 

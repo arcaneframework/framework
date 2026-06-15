@@ -1,114 +1,104 @@
-﻿# Gestion des connectivités des entités {#arcanedoc_entities_connectivity_internal}
+﻿# Entity Connectivity Management {#arcanedoc_entities_connectivity_internal}
 
 [TOC]
 
-Cette page regroupe les informations sur les développements
-effectués dans %Arcane pour la gestion des nouvelles
-connectivités. Il se base sur la version CEA de février 2017, ce qui
-correspond aux versions de %Arcane 2.5.0 et ultérieures.
+This page groups information on the developments made in %Arcane for managing
+new connectivities. It is based on the CEA version from February 2017, which
+corresponds to %Arcane versions 2.5.0 and later.
 
-Afin de répondre à de nouveaux besoin, le mécanisme de gestion des
-connectivités des entités de %Arcane a évolué à partir de 2017.
+To meet new needs, the entity connectivity management mechanism in %Arcane
+evolved starting in 2017.
 
-Le mécanisme historique avait pour but premier d'économiser la mémoire
-et rangeait toutes les connectivités d'une entité consécutivement en
-mémoire. Cela présente cependant deux inconvénients :
-- ce mécanisme n'est pas facilement extensible si on souhaite ajouter de
-  nouvelles connectivités ou si on souhaite ne pas utiliser certaines
-  connectivités. Au départ, seuls les noeuds, faces et mailles étaient
-  gérés. Aujourd'hui il y a les noeuds duaux, les liens, les degrés de
-  liberté, l'AMR et toutes ces connectivités alourdissent la gestion.
-- il est plus difficile de profiter des effets de cache mémoire
-  lorsqu'on parcourt qu'un seul type de connectivité.
+The historical mechanism's primary goal was to save memory and stored all of an
+entity's connectivities consecutively in memory. However, this presents two
+drawbacks:
+- this mechanism is not easily extensible if you want to add new connectivities
+  or if you do not want to use certain connectivities. Initially, only nodes,
+  faces, and cells were managed. Today, there are dual nodes, links, degrees of
+  freedom, AMR, and all these connectivities complicate management.
+- it is more difficult to benefit from memory cache effects when traversing only
+  one type of connectivity.
 
-Le nouveau mécanisme permet de séparer complètement chaque type de
-connectivités et éventuellement de spécialiser un type de
-connectivité en fonction de certains besoins (par exemple suivant le
-type de maillage).
+The new mechanism allows for the complete separation of each connectivity type
+and potentially the specialization of a connectivity type based on certain
+needs (for example, depending on the mesh type).
 
-Il permet de résoudre les deux inconvénients
-précédents avec en contre-partie pour les maillages non structurés
-une augmentation de la mémoire utilisée. Avec l'ancien mécanisme,
-pour chaque entité 1 indice (de type Arcane::Int32) suffisait pour accéder aux infos
-de connectivité alors qu'avec le nouveau il faut 2 indices (position +
-nombre de connectivités) par connectivité. Par exemple dans le cas
-des entités classiques de maillage (noeud, arête, face ou maille),
-il faut donc 8 indices au lieu de 1.
+It resolves the two previous drawbacks, but in return, it results in an increase
+in memory usage for unstructured meshes. With the old mechanism, 1 index (of
+type Arcane::Int32) was sufficient for each entity to access connectivity
+information, whereas with the new mechanism, 2 indices (position + number of
+connectivities) are required per connectivity. For example, in the case of
+classic mesh entities (node, edge, face, or cell), 8 indices are therefore
+required instead of 1.
 
-Le mécanisme historique permet d'accéder aux informations de
-connectivité directement via l'entité. Par exemple, pour accéder
-au 4-ème noeud d'une maille :
+The historical mechanism allows access to connectivity information directly via
+the entity. For example, to access the 4th node of a cell:
 ```cpp
 Arcane::Cell cell;
 Arcane::Node node = cell.node(3);
 ```
 
-\`A terme, l'accès aux connectivités pourrait être disponible sous une autre forme
-mais en attendant il faut pouvoir continuer à utiliser ce mécanisme
-sous peine de rendre tous les codes actuels incompatibles.
+In the long term, access to connectivities might be available in another form,
+but for now, this mechanism must be usable to avoid making all current codes
+incompatible.
 
-Pour effectuer la transition entre l'ancienne et la nouvelle gestion
-des connectivités, des mécanismes de compatibilité ont été mis en
-place. L'objectif de ces mécanismes est de garantir la compatibilité
-au niveau des sources des codes utilisant %Arcane: ces codes doivent
-pouvoir compiler sans modification avec les versions d'%Arcane
-intégrant les nouvelles connectivités.
-  
-Pour garantir cette compatibilité, le mécanisme d'accès pour les
-méthodes telles que Arcane::Cell::node() est modifié et
-utilise maintenant un objet de type Arcane::ItemInternalConnectivityList. La
-classe Arcane::ItemInternal contient un champ Arcane::ItemInternal::m_connectivity
-est qui un pointeur sur un Arcane::ItemInternalConnectivityList. Toutes les
-entités d'une même famille pointent sur la même valeur qui est
-Arcane::ItemFamily::m_item_connectivity_list.
+To transition between the old and new connectivity management, compatibility
+mechanisms have been implemented. The goal of these mechanisms is to ensure
+compatibility at the source level of codes using %Arcane: these codes must be
+able to compile without modification with %Arcane versions that integrate the
+new connectivities.
 
-\note Le fait de mettre ce pointeur dans chaque Arcane::ItemInternal permet
-d'éviter une indirection lorsqu'on accède aux connectivités mais il
-est aussi possible de le mettre dans le Arcane::ItemSharedInfo car il est
-commun à toutes les entités d'une famille. Cela permet d'utiliser
-moins de mémoire pour Arcane::ItemInternal (16 octets au lieu de 24) au pris
-d'une indirection supplémentaire. Dans mes tests au CEA, je n'ai pas
-eu de différences de performances entre les deux mécanismes.
+To ensure this compatibility, the access mechanism for methods such as
+Arcane::Cell::node() is modified and now uses an object of type
+Arcane::ItemInternalConnectivityList. The Arcane::ItemInternal class contains a
+field Arcane::ItemInternal::m_connectivity which is a pointer to an
+Arcane::ItemInternalConnectivityList. All entities of the same family point to
+the same value, which is Arcane::ItemFamily::m_item_connectivity_list.
 
-Afin de ne pas modifier l'API existante, les méthodes de ItemInternal
-permettant d'accéder à la connectivité n'ont pas été modifiées et de
-nouvelles ont été ajoutées. Elles utilisent le suffixe V2. Par
-exemple Arcane::ItemInternal::nodesV2() au lieu de Arcane::ItemInternal::nodes().
+\note Placing this pointer in each Arcane::ItemInternal avoids an indirection
+when accessing connectivities, but it is also possible to place it in
+Arcane::ItemSharedInfo because it is common to all entities in a family. This
+allows for less memory usage for Arcane::ItemInternal (16 bytes instead of 24)
+at the cost of an additional indirection. In my tests at CEA, I did not observe
+any performance differences between the two mechanisms.
 
-La macro **ARCANE_USE_LEGACY_ITEMINTERNAL_CONNECTIVITY** permet de
-choisir à la compilation si les acceseseurs via Arcane::Item, Arcane::Edge, Arcane::Face,
-Arcane::Cell, ... utilisent les anciens ou nouveaux mécanismes. Si cette
-macro est définie alors :
+In order not to modify the existing API, the ItemInternal methods for accessing
+connectivity have not been modified, and new ones have been added. They use the
+V2 suffix. For example, Arcane::ItemInternal::nodesV2() instead of
+Arcane::ItemInternal::nodes().
+
+The macro **ARCANE_USE_LEGACY_ITEMINTERNAL_CONNECTIVITY** allows you to choose
+at compile time whether the accessors via Arcane::Item, Arcane::Edge,
+Arcane::Face, Arcane::Cell, ... use the old or new mechanisms. If this macro is
+defined, then:
+
 ```cpp
-// version historique si macro définie
+// historical version if macro defined
 NodeVectorView Cell::node() { return m_internal->nodes(); }
-// nouvelle version si macro non définie
+// new version if macro not defined
 NodeVectorView Cell::node() { return m_internal->nodesV2(); }
 ```
 
-Cette macro est définie uniquement si on compile %Arcane avec dans
-le configure l'option **--with-legacy-connectivity**. Si cette option
-est active, il est impossible d'accéder aux nouvelles connectivités
-via Item. Le seul intérêt de cette option est de vérifier si le
-nouveau mécanisme ne contient pas de bugs et de valider les
-nouvelles versions de %Arcane sur d'anciens codes utilisateur. On
-supposera par la suite que cette option n'est pas utilisée et donc
-qu'on accède aux connectivités via les méthodes V2. Pour cela, il
-faut utiliser l'option de configuration
-**--without-legacy-connectiviy** dans le configure.
+This macro is defined only if %Arcane is compiled with the
+**--with-legacy-connectivity** option in the configure script. If this option is
+active, it is impossible to access the new connectivities via Item. The only
+purpose of this option is to check if the new mechanism contains bugs and to
+validate new %Arcane versions on old user codes. We will assume later that this
+option is not used and therefore that connectivities are accessed via the V2
+methods. To do this, you must use the configuration option
+**--without-legacy-connectiviy** in the configure script.
 
-Lorsqu'on utilise les méthodes V2, les accès de chaque connectivité
-se font via la classe Arcane::ItemInternalConnectivityList. Pour chaque
-connectivité, il y a trois tableaux :
-- nb_item: nombre d'entités connectée
-- list: tableaux des localId() des entités connectées.
-- index: indice dans \a list de la première entité connectée.
+When using the V2 methods, access to each connectivity is done via the
+Arcane::ItemInternalConnectivityList class. For each connectivity, there are
+three arrays:
+- nb_item: number of connected entities
+- list: array of localId() of connected entities.
+- index: index in \a list of the first connected entity.
 
-La liste des entités connectées à une entité est rangée
-consécutivement en mémoire et donc l'indice dans le tableau de la
-première permet de récupérer les autres.
-\a nb_item et \a index sont indexés par le localId() de l'entité
-dont on souhaite avoir les connectivités. Par exemple :
+The list of entities connected to an entity is stored consecutively in memory,
+so the index in the first array allows the others to be retrieved.
+\a nb_item and \a index are indexed by the localId() of the entity whose
+connectivities you want to access. For example:
 
 ```cpp
 using namespace Arcane;
@@ -117,59 +107,54 @@ Int32 lid = my_item.localId();
 Int32ConstArrayView nb_items = ...;
 Int32ConstArrayView list = ...;
 Int32ConstArrayView index = ...;
-// Nombre d'entités connectés à my_item.
+// Number of entities connected to my_item.
 Int32 n = nb_items[lid];
-// localId() de la première entité connectées à my_item.
+// localId() of the first entity connected to my_item.
 Int32 c0 = list[ index[lid] ];
 ```
 
-Toutes les connectivités des entités classiques (Arcane::Node, Arcane::Edge, Arcane::Face et
-Arcane::Cell) utilisent maintenant ce type d'accès. Il est possible de choisir
-à l'exécution si les accès se font via les connectivités historiques
-ou les nouvelles connectitivités. Cela se fait via la variable
-d'environnement **ARCANE_CONNECTIVITY_POLICY** qui permet d'associer une
-des valeurs énumérées #Arcane::InternalConnectivityPolicy. Cette association
-se fait dans le constructeur de DynamicMesh. La méthode
-Arcane::IMesh::_connectivityPolicy() permet de récupérer la politique
-choisie. Il y a actuellement 4 valeurs possibles :
-- Arcane::InternalConnectivityPolicy::Legacy: indique seules les
-  connectivités historiques sont allouées et donc que
-  ItemInternal::m_connectivity n'est pas utilisé. Il n'est donc pas
-  possible d'accéder aux nouveaux mécanismes de connectivités via
-  ce mode. Ce mode est celui qui correspond le plus aux anciennes
-  versions de Arcane, notamment au niveau de l'usage mémoire.
-- Arcane::InternalConnectivityPolicy::LegacyAndAllocAccessor: indique que seules les
-  connectivités historiques sont allouées et que
-  Arcane::ItemInternal::m_connectivity utilise les connectivités définies dans
-  Arcane::ItemFamily::m_items_data. Le booléen
-  Arcane::ItemFamily::m_use_legacy_connectivity_policy vaut \a true dans
-  ce cas. Ce mode alloue les acceseurs des connectivités via
-  ItemInternal::m_connectivity et donc utilise plus de mémoire que le
-  mode InternalConnectivityPolicy::Legacy.
-- Arcane::InternalConnectivityPolicy::LegacyAndNew: est identique à la
-  valeur InternalConnectivityPolicy::LegacyAndAllocAccessor mais en plus les nouvelles
-  connectités sont allouées. Elles ne sont cependant pas utilisées par
-  les classes Item et Internal. En mode check, on vérifie à chaque
-  modification de maillage que les valeurs des anciennes et nouvelles
-  connectivités sont les mêmes. Ce mode permet donc de valider les
-  nouveaux mécanismes. Pour ce mode
-  Arcane::ItemFamily::m_use_legacy_connectivity_policy vaut aussi \a true.
-- Arcane::InternalConnectivityPolicy::NewAndLegacy: indique qu'on alloue les
-  anciennes et nouvelles connectivités mais que les accès via Item et
-  ItemInternal se font avec ces nouvelles connectivités. Ce mode est
-  donc proche du futur mode de fonctionnement.
+All connectivities of classic entities (Arcane::Node, Arcane::Edge,
+Arcane::Face, and Arcane::Cell) now use this type of access. It is possible to
+choose at runtime whether the access is done via historical connectivities or
+new connectivities. This is done via the environment variable
+**ARCANE_CONNECTIVITY_POLICY**, which allows associating one of the enumerated
+values #Arcane::InternalConnectivityPolicy. This association is made in the
+DynamicMesh constructor. The Arcane::IMesh::_connectivityPolicy() method allows
+retrieving the chosen policy. There are currently 4 possible values:
+- Arcane::InternalConnectivityPolicy::Legacy: indicates that only historical
+  connectivities are allocated and therefore that ItemInternal::m_connectivity
+  is not used. It is therefore not possible to access the new connectivity
+  mechanisms in this mode. This mode corresponds most closely to older versions
+  of Arcane, particularly regarding memory usage.
+- Arcane::InternalConnectivityPolicy::LegacyAndAllocAccessor: indicates that
+  only historical connectivities are allocated and that
+  Arcane::ItemInternal::m_connectivity uses the connectivities defined in
+  Arcane::ItemFamily::m_items_data. The boolean
+  Arcane::ItemFamily::m_use_legacy_connectivity_policy
+  is true in this case. This mode allocates connectivity accessors via
+  ItemInternal::m_connectivity and therefore uses more memory than the
+  InternalConnectivityPolicy::Legacy mode.
+- Arcane::InternalConnectivityPolicy::LegacyAndNew: is identical to the
+  InternalConnectivityPolicy::LegacyAndAllocAccessor value but additionally the
+  new connectivities are allocated. However, they are not used by the Item and
+  Internal classes. In check mode, the values of the old and new connectivities
+  are verified upon every mesh modification. This mode therefore allows for
+  validating the new mechanisms. For this mode,
+  Arcane::ItemFamily::m_use_legacy_connectivity_policy is also true.
+- Arcane::InternalConnectivityPolicy::NewAndLegacy: indicates that both old and
+  new connectivities are allocated, but that access via Item and ItemInternal is
+  done using these new connectivities. This mode is therefore close to the
+  future operating mode.
 
-\`A terme il y a aura une 5-ème valeur qui correspond au mode définitif
-ou seules les nouvelles connectivités sont allouées. Il sera mis en
-place lorsque tous les codes utilisant %Arcane auront été validés
-avec les nouvelles connectivités.
+In the long term, there will be a 5th value corresponding to the definitive mode
+where only the new connectivities are allocated. This will be implemented when
+all codes using %Arcane have been validated with the new connectivities.
 
-Suivant comme %Arcane est configuré, certaines valeurs ne sont pas
-possibles. Si la configuration est faite avec
-**--with-legacy-connectivity**, alors le mode
-Arcane::InternalConnectivityPolicy::NewAndLegacy n'est pas possible. Si
-%Arcane est configuré avec **--without-legacy-connectivity**, alors
-le mode Arcane::InternalConnectivityPolicy::Legacy n'est pas possible.
+Depending on how %Arcane is configured, certain values are not possible. If the
+configuration is done with **--with-legacy-connectivity**, then the
+Arcane::InternalConnectivityPolicy::NewAndLegacy mode is not possible. If
+%Arcane is configured with **--without-legacy-connectivity**, then the
+Arcane::InternalConnectivityPolicy::Legacy mode is not possible.
 
 
 

@@ -1,11 +1,11 @@
-# Exemple n°6 {#arcanedoc_services_modules_simplecsvoutput_example6}
+﻿# Example No. 6 {#arcanedoc_services_modules_simplecsvoutput_example6}
 
 [TOC]
 
-Pour ce dernier exemple, on va voir le potentiel
-des déplacements par direction.
+For this last example, we will look at the potential of displacements by
+direction.
 
-Voici le résultat :
+Here is the result:
 
 |Ex6|0  |1  |2  |3  |4   |5    |6    |7    |8    |9    |10   |11   |12   |13   |14   |15  |16 |17 |18 |19 |Somme 
 |---|---|---|---|---|----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|----|---|---|---|---|------
@@ -32,38 +32,36 @@ Voici le résultat :
 
 
 
-## Point d'entrée initial
+## Initial entry point
 
-Voyons le point d'entrée `start-init` :
+Let's look at the `start-init` entry point:
 
 `SimpleTableOutputExample6Module.cc`
 \snippet SimpleTableOutputExample6Module.cc SimpleTableOutputExample6_init
 
-Dans ce point d'entrée, on ajoute des lignes et des colonnes ayant comme nom
-un nombre de 0 à nombre d'itérations.  
-On pense aussi à mettre la valeur "1" dans la case [0,0].
+In this entry point, we add rows and columns named from 0 up to the number of
+iterations. We also think about putting the value "1" in the [0,0] cell.
 
 
 
-## Point d'entrée loop
+## Loop entry point
 
-Voyons le point d'entrée `compute-loop` :
+Let's look at the `compute-loop` entry point:
 
 `SimpleTableOutputExample6Module.cc`
 \snippet SimpleTableOutputExample6Module.cc SimpleTableOutputExample6_loop
 
-Ici, on joue avec le déplacement du pointeur. Normalement, la mise à jour du pointeur
-s'effectue uniquement lors d'une écriture, pas lors d'une lecture.  
-Dans cet exemple, on inverse les choses.
+Here, we play with pointer displacement. Normally, pointer updates only occur
+during a write, not during a read. In this example, we reverse things.
 
-## Point d'entrée exit
+## Exit entry point
 
-Enfin, voyons le point d'entrée `exit` :
+Finally, let's look at the `exit` entry point:
 
 `SimpleTableOutputExample6Module.cc`
 \snippet SimpleTableOutputExample6Module.cc SimpleTableOutputExample6_exit
 
-Même point d'entrée que précédemment.
+Same entry point as before.
 
 ____
 

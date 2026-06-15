@@ -1,18 +1,17 @@
-# Matériaux et milieux {#arcanedoc_materials}
+﻿# Materials and Environment {#arcanedoc_materials}
 
-Ce chapitre décrit la partie matériau et milieux de %Arcane, afin de pouvoir
-les utiliser dans un code %Arcane.
+This chapter describes the materials and environments section of %Arcane, so
+that they can be used in %Arcane code.
 
 <br>
 
-Sommaire de ce chapitre :
+Table of Contents for this chapter:
 
 1. \subpage arcanedoc_materials_manage <br>
-  Présente les notions de matériaux et de milieux dans %Arcane.
+   Presents the concepts of materials and environments in %Arcane.
 
 2. \subpage arcanedoc_materials_loop <br>
-  Présente comment utiliser les boucles sur les entités d'un matériau ou d'un milieu.
-
+   Presents how to use loops on the entities of a material or a environment.
 
 ____
 

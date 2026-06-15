@@ -1,9 +1,9 @@
-# Spack {#arcanedoc_build_install_spack}
+﻿# Spack {#arcanedoc_build_install_spack}
 
 [TOC]
 
-Les recettes Spack permettant d'installer %Arcane sont disponibles
-[ici](https://github.com/arcaneframework/spack_recipes).
+The Spack recipes for installing %Arcane are available
+[here](https://github.com/arcaneframework/spack_recipes).
 
 ____
 

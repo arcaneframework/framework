@@ -1,15 +1,14 @@
-# Ubuntu 26.04 (Resolute Raccoon) {#arcanedoc_build_install_prerequisites_ubuntu26}
+﻿# Ubuntu 26.04 (Resolute Raccoon) {#arcanedoc_build_install_prerequisites_ubuntu26}
 
 [TOC]
 
-## Installation des packages nécessaires
+## Installation of necessary packages
 
-Sur Ubuntu 26.04, les versions des dépendances nécessaires pour
-compiler %Arcane (GCC, CMake, '.Net', ...) sont suffisament récentes
-pour pouvoir être installés via les packages système.
+On Ubuntu 26.04, the versions of dependencies required to compile %Arcane (GCC,
+CMake, '.Net', ...) are sufficiently recent to be installed via system packages.
 
-Les commandes suivantes permettent d'installer les dépendances
-nécessaires pour %Arcane
+The following commands allow you to install the dependencies required for
+%Arcane:
 
 ~~~{sh}
 sudo apt update
@@ -18,37 +17,38 @@ sudo apt install -y apt-utils build-essential iputils-ping python3 \
   libunwind-dev software-properties-common dotnet-sdk-10.0 cmake
 ~~~
 
-Pour compiler Alien en plus d'%Arcane, il est nécessaire d'installer un package en plus :
+To compile Alien in addition to %Arcane, it is necessary to install one
+additional package:
 ~~~{sh}
 sudo apt install -y libboost-program-options-dev
 ~~~
 
-## Installation des packages optionnels
+## Installation of optional packages
 
-\note Actuellement (avril 2026) il n'y a pas encore de package
-dans Ubuntu 26.04 pour ParMetis.
+\note Currently (April 2026), there is no package in Ubuntu 26.04 for ParMetis
+yet.
 
 ~~~{sh}
-# Pour HDF5
+# For HDF5
 sudo apt libhdf5-openmpi-dev
 
-# Pour google test:
+# For googletest:
 sudo apt install -y googletest
 
-# Pour Ninja:
+# For Ninja:
 sudo apt install -y ninja-build
 
-# Pour Hypre
+# For Hypre
 sudo apt install -y libhypre-dev
 
-# Pour PETSc
+# For PETSc
 sudo apt install -y libpetsc-real-dev
 
-# Pour le wrapper C#:
+# For the C# wrapper:
 sudo apt install -y swig
 ~~~
 
-Voir la page suivante pour plus d'informations sur la compilation.
+See the next page for more information on compilation.
 
 ____
 

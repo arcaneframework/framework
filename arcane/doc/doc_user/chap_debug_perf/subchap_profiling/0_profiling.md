@@ -1,14 +1,13 @@
-# Profiling {#arcanedoc_debug_perf_profiling}
+﻿# Profiling {#arcanedoc_debug_perf_profiling}
 
-Ce sous-chapitre décrit les mécanismes disponibles dans %Arcane pour
-obtenir des informations sur les performances.
+This subsection describes the mechanisms available in %Arcane to obtain
+performance information.
 
-Ces mécanismes permettent de savoir quelles sont les méthodes qui
-prennent le plus de temps dans le code.
+These mechanisms allow you to know which methods take the most time in the code.
 
 <br>
 
-Les différents type d'analyse de performances disponibles sont :
+The different types of performance analysis available are:
 
 1. \subpage arcanedoc_debug_perf_profiling_sampling
 

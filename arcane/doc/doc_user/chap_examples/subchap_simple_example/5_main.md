@@ -1,9 +1,9 @@
-# Fichier main {#arcanedoc_examples_simple_example_main}
+﻿# Main File {#arcanedoc_examples_simple_example_main}
 
 [TOC]
 
-À présent, voyons le fichier `main.cc`. Ce fichier contient la fonction `main()` 
-qui sera lancée à l'ouverture de HelloWorld. Voici à quoi elle ressemble :
+Now, let's look at the `main.cc` file. This file contains the `main()` function,
+which will be launched when HelloWorld starts. Here is what it looks like:
 
 ## main.cc {#arcanedoc_examples_simple_example_main_maincc}
 ```cpp
@@ -22,13 +22,13 @@ main(int argc,char* argv[])
   return ArcaneLauncher::run();
 }
 ```
-La fonction `main()` sert à lancer %Arcane et notre application.
-Cette fonction ne sera donc pratiquement jamais modifié (sauf pour faire évoluer
-la version du code). Dans des cas plus avancés, on doit modifier `main()` pour, 
-par exemple, changer l'allocateur mémoire qui sera utilisé dans %Arcane pour
-notre application.
-On peut aussi utiliser cette fonction pour lancer des calculs sans modules,
-en utilisant les classes %Arcane.
+The `main()` function is used to launch %Arcane and our application.
+Therefore, this function will practically never be modified (except to update
+the code version). In more advanced cases, we must modify `main()` to,
+for example, change the memory allocator that will be used in %Arcane for
+our application.
+We can also use this function to run calculations without modules,
+by using the %Arcane classes.
 
 ____
 

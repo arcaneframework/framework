@@ -1,22 +1,21 @@
-# Lancement d'un calcul {#arcanedoc_execution_launcher}
+﻿# Launching a Calculation {#arcanedoc_execution_launcher}
 
 <!-- [TOC] -->
 
-Il existe deux mécanismes pour exécuter un code avec %Arcane:
+There are two mechanisms for executing code with %Arcane:
 
-1. le mécanisme avec boucle en temps qui est le mécanisme classique
-  disponible depuis les premières versions de %Arcane.
-2. l'exécution directe
+1. the time loop mechanism, which is the classic mechanism available since the
+   first versions of %Arcane.
+2. direct execution
 
-Pour les deux mécanismes, il faut utiliser la classe
-Arcane::ArcaneLauncher. Cette classe permet de spécifier les
-paramètres d'exécution. Toutes les méthodes de cette classe sont statiques
+For both mechanisms, you must use the class Arcane::ArcaneLauncher. This class
+allows you to specify the execution parameters. All methods of this class are
+static.
 
-La première chose à faire est d'appeler la méthode
-Arcane::ArcaneLauncher::init() pour spécifier à %Arcane les paramètres
-d'exécution. Cela permet d'analyser automatiquement certaines valeurs
-de la ligne de commande (comme le niveau de verbosité, le nom du
-répertoire de sortie, ...)
+The first thing to do is call the method Arcane::ArcaneLauncher::init() to
+specify the execution parameters to %Arcane. This allows certain command-line
+values (such as the verbosity level, the output directory name, ...) to be
+automatically analyzed.
 
 ```cpp
 #include <arcane/launcher/ArcaneLauncher.h>
@@ -31,20 +30,17 @@ main(int argc,char* argv[])
 }
 ```
 
-Il existe deux classes permettant de spécifier les paramètres
-d'exécution : Arcane::ApplicationInfo et
-Arcane::ApplicationBuildInfo.
+There are two classes for specifying execution parameters:
+Arcane::ApplicationInfo and Arcane::ApplicationBuildInfo.
 
-\note Ces deux classes existent pour des raisons de compatiblitées avec
-le code existant. À terme, seule la classe
-Arcane::ApplicationBuildInfo restera et c'est donc cette dernière
-qu'il faut utiliser.
+\note These two classes exist for compatibility reasons with existing code.
+Eventually, only the Arcane::ApplicationBuildInfo class will remain, so this is
+the one that must be used.
 
-Les instances statiques de ces deux classes peuvent être récupérées
-via les méthodes Arcane::ArcaneLauncher::applicationInfo() et
-Arcane::ArcaneLauncher::applicationBuildInfo(). L'exemple suivant
-montre comment changer le nom et la version du code et le répertoire
-par défaut pour les sorties :
+The static instances of these two classes can be retrieved via the methods
+Arcane::ArcaneLauncher::applicationInfo() and
+Arcane::ArcaneLauncher::applicationBuildInfo(). The following example shows how
+to change the code name and version and the default directory for outputs:
 
 ```cpp
 #include <arcane/launcher/ArcaneLauncher.h>
@@ -63,8 +59,8 @@ main(int argc,char* argv[])
 }
 ```
 
-Une fois l'initialisation effectuée, il est possible de lancer
-l'exécution du code via l'appel à Arcane::ArcaneLauncher::run() :
+Once initialization is complete, it is possible to launch the code execution via
+the call to Arcane::ArcaneLauncher::run():
 
 ```cpp
 #include <arcane/launcher/ArcaneLauncher.h>
@@ -83,77 +79,71 @@ main(int argc,char* argv[])
 }
 ```
 
-## Initialisation de MPI {#arcanedoc_execution_launcher_mpi}
+## MPI Initialization {#arcanedoc_execution_launcher_mpi}
 
-L'utilisation de MPI nécessite de faire un appel à la méthode
-`MPI_Init_thread()` de la bibliothèque MPI. Si %Arcane est compilé avec le
-support de MPI, alors la détection de MPI et l'appel à `MPI_Init_thread()` est
-fait automatiquement par %Arcane. Le niveau de support des threads
-utilisé pour l'appel à `MPI_Init_thread()` dépend des options telles que
-le nombre de tâches ou de sous-domaines locaux en mode hybride qu'on
-souhaite utiliser.
+Using MPI requires calling the `MPI_Init_thread()` method from the MPI library.
+If %Arcane is compiled with MPI support, MPI detection and the call to
+`MPI_Init_thread()` are done automatically by %Arcane. The thread support level
+used for the call to `MPI_Init_thread()` depends on options such as the number
+of tasks or local subdomains in hybrid mode that you wish to use.
 
-Il est néanmoins possible pour le code d'initialiser lui-même MPI s'il
-le souhaite. Pour cela, il doit appeler la méthode `MPI_Init_thread()`
-avant l'appel à Arcane::ArcaneLauncher::run().
+However, it is possible for the code to initialize MPI itself if it wishes. To
+do this, it must call the method `MPI_Init_thread()` before calling
+Arcane::ArcaneLauncher::run().
 
-\note Même si l'exécutable est utilisé en séquentiel (c'est-à-dire
-sans passer par une commande telle que `mpiexec ...`), %Arcane tente
-d'initialiser MPI. Cela est nécessaire car certaines bibliothèques
-(par exemple les solveurs linéaires) ont besoin que MPI soit
-initialisé dans tous les cas. Il est possible de modifier ce
-comportement en spécifiant explicitement le service de parallélisme
-souhaité (TODO faire doc).
+\note Even if the executable is used sequentially (i.e., without going through a
+command such as `mpiexec ...`), %Arcane attempts to initialize MPI. This is
+necessary because certain libraries (for example, linear solvers) require MPI to
+be initialized in all cases. It is possible to modify this behavior by
+explicitly specifying the desired parallelism service (TODO document).
 
-\warning Il faut faire attention à bien utiliser l'exécutable
-`mpiexec` qui correspond à la version de MPI avec laquelle %Arcane a
-été compilé sinon on va lancer *N* fois l'exécution séquentielle.
+\warning You must be careful to use the `mpiexec` executable that corresponds to
+the version of MPI with which %Arcane was compiled, otherwise you will run the
+sequential execution *N* times.
 
-## Exécution du code {#arcanedoc_execution_launcher_exec}
+## Code Execution {#arcanedoc_execution_launcher_exec}
 
-La méthode Arcane::ArcaneLauncher::run() permet de lancer l'exécution
-du code. Cette méthode possède trois surcharges :
+The method Arcane::ArcaneLauncher::run() allows you to launch the code
+execution. This method has three overloads:
 
-1. L'appel sans argument (Arcane::ArcaneLauncher::run()) pour lancer l'exécution classique
-   en utilisant une boucle en temps (voir \ref
-   arcanedoc_core_types_codeconfig). Ce mécanisme est à privilégier car elle
-   permet de disposer de toutes les fonctionnalités de %Arcane. La
-   page \ref arcanedoc_execution_launcher montre un exemple minimal de ce
-   type d'utilisation.
-2. Arcane::ArcaneLauncher::run(std::function<int(DirectSubDomainExecutionContext&)>
-   func) pour exécuter le code spécifié par la \a func après
-   l'initialisation et la création des sous-domaines. La page
-   \ref arcanedoc_general_direct_execution montre un exemple d'exécution directe.
-3. Arcane::ArcaneLauncher::run(std::function<int(DirectExecutionContext&)>
-   func) pour exécuter uniquement en **séquentiel** le code spécifié par la \a
-   func. Ce mécanisme est à utiliser si on souhaite par exemple faire des tests
-   unitaires simples sans avoir de sous-domaine (Arcane::ISubDomain*).
-   application sans jeu de données ni boucle en temps.
+1. The call without arguments (Arcane::ArcaneLauncher::run()) to launch the
+   classic execution using a time loop (see
+   \ref arcanedoc_core_types_codeconfig). This mechanism should be preferred
+   because it allows you to use all of %Arcane's features. The page
+   \ref arcanedoc_execution_launcher shows a minimal example of this type of
+   usage.
+2. Arcane::ArcaneLauncher::run(std::function<int(DirectSubDomainExecutionContext&)> func)
+   to execute the code specified by \a func after initialization and subdomain
+   creation. The page \ref arcanedoc_general_direct_execution shows an example
+   of direct execution.
+3. Arcane::ArcaneLauncher::run(std::function<int(DirectExecutionContext&)> func)
+   to execute the code specified by \a func **sequentially** only. This
+   mechanism should be used if, for example, you want to perform simple unit
+   tests without having a subdomain (Arcane::ISubDomain*). application without
+   dataset or time loop.
 
-## Options de la ligne de commande {#arcanedoc_execution_launcher_options}
+## Command Line Options {#arcanedoc_execution_launcher_options}
 
-%Arcane interprète les options de la ligne de commande qui commencent
-par `-A`. Par exemple, pour changer le niveau de verbosité, il suffit
-de spécifier l'option `-A,VerbosityLevel=3` dans la ligne de commande.
+%Arcane interprets command-line options that start with `-A`. For example, to
+change the verbosity level, simply specify the option `-A,VerbosityLevel=3` in
+the command line.
 
-Les options sont interprétées lors de l'appel à
-Arcane::ArcaneLauncher::init() et les valeurs de
-ArcaneLauncher::applicationBuildInfo() sont automatiquement remplies
-avec ces options. Il est cependant possible de les surcharger si
-nécessaire.
+The options are interpreted when calling Arcane::ArcaneLauncher::init(), and the
+values of ArcaneLauncher::applicationBuildInfo() are automatically filled with
+these options. However, it is possible to override them if necessary.
 
-\remark Il est aussi possible de modifier le jeu de données avec des
-options de la ligne de commande. Cette possibilité est abordée à la
-page \ref arcanedoc_execution_commandlineargs.
+\remark It is also possible to modify the dataset using command-line options.
+This possibility is discussed on the page
+\ref arcanedoc_execution_commandlineargs.
 
-Les options disponibles sont :
+The available options are:
 
 <table>
 <tr>
 <th>Option</th>
-<th>Variable d'environnement</th>
+<th>Environment Variable</th>
 <th>Type</th>
-<th>Défaut</th>
+<th>Default</th>
 <th>Description</th>
 </tr>
 
@@ -162,35 +152,34 @@ Les options disponibles sont :
 <td>ARCANE_NB_TASK</td>
 <td>Int32</td>
 <td>1</td>
-<td>Nombre de tâches concurrentes à exécuter</td>
+<td>Number of concurrent tasks to execute</td>
 </tr>
 
 <tr>
 <td>S</td>
-<td>ARCANE_NB_THREAD (Cette variable d'environnement est obsolète)</td>
+<td>ARCANE_NB_THREAD (This environment variable is obsolete)</td>
 <td>Int32</td>
 <td></td>
-<td>Nombre de sous-domaines en mémoire partagée</td>
+<td>Number of subdomains in shared memory</td>
 </tr>
 
 <tr>
 <td>R</td>
-<td>ARCANE_NB_REPLICATION (Cette variable d'environnement est obsolète)</td>
+<td>ARCANE_NB_REPLICATION (This environment variable is obsolete)</td>
 <td>Int32</td>
 <td>1</td>
-<td>Nombre de sous-domaines répliqués</td>
+<td>Number of replicated subdomains</td>
 </tr>
 
 <tr>
 <td>P</td>
-<td>ARCANE_NB_SUB_DOMAIN (Cette variable d'environnement est obsolète)</td>
+<td>ARCANE_NB_SUB_DOMAIN (This environment variable is obsolete)</td>
 <td>Int32</td>
 <td></td>
-<td>Nombre de processus à utiliser pour les sous-domaines. Cette
-valeur est normalement calculée automatiquement en fonction des
-paramètres MPI. Elle n'est utile que si on souhaite utiliser moins de
-processus pour le partitionnement de domaine que ceux alloués pour le
-calcul.
+<td>Number of processes to use for subdomains. This value is normally calculated
+automatically based on MPI parameters. It is only useful if you wish to use
+fewer processes for domain partitioning than those allocated for the
+calculation.
 </td>
 </tr>
 
@@ -199,9 +188,9 @@ calcul.
 <td></td>
 <td>string</td>
 <td></td>
-<td>Runtime accélérateur à utiliser. Les deux valeurs possibles sont
-`cuda` ou `hip`. Il faut avoir compiler %Arcane avec le support des
-accélérateurs pour que cette option soit accessible.
+<td>Accelerator runtime to use. The two possible values are `cuda` or `hip`. You
+must have compiled %Arcane with accelerator support for this option to be
+accessible.
 </td>
 </tr>
 
@@ -210,9 +199,8 @@ accélérateurs pour que cette option soit accessible.
 <td></td>
 <td>Int32</td>
 <td></td>
-<td>Nombre maximum d'itérations à effectuer pour l'exécution. Si le
-nombre d'itérations spécifié par cette variable est atteint, le calcul
-s'arrête.
+<td>Maximum number of iterations to perform for the execution. If the number of
+iterations specified by this variable is reached, the calculation stops.
 </td>
 </tr>
 
@@ -221,7 +209,8 @@ s'arrête.
 <td>ARCANE_OUTPUT_LEVEL</td>
 <td>Int32</td>
 <td>3</td>
-<td>Niveau de verbosité des messages sur la sortie standard.</td>
+<td>Verbosity level of messages on standard output.
+</td>
 </tr>
 
 <tr>
@@ -229,9 +218,8 @@ s'arrête.
 <td>ARCANE_VERBOSITY_LEVEL</td>
 <td>Int32</td>
 <td>3</td>
-<td>Niveau de verbosité des messages pour les sorties listings
-fichiers. Si l'option `OutputLevel` n'est pas spécifiée, cette option
-est aussi utilisée pour les sorties standards.
+<td>Verbosity level of messages for listing file outputs. If the `OutputLevel`
+option is not specified, this option is also used for standard outputs.
 </td>
 </tr>
 
@@ -240,11 +228,10 @@ est aussi utilisée pour les sorties standards.
 <td></td>
 <td>Int32</td>
 <td></td>
-<td>Niveau de verbosité minimal. Si spécifié, les appels explicites
-dans le code pour modifier la verbosité (via
-Arccore::ITraceMng::setVerbosityLevel()) ne pourront pas descendre en
-dessous de ce niveau de verbosité minimal. Ce mécanisme est surtout
-utilisé en débug pour garantir l'affichage des messages.
+<td>Minimum verbosity level. If specified, explicit calls in the code to change
+verbosity (via Arccore::ITraceMng::setVerbosityLevel()) cannot go below this
+minimum verbosity level. This mechanism is mainly used for debugging to ensure
+message display.
 </td>
 </tr>
 
@@ -253,8 +240,8 @@ utilisé en débug pour garantir l'affichage des messages.
 <td>ARCANE_MASTER_HAS_OUTPUT_FILE</td>
 <td>Bool</td>
 <td>False</td>
-<td>Indique si le processus maitre (en général le processus 0) écrit
-le listing dans un fichier en plus de la sortie standard</td>
+<td>Indicates whether the master process (generally process 0) writes the
+listing to a file in addition to standard output</td>
 </tr>
 
 <tr>
@@ -262,9 +249,8 @@ le listing dans un fichier en plus de la sortie standard</td>
 <td>ARCANE_OUTPUT_DIRECTORY</td>
 <td>String</td>
 <td>.</td>
-<td>Répertoire de base pour les fichiers générés (listings, logs,
-courbes, dépouillement, ...). Cette valeur est celle retournée par
-Arcane::ISubDomain::exportDirectory().
+<td>Base directory for generated files (listings, logs, curves, output, ...).
+This value is the one returned by Arcane::ISubDomain::exportDirectory().
 </td>
 </tr>
 
@@ -273,9 +259,8 @@ Arcane::ISubDomain::exportDirectory().
 <td></td>
 <td>String</td>
 <td></td>
-<td>Nom du fichier du jeu de données. Si non spécifié et requis, le
-dernier argument de la ligne de commande est considéré comme le nom de
-fichier du jeu données.
+<td>Dataset file name. If not specified and required, the last argument of the
+command line is considered the dataset file name.
 </td>
 </tr>
 
@@ -284,14 +269,12 @@ fichier du jeu données.
 <td>ARCANE_THREAD_BINDING_STRATEGY</td>
 <td>String</td>
 <td></td>
-<td>Stratégie de punnaisage des threads. Cela fonctionne uniquement si
-%Arcane est compilé avec la bibliothèque 'hwloc'. Par défaut aucun
-binding n'est effectué. Le seul mode disponible est 'Simple' qui
-alloue les threads suivant un mécanisme round-robin.
+<td>Thread binding strategy. This only works if %Arcane is compiled with the
+'hwloc' library. By default, no binding is performed. The only available mode is
+'Simple', which allocates threads according to a round-robin mechanism.
 
-NOTE: ce mécanisme de punnaisage est en cours de développement et il
-est possible qu'il ne fonctionne pas de manière optimale dans tous les
-cas
+NOTE: this binding mechanism is under development and may not function optimally
+in all cases
 </td>
 </tr>
 
@@ -300,9 +283,9 @@ cas
 <td></td>
 <td>Int32</td>
 <td></td>
-<td>Taille de grain pour les boucles parallèles multi-threadées. Si
-positionné, indique le nombre d'éléments de chaque bloc qui décompose une boucle
-multi-threadée (à partir de la version 3.8).
+<td>Grain size for multi-threaded parallel loops. If set, it indicates the
+number of elements in each block that decomposes a multi-threaded loop (from
+version 3.8).
 </td>
 </tr>
 
@@ -311,18 +294,17 @@ multi-threadée (à partir de la version 3.8).
 <td></td>
 <td>String</td>
 <td></td>
-<td>Choix du partitionneur pour les boucles parallèles
-multi-threadées. Les valeurs possibles sont `auto`, `static` ou
-`deterministic` (à partir de la version 3.8).
+<td>Choice of partitioner for multi-threaded parallel loops. Possible values are
+`auto`, `static`, or `deterministic` (from version 3.8).
 </td>
 </tr>
 
 </table>
 
-## Choix du gestionnaire d'échange de message {#arcanedoc_execution_launcher_exchange}
+## Choosing the Message Exchange Manager {#arcanedoc_execution_launcher_exchange}
 
-Le gestionnaire d'échange de message (Arcane::IParallelSuperMng) est
-choisi lors du lancement du calcul.  %Arcane fournit les gestionnaires suivants :
+The message exchange manager (Arcane::IParallelSuperMng) is chosen when
+launching the calculation. %Arcane provides the following managers:
 
 - MpiParallelSuperMng
 - SequentialParallelSuperMng
@@ -330,74 +312,72 @@ choisi lors du lancement du calcul.  %Arcane fournit les gestionnaires suivants 
 - SharedMemoryParallelSuperMng
 - HybridParallelSuperMng
 
-En général, %Arcane choisit
-automatiquement le gestionnaire en fonction des paramètres utilisés
-pour lancer le calcul mais il est possible de spécifier explicitement
-le gestionnaire à utiliser en positionnant la variable d'environnement (obsolète)
-`ARCANE_PARALLEL_SERVICE` ou en spécifiant l'option
-`MessagePassingService` dans la ligne de commande avec une des valeurs
-ci-dessus (sans le suffixe `ParallelSuperMng`, donc par exemple `Mpi`,
-`Sequential`, `MpiSequential`, ...).
+Generally, %Arcane automatically chooses the manager based on the parameters
+used to launch the calculation, but it is possible to explicitly specify the
+manager to use by setting the environment variable (obsolete)
+`ARCANE_PARALLEL_SERVICE` or by specifying the `MessagePassingService` option in
+the command line with one of the values above (without the `ParallelSuperMng`
+suffix, so for example `Mpi`, `Sequential`, `MpiSequential`, ...).
 
-Le choix automatique du gestionnaire est fait comme suit :
+The automatic choice of the manager is made as follows:
 
 <table>
 <tr>
-<th>Ligne de commande</th>
-<th>Gestionnaire utilisé</th>
+<th>Command Line</th>
+<th>Manager Used</th>
 <th>Description</th>
 </tr>
 <tr>
 <td>`./a.out ...`</td>
-<td>`MpiSequentialParallelSuperMng` ou `SequentialParallelSuperMng`</td>
-<td>`MpiSequentialParallelSuperMng` si %Arcane a été
-compilé avec MPI, `SequentialParallelSuperMng` sinon. La différence
-entre les deux est que le premier initialise MPI afin que les
-communicateurs tels que `MPI_COMM_WORLD` puissent être utilisés
+<td>`MpiSequentialParallelSuperMng` or `SequentialParallelSuperMng`</td>
+<td>`MpiSequentialParallelSuperMng` if %Arcane was compiled with MPI,
+`SequentialParallelSuperMng` otherwise. The difference between the two is that
+the former initializes MPI so that communicators such as `MPI_COMM_WORLD` can
+be used
 </td>
 </tr>
 
 <tr>
 <td>`mpiexec -n $N ./a.out ...`</td>
 <td>`MpiParallelSuperMng`</td>
-<td>$N processus, 1 sous-domaine par processus</td>
+<td>$N processes, 1 subdomain per process</td>
 </tr>
 
 <tr>
 <td>`./a.out -A,S=$S ...`</td>
 <td>`SharedMemoryParallelSuperMng`</td>
-<td>1 processus, $S sous-domaines par processus. La communication
-entre les sous-domaines se fait par échange de message en mémoire partagée.
+<td>1 process, $S subdomains per process. Communication between subdomains is
+done via message exchange in shared memory.
 </td>
 </tr>
 
 <tr>
 <td>`mpiexec -n $N ./a.out -A,S=$S ...`</td>
 <td>`HybridParallelSuperMng`</td>
-<td>$N processus, $S sous-domaines par processus
-soit au total $N * $S sous-domaines.
+<td>$N processes, $S subdomains per process, resulting in $N * $S subdomains in
+total.
 </td>
 </tr>
 
 </table>
 
-Voici quelques exemples de lancement :
+Here are some launch examples:
 
 ```sh
-# lancement séquentiel du jeu de données 'Test.arc'
+# sequential launch of the dataset 'Test.arc'
 a.out Test.arc
 
-# lancement avec 4 sous-domaines MPI
+# launch with 4 MPI subdomains
 mpiexec -n 4 a.out Test.arc
 
-# lancement avec 4 sous-domaines en mode mémoire partagée
+# launch with 4 subdomains in shared memory mode
 a.out -A,S=4 Test.arc
 
-# lancement avec 12 sous-domaines et 4 processus (4 sous-domaines en
-# mémoire partagée par processus)
+# launch with 12 subdomains and 4 processes (4 subdomains in
+# shared memory per process)
 mpiexec -n 3 -c 4 a.out -A,S=4 Test.arc
 
-# lancement avec le runtime accélérateur CUDA.
+# launch with the CUDA accelerator runtime.
 a.out -A,AcceleratorRuntime=cuda Test.arc
 ```
 

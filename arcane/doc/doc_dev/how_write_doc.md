@@ -1,91 +1,92 @@
-# Comment écrire de la documentation {#arcanedoc_doxygen}
+﻿How to write documentation {#arcanedoc_doxygen}
 
 [TOC]
 
 ## Introduction {#arcanedoc_doxygen_intro}
 
-Lors de la réécriture/restructuration de cette documentation,
-certaines conventions ont été établies pour avoir une
-doncumentation homogène, simple à lire (à la fois son code source
-et son rendu final).
+During the rewriting/restructuring of this documentation, certain conventions
+have been established to ensure homogeneous documentation that is easy to read
+(both its source code and its final rendering).
 
 ## Structure {#arcanedoc_doxygen_struct}
 
-La documentation se présente ainsi :
-(commande `tree` avec quelques coupes)
+The documentation is structured as follows:
+(using the `tree` command with some cuts)
+
 ```sh
 framework/arcane/doc/
 ├── cea_ifpen_logo.png
 ├── changelog.md
 ├── chap_core_types
-│   ├── 0_core_types.md
-│   ├── 1_module.md
-│   ├── 2_variable.md
-│   ├── ...
-│   └── subchap_caseoptions
-│       ├── 0_caseoptions.md
-│       ├── 1_intro.md
-│       ├── 2_struct.md
-│       └── ...
+│   ├── 0_core_types.md
+│   ├── 1_module.md
+│   ├── 2_variable.md
+│   ├── ...
+│   └── subchap_caseoptions
+│       ├── 0_caseoptions.md
+│       ├── 1_intro.md
+│       ├── 2_struct.md
+│       └── ...
 ├── chap_debug_perf
-│   ├── 0_debug_perf.md
-│   ├── 1_check_memory.md
-│   ├── 2_profiling.md
-│   └── ...
+│   ├── 0_debug_perf.md
+│   ├── 1_check_memory.md
+│   ├── 2_profiling.md
+│   └── ...
 ├── chap_examples
-│   ├── 0_examples.md
-│   ├── 1_simple_example.goto
-│   ├── 2_concret_example.goto
-│   ├── subchap_concret_example
-│   │   ├── 0_concret_example.md
-│   │   ├── 1_struct.md
-│   │   ├── 2_config.md
-│   │   ├── ...
-│   │   └── img
-│   │       ├── QAMA_schema.odg
-│   │       └── QAMA_schema.svg
-│   └── subchap_simple_example
-│       ├── 0_simple_example.md
-│       ├── 1_struct.md
-│       ├── 2_module.md
-│       ├── ...
-│       └── img
-│           ├── HW_schema.odg
-│           ├── HW_schema.svg
-│           └── ...
+│   ├── 0_examples.md
+│   ├── 1_simple_example.goto
+│   ├── 2_concret_example.goto
+│   ├── subchap_concret_example
+│   │   ├── 0_concret_example.md
+│   │   ├── 1_struct.md
+│   │   ├── 2_config.md
+│   │   ├── ...
+│   │   └── img
+│   │       ├── QAMA_schema.odg
+│   │       └── QAMA_schema.svg
+│   └── subchap_simple_example
+│       ├── 0_simple_example.md
+│       ├── 1_struct.md
+│       ├── 2_module.md
+│       ├── ...
+│       └── img
+│           ├── HW_schema.odg
+│           ├── HW_schema.svg
+│           └── ...
 ├── chap_getting_started
-│   ├── 0_getting_started.md
-│   ├── 1_about.md
-│   ├── 2_basicstruct.md
-│   └── ...
+│   ├── 0_getting_started.md
+│   ├── 1_about.md
+│   ├── 2_basicstruct.md
+│   └── ...
 ├── how_write_doc.md
 ├── theme
-│   ├── custom.css
-│   ├── doxygen-awesome-theme
-│   │   └── ...
-│   ├── header.html
-│   ├── script-num-lines-code.js
-│   └── script-resize.js
+│   ├── custom.css
+│   ├── doxygen-awesome-theme
+│   │   └── ...
+│   ├── header.html
+│   ├── script-num-lines-code.js
+│   └── script-resize.js
 ├── user
-│   ├── cleanup_v2.dox
-│   └── usermanual.md
+│   ├── cleanup_v2.dox
+│   └── usermanual.md
 └── userdoc.doxyfile
 ```
 
-Toute la partie thème pour Doxygen se trouve dans le dossier `theme`.
-La documentation générale est répartie en chapitre, sous-chapitre, sous-sous-chapitre, &c.
+The entire theme section for Doxygen is located in the `theme` folder.
+The general documentation is divided into chapters, subchapters,
+sub-subchapters, etc.
 
-Prenons le chapitre `getting_started` pour l'exemple.
-Tout ce chapitre se trouve dans le dossier `chap_getting_started`. Il n'y a pas
-de numérotations sur ces dossiers pour éviter d'avoir à tout changer dans
-le fichier `userdoc.doxyfile` en cas de changement de position.
+Let's take the `getting_started` chapter as an example.
+This entire chapter is located in the `chap_getting_started` folder. There are
+no numbers on these folders to avoid having to change everything in the
+`userdoc.doxyfile` file if the position changes.
 
-Dans un chapitre, nous avons plusieurs fichiers markdown (`.md`).
-Le premier doit être un sommaire et nommé `0_nom_du_chapitre.md`.
-Ce sommaire permet de lister les `\subpage` pour que Doxygen puisse créer
-les liaisons et la structure de la documentation.
+In a chapter, we have several markdown files (`.md`).
+The first one must be a summary and named `0_chapter_name.md`.
+This summary allows listing the `\subpage` entries so that Doxygen can create
+the links and the documentation structure.
 
-Exemple, le fichier `0_getting_started.md` :
+Example, the file `0_getting_started.md` :
 ```md
 # Débuter avec %Arcane {#arcanedoc_getting_started}
 
@@ -105,42 +106,42 @@ ____
 </div>
 ```
 
-Première ligne, on a le titre de notre chapitre et son tag (pour pouvoir être référencé
-dans d'autres pages).
-On utilise les `#` pour désigner les titres (comme dans les markdowns).
-La première ligne est toujours un titre `h1` (1 seul `#`).
-Le tag est entre acolades et débute par un croisillon.
-Le nom du tag est structuré comme ceci :
-`arcane`\_`nom_du_chapitre`.
+First line, we have the title of our chapter and its tag (so it can be
+referenced in other pages).
+We use `#` to designate titles (like in markdowns).
+The first line is always an `h1` title (only 1 `#`).
+The tag is enclosed in curly braces and starts with a hash/pound sign.
+The tag name is structured as follows:
+`arcane`\_`chapter_name`.
 
-Troisième ligne, on a une description sommaire du chapitre.
+Third line, we have a brief description of the chapter.
 
-Les trois lignes suivantes représentent le sommaire du chapitre.
-On a une liste numérotée de `\subpage`. 
-À coté de `\subpage`, on a le tag d'une page du chapitre.
+The following three lines represent the chapter summary.
+We have a numbered list of `\subpage`. Next to `\subpage`, we have the tag of a
+chapter page.
 
-À la ligne 10, on a une ligne de séparation (voir doc de markdown).
+On line 10, we have a separator line (see markdown documentation).
 
-Enfin, on a une partie de html pour faire apparaitre des boutons.
-Deux boutons maximum : un bouton `back` et un bouton `next`.
-Ici, on n'a qu'un bouton `next`. Entre les `<span>`, on doit mettre
-une référence à une page (et pas un `\subpage` !). La partie CSS
-s'occupera de faire apparaitre les boutons correctement.
+Finally, we have an HTML section to display buttons.
+Maximum two buttons: a `back` button and a `next` button.
+Here, we only have a `next` button. Between the `<span>` tags, we must put a
+reference to a page (and not a `\subpage`!). The CSS part will handle displaying
+the buttons correctly.
 
-Prenons maintenant le fichier suivant : `1_about.md` (un peu modifié pour
-cette explication) :
+Let's now take the following file: `1_about.md` (slightly modified for this
+explanation) :
 
 ```md
 # Qu'est-ce que %Arcane ? {#arcanedoc_getting_started_about}
 
 [TOC]
 
-## Arcon, Arccore ?  {#arcanedoc_getting_started_about_arcall}
-### Arcon  {#arcanedoc_getting_started_about_arcall_arcon}
+## Arcon, Arccore ? {#arcanedoc_getting_started_about_arcall}
+### Arcon {#arcanedoc_getting_started_about_arcall_arcon}
 
 ...Texte...
 
-## Framework ?  {#arcanedoc_getting_started_about_framework}
+## Framework ? {#arcanedoc_getting_started_about_framework}
 
 ...Texte...
 
@@ -157,53 +158,56 @@ ____
 </div>
 ```
 
-D'abord, la première ligne est semblable à la première ligne
-du fichier précédent.
-Titre de niveau 1 (1 seul `#`). On commence avec le nom de la page
-puis son tag.
-Le tag est structuré comme ceci :
-`arcane`\_`nom_du_chapitre`\_`nom_de_la_page`.
+First, the first line is similar to the first line of the previous file.
+Level 1 title (only 1 `#`). We start with the page name followed by its tag.
+The tag is structured as follows:
+`arcane`\_`chapter_name`\_`page_name`.
 
-Ensuite, on retrouve la table des matières (`[TOC]`) qui sera généré
-par doxygen si besoin.
+Next, we find the table of contents (`[TOC]`) which will be generated by Doxygen
+if needed.
 
-Après, on a des titres de niveau 2 et 3.
-Le tag est toujours construit de la même manière :
+After that, we have level 2 and 3 titles.
+The tag is always constructed in the same way:
 
-`arcane`\_`nom_du_chapitre`\_`nom_de_la_page`\_`titre_de_la_section_niveau2`\_`titre_de_la_section_niveau3`,...
+`arcane`\_`chapter_name`\_`page_name`\_`level2_section_title`\_`level3_section_title`,...
 
-Pour finir, on retrouve la ligne horizontale et les boutons `back` et `next` avec des `\ref` entre les `<span>`.
+Finally, we find the horizontal line and the `back` and `next` buttons with
+`\ref` between the `<span>` tags.
 
 ____
 
-Enfin, les sous-chapitres. C'est à peu près le même principe.
+Finally, subchapters. It is pretty much the same principle.
 
-Dans le chapitre `example`, on a :
+In the `example` chapter, we have:
+
 ```sh
 ├── chap_examples
-│   ├── 0_examples.md
-│   ├── 1_simple_example.goto
-│   ├── 2_concret_example.goto
-│   ├── subchap_concret_example
-│   │   ├── 0_concret_example.md
-│   │   ├── 1_struct.md
+│   ├── 0_examples.md
+│   ├── 1_simple_example.goto
+│   ├── 2_concret_example.goto
+│   ├── subchap_concret_example
+│   │   ├── 0_concret_example.md
+│   │   ├── 1_struct.md
 ```
 
-Quand on veut faire un sous-chapitre, on créé un dossier `subchap_nom_du_sous_chapitre`
-dans le dossier du chapitre parent et on créé un fichier `1_nom_du_sous_chapitre.goto`.
+When we want to create a subchapter, we create a folder
+`subchap_subchapter_name` in the parent chapter folder and create a file
+`1_subchapter_name.goto`.
 
-Ce fichier permet de situer le sous-chapitre par rapport aux autres pages (pour nous,
-doxygen n'en a pas besoin).
+This file allows locating the subchapter relative to other pages (for us,
+Doxygen does not need it).
 
-Voyons le fichier `0_concret_example.md` :
+Let's look at the file `0_concret_example.md` :
 ```md
 # Exemple concret {#arcanedoc_examples_concret_example}
 
+Ce sous-chapitre présente un exemple concret appelé
+`Quicksilver %Arcane Mini-App`.
 
-Ce sous-chapitre présente un exemple concret appelé `Quicksilver %Arcane Mini-App`.
-
-Il est recommendé d'avoir lu le sous-chapitre précédent \ref arcanedoc_examples_simple_example
-pour bien comprendre ce qui suit, car certaines choses ne seront pas répétées ici.
+Il est recommendé d'avoir lu le sous-chapitre précédent \ref
+arcanedoc_examples_simple_example
+pour bien comprendre ce qui suit, car certaines choses ne seront pas répétées
+ici.
 
 Sommaire de ce sous-chapitre :
 1. \subpage arcanedoc_examples_concret_example_struct
@@ -221,88 +225,87 @@ ____
 </div>
 ```
 
-Les tag seront structurés comme ça :
-`arcane`\_`nom_du_chapitre`\_`nom_du_sous_chapitre`\_`nom_de_la_page`\_`titre_de_la_section_niveau2`,...
+The tags will be structured like this:
+`arcane`\_`chapter_name`\_`subchapter_name`\_`page_name`\_`level2_section_title`,...
 
-A part ça, on reprend les règles précédentes.
-
-____
-
-Pour les images, elles doivent être mises avec le (sous-) chapitre correspondant,
-dans un dossier `img`. Ce dossier devra être répertorié dans la partie
-`IMAGE_PATH` du `userdoc.doxyfile`.
+Other than that, we follow the previous rules.
 
 ____
 
-Les morceaux de code sont à mettre entre trois "`" (AltGr+7 sur clavier azerty) ou 
-entre trois "~" (AtlGr+2 sur clavier azerty).
-(Voir doc markdown pour plus d'infos).
+For images, they must be placed with the corresponding (sub-) chapter, in an
+`img` folder. This folder must be listed in the `IMAGE_PATH` section of the
+`userdoc.doxyfile`.
 
 ____
 
-Une fois votre chapitre ajouté, il faudra ajouter le ou les dossiers des chapitres
-et des sous-chapitres dans le userdoc.doxyfile, partie `INPUT`.
+Code snippets must be placed between three backticks (AltGr+7 on an azerty
+keyboard) or between three tildes (AltGr+2 on an azerty keyboard).
+(See markdown documentation for more info).
 
 ____
 
-Deux macros ont été défini : `\arcane{}` et `\arccore{}`.
-Elles permettent de lier une classe ou une méthode sans mettre le namespace `Arcane::` ou `Arccore::`
-et sans l'afficher.
+Once your chapter is added, you must add the chapter and subchapter folders to
+the `userdoc.doxyfile`, under the `INPUT` section.
 
-Exemple :
+____
 
-`Sans namespace : Cell -- Sans macro : Arcane::Cell -- Avec macro : \\arcane{Cell}` 
+Two macros have been defined: `\arcane{}` and `\arccore{}`.
+They allow linking a class or method without including the `Arcane::` or
+`Arccore::` namespace and without displaying it.
 
-donne : 
+Example :
+
+`Sans namespace : Cell -- Sans macro : Arcane::Cell -- Avec macro : \\arcane{Cell}`
+
+gives :
 
 Sans namespace : Cell -- Sans macro : Arcane::Cell -- Avec macro : \arcane{Cell}
 
 ---
 
-Dans la partie Changelog, il est possible d'utiliser la macro `\pr{}`
-pour rediriger créer un lien vers la pull request sur GitHub. Exemple :
+In the Changelog section, it is possible to use the `\pr{}` macro to create a
+link to the GitHub pull request. Example :
 
 \pr{530}
 
 ---
 
-Avec la dernière version du thème "Doxygen Awesome", nous avons la possibilité
-d'ajouter des onglets dans la documentation. Exemple :
+With the latest version of the "Doxygen Awesome" theme, we have the possibility
+of adding tabs to the documentation. Example :
 
 <div class="tabbed">
- 
+
 - <b class="tab-title">Onglet 1</b>
 Coucou ! Voici l'onglet n°1 !
 
 - <b class="tab-title">Onglet 2</b>
 Recoucou ! Voici l'onglet n°2 !
- 
+
 </div>
 
-Voici le code des onglets affichés au-dessus :
+Here is the code for the tabs displayed above:
 ```md
 <div class="tabbed">
- 
+
 - <b class="tab-title">Onglet 1</b>
-Coucou ! Voici l'onglet n°1 !
+  Coucou ! Voici l'onglet n°1 !
 
 - <b class="tab-title">Onglet 2</b>
-Recoucou ! Voici l'onglet n°2 !
- 
+  Recoucou ! Voici l'onglet n°2 !
+
 </div>
 ```
 
-Doxygen est assez capricieux pour le html. Pour mettre plusieurs lignes
-dans un onglet, il faut soit utiliser la balise `<br>`, soit mettre
-le tout dans une `<div>`, avec tout le contenu de la div indentée.
-Exemple :
+Doxygen is quite capricious regarding HTML. To put multiple lines in a tab, you
+must either use the `<br>` tag, or put everything in a `<div>`, with all the div
+content indented. Example :
 
 <div class="tabbed">
- 
+
 - <b class="tab-title">Onglet 1</b>
-Coucou ! Voici l'onglet n°1 !<br>
-Coucou ! Voici l'onglet n°1 !<br>
-Coucou ! Voici l'onglet n°1 !
+  Coucou ! Voici l'onglet n°1 !<br>
+  Coucou ! Voici l'onglet n°1 !<br>
+  Coucou ! Voici l'onglet n°1 !
 
 
 - <b class="tab-title">Onglet 2</b>
@@ -343,10 +346,10 @@ Coucou ! Voici l'onglet n°1 !
 
 ---
 
-Il est possible d'utiliser les balises `<details><summary>` dans la documentation
-pour réduire un bout de texte.
+It is possible to use the `<details><summary>` tags in the documentation to
+collapse a piece of text.
 
-Exemple :
+Example :
 ```xml
 <details>
   <summary>Titre</summary>

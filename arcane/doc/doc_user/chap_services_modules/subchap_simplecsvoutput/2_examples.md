@@ -1,23 +1,26 @@
-# Exemples : généralités {#arcanedoc_services_modules_simplecsvoutput_examples}
+﻿# Examples: generalities {#arcanedoc_services_modules_simplecsvoutput_examples}
 
 [TOC]
 
-Dans les chapitres suivants, quelques exemples simples vous seront présentés.
+In the following chapters, some simple examples will be presented to you.
 
-Lors de la description des tableaux, pour souligner le nombre de lignes
-et de colonnes, la ligne et la colonne contenant les titres sont omises
-dans les décomptes, tout comme dans le service.
+When describing tables, to highlight the number of rows and columns, the row and
+column containing the headers are omitted from the counts, just as in the
+service.
 
-Les 6 exemples présentés dans ce sous-chapitre sont fonctionnels et se trouvent dans le dossier :
+The 6 examples presented in this subsection are functional and are located in
+the folder:
 `framework/arcane/samples_build/samples/simple_csv_output/`.
 
-À noter également que ces exemples fonctionneront quelque soit l'implémentation de \arcane{ISimpleTableOutput}
-(juste à changer l'implémentation dans `.config` (pour le mode singleton) ou dans les `.arc`).
+It should also be noted that these examples will work regardless of the
+implementation of \arcane{ISimpleTableOutput} (simply change the implementation
+in `.config` (for singleton mode) or in the `.arc` files).
 
-Ces exemples ont des structures en communs : trois points d'entrée (`initModule`, `loopModule`, `endModule`) représentant
-trois types de points d'entrée (`start-init`, `compute-loop`, `exit`) (au cas où : \ref arcanedoc_core_types_axl_entrypoint)
-et aucunes variables.  
-Les options varient pour les exemples 1, 2 et 3-6.
+These examples share common structures: three entry points (`initModule`,
+`loopModule`, `endModule`) representing three types of entry points
+(`start-init`, `compute-loop`, `exit`) (in case:
+\ref arcanedoc_core_types_axl_entrypoint) and no variables.
+The options vary for examples 1, 2, and 3-6.
 
 ____
 

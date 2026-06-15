@@ -1,30 +1,27 @@
-# Utilisation de fonctions C# pour le jeu de données {#arcanedoc_wrapping_csharp_casefunction}
+﻿# Using C# functions for the dataset {#arcanedoc_wrapping_csharp_casefunction}
 
 [TOC]
 
-Il est possible à partir de la version 3.11 de %Arcane de définir en
-C# des fonctions du jeu données. Il existe deux types de fonctions :
+Starting from version 3.11 of %Arcane, it is possible to define dataset
+functions in C#. There are two types of functions:
 
-- les fonctions classiques utilisées automatiquement par %Arcane
-- les fonctions avancées qui doivent être appelées explicitement par
-  le développeur.
+- classic functions automatically used by %Arcane
+- advanced functions that must be explicitly called by the developer.
 
-L'exemple \ref arcanedoc_sample_userfunction montre comment utiliser
-les fonctions utilisateurs en C#.
+Example \ref arcanedoc_sample_userfunction shows how to use user functions in
+C#.
 
-## Fonctions simples
+## Simple Functions
 
-Pour définir des fonctions du jeu de données en C#, l'utilisateur doit
-définir une classe contenant un ensemble de méthodes publiques dont la
-signature correspond à celle d'une fonction du jeu de données. Lorsque
-c'est le cas %Arcane génère une fonction du jeu de données dont le nom
-est celui de la méthode correspondante.
+To define dataset functions in C#, the user must define a class containing a set
+of public methods whose signature matches that of a dataset function. In this
+case, %Arcane generates a dataset function whose name is that of the
+corresponding method.
 
-Les signatures valides sont celles correspondantes aux méthodes
-prenant un argument de type `double` ou `Int32` et retournant un type
-`double` ou `Int32`.
+Valid signatures are those corresponding to methods that take an argument of
+type `double` or `Int32` and return a type of `double` or `Int32`.
 
-Par exemple, avec le code suivant, il y aura 2 fonctions utilisateurs
+For example, with the following code, there will be 2 user functions
 
 ```{cs}
 public class MyDotNetFunctions
@@ -46,24 +43,24 @@ public class MyDotNetFunctions
 }
 ```
 
-## Fonctions avancées
+## Advanced Functions
 
-Les fonctions avancées doivent être appelées directement par le code
-C++. L'interface \arcane{IStandardFunction} permet de récupérer un
-pointeur sur ces méthodes. Il existe 4 prototypes possibles :
+Advanced functions must be called directly by C++ code. The
+\arcane{IStandardFunction} interface allows retrieving a pointer to these
+methods. There are 4 possible prototypes:
 
 - f(Real,Real) -> Real
 - f(Real,Real3) -> Real
 - f(Real,Real) -> Real3
 - f(Real,Real3) -> Real3
 
-Pour une option simple du jeu de données, il est possible de récuperer
-l'instance de \arcane{IStandardFunction} via la méthode
-\arcane{CaseOptionSimple::standardFunction()}.
+For a simple dataset option, it is possible to retrieve the
+\arcane{IStandardFunction} instance via the
+\arcane{CaseOptionSimple::standardFunction()} method.
 
-Par exemple si l'option `node-velocity` du jeu de données doit avoir
-une fonction dont la signature est `f(Real,Real3) -> Real3`, on peut
-récupérer l'instance et l'utiliser comme cela:
+For example, if the dataset option `node-velocity` must have a function with the
+signature `f(Real,Real3) -> Real3`, we can retrieve the instance and use it as
+follows:
 
 ~~~{cpp}
 Arcane::IBinaryMathFunctor<Real, Real3, Real3>* functor = nullptr;
@@ -79,17 +76,16 @@ Arcane::Real3 position(1.2,0.4,1.5);
 functor->apply(1.2,position);
 ~~~
 
-L'instance `functor` n'est pas modifiée au cours du calcul. Il est
-donc possible de la conserver entre les itérations.
+The `functor` instance is not modified during the calculation. It is therefore
+possible to keep it between iterations.
 
-## Compilation et utilisation
+## Compilation and Usage
 
-La commande `arcane_dotnet_compile` disponible dans le répertoire
-`bin` d'installation de %Arcane permet de compiler un fichier C# en
-une assembly (`.dll`) qui sera placée dans le répertoire courant. Le
-nom de l'assembly est le nom du fichier compilé sans l'extension
-`.cs`. Le fichier compilé est indépendant de la plateforme cible et il
-n'est donc nécessaire de la compiler qu'une seule fois.
+The `arcane_dotnet_compile` command, available in the `bin` directory of the
+%Arcane installation, allows compiling a C# file into an assembly (`.dll`) which
+will be placed in the current directory. The name of the assembly is the name of
+the compiled file without the `.cs` extension. The compiled file is
+platform-independent, so it only needs to be compiled once.
 
 ```{sh}
 > ls .
@@ -99,8 +95,8 @@ Functions.cs
 Functions.cs  Functions.dll  Functions.pdb
 ```
 
-Il faut ensuite référencer dans le fichier `.arc` cet assembly dans
-l'élément `<functions>` à la racine du jeu de données:
+You must then reference this assembly in the `.arc` file within the
+`<functions>` element at the root of the dataset:
 
 ```{xml}
 <functions>
@@ -111,18 +107,17 @@ l'élément `<functions>` à la racine du jeu de données:
 </functions>
 ```
 
-Lors de l'exécution du calcul, il faut spécifier l'argument
-`-A,UsingDotNet=1` pour que l'environnement `.Net` soit utilisé et que
-l'assembly `Functions.dll` soit chargée. Si le nom de l'assembly est
-relatif (par exemple sous Linux il ne commence pas par `/`) ,
-l'assembly doit se trouver dans le répertoire courant d'exécution.
+When running the calculation, you must specify the argument `-A,UsingDotNet=1`
+so that the `.Net` environment is used and the `Functions.dll` assembly is
+loaded. If the assembly name is relative (for example, on Linux it does not
+start with `/`), the assembly must be located in the current execution
+directory.
 
-Une fois l'assembly chargée, %Arcane va créér une instance de la
-classe spécifiée dans l'élément `<class-name>`. Il est donc possible
-d'avoir un constructeur dans cette classe et ce dernier sera donc
-utilisé. La classe peut se trouver dans un `namespace`. Dans ce cas il
-faut indiquer le nom complet dans `<class-name>` comme par exemple
-`MyNamespace.MyClass`.
+Once the assembly is loaded, %Arcane will create an instance of the class
+specified in the `<class-name>` element. It is therefore possible to have a
+constructor in this class, and it will be used. The class may be located in a
+`namespace`. In this case, you must specify the full name in `<class-name>`,
+such as `MyNamespace.MyClass`.
 
 ____
 

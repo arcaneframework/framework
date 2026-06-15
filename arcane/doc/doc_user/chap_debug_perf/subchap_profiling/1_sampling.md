@@ -1,56 +1,45 @@
-﻿# Analyse de performances par échantillonage {#arcanedoc_debug_perf_profiling_sampling}
+﻿# Performance analysis by sampling {#arcanedoc_debug_perf_profiling_sampling}
 
 [TOC]
 
-\warning Actuellement, le profiling ne fonctionne que sur les
-plateformes Linux.
+\warning Currently, profiling only works on Linux platforms.
 
-\warning Actuellement, le profiling NE FONCTIONNE
-PAS lorsque le multi-threading (que ce soit avec le mécanisme des
-tâches ou d'échange de message) est actif.
+\warning Currently, profiling DOES NOT WORK when multi-threading (whether using
+the task mechanism or message passing) is active.
 
-Le profiling dans %Arcane fonctionne sur un principe
-d'échantillonage : à interval régulier, le code est interrompu et on
-regarde dans quelle méthode on se trouve.  Si l'interval
-d'échantillonage est petit et si le code est exécuté pendant
-suffisamment longtemps, on obtient une bonne représentation
-statistique de la proportion de temps passé dans les méthodes les
-plus couteuses. Les méthodes par échantillonage ne nécessitent pas
-l'instrumentation du code et donc ralentissent très peu
-l'exécution. Par contre, elles ne permettent pas de savoir par
-exemple combien de fois une méthode est appelée, ni de connaitre
-facilement le graphe d'appel. Pour cela, il est
-nécessaire d'utiliser des mécanismes comme gprof avec le suppport du
-compilateur.
+Profiling in %Arcane works on a sampling principle: at regular intervals, the
+code is interrupted and we check which method we are in. If the sampling
+interval is small and the code is executed for a sufficient amount of time, we
+obtain a good statistical representation of the proportion of time spent in the
+most costly methods. Sampling methods do not require code instrumentation and
+therefore slow down execution very little. However, they do not allow us to
+know, for example, how many times a method is called, nor do they easily allow
+us to know the call graph. For this, it is necessary to use mechanisms like
+gprof with compiler support.
 
 
-Pour activer le profiling, il faut positionner la variable
-d'environnement ARCANE_PROFILING avec une des valeurs suivantes:
-- \a Prof . Cela permet d'avoir un profiling peu précis mais qui fonctionne sur
-toutes les machines Linux. L'échantillonage est d'une fréquence de
-l'ordre de 20Hz et donc il faut faire tourner le code au moins 1
-minutes pour avoir des résultats significatifs
-- \a Papi. Cela permet d'avoir un profiling très précis, utilisant
-les compteurs hardware du processeur. On utilise pour cela la
-bibliothèque libre PAPI. Cela ne fonctionne qu'avec les noyaux Linux
-récents (2.6.32 ou +) ou les noyaux patchés et il faut que %Arcane
-soit compilé avec ce support. Dans ce mode l'échantillonage est
-donnée en nombre de cycles d'horloge du processeur. La valeur par
-défaut est de 500000 cycles. Pour un processeur à 3GHz, cela fait
-donc 6000 échantillons par seconde. Il est possible de changer le
-nombre de cycles via la variable d'environnement
-ARCANE_PROFILING_PERIOD. Il est préférable de ne pas descendre en
-dessous de la valeur par défaut.
+To activate profiling, you must set the ARCANE_PROFILING environment variable to
+one of the following values:
+- \a Prof . This allows for imprecise profiling but works on all Linux machines.
+  The sampling frequency is around 20Hz, so you must run the code for at least 1
+  minute to get significant results
+- \a Papi. This allows for very precise profiling, using the processor's
+  hardware counters. For this, the free PAPI library is used. This only works
+  with recent Linux kernels (2.6.32 or later) or patched kernels, and %Arcane
+  must be compiled with this support. In this mode, sampling is given in the
+  number of processor clock cycles. The default value is 500,000 cycles. For a
+  3GHz processor, this means 6000 samples per second. It is possible to change
+  the number of cycles via the ARCANE_PROFILING_PERIOD environment variable. It
+  is preferable not to go below the default value.
 
-Afin de garder des performances raisonnables lors de l'exécution, il
-est préférable de ne pas dépasser 100000 échantillons. Il faut donc
-ajuster la durée d'exécution du test ou la fréquence
-d'échantillonage en fonction de cela.
+In order to maintain reasonable performance during execution, it is preferable
+not to exceed 100,000 samples. Therefore, you must adjust the test execution
+duration or the sampling frequency accordingly.
 
-Lorsqu'il est actif, le profiling commence à la première itération et s'arrête
-à la dernière itération de l'exécution. En parallèle, le profiling se fait
-pour chaque processeur et %Arcane affiche alors dans le
-listing de chaque processeur les informations de profiling de la manière suivante :
+When active, profiling starts at the first iteration and stops at the last
+iteration of the execution. In parallel, profiling is performed for each
+processor, and %Arcane then displays the profiling information for each
+processor in the following manner:
 
 ```log
 *I-Internal    PROCESS_ID = 17977
@@ -80,13 +69,12 @@ listing de chaque processeur les informations de profiling de la manière suivan
 *I-Internal         1    0.0         1      0      0 0  SimpleHydro::ModuleSimpleHydro::applyEquationOfState()
 ```
 
-Les premières lignes sont des informations internes à %Arcane.
-Ensuite, est affiché, par ordre décroissant du temps passé, chaque
-méthode. Dans l'exemple précédent, on voit qu'on passe 39.7% du temps
-dans la méthode ModuleSimpleHydro::computeCQs().
+The first lines are internal information for %Arcane. Then, each method is
+displayed in descending order of time spent. In the previous example, we see
+that 39.7% of the time is spent in the ModuleSimpleHydro::computeCQs() method.
 
-Pour que les résultats soient pertinents, il faut que le code soit
-compilé en mode optimisé avec l'inlining activé.
+For the results to be relevant, the code must be compiled in optimized mode with
+inlining enabled.
 
 
 

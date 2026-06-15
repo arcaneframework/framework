@@ -1,90 +1,101 @@
-# Comment ça fonctionne {#arcanedoc_io_timehistory_howto}
+﻿# How it works {#arcanedoc_io_timehistory_howto}
 
 [TOC]
 
-L'utilisation du TimeHistory est extrêmement simple.
+The use of TimeHistory is extremely simple.
 
-À chaque itération, une valeur sera enregistrée pour chaque historique de valeurs.
-S'il n'y a pas d'enregistrement de valeur explicite lors d'une itération, un 0 sera enregistré.
-S'il y a deux valeurs enregistrées pendant une même itération pour un historique de valeurs,
-c'est la dernière valeur qui sera réellement enregistrée.
+At each iteration, a value will be recorded for each value history.
+If there is no explicit value recording during an iteration, a 0 will be
+recorded.
+If there are two values recorded during the same iteration for a value history,
+the last value recorded will be the one that is actually saved.
 
-Historiquement, les historiques de valeurs étaient gérés uniquement par le processus 0.
-Aujourd'hui, ce n'est plus le cas. Chaque processus peut avoir son historique, avec une même clef.
-De plus, on peut lier un historique à un maillage. Ainsi, on peut avoir un historique par maillage, toujours
-avec la même clef.
+Historically, value histories were managed only by process 0.
+Today, this is no longer the case. Each process can have its own history, using
+the same key.
+Furthermore, a history can be linked to a mesh. Thus, we can have a history per
+mesh, always using the same key.
 
-\warning Pour activer l'enregistrement en multi-processus, il est nécessaire de définir la variable
-d'environnement `ARCANE_ENABLE_NON_IO_MASTER_CURVES=1`.
+\warning To enable multi-process recording, it is necessary to define the
+environment variable `ARCANE_ENABLE_NON_IO_MASTER_CURVES=1`.
 
 ## GlobalTimeHistoryAdder
 
-La première structure permettant de gérer des historiques de valeurs est le `GlobalTimeHistoryAdder`.
-Il permet d'ajouter des valeurs à un historique.
-Le "Global" signifie que les variables internes utilisées pour gérer cet historique sont globales, liées
-aux sous-domaines.
+The first structure allowing the management of value histories is the
+`GlobalTimeHistoryAdder`.
+It allows adding values to a history.
+"Global" means that the internal variables used to manage this history are
+global, linked to the sub-domains.
 
-Admettons que l'on ai un maillage partagé dans quatre sous-domaines (`SD0`, `SD1`, `SD2`, `SD3`).
-Chaque maille possède une pression. On veut avoir, pour chaque itération, la pression moyenne de chaque
-sous-domaine. Et en plus, on veut avoir la pression moyenne de tout le domaines.
+Suppose we have a mesh shared across four sub-domains (`SD0`, `SD1`, `SD2`,
+`SD3`).
+Each cell has a pressure. We want to have, for each iteration, the average
+pressure of each sub-domain. And in addition, we want to have the average
+pressure of the entire domain.
 
-Utilisons comme clef : `avg_pressure` :
+Let's use `avg_pressure` as the key:
 \image html avg_pressure.svg
 
-Chaque sous-domaine possède une pression moyenne et il y a une pression moyenne globale. L'image
-présente une seule itération : l'itération 0.
+Each sub-domain has an average pressure and there is a global average pressure.
+The image presents a single iteration: iteration 0.
 
-Pour obtenir un historique comme celui-ci, on peut faire comme ceci :
+To obtain a history like this, we can do this:
 \snippet{c++} TimeHistoryAdderTestModule.cc snippet_timehistory_example1
 
-\remark En interne, `GlobalTimeHistoryAdder` utilise la partie interne du `ITimeHistoryMng` passé en paramètre.
-L'objet `GlobalTimeHistoryAdder` peut donc être détruit sans problème.
+\remark Internally, `GlobalTimeHistoryAdder` uses the internal part of the
+`ITimeHistoryMng` passed as a parameter.
+The `GlobalTimeHistoryAdder` object can therefore be destroyed without problems.
 
-\note Pour utiliser `GlobalTimeHistoryAdder`, ne pas oublier d'importer les headers nécessaires :
+\note To use `GlobalTimeHistoryAdder`, do not forget to import the necessary
+headers:
 ```cpp
 #include <arcane/core/ITimeHistoryMng.h>
 #include <arcane/core/GlobalTimeHistoryAdder.h>
 ```
 
-Ce bout de code, s'il est appelé à toutes les itérations, permet d'obtenir les
-moyennes à chaque itération.
+This piece of code, if called at every iteration, allows obtaining the averages
+at each iteration.
 
 ## MeshTimeHistoryAdder
 
-La seconde structure permettant de gérer des historiques de valeurs est le `MeshTimeHistoryAdder`.
-Comme la première structure, il permet d'ajouter des valeurs à un historique.
-Le "Mesh" signifie que les variables internes utilisées pour gérer cet historique sont liées au
-maillage souhaité. Donc, chaque maillage peut avoir une variable différente de même nom. 
+The second structure allowing the management of value histories is the
+`MeshTimeHistoryAdder`.
+Like the first structure, it allows adding values to a history.
+"Mesh" means that the internal variables used to manage this history are linked
+to the desired mesh. Therefore, each mesh can have a different variable with the
+same name.
 
-Reprenons l'exemple au-dessus mais avec deux maillages.
-Ces deux maillages sont réparties sur quatre sous-domaines. On veut avoir, pour chaque
-sous-domaine, la moyenne des pressions des mailles de chaque maillage.
-Mais on veut toujours, comme au-dessus, la pression moyenne de chaque
-sous-domaine.
+Let's take the example above but with two meshes.
+These two meshes are distributed across four sub-domains. We want to have, for
+each sub-domain, the average pressure of the cells of each mesh.
+But we still want, as above, the average pressure of each sub-domain.
 
-Utilisons la même clef : `avg_pressure` :
+Let's use the same key: `avg_pressure`:
 \image html avg_pressure2.svg
 
-On peut voir qu'en plus des `avg_pressure` de chaque sous-domaine et du globale, il y a des `avg_pressure`
-pour les deux maillages.
+We can see that in addition to the `avg_pressure` of each sub-domain and the
+global one, there are `avg_pressure` for the two meshes.
 
-Voici un exemple de code pour réaliser ce calcul :
+Here is a code example to perform this calculation:
 \snippet{c++} TimeHistoryAdderTestModule.cc snippet_timehistory_example2
 
-La différence ici, c'est qu'on itère sur les maillages. Pour créer le `MeshTimeHistoryAdder`,
-on doit donner, en plus d'un `ITimeHistoryMng*`, un handle de maillage. Ça permet de lier
-l'historique au maillage.
+The difference here is that we iterate over the meshes. To create the
+`MeshTimeHistoryAdder`, in addition to an `ITimeHistoryMng*`, we must provide a
+mesh handle. This allows linking the history to the mesh.
 
-\remark En interne, `MeshTimeHistoryAdder` utilise la partie interne du `ITimeHistoryMng` passé en paramètre.
-L'objet `MeshTimeHistoryAdder` peut donc être détruit sans problème.
+\remark Internally, `MeshTimeHistoryAdder` uses the internal part of the
+`ITimeHistoryMng` passed as a parameter.
+The `MeshTimeHistoryAdder` object can therefore be destroyed without problems.
 
-\note Pour utiliser `MeshTimeHistoryAdder`, ne pas oublier d'importer les headers nécessaires :
+\note To use `MeshTimeHistoryAdder`, do not forget to import the necessary
+headers:
 ```cpp
 #include <arcane/core/ITimeHistoryMng.h>
 #include <arcane/core/MeshTimeHistoryAdder.h>
 ```
 
-\note Le TimeHistoryMng gère les checkpoints, l'utilisateur n'a donc pas à s'en occuper.
+\note The TimeHistoryMng manages checkpoints, so the user does not have to worry
+about it.
 
 ____
 

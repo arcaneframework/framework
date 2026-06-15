@@ -1,12 +1,12 @@
-﻿#  Gestion des matériaux et des milieux. {#arcanedoc_materials_manage}
+﻿# Material and Environment Management. {#arcanedoc_materials_manage}
 
 [TOC]
 
-Cette page décrit la gestion des matériaux et des milieux dans %Arcane.
+This page describes the management of materials and environments in %Arcane.
 
-L'ensemble des classes associées aux matériaux et milieux se trouvent
-dans le namespace Materials de Arcane (voir \ref ArcaneMaterials). Le plus simple pour utiliser
-ces classes est d'utiliser le mot clé \a using. Par exemple :
+The set of classes associated with materials and environments is found
+in the Materials namespace of Arcane (see \ref ArcaneMaterials). The simplest
+way to use these classes is to use the \a using keyword. For example:
 
 ```cpp
 #include <arcane/materials/IMeshMaterial.h>
@@ -15,207 +15,198 @@ using namespace Arcane::Materials;
 ```
 
 
-L'ensemble des milieux et des matériaux est gérée par la classe
-\arcanemat{IMeshMaterialMng}. Une instance de cette classe est associée à un
-maillage \arcane{IMesh}. Il est possible d'avoir plusieurs instances de
-\arcanemat{IMeshMaterialMng} par \arcane{IMesh} mais cela n'est pas utilisé pour l'instant.
+The set of environments and materials is managed by the class
+\arcanemat{IMeshMaterialMng}. An instance of this class is associated with a
+mesh \arcane{IMesh}. It is possible to have multiple instances of
+\arcanemat{IMeshMaterialMng} per \arcane{IMesh} but this is not used for the
+moment.
 
-\warning Pour l'instant, la gestion des matériaux et milieux est
-incompatible avec les modifications de la topologie de maillage. En
-particulier, cela inclue le repartionnement dû à l'équilibrage de
-charge.
+\warning For now, material and environment management is
+incompatible with mesh topology modifications. In particular, this includes
+repartitioning due to load balancing.
 
-\note L'utilisation des constituants est compatible avec les
-changements de la topologie du maillage. Néanmoins, pour que ce
-support soit actif, il faut appeler la méthode
-\arcanemat{IMeshMaterialMng::setMeshModificationNotified(true)} avant
-de créer les milieux et matériaux.
+\note The use of constituents is compatible with mesh topology changes.
+Nevertheless, for this support to be active, the method
+\arcanemat{IMeshMaterialMng::setMeshModificationNotified(true)} must be called
+before creating environments and materials.
 
-Une instance de \arcanemat{IMeshMaterialMng} décrit un ensemble de milieux, chaque
-milieu étant composé d'un ou plusieurs matériaux.
-La liste des milieux et des matériaux doit aussi être créé lors de
-l'initialisation du calcul et ne plus évoluer par la suite. Il est
-aussi possible d'avoir la notion de bloc au-dessus de la motion de milieu, un bloc
-comprenant un ou plusieurs milieux. Cette notion de bloc est
-optionnel et n'est pas indispensable à l'utilisation des milieux ou
-des matériaux
+An instance of \arcanemat{IMeshMaterialMng} describes a set of environments,
+each environment being composed of one or more materials.
+The list of environments and materials must also be created during the
+calculation initialization and must not evolve afterward. It is also possible to
+have the notion of a block above the environment motion, a block comprising one
+or more environments. This block notion is optional and is not essential for
+using environments or materials.
 
-Dans l'implémentation actuelle, les milieux et les matériaux ne sont
-associées qu'aux mailles et pas aux autres entités du maillage. La
-liste des mailles d'un milieu ou d'un matériau est dynamique et peut
-évoluer au cours du calcul. De même, il est possible d'avoir
-plusieurs milieux et plusieurs matériaux par maille.
+In the current implementation, environments and materials are associated only
+with mesh cells and not with other mesh entities. The list of cells for an
+environment or a material is dynamic and can evolve during the calculation.
+Similarly, it is possible to have multiple environments and multiple materials
+per cell.
 
-\note Il ne faut pas détruire manuellement les instances de
-\arcanemat{IMeshMaterialMng}. Elles seront automatiquement détruites lorsque le maillage
-associé sera supprimé.
+\note You must not manually destroy instances of
+\arcanemat{IMeshMaterialMng}. They will be automatically destroyed when the
+associated mesh is deleted.
 
-L'instance par défaut de \arcanemat{IMeshMaterialMng} pour un maillage ne se
-créée pas directement. Pour la récupérer, il faut utiliser la
-méthode \arcanemat{IMeshMaterialMng::getReference()} avec comme argument le maillage
-concerné. L'appel à cette fonction provoque la création du
-gestionnaire si ce n'est pas déjà fait. Cette fonction à un coût CPU
-non négligeable et il est donc préférable de stocker l'instance retournée
-plutôt que d'appeler la fonction plusieurs fois.
+The default instance of \arcanemat{IMeshMaterialMng} for a mesh is not
+created directly. To retrieve it, you must use the method
+\arcanemat{IMeshMaterialMng::getReference()} with the mesh concerned as an
+argument. Calling this function triggers the creation of the manager if it has
+not already been done. This function has a non-negligible CPU cost, so it is
+preferable to store the returned instance rather than calling the function
+multiple times.
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleMaterialCreate
 
-## Création des matériaux, des milieux et des blocs {#arcanedoc_materials_manage_create}
+## Creating materials, environments, and blocks {#arcanedoc_materials_manage_create}
 
-Une fois le gestionnaire créé, il faut enregistrer les matériaux et
-les milieux. La première chose à faire est d'enregistrer les
-caractéristiques des matériaux. Pour l'instant, il s'agit uniquement
-du nom du matériau. On enregistre uniquement les caractéristiques des
-matériaux et pas les matériaux eux-mêmes car ces derniers sont créés
-lors de la création des milieux.
+Once the manager is created, you must register the materials and
+environments. The first thing to do is to register the material properties. For
+now, this is only the material name. We only register the material properties
+and not the materials themselves because the latter are created when the
+environments are created.
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleMaterialCreate2
 
-Une fois les caractéristiques enregistrées, il est possible de créer
-les milieux, en spécifiant leur nom et la liste de leurs matériaux.
-Il faut noter que deux milieux (ou plus) peuvent être constitués du même
-matériau. Dans ce cas, %Arcane créé deux instances différentes du même
-matériau et ces dernières sont indépendantes. Ainsi, dans l'exemple
-suivant, le matériau MAT1 est présent dans ENV1 et ENV3, ce qui fait
-deux matériaux distincts avec chacun leurs valeurs partielles. Une
-fois les milieux créés, il est possible de les associés dans des
-blocs. Un bloc est défini par un nom, le groupe de maille associé et
-sa liste des milieux, qui est donc fixe.
+Once the properties are registered, it is possible to create
+the environments, specifying their name and the list of their materials. It
+should be noted that two (or more) environments can be composed of the same
+material. In this case, %Arcane creates two different instances of the same
+material, and these are independent. Thus, in the following example, the
+material MAT1 is present in ENV1 and ENV3, which results in two distinct
+materials, each with its partial values. Once the environments are created, it
+is possible to associate them in blocks. A block is defined by a name, the
+associated cell group, and its list of environments, which is therefore fixed.
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleMaterialCreate3
 
-Une fois tous les milieux et blocs créés, il faut appeler
+Once all environments and blocks are created, you must call
 \arcanemat{IMeshMaterialMng::endCreate()}
-pour signaler au gestionnaire que l'initialisation est terminée et qu'il
-peut allouer les variables. Une fois cette méthode appelée, il ne faut
-plus créer de blocs, ni de milieux ni de matériaux.
+to signal to the manager that initialization is complete and that it can
+allocate the variables. Once this method is called, you must no longer create
+blocks, environments, or materials.
 
-Il est possible d'ajouter des milieux à un bloc entre sa création
-(\arcanemat{IMeshMaterialMng::createBlock()}) et l'appel à
-\arcanemat{IMeshMaterialMng::endCreate()}, via la méthode
+It is possible to add environments to a block between its creation
+(\arcanemat{IMeshMaterialMng::createBlock()}) and the call to
+\arcanemat{IMeshMaterialMng::endCreate()}, via the method
 \arcanemat{IMeshMaterialMng::addEnvironmentToBlock()}.
 
-Il est possible de supprimer des milieux à un bloc entre sa création
-(\arcanemat{IMeshMaterialMng::createBlock()}) et l'appel à
-\arcanemat{IMeshMaterialMng::endCreate()}, via la méthode
+It is possible to remove environments from a block between its creation
+(\arcanemat{IMeshMaterialMng::createBlock()}) and the call to
+\arcanemat{IMeshMaterialMng::endCreate()}, via the method
 \arcanemat{IMeshMaterialMng::removeEnvironmentToBlock()}.
 
-Les instances de \arcanemat{IMeshMaterial},
-\arcanemat{IMeshEnvironment} et \arcanemat{IMeshBlock}
-restent valident durant toute l'existence du \arcanemat{IMeshMaterialMng}
-correspondant. Elles peuvent donc être conservées et il est possible
-d'utiliser l'opérateur d'égalité pour savoir si deux instances
-correspondent au même matériau.
+Instances of \arcanemat{IMeshMaterial}, \arcanemat{IMeshEnvironment}, and
+\arcanemat{IMeshBlock} remain valid throughout the existence of the
+corresponding \arcanemat{IMeshMaterialMng}. They can therefore be kept, and it
+is possible to use the equality operator to know if two instances correspond to
+the same material.
 
-Les informations concernant les
-blocs, les matériaux et les milieux sont sauvegardées et
-peuvent être relues en reprise. Néanmoins, cela n'est pas
-automatique pour des raisons de compatibilité. Si on souhaite
-relire les informations sauvegardées, il faut appeler
-\arcanemat{IMeshMaterialMng::recreateFromDump()} et ne plus créér manuellement
-les informations ni appeler la méthode \arcanemat{IMeshMaterialMng::endCreate()}.
+Information concerning blocks, materials, and environments is saved and can be
+reloaded upon restart. Nevertheless, this is not automatic for compatibility
+reasons. If you wish to reload the saved information, you must call
+\arcanemat{IMeshMaterialMng::recreateFromDump()} and must no longer manually
+create the information or call the method
+\arcanemat{IMeshMaterialMng::endCreate()}.
 
-Chaque matériau \arcanemat{IMeshMaterial}, milieu
-\arcanemat{IMeshEnvironment} et bloc \arcanemat{IMeshBlock} possède un
-identifiant unique, de type \arcane{Int32}, qui est accessible via les
-méthodes \arcanemat{IMeshMaterial::id()}, \arcanemat{IMeshEnvironment::id()} ou
-\arcanemat{IMeshBlock::id()}. Ces identifiants commencent à 0 et sont incrémentés
-pour chaque matériau, milieu ou bloc. Par exemple, avec la
-construction de l'exemple précédent, on a :
+Each material \arcanemat{IMeshMaterial}, environment
+\arcanemat{IMeshEnvironment}, and block \arcanemat{IMeshBlock} has a
+unique identifier, of type \arcane{Int32}, which is accessible via the methods
+\arcanemat{IMeshMaterial::id()}, \arcanemat{IMeshEnvironment::id()}, or
+\arcanemat{IMeshBlock::id()}. These identifiers start at 0 and are incremented
+for each material, environment, or block. For example, with the construction of
+the previous example, we have:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleMaterialCreate4
 
-## Ajout ou suppression de mailles d'un matériau {#arcanedoc_materials_manage_addremovecells}
+## Adding or removing cells for a material {#arcanedoc_materials_manage_addremovecells}
 
-Une fois les matériaux et milieux créés, il est possible d'ajouter ou
-de supprimer des mailles pour un matériau. Il n'est pas nécessaire de
-modifier les mailles par milieu : Arcane se charge de recalculer
-automatiquement la liste des mailles d'un milieu en fonction de
-celles de ses matériaux.
+Once materials and environments are created, it is possible to add or
+remove cells for a material. It is not necessary to modify the cells by
+environment: Arcane automatically handles recalculating the list of cells for an
+environment based on those of its materials.
 
-Toute modification se fait via la classe \arcanemat{MeshMaterialModifier}.
-Il suffit de créer une instance de cette classe et d'appeler autant
-de fois que nécessaire les méthodes \arcanemat{MeshMaterialModifier::addCells()} ou
-\arcanemat{MeshMaterialModifier::removeCells()}. Il faut noter que ceux deux
-méthodes permettent uniquement d'indiquer les mailles à ajouter ou
-supprimer. La modification effective n'a lieu que lors de l'appel à
-\arcanemat{MeshMaterialModifier::endUpdate()} ou de la destruction l'instance de
-\arcanemat{MeshMaterialModifier}. C'est seulement à ce moment là que les valeurs
-partielles sont mises à jour et qu'il est possible d'y accéder.
+All modifications are made via the class \arcanemat{MeshMaterialModifier}.
+You simply need to create an instance of this class and call the methods
+\arcanemat{MeshMaterialModifier::addCells()} or
+\arcanemat{MeshMaterialModifier::removeCells()} as many times as necessary. It
+should be noted that these two
+methods only allow indicating the cells to be added or removed. The effective
+modification only takes place when calling
+\arcanemat{MeshMaterialModifier::endUpdate()} or when the instance of
+\arcanemat{MeshMaterialModifier} is destroyed. Only at that moment are the
+partial values updated and accessible.
 
-\note Pour l'instant, les variables partielles des matériaux sont automatiquement
-initialisées à 0 dans les nouvelles mailles d'un matériau. Pour des
-raisons de performance, il est possible que cela ne soit plus le cas
-et alors les valeurs ne seront pas initialisées.
+\note For now, the partial values of materials are automatically
+initialized to 0 in the new cells of a material. For performance reasons, this
+may no longer be the case, and in that case, the values will not be initialized.
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleMaterialAddMat
 
-## Itération sur les mailles matériaux {#arcanedoc_materials_manage_iteration}
+## Iterating over material cells {#arcanedoc_materials_manage_iteration}
 
-Il existe trois classes pour faire référence aux notions de maille
-matériaux :
-- \arcanemat{AllEnvCell} est une classe permettant d'accéder à l'ensemble des
-milieux d'une maille.
-- \arcanemat{EnvCell} correspond à un milieu d'une maille et permet d'accéder aux
-valeurs de ce milieu pour cette maille et à l'ensemble des valeurs
-de cette maille pour les matériaux de ce milieu.
-- \arcanemat{MatCell} correspondant à une valeur d'un matériau d'un milieu d'une maille.
+There are three classes to reference the material cell notions:
+- \arcanemat{AllEnvCell} is a class that allows access to all
+  environments of a cell.
+- \arcanemat{EnvCell} corresponds to an environment of a cell and allows access
+  to the values of this environment for this cell and to all the values of this
+  cell for the materials of this environment.
+- \arcanemat{MatCell} corresponds to a value of a material of an environment of
+  a cell.
 
-Il existe une quatrième classe \arcanemat{ComponentCell} qui n'est pas une maille
-spécifique mais qui peut représenter un des trois types ci-dessus et
-permet d'unifier les traitements (voir \ref arcanedoc_materials_manage_component).
+There is a fourth class \arcanemat{ComponentCell} which is not a specific cell
+but can represent one of the three types above and allows unifying the
+treatments (see \ref arcanedoc_materials_manage_component).
 
-Il existe deux manières d'itérer sur les mailles matériaux.
+There are two ways to iterate over material cells.
 
-La première est d'itérer sur tous les milieux, pour chaque milieu
-d'itérer sur les matériaux de ce milieu et pour chacun de ces
-matériaux d'itérer sur ces mailles. Par exemple :
+The first is to iterate over all environments, for each environment iterate over
+the materials of that environment, and for each of these materials iterate over
+their cells. For example:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleMaterialIterEnv
 
-Il est aussi possible d'utiliser un bloc pour itérer uniquement sur
-les milieux de ce bloc au lieu d'itérer sur tous les milieux :
+It is also possible to use a block to iterate only over the environments of that
+block instead of iterating over all environments:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleBlockEnvironmentIter
 
-La seconde manière est de parcourir toutes les mailles d'un groupe de
-maille, puis pour chaque maille d'itérer sur ses milieux et sur les matériaux de ses
-milieux. Pour cela, on peut utiliser la macro ENUMERATE_ALLENVCELL,
-de la même manière que la macro ENUMERATE_CELL, mais en spécifiant
-en plus le gestionnaire de matériaux. Par exemple, si on souhaite
-itérer sur toutes les mailles (groupe allCells())
+The second way is to traverse all cells of a cell group, and then for each cell
+iterate over its environments and over the materials of its environments. To do
+this, you can use the macro ENUMERATE_ALLENVCELL, in the same way as the macro
+ENUMERATE_CELL, but by specifying the material manager additionally. For
+example, if you want to iterate over all cells (group allCells())
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleMaterialIterCell
 
-De la même manière, en itérant sur toutes les mailles d'un bloc :
+Similarly, by iterating over all cells of a block:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleBlockMaterialIterCell
 
-Il existe une troisième manière pour itérer sur les mailles d'un
-matériau ou d'un milieu.
-Les classes \arcanemat{MatCellVector} et \arcanemat{EnvCellVector} permettent d'obtenir une
-liste de \arcanemat{MatCell} ou de \arcanemat{EnvCell} à partir d'un groupe de mailles
-et d'un matériau ou d'un mileu. L'exemple suivant montre comment récupérer la
-liste des mailles du matériau \a mat et du milieu \env correspondant au groupe \a cells
-pour positionner une variable \a mat_density :
+There is a third way to iterate over the cells of a material or an environment.
+The classes \arcanemat{MatCellVector} and \arcanemat{EnvCellVector} allow
+obtaining a list of \arcanemat{MatCell} or \arcanemat{EnvCell} from a cell group
+and a material or an environment. The following example shows how to retrieve
+the list of cells for the material \a mat and the environment \env corresponding
+to the group \a cells to position a variable \a mat_density:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleMaterialIterFromGroup
 
-\note Actuellement, les classes \arcanemat{MatCellVector} et \arcanemat{EnvCellVector} ne
-sont pas copiables et ne sont valides que tant que le matériau (pour
-\arcanemat{MatCellVector}) ou le milieu (pour \arcanemat{EnvCellVector}) et le groupe de
-maille associé ne change pas.
-De plus, la conservation des informations consomme de la mémoire et
-la création à un cout en temps de calcul proportionnel au nombre
-de mailles du groupe. 
+\note Currently, the classes \arcanemat{MatCellVector} and
+\arcanemat{EnvCellVector} are not copyable and are only valid as long as the
+material (for \arcanemat{MatCellVector}) or the environment (for
+\arcanemat{EnvCellVector}) and the associated cell group do not change.
+Furthermore, keeping the information consumes memory and creation has a
+calculation time cost proportional to the number of cells in the group.
 
-## Conversion Cell vers AllEnvCell, MatCell ou EnvCell {#arcanedoc_materials_manage_conversion}
+## Converting Cell to AllEnvCell, MatCell, or EnvCell {#arcanedoc_materials_manage_conversion}
 
-La plupart des méthodes sur les entités retournent des objets de type
-\arcane{Cell}. Pour convertir ces objets en le type \a \arcanemat{AllEnvCell} afin
-d'avoir les infos sur les matériaux, il faut passer par une instance
-de \arcanemat{CellToAllEnvCellConverter}. Ce convertisseur peut par exemple être
-créé en début de fonction car son coût de création est négligeable.
+Most methods on the entities return objects of type
+\arcane{Cell}. To convert these objects to the type \a \arcanemat{AllEnvCell} in
+order to get information about the materials, you must go through an instance of
+\arcanemat{CellToAllEnvCellConverter}. This converter can, for example, be
+created at the beginning of the function because its creation cost is
+negligible.
 
 ```cpp
 Arcane::Materials::CellToAllEnvCellConverter all_env_cell_converter(m_material_mng);
@@ -223,140 +214,137 @@ Arcane::Cell cell = ...;
 Arcane::Materials::AllEnvCell allenvcell = all_env_cell_converter[cell];
 ```
 
-À partir d'une \arcanemat{AllEnvCell}, il est possible de récupérer directement une
-maille pour un matériau ou un milieu donné via
-\arcanemat{IMeshMaterial::findMatCell()} ou \arcanemat{IMeshEnvironment::findEnvCell()}. Ces
-méthodes retournent respectivement une \arcanemat{MatCell} ou une \arcanemat{EnvCell}
-correspondant à la maille matériau ou milieu souhaité. L'instance
-retournée peut-être nulle si le matériau ou le milieu n'est pas
-présent dans la maille. Par exemple :
+From an \arcanemat{AllEnvCell}, it is possible to directly retrieve a cell for a
+given material or environment via
+\arcanemat{IMeshMaterial::findMatCell()} or
+\arcanemat{IMeshEnvironment::findEnvCell()}. These
+methods return a \arcanemat{MatCell} or an \arcanemat{EnvCell} corresponding to
+the desired material cell or environment cell. The returned instance may be null
+if the material or environment is not present in the cell. For example:
 
 ```cpp
 Arcane::Materials::AllEnvCell allenvcell = ...;
 Arcane::Materials::IMeshMaterial* mat = ...;
 Arcane::Materials::MatCell matcell = mat->findMatCell(allenvcell);
 if (matcell.null())
-  // Materiau absent de la maille
+  // Material absent from the cell
   ...
 Arcane::Materials::IMeshEnvironment* env = ...;
 Arcane::Materials::EnvCell envcell = env->findEnvCell(allenvcell);
 if (envcell.null())
-  // Milieu absent de la maille.
+  // Environment absent from the cell.
   ...
 ```
 
 ## Unification {#arcanedoc_materials_manage_component}
 
-Il est possible de traiter les mailles matériaux et milieu de manière
-générique. La classe \arcanemat{ComponentCell} permet cette
-unification et peut s'utiliser pour tous les types de mailles
-\arcanemat{MatCell}, \arcanemat{EnvCell} ou \arcanemat{AllEnvCell}. La
-macro ENUMERATE_COMPONENTCELL() permet d'itérer sur des mailles de ce
-type :
+It is possible to treat material and environment cells generically. The class
+\arcanemat{ComponentCell} allows this unification and can be used for all types
+of cells
+\arcanemat{MatCell}, \arcanemat{EnvCell}, or \arcanemat{AllEnvCell}. The macro
+ENUMERATE_COMPONENTCELL() allows iterating over cells of this type:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleComponentIter
 
-La classe \arcanemat{ComponentCell} peut aussi servir à indexer une variable comme
-le ferait une \arcanemat{MatCell} ou une \arcanemat{EnvCell}.
+The class \arcanemat{ComponentCell} can also be used to index a variable as
+would a \arcanemat{MatCell} or an \arcanemat{EnvCell}.
 
-De la même manière, l'interface \arcanemat{IMeshComponent} est maintenant
-l'interface de base de \arcanemat{IMeshMaterial} et
-\arcanemat{IMeshEnvironment} et les méthodes
-\arcanemat{IMeshMaterialMng::materialsAsComponents()} et
-\arcanemat{IMeshMaterialMng::environmentsAsComponents()} permettent de traiter les
-listes de matériaux et milieux de la même manière sous forme de liste
-de \arcanemat{IMeshComponent}. Enfin, la classe \arcanemat{ComponentCellVector} permet de
-créer un vecteur de \arcanemat{ComponentCell} et s'utiliser comme un \arcanemat{EnvCellVector}
-ou \arcanemat{MatCellVector}.
+Similarly, the interface \arcanemat{IMeshComponent} is now
+the base interface for \arcanemat{IMeshMaterial} and
+\arcanemat{IMeshEnvironment}, and the methods
+\arcanemat{IMeshMaterialMng::materialsAsComponents()} and
+\arcanemat{IMeshMaterialMng::environmentsAsComponents()} allow treating the
+lists of materials and environments in the same way as a list of
+\arcanemat{IMeshComponent}. Finally, the class \arcanemat{ComponentCellVector}
+allows creating a vector of \arcanemat{ComponentCell} and can be used as an
+\arcanemat{EnvCellVector}
+or \arcanemat{MatCellVector}.
 
-La méthode \arcanemat{ComponentCell::superCell()} retourne la \arcanemat{ComponentCell} de
-niveau hiérarchique immédiatement supérieur. Il est aussi possible
-d'itérer sur les sous-mailles d'une \arcanemat{ComponantCell} via la macro
+The method \arcanemat{ComponentCell::superCell()} returns the
+\arcanemat{ComponentCell} of the immediately higher hierarchical level. It is
+also possible
+to iterate over the sub-cells of an \arcanemat{ComponentCell} via the macro
 ENUMERATE_CELL_COMPONENTCELL():
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleComponentSuperItem
 
-Enfin, il existe une macro ENUMERATE_COMPONENT() qui permet d'itérer
-sur une liste de composants, et qui peut donc se substituer à
-ENUMERATE_MAT() ou ENUMERATE_ENV().
+Finally, there is a macro ENUMERATE_COMPONENT() which allows iterating
+over a list of components, and thus can replace ENUMERATE_MAT() or
+ENUMERATE_ENV().
 
-## Variables matériaux {#arcanedoc_materials_manage_variable}
+## Material Variables {#arcanedoc_materials_manage_variable}
 
-Il est aussi possible de déclarer des
-variables uniquement sur les milieux et qui n'ont pas de valeurs sur
-les matériaux. Pour plus d'infos voir la section \ref
-arcanedoc_execution_env_variables.
+It is also possible to declare variables only on environments that do not have
+values on materials. For more information, see section
+\ref arcanedoc_execution_env_variables.
 
-Les variables matériaux sont similaires aux variables de maillage
-mais possèdent en plus de la valeur aux mailles
-classiques une valeur par matériau et par milieu présent dans la
-maille. Pour une maille qui a 3 milieux, avec 2 matériaux pour le
-milieu 1, 3 pour le milieu 2 et 5 pour le milieu 3, le nombre de
-valeurs est donc de 14 (10 pour les matériaux, 3 pour les
-milieux et 1 pour la valeur globale). Les valeurs par matériaux et
-par milieux sont appelées des valeurs partielles.
+Material variables are similar to mesh variables but in addition to having a
+value on classical cells, they have a value per material and per environment
+present in the cell. For a cell that has 3 environments, with 2 materials for
+environment 1, 3 for environment 2, and 5 for environment 3, the number of
+values is therefore 14 (10 for materials, 3 for environments, and 1 for the
+global value). The values per materials and per environments are called partial
+values.
 
-Actuellement, les variables matériaux sont uniquement disponibles aux
-mailles. La classe de base gérant ces variables est
-MeshMaterialVariableRef. Les types possibles sont les suivants et
-sont définis dans le fichier \c "MeshMaterialVariableRef.h".
+Currently, material variables are only available on cells. The base class
+managing these variables is
+MeshMaterialVariableRef. The possible types are as follows and are defined in
+the file \c "MeshMaterialVariableRef.h".
 
 <table>
-<tr><th>Nom</th><th>Description</th></th>
-<tr><td>\arcanemat{MaterialVariableCellByte}</td><td>variable matériau de type \arcane{Byte}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellReal}</td><td>variable matériau de type \arcane{Real}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellInt16}</td><td>variable matériau de type \arcane{Int16}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellInt32}</td><td>variable matériau de type \arcane{Int32}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellInt64}</td><td>variable matériau de type \arcane{Int64}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellReal2}</td><td>variable matériau de type \arcane{Real2}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellReal3}</td><td>variable matériau de type \arcane{Real3}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellReal2x2}</td><td>variable matériau de type \arcane{Real2x2}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellReal3x3}</td><td>variable matériau de type \arcane{Real3x3}</td></tr>
+<tr><th>Name</th><th>Description</th></th>
+<tr><td>\arcanemat{MaterialVariableCellByte}</td><td>material variable of type \arcane{Byte}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellReal}</td><td>material variable of type \arcane{Real}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellInt16}</td><td>material variable of type \arcane{Int16}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellInt32}</td><td>material variable of type \arcane{Int32}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellInt64}</td><td>material variable of type \arcane{Int64}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellReal2}</td><td>material variable of type \arcane{Real2}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellReal3}</td><td>material variable of type \arcane{Real3}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellReal2x2}</td><td>material variable of type \arcane{Real2x2}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellReal3x3}</td><td>material variable of type \arcane{Real3x3}</td></tr>
 </table>
 
-Il est aussi possible de définir des variables tableaux sur les
-matériaux, qui ont le type suivant:
+It is also possible to define array variables on materials, which have the
+following type:
 
 <table>
-<tr><th>Nom</th><th>Description</th></th>
-<tr><td>\arcanemat{MaterialVariableCellArrayByte}</td><td>variable matériau de type tableau de \arcane{Byte}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellArrayReal}</td><td>variable matériau de type tableau de \arcane{Real}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellArrayInt16}</td><td>variable matériau de type tableau de \arcane{Int16}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellArrayInt32}</td><td>variable matériau de type tableau de \arcane{Int32}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellArrayInt64}</td><td>variable matériau de type tableau de \arcane{Int64}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellArrayReal2}</td><td>variable matériau de type tableau de \arcane{Real2}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellArrayReal3}</td><td>variable matériau de type tableau de \arcane{Real3}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellArrayReal2x2}</td><td>variable matériau de type tableau de \arcane{Real2x2}</td></tr>
-<tr><td>\arcanemat{MaterialVariableCellArrayReal3x3}</td><td>variable matériau de type tableau de \arcane{Real3x3}</td></tr>
+<tr><th>Name</th><th>Description</th></th>
+<tr><td>\arcanemat{MaterialVariableCellArrayByte}</td><td>material variable of type array of \arcane{Byte}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellArrayReal}</td><td>material variable of type array of \arcane{Real}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellArrayInt16}</td><td>material variable of type array of \arcane{Int16}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellArrayInt32}</td><td>material variable of type array of \arcane{Int32}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellArrayInt64}</td><td>material variable of type array of \arcane{Int64}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellArrayReal2}</td><td>material variable of type array of \arcane{Real2}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellArrayReal3}</td><td>material variable of type array of \arcane{Real3}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellArrayReal2x2}</td><td>material variable of type array of \arcane{Real2x2}</td></tr>
+<tr><td>\arcanemat{MaterialVariableCellArrayReal3x3}</td><td>material variable of type array of \arcane{Real3x3}</td></tr>
 </table>
 
-\note Pour information, en interne
-d'Arcane, ces valeurs partielles sont gérées sous forme de variable
-tableau classique mais cette implémentation peut évoluer. Depuis la
-version 2.0 de %Arcane, pour pouvoir distinguer ces variables des
-variables classiques, elles sont taggées avec la valeur
-"Material". Par exemple, la commande
+\note For information, internally in Arcane, these partial values are managed as
+a classic array variable, but this implementation may evolve. Since version 2.0
+of %Arcane, in order to distinguish these variables from classical variables,
+they are tagged with the value "Material". For example, the command
+
 ```cpp
 Arcane::IVariable* var = ...;
 if (var->hasTag("Material")){
-  // Il s'agit d'une valeur partielle.
+  // This is a partial value.
 }
 ```
 
-Pour l'instant, il n'est possible de créer que des variables
-scalaires aux mailles, avec l'un des types de donnée suivante : #Real, #Int32, #Int64,
-Real2, Real3, Real2x2 ou Real3x3. Le nom de la classe correspondante
-est le même que pour les variables classiques, mais préfixé de
-'Material'. Par exemple, pour une variable de type Real3, le nom est
-\a MaterialVariableCellReal3.
+For now, it is only possible to create scalar variables on cells, with one of
+the following data types: #Real, #Int32, #Int64, Real2, Real3, Real2x2, or
+Real3x3. The name of the corresponding class is the same as for classical
+variables, but prefixed with 'Material'. For example, for a Real3 variable, the
+name is \a MaterialVariableCellReal3.
 
 ### Construction {#arcanedoc_materials_manage_variable_build}
 
-La déclaration des variables matériaux se fait d'une manière
-similaire à celle des variables du maillage. Il est aussi possible de
-les déclarer dans le fichier axl, de la même manière qu'une variable
-classique, en ajoutant l'attribut \c material avec la valeur \c
-true. Les valeurs valides pour \c dimension sont \c 0 ou \c 1.
+The declaration of material variables is done in a manner similar to that of
+mesh variables. It is also possible to declare them in the axl file, in the same
+way as a classical variable, by adding the attribute \c material with the value
+\c true. The valid values for \c dimension are \c 0 or
+\c 1.
 
 ```xml
 <variable field-name="mat_density"
@@ -368,36 +356,35 @@ true. Les valeurs valides pour \c dimension sont \c 0 ou \c 1.
 />
 ```
 
-La construction se fait avec un objet du type MaterialVariableBuildInfo qui référence le IMeshMaterialMng
-correspondant ou alors de la même manière qu'une variable classique,
-via le VariableBuildInfo. Par exemple :
+The construction is done with an object of type MaterialVariableBuildInfo which
+references the corresponding IMeshMaterialMng or in the same way as a classical
+variable, via the VariableBuildInfo. For example:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleMaterialCreateVariable
 
-\note La construction des variables matériaux est thread-safe.
+\note The construction of material variables is thread-safe.
 
-Comme pour les variables classiques, les instructions précédentes ne
-créent une variable que si aucune de même nom n'existe. Dans le cas
-contraire, elles récupèrent une référence à la variable déjà créé
-correspondante.
+As with classic variables, the previous instructions create a variable only if
+none with the same name exists. Otherwise, they retrieve a reference to the
+corresponding already created variable.
 
-### Utilisation {#arcanedoc_materials_manage_variable_usage}
+### Usage {#arcanedoc_materials_manage_variable_usage}
 
-Pour accéder à une valeur d'une variable matériau, il suffit
-d'utiliser l'opérateur [] avec comme argument un des types
-ComponentCell, Cell, MatCell, EnvCell ou AllEnvCell.
+To access a material variable's value, simply use the [] operator with one of
+the following types as an argument: ComponentCell, Cell, MatCell, EnvCell, or
+AllEnvCell.
 
 ```cpp
 Arcane::Cell global_cell;
 Arcane::Materials::MatCell mat_cell;
 Arcane::Materials::EnvCell env_cell;
-mat_density[global_cell]; // Valeur globale
-mat_density[mat_cell];    // Valeur pour un matériau
-mat_density[env_cell];    // Valeur pour un milieu.
+mat_density[global_cell]; // Global value
+mat_density[mat_cell];    // Value for a material
+mat_density[env_cell];    // Value for an environment.
 ```
 
-La valeur globale est partagée avec celle des variables standards
-Arcane de même nom. Par exemple :
+The global value is shared with that of standard Arcane variables of the same
+name. For example:
 
 ```cpp
 Arcane::Materials::IMeshMaterialMng* material_mng = ...;
@@ -407,11 +394,11 @@ Arcane::VariableBuildInfo info(defaultMesh(),"Density"))
 Arcane::VariableCellReal density(info);
 
 mat_density[global_cell] = 3.0;
-info() << density[global_cell]; // Affiche 3.0
+info() << density[global_cell]; // Displays 3.0
 ```
 
-Il est aussi possible de récupérer la variable globale associée à une
-variable matériaux, via la méthode globalVariable():
+It is also possible to retrieve the global variable associated with a material
+variable via the globalVariable() method:
 
 ```cpp
 Arcane::Materials::IMeshMaterialMng* material_mng = ...;
@@ -419,134 +406,123 @@ Arcane::Materials::MaterialVariableCellReal mat_density(Arcane::Materials::Mater
 Arcane::VariableCellReal& density(mat_density.globalVariable());
 ```
 
-L'implémentation des variables matériaux a pour but de limiter
-l'utilisation mémoire. Dans cette optique, les valeurs aux milieux et
-aux matériaux peuvent utiliser la même zone mémoire et dans ce cas
-modifier la valeur milieu modifie aussi la valeur matériau et
-réciproquement. Cela est le cas si les conditions suivantes sont
-respectées dans une maille \a cell :
-- un seul matériau (MAT) dans un milieu (ENV), alors var[MAT]==var[ENV]
-- un seul milieu (ENV) dans la maille, alors var[ENV] == var[cell]
+The implementation of material variables aims to limit memory usage. With this
+goal in mind, values in environments and materials can use the same memory area,
+and in this case, modifying the environment value also modifies the material
+value and vice versa. This is the case if the following conditions are met in a
+cell \a cell:
+- only one material (MAT) in an environment (ENV), then var[MAT]==var[ENV]
+- only one environment (ENV) in the cell, then var[ENV] == var[cell]
 
-### Synchronisations {#arcanedoc_materials_manage_variable_synchronize}
+### Synchronizations {#arcanedoc_materials_manage_variable_synchronize}
 
-Il est possible de synchroniser les valeurs des variables matériaux,
-de la même manière que les variables classiques via la fonction
-\arcanemat{MeshMaterialVariableRef::synchronize()}.
+It is possible to synchronize the values of material variables, just like
+classic variables, using the \arcanemat{MeshMaterialVariableRef::synchronize()}
+function.
 
-\warning Attention, il faut tout de même que
-les informations sur les matériaux présents soient cohérentes entre
-tous les sous-domaines : si une maille existe dans plusieurs
-sous-domaines, elle doit avoir les mêmes matériaux et milieux dans
-chaque sous-domaine.
+\warning Attention, it is still necessary that the information about the present
+materials is consistent across all subdomains: if a cell exists in multiple
+subdomains, it must have the same materials and environments in each subdomain.
 
-Il est possible de garantir que toutes les informations sur les
-matériaux et les milieux sont cohérentes entre les sous-domaines en
-appelant la méthode
-\arcanemat{IMeshMaterialMng::synchronizeMaterialsInCells()}. Il est aussi possible
-de vérifier cette cohérence en appelant
+It is possible to guarantee that all information about materials and
+environments is consistent across subdomains by calling the
+\arcanemat{IMeshMaterialMng::synchronizeMaterialsInCells()} method. It is also
+possible to check this consistency by calling
 \arcanemat{IMeshMaterialMng::checkMaterialsInCells()}.
 
-Depuis la version 2.3.7, il existe plusieurs implémentations pour la
-synchronisation. La version par défaut n'est pas optimisée et
-effectue une synchronisation par matériau enregistré dans
-\arcanemat{IMeshMaterialMng}. La version optimisée conseillée est la version 6.
-Pour l'utiliser, il faut appeler la méthode
-\arcanemat{IMeshMaterialMng::setSynchronizeVariableVersion()} avec la valeur 6. Il est aussi
-possible d'effectuer plusieurs synchronisations en une seule fois via la
-classe \arcanemat{MeshMaterialVariableSynchronizerList}. Cela permet d'optimiser
-les communications en réduisant le nombre de messages entre les
-processeurs.
-Par exemple :
+Since version 2.3.7, there are several implementations for synchronization. The
+default version is not optimized and performs synchronization per material
+registered in \arcanemat{IMeshMaterialMng}. The recommended optimized version is
+version 6. To use it, you must call the
+\arcanemat{IMeshMaterialMng::setSynchronizeVariableVersion()} method with the
+value 6. It is also possible to
+perform multiple synchronizations at once using the
+\arcanemat{MeshMaterialVariableSynchronizerList} class. This allows optimizing
+communications by reducing the number of messages between processors.
+For example:
 ```cpp
 Arcane::Materials::IMeshMaterialMng* material_mng = ...;
 Arcane::Materials::MaterialVariableCellReal temperature = ...;
 Arcane::Materials::MaterialVariableCellInt32 mat_index = ...;
 Arcane::Materials::MaterialVariableCellReal pressure = ...;
-// Création de la liste de variables à synchroniser.
+// Creation of the list of variables to synchronize.
 Arcane::Materials::MeshMaterialVariableSynchronizerList mmvsl(material_mng);
 
-// Ajoute 3 variables à la liste.
+// Adds 3 variables to the list.
 temperatture.synchronize(mmvsl);
 mat_index.synchronize(mmvsl);
 pressure.synchronize(mmvsl);
 
-// Exécute la synchronisation sur les 3 variables en une fois.
+// Executes the synchronization for the 3 variables at once.
 mmvsl.apply();
 ```
 
-Depuis la version 3.6, il existe deux autres versions de la
-synchronisation qui fonctionne de manière identique à la version 6
-mais avec les modifications suivantes :
-- La version 7 n'effectue qu'une seule allocation mémoire pour les
-buffers d'envoi et de réception (alors que la version 6 effectue
-autant d'allocation qu'il y a de sous-domaines voisins)
-- La version 8 qui est identique à la version 7 au détail près que
-les buffers alloués sont conservés entre deux synchronisations. Cette
-version permet d'éviter des allocations/désallocations successives au
-prix d'une augmentation mémoire.
-Ces deux versions ont pour but d'éviter de faire trop de cycles
-d'allocations/désallocations qui peuvent demander une charge de
-travail importante pour les cartes réseaux pour accès directs à la
-mémoire (RMA).
+Since version 3.6, there are two other versions of synchronization that function
+identically to version 6 but with the following modifications:
+- Version 7 performs only one memory allocation for the send and receive
+  buffers (whereas version 6 performs as many allocations as there are
+  neighboring subdomains)
+- Version 8, which is identical to version 7 in detail, keeps the allocated
+  buffers between two synchronizations. This version avoids successive
+  allocations/deallocations at the cost of increased memory usage.
+  These two versions aim to avoid too many allocation/deallocation cycles, which
+  can demand a significant workload for network cards for direct memory access
+  (RMA).
 
-### Gestion des dépendances {#arcanedoc_materials_manage_variable_dependencies}
+### Dependency Management {#arcanedoc_materials_manage_variable_dependencies}
 
-Il est possible d'utiliser le mécanisme de dépendance sur les variables matériaux.
-Ce mécanisme est similaire à celui des variables classiques mais
-permet de gérer les dépendances par matériaux. 
+It is possible to use the dependency mechanism on material variables. This
+mechanism is similar to that of classic variables but allows managing
+dependencies per material.
 
-\note Contrairement aux dépendances sur les variables classiques,
-les dépendances sur les matériaux ne gèrent pas le temps physique et
-il n'est pas possible par exemple de faire des dépendances sur le
-temps physique précédent (en spécifiant \arcane{IVariable::DPT_PreviousTime}
-par exemple).
+\note Unlike dependencies on classic variables, dependencies on materials do not
+manage physical time, and it is not possible, for example, to make dependencies
+on the previous physical time (by specifying
+\arcane{IVariable::DPT_PreviousTime}, for example).
 
-Le fonctionnement est le suivant :
+The operation works as follows:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleDependencies
 
-Lors de l'appel à \arcanemat{MeshMaterialVariableRef::update()}, il est
-nécessaire de spécifier en argument le matériau sur lequel on
-souhaite faire la mise à jour. La méthode de calcul doit donc avoir
-comme argument un matériau, et en fin de calcul appeler
-\arcanemat{MeshMaterialVariableRef::setUpToDate(mat)} avec \a mat le matériau
-recalculé.
-Par exemple :
+When calling \arcanemat{MeshMaterialVariableRef::update()}, it is necessary to
+specify the material on which the update should be performed as an argument. The
+calculation method must therefore have a material as an argument, and at the end
+of the calculation, call \arcanemat{MeshMaterialVariableRef::setUpToDate(mat)}
+with \a mat being the recalculated material.
+For example:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleDependenciesComputeFunction
 
-## Variables milieux {#arcanedoc_materials_manage_environment_variable}
+## Environment Variables {#arcanedoc_materials_manage_environment_variable}
 
-Il est aussi possible de définir des variables qui n'ont de valeurs
-partielles que sur les milieux et pas sur les matériaux. Mise à part
-cette différence, elles se comportent comme les variables
-matériaux. Les variables milieux disponibles sont les suivantes:
+It is also possible to define variables that only have partial values in
+environments and not in materials. Apart from this difference, they behave like
+material variables. The available environment variables are as follows:
 
 <table>
-<tr><th>Nom</th><th>Description</th></th>
-<tr><td>\arcanemat{EnvironmentVariableCellByte}</td><td>variable milieu de type \arcane{Byte}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellReal}</td><td>variable milieu de type \arcane{Real}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellInt16}</td><td>variable milieu de type \arcane{Int16}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellInt32}</td><td>variable milieu de type \arcane{Int32}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellInt64}</td><td>variable milieu de type \arcane{Int64}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellReal2}</td><td>variable milieu de type \arcane{Real2}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellReal3}</td><td>variable milieu de type \arcane{Real3}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellReal2x2}</td><td>variable milieu de type \arcane{Real2x2}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellReal3x3}</td><td>variable milieu de type \arcane{Real3x3}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellArrayByte}</td><td>variable milieu de type tableau de \arcane{Byte}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellArrayReal}</td><td>variable milieu de type tableau de \arcane{Real}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellArrayInt16}</td><td>variable milieu de type tableau de \arcane{Int16}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellArrayInt32}</td><td>variable milieu de type tableau de \arcane{Int32}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellArrayInt64}</td><td>variable milieu de type tableau de \arcane{Int64}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellArrayReal2}</td><td>variable milieu de type tableau de \arcane{Real2}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellArrayReal3}</td><td>variable milieu de type tableau de \arcane{Real3}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellArrayReal2x2}</td><td>variable milieu de type tableau de \arcane{Real2x2}</td></tr>
-<tr><td>\arcanemat{EnvironmentVariableCellArrayReal3x3}</td><td>variable milieu de type tableau de \arcane{Real3x3}</td></tr>
+<tr><th>Name</th><th>Description</th></th>
+<tr><td>\arcanemat{EnvironmentVariableCellByte}</td><td>environment variable of type \arcane{Byte}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellReal}</td><td>environment variable of type \arcane{Real}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellInt16}</td><td>environment variable of type \arcane{Int16}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellInt32}</td><td>environment variable of type \arcane{Int32}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellInt64}</td><td>environment variable of type \arcane{Int64}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellReal2}</td><td>environment variable of type \arcane{Real2}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellReal3}</td><td>environment variable of type \arcane{Real3}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellReal2x2}</td><td>environment variable of type \arcane{Real2x2}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellReal3x3}</td><td>environment variable of type \arcane{Real3x3}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellArrayByte}</td><td>environment variable of type array of \arcane{Byte}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellArrayReal}</td><td>environment variable of type array of \arcane{Real}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellArrayInt16}</td><td>environment variable of type array of \arcane{Int16}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellArrayInt32}</td><td>environment variable of type array of \arcane{Int32}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellArrayInt64}</td><td>environment variable of type array of \arcane{Int64}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellArrayReal2}</td><td>environment variable of type array of \arcane{Real2}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellArrayReal3}</td><td>environment variable of type array of \arcane{Real3}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellArrayReal2x2}</td><td>environment variable of type array of \arcane{Real2x2}</td></tr>
+<tr><td>\arcanemat{EnvironmentVariableCellArrayReal3x3}</td><td>environment variable of type array of \arcane{Real3x3}</td></tr>
 </table>
 
-Dans le fichier axl, ces variables peuvent être définies en
-spécifiant l'attribut \c environment à \c true.
+In the axl file, these variables can be defined by specifying the \c environment
+attribute to \c true.
 
 ```xml
 <variable field-name="mat_density"
@@ -558,71 +534,65 @@ spécifiant l'attribut \c environment à \c true.
 />
 ```
 
-\warning Comme les structures internes des mailles matériaux et
-milieux sont unifiées, il est possible à la compilation d'indexer une variable milieu
-avec une \arcanemat{MatCell}. Comme il n'y a pas de valeurs matériaux associées,
-cela provoquera un accès mémoire invalide qui a de fortes chance de
-se solder par une erreur de segmentation (SegmentationFault). Ces
-erreurs sont détectées en mode CHECK et il est donc préférable
-d'utiliser ce mode pour les développements.
+\warning Since the internal structures of material and environment cells are
+unified, it is possible at compilation time to index an environment variable
+with a \arcanemat{MatCell}. Since there are no associated material values, this
+will cause an invalid memory access which is highly likely to result in a
+segmentation fault (SegmentationFault). These errors are detected in CHECK mode,
+so it is preferable to use this mode for development.
 
-## Parallélisation des boucles sur les matériaux et milieux {#arcanedoc_materials_manage_concurrency}
+## Parallelization of Loops on Materials and Environments {#arcanedoc_materials_manage_concurrency}
 
-De la même manière que les boucles sur les entités (voir \ref
-arcanedoc_parallel_concurrency), il est possible d'exécuter en parallèle des
-boucles sur les milieux où les matériaux. Cela se fait de manière
-similaire aux boucles sur les entités, en utilisant la méthode
-\arcane{Parallel::Foreach}. Par exemple :
+Just like loops on entities (see \ref arcanedoc_parallel_concurrency), it is
+possible to execute loops on environments or materials in parallel. This is done
+similarly to loops on entities, using the \arcane{Parallel::Foreach} method. For
+example:
 
 \snippet MeshMaterialTesterModule_Samples.cc SampleConcurrency
 
-## Optimisation des modifications sur les matériaux et les milieux. {#arcanedoc_materials_manage_optimization}
+## Optimization of Modifications on Materials and Environments. {#arcanedoc_materials_manage_optimization}
 
-La modification des mailles matériaux et milieux se fait via la
-classe \arcanemat{MeshMaterialModifier}. Cette modification se fait via des
-appels successifs à \arcanemat{MeshMaterialModifier::addCells()} ou
-\arcanemat{MeshMaterialModifier::removeCells()}. Ces méthodes permettent
-d'enregistrer la liste des modifications mais ces dernières ne sont
-réellement exécutées que lors de la destruction de l'instance
-\arcanemat{MeshMaterialModifier}.
+Modification of material and environment cells is done via the
+\arcanemat{MeshMaterialModifier} class. This modification is done through
+successive calls to \arcanemat{MeshMaterialModifier::addCells()} or
+\arcanemat{MeshMaterialModifier::removeCells()}. These methods allow recording
+the list of modifications, but they are only actually executed upon the
+destruction of the \arcanemat{MeshMaterialModifier} instance.
 
-Par défaut, le comportement est le suivant :
-- sauvegarde des valeurs de toutes les variables matériaux
-- application des modifications (qui consiste uniquement à modifier
-la liste des entités des groupes de mailles associées aux matériaux
-et milieux)
-- restauration des valeurs de toutes les variables matériaux. Lors de
-la restauration, si une nouvelle maille matériau est créée, sa valeur
-dépend de \arcanemat{IMeshMaterialMng::isDataInitialisationWithZero()}.
+By default, the behavior is as follows:
+- saving the values of all material variables
+- applying the modifications (which consists only of modifying the list of
+  entities of the cell groups associated with materials and environments)
+- restoring the values of all material variables. During restoration, if a new
+  material cell is created, its value depends on
+  \arcanemat{IMeshMaterialMng::isDataInitialisationWithZero()}.
 
-La sauvegarde et la restauration des valeurs sont des opérations
-couteuses en temps CPU et mémoire. Il est possible de désactiver ces
-opérations via setKeepValuesAfterChange() mais bien entendu dans ce
-cas les valeurs partielles ne sont pas conservées.
+Saving and restoring values are CPU and memory-intensive operations. It is
+possible to disable these operations via setKeepValuesAfterChange(), but of
+course, in this case, partial values are not preserved.
 
-Afin d'optimiser ces modifications de matériaux, il est possible de
-se passer de ces opérations de sauvegarde/restauration. Pour cela, il
-faut utiliser la méthode IMeshMaterialMng::setModificationFlags(int
-v). Cette méthode doit être appelée avant
-\arcanemat{IMeshMaterialMng::endCreate()}.
-L'argument utilisé est une combinaison de bits de l'énumération
-\arcanemat{eModificationFlags}:
-- \arcanemat{eModificationFlags::GenericOptimize} : indique qu'on souhaite
-activer les optimisations.
-- \arcanemat{eModificationFlags::OptimizeMultiAddRemove}: indique qu'on active
-les optimisations dans le cas où il y a plusieurs ajouts ou
-suppressions avec un même MeshMaterialModifier.
-- \arcanemat{eModificationFlags::OptimizeMultiMaterialPerEnvironment} indique qu'on active
-les optimisations dans le cas où il y a plusieurs matériaux
-dans le milieu.
+To optimize these material modifications, it is possible to bypass these
+save/restore operations. To do this, you must use the
+IMeshMaterialMng::setModificationFlags(int v) method. This method must be called
+before \arcanemat{IMeshMaterialMng::endCreate()}.
+The argument used is a combination of bits from the
+\arcanemat{eModificationFlags} enumeration:
+- \arcanemat{eModificationFlags::GenericOptimize}: indicates that you wish to
+  enable optimizations.
+- \arcanemat{eModificationFlags::OptimizeMultiAddRemove}: indicates that you
+  activate optimizations in the case where there are multiple additions or
+  removals with the same MeshMaterialModifier.
+- \arcanemat{eModificationFlags::OptimizeMultiMaterialPerEnvironment} indicates
+  that you activate optimizations in the case where there are multiple materials
+  in the environment.
 
-\warning La valeur \arcanemat{eModificationFlags::OptimizeMultiMaterialPerEnvironment}
-n'est disponible qu'à partir de la version 2.3.2 de %Arcane. Sur
-les versions antérieures, aucune optimisation n'est effectuée
-si un des matériaux modifié n'est pas le seul matériau du
-milieu.
+\warning The value
+\arcanemat{eModificationFlags::OptimizeMultiMaterialPerEnvironment} is only
+available from version 2.3.2 of %Arcane. On earlier versions, no optimization
+is performed if one of the modified materials is not the only material in the
+environment.
 
-Par exemple, on suppose les trois séries de modifications :
+For example, suppose the three series of modifications:
 ```cpp
 {
   Arcane::Materials::MeshMaterialModifier m1(m_material_mng);
@@ -640,27 +610,26 @@ Par exemple, on suppose les trois séries de modifications :
 }
 ```
 
-Suivant les valeurs spécifiées lors de l'init, on aura :
+Depending on the values specified during initialization, you will have:
 
 ```cpp
 int flags1 = (int)Arcane::Materials::eModificationFlags::GenericOptimize;
 m_material_mng->setModificationFlags(flags1);
-// Seuls m1 et m3 sont optimisés.
+// Only m1 and m3 are optimized.
 
 int flags2 = (int)Arcane::Materials::eModificationFlags::GenericOptimize | (int)Arcane::Materials::eModificationFlags::OptimizeMultiAddRemove;
 m_material_mng->setModificationFlags(flags2);
-// m1, m2 et m3 sont optimisés.
+// m1, m2 and m3 are optimized.
 ```
 
-Il est possible de surcharger les optimisations utilisées via la
-variable d'environnement ARCANE_MATERIAL_MODIFICATION_FLAGS. Cette
-variable doit contenir une valeur entière correspondant à celle
-utilisée en argument de \arcanemat{IMeshMaterialMng::setModificationFlags()} (à
-savoir 1 pour l'optimisation générale, 3 pour en plus optimiser les
-ajouts/suppressions multiples, et 7 pour optimiser aussi les cas des
-milieux multi-matériaux).
+It is possible to override the used optimizations via the environment variable
+ARCANE_MATERIAL_MODIFICATION_FLAGS. This variable must contain an integer value
+corresponding to the one used as an argument for
+\arcanemat{IMeshMaterialMng::setModificationFlags()} (namely 1 for general
+optimization, 3 to further optimize multiple additions/removals, and 7 to also
+optimize multi-material environments).
 
-### Notes sur l'implémentation {#arcanedoc_materials_manage_optimization_implementation}
+### Notes on Implementation {#arcanedoc_materials_manage_optimization_implementation}
 
 \htmlonly
 <span style='background: red'>IMPORTANT</span>
@@ -668,18 +637,15 @@ milieux multi-matériaux).
 
 <h4>NOTE 1</h4>
 
-Actuellement, les méthodes optimisées ne réutilisent pas les valeurs
-partielles lorsque des mailles sont supprimées puis ajoutées à un même matériau
-ce qui conduit à une augmentation progressive de la mémoire utilisée
-par les valeurs partielles. Il est néanmoins possible de libérer
-cette mémoire supplémentaire via l'appel à
-IMeshMaterialMng::forceRecompute().
+Currently, the optimized methods do not reuse partial values when cells are
+deleted and then added to the same material, which leads to a gradual increase
+in the memory used by partial values. However, it is possible to free up this
+extra memory by calling IMeshMaterialMng::forceRecompute().
 
 <h4>NOTE 2</h4>
 
-Le comportement en mode optimisé lorsqu'il y a suppression puis ajout
-d'une même maille dans un même matériau est différent du mode
-classique. Par exemple :
+The behavior in optimized mode when there is deletion followed by addition of
+the same cell in the same material is different from classic mode. For example:
 
 ```cpp
 MeshMaterialModifier m1(m_material_mng);
@@ -695,43 +661,39 @@ m1.removeCells(mat1,remove_ids);
 m1.addCells(mat1,add_ids);
 ```
 
-La maille de localId() \a 5 est d'abord supprimée puis remise dans le
-matériau. En mode classique, la valeur de la maille sera la même
-qu'avant la modification car on restaure la valeur depuis la
-sauvegarde. En mode optimisé, avec
-eModificationFlags::OptimizeMultiAddRemove spécifié, on supprime
-d'abord la maille du matériau puis on l'a recréé. Sa valeur sera donc
-celle d'une nouvelle maille matériau crée, donc 0 si
-IMeshMaterialMng::isDataInitialisationWithZero() ou la valeur de la
-maille globale associée sinon.
+The cell with localId() \a 5 is first deleted and then put back into the
+material. In classic mode, the cell value will be the same as before the
+modification because the value is restored from the save. In optimized mode,
+with eModificationFlags::OptimizeMultiAddRemove specified, the cell is first
+removed from the material and then recreated. Its value will therefore be that
+of a newly created material cell, so 0 if
+IMeshMaterialMng::isDataInitialisationWithZero() or the value of the associated
+global cell otherwise.
 
 <h4>NOTE 3</h4>
 
-Enfin, les méthodes optimisées sont plus strictes que les méthodes
-classiques et certaines opérations qui étaient tolérées en mode
-classique ne le sont plus :
-- spécifier dans la liste des mailles à ajouter une maille qui est
-déjà dans le matériau.
-- spécifier dans la liste des mailles à supprimer une maille qui
-n'est pas dans le matériau.
-- spécifier plusieurs fois la même maille dans la liste des mailles
-à supprimer ou ajouter.
+Finally, the optimized methods are stricter than the classic methods, and
+certain operations that were tolerated in classic mode are no longer tolerated:
+- specifying in the list of cells to add a cell that is already in the
+  material.
+- specifying in the list of cells to remove a cell that is not in the material.
+- specifying the same cell multiple times in the list of cells to remove or
+  add.
 
 ```cpp
 MeshMaterialModifier mm(m_material_mng);
 Int32Array ids;
 ids.add(5);
-mm.addCells(mat1,ids); // Erreur si la maille 5 est déjà dans mat1
-mm.removeCells(mat1,ids); // Erreur si la maille 5 n'est pas mat1
+mm.addCells(mat1,ids); // Error if mesh 5 is already in mat1
+mm.removeCells(mat1,ids); // Error if mesh 5 is not in mat1
 ids.add(6);
-ids.add(6); // Erreur si \a ids contient plusieurs fois la même maille.
+ids.add(6); // Error if \a ids contains the same cells multiple times.
 ```
 
-Si on se trouve dans un des cas précédent, il y a de fortes chances
-que cela fasse planter le code. Pour éviter cela, le mode CHECK
-détecte ces erreurs, les signale dans le listing et les filtre pour
-que cela fonctionne correctement. Ces erreurs sont signalées dans le
-listing par des messages du style suivant :
+If one of the previous cases occurs, there is a high chance that the code will
+crash. To prevent this, CHECK mode detects these errors, signals them in the
+listing, and filters them so that it works correctly. These errors are signaled
+in the listing with messages such as the following:
 
 \verbatim
 ERROR: item ... is present several times in add/remove list for material mat=...
@@ -739,9 +701,8 @@ ERROR: item ... is already in material mat=...
 ERROR: item ... is not in material mat=...
 \endverbatim
 
-En mode release, la détection et la correction ne se fait que si
-la variable d'environnement ARCANE_CHECK est positionnée et vaut 1.
-*/
+In release mode, detection and correction only happen if the ARCANE_CHECK
+environment variable is set and equals 1.
 
 
 ____

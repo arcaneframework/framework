@@ -1,11 +1,11 @@
-﻿# Utilisation dans le module {#arcanedoc_core_types_axl_caseoptions_usage}
+﻿# Usage in the module {#arcanedoc_core_types_axl_caseoptions_usage}
 
 [TOC]
 
-Les options du jeu de données s'utilisent de manière naturelle dans le code.
-Pour continuer l'exemple présenté en début de document, 
-on souhaite avoir deux options
-<tt>simple-real</tt> et <tt>boundary-condition</tt>. Par exemple :
+The dataset options are used naturally in the code.
+To continue the example presented at the beginning of the document, we want to
+have two options:
+<tt>simple-real</tt> and <tt>boundary-condition</tt>. For example:
 
 ```cpp
 namespace TypesTest
@@ -19,58 +19,59 @@ namespace TypesTest
 };
 ```
 
-Le bloc descripteur de module sera le suivant :
+The module descriptor block will be the following:
 
 ```xml
 <?xml version="1.0" ?>
 <module name="Test" version="1.0">
- <name lang='fr'>test</name>
- <description>Module de test</description>
+  <name lang='fr'>test</name>
+  <description>Module de test</description>
 
- <variables/>
- <entry-points/>
+  <variables/>
+  <entry-points/>
 
- <!-- Liste des options -->
- <options>
+  <!-- Liste des options -->
+  <options>
 
-   <simple name="simple-real" type="real">
-     <description>Réel simple</description>
-   </simple>
+    <simple name="simple-real" type="real">
+      <description>Réel simple</description>
+    </simple>
 
-   <enumeration name="boundary-condition" type="TypesTest::eBoundaryCondition" default="X">
-     <description>Type de condition aux limites</description>
-     <enumvalue name="X" genvalue="TypesTest::VelocityX" />
-     <enumvalue name="Y" genvalue="TypesTest::VelocityY"  />
-     <enumvalue name="Z" genvalue="TypesTest::VelocityZ"  />
-   </enumeration>
+    <enumeration name="boundary-condition" type="TypesTest::eBoundaryCondition"
+                 default="X">
+      <description>Type de condition aux limites</description>
+      <enumvalue name="X" genvalue="TypesTest::VelocityX"/>
+      <enumvalue name="Y" genvalue="TypesTest::VelocityY"/>
+      <enumvalue name="Z" genvalue="TypesTest::VelocityZ"/>
+    </enumeration>
 
- </options>
+  </options>
 </module>
 ```
 
-\`A partir de ce fichier, %Arcane va générer un fichier *Test_axl.h* 
-qui contient, entre autre, une classe équivalente à celle-ci :
+From this file, %Arcane will generate a file *Test_axl.h* which contains, among
+other things, a class equivalent to this one:
 
 ```cpp
 class CaseOptionsTest
 {
-  public:
-   ...
-   double simpleReal() { ... }
-   eBoundaryCondition boundaryCondition() { ... }
-   ...
+ public:
+  ...
+  double simpleReal() { ... }
+  eBoundaryCondition boundaryCondition() { ... }
+  ...
 };
 ```
 
-Le module \c TestModule qui, par définition, hérite de la classe
-\c ArcaneTestObject (voir \ref arcanedoc_core_types_module), peut
-lire ses options en récupérant une instance de la classe \c CaseOptionsTest
-grâce à la méthode \c options(). Après la lecture du jeu de données 
-par %Arcane, le module pourra accéder à ses options par leur nom.
+The \c TestModule module, which by definition inherits from the
+\c ArcaneTestObject class (see \ref arcanedoc_core_types_module), can read its
+options by retrieving an instance of the \c CaseOptionsTest class using the
+\c options() method. After %Arcane reads the dataset, the module can access its
+options by their name.
 
-Par exemple, dans le module de test \c TestModule, on peut accéder 
-aux options de la manière suivante :
-  
+For example, in the \c TestModule test module, options can be accessed in the
+following way:
+
 ```cpp
 void TestModule::
 myInit()
@@ -82,7 +83,7 @@ myInit()
 }
 ```
 
-La partie du jeu de données concernant ce module peut être par exemple :
+The dataset part concerning this module can be, for example:
 
 ```xml
 <test>
