@@ -28,10 +28,12 @@ repository components to compile. This list can contain the following values:
 
 - `%Arcane`
 - `Alien`
+- `%Arccore`
 
 By default, the value is `%Arcane;Alien`, and thus both components are compiled.
+As they depend on %Arccore, this component is also enabled.
 
-To compile %Arcane and Alien, you must proceed as follows:
+To compile, you must proceed as follows:
 
 ~~~{sh}
 mkdir /path/to/build
@@ -51,7 +53,10 @@ General options:
 <tr><td>`CMAKE_INSTALL_PREFIX` <td>`/path/to/install` <td>Choice of an installation directory
 <tr><td>`ARCANEFRAMEWORK_BUILD_COMPONENTS` <td>`%Arcane` or `Alien` or `%Arcane;Alien` <td>Component(s) to compile 
 <tr><td>`ARCCORE_CXX_STANDARD` <td>`20` (the default), `23` or `26` <td>Choice of C++ standard to use
-<tr><td>`ARCANE_ENABLE_TESTS` <td>`ON`/`OFF` <td>Enable/Disable tests
+<tr><td>`ARCCORE_ENABLE_MPI` <td>`ON` (default) /`OFF` <td>Enable/Disable MPI support in %Arccore
+<tr><td>`ARCCORE_ENABLE_TBB` <td>`ON` (default) /`OFF` <td>Enable/Disable multi-threading  support using OneTBBin %Arccore
+<tr><td>`ARCCORE_ENABLE_TESTS` <td>`ON`/`OFF` <td>Enable/Disable tests for Arccore
+<tr><td>`ARCANE_ENABLE_TESTS` <td>`ON`/`OFF` <td>Enable/Disable tests for %Arcane
 <tr><td>`ARCANE_ENABLE_DOTNET_WRAPPER` <td>`ON`/`OFF` <td>Enable/Disable the C#/.Net wrapper
 <tr><td>`ARCANE_ENABLE_ALEPH` <td>`ON`/`OFF` <td>Enable/Disable support for the Aleph component
 </table>
@@ -170,7 +175,8 @@ It is possible to specify a target architecture (Compute Capability) via the
 
 #### AMD ROCM/HIP compilation
 
-The minimum required ROCM version is 5.7.
+The minimum required ROCM version is 6.3.
+Older versions may compile but they are not tested.
 
 To compile for AMD GPUs (such as the MI100 or MI250 GPUs), you must first
 install the [ROCM](https://docs.amd.com/) library. When configuring %Arcane, you

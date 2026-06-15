@@ -3,7 +3,7 @@
 As previously explained, the module/service descriptor is a file
 with the `.axl` extension that accompanies modules and services and describes
 the following elements:
-- where the interfaces it implements (**service only**),
+- the interfaces it implements (**service only**),
 - its variables,
 - its entry points (**module only**),
 - its configuration options.

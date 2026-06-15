@@ -12,10 +12,10 @@ This subsection is dedicated to installing these dependencies.
 <tr><td>[GCC](https://gcc.gnu.org/)</td> <td>11/</td> <td rowspan="3">Compiler supporting C++20</td></tr>
 <tr><td>[CLang](https://clang.llvm.org/)</td> <td>15/</td></tr>
 <tr><td>[Visual Studio](https://visualstudio.microsoft.com/)</td> <td>17.4/</td></tr>
-<tr><td>[Make](https://www.gnu.org/software/make/)</td> <td> <td>Executable generation system</td></tr>
+<tr><td>[Make](https://www.gnu.org/software/make/) or [Ninja](https://ninja-build.org/)</td> <td> <td>Executable generation system</td></tr>
 <tr><td>[CMake](https://cmake.org/)</td> <td>3.21/ (3.26/ if using CUDA) <td>Project build system</td></tr>
 <tr><td>[DotNet](https://dotnet.microsoft.com/)</td> <td>8/</td> <td>For AxlStar and the C# wrapper</td></tr>
-<tr><td>[GLib](https://www.gtk.org/)</td> <td> </td> <td>Multi-threading support</td></tr>
+<tr><td>[GLib](https://www.gtk.org/)</td> <td> </td> <td>UTF-8 and legacy multi-threading support</td></tr>
 <tr><td>[LibXml2](http://www.xmlsoft.org/)</td> <td> </td> <td>Reading AXL/ARC files</td></tr>
 </table>
 </details>

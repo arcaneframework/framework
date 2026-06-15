@@ -71,13 +71,13 @@ cells. Thus, to iterate over all cells, with **i** as the name of the iterator,
 you can do this:
 
 ```cpp
-ENUMERATE_(Cell,i,allCells())
+ENUMERATE_(Cell, i, allCells())
 ```
 
 The mass calculation loop described previously then becomes:
 
 ```cpp
-ENUMERATE_(Cell,i,allCells()){
+ENUMERATE_(Cell, i, allCells()){
   m_cell_mass[i] = m_density[i] * m_volume[i];
 }
 ```
@@ -94,7 +94,7 @@ cout << m_velocity[i]; // Erreur!
 Similarly, it is impossible to write:
 
 ```cpp
-ENUMERATE_(Cell,i,allNodes()) // Erreur!
+ENUMERATE_(Cell, i, allNodes()) // Erreur!
 ```
 
 because \arcane{BasicModule::allNodes()} is a group of nodes and **i** is an
@@ -102,7 +102,7 @@ enumerator over a group of cells.
 
 Note that the enumerator's '*' operator allows access to the current element:
 ```cpp
-ENUMERATE_(Cell,icell,allCells()){
+ENUMERATE_(Cell, icell, allCells()){
   Cell cell = *icell;
 }
 ```
@@ -110,7 +110,7 @@ ENUMERATE_(Cell,icell,allCells()){
 It is possible to use the entity itself to retrieve the value of a variable, but
 for performance reasons, you must prioritize access via the iterator:
 ```cpp
-ENUMERATE_(Cell,icell,allCells()){
+ENUMERATE_(Cell, icell, allCells()){
   Cell cell = *icell;
   m_cell_mass[cell] = m_density[cell] * m_volume[cell]; // less performant
   m_cell_mass[icell] = m_density[icell] * m_volume[icell]; // more performant

@@ -418,7 +418,7 @@ For example, with the variable *m_volume* of type \arcane{VariableCellReal}:
 
 ```cpp
 Arcane::VariableCellReal m_volume = ...;
-ENUMERATE_CELL(icell,allCells()) {
+ENUMERATE_(Cell, icell, allCells()) {
   m_temperature[icell] = 2.0;     // Assigns the value 2.0 to the volume of the current cell
   cout << m_temperature[icell];   // Prints the volume of the current cell
 
@@ -448,7 +448,7 @@ For example, with the variable *m_temperature* of type
 ```cpp
 Arcane::VariableCellArrayReal m_temperature = ...;
 m_temperature.resize(3); // Each cell will have 3 temperature values
-ENUMERATE_CELL(icell,allCells()) {
+ENUMERATE_(Cell, icell, allCells()) {
   // Assigns the value 2.0 to the first temperature of the current cell
   m_temperature[icell][0] = 2.0;
 

@@ -15,8 +15,6 @@ Two ways to exploit these windows are available:
 
 From now on, we will refer to a computing node as a machine.
 
-<br>
-
 Table of Contents for this subsection:
 
 1. \subpage arcanedoc_parallel_shmem_winarray <br>

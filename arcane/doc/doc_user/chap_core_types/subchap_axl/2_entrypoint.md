@@ -61,7 +61,7 @@ The meaning of the attributes of the **entry-point** element is as follows:
 <table>
 <tr>
 <td> **compute-loop**</td>
-<td> entrypoint call during iteration,</td>
+<td> entrypoint called during loop iteration</td>
 </tr>
 <tr>
 <td> **init** </td>
@@ -82,7 +82,7 @@ a module should not have to perform specific operations in this case,</td>
 </tr>
 <tr>
 <td> **build** </td>
-<td> entrypoint call before initialization; the dataset has not yet been read.
+<td> entrypoint called before initialization; the dataset has not yet been read.
 This entrypoint is generally used to build certain objects useful to the module
 but is rarely used by numerical modules.</td>
 </tr>
@@ -99,8 +99,9 @@ size of the code variables defined on mesh entities is automatically updated by
 </tr>
 <tr>
 <td> **exit** </td>
-<td> for example, used to deallocate data structures when the code exits: end of
-simulation, stop before restart...</td>
+<td> entrypoint called at the end of execution. It is used for
+example, used to deallocate data structures when the code exits: end
+of simulation, stop before restart...</td>
 </tr>
 </table>
 
@@ -117,18 +118,17 @@ class TestModule
 
  public:
 
-   virtual void testPressureSync();
-   virtual void dumpConnection();
+   void testPressureSync() override;
+   void dumpConnection() override;
    ...
 };
 ```
 
 ## Construction {#arcanedoc_core_types_axl_entrypoint_build}
 
-Entrypoints are defined in the module definition file, in our case \c
-TestModule.cc.
+Entrypoints are defined in the module definition file, in our case `TestModule.cc`.
 
-For example, here is the \c testPressureSync entrypoint called at each iteration
+For example, here is the `testPressureSync` entrypoint called at each iteration
 of the computation loop. This entrypoint calculates the average of the cell
 pressures over time:
 
@@ -145,26 +145,26 @@ testPressureSync()
   m_node_pressure.fill(0.0);
 
   // Adds to each node the pressure of each cell it belongs to
-  ENUMERATE_CELL(i,allCells()){
+  ENUMERATE_(Cell, i, allCells()){
     Cell cell = *i;
     Real cell_pressure = m_pressure[i];
-    for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
-      m_node_pressure[inode] += pressure;
+    for( Node node : cell.nodes() )
+      m_node_pressure[node] += pressure;
   }
 
   // Calculates the average pressure.
-  ENUMERATE_NODE(i,allNodes()){
+  ENUMERATE_(Node, i, allNodes()){
     Node node = *i;
     m_node_pressure[i] /= node.nbCell();
   }
 
   // Assigns to each cell the average pressure of the nodes that compose it
-  ENUMERATE_CELL(i,allCells()){
+  ENUMERATE_(Cell, i, allCells()){
     Cell cell = *i;
     Integer nb_node = cell.nbNode();
     Real cell_pressure = 0.;
-    for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
-      cell_pressure += m_node_pressure[inode];
+    for( Node node : cell.nodes())
+      cell_pressure += m_node_pressure[node];
     cell_pressure /= nb_node;
     m_pressure[i] = cell_pressure;
   }
@@ -178,7 +178,7 @@ testPressureSync()
  Real max_pressure = 0.0;
  Real sum_pressure = 0.0;
 
- ENUMERATE_CELL(i,ownCells()){
+ ENUMERATE_(Cell, i, ownCells()){
    Real pressure = m_pressure[i];
    sum_pressure += pressure;
    if (pressure<min_pressure)

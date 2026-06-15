@@ -92,7 +92,7 @@ Currently, %Arcane provides the following vector types:
 <td>
 
 ```cpp
-#include "arcane/SimdItem.h"
+#include "arcane/core/SimdItem.h"
 ```
 </td>
 </tr>
@@ -134,7 +134,7 @@ VariableCellRealOutView out_internal_energy = viewOut(internal_energy);
 VariableCellRealOutView out_sound_speed = viewOut(sound_speed);
 
 // Scalar version
-ENUMERATE_CELL(icell,allCells()){
+ENUMERATE_(Cell, icell,allCells()){
   Cell vi = *icell;
   Real pressure = in_pressure[vi];
   Real adiabatic_cst = in_adiabatic_cst[vi];
@@ -288,7 +288,7 @@ The mathematical operations supported by %Arcane's vector classes are defined in
 the SimdMathUtils.h file:
 
 ```cpp
-#include "arcane/SimdMathUtils.h"
+#include "arcane/core/SimdMathUtils.h"
 ```
 
 %Arcane provides for the Arcane::SimdReal, Arcane::SimdReal2, and

@@ -53,7 +53,7 @@ that direction and, for cells for example, to get the cell before and after:
 
 ```cpp
 using namespace Arcane;
-ENUMERATE_CELL(icell,cell_dm.allCells()){
+ENUMERATE_(Cell, icell, cell_dm.allCells()){
   Arcane::Cell cell = *icell;
   Arcane::DirCell dir_cell(cell_dm[icell]); // Directional info for cell
   Arcane::Cell prev_cell = dir_cell.previous(); // Cell before
@@ -69,7 +69,7 @@ Retrieving nodes in a direction is done in the same way.
 ```cpp
 using namespace Arcane;
 Arcane::NodeDirectionMng node_dm(cartesian_mesh->nodeDirection(MD_DirX));
-ENUMERATE_NODE(inode,node_dm.allNodes()){
+ENUMERATE_(Node, inode, node_dm.allNodes()){
   Arcane::Node node = *inode;
   Arcane::DirNode dir_node(node_dm[inode]); // Directional info for node
   Arcane::Node prev_cell = dir_node.previous(); // Node before
@@ -83,7 +83,7 @@ after the current face, you can retrieve the cell before and after:
 ```cpp
 using namespace Arcane;
 Arcane::FaceDirectionMng face_dm(cartesian_mesh->faceDirection(MD_DirX));
-ENUMERATE_FACE(iface,face_dm.allFaces()){
+ENUMERATE_(Face, iface, face_dm.allFaces()){
   Arcane::Face face = *iface;
   Arcane::DirFace dir_face(face_dm[iface]);
   Arcane::Cell prev_cell = dir_face.previousCell(); // Cell before the face
@@ -97,7 +97,7 @@ nodes of a cell following a direction, via the Arcane::DirCellNode class.
 ```cpp
 using namespace Arcane;
 Arcane::CellDirectionMng cell_dm(cartesian_mesh->cellDirection(MD_DirY));
-ENUMERATE_CELL(icell,cell_dm.allCells()){
+ENUMERATE_(Cell, icell, cell_dm.allCells()){
   Arcane::Cell cell = *icell;
   Arcane::DirCellNode cn(cell_dm.cellNode(cell));
   Arcane::Node next_left = cn.nextLeft(); // Node to the left towards the next cell.
@@ -113,7 +113,7 @@ in a given direction (this also works in 3D):
 ```cpp
 using namespace Arcane;
 Arcane::CellDirectionMng cell_dm(cartesian_mesh->cellDirection(MD_DirY));
-ENUMERATE_CELL(icell,cell_dm.allCells()){
+ENUMERATE_(Cell, icell, cell_dm.allCells()){
   Arcane::Cell cell = *icell;
   Arcane::DirCellFace cf(cell_dm.cellFace(cell));
   Arcane::Face next_left = cf.next(); // Face connected to the next cell.
@@ -128,7 +128,7 @@ using namespace Arcane;
 Integer nb_dir = mesh->dimension();
 for( Integer idir=0; idir<nb_dir; ++idir){
   CellDirectionMng cdm(cartesian_mesh->cellDirection(idir));
-  ENUMERATE_CELL(icell,cdm.allCells()){
+  ENUMERATE_(Cell, icell, cdm.allCells()){
     ...
   }
 }
@@ -164,7 +164,7 @@ And similarly for cells:
 ```cpp
 using namespace Arcane;
 Arcane::CartesianConnectivity cc = cartesian_mesh->connectivity();
-ENUMERATE_CELL(icell,allCells()){
+ENUMERATE_(Cell, icell, allCells()){
   Arcane::Cell c = *icell;
   Arcane::Node n1 = cc.upperLeft(c); // Node upper left
   Arcane::Node n2 = cc.upperRight(c); // Node upper right
@@ -182,7 +182,7 @@ same code in 2D and 3D.
 ```cpp
 using namespace Arcane;
 Arcane::CartesianConnectivity cc = cartesian_mesh->connectivity();
-ENUMERATE_CELL(icell,allCells()){
+ENUMERATE_(Cell, icell, allCells()){
   Arcane::Cell c = *icell;
   Arcane::Node n1 = cc.upperLeft(c); // Node below in Z, upper left
   Arcane::Node n2 = cc.upperRight(c); // Node below in Z, upper right
@@ -194,8 +194,6 @@ ENUMERATE_CELL(icell,allCells()){
   Arcane::Node n8 = cc.topZLowerLeft(c); // Node above in Z, lower left
 }
 ```
-
-
 
 ____
 

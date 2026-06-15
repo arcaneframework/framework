@@ -14,7 +14,7 @@ such as [RAJA](https://github.com/LLNL/RAJA) or
 needs of %Arcane.
 
 \note The %Arcane accelerator API can be used independently of
-the mechanisms associated with calculation codes such as modules, mesh, or
+the mechanisms associated with simulation codes such as modules, mesh, or
 services. For an example of standalone operation, refer to chapter
 \ref arcanedoc_parallel_accelerator_standalone.
 
@@ -112,7 +112,7 @@ class MyModule
  public:
   void myEntryPoint()
   {
-    RunQueue* queue = acceleratorMng()->defaultQueue();
+    RunQueue queue = acceleratorMng()->queue();
     // Loop over cells offloaded to accelerator
     auto command1 = makeCommand(queue);
     command1 << RUNCOMMAND_ENUMERATE(Cell,vi,allCells()){
@@ -184,7 +184,7 @@ then `ARCANE_HAS_HIP` is defined.
 ## Execution {#arcanedoc_parallel_accelerator_exec}
 
 The choice of the default execution environment
-(\arcaneacc{IAcceleratorMng::defaultRunner()}) is determined by the command
+(\arcaneacc{IAcceleratorMng::runner()}) is determined by the command
 line:
 
 - If the `AcceleratorRuntime` option is specified, that runtime is used.
@@ -257,7 +257,7 @@ called a view, which allows specifying for a variable or an array whether it
 will be used as input, output, or both.
 
 \warning A view is a **TEMPORARY** object and is always associated with a
-command (\arcaneacc{RunCommand}) and a container (Arcane Variable or array) and
+command (\arcaneacc{RunCommand}) and a container (%Arcane Variable or array) and
 must not be used when the associated command is finished or the associated
 container is modified.
 

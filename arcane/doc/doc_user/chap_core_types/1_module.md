@@ -11,7 +11,7 @@ A module is represented by a class and an XML file called the
 
 ## Module Descriptor {#arcanedoc_core_types_module_desc}
 
-The module descriptor is an XML file with the ".axl" extension. It presents the
+The module descriptor is an XML file with the `.axl` extension. It presents the
 characteristics of the module:
 - its variables,
 - its entry points,
@@ -46,7 +46,7 @@ The variables, entry points, and options will be described in chapter
 
 ## Class Representing the Module {#arcanedoc_core_types_module_class}
 
-Thanks to the \c axl2cc utility, the \c Hydro.axl file generates a Hydro_axl.h
+Thanks to the \c axl2cc utility, the \c Hydro.axl file generates a `Hydro_axl.h`
 file. This file contains the \c ArcaneHydroObject class, the base class for the
 Hydro module.
 
@@ -56,11 +56,11 @@ class HydroModule
 {
  public:
   // Constructs a module with the parameters specified in \a mb
-  ModuleHydro(const ModuleBuildInfo & mbi)
+  explicit ModuleHydro(const ModuleBuildInfo & mbi)
   : ArcaneHydroObject(mbi) {}
 
   // Returns the version number of the module
-  virtual VersionInfo versionInfo() const { return VersionInfo(1, 0, 0); }
+  VersionInfo versionInfo() const override { return VersionInfo(1, 0, 0); }
 };
 ```
 
@@ -75,13 +75,16 @@ things, to the %Arcane traces (see \ref arcanedoc_execution_traces) and the
 following methods:
 <table>
 <tr><th>Method</th><th>Action</th></tr>
-<tr><td>\c allCells() </td><td> returns the group of all cells </td></tr>
-<tr><td>\c allNodes() </td><td> returns the group of all nodes </td></tr>
-<tr><td>\c allFaces() </td><td> returns the group of all faces </td></tr>
+<tr><td>\c allCells() </td><td> returns the group of all cells in the subdomain</td></tr>
+<tr><td>\c allNodes() </td><td> returns the group of all nodes in the subdomain</td></tr>
+<tr><td>\c allFaces() </td><td> returns the group of all faces in the subdomain</td></tr>
 <tr><td>\c ownCells() </td><td> returns the group of cells belonging to the subdomain </td></tr>
 <tr><td>\c ownNodes() </td><td> returns the group of nodes belonging to the subdomain </td></tr>
 <tr><td>\c ownFaces() </td><td> returns the group of all faces belonging to the subdomain </td></tr>
 </table>
+Because in %Arcane the mesh is partitioned, a sub-domain has only
+access to one partition. There is no way to access to the complete
+mesh.
 
 ## Connecting the Module to Arcane {#arcanedoc_core_types_module_connectarcane}
 
@@ -96,7 +99,7 @@ following prototype:
 ARCANE_REGISTER_MODULE_HYDRO(HydroModule);
 ```
 
-\c *HydroModule* corresponds to the class name and *HYDRO* following
+\c `HydroModule` corresponds to the class name and `HYDRO` following
 **ARCANE_REGISTER_MODULE_** allows defining the creation function.
 
 ____

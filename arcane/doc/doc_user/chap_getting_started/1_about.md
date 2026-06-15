@@ -9,7 +9,7 @@ environment, such as dataset configuration.
 
 %Arcane can be used in two ways:
 
-- the calculation code mode. This is the classic mode in which %Arcane manages
+- the framework mode. This is the classic mode in which %Arcane manages
   all the elements of a calculation code. This mode is described in chapter
   \ref arcanedoc_getting_started_mode_full. In this mode, %Arcane automatically
   manages the calculation initialization, the time loop, the post-processing,
@@ -54,17 +54,17 @@ arccore/trace
 
 The other directories are considered internal to %Arcane and should not be used.
 
-## Usage in a Calculation Code {#arcanedoc_getting_started_mode_full}
+## Usage in a Simulation Code {#arcanedoc_getting_started_mode_full}
 
-A calculation code, whatever it may be, can be seen as a system that takes
+A simulation code, whatever it may be, can be seen as a system that takes
 certain values as input and provides output values by performing *operations*.
-Since it is impossible to handle all types of calculation codes, %Arcane is
+Since it is impossible to handle all types of simulation codes, %Arcane is
 restricted to calculation codes having the following properties:
 
 - the execution flow can be described as a repetition of a sequence of
   operations, each execution of the sequence of operations being called an
   *iteration*;
-- The calculation domain is discretized in space into a set of elements, the
+- The simulation domain is discretized in space into a set of elements, the
   *mesh*. This mesh can be 1D, 2D, or 3D. A mesh consists of at most four types
   of elements: nodes, edges, faces, and cells. The values manipulated by the
   code are based on one of these element types.
@@ -79,7 +79,7 @@ Each of the terms described above has its own terminology in %Arcane:
   called [variables](\ref arcanedoc_core_types_axl_variable). For example,
   temperature and pressure are variables.
 
-In general, a calculation code can be decomposed into several distinct parts.
+In general, a simulation code can be decomposed into several distinct parts.
 For example, the numerical calculation itself and the part performing outputs
 for post-processing. Similarly, a code can use multiple physics: hydrodynamics,
 thermal, ...

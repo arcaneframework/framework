@@ -55,9 +55,9 @@ that manages a group of an entity is named after the entity with the suffix
 </table>
 
 \note
-The faces \arcane{Face} are the N-1 dimensional entities where N is the
-dimension of the cells. In dimension 2, faces therefore correspond to edges, and
-in dimension 3 to the faces of polyhedra. This allows numerical algorithms to
+The faces (\arcane{Face}) are the `N-1` dimensional entities where `N` is the
+dimension of the cell. In dimension 2, faces therefore correspond to edges, and
+in dimension 3 to the faces of a polyhedra. This allows numerical algorithms to
 traverse the mesh regardless of its dimension. The edge entity (\arcane{Edge})
 only exists for 3D meshes and then corresponds to an edge.
 

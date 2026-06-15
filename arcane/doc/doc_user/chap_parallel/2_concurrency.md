@@ -21,7 +21,7 @@ not very performant in this mode, and some only support it partially.
 To use tasks, you must include the following file:
 
 ```cpp
-#include "arcane/Concurrency.h"
+#include "arcane/core/Concurrency.h"
 ```
 
 There are two mechanisms for using tasks:
@@ -108,7 +108,7 @@ over a group like the following code:
 ```cpp
 void func()
 {
-  ENUMERATE_CELL(icell,my_group){
+  ENUMERATE_(Cell, icell, my_group){
     p[icell] = (gamma[icell]-1.0) * rho[icell] * e[icell];
   }
 }
@@ -123,7 +123,7 @@ class Func
   public:
    void exec(CellVectorView view)
    {
-     ENUMERATE_CELL(icell,view){
+     ENUMERATE_(Cell, icell, view){
        p[icell] = (gamma[icell]-1.0) * rho[icell] * e[icell];
      }
    }
@@ -143,7 +143,7 @@ using namespace Arcane;
 void func()
 {
   arcaneParallelForeach(my_group,[&](CellVectorView cells){
-    ENUMERATE_CELL(icell,cells){
+    ENUMERATE_(Cell, icell, cells){
       p[icell] = (gamma[icell]-1.0) * rho[icell] * e[icell];
     }
   });
@@ -162,7 +162,7 @@ void func()
   // Executes the loop in chunks of about 50 cells.
   options.setGrainSize(50);
   Arcane::arcaneParallelForeach(my_group,options,[&](Arcane::CellVectorView cells){
-    ENUMERATE_CELL(icell,cells){
+    ENUMERATE_(Cell, icell,cells){
       p[icell] = (gamma[icell]-1.0) * rho[icell] * e[icell];
     }
   });

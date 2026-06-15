@@ -45,7 +45,7 @@ to be referenced, are presented in the document
 
 ## Service Descriptor {#arcanedoc_core_types_service_desc}
 
-Like the module, the service descriptor is an XML file with the ".axl"
+Like the module, the service descriptor is an XML file with the `.axl`
 extension. It presents the characteristics of the service:
 - the interfaces it implements,
 - its configuration options,
@@ -53,7 +53,7 @@ extension. It presents the characteristics of the service:
 
 Unlike the module, a service does not have entry points.
 
-The following example defines a service descriptor for solving a "perfect gas"
+The following example defines a service descriptor for solving a `perfect gas`
 equation of state:
 
 ```xml
@@ -67,8 +67,8 @@ equation of state:
 </service>
 ```
 
-The following example defines a service descriptor used for solving a "stiffened
-gas" equation of state:
+The following example defines a service descriptor used for solving a `stiffened
+gas` equation of state:
 
 ```xml
 <?xml version="1.0"?>
@@ -92,15 +92,15 @@ indicating whether the service can be a singleton.
 \note A service used as a singleton does not have direct access to the dataset
 data.
 
-\remark A service used as a singleton does not need to be declared in the module
-descriptor (file .axl) but in the code configuration (file .config), given that
+\remark A service used as a singleton is not declared in the module
+descriptor (file `.axl`) but in the code configuration (file `.config`), given that
 the principle of the singleton is to have only one instance for all the code.
 
-## Class Representing the Service {#arcanedoc_core_types_service_class}
+## Class representing the Service {#arcanedoc_core_types_service_class}
 
 Like the module, compiling the files \c PerfectGasEOS.axl and
 \c StiffenedGasEOS.axl with the \c axl2cc utility generates the files
-PerfectGasEOS_axl.h and StiffenedGasEOS_axl.h, containing the classes
+`PerfectGasEOS_axl.h` and `StiffenedGasEOS_axl.h`, containing the classes
 \c ArcanePerfectGasEOSObject and \c ArcaneStiffenedGasEOSObject, which are base
 classes for services.
 
@@ -112,7 +112,7 @@ class PerfectGasEOSService
 {
  public:
   explicit PerfectGasEOSService(const Arcane::ServiceBuildInfo& sbi)
-	: ArcanePerfectGasEOSObject(sbi) {}
+  : ArcanePerfectGasEOSObject(sbi) {}
 
  public:
   void applyEOS(const Arcane::CellGroup& group) override
@@ -128,7 +128,7 @@ class StiffenedGasEOSService
 {
  public:
   explicit StiffenedGasEOSService(const Arcane::ServiceBuildInfo& sbi)
-	: ArcaneStiffenedGasEOSObject(sbi) {}
+  : ArcaneStiffenedGasEOSObject(sbi) {}
 	
  public:
   void applyEOS(const Arcane::CellGroup& group) override
