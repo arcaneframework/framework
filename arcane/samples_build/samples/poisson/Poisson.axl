@@ -30,7 +30,7 @@
   <options>
     <!-- - - - - - init-temperature - - - - -->
     <simple name="init-temperature" type="real" default="300">
-      <description>Température iitiale dans tout le maillage</description>
+      <description>Temperature initiale dans tout le maillage</description>
     </simple>
 
     <!-- - - - - - boundary-condition - - - - -->

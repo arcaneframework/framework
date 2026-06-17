@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 
-<module name="Poisson" parent-path="arcane" parent-name="BasicModule">
+<module name="Poisson" version="1.0" parent-path="arcane" parent-name="BasicModule">
 
 	<description>Descripteur du module Poisson</description>
 

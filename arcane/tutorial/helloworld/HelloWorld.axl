@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 
 <!-- Compléter les attributs name et parent-name -->
-<module name="" parent-path="arcane" parent-name="">
+<module name="" version="1.0" parent-path="arcane" parent-name="">
 
 	<description>Descripteur du module Hello World</description>
 

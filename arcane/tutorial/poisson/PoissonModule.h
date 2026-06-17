@@ -2,6 +2,7 @@
 #ifndef POISSONMODULE_H
 #define POISSONMODULE_H
 
+#include "TypesPoisson.h"
 #include "Poisson_axl.h"
 
 using namespace Arcane;
