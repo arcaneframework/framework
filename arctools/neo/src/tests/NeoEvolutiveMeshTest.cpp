@@ -110,11 +110,14 @@ TEST(NeoEvolutiveMeshTest, RemoveCells) {
   EXPECT_EQ(remaining_cell_uids.back(), 3);
   // compute a reference connectivity : replace removed cells by null lid
   auto node2cells = mesh.getConnectivity(node_family, cell_family, node2cells_con_name);
-  std::fill(node_to_cell.begin(), node_to_cell.end(), Neo::utils::NULL_ITEM_LID);
-  node_to_cell[5] = 3;
-  node_to_cell[11] = 3;
-  node2cells.connectivity_value.debugPrint();
-  EXPECT_TRUE(std::equal(node2cells.connectivity_value.begin(), node2cells.connectivity_value.end(), node_to_cell.begin()));
+  std::vector cell_connected_ref{3,3};
+  std::vector<int> cell_connected;
+  for (auto node : node_family.all()) {
+    for (auto cell : node2cells[node]) {
+      cell_connected.push_back(cell);
+    }
+  }
+  EXPECT_TRUE(std::equal(cell_connected.begin(), cell_connected.end(), cell_connected_ref.begin()));
   // Remove last cell 3
   mesh.scheduleRemoveItems(cell_family, { 3 });
   mesh.applyScheduledOperations();

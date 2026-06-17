@@ -143,7 +143,7 @@ public:
 
   std::string const& lidPropName() { return m_prop_lid_name; }
 
-  std::size_t nbElements() const {
+  utils::Int32 nbElements() const {
     return _lidProp().size();
   }
 

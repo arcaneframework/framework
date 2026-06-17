@@ -17,6 +17,7 @@
 #include <iterator>
 #include <numeric>
 #include <unordered_map>
+#include <set>
 
 #include "neo/Utils.h"
 #include "neo/Items.h"
@@ -510,13 +511,14 @@ class MeshArrayPropertyT : public PropertyBase
 
     using PropertyDataType = DataType;
     using PropertyOffsetType = utils::Int32;
-    using PropertyIndexType = utils::Int32;
+    using PropertyIndexType  = utils::Int32;
+    using PropertySizeType   = utils::Int32;
 
  private:
   std::vector<DataType> m_data;
   std::vector<PropertyOffsetType> m_offsets;
   std::vector<PropertyIndexType> m_indexes;
-  std::vector<PropertyIndexType> m_sizes;
+  std::vector<PropertySizeType> m_sizes;
   int m_data_size = 0;
   int m_data_capacity = 0;
 
@@ -646,6 +648,7 @@ class MeshArrayPropertyT : public PropertyBase
     m_data.clear();
     m_offsets.clear();
     m_indexes.clear();
+    m_sizes.clear();
     m_data_size = 0;
   }
 
@@ -677,25 +680,55 @@ class MeshArrayPropertyT : public PropertyBase
   auto end() noexcept { return m_data.end(); }
   auto end() const noexcept { return m_data.end(); }
 
-  auto removeValues(MeshArrayPropertyT<utils::Int32> const& removed_value_indexes) {
+  /*!
+   * @brief Remove values from MeshArrayProperty. The memory is not modified in this operation.
+   * @param removed_value_indexes contains for each item of the support the indexes of the removed values in the item array
+   */
+  void removeValues(MeshArrayPropertyT<utils::Int32> const& removed_value_indexes) {
+    auto nb_removed_values = removed_value_indexes.cumulatedSize();
+    if (size() == 0 || nb_removed_values == 0) return;
     NEO_ASSERT(removed_value_indexes.size() == size(), "removed_value_indexes size must be equal to property size");
-    if (size() == 0) return;
     ItemRange item_range{ ItemLocalIds{ {}, 0, (int)m_offsets.size() } };
     for (auto item : item_range) {
-      NEO_ASSERT(removed_value_indexes[item].size() <= m_sizes[item],
-        "Cannot remove more element than contained in the item array, In MeshArrayPropertyT::removeValues");
-      if (removed_value_indexes[item].size() >= m_sizes[item]) {
+      auto item_removed_value_indexes = removed_value_indexes[item];
+      auto item_nb_removed_values = item_removed_value_indexes.size();
+      if (m_sizes[item] == 0 || item_nb_removed_values == 0)
+        continue;
+      if (item_nb_removed_values == m_sizes[item]) {
+        // removing all the elements
+        // Neo::printer() << "Remove all values from item " << item << Neo::endline;
         m_sizes[item] = 0;
         continue;
       }
-      for (auto removed_value_index : removed_value_indexes[item]) {
-        NEO_ASSERT(removed_value_index < m_sizes[item], "removed_value_index must be < item array size, In MeshArrayPropertyT::removeValues");
-        Neo::printer() << "Remove value " << (*this)[item][removed_value_index] << " with index " << removed_value_index << " from item " << item << Neo::endline;
-        std::swap(m_data[m_indexes[item] + removed_value_index], m_data[m_indexes[item] + m_sizes[item] - 1]);
-        --m_sizes[item];
+      NEO_ASSERT(item_removed_value_indexes.size() <= m_sizes[item],
+        "Cannot remove more element than contained in the item array, In MeshArrayPropertyT::removeValues");
+      auto check_duplicates = [&]() {
+        std::set<int> removed_index_set{item_removed_value_indexes.begin(), item_removed_value_indexes.end()};
+        return removed_index_set.size() == item_removed_value_indexes.size();
+      };
+      NEO_ASSERT(check_duplicates(), "Removed item indexes cannot contain duplicated index");
+      // copy item values before remove
+      auto item_values = (*this)[item];
+      std::vector<DataType> item_values_copy(item_values.begin(), item_values.end());
+      std::vector<int> item_removed_values_indexes_sorted(item_removed_value_indexes.begin(), item_removed_value_indexes.end());
+      std::sort(item_removed_values_indexes_sorted.begin(), item_removed_values_indexes_sorted.end());
+      auto sorted_removed_values_index = 0;
+      auto values_index = 0;
+      for (auto i = 0; i < item_values.size(); ++i) {
+        if (sorted_removed_values_index < item_nb_removed_values && i == item_removed_values_indexes_sorted[sorted_removed_values_index]) {
+          // Neo::printer()  << "Remove value " << item_values_copy[item_removed_values_indexes_sorted[sorted_removed_values_index]]
+          //                 << " with index "  << item_removed_values_indexes_sorted[sorted_removed_values_index]
+          //                 << " from item " << item << Neo::endline;
+          ++sorted_removed_values_index;
+        }
+        else {
+          item_values[values_index] = item_values_copy[i];
+          ++values_index;
+        }
       }
+      m_sizes[item] -= item_removed_value_indexes.size();
     }
-    m_data_size = _computeCumulatedSize(m_sizes);
+    m_data_size = _computeCumulatedSize(m_sizes); // offsets and indexes must not be updated since memory does not move
   }
 
  private:
@@ -716,6 +749,7 @@ class MeshArrayPropertyT : public PropertyBase
     _computeIndexesFromOffsets(new_indexes, new_offsets);
     // Compute new values
     m_data_capacity = _computeCumulatedSize(new_offsets);
+    if (m_data_capacity == 0) return;
     std::vector<DataType> new_data(m_data_capacity);
     // copy new_values
     auto global_index = 0;
@@ -743,6 +777,12 @@ class MeshArrayPropertyT : public PropertyBase
       m_sizes[item] =  m_offsets[item];
     }
     m_data_size = _computeCumulatedSize(m_sizes);
+    if (m_data_size == 0) {
+      m_data.clear();
+      m_offsets.clear();
+      m_indexes.clear();
+      m_sizes.clear();
+    }
   }
 
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item) {
@@ -807,7 +847,7 @@ class MeshArrayPropertyT : public PropertyBase
     //std::exclusive_scan(new_offsets.begin(),new_offsets.end(),new_indexes.begin(),0);
   }
 
-  int _computeCumulatedSize(std::vector<int> const& sizes) {
+  int _computeCumulatedSize(std::vector<int> const& sizes) const noexcept {
     return std::accumulate(sizes.begin(), sizes.end(), 0);
   }
 
@@ -839,6 +879,7 @@ struct MeshArrayPropertyProxyT {
 
   using OffsetType = MeshArrayPropertyT<DataType>::PropertyOffsetType;
   using IndexType  = MeshArrayPropertyT<DataType>::PropertyIndexType;
+  using SizeType   = MeshArrayPropertyT<DataType>::PropertySizeType;
 
   DataType* arrayPropertyData() noexcept { return m_mesh_array_property.m_data.data(); }
   DataType const* arrayPropertyData() const noexcept { return m_mesh_array_property.m_data.data(); }
@@ -849,6 +890,9 @@ struct MeshArrayPropertyProxyT {
   IndexType * arrayPropertyIndex() noexcept {return m_mesh_array_property.m_indexes.data();};
   IndexType const* arrayPropertyIndex() const noexcept {return m_mesh_array_property.m_indexes.data();};
   auto arrayPropertyIndexSize() const noexcept {return m_mesh_array_property.m_indexes.size();};
+  SizeType * arrayPropertySizes() noexcept {return m_mesh_array_property.m_sizes.data();};
+  SizeType const* arrayPropertySizes() const noexcept {return m_mesh_array_property.m_sizes.data();};
+  auto arrayPropertySizesSize() const noexcept {return m_mesh_array_property.m_sizes.size();};
 };
 
 /*---------------------------------------------------------------------------*/
