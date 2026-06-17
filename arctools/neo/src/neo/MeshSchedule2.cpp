@@ -28,6 +28,7 @@ void Neo::Mesh::scheduleMoveItems(Neo::Family& item_family, std::vector<Neo::uti
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty },
   Neo::MeshKernel::OutProperty{ item_family, std::move(coord_prop_name) },
+  "MoveItemsIn"+item_family.name(),
   [moved_item_uids = std::move(moved_item_uids),
         moved_item_new_coords = std::move(moved_item_new_coords),rank(m_rank)]
         (Neo::ItemLidsProperty const& item_lids_property,
@@ -50,6 +51,7 @@ void Neo::Mesh::scheduleAddMeshOperation(Neo::Family& input_property_family,
   std::visit([&](auto& algorithm) {
     m_mesh_graph->addAlgorithm(Neo::MeshKernel::InProperty{ input_property_family, input_property_name },
                                Neo::MeshKernel::OutProperty{ output_property_family, output_property_name },
+                               "UserMeshOperation",
                                algorithm);
   },
              mesh_operation);

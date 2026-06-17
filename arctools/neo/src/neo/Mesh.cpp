@@ -78,8 +78,11 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
   ItemRange& added_items = added_item_range;
   // Add items
   m_mesh_graph->addAlgorithm(Neo::MeshKernel::OutProperty{ family, family.lidPropName() },
+                             "CreateItemsIn" + family.name(),
                              [&family, uids, &added_items, rank = m_rank](Neo::ItemLidsProperty& lids_property) {
                                Neo::printer(rank) << "== Algorithm: create items in family " << family.name() << Neo::endline;
+                               lids_property.debugPrint(rank);
+                               Neo::printer(rank) << "Add uids " << uids << Neo::endline;
                                added_items = lids_property.append(uids);
                                lids_property.debugPrint(rank);
                                Neo::printer(rank) << "Inserted item range : " << added_items;
@@ -88,6 +91,7 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ family, family.lidPropName() },
   Neo::MeshKernel::OutProperty{ family, uniqueIdPropertyName(family.name()) },
+  "RegisterItemUidsIn"+family.name(),
   [&family, uids{ std::move(uids) }, &added_items, rank = m_rank]([[maybe_unused]] Neo::ItemLidsProperty const& item_lids_property,
                                                    Neo::MeshScalarPropertyT<Neo::utils::Int64>& item_uids_property) {
     Neo::printer(rank) << "== Algorithm: register item uids for family " << family.name() << Neo::endline;
@@ -111,6 +115,7 @@ void Neo::Mesh::_addConnectivityOrientationCheck(Neo::Family& source_family, Neo
   Neo::MeshKernel::InProperty{ source_family, orientation_property_name },
   Neo::MeshKernel::InProperty{ source_family, source_family.m_name + "_uids" },
   Neo::MeshKernel::OutProperty{ source_family, orientation_check_property_name },
+  "CheckOrientation"+orientation_check_property_name,
   [&source_family, &target_family, rank=m_rank](
   Neo::MeshArrayPropertyT<int> const& item_orientation,
   Neo::MeshScalarPropertyT<Neo::utils::Int64> const& item_uids,
@@ -144,6 +149,7 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemR
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty }, // TODO handle property status in Property Holder constructor
   Neo::MeshKernel::OutProperty{ item_family, coord_prop_name },
+  "RegisterItemCoordsIn"+item_family.name(),
   [item_coords{ std::move(item_coords) }, &added_items, rank=m_rank](Neo::ItemLidsProperty const& item_lids_property,
                                                         Neo::MeshScalarPropertyT<Neo::utils::Real3>& item_coords_property) {
     Neo::printer(rank) << "== Algorithm: register item coords" << Neo::endline;

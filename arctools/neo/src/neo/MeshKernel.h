@@ -118,7 +118,8 @@ namespace MeshKernel
     }
 
     std::string uniqueName() const noexcept {
-      return m_name + "_" + m_family.name();
+      std::string unique_name = m_family.name() + "_" + m_name;
+      return unique_name;
     }
   };
 
@@ -142,6 +143,7 @@ namespace MeshKernel
     virtual ~IAlgorithm() = default;
     virtual int nbInProperties() const = 0;
     virtual int nbOutProperties() const = 0;
+    virtual std::string const& name() const = 0;
   };
 
   /*---------------------------------------------------------------------------*/
@@ -149,12 +151,14 @@ namespace MeshKernel
   template <typename Algorithm>
   struct AlgoHandler : public IAlgorithm
   {
-    AlgoHandler(InProperty&& in_prop, OutProperty&& out_prop, Algorithm&& algo)
+    AlgoHandler(InProperty&& in_prop, OutProperty&& out_prop, std::string const& name, Algorithm algo)
     : m_in_property(std::move(in_prop))
     , m_out_property(std::move(out_prop))
-    , m_algo(std::forward<Algorithm>(algo)) {}
+    , m_name(name)
+    , m_algo(algo) {}
     InProperty m_in_property;
     OutProperty m_out_property;
+    std::string m_name;
     Algorithm m_algo;
     void operator()() override {
       tye::apply(m_algo, m_in_property(), m_out_property());
@@ -179,6 +183,10 @@ namespace MeshKernel
     int nbOutProperties() const override {
       return 1;
     }
+
+    std::string const& name() const override {
+      return m_name;
+    }
   };
 
   /*---------------------------------------------------------------------------*/
@@ -186,14 +194,16 @@ namespace MeshKernel
   template <typename Algorithm>
   struct DualInAlgoHandler : public IAlgorithm
   {
-    DualInAlgoHandler(InProperty&& in_prop1, InProperty&& in_prop2, OutProperty&& out_prop, Algorithm&& algo)
+    DualInAlgoHandler(InProperty&& in_prop1, InProperty&& in_prop2, OutProperty&& out_prop, std::string const& name, Algorithm algo)
     : m_in_property1(std::move(in_prop1))
     , m_in_property2(std::move(in_prop2))
     , m_out_property(std::move(out_prop))
-    , m_algo(std::forward<Algorithm>(algo)) {}
+    , m_name(name)
+    , m_algo(algo) {}
     InProperty m_in_property1;
     InProperty m_in_property2;
     OutProperty m_out_property;
+    std::string m_name;
     Algorithm m_algo;
     void operator()() override {
       tye::apply(m_algo, m_in_property1(), m_in_property2(), m_out_property());
@@ -220,6 +230,10 @@ namespace MeshKernel
     int nbOutProperties() const override {
       return 1;
     }
+
+    std::string const& name() const override {
+      return m_name;
+    }
   };
 
   /*---------------------------------------------------------------------------*/
@@ -227,14 +241,16 @@ namespace MeshKernel
   template <typename Algorithm>
   struct DualOutAlgoHandler : public IAlgorithm
   {
-    DualOutAlgoHandler(InProperty&& in_prop, OutProperty&& out_prop1, OutProperty&& out_prop2, Algorithm&& algo)
+    DualOutAlgoHandler(InProperty&& in_prop, OutProperty&& out_prop1, OutProperty&& out_prop2, std::string const& name, Algorithm algo)
     : m_in_property(std::move(in_prop))
     , m_out_property1(std::move(out_prop1))
     , m_out_property2(std::move(out_prop2))
-    , m_algo(std::forward<Algorithm>(algo)) {}
+    , m_name(name)
+    , m_algo(algo) {}
     InProperty m_in_property;
     OutProperty m_out_property1;
     OutProperty m_out_property2;
+    std::string m_name;
     Algorithm m_algo;
     void operator()() override {
       tye::apply(m_algo, m_in_property(), m_out_property1(), m_out_property2());
@@ -261,6 +277,10 @@ namespace MeshKernel
     int nbOutProperties() const override {
       return 2;
     }
+
+    std::string const& name() const override {
+      return m_name;
+    }
   };
 
   /*---------------------------------------------------------------------------*/
@@ -268,10 +288,12 @@ namespace MeshKernel
   template <typename Algorithm>
   struct NoDepsAlgoHandler : public IAlgorithm
   {
-    NoDepsAlgoHandler(OutProperty&& out_prop, Algorithm&& algo)
+    NoDepsAlgoHandler(OutProperty&& out_prop, std::string const& name, Algorithm algo)
     : m_out_property(std::move(out_prop))
-    , m_algo(std::forward<Algorithm>(algo)) {}
+    , m_name(name)
+    , m_algo(algo) {}
     OutProperty m_out_property;
+    std::string m_name;
     Algorithm m_algo;
     void operator()() override {
       tye::apply(m_algo, m_out_property());
@@ -293,6 +315,10 @@ namespace MeshKernel
     int nbOutProperties() const override {
       return 1;
     }
+
+    std::string const& name() const override {
+      return m_name;
+    }
   };
 
   /*---------------------------------------------------------------------------*/
@@ -300,12 +326,14 @@ namespace MeshKernel
   template <typename Algorithm>
   struct NoDepsDualOutAlgoHandler : public IAlgorithm
   {
-    NoDepsDualOutAlgoHandler(OutProperty&& out_prop1, OutProperty&& out_prop2, Algorithm&& algo)
+    NoDepsDualOutAlgoHandler(OutProperty&& out_prop1, OutProperty&& out_prop2, std::string const& name, Algorithm algo)
     : m_out_property1(std::move(out_prop1))
     , m_out_property2(std::move(out_prop2))
-    , m_algo(std::forward<Algorithm>(algo)) {}
+    , m_name(name)
+    , m_algo(algo) {}
     OutProperty m_out_property1;
     OutProperty m_out_property2;
+    std::string m_name;
     Algorithm m_algo;
     void operator()() override {
       tye::apply(m_algo, m_out_property1(), m_out_property2());
@@ -329,6 +357,10 @@ namespace MeshKernel
     int nbOutProperties() const override {
       return 2;
     }
+
+    std::string const& name() const override {
+      return m_name;
+    }
   };
 
   /*---------------------------------------------------------------------------*/
@@ -349,6 +381,7 @@ namespace MeshKernel
     using ProducingAlgoArray = std::vector<AlgoPtr>;
     using ConsumingAlgoArray = std::vector<AlgoPtr>;
     using PropertyRef = std::reference_wrapper<const PropertyHolder>;
+    using GraphType = SGraph::DirectedAcyclicGraph<AlgoPtr, PropertyHolder>;
 #ifndef _MSC_VER
     static inline auto m_prop_holder_less_comparator = [](PropertyHolder const& a, PropertyHolder const& b) { return a.uniqueName() < b.uniqueName(); };
     using PropertyHolderLessComparator = decltype(m_prop_holder_less_comparator);
@@ -356,7 +389,7 @@ namespace MeshKernel
     PropertyHolderLessComparator  m_prop_holder_less_comparator;
 #endif
     std::map<PropertyHolder, std::pair<ProducingAlgoArray, ConsumingAlgoArray>, PropertyHolderLessComparator> m_property_algorithms{m_prop_holder_less_comparator };
-    SGraph::DirectedAcyclicGraph<AlgoPtr, PropertyHolder> m_dag;
+    GraphType m_dag;
     std::list<AlgoPtr> m_kept_in_out_algos;
     std::list<AlgoPtr> m_kept_out_algos;
     std::list<AlgoPtr> m_kept_dual_out_algos;
@@ -377,8 +410,8 @@ namespace MeshKernel
    public:
 
     template <typename Algorithm>
-    void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-      auto algo_handler = std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property), std::move(out_property), std::forward<Algorithm>(algo));
+    void addAlgorithm(InProperty&& in_property, OutProperty&& out_property, std::string const& name, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) {
+      auto algo_handler = std::make_shared<AlgoHandler<decltype(algo)>>(std::move(in_property), std::move(out_property), name, algo);
       m_algos.push_back(algo_handler);
       _addAlgoFromHandler(algo_handler);
       if (persistance == AlgorithmPersistence::KeepAfterExecution)
@@ -386,8 +419,8 @@ namespace MeshKernel
     }
 
     template <typename Algorithm>
-    void addAlgorithm(OutProperty&& out_property, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-      auto algo_handler = std::make_shared<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property), std::forward<Algorithm>(algo));
+    void addAlgorithm(OutProperty&& out_property, std::string const& name, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) {
+      auto algo_handler = std::make_shared<NoDepsAlgoHandler<decltype(algo)>>(std::move(out_property), name, algo);
       m_algos.push_back(algo_handler);
       _addAlgoFromNoDepsHandler(algo_handler);
       if (persistance == AlgorithmPersistence::KeepAfterExecution)
@@ -395,12 +428,13 @@ namespace MeshKernel
     }
 
     template <typename Algorithm>
-    void addAlgorithm(InProperty&& in_property1, InProperty&& in_property2, OutProperty&& out_property, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
+    void addAlgorithm(InProperty&& in_property1, InProperty&& in_property2, OutProperty&& out_property, std::string const& name, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) {
       auto algo_handler = std::make_shared<DualInAlgoHandler<decltype(algo)>>(
       std::move(in_property1),
       std::move(in_property2),
       std::move(out_property),
-      std::forward<Algorithm>(algo));
+      name,
+      algo);
       m_algos.push_back(algo_handler);
       _addAlgoFromDualInHandler(algo_handler);
       if (persistance == AlgorithmPersistence::KeepAfterExecution)
@@ -408,8 +442,8 @@ namespace MeshKernel
     }
 
     template <typename Algorithm>
-    void addAlgorithm(InProperty&& in_property, OutProperty&& out_property1, OutProperty&& out_property2, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-      auto algo_handler = std::make_shared<DualOutAlgoHandler<decltype(algo)>>(std::move(in_property), std::move(out_property1), std::move(out_property2), std::forward<Algorithm>(algo));
+    void addAlgorithm(InProperty&& in_property, OutProperty&& out_property1, OutProperty&& out_property2, std::string const& name, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) {
+      auto algo_handler = std::make_shared<DualOutAlgoHandler<decltype(algo)>>(std::move(in_property), std::move(out_property1), std::move(out_property2), name, algo);
       m_algos.push_back(algo_handler);
       _addAlgoFromDualOutHandler(algo_handler);
       if (persistance == AlgorithmPersistence::KeepAfterExecution)
@@ -417,8 +451,8 @@ namespace MeshKernel
     }
 
     template <typename Algorithm>
-    void addAlgorithm(OutProperty&& out_property1, OutProperty&& out_property2, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) { // problem when putting Algorithm&& (references captured by lambda are invalidated...Todo see why)
-      auto algo_handler = std::make_shared<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1), std::move(out_property2), std::forward<Algorithm>(algo));
+    void addAlgorithm(OutProperty&& out_property1, OutProperty&& out_property2, std::string const& name, Algorithm algo, AlgorithmPersistence persistance = AlgorithmPersistence::DropAfterExecution) {
+      auto algo_handler = std::make_shared<NoDepsDualOutAlgoHandler<decltype(algo)>>(std::move(out_property1), std::move(out_property2), name, algo);
       m_algos.push_back(algo_handler);
       _addAlgoFromNoDepsDualOutHandler(algo_handler);
       if (persistance == AlgorithmPersistence::KeepAfterExecution)
@@ -483,7 +517,9 @@ namespace MeshKernel
           auto sorted_graph = m_dag.topologicalSort();
           std::for_each(sorted_graph.begin(), sorted_graph.end(), [](auto& algo) { (*algo.get())(); });
         }
-        catch (std::runtime_error& error) {
+        catch (GraphType::CycleDetection& error) {
+          AlgoPtr algo_leading_to_cycle = error.vertexCreatingCycle();
+          Neo::printer(m_rank) << "Cycle detected in the graph: " << algo_leading_to_cycle->name() << Neo::endline;
           if (!do_keep_algorithms)
             removeAlgorithms();
           throw error;
@@ -576,11 +612,15 @@ namespace MeshKernel
         auto& [producing_property_array, consuming_property_array] = property_algos;
         for (auto& producing_algo : producing_property_array) {
           // Add each producing algo in graph: it may have no consuming algo
-          if (!is_removed_algo(producing_algo))
+          if (!is_removed_algo(producing_algo)) {
             m_dag.addVertex(producing_algo);
+            Neo::printer(m_rank) << "Adding vertex " << producing_algo->name() << Neo::endline;
+          }
           for (auto& consuming_algo : consuming_property_array) {
-            if (!is_removed_algo(producing_algo) && !is_removed_algo(consuming_algo))
+            if (!is_removed_algo(producing_algo) && !is_removed_algo(consuming_algo)) {
               m_dag.addEdge(producing_algo, consuming_algo, property);
+            Neo::printer(m_rank) << "Adding edge between " << producing_algo->name() << " and " << consuming_algo->name() << Neo::endline;
+            }
           }
         }
       }

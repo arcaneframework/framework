@@ -32,9 +32,10 @@ void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils:
   m_mesh_graph->addAlgorithm(
   Neo::MeshKernel::OutProperty{ family, removed_item_property_name },
   Neo::MeshKernel::OutProperty{ family, ok_to_start_remove_property_name },
+  "Clear"+family.name()+"RemoveItemProperty",
   [&family,rank(m_rank)](Neo::MeshScalarPropertyT<Neo::utils::Int32>& removed_item_property,
             Neo::MeshScalarPropertyT<Neo::utils::Int32>& ok_to_start_remove_property) {
-    Neo::printer(rank) << "Algorithm : clear remove item property for family " << family.name() << Neo::endline;
+    Neo::printer(rank) << "== Algorithm: clear remove item property for family " << family.name() << Neo::endline;
     removed_item_property.init(family.all(), 0);
     ok_to_start_remove_property.init(family.all(), 1);
   });
@@ -43,6 +44,7 @@ void Neo::Mesh::scheduleRemoveItems(Neo::Family& family, std::vector<Neo::utils:
   Neo::MeshKernel::InProperty{ family, ok_to_start_remove_property_name },
   Neo::MeshKernel::OutProperty{ family, family.lidPropName() },
   Neo::MeshKernel::OutProperty{ family, removed_item_property_name },
+  "RemoveItemsIn"+family.name(),
   [removed_item_uids, &family,rank(m_rank)](
   Neo::MeshScalarPropertyT<Neo::utils::Int32> const&, // ok_to_start_remove_property
   Neo::ItemLidsProperty& item_lids_property,

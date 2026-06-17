@@ -154,7 +154,7 @@ Neo::utils::Int32 Neo::ItemLidsProperty::_getLidFromUid(utils::Int64 const uid) 
 /*---------------------------------------------------------------------------*/
 
 void Neo::ItemLidsProperty::_getLidsFromUids(std::vector<utils::Int32>& lids, std::vector<utils::Int64> const& uids) const {
-  // todo check size
+  NEO_ASSERT(lids.size() == uids.size(), "lids and uids sizes differ");
   std::transform(uids.begin(), uids.end(), lids.begin(), [this](auto const& uid) { return this->_getLidFromUid(uid); });
 }
 

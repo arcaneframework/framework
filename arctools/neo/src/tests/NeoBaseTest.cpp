@@ -218,34 +218,34 @@ TEST(NeoBaseClassTest,AlgorithmHandlerTest) {
   auto algo = [](Neo::MeshKernel::InProperty prop_in, Neo::MeshKernel::OutProperty prop_out) {};
   Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cells" };
   Neo::MeshKernel::AlgoHandler<decltype(algo)> algorithm_handler{ Neo::MeshKernel::InProperty{cell_family,"in_prop1"},
-    Neo::MeshKernel::OutProperty{cell_family,"out_prop1"}, (std::move(algo)) };
+    Neo::MeshKernel::OutProperty{cell_family,"out_prop1"},"Algo", (std::move(algo)) };
   EXPECT_EQ(algorithm_handler.nbInProperties(),1);
   EXPECT_EQ(algorithm_handler.nbOutProperties(),1);
   // Test DalInAlgoHandler (2 input prop, one output) with family and property
   auto algo2 = [](Neo::MeshKernel::InProperty prop_in1, Neo::MeshKernel::InProperty prop_in2, Neo::MeshKernel::OutProperty prop_out) {};
   Neo::MeshKernel::DualInAlgoHandler<decltype(algo2)> algorithm_handler2{ Neo::MeshKernel::InProperty{cell_family,"in_prop1"},
     Neo::MeshKernel::InProperty{cell_family,"in_prop2"},
-    Neo::MeshKernel::OutProperty{cell_family,"out_prop"}, (std::move(algo2)) };
+    Neo::MeshKernel::OutProperty{cell_family,"out_prop"}, "Algo2",(std::move(algo2)) };
   EXPECT_EQ(algorithm_handler2.nbInProperties(),2);
   EXPECT_EQ(algorithm_handler2.nbOutProperties(),1);
-  // Test DalOutAlgoHandler (1 input prop, 2 output) with family and property
+  // Test DualOutAlgoHandler (1 input prop, 2 output) with family and property
   auto algo3 = [](Neo::MeshKernel::InProperty prop_in1, Neo::MeshKernel::OutProperty prop_inout1, Neo::MeshKernel::OutProperty prop_out2) {};
   Neo::MeshKernel::DualOutAlgoHandler<decltype(algo3)> algorithm_handler3{ Neo::MeshKernel::InProperty{cell_family,"in_prop1"},
     Neo::MeshKernel::OutProperty{cell_family,"out_prop1"},
-    Neo::MeshKernel::OutProperty{cell_family,"out_prop2"}, (std::move(algo3)) };
+    Neo::MeshKernel::OutProperty{cell_family,"out_prop2"}, "Algo3", (std::move(algo3)) };
   EXPECT_EQ(algorithm_handler3.nbInProperties(),1);
   EXPECT_EQ(algorithm_handler3.nbOutProperties(),2);
   // Test NoDepsAlgoHandler (0 input prop, 1 output) with family and property
   auto algo4 = [](Neo::MeshKernel::OutProperty prop_out) {};
   Neo::MeshKernel::NoDepsAlgoHandler<decltype(algo4)> algorithm_handler4{
-    Neo::MeshKernel::OutProperty{cell_family,"out_prop1"}, (std::move(algo4)) };
+    Neo::MeshKernel::OutProperty{cell_family,"out_prop1"}, "Algo4", (std::move(algo4)) };
   EXPECT_EQ(algorithm_handler4.nbInProperties(),0);
   EXPECT_EQ(algorithm_handler4.nbOutProperties(),1);
   // Test NoDepsDualoutAlgoHandler (0 input prop, 2 output) with family and property
   auto algo5 = [](Neo::MeshKernel::OutProperty prop_out1,Neo::MeshKernel::OutProperty prop_out2) {};
   Neo::MeshKernel::NoDepsDualOutAlgoHandler<decltype(algo5)> algorithm_handler5{
     Neo::MeshKernel::OutProperty{cell_family,"out_prop1"},
-    Neo::MeshKernel::OutProperty{cell_family,"out_prop2"}, (std::move(algo5)) };
+    Neo::MeshKernel::OutProperty{cell_family,"out_prop2"}, "Algo5", (std::move(algo5)) };
   EXPECT_EQ(algorithm_handler5.nbInProperties(),0);
   EXPECT_EQ(algorithm_handler5.nbOutProperties(),2);
 }
@@ -260,20 +260,20 @@ TEST(NeoTestPropertyGraph, test_property_graph_info) {
   Neo::Family cell_family{ Neo::ItemKind::IK_Cell, "cells" };
 
   // Add a consuming/producing algo
-  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "in_property" }, Neo::MeshKernel::OutProperty{ cell_family, "out_property" }, []() {});
+  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "in_property" }, Neo::MeshKernel::OutProperty{ cell_family, "out_property" }, "",[]() {});
   mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "in_property" }, Neo::MeshKernel::InProperty{ cell_family, "in_property2" },
-                    Neo::MeshKernel::OutProperty{ cell_family, "out_property" }, []() {});
+                    Neo::MeshKernel::OutProperty{ cell_family, "out_property" }, "",[]() {});
   mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "in_property2" }, Neo::MeshKernel::InProperty{ cell_family, "in_property2" },
-                    Neo::MeshKernel::OutProperty{ cell_family, "out_property2" }, []() {});
+                    Neo::MeshKernel::OutProperty{ cell_family, "out_property2" }, "",[]() {});
 
   // add producing algos
-  mesh.addAlgorithm(Neo::MeshKernel::OutProperty{ cell_family, "out_property2" }, []() {});
+  mesh.addAlgorithm(Neo::MeshKernel::OutProperty{ cell_family, "out_property2" },"", []() {});
   mesh.addAlgorithm(Neo::MeshKernel::OutProperty{ cell_family, "out_property2" },
-                    Neo::MeshKernel::OutProperty{ cell_family, "out_property3" }, []() {});
+                    Neo::MeshKernel::OutProperty{ cell_family, "out_property3" }, "", []() {});
 
   mesh.addAlgorithm(Neo::MeshKernel::InProperty{ cell_family, "in_property" },
                     Neo::MeshKernel::InProperty{ cell_family, "in_property2" },
-                    Neo::MeshKernel::OutProperty{ cell_family, "out_property2" },
+                    Neo::MeshKernel::OutProperty{ cell_family, "out_property2" }, "",
                     []() {});
 
   // Check number of consuming algo
@@ -482,7 +482,7 @@ TEST(NeoTestBaseMesh, base_mesh_unit_test) {
   family3.addMeshScalarProperty<int>("prop3");
   family4.addMeshScalarProperty<int>("prop4");
   family5.addMeshScalarProperty<int>("prop5");
-  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ family1, "prop1", Neo::PropertyStatus::ExistingProperty }, Neo::MeshKernel::OutProperty{ family2, "prop2" },
+  mesh.addAlgorithm(Neo::MeshKernel::InProperty{ family1, "prop1", Neo::PropertyStatus::ExistingProperty }, Neo::MeshKernel::OutProperty{ family2, "prop2" },"algo",
                     [&is_called]([[maybe_unused]] Neo::MeshScalarPropertyT<int> const& prop1,
                                  [[maybe_unused]] Neo::MeshScalarPropertyT<int>& prop2) {
                       is_called = true;

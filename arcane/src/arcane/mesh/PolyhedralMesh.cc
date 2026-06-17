@@ -48,6 +48,7 @@
 #include "arcane/mesh/GhostLayerMng.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arccore/base/StringBuilder.h"
 
 #ifdef ARCANE_HAS_POLYHEDRAL_MESH_TOOLS
 
@@ -636,9 +637,11 @@ namespace mesh
       UniqueArray<Int32> owners_copy(owners);
       mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ item_family, item_family.lidPropName() },
                               Neo::MeshKernel::OutProperty{ item_family, PolyhedralFamily::m_arcane_item_lids_property_name.localstr() },
-                              [arcane_item_family, uids_local = std::move(uids_copy), &added_items, owners_local = std::move(owners_copy)]([[maybe_unused]] Neo::ItemLidsProperty const& lids_property,
-                                                                                                                                           Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
-                                auto new_items_lids{ added_items.new_items.localIds() };
+                              "AddArcaneItems"+std::string{arcane_item_family->name().localstr()},
+                              [arcane_item_family, uids_local=std::move(uids_copy), &added_items, owners_local=std::move(owners_copy)]
+                                  ([[maybe_unused]] Neo::ItemLidsProperty const& lids_property,
+                                   Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
+                                auto new_items_lids{added_items.new_items.localIds()};
                                 Int32ConstSpan neo_items{ new_items_lids.data(), static_cast<Int32>(new_items_lids.size()) };
                                 UniqueArray<Int32> arcane_items(added_items.new_items.size());
                                 if (owners_local.empty())
@@ -668,6 +671,7 @@ namespace mesh
       item_family.addMeshScalarProperty<Neo::utils::Int32>(PolyhedralFamily::m_arcane_remove_item_property_name.localstr());
       mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ item_family, m_mesh._removeItemPropertyName(item_family) },
                               Neo::MeshKernel::OutProperty{ item_family, PolyhedralFamily::m_arcane_remove_item_property_name.localstr() },
+                              "RemoveArcaneFamily"+std::string{arcane_item_family->name().localstr()},
                               [arcane_item_family, local_ids](Neo::MeshScalarPropertyT<Neo::utils::Int32> const&,
                                                               Neo::MeshScalarPropertyT<Neo::utils::Int32>&) {
                                 arcane_item_family->removeItems(local_ids);
@@ -784,7 +788,12 @@ namespace mesh
       std::string connectivity_add_output_property_name = std::string{ "EndOf" } + connectivity_name.localstr() + "Add";
       source_family.addScalarProperty<Neo::utils::Int32>(connectivity_add_output_property_name);
       // todo is operation == Modify, the update algo should not be needed. To check
-      mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, connectivity_name.localstr() }, Neo::MeshKernel::OutProperty{ source_family, connectivity_add_output_property_name }, [arcane_source_item_family, arcane_target_item_family, &source_family, &target_family, this](Neo::Mesh::ConnectivityPropertyType const& neo_connectivity, Neo::ScalarPropertyT<Neo::utils::Int32>&) {
+      mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, connectivity_name.localstr() },
+                              Neo::MeshKernel::OutProperty{ source_family, connectivity_add_output_property_name },
+                              "UpdateArcaneConnectivity"+std::string{connectivity_name.localstr()},
+                              [arcane_source_item_family, arcane_target_item_family, &source_family, &target_family, this]
+                                    (Neo::Mesh::ConnectivityPropertyType const& neo_connectivity,
+                                     Neo::ScalarPropertyT<Neo::utils::Int32>&) {
                                 auto rank = arcane_source_item_family->mesh()->parallelMng()->commRank();
                                 Neo::printer(rank) << "==Algorithm update Arcane connectivity: "<< neo_connectivity.name() << Neo::endline;
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
@@ -813,6 +822,7 @@ namespace mesh
         source_family.addScalarProperty<Neo::utils::Int32>(flag_definition_output_property_name);
         // update Face flags after connectivity add
         mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, connectivity_add_output_property_name }, Neo::MeshKernel::OutProperty{ source_family, flag_definition_output_property_name },
+                                "UpdateFaceFlagsAfterConnectivityDefinition",
                                 [arcane_source_item_family, arcane_target_item_family, target_item_uids_local = std::move(target_item_uids_copy), &source_items](Neo::ScalarPropertyT<Neo::utils::Int32> const&, Neo::ScalarPropertyT<Neo::utils::Int32> const&) {
                                   auto current_face_index = 0;
                                   auto arcane_faces = arcane_source_item_family->itemInfoListView();
@@ -843,7 +853,11 @@ namespace mesh
       auto isolated_item_property_name = m_mesh._isolatedItemLidsPropertyName(source_family, target_family);
       auto end_of_isolated_removal_property_name = std::string{ "EndOf" } + isolated_item_property_name;
       source_family.addScalarProperty<Neo::utils::Int32>(end_of_isolated_removal_property_name);
-      mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, isolated_item_property_name }, Neo::MeshKernel::OutProperty{ source_family, end_of_isolated_removal_property_name }, [arcane_source_item_family](Neo::MeshScalarPropertyT<Neo::utils::Int32> const& isolated_items_lids_property, Neo::ScalarPropertyT<Neo::utils::Int32>& end_of_isolated_removal_property) {
+      mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, isolated_item_property_name },
+        Neo::MeshKernel::OutProperty{ source_family, end_of_isolated_removal_property_name },
+        "RemoveIsolatedArcaneItemsIn"+std::string{ arcane_source_item_family->name().localstr() },
+        [arcane_source_item_family](Neo::MeshScalarPropertyT<Neo::utils::Int32> const& isolated_items_lids_property,
+          Neo::ScalarPropertyT<Neo::utils::Int32>& end_of_isolated_removal_property) {
           end_of_isolated_removal_property.set(1);
           // remove Arcane items
           Int32UniqueArray isolated_item_lids;
@@ -872,6 +886,7 @@ namespace mesh
       _item_family.addScalarProperty<Int32>("NoOutProperty42"); // todo remove : create noOutput algo in Neo
       mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ _item_family, m_mesh._itemCoordPropertyName(_item_family) },
                               Neo::MeshKernel::OutProperty{ _item_family, "NoOutProperty42" },
+                              "UpdateArcaneCoordsIn"+std::string{item_family->name().localstr()},
                               [this, item_family, &_item_family, &arcane_coords](Neo::Mesh::CoordPropertyType const& item_coords_property,
                                                                                  Neo::ScalarPropertyT<Neo::utils::Int32>&) {
                                 // enumerate nodes : ensure again Arcane/Neo local_ids are identicals
