@@ -17,8 +17,7 @@ jobs:
     name: ubuntu coverity
     runs-on: ubuntu-latest
     container:
-      #      image: ghcr.io/arcaneframework/ubuntu-2604:gcc_full_stable
-      image: ghcr.io/arcaneframework/ubuntu-2604:gcc_full_latest
+      image: ghcr.io/arcaneframework/ubuntu-2604:gcc_full_stable
     steps:
       - name: Display CPU Infos
         shell: bash

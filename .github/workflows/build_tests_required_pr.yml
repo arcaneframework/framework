@@ -21,8 +21,7 @@ jobs:
             compilo_version: '22'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            #            date: '20260528'
-            date: 'latest'
+            date: '20260617'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
