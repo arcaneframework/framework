@@ -651,9 +651,14 @@ namespace mesh
                                 // debug check lid matching.
                                 if (!arcane_items.size() == added_items.new_items.size())
                                   arcane_item_family->traceMng()->fatal() << "Inconsistent item lids generation between Arcane and Neo, nb items Neo "
-                                                                          << added_items.new_items.size() << " nb items Arcane " << arcane_items.size();
-                                if (!std::equal(added_items.new_items.begin(), added_items.new_items.end(), arcane_items.begin()))
-                                  arcane_item_family->traceMng()->fatal() << "Inconsistent item lids generation between Arcane and Neo.";
+                                  << added_items.new_items.size() << " nb items Arcane " << arcane_items.size();
+                                if (!std::equal(added_items.new_items.begin(), added_items.new_items.end(), arcane_items.begin())) {
+                                  arcane_item_family->traceMng()->info() << "Arcane Items " << arcane_items;
+                                  std::cout << "Neo Items ";
+                                  std::ranges::copy(neo_items,std::ostream_iterator<int>(std::cout," "));
+                                  std::cout << "\n";
+                                  arcane_item_family->traceMng()->fatal() << "Inconsistent item lids generation between Arcane and Neo in ItemFamily " << arcane_item_family->name();
+                                }
                               });
     }
 
@@ -802,8 +807,8 @@ namespace mesh
                                 // to access connectivity data (for initializing Arcane connectivities) create a proxy on Neo connectivity
                                 auto& connectivity_values = source_family.getConcreteProperty<Neo::Mesh::ConnectivityPropertyType>(neo_connectivity.name());
                                 Neo::MeshArrayPropertyProxyT<Neo::Mesh::ConnectivityPropertyType::PropertyDataType> connectivity_proxy{ connectivity_values };
-                                auto nb_item_data = connectivity_proxy.arrayPropertyOffsets();
-                                auto nb_item_size = connectivity_proxy.arrayPropertyOffsetsSize(); // todo check MeshArrayProperty::size
+                                auto nb_item_data = connectivity_proxy.arrayPropertySizes();
+                                auto nb_item_size = connectivity_proxy.arrayPropertySizesSize();
                                 item_internal_connectivity_list->_setConnectivityNbItem(arcane_target_item_family->itemKind(),
                                                                                         Int32ArrayView{ Integer(nb_item_size), nb_item_data });
                                 auto max_nb_connected_items = connectivity.maxNbConnectedItems();
@@ -867,7 +872,12 @@ namespace mesh
               isolated_item_lids.push_back(iitem->localId());
             }
           }
-          arcane_source_item_family->removeItems(isolated_item_lids); }, Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
+          std::sort(isolated_item_lids.begin(), isolated_item_lids.end());
+          arcane_source_item_family->traceMng()->info() << "Remove isolated in Arcane for family "
+            << " lids : " << isolated_item_lids;
+            isolated_items_lids_property.debugPrint();
+          arcane_source_item_family->removeItems(isolated_item_lids);
+        }, Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
     }
 
     /*---------------------------------------------------------------------------*/
