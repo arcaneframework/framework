@@ -1,7 +1,7 @@
-#ifndef TYPESPOISSON_H
+﻿#ifndef TYPESPOISSON_H
 #define TYPESPOISSON_H
 
-#include <arcane/ItemGroup.h>
+#include <arcane/core/ItemGroup.h>
 
 struct TypesPoisson
 {
@@ -13,4 +13,3 @@ struct TypesPoisson
 };
 
 #endif  
-

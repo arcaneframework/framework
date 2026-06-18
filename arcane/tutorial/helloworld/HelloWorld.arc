@@ -1,8 +1,8 @@
-<?xml version='1.0' encoding='ISO-8859-1'?>
+ï»¿<?xml version='1.0'?>
 <case codeversion="1.0" codename="HelloWorld" xml:lang="en">
 	<arcane>
-		<title>Exemple Arcane de l'affichage de Hello World!</title>
-		<!-- sélectionner la boucle en temps de l'application  -->
+		<title>Arcane Example for Displaying Hello World!</title>
+		<!-- select the loop at runtime -->
 	</arcane>
 
 	<mesh>

@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+ï»¿<?xml version="1.0" ?>
 <service name="StiffenedGasEOS" parent-path="arcane" parent-name="BasicService">
 
-	<description>Jeu de données du service StiffenedGasEOS</description>
+	<description>Data set for the StiffenedGasEOS service</description>
 
 	<variables>
 		<!-- DENSITY -->
@@ -67,7 +67,7 @@
 			dim="0"
 			dump="true"
 			need-sync="true" />
-		<!-- 	CARACTERISTIC LENGTH	 -->
+		<!-- 	CHARACTERISTIC LENGTH	 -->
 		<variable
 			field-name="caracteristic_length"
 			name="CaracteristicLength"
@@ -90,7 +90,7 @@
 	<options>
 		<!-- - - - - - limit tension - - - - -->
 		<simple name="limit-tension" type="real" default="0.01">
-			<description>Définition de la tension limite</description>
+			<description>Definition of the limit tension</description>
 		</simple>
 	</options>
 </service>

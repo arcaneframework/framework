@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+ï»¿<?xml version="1.0"?>
 
 <module name="Poisson" version="1.0" parent-path="arcane" parent-name="BasicModule">
 
-	<description>Descripteur du module Poisson</description>
+	<description>Poisson module descriptor</description>
 
 	<variables>
-		<!-- Déclarer les variables "CellTemperature" et "NodeTemperature" -->
+		<!-- Declare the variables "CellTemperature" and "NodeTemperature" -->
 	</variables>
 
 	<entry-points>
@@ -15,9 +15,9 @@
 
 	<options>
 		<!-- - - - - - init-temperature - - - - -->
-		<!-- A COMPLETER -->
+		<!-- TO BE COMPLETED -->
 		
 		<!-- - - - - - boundary-condition - - - - -->
-		<!-- A COMPLETER -->
+		<!-- TO BE COMPLETED -->
 	</options>
 </module>

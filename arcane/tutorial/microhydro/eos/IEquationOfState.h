@@ -7,25 +7,25 @@
 using namespace Arcane;
 
 /**
- * Interface du service du modèle de calcul de l'équation d'état.
+ * Interface for the equation of state model calculation service.
  */
 class IEquationOfState
 {
 public:
-  /** Constructeur de la classe */
+  /** Constructor for the class */
   IEquationOfState() {};
-  /** Destructeur de la classe */
+  /** Destructor for the class */
   virtual ~IEquationOfState() {};
   
 public:
   /** 
-   *  Initialise l'équation d'état au groupe de mailles passé en argument
-   *  et calcule la vitesse du son et l'énergie interne. 
+   *  Initializes the equation of state for the given cell group
+   *  and calculates the speed of sound and the internal energy.
    */
   virtual void initEOS(const CellGroup & group) = 0;
   /** 
-   *  Applique l'équation d'état au groupe de mailles passé en argument
-   *  et calcule la vitesse du son et la pression. 
+   *  Applies the equation of state to the given cell group
+   *  and calculates the speed of sound and the pressure.
    */
   virtual void applyEOS(const CellGroup & group) = 0;
 };
