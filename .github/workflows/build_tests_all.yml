@@ -3,7 +3,7 @@ name: '[All] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04-26.04 / GCC
 
 on:
   schedule:
-    - cron: '23 1 * * *'
+    - cron: '1 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -186,7 +186,7 @@ jobs:
           # Il n'y a pas CUDA ni ROCm dans les images Minimal.
           - { version: { short: 'M' }, image: { short: 'U26_G15_CU131' } }
           - { version: { short: 'M' }, image: { short: 'U26_C20_CU131' } }
-          - { version: { short: 'M' }, image: { short: 'U26_G15_CUC22' } }
+          - { version: { short: 'M' }, image: { short: 'U24_G14_CUC19' } }
           - { version: { short: 'M' }, image: { short: 'U26_G15_RC710' } }
           - { version: { short: 'M' }, image: { short: 'U26_C22_RC710' } }
           - { version: { short: 'M' }, image: { short: 'U26_ACPP' } }
@@ -195,9 +195,9 @@ jobs:
           # Les tests non-Cuda sont faits par les runners GH.
           - { image: { acc_compilo_name: '' }, runner: { runner_tag: 'm-1' } }
           - { image: { acc_compilo_name: 'rocm' }, runner: { runner_tag: 'm-1' } }
-          - { image: { acc_compilo_name: 'acpp' }, runner: { runner_tag: 'm-1' } }
           # Les tests Cuda sont faits par les runners M1.
           - { image: { acc_compilo_name: 'cuda' }, runner: { runner_tag: 'ubuntu-latest' } }
+          - { image: { acc_compilo_name: 'acpp' }, runner: { runner_tag: 'ubuntu-latest' } }
 
     name: '[${{matrix.runner.runner_name}}][${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
@@ -228,4 +228,4 @@ jobs:
       use_cache: false
       artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
       runner_tag: ${{ matrix.runner.runner_tag }}
-      runner_gpu: ${{ case(matrix.image.acc_compilo_name == 'cuda', 'true', 'false') }}
+      runner_gpu: ${{ case(matrix.image.acc_compilo_name == 'cuda' || matrix.image.acc_compilo_name == 'acpp', 'true', 'false') }}
