@@ -64,7 +64,7 @@ jobs:
             compilo_version: '15'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20260617'
+            date: '20260619'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -74,7 +74,7 @@ jobs:
             compilo_version: '22'
             acc_compilo_name: ''
             acc_compilo_version: ''
-            date: '20260617'
+            date: '20260619'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
@@ -84,7 +84,7 @@ jobs:
             compilo_version: '15'
             acc_compilo_name: 'cuda'
             acc_compilo_version: '131'
-            date: '20260617'
+            date: '20260619'
             # CUDA 13 doesn't support arch < 80
             args: '-DARCCORE_CXX_STANDARD=20
               -DCMAKE_CUDA_ARCHITECTURES=80'
@@ -96,7 +96,7 @@ jobs:
             compilo_version: '20'
             acc_compilo_name: 'cuda'
             acc_compilo_version: '131'
-            date: '20260617'
+            date: '20260619'
             # CUDA 13 doesn't support arch < 80
             args: '-DARCCORE_CXX_STANDARD=20
               -DCMAKE_CUDA_ARCHITECTURES=80'
@@ -120,7 +120,7 @@ jobs:
             compilo_version: '15'
             acc_compilo_name: 'rocm'
             acc_compilo_version: '710'
-            date: '20260617'
+            date: '20260619'
             args: '-DARCCORE_CXX_STANDARD=20'
             execute_tests: false
 
@@ -130,7 +130,7 @@ jobs:
             compilo_version: '22'
             acc_compilo_name: 'rocm'
             acc_compilo_version: '710'
-            date: '20260617'
+            date: '20260619'
             args: '-DARCCORE_CXX_STANDARD=20'
             execute_tests: false
 
@@ -140,7 +140,7 @@ jobs:
             compilo_version: '22'
             acc_compilo_name: 'acpp'
             acc_compilo_version: ''
-            date: '20260617'
+            date: '20260619'
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
