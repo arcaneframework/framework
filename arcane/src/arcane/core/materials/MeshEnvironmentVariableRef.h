@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshEnvironmentVariableRef.h                                (C) 2000-2024 */
+/* MeshEnvironmentVariableRef.h                                (C) 2000-2026 */
 /*                                                                           */
 /* Reference to a variable on a mesh environment.                            */
 /*---------------------------------------------------------------------------*/
@@ -31,7 +31,6 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \ingroup ArcaneMaterials
  * \brief Scalar variable on the cells of a mesh environment.
@@ -243,6 +242,15 @@ class CellEnvironmentVariableArrayRef
   ArrayView<DataType> operator[](CellLocalId c)
   {
     return m_value[0][c.localId()];
+  }
+
+  MeshMaterialVariableArrayContainerView<DataType> containerView()
+  {
+    return MeshMaterialVariableArrayContainerView<DataType>(m_container_value);
+  }
+  MeshMaterialVariableArrayContainerView<const DataType> constContainerView() const
+  {
+    return MeshMaterialVariableArrayContainerView<const DataType>(m_container_value);
   }
 
  private:

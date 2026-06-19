@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableRef.h                                   (C) 2000-2025 */
+/* MeshMaterialVariableRef.h                                   (C) 2000-2026 */
 /*                                                                           */
 /* Reference to a variable on a mesh material.                               */
 /*---------------------------------------------------------------------------*/
@@ -41,7 +41,58 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief View of the container for 1D array constituent variables.
+ *
+ * If `DataType_` has `const` qualifier the container provides only
+ * read-only access.
+ */
+template <typename DataType_>
+class MeshMaterialVariableArrayContainerView
+{
+  using PlainDataType = std::remove_cv_t<DataType_>;
+  friend CellMaterialVariableArrayRef<PlainDataType>;
+  friend CellEnvironmentVariableArrayRef<PlainDataType>;
 
+ public:
+
+  using DataType = DataType_;
+  MeshMaterialVariableArrayContainerView() = default;
+
+ private:
+
+  //! This constructor is available via CellMaterialVariableArrayRef::containerView().
+  explicit MeshMaterialVariableArrayContainerView(ArrayView<Array2View<PlainDataType>> v)
+  : m_container_value(v)
+  {}
+
+ public:
+
+  //! Access operator for entity \a clid
+  ARCCORE_HOST_DEVICE SmallSpan<DataType> operator[](ComponentItemLocalId clid) const
+  {
+    return m_container_value[clid.localId().arrayIndex()][clid.localId().valueIndex()];
+  }
+
+  //! Access operator for entity \a pmvi
+  ARCCORE_HOST_DEVICE SmallSpan<DataType> operator[](PureMatVarIndex pmvi) const
+  {
+    return m_container_value[0][pmvi.valueIndex()];
+  }
+
+  //! Access operator for entity \a lid
+  ARCCORE_HOST_DEVICE SmallSpan<DataType> operator[](ItemLocalId lid) const
+  {
+    return m_container_value[0][lid.localId()];
+  }
+
+ private:
+
+  SmallSpan<Array2View<PlainDataType>> m_container_value;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneMaterials
  * \brief Base class for material variable references.
@@ -396,6 +447,7 @@ class CellMaterialVariableArrayRef
   using ItemType = Cell;
   using GlobalVariableRefType = MeshVariableArrayRefT<ItemType, DataType>;
   using ThatClass = CellMaterialVariableArrayRef<DataType>;
+  using ContainerView = MeshMaterialVariableArrayContainerView<DataType>;
 
  public:
 
@@ -492,6 +544,15 @@ class CellMaterialVariableArrayRef
   ArrayView<DataType> operator[](PureMatVarIndex mvi)
   {
     return m_value[0][mvi.valueIndex()];
+  }
+
+  MeshMaterialVariableArrayContainerView<DataType> containerView()
+  {
+    return MeshMaterialVariableArrayContainerView<DataType>(m_container_value);
+  }
+  MeshMaterialVariableArrayContainerView<const DataType> constContainerView() const
+  {
+    return MeshMaterialVariableArrayContainerView<const DataType>(m_container_value);
   }
 
  private:
