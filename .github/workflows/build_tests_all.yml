@@ -1,9 +1,9 @@
-name: '[All] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04 / GCC 12-14 / CLang 16-19-21 / CUDA 13.0 / ROCM 6.4.3 / Minimal-Full / Release-Debug)'
+name: '[All] Build/Install/Test Arcane Framework (Ubuntu 22.04-24.04-26.04 / GCC 12-14-15 / CLang 16-19-21-22 / CUDA 13.1 / ROCM 7.1.0 / Minimal-Full / Release-Debug)'
 # Attention : GitHub limite à 20 tests à la fois.
 
 on:
   schedule:
-    - cron: '23 1 * * *'
+    - cron: '1 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -36,6 +36,7 @@ jobs:
             args: '-DARCCORE_CXX_STANDARD=23 -DARCCORE_ENABLE_TBB=FALSE -DCMAKE_DISABLE_FIND_PACKAGE_TBB=TRUE'
             execute_tests: true
 
+
           - short: 'U24_G14'
             long: 'ubuntu-2404'
             compilo_name: 'gcc'
@@ -56,33 +57,50 @@ jobs:
             args: '-DARCCORE_CXX_STANDARD=23'
             execute_tests: true
 
-          - short: 'U24_G14_CU130'
-            long: 'ubuntu-2404'
-            compilo_name: 'gcc'
-            compilo_version: '14'
-            acc_compilo_name: 'cuda'
-            acc_compilo_version: '130'
-            date: '20250830'
-            # Disable googletest with CUDA because it requires a GPU driver
-            # CUDA 13 doesn't support arch < 80
-            args: '-DARCCORE_CXX_STANDARD=20
-              -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF
-              -DCMAKE_CUDA_ARCHITECTURES=80'
-            execute_tests: false
 
-          - short: 'U24_C19_CU130'
-            long: 'ubuntu-2404'
+          - short: 'U26_G15'
+            long: 'ubuntu-2604'
+            compilo_name: 'gcc'
+            compilo_version: '15'
+            acc_compilo_name: ''
+            acc_compilo_version: ''
+            date: '20260619'
+            args: '-DARCCORE_CXX_STANDARD=23'
+            execute_tests: true
+
+          - short: 'U26_C22'
+            long: 'ubuntu-2604'
             compilo_name: 'clang'
-            compilo_version: '19'
+            compilo_version: '22'
+            acc_compilo_name: ''
+            acc_compilo_version: ''
+            date: '20260619'
+            args: '-DARCCORE_CXX_STANDARD=23'
+            execute_tests: true
+
+          - short: 'U26_G15_CU131'
+            long: 'ubuntu-2604'
+            compilo_name: 'gcc'
+            compilo_version: '15'
             acc_compilo_name: 'cuda'
-            acc_compilo_version: '130'
-            date: '20250830'
-            # Disable googletest with CUDA because it requires a GPU driver
+            acc_compilo_version: '131'
+            date: '20260619'
             # CUDA 13 doesn't support arch < 80
             args: '-DARCCORE_CXX_STANDARD=20
-              -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF
               -DCMAKE_CUDA_ARCHITECTURES=80'
-            execute_tests: false
+            execute_tests: true
+
+          - short: 'U26_C20_CU131'
+            long: 'ubuntu-2604'
+            compilo_name: 'clang'
+            compilo_version: '20'
+            acc_compilo_name: 'cuda'
+            acc_compilo_version: '131'
+            date: '20260619'
+            # CUDA 13 doesn't support arch < 80
+            args: '-DARCCORE_CXX_STANDARD=20
+              -DCMAKE_CUDA_ARCHITECTURES=80'
+            execute_tests: true
 
           - short: 'U24_G14_CUC19'
             long: 'ubuntu-2404'
@@ -93,38 +111,38 @@ jobs:
             acc_compilo_version: '19'
             date: '20250120'
             # Disable googletest with CUDA because it requires a GPU driver
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            args: '-DARCCORE_CXX_STANDARD=20'
             execute_tests: false
 
-          - short: 'U24_G14_RC643'
-            long: 'ubuntu-2404'
+          - short: 'U26_G15_RC710'
+            long: 'ubuntu-2604'
             compilo_name: 'gcc'
-            compilo_version: '14'
+            compilo_version: '15'
             acc_compilo_name: 'rocm'
-            acc_compilo_version: '643'
-            date: '20250830'
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            acc_compilo_version: '710'
+            date: '20260619'
+            args: '-DARCCORE_CXX_STANDARD=20'
             execute_tests: false
 
-          - short: 'U24_C19_RC643'
-            long: 'ubuntu-2404'
+          - short: 'U26_C22_RC710'
+            long: 'ubuntu-2604'
             compilo_name: 'clang'
-            compilo_version: '19'
+            compilo_version: '22'
             acc_compilo_name: 'rocm'
-            acc_compilo_version: '643'
-            date: '20250830'
-            args: '-DARCCORE_CXX_STANDARD=20 -DARCANE_EXECUTE_ACCELERATOR_GOOGLETEST=OFF'
+            acc_compilo_version: '710'
+            date: '20260619'
+            args: '-DARCCORE_CXX_STANDARD=20'
             execute_tests: false
 
-          - short: 'U24_ACPP'
-            long: 'ubuntu-2404'
+          - short: 'U26_ACPP'
+            long: 'ubuntu-2604'
             compilo_name: 'clang'
-            compilo_version: '19'
+            compilo_version: '22'
             acc_compilo_name: 'acpp'
             acc_compilo_version: ''
-            date: '20250830'
+            date: '20260619'
             args: '-DARCCORE_CXX_STANDARD=23'
-            execute_tests: false
+            execute_tests: true
 
 
         version:
@@ -150,6 +168,12 @@ jobs:
           - implementation: 'MPICH'
 
         runner:
+          - runner_tag: 'm-1'
+            runner_name: 'M1'
+            excluded_tests: ''
+            excluded_tests_with_labels: ''
+            ctest_parallel_jobs: '-j32'
+
           - runner_tag: 'ubuntu-latest'
             runner_name: 'GH'
             excluded_tests: ''
@@ -160,20 +184,34 @@ jobs:
           # Certains packages ne sont pas compilés avec MPICH dans les images Full.
           - { version: { short: 'F' }, mpi: { implementation: 'MPICH' } }
           # Il n'y a pas CUDA ni ROCm dans les images Minimal.
-          - { version: { short: 'M' }, image: { short: 'U24_G14_CU130' } }
-          - { version: { short: 'M' }, image: { short: 'U24_C19_CU130' } }
+          - { version: { short: 'M' }, image: { short: 'U26_G15_CU131' } }
+          - { version: { short: 'M' }, image: { short: 'U26_C20_CU131' } }
           - { version: { short: 'M' }, image: { short: 'U24_G14_CUC19' } }
-          - { version: { short: 'M' }, image: { short: 'U24_G14_RC643' } }
-          - { version: { short: 'M' }, image: { short: 'U24_C19_RC643' } }
-          - { version: { short: 'M' }, image: { short: 'U24_ACPP' } }
+          - { version: { short: 'M' }, image: { short: 'U26_G15_RC710' } }
+          - { version: { short: 'M' }, image: { short: 'U26_C22_RC710' } }
+          - { version: { short: 'M' }, image: { short: 'U26_ACPP' } }
           # Pas possible de compiler Arcane avec AdaptiveCpp en Debug.
-          - { config: { type: 'Debug' }, image: { short: 'U24_ACPP' } }
+          - { config: { type: 'Debug' }, image: { short: 'U26_ACPP' } }
+          # Les tests non-Cuda sont faits par les runners GH.
+          - { image: { acc_compilo_name: '' }, runner: { runner_tag: 'm-1' } }
+          - { image: { acc_compilo_name: 'rocm' }, runner: { runner_tag: 'm-1' } }
+          # Les tests Cuda sont faits par les runners M1.
+          - { image: { acc_compilo_name: 'cuda' }, runner: { runner_tag: 'ubuntu-latest' } }
+          - { image: { acc_compilo_name: 'acpp' }, runner: { runner_tag: 'ubuntu-latest' } }
 
     name: '[${{matrix.runner.runner_name}}][${{matrix.image.short}}_${{matrix.version.short}}]_${{matrix.mpi.implementation}}_${{matrix.config.type}}'
     # La partie 'uses' est déterminée à la compilation, donc on ne peut pas mettre de variable ${{}}.
     uses: 'arcaneframework/gh_actions/.github/workflows/reusable_test_framework.yml@v3'
+    secrets: inherit
     with:
-      image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
+      # image: ghcr.io/arcaneframework/${{matrix.image.long}}:${{matrix.image.compilo_name}}-${{matrix.image.compilo_version}}_${{matrix.version.long}}_${{matrix.image.date}}
+      image: |-
+        ${{ format(
+          case( 
+            matrix.image.date == 'latest', 'ghcr.io/arcaneframework/{0}:{1}_{3}_latest',
+            'ghcr.io/arcaneframework/{0}:{1}-{2}_{3}_{4}'),
+          matrix.image.long, matrix.image.compilo_name, matrix.image.compilo_version, matrix.version.long, matrix.image.date
+        ) }}
       compilo_name: ${{ matrix.image.compilo_name }}
       compilo_version: ${{ matrix.image.compilo_version }}
       acc_compilo_name: ${{ matrix.image.acc_compilo_name }}
@@ -190,3 +228,4 @@ jobs:
       use_cache: false
       artifact_key_prefix: ${{matrix.image.short}}_${{matrix.version.short}}_${{matrix.mpi.implementation}}_${{matrix.config.type}}
       runner_tag: ${{ matrix.runner.runner_tag }}
+      runner_gpu: ${{ case(matrix.image.acc_compilo_name == 'cuda' || matrix.image.acc_compilo_name == 'acpp', 'true', 'false') }}
