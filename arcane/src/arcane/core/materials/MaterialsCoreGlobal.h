@@ -163,7 +163,15 @@ using ComponentCellVectorView = ComponentItemVectorView;
 //! List of multi-material components of the mesh.
 using MeshComponentList = ConstArrayView<IMeshComponent*>;
 
-template <typename DataType> class CellMaterialVariableScalarRef;
+template <typename DataType>
+class CellMaterialVariableScalarRef;
+template <typename DataType>
+class CellEnvironmentVariableScalarRef;
+
+template <typename DataType_>
+class CellMaterialVariableArrayRef;
+template <typename DataType_>
+class CellEnvironmentVariableArrayRef;
 
 template <typename ItemType, typename DataType>
 class IScalarMeshMaterialVariable;

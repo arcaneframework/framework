@@ -66,7 +66,6 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Unit test service for the constituent accelerator support.
  */
@@ -85,7 +84,7 @@ class MeshMaterialAcceleratorUnitTest
 
  private:
 
-  ax::Runner m_runner;
+  Runner m_runner;
 
   IMeshMaterialMng* m_mm_mng = nullptr;
   IMeshEnvironment* m_env1 = nullptr;
@@ -95,20 +94,25 @@ class MeshMaterialAcceleratorUnitTest
   MaterialVariableCellReal m_mat_c_ref;
   MaterialVariableCellReal m_mat_d_ref;
   MaterialVariableCellReal m_mat_e_ref;
+  MaterialVariableCellArrayReal m_mat_array_a_ref;
 
   MaterialVariableCellReal m_mat_a;
   MaterialVariableCellReal m_mat_b;
   MaterialVariableCellReal m_mat_c;
   MaterialVariableCellReal m_mat_d;
   MaterialVariableCellReal m_mat_e;
+  MaterialVariableCellArrayReal m_mat_array_a;
 
   EnvironmentVariableCellReal m_env_a;
   EnvironmentVariableCellReal m_env_b;
   EnvironmentVariableCellReal m_env_c;
+  EnvironmentVariableCellArrayReal m_env_array_a;
 
   UniqueArray<Int32> m_env1_pure_value_index;
   UniqueArray<Int32> m_env1_partial_value_index;
   CellGroup m_sub_env_group1;
+
+  Int32 m_nb_dim2 = 3;
 
   void _initializeVariables(ComponentItemVectorView component);
 
@@ -126,6 +130,7 @@ class MeshMaterialAcceleratorUnitTest
   void _executeTest7(RunQueue& queue);
   void _testComponentSetSpecificExecutionPolicy();
   void _checkEnvValues1();
+  void _checkEnvValuesArray1();
   void _checkMatValues1();
   void _checkEnvironmentValues();
   void _testSelection();
@@ -145,19 +150,22 @@ MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& sb)
 : BasicUnitTest(sb)
 , m_mm_mng(nullptr)
 , m_env1(nullptr)
-, m_mat_a_ref(VariableBuildInfo(mesh(), "MatA_ref"))
-, m_mat_b_ref(VariableBuildInfo(mesh(), "MatB_ref"))
-, m_mat_c_ref(VariableBuildInfo(mesh(), "MatC_ref"))
-, m_mat_d_ref(VariableBuildInfo(mesh(), "MatD_ref"))
-, m_mat_e_ref(VariableBuildInfo(mesh(), "MatE_ref"))
+, m_mat_a_ref(VariableBuildInfo(mesh(), "MatAref"))
+, m_mat_b_ref(VariableBuildInfo(mesh(), "MatBref"))
+, m_mat_c_ref(VariableBuildInfo(mesh(), "MatCref"))
+, m_mat_d_ref(VariableBuildInfo(mesh(), "MatDref"))
+, m_mat_e_ref(VariableBuildInfo(mesh(), "MatEref"))
+, m_mat_array_a_ref(VariableBuildInfo(mesh(), "MatArrayAref"))
 , m_mat_a(VariableBuildInfo(mesh(), "MatA"))
 , m_mat_b(VariableBuildInfo(mesh(), "MatB"))
 , m_mat_c(VariableBuildInfo(mesh(), "MatC"))
 , m_mat_d(VariableBuildInfo(mesh(), "MatD"))
 , m_mat_e(VariableBuildInfo(mesh(), "MatE"))
+, m_mat_array_a(VariableBuildInfo(mesh(), "MatArrayA"))
 , m_env_a(VariableBuildInfo(mesh(), "EnvA"))
 , m_env_b(VariableBuildInfo(mesh(), "EnvB"))
 , m_env_c(VariableBuildInfo(mesh(), "EnvC"))
+, m_env_array_a(VariableBuildInfo(mesh(), "EnvArrayA"))
 {
 }
 
@@ -387,6 +395,10 @@ _initializeVariables(ComponentItemVectorView component)
   MaterialVariableCellReal& e(m_mat_e);
   bool is_env = component.component()->isEnvironment();
 
+  m_mat_array_a_ref.resize(m_nb_dim2);
+  m_mat_array_a.resize(m_nb_dim2);
+  m_env_array_a.resize(m_nb_dim2);
+
   ENUMERATE_COMPONENTCELL (i, component) {
     Real z = (Real)i.index();
     b_ref[i] = z * 2.3;
@@ -509,7 +521,6 @@ _executeTest5(Integer nb_z, MatCellVectorView mat1)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Test of RUNCOMMAND_MAT_ENUMERATE(EnvCell, ...
  * with a collection of envcells as parameters and trying to access
@@ -524,7 +535,9 @@ _executeTest2(Integer nb_z)
   MaterialVariableCellReal& c_ref(m_mat_c_ref);
   MaterialVariableCellReal& d_ref(m_mat_d_ref);
   MaterialVariableCellReal& e_ref(m_mat_e_ref);
+  MaterialVariableCellArrayReal& array_a_ref(m_mat_array_a_ref);
   UniqueArray<Real> ref_reduced_values(m_mm_mng->environments().size());
+  const Int32 nb_dim2 = m_nb_dim2;
   // Ref CPU
   CellToAllEnvCellConverter allenvcell_converter(m_mm_mng);
   for (Integer z = 0, iz = nb_z; z < iz; ++z) {
@@ -534,11 +547,15 @@ _executeTest2(Integer nb_z)
       ENUMERATE_ENVCELL (iev, envcellsv) {
         Cell cell = (*iev).globalCell();
         a_ref[iev] = b_ref[iev] * e_ref[cell];
+        for (Int32 k = 0; k < nb_dim2; ++k)
+          array_a_ref[iev][k] = b_ref[iev] * e_ref[cell] + k;
         AllEnvCell all_env_cell = allenvcell_converter[cell];
         ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
           EnvCell env_cell = *ienvcell;
           Int32 env_id = env_cell.environmentId();
           a_ref[iev] += env_id;
+          for (Int32 k = 0; k < nb_dim2; ++k)
+            array_a_ref[iev][k] += env_id + k;
         }
       }
       Real total_cref = 0.0;
@@ -570,6 +587,11 @@ _executeTest2(Integer nb_z)
           auto inout_a = viewInOut(cmd, m_mat_a);
           auto in_b = viewIn(cmd, m_mat_b);
           auto in_e = viewIn(cmd, m_mat_e.globalVariable());
+          auto in_array_a = viewIn(cmd, m_mat_array_a);
+          auto out_mat_array_a = viewOut(cmd, m_mat_array_a);
+          auto out_env_array_a = viewOut(cmd, m_env_array_a);
+          auto inout_mat_array_a = viewInOut(cmd, m_mat_array_a);
+          auto inout_env_array_a = viewInOut(cmd, m_env_array_a);
 
           auto inout_env_a = viewInOut(cmd, m_env_a);
           auto in_env_b = viewIn(cmd, m_env_b);
@@ -577,13 +599,21 @@ _executeTest2(Integer nb_z)
           {
             auto [mvi, cid] = evi();
             inout_a[mvi] = in_b[mvi] * in_e[cid];
+            for (Int32 k = 0; k < nb_dim2; ++k) {
+              out_mat_array_a[mvi][k] = in_b[mvi] * in_e[cid] + k;
+              out_env_array_a[mvi][k] = in_array_a[mvi][k];
+            }
             inout_env_a[mvi] = in_env_b[mvi] * in_e[cid];
             AllEnvCell all_env_cell = allenvcell_converter[cid];
             ENUMERATE_CELL_ENVCELL (ienvcell, all_env_cell) {
               EnvCell env_cell = *ienvcell;
               Int32 env_id = env_cell.environmentId();
               inout_a[mvi] += env_id;
+              for (Int32 k = 0; k < nb_dim2; ++k)
+                inout_mat_array_a[mvi][k] += env_id + k;
               inout_env_a[mvi] += env_id;
+              for (Int32 k = 0; k < nb_dim2; ++k)
+                inout_env_array_a[mvi][k] += env_id + k;
             }
           };
         }
@@ -616,6 +646,7 @@ _executeTest2(Integer nb_z)
   }
 
   _checkEnvValues1();
+  _checkEnvValuesArray1();
   _checkEnvironmentValues();
 }
 
@@ -1071,6 +1102,25 @@ _checkEnvValues1()
       _checkOneValue(m_mat_c[iev], m_mat_c_ref[iev], "Test1_mat_c");
       _checkOneValue(m_mat_d[iev], m_mat_d_ref[iev], "Test1_mat_d");
       _checkOneValue(m_mat_e[iev], m_mat_e_ref[iev], "Test1_mat_e");
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialAcceleratorUnitTest::
+_checkEnvValuesArray1()
+{
+  ValueChecker vc(A_FUNCINFO);
+  const Int32 nb_dim2 = m_nb_dim2;
+  ENUMERATE_ENV (ienv, m_mm_mng) {
+    IMeshEnvironment* env = *ienv;
+    ENUMERATE_ENVCELL (iev, env) {
+      for (Int32 k = 0; k < nb_dim2; ++k) {
+        _checkOneValue(m_mat_array_a[iev][k], m_mat_array_a_ref[iev][k], "Test1_mat_array_a");
+        _checkOneValue(m_env_array_a[iev][k], m_mat_array_a_ref[iev][k], "Test1_env_array_a");
+      }
     }
   }
 }
