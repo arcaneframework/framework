@@ -13,6 +13,7 @@
  <module-test-unitaire>
    <test name="MeshUnitTest">
      <test-adjacence>0</test-adjacence>
+     <write-mesh-service-name>VtkLegacy</write-mesh-service-name>
    </test>
  </module-test-unitaire>
 
