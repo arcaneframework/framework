@@ -117,8 +117,7 @@ jobs:
             -DARCANE_USE_HASHTABLEMAP2_FOR_ITEMINTERNALMAP=ON
             -DALIEN_BUILD_COMPONENT=all
             -DALIEN_PLUGIN_HYPRE=ON
-            -DALIEN_PLUGIN_PETSC=ON
-            -DGFORTRAN_LIBRARY=/usr/lib/gcc/x86_64-linux-gnu/13/libgfortran.so'
+            -DALIEN_PLUGIN_PETSC=ON'
           type_build: 'Release'
           compilo: 'gcc'
           verbose: true
