@@ -227,7 +227,7 @@ public:
   , val(other.val)
   , own_data(other.own_data)
   {
-    other.m_nbRow = 0;
+    other.m_nb_row = 0;
     other.ncols = 0;
     other.m_nb_non_zero = 0;
     other.ptr = 0;
