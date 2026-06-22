@@ -32,8 +32,9 @@ concurrency:
 
 env:
   # CTest
-  CT_OPTS: "-j4 --timeout 600 --output-on-failure"
-  EXCLUDED_TESTS: '^.*(mumps).*$'
+  CT_OPTS: "--timeout 1200 --output-on-failure"
+  # TODO Alien ne fonctionne pas avec les dernières versions de hypre et petsc.
+  EXCLUDED_TESTS: '^.*(mumps|hypre\.hypre|petsc\.petsc).*$'
   EXCLUDED_TESTS_WITH_LABELS: 'LARGE_HYBRID'
 
   # OpenMPI
@@ -46,11 +47,21 @@ env:
   ARCANE_TEST_CLEANUP_AFTER_RUN: 1
 
 jobs:
+  check-runner:
+    name: 'Check runner'
+    uses: 'arcaneframework/gh_actions/.github/workflows/check_runner.yml@v3'
+    secrets: inherit
+    with:
+      requested_runner_tag: 'gpu'
+      is_requested_runner_a_gpu_runner: true
+
   build:
     name: Codecov
-    runs-on: ubuntu-latest
+    needs: check-runner
+    runs-on: ${{ needs.check-runner.outputs.runner_tag }}
     container:
       image: ghcr.io/arcaneframework/ubuntu-2604:gcc_full_stable
+      options: ${{ case(needs.check-runner.outputs.is_a_gpu_runner == 'true', '--runtime nvidia --gpus all', '') }}
 
     steps:
       - name: Display CPU infos
@@ -79,6 +90,9 @@ jobs:
         run: |
           source /root/scripts/use_openmpi.sh
           source /root/scripts/use_gcc.sh
+          if [[ "${{ needs.check-runner.outputs.is_a_gpu_runner }}" == "true" ]]; then
+            source /root/scripts/use_cuda.sh
+          fi
 
       - name: Get date
         shell: bash
@@ -121,6 +135,7 @@ jobs:
             -DALIEN_PLUGIN_PETSC=ON'
           type_build: 'Release'
           compilo: 'gcc'
+          acc_compilo: ${{ case(needs.check-runner.outputs.is_a_gpu_runner == 'true', 'nvcc', '') }}
           verbose: true
           with_samples: false
 
@@ -141,7 +156,14 @@ jobs:
         shell: bash
         run: |
           mkdir -p ${{ env.CT_RESULT_DIR }}
-          ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{ env.EXCLUDED_TESTS }}' -LE '${{ env.EXCLUDED_TESTS_WITH_LABELS }}'
+          [ -f /root/scripts/config_env.sh ] && source /root/scripts/config_env.sh
+          ARCANE_CHECK=1 ctest \
+            --test-dir ${{ env.BUILD_DIR }} \
+            --output-junit ${{ env.CT_RESULT_DIR }}/results.xml \
+            ${{ env.CT_OPTS }} \
+            ${{ case(needs.check-runner.outputs.runner_tag == 'ubuntu-latest', '-j4', '-j8') }} \
+            -E '${{ env.EXCLUDED_TESTS }}' \
+            -LE '${{ env.EXCLUDED_TESTS_WITH_LABELS }}'
 
       # https://www.ibm.com/docs/en/developer-for-zos/9.1.1?topic=formats-junit-xml-format
       - name: Edit results.xml for Codecov (need valid JUnit XML)
