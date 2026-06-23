@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtuMeshWriter.cc                                            (C) 2000-2025 */
+/* VtuMeshWriter.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Reading/Writing a VtuMeshWriter format file.                              */
 /*---------------------------------------------------------------------------*/
@@ -117,7 +117,7 @@ _writeFieldGroupsFromData(vtkFieldData* fieldData, ItemGroup group)
   a->InsertNextValue(group.itemKind());
 
   ENUMERATE_ITEM (iitem, group) {
-    a->InsertNextValue(iitem->uniqueId());
+    a->InsertNextValue(iitem->uniqueId().asInt32());
   }
 
   a->SetNumberOfTuples(a->GetNumberOfTuples());
@@ -169,7 +169,7 @@ writeMeshToFile(IMesh* mesh, const String& file_name)
   vtk_cell_uids->SetName("CellsUniqueIDs");
   ENUMERATE_CELL (iCell, mesh->allCells()) {
     Cell cell = *iCell;
-    vtk_cell_uids->InsertNextValue(cell.uniqueId());
+    vtk_cell_uids->InsertNextValue(cell.uniqueId().asInt32());
   }
   vtk_cell_data->AddArray(vtk_cell_uids); // Now add our Cells' UniqueIDs array
   vtk_cell_uids->Delete();

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtuMeshReader.cc                                            (C) 2000-2025 */
+/* VtuMeshReader.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Reading/Writing a file in VtuMeshReader format.                           */
 /*---------------------------------------------------------------------------*/
@@ -132,7 +132,7 @@ class VtuMeshReaderBase
 \****************************************************************************/
 typedef struct
 {
-  char* ext;
+  const char* ext;
   IMeshReader::eReturnType (VtuMeshReaderBase::*reader)(IMesh*, const String&, const String&, bool);
 } vtkExtReader;
 
