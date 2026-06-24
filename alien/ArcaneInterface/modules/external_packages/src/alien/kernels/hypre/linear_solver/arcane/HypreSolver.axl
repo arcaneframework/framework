@@ -69,7 +69,7 @@
             <description>ilut max nnz per row</description>
       </simple>
 
-      <simple name="fsai-max-step" type="integer" default="5">
+      <simple name="fsai-max-steps" type="integer" default="5">
             <description>FSAI max steps</description>
       </simple>
 
