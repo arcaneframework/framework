@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 using System;
+using System.Reflection;
 using Python.Runtime;
 using System.IO;
 
@@ -128,6 +129,9 @@ namespace Arcane.Python
       lock(m_init_lock){
         if (m_has_init)
           return;
+        Assembly pythonnet_assembly = Assembly.GetAssembly(typeof(PythonEngine));
+        if (pythonnet_assembly != null)
+          Console.WriteLine("Initializing PythonNet Version={0}",pythonnet_assembly.GetName().Version);
         PythonEngine.Initialize();
         m_has_init = true;
       }
