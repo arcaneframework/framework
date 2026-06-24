@@ -5,6 +5,8 @@
 
   internal/LimaMalippT.h
   internal/LimaUtils.cc
+  internal/LimaMalipp.cc
+  internal/LimaMalipp2.cc
   internal/LimaUtils.h
 )
 
