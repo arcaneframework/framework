@@ -13,6 +13,11 @@ arccon_return_if_package_found(HDF5)
 # Tente d'utiliser le module correspondant de CMake
 set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 unset(CMAKE_MODULE_PATH)
+# It seems CMake config file for HDF5 1.14
+# does not include ZLIB which leads to errors
+# when configuring (like 'ZLIB::ZLIB target not found').
+# To prevent that, we manually include this package
+find_package(ZLIB QUIET)
 find_package(HDF5 CONFIG QUIET)
 set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 
