@@ -161,7 +161,7 @@ jobs:
             --test-dir ${{ env.BUILD_DIR }} \
             --output-junit ${{ env.CT_RESULT_DIR }}/results.xml \
             ${{ env.CT_OPTS }} \
-            ${{ case(needs.check-runner.outputs.runner_tag == 'ubuntu-latest', '-j4', '-j8') }} \
+            ${{ case(needs.check-runner.outputs.runner_tag == 'ubuntu-latest', '-j4', '-j32 --test-load 192') }} \
             -E '${{ env.EXCLUDED_TESTS }}' \
             -LE '${{ env.EXCLUDED_TESTS_WITH_LABELS }}'
 

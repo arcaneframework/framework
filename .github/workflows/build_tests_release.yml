@@ -104,7 +104,7 @@ jobs:
             runner_name: 'M1'
             excluded_tests: ''
             excluded_tests_with_labels: ''
-            ctest_parallel_jobs: '-j8'
+            ctest_parallel_jobs: '-j32 --test-load 192'
 
           - runner_tag: 'ubuntu-latest'
             runner_name: 'GH'
