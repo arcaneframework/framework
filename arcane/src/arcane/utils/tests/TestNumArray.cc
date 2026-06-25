@@ -221,6 +221,23 @@ TEST(NumArray3, Misc)
   v.resize(3, 2, 6);
   std::cout << "CAPACITY V4=" << v.capacity() << "\n";
 
+  ASSERT_EQ(v.data(), v.to1DSpan().data());
+
+  {
+    // Check iterators
+    NumArray<Int32, MDDim1> array1(4);
+    Int32 base = 2;
+    Int32 total = 0;
+    for( Int32& x : array1 ){
+      x = base;
+      ++base;
+    }
+    const auto&  const_array1 = array1;
+    for( Int32 x : const_array1 )
+      total += x;
+    ASSERT_EQ(total,14);
+  }
+
   // NOTE: temporarily disables the test until the method
   // resize() of 'NumArray' preserves values
 #if NUMARRAY_HAS_VALID_RESIZE
