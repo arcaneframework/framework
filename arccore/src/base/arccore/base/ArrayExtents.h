@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayExtents.h                                              (C) 2000-2025 */
+/* ArrayExtents.h                                              (C) 2000-2026 */
 /*                                                                           */
 /* Management of the number of elements per dimension for N-dimensional      */
 /* arrays.                                                                   */
@@ -212,6 +212,7 @@ class ArrayExtents<ExtentsV<SizeType_, X0>>
 
   using ExtentsType = ExtentsV<SizeType_, X0>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
+  using BaseClass::extent0;
   using BaseClass::totalNbElement;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
@@ -247,6 +248,8 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1>>
 
   using ExtentsType = ExtentsV<SizeType_, X0, X1>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
+  using BaseClass::extent0;
+  using BaseClass::extent1;
   using BaseClass::totalNbElement;
   using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
@@ -283,6 +286,9 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2>>
 
   using ExtentsType = ExtentsV<SizeType_, X0, X1, X2>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
+  using BaseClass::extent0;
+  using BaseClass::extent1;
+  using BaseClass::extent2;
   using BaseClass::totalNbElement;
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
 
@@ -320,6 +326,10 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2, X3>>
 
   using ExtentsType = ExtentsV<SizeType_, X0, X1, X2, X3>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
+  using BaseClass::extent0;
+  using BaseClass::extent1;
+  using BaseClass::extent2;
+  using BaseClass::extent3;
   using BaseClass::totalNbElement;
   using DynamicDimsType = typename BaseClass::DynamicDimsType;
 
