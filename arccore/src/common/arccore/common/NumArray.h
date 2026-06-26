@@ -700,6 +700,37 @@ class NumArray
 
  public:
 
+  //! Base pointer of the array.
+  DataType* data() { return m_span._internalData(); }
+
+  //! Base pointer of the array.
+  const DataType* data() const { return m_span._internalData(); }
+
+ public:
+
+  //! Mutable iterator for the first element of the array
+  ArrayIterator<DataType*> begin() requires(Extents::rank() == 1)
+  {
+    return m_span.to1DSmallSpan().begin();
+  }
+  //! Mutable iterator following the last element of the array
+  ArrayIterator<DataType*> end() requires(Extents::rank() == 1)
+  {
+    return m_span.to1DSmallSpan().end();
+  }
+  //! Read-only iterator for the first element of the array
+  ArrayIterator<const DataType*> begin() const requires(Extents::rank() == 1)
+  {
+    return m_span.to1DSmallSpan().begin();
+  }
+  //! Read-only iterator following the last element of the array
+  ArrayIterator<const DataType*> end() const requires(Extents::rank() == 1)
+  {
+    return m_span.to1DSmallSpan().end();
+  }
+
+ public:
+
   //! \internal
   DataType* _internalData() { return m_span._internalData(); }
 

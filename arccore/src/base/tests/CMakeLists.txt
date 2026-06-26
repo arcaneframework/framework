@@ -1,5 +1,6 @@
 ﻿arccore_add_component_test_executable(base
   FILES
+  TestArrayExtents.cc
   TestBasicDataType.cc
   TestException.cc
   TestGetIndices.cc
