@@ -483,9 +483,15 @@ PETScInternalLinearSolver::solve(
 #else
     PetscViewerAndFormat* vf;
     PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf);
+#if PETSC_VERSION_GE(3, 25, 0)
     KSPMonitorSet(ksp,
         (PetscErrorCode(*)(KSP, PetscInt, PetscReal, void*))KSPMonitorTrueResidualNorm,
-        vf, (PetscErrorCode(*)(void**))PetscViewerAndFormatDestroy);
+                  vf, (PetscCtxDestroyFn*)PetscViewerAndFormatDestroy);
+#else
+    KSPMonitorSet(ksp,
+        (PetscErrorCode(*)(KSP, PetscInt, PetscReal, void*))KSPMonitorTrueResidualNorm,
+                  vf, (PetscErrorCode(*)(void**))PetscViewerAndFormatDestroy);
+#endif
 #endif
   }
 
@@ -549,7 +555,11 @@ PETScInternalLinearSolver::checkError(const Arccore::String& msg, int ierr)
 {
   if (ierr != 0) {
     const char* text;
-    char* specific;
+#if PETSC_VERSION_GE(3, 25, 0)
+      const char* specific;
+#else
+      char* specific;
+#endif
     PetscErrorMessage(ierr, &text, &specific);
     alien_fatal([&] {
       cout() << msg << " failed : " << text << " / " << specific << "[code=" << ierr
