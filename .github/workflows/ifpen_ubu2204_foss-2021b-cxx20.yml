@@ -12,6 +12,10 @@ on:
         required: false
         default: ''
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 env:
   # Framework directories
   BUILD_DIR: /__w/framework/framework/build
