@@ -375,6 +375,26 @@ run(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& fu
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Applies the lambda \a func on the iteration range given by \a bounds
+template <int N, typename Lambda> void
+launchRunCommand(RunCommand& command, SimpleForLoopRanges<N, Int32> bounds, Lambda func)
+{
+  Impl::_applyGenericLoop(command, bounds, func);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Applies the lambda \a func on the iteration range given by \a bounds
+template <int N, typename Lambda> void
+launchRunCommand(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& func)
+{
+  Impl::_applyGenericLoop(command, bounds, func);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename ExtentType> auto
 operator<<(RunCommand& command, const ArrayBounds<ExtentType>& bounds)
 -> Impl::ArrayBoundRunCommand<SimpleForLoopRanges<ExtentType::rank(), Int32>>
