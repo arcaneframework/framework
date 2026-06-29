@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SequentialFor.h                                             (C) 2000-2025 */
+/* SequentialFor.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Handling of sequential for loops.                                         */
 /*---------------------------------------------------------------------------*/
@@ -29,7 +29,7 @@ namespace Arcane
 //! Applies the functor \a func over a 1D loop.
 template <typename IndexType, template <int T, typename> class LoopBoundType,
           typename Lambda, typename... RemainingArgs>
-void arccoreSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func,
+void arccoreSequentialFor(LoopBoundType<1, IndexType> bounds, Lambda func,
                           RemainingArgs... remaining_args)
 {
   Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
@@ -43,7 +43,7 @@ void arccoreSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func
 
 //! Applies the functor \a func over a 2D loop.
 template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> void
-arccoreSequentialFor(LoopBoundType<2, IndexType> bounds, const Lambda& func)
+arccoreSequentialFor(LoopBoundType<2, IndexType> bounds, Lambda func)
 {
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     for (Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1)
@@ -55,7 +55,7 @@ arccoreSequentialFor(LoopBoundType<2, IndexType> bounds, const Lambda& func)
 
 //! Applies the functor \a func over a 3D loop.
 template <typename IndexType, template <int T, typename> class LoopBoundType, typename Lambda> void
-arccoreSequentialFor(LoopBoundType<3, IndexType> bounds, const Lambda& func)
+arccoreSequentialFor(LoopBoundType<3, IndexType> bounds, Lambda func)
 {
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     for (Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1)
@@ -68,7 +68,7 @@ arccoreSequentialFor(LoopBoundType<3, IndexType> bounds, const Lambda& func)
 
 //! Applies the functor \a func over a 4D loop.
 template <typename IndexType, template <int, typename> class LoopBoundType, typename Lambda> void
-arccoreSequentialFor(LoopBoundType<4, IndexType> bounds, const Lambda& func)
+arccoreSequentialFor(LoopBoundType<4, IndexType> bounds, Lambda func)
 {
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     for (Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1)
