@@ -1,6 +1,7 @@
 ﻿arccore_add_component_test_executable(common
   FILES
   TestProcess.cc
+  TestSequentialFor.cc
   TestStringVector.cc
 )
 
