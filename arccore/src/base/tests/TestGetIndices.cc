@@ -10,8 +10,6 @@
 #include "arccore/base/ArrayExtentsValue.h"
 #include "arccore/base/ArrayExtents.h"
 
-#include "arccore/base/ForLoopRanges.h"
-
 #include <iostream>
 
 using namespace Arcane;
@@ -32,9 +30,9 @@ struct XYZ
   }
   std::array<Int32, 3> getIndices1(Int32 index)
   {
-    Int32 i2 = impl::fastmod(index, z);
+    Int32 i2 = Impl::fastmod(index, z);
     Int32 fac = z;
-    Int32 i1 = impl::fastmod(index / fac, y);
+    Int32 i1 = Impl::fastmod(index / fac, y);
     fac *= y;
     Int32 i0 = index / fac;
     return { i0, i1, i2 };

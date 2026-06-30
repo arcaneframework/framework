@@ -26,7 +26,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \file BaseTypes.h
  *
@@ -170,7 +169,7 @@ using Accelerator::RunQueue;
 class DefaultLayout;
 template <int RankValue> class RightLayoutN;
 template <int RankValue> class LeftLayoutN;
-template <int RankValue> class MDDimType;
+template <int RankValue, typename IndexType_ = Int32> class MDDimType;
 class ConstMemoryView;
 class MutableMemoryView;
 class IMemoryResourceMng;
@@ -200,7 +199,7 @@ template <typename Extents> class ArrayExtents;
 template <int RankValue> class ArrayStridesBase;
 template <int RankValue> class IMDRangeFunctor;
 template <int RankValue> class ArrayExtentsValueDynamic;
-namespace impl
+namespace Impl
 {
   template <typename IndexType_, Int32... RankSize> class ArrayExtentsValue;
 }

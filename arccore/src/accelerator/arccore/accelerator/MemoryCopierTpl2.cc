@@ -25,7 +25,7 @@ namespace Arcane::Accelerator::Impl
 void AcceleratorSpecificMemoryCopyList::
 addExplicitTemplate2()
 {
-  using namespace Arcane::impl;
+  using namespace Arcane::Impl;
 
   //! Adds specific implementations for the first common sizes
   addCopier<SpecificType<Int16, ExtentValue<3>>>(); // 6

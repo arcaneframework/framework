@@ -358,7 +358,7 @@ class SpecificMemoryCopyRef
  private:
 
   ISpecificMemoryCopy* m_specialized_copier = nullptr;
-  SpecificType<std::byte, impl::ExtentValue<DynExtent>> m_generic_copier;
+  SpecificType<std::byte, Impl::ExtentValue<DynExtent>> m_generic_copier;
   ISpecificMemoryCopy* m_used_copier = nullptr;
 };
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MDDim.h                                                     (C) 2000-2025 */
+/* MDDim.h                                                     (C) 2000-2026 */
 /*                                                                           */
 /* Tag for N-dimensional arrays.                                             */
 /*---------------------------------------------------------------------------*/
@@ -43,40 +43,40 @@ using MDDim4 = ExtentsV<Int32, DynExtent, DynExtent, DynExtent, DynExtent>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <>
-class MDDimType<0>
+template <typename IndexType_>
+class MDDimType<0, IndexType_>
 {
  public:
 
-  using DimType = MDDim0;
+  using DimType = ExtentsV<IndexType_>;
 };
-template <>
-class MDDimType<1>
+template <typename IndexType_>
+class MDDimType<1, IndexType_>
 {
  public:
 
-  using DimType = MDDim1;
+  using DimType = ExtentsV<IndexType_, DynExtent>;
 };
-template <>
-class MDDimType<2>
+template <typename IndexType_>
+class MDDimType<2, IndexType_>
 {
  public:
 
-  using DimType = MDDim2;
+  using DimType = ExtentsV<IndexType_, DynExtent, DynExtent>;
 };
-template <>
-class MDDimType<3>
+template <typename IndexType_>
+class MDDimType<3, IndexType_>
 {
  public:
 
-  using DimType = MDDim3;
+  using DimType = ExtentsV<IndexType_, DynExtent, DynExtent, DynExtent>;
 };
-template <>
-class MDDimType<4>
+template <typename IndexType_>
+class MDDimType<4, IndexType_>
 {
  public:
 
-  using DimType = MDDim4;
+  using DimType = ExtentsV<IndexType_, DynExtent, DynExtent, DynExtent, DynExtent>;
 };
 
 /*---------------------------------------------------------------------------*/
