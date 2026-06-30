@@ -716,12 +716,12 @@ HypreInternalLinearSolver::Impl::init(IOptionsHypreSolver* options, MPI_Comm com
       precond_name = "iluk";
       checkError("Hypre ILU preconditioner", HYPRE_ILUCreate(&preconditioner));
       /* (Recommended) General solver options */
-      int ilu_type = 0 ;
-      int max_iter = 1 ;
-      double tol = 0. ;
-      int reordering = 0 ;
-      int fill = options->ilukLevel() ;
-      int print_level = 3 ;
+      int ilu_type    = 0 ;
+      int max_iter    = options->iluMaxIter() ;
+      double tol      = options->iluTol() ;
+      int reordering  = options->iluReordering() ;
+      int fill        = options->ilukLevel() ;
+      int print_level = options->iluPrintLevel() ;
       checkError("Hypre ILUK preconditioner Type SetUp    ", HYPRE_ILUSetType(preconditioner, ilu_type)); /* 0, 1, 10, 11, 20, 21, 30, 31, 40, 41, 50 */
       checkError("Hypre ILUK preconditioner Max Iter      ", HYPRE_ILUSetMaxIter(preconditioner, max_iter));
       checkError("Hypre ILUK preconditioner Tol           ", HYPRE_ILUSetTol(preconditioner, tol));
@@ -738,16 +738,16 @@ HypreInternalLinearSolver::Impl::init(IOptionsHypreSolver* options, MPI_Comm com
   case HypreOptionTypes::BJILUTPC:
     {
       precond_name = "ilut";
-      checkError("Hypre ILU preconditioner", HYPRE_ILUCreate(&preconditioner));
       /* (Recommended) General solver options */
-      int ilu_type = 1 ;
-      int max_iter = 1 ;
-      double tol = 0. ;
-      int reordering = 0 ;
+      int ilu_type     = 1 ;/* 0, 1, 10, 11, 20, 21, 30, 31, 40, 41, 50 */
+      int max_iter     = options->iluMaxIter() ;
+      double tol       = options->iluTol() ;
+      int reordering   = options->iluReordering() ;
       double threshold = options->ilutThreshold() ;
-      int max_nnz_row = options->ilutMaxNnz() ;
-      int print_level = 3 ;
-      checkError("Hypre ILUT preconditioner Type SetUp      ", HYPRE_ILUSetType(preconditioner, ilu_type)); /* 0, 1, 10, 11, 20, 21, 30, 31, 40, 41, 50 */
+      int max_nnz_row  = options->ilutMaxNnz() ;
+      int print_level  = options->iluPrintLevel() ;
+      checkError("Hypre ILU preconditioner                  ", HYPRE_ILUCreate(&preconditioner));
+      checkError("Hypre ILUT preconditioner Type SetUp      ", HYPRE_ILUSetType(preconditioner, ilu_type));
       checkError("Hypre ILUT preconditioner Max Iter        ", HYPRE_ILUSetMaxIter(preconditioner, max_iter));
       checkError("Hypre ILUT preconditioner Tol             ", HYPRE_ILUSetTol(preconditioner, tol));
       checkError("Hypre ILUT preconditioner Reodering       ", HYPRE_ILUSetLocalReordering(preconditioner, reordering)); /* 0: none, 1: RCM */
@@ -766,9 +766,9 @@ HypreInternalLinearSolver::Impl::init(IOptionsHypreSolver* options, MPI_Comm com
   case HypreOptionTypes::FSAIPC:
     {
       precond_name = "fsai";
-      int max_steps = 5 ;
-      int max_step_size = 3;
-      double kap_tolerance = 1.e-3 ;
+      int max_steps        = options->fsaiMaxSteps() ;
+      int max_step_size    = options->fsaiMaxStepSize() ;
+      double kap_tolerance = options->fsaiKapTolerance() ;
       checkError("Hypre FSAI preconditioner", HYPRE_FSAICreate(&preconditioner));
       checkError("Hypre FSAI preconditioner", HYPRE_FSAISetMaxSteps(preconditioner, max_steps));
       checkError("Hypre FSAI preconditioner", HYPRE_FSAISetMaxStepSize(preconditioner, max_step_size));
