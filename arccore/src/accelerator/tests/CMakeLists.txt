@@ -6,6 +6,7 @@
   TestReduce1.cc
   TestLoop1.cc
   TestMemoryBandwidth.cc
+  TestLambda.cc
 )
 
 set(ACCELERATOR_FILES
@@ -15,6 +16,7 @@ set(ACCELERATOR_FILES
   TestCooperativeLaunch_GridSync.cc
   TestCooperativeLaunch_Accelerator.cc
   TestCooperativeLaunch_Accelerator2.cc
+  TestLambda_Accelerator.cc
 )
 
 arccore_add_component_test_executable(accelerator
