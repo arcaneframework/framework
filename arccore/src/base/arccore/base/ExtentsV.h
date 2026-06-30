@@ -27,13 +27,13 @@ namespace Impl::extent
   {
     return (x + ...);
   }
-  template<class Int32> constexpr int oneIfDynamic(Int32 x)
+  constexpr int oneIfDynamic(Int32 x)
   {
     return ((x == DynExtent) ? 1 : 0);
   }
   // Number of dynamic values in the list of arguments
   // An argument is dynamic if it equals Arcane::DynExtent
-  template <class... IndexType> constexpr int nbDynamic(IndexType... args)
+  template <class... Int32> constexpr int nbDynamic(Int32... args)
   {
     return doSum(oneIfDynamic(args)...);
   }
