@@ -8,9 +8,11 @@
 #include <gtest/gtest.h>
 
 #include "arccore/base/ForLoopRanges.h"
+#include "arccore/base/MDSpan.h"
 
 #include "arccore/common/SequentialFor.h"
 #include "arccore/common/Array.h"
+#include "arccore/common/NumArray.h"
 
 using namespace Arcane;
 
@@ -31,18 +33,27 @@ class LoopTester
     IndexType nb_dim1 = 20;
     SimpleForLoopRanges<1, IndexType> loop1(nb_dim1);
     UniqueArray<IndexType> sum_array;
+    NumArray<IndexType, MDDim1Ext<IndexType>> sum_array2;
+    sum_array2.resize(nb_dim1);
     IndexType ref_sum = {};
+    IndexType numarray_index = {};
     auto f = [&](MDIndex<1, IndexType> index) {
       IndexType i = index;
       sum_array.add(i);
+      sum_array2[numarray_index] = i;
+      ++numarray_index;
       ref_sum += i;
     };
     arccoreSequentialFor(loop1, f);
-    IndexType sum = {};
+    IndexType sum1 = {};
     for (IndexType x : sum_array) {
-      sum += x;
+      sum1 += x;
     }
-    ASSERT_EQ(ref_sum,sum);
+    IndexType sum2 = {};
+    for (IndexType x : sum_array2) {
+      sum2 += x;
+    }
+    ASSERT_EQ(ref_sum,sum2);
   }
 };
 
