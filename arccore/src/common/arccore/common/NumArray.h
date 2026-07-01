@@ -33,7 +33,6 @@ concept NumArrayDataTypeConcept = std::is_trivially_copyable_v<T>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Multi-dimensional arrays for numerical types accessible
  * on accelerators.
@@ -65,12 +64,13 @@ class NumArray
  public:
 
   using ExtentsType = Extents;
+  using ExtentIndexType = Extents::ExtentIndexType;
   using ThatClass = NumArray<DataType, Extents, LayoutPolicy>;
-  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
+  using DynamicDimsType = ExtentsType::DynamicDimsType;
   using ConstMDSpanType = MDSpan<const DataType, ExtentsType, LayoutPolicy>;
   using MDSpanType = MDSpan<DataType, ExtentsType, LayoutPolicy>;
   using ArrayWrapper = Impl::NumArrayContainer<DataType>;
-  using ArrayBoundsIndexType = typename MDSpanType::ArrayBoundsIndexType;
+  using ArrayBoundsIndexType = MDSpanType::ArrayBoundsIndexType;
   using value_type = DataType;
   using LayoutPolicyType = LayoutPolicy;
 
@@ -146,12 +146,12 @@ class NumArray
   }
 
   //! Constructs an array with 1 dynamic value
-  explicit NumArray(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
+  explicit NumArray(ExtentIndexType dim1_size) requires(Extents::nb_dynamic == 1)
   : ThatClass(DynamicDimsType(dim1_size))
   {
   }
   //! Constructs an array with 1 dynamic value
-  NumArray(Int32 dim1_size, eMemoryResource r) requires(Extents::nb_dynamic == 1)
+  NumArray(ExtentIndexType dim1_size, eMemoryResource r) requires(Extents::nb_dynamic == 1)
   : ThatClass(DynamicDimsType(dim1_size), r)
   {
   }
@@ -279,27 +279,27 @@ class NumArray
  public:
 
   //! Value of the first dimension
-  constexpr Int32 dim1Size() const requires(Extents::rank() >= 1) { return m_span.extent0(); }
+  constexpr ExtentIndexType dim1Size() const requires(Extents::rank() >= 1) { return m_span.extent0(); }
   //! Value of the second dimension
-  constexpr Int32 dim2Size() const requires(Extents::rank() >= 2) { return m_span.extent1(); }
+  constexpr ExtentIndexType dim2Size() const requires(Extents::rank() >= 2) { return m_span.extent1(); }
   //! Value of the third dimension
-  constexpr Int32 dim3Size() const requires(Extents::rank() >= 3) { return m_span.extent2(); }
+  constexpr ExtentIndexType dim3Size() const requires(Extents::rank() >= 3) { return m_span.extent2(); }
   //! Value of the fourth dimension
-  constexpr Int32 dim4Size() const requires(Extents::rank() >= 4) { return m_span.extent3(); }
+  constexpr ExtentIndexType dim4Size() const requires(Extents::rank() >= 4) { return m_span.extent3(); }
 
   //! Value of the first dimension
-  constexpr Int32 extent0() const requires(Extents::rank() >= 1) { return m_span.extent0(); }
+  constexpr ExtentIndexType extent0() const requires(Extents::rank() >= 1) { return m_span.extent0(); }
   //! Value of the second dimension
-  constexpr Int32 extent1() const requires(Extents::rank() >= 2) { return m_span.extent1(); }
+  constexpr ExtentIndexType extent1() const requires(Extents::rank() >= 2) { return m_span.extent1(); }
   //! Value of the third dimension
-  constexpr Int32 extent2() const requires(Extents::rank() >= 3) { return m_span.extent2(); }
+  constexpr ExtentIndexType extent2() const requires(Extents::rank() >= 3) { return m_span.extent2(); }
   //! Value of the fourth dimension
-  constexpr Int32 extent3() const requires(Extents::rank() >= 4) { return m_span.extent3(); }
+  constexpr ExtentIndexType extent3() const requires(Extents::rank() >= 4) { return m_span.extent3(); }
 
  public:
 
   //! Resizes the array without keeping current values
-  void resize(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
+  void resize(ExtentIndexType dim1_size) requires(Extents::nb_dynamic == 1)
   {
     m_span.m_extents = DynamicDimsType(dim1_size);
     _resize();
@@ -307,21 +307,21 @@ class NumArray
 
   // TODO: Deprecate (June 2025)
   //! Resizes the array without keeping current values
-  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
+  void resize(ExtentIndexType dim1_size, ExtentIndexType dim2_size, ExtentIndexType dim3_size, ExtentIndexType dim4_size) requires(Extents::nb_dynamic == 4)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
   // TODO: Deprecate (June 2025)
   //! Resizes the array without keeping current values
-  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
+  void resize(ExtentIndexType dim1_size, ExtentIndexType dim2_size, ExtentIndexType dim3_size) requires(Extents::nb_dynamic == 3)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size));
   }
 
   // TODO: Deprecate (June 2025)
   //! Resizes the array without keeping current values
-  void resize(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
+  void resize(ExtentIndexType dim1_size, ExtentIndexType dim2_size) requires(Extents::nb_dynamic == 2)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size));
   }
@@ -333,25 +333,25 @@ class NumArray
    */
   //@{
   //! Resizes the array without keeping current values
-  void resizeDestructive(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size) requires(Extents::nb_dynamic == 4)
+  void resizeDestructive(ExtentIndexType dim1_size, ExtentIndexType dim2_size, ExtentIndexType dim3_size, ExtentIndexType dim4_size) requires(Extents::nb_dynamic == 4)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
   //! Resizes the array without keeping current values
-  void resizeDestructive(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size) requires(Extents::nb_dynamic == 3)
+  void resizeDestructive(ExtentIndexType dim1_size, ExtentIndexType dim2_size, ExtentIndexType dim3_size) requires(Extents::nb_dynamic == 3)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size, dim3_size));
   }
 
   //! Resizes the array without keeping current values
-  void resizeDestructive(Int32 dim1_size, Int32 dim2_size) requires(Extents::nb_dynamic == 2)
+  void resizeDestructive(ExtentIndexType dim1_size, ExtentIndexType dim2_size) requires(Extents::nb_dynamic == 2)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size, dim2_size));
   }
 
   //! Resizes the array without keeping current values
-  void resizeDestructive(Int32 dim1_size) requires(Extents::nb_dynamic == 1)
+  void resizeDestructive(ExtentIndexType dim1_size) requires(Extents::nb_dynamic == 1)
   {
     this->resizeDestructive(DynamicDimsType(dim1_size));
   }
@@ -564,48 +564,48 @@ class NumArray
  public:
 
   //! Retrieves a reference for element \a i
-  DataType& operator[](Int32 i) requires(Extents::rank() == 1) { return m_span(i); }
+  DataType& operator[](ExtentIndexType i) requires(Extents::rank() == 1) { return m_span(i); }
   //! Value for element \a i
-  DataType operator[](Int32 i) const requires(Extents::rank() == 1) { return m_span(i); }
+  DataType operator[](ExtentIndexType i) const requires(Extents::rank() == 1) { return m_span(i); }
 
  public:
 
   //! Value for element \a i,j,k,l
-  DataType operator()(Int32 i, Int32 j, Int32 k, Int32 l) const requires(Extents::rank() == 4)
+  DataType operator()(ExtentIndexType i, ExtentIndexType j, ExtentIndexType k, ExtentIndexType l) const requires(Extents::rank() == 4)
   {
     return m_span(i, j, k, l);
   }
   //! Positions the value for element \a i,j,k,l
-  DataType& operator()(Int32 i, Int32 j, Int32 k, Int32 l) requires(Extents::rank() == 4)
+  DataType& operator()(ExtentIndexType i, ExtentIndexType j, ExtentIndexType k, ExtentIndexType l) requires(Extents::rank() == 4)
   {
     return m_span(i, j, k, l);
   }
 
   //! Value for element \a i,j,k
-  DataType operator()(Int32 i, Int32 j, Int32 k) const requires(Extents::rank() == 3)
+  DataType operator()(ExtentIndexType i, ExtentIndexType j, ExtentIndexType k) const requires(Extents::rank() == 3)
   {
     return m_span(i, j, k);
   }
   //! Positions the value for element \a i,j,k
-  DataType& operator()(Int32 i, Int32 j, Int32 k) requires(Extents::rank() == 3)
+  DataType& operator()(ExtentIndexType i, ExtentIndexType j, ExtentIndexType k) requires(Extents::rank() == 3)
   {
     return m_span(i, j, k);
   }
 
   //! Value for element \a i,j
-  DataType operator()(Int32 i, Int32 j) const requires(Extents::rank() == 2)
+  DataType operator()(ExtentIndexType i, ExtentIndexType j) const requires(Extents::rank() == 2)
   {
     return m_span(i, j);
   }
   //! Positions the value for element \a i,j
-  DataType& operator()(Int32 i, Int32 j) requires(Extents::rank() == 2)
+  DataType& operator()(ExtentIndexType i, ExtentIndexType j) requires(Extents::rank() == 2)
   {
     return m_span(i, j);
   }
   //! Value for element \a i
-  DataType operator()(Int32 i) const requires(Extents::rank() == 1) { return m_span(i); }
+  DataType operator()(ExtentIndexType i) const requires(Extents::rank() == 1) { return m_span(i); }
   //! Positions the value for element \a i
-  DataType& operator()(Int32 i) requires(Extents::rank() == 1) { return m_span(i); }
+  DataType& operator()(ExtentIndexType i) requires(Extents::rank() == 1) { return m_span(i); }
 
  public:
 

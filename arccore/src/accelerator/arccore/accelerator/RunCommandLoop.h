@@ -165,18 +165,6 @@ class DoDirectSYCLLambdaArrayBounds
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Accelerator::Impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator::Impl
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Applies the lambda \a func on a loop \a bounds.
  *
@@ -376,8 +364,8 @@ run(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& fu
 /*---------------------------------------------------------------------------*/
 
 //! Applies the lambda \a func on the iteration range given by \a bounds
-template <int N, typename Lambda> void
-launchRunCommand(RunCommand& command, SimpleForLoopRanges<N, Int32> bounds, Lambda func)
+template <int N, typename IndexType_, typename Lambda> void
+launchRunCommand(RunCommand& command, SimpleForLoopRanges<N, IndexType_> bounds, Lambda func)
 {
   Impl::_applyGenericLoop(command, bounds, func);
 }
@@ -386,8 +374,8 @@ launchRunCommand(RunCommand& command, SimpleForLoopRanges<N, Int32> bounds, Lamb
 /*---------------------------------------------------------------------------*/
 
 //! Applies the lambda \a func on the iteration range given by \a bounds
-template <int N, typename Lambda> void
-launchRunCommand(RunCommand& command, ComplexForLoopRanges<N, Int32> bounds, const Lambda& func)
+template <int N, typename IndexType_, typename Lambda> void
+launchRunCommand(RunCommand& command, ComplexForLoopRanges<N, IndexType_> bounds, const Lambda& func)
 {
   Impl::_applyGenericLoop(command, bounds, func);
 }

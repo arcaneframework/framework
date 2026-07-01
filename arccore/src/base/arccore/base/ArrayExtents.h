@@ -145,6 +145,7 @@ class ArrayExtentsBase
 
  public:
 
+  using BaseClass::asOtherStdArray;
   using BaseClass::asStdArray;
   using BaseClass::constExtent;
   using BaseClass::dynamicExtents;
@@ -182,7 +183,7 @@ class ArrayExtentsBase
   }
 
   // Number of elements of the I-th dimension converted to an 'Int64'.
-  template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int64 constLargeExtent() const
+  template <Int32 I> constexpr Int64 constLargeExtent() const
   {
     return BaseClass::template constExtent<I>();
   }
@@ -201,13 +202,13 @@ class ArrayExtentsBase
 /*!
  * \brief Extent for 1-dimensional arrays.
  */
-template <typename SizeType_, Int32 X0>
-class ArrayExtents<ExtentsV<SizeType_, X0>>
-: public ArrayExtentsBase<ExtentsV<SizeType_, X0>>
+template <typename IndexType_, Int32 X0>
+class ArrayExtents<ExtentsV<IndexType_, X0>>
+: public ArrayExtentsBase<ExtentsV<IndexType_, X0>>
 {
  public:
 
-  using ExtentsType = ExtentsV<SizeType_, X0>;
+  using ExtentsType = ExtentsV<IndexType_, X0>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::extent0;
   using BaseClass::totalNbElement;
@@ -218,15 +219,15 @@ class ArrayExtents<ExtentsV<SizeType_, X0>>
  public:
 
   ArrayExtents() = default;
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
+  constexpr ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
+  constexpr ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
   // TODO: To be removed
-  constexpr ARCCORE_HOST_DEVICE explicit ArrayExtents(ExtentIndexType dim1_size)
+  constexpr explicit ArrayExtents(ExtentIndexType dim1_size)
   {
     static_assert(ExtentsType::nb_dynamic == 1, "This method is only allowed for full dynamic extents");
     this->m_extent0.v = dim1_size;
@@ -238,13 +239,13 @@ class ArrayExtents<ExtentsV<SizeType_, X0>>
 /*!
  * \brief Extent for 2-dimensional arrays.
  */
-template <typename SizeType_, Int32 X0, Int32 X1>
-class ArrayExtents<ExtentsV<SizeType_, X0, X1>>
-: public ArrayExtentsBase<ExtentsV<SizeType_, X0, X1>>
+template <typename IndexType_, Int32 X0, Int32 X1>
+class ArrayExtents<ExtentsV<IndexType_, X0, X1>>
+: public ArrayExtentsBase<ExtentsV<IndexType_, X0, X1>>
 {
  public:
 
-  using ExtentsType = ExtentsV<SizeType_, X0, X1>;
+  using ExtentsType = ExtentsV<IndexType_, X0, X1>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::extent0;
   using BaseClass::extent1;
@@ -256,15 +257,15 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1>>
  public:
 
   ArrayExtents() = default;
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
+  constexpr ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
+  constexpr ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
   // TODO: To be removed
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(ExtentIndexType dim1_size, ExtentIndexType dim2_size)
+  constexpr ArrayExtents(ExtentIndexType dim1_size, ExtentIndexType dim2_size)
   {
     static_assert(ExtentsType::nb_dynamic == 2, "This method is only allowed for full dynamic extents");
     this->m_extent0.v = dim1_size;
@@ -277,13 +278,13 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1>>
 /*!
  * \brief Extent for 3-dimensional arrays.
  */
-template <typename SizeType_, Int32 X0, Int32 X1, Int32 X2>
-class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2>>
-: public ArrayExtentsBase<ExtentsV<SizeType_, X0, X1, X2>>
+template <typename IndexType_, Int32 X0, Int32 X1, Int32 X2>
+class ArrayExtents<ExtentsV<IndexType_, X0, X1, X2>>
+: public ArrayExtentsBase<ExtentsV<IndexType_, X0, X1, X2>>
 {
  public:
 
-  using ExtentsType = ExtentsV<SizeType_, X0, X1, X2>;
+  using ExtentsType = ExtentsV<IndexType_, X0, X1, X2>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::extent0;
   using BaseClass::extent1;
@@ -296,15 +297,15 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2>>
  public:
 
   ArrayExtents() = default;
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
+  constexpr ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
+  constexpr ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
   // TODO: To be removed
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(ExtentIndexType dim1_size, ExtentIndexType dim2_size, ExtentIndexType dim3_size)
+  constexpr ArrayExtents(ExtentIndexType dim1_size, ExtentIndexType dim2_size, ExtentIndexType dim3_size)
   {
     static_assert(ExtentsType::nb_dynamic == 3, "This method is only allowed for full dynamic extents");
     this->m_extent0.v = dim1_size;
@@ -318,13 +319,13 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2>>
 /*!
  * \brief Extent for 4-dimensional arrays.
  */
-template <typename SizeType_, Int32 X0, Int32 X1, Int32 X2, Int32 X3>
-class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2, X3>>
-: public ArrayExtentsBase<ExtentsV<SizeType_, X0, X1, X2, X3>>
+template <typename IndexType_, Int32 X0, Int32 X1, Int32 X2, Int32 X3>
+class ArrayExtents<ExtentsV<IndexType_, X0, X1, X2, X3>>
+: public ArrayExtentsBase<ExtentsV<IndexType_, X0, X1, X2, X3>>
 {
  public:
 
-  using ExtentsType = ExtentsV<SizeType_, X0, X1, X2, X3>;
+  using ExtentsType = ExtentsV<IndexType_, X0, X1, X2, X3>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::extent0;
   using BaseClass::extent1;
@@ -364,13 +365,13 @@ class ArrayExtents<ExtentsV<SizeType_, X0, X1, X2, X3>>
 /*!
  * \brief Extent and Offset for 1-dimensional arrays.
  */
-template <typename SizeType_, SizeType_ X0, typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0>, LayoutType>
-: private ArrayExtents<ExtentsV<SizeType_, X0>>
+template <typename IndexType_, Int32 X0, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<IndexType_, X0>, LayoutType>
+: private ArrayExtents<ExtentsV<IndexType_, X0>>
 {
  public:
 
-  using ExtentsType = ExtentsV<SizeType_, X0>;
+  using ExtentsType = ExtentsV<IndexType_, X0>;
   using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::asStdArray;
   using BaseClass::extent0;
@@ -417,13 +418,13 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0>, LayoutType>
 /*!
  * \brief Extent and Offset for 2-dimensional arrays.
  */
-template <typename SizeType_, SizeType_ X0, SizeType_ X1, typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1>, LayoutType>
-: private ArrayExtents<ExtentsV<SizeType_, X0, X1>>
+template <typename IndexType_, Int32 X0, Int32 X1, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<IndexType_, X0, X1>, LayoutType>
+: private ArrayExtents<ExtentsV<IndexType_, X0, X1>>
 {
  public:
 
-  using ExtentsType = ExtentsV<SizeType_, X0, X1>;
+  using ExtentsType = ExtentsV<IndexType_, X0, X1>;
   using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::asStdArray;
   using BaseClass::extent0;
@@ -441,19 +442,19 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1>, LayoutType>
 
   ArrayExtentsWithOffset() = default;
   // TODO: to be removed
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
+  constexpr ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
+  constexpr ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(ExtentIndexType i, ExtentIndexType j) const
+  constexpr Int64 offset(ExtentIndexType i, ExtentIndexType j) const
   {
     return offset({ i, j });
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(MDIndexType idx) const
+  constexpr Int64 offset(MDIndexType idx) const
   {
     BaseClass::_checkIndex(idx);
     return Layout::offset(idx, this->template constExtent<Layout::LastExtent>());
@@ -467,17 +468,16 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1>, LayoutType>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Extent and Offset for 3-dimensional arrays.
  */
-template <typename SizeType_, SizeType_ X0, SizeType_ X1, SizeType_ X2, typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2>, LayoutType>
-: private ArrayExtents<ExtentsV<SizeType_, X0, X1, X2>>
+template <typename IndexType_, Int32 X0, Int32 X1, Int32 X2, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<IndexType_, X0, X1, X2>, LayoutType>
+: private ArrayExtents<ExtentsV<IndexType_, X0, X1, X2>>
 {
  public:
 
-  using ExtentsType = ExtentsV<SizeType_, X0, X1, X2>;
+  using ExtentsType = ExtentsV<IndexType_, X0, X1, X2>;
   using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::asStdArray;
   using BaseClass::extent0;
@@ -496,21 +496,21 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2>, LayoutType>
 
   ArrayExtentsWithOffset() = default;
   // TODO: to be removed
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
+  constexpr ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
+  constexpr ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(ExtentIndexType i, ExtentIndexType j, ExtentIndexType k) const
+  constexpr Int64 offset(ExtentIndexType i, ExtentIndexType j, ExtentIndexType k) const
   {
     return offset({ i, j, k });
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(MDIndexType idx) const
+  constexpr Int64 offset(MDIndexType idx) const
   {
     this->_checkIndex(idx);
     return Layout::offset(idx, this->template constExtent<Layout::LastExtent>(), m_dim23_size);
@@ -539,13 +539,13 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2>, LayoutType>
 /*!
  * \brief Extent and Offset for 4-dimensional arrays.
  */
-template <typename SizeType_, SizeType_ X0, SizeType_ X1, SizeType_ X2, SizeType_ X3, typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2, X3>, LayoutType>
-: private ArrayExtents<ExtentsV<SizeType_, X0, X1, X2, X3>>
+template <typename IndexType_, Int32 X0, Int32 X1, Int32 X2, Int32 X3, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<IndexType_, X0, X1, X2, X3>, LayoutType>
+: private ArrayExtents<ExtentsV<IndexType_, X0, X1, X2, X3>>
 {
  public:
 
-  using ExtentsType = ExtentsV<SizeType_, X0, X1, X2, X3>;
+  using ExtentsType = ExtentsV<IndexType_, X0, X1, X2, X3>;
   using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::asStdArray;
   using BaseClass::extent0;
@@ -554,7 +554,7 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2, X3>, LayoutType>
   using BaseClass::extent3;
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
-  using Layout = typename LayoutType::Layout4Type;
+  using Layout = LayoutType::Layout4Type;
   using DynamicDimsType = BaseClass::DynamicDimsType;
   using MDIndexType = BaseClass::MDIndexType;
   using ExtentIndexType = BaseClass::ExtentIndexType;
@@ -565,21 +565,21 @@ class ArrayExtentsWithOffset<ExtentsV<SizeType_, X0, X1, X2, X3>, LayoutType>
 
   ArrayExtentsWithOffset() = default;
   // TODO: to be removed
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
+  constexpr ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
+  constexpr ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(ExtentIndexType i, ExtentIndexType j, ExtentIndexType k, ExtentIndexType l) const
+  constexpr Int64 offset(ExtentIndexType i, ExtentIndexType j, ExtentIndexType k, ExtentIndexType l) const
   {
     return offset({ i, j, k, l });
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(MDIndexType idx) const
+  constexpr Int64 offset(MDIndexType idx) const
   {
     this->_checkIndex(idx);
     return (m_dim234_size * idx.largeId0()) + m_dim34_size * idx.largeId1() + this->m_extent3.v * idx.largeId2() + idx.largeId3();

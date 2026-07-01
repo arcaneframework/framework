@@ -26,7 +26,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Base class for managing indices of an N-dimensional array.
  */
@@ -52,20 +51,20 @@ class MDIndexBase
   constexpr std::array<ExtentIndexType, RankValue> operator()() const { return m_indexes; }
 
   //! Returns the i-th index
-  constexpr ARCCORE_HOST_DEVICE ExtentIndexType operator[](int i) const
+  constexpr ExtentIndexType operator[](int i) const
   {
     ARCCORE_CHECK_AT(i, RankValue);
     return m_indexes[i];
   }
   //! Returns the i-th index as an Int64
-  constexpr ARCCORE_HOST_DEVICE Int64 asInt64(int i) const
+  constexpr Int64 asInt64(int i) const
   {
     ARCCORE_CHECK_AT(i, RankValue);
     return m_indexes[i];
   }
 
   //! Adds \a rhs to the index values of the instance.
-  constexpr ARCCORE_HOST_DEVICE void add(const MDIndexBase<RankValue, ExtentIndexType>& rhs)
+  constexpr void add(const MDIndexBase<RankValue, ExtentIndexType>& rhs)
   {
     for (int i = 0; i < RankValue; ++i)
       m_indexes[i] += rhs[i];
@@ -92,7 +91,7 @@ class MDIndex<0, IndexType_>
  public:
 
   MDIndex() = default;
-  ARCCORE_HOST_DEVICE constexpr MDIndex(std::array<ExtentIndexType, 0> _id)
+  constexpr MDIndex(std::array<ExtentIndexType, 0> _id)
   : MDIndexBase<0, IndexType_>(_id)
   {}
 };
@@ -114,22 +113,31 @@ class MDIndex<1, IndexType_>
  public:
 
   MDIndex() = default;
-  ARCCORE_HOST_DEVICE constexpr MDIndex(ExtentIndexType _id0)
+  constexpr MDIndex(ExtentIndexType _id0)
   : BaseClass()
   {
     m_indexes[0] = _id0;
   }
-  ARCCORE_HOST_DEVICE constexpr MDIndex(std::array<ExtentIndexType, 1> _id)
+  constexpr MDIndex(std::array<ExtentIndexType, 1> _id)
   : BaseClass(_id)
   {}
 
  public:
 
-  ARCCORE_HOST_DEVICE constexpr ExtentIndexType id0() const { return m_indexes[0]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 largeId0() const { return m_indexes[0]; }
+  constexpr ExtentIndexType id0() const { return m_indexes[0]; }
+  constexpr Int64 largeId0() const { return m_indexes[0]; }
 
   // Pour l'index de dimension 1, on autorise la conversion vers l'index
-  ARCCORE_HOST_DEVICE constexpr operator IndexType_() const { return m_indexes[0]; }
+  constexpr operator IndexType_() const { return m_indexes[0]; }
+
+ public:
+
+  //! Convert to a MDIndex with different index type
+  template <typename OtherIndexType> static constexpr MDIndex
+  fromOther(const MDIndex<1, OtherIndexType>& rhs)
+  {
+    return MDIndex(static_cast<ExtentIndexType>(rhs.id0()));
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -149,22 +157,32 @@ class MDIndex<2, IndexType_>
  public:
 
   MDIndex() = default;
-  ARCCORE_HOST_DEVICE constexpr MDIndex(ExtentIndexType _id0, ExtentIndexType _id1)
+  constexpr MDIndex(ExtentIndexType _id0, ExtentIndexType _id1)
   : BaseClass()
   {
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
   }
-  ARCCORE_HOST_DEVICE constexpr MDIndex(std::array<ExtentIndexType, 2> _id)
+  constexpr MDIndex(std::array<ExtentIndexType, 2> _id)
   : BaseClass(_id)
   {}
 
  public:
 
-  ARCCORE_HOST_DEVICE constexpr ExtentIndexType id0() const { return m_indexes[0]; }
-  ARCCORE_HOST_DEVICE constexpr ExtentIndexType id1() const { return m_indexes[1]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 largeId0() const { return m_indexes[0]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 largeId1() const { return m_indexes[1]; }
+  constexpr ExtentIndexType id0() const { return m_indexes[0]; }
+  constexpr ExtentIndexType id1() const { return m_indexes[1]; }
+  constexpr Int64 largeId0() const { return m_indexes[0]; }
+  constexpr Int64 largeId1() const { return m_indexes[1]; }
+
+ public:
+
+  //! Convert to a MDIndex with different index type
+  template <typename OtherIndexType> static constexpr MDIndex
+  fromOther(const MDIndex<2, OtherIndexType>& rhs)
+  {
+    return MDIndex(static_cast<ExtentIndexType>(rhs.id0()),
+                   static_cast<ExtentIndexType>(rhs.id1()));
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -184,25 +202,36 @@ class MDIndex<3, IndexType_>
  public:
 
   MDIndex() = default;
-  ARCCORE_HOST_DEVICE constexpr MDIndex(ExtentIndexType _id0, ExtentIndexType _id1, ExtentIndexType _id2)
+  constexpr MDIndex(ExtentIndexType _id0, ExtentIndexType _id1, ExtentIndexType _id2)
   : BaseClass()
   {
     m_indexes[0] = _id0;
     m_indexes[1] = _id1;
     m_indexes[2] = _id2;
   }
-  ARCCORE_HOST_DEVICE constexpr MDIndex(std::array<ExtentIndexType, 3> _id)
+  constexpr MDIndex(std::array<ExtentIndexType, 3> _id)
   : BaseClass(_id)
   {}
 
  public:
 
-  ARCCORE_HOST_DEVICE constexpr ExtentIndexType id0() const { return m_indexes[0]; }
-  ARCCORE_HOST_DEVICE constexpr ExtentIndexType id1() const { return m_indexes[1]; }
-  ARCCORE_HOST_DEVICE constexpr ExtentIndexType id2() const { return m_indexes[2]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 largeId0() const { return m_indexes[0]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 largeId1() const { return m_indexes[1]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 largeId2() const { return m_indexes[2]; }
+  constexpr ExtentIndexType id0() const { return m_indexes[0]; }
+  constexpr ExtentIndexType id1() const { return m_indexes[1]; }
+  constexpr ExtentIndexType id2() const { return m_indexes[2]; }
+  constexpr Int64 largeId0() const { return m_indexes[0]; }
+  constexpr Int64 largeId1() const { return m_indexes[1]; }
+  constexpr Int64 largeId2() const { return m_indexes[2]; }
+
+ public:
+
+  //! Convert to a MDIndex with different index type
+  template <typename OtherIndexType> static constexpr MDIndex
+  fromOther(const MDIndex<3, OtherIndexType>& rhs)
+  {
+    return MDIndex(static_cast<ExtentIndexType>(rhs.id0()),
+                   static_cast<ExtentIndexType>(rhs.id1()),
+                   static_cast<ExtentIndexType>(rhs.id2()));
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -222,7 +251,8 @@ class MDIndex<4, IndexType_>
  public:
 
   MDIndex() = default;
-  ARCCORE_HOST_DEVICE constexpr MDIndex(ExtentIndexType _id0, ExtentIndexType _id1, ExtentIndexType _id2, ExtentIndexType _id3)
+  constexpr MDIndex(ExtentIndexType _id0, ExtentIndexType _id1,
+                    ExtentIndexType _id2, ExtentIndexType _id3)
   : MDIndexBase<4, IndexType_>()
   {
     m_indexes[0] = _id0;
@@ -230,20 +260,32 @@ class MDIndex<4, IndexType_>
     m_indexes[2] = _id2;
     m_indexes[3] = _id3;
   }
-  ARCCORE_HOST_DEVICE constexpr MDIndex(std::array<ExtentIndexType, 4> _id)
+  constexpr MDIndex(std::array<ExtentIndexType, 4> _id)
   : MDIndexBase<4, IndexType_>(_id)
   {}
 
  public:
 
-  ARCCORE_HOST_DEVICE constexpr ExtentIndexType id0() const { return m_indexes[0]; }
-  ARCCORE_HOST_DEVICE constexpr ExtentIndexType id1() const { return m_indexes[1]; }
-  ARCCORE_HOST_DEVICE constexpr ExtentIndexType id2() const { return m_indexes[2]; }
-  ARCCORE_HOST_DEVICE constexpr ExtentIndexType id3() const { return m_indexes[3]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 largeId0() const { return m_indexes[0]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 largeId1() const { return m_indexes[1]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 largeId2() const { return m_indexes[2]; }
-  ARCCORE_HOST_DEVICE constexpr Int64 largeId3() const { return m_indexes[3]; }
+  constexpr ExtentIndexType id0() const { return m_indexes[0]; }
+  constexpr ExtentIndexType id1() const { return m_indexes[1]; }
+  constexpr ExtentIndexType id2() const { return m_indexes[2]; }
+  constexpr ExtentIndexType id3() const { return m_indexes[3]; }
+  constexpr Int64 largeId0() const { return m_indexes[0]; }
+  constexpr Int64 largeId1() const { return m_indexes[1]; }
+  constexpr Int64 largeId2() const { return m_indexes[2]; }
+  constexpr Int64 largeId3() const { return m_indexes[3]; }
+
+ public:
+
+  //! Convert to a MDIndex with different index type
+  template <typename OtherIndexType> static constexpr MDIndex
+  fromOther(const MDIndex<4, OtherIndexType>& rhs)
+  {
+    return MDIndex(static_cast<ExtentIndexType>(rhs.id0()),
+                   static_cast<ExtentIndexType>(rhs.id1()),
+                   static_cast<ExtentIndexType>(rhs.id2()),
+                   static_cast<ExtentIndexType>(rhs.id3()));
+  }
 };
 
 /*---------------------------------------------------------------------------*/

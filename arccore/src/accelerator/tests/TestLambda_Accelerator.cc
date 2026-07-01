@@ -23,17 +23,18 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-_fillArray(NumArray<Int64, MDDim1>& num_array, Int64 base_value)
+template<typename Extents> void
+_fillArray(NumArray<Int64, Extents>& num_array, Int64 base_value)
 {
-  Int32 nb_value = num_array.extent0();
-  for (Int32 i = 0; i < nb_value; ++i) {
+  using ExtentIndexType = Extents::ExtentIndexType;
+  ExtentIndexType nb_value = num_array.extent0();
+  for (ExtentIndexType i = 0; i < nb_value; ++i) {
     num_array(i) = (i + base_value);
   }
 }
 
-extern "C++" void
-_doTestLambda(RunQueue queue)
+void
+_doTestLambda1(RunQueue queue)
 {
   Int32 nb_value = 50000;
 
@@ -65,6 +66,7 @@ _doTestLambda(RunQueue queue)
     }
   }
 
+  // Test direct mutable lambda launch
   {
     _fillArray(a, 5);
 
@@ -85,6 +87,52 @@ _doTestLambda(RunQueue queue)
       ASSERT_EQ(a_view[k], b_view[k]) << " Index2=" << k;
     }
   }
+}
+
+// Check using a loop with a NumArray using 'Int64' as index type
+void
+_doTestLambda2(RunQueue queue)
+{
+  Int32 nb_value = 50000;
+
+  std::cout << "Using accelerator policy name=" << queue.executionPolicy() << "\n";
+  std::cout << " nb_value=" << nb_value << "\n";
+
+  NumArray<Int64, MDDim1Ext<Int64>> a(nb_value);
+  _fillArray(a, 3);
+
+  NumArray<Int64, MDDim1Ext<Int64>> b(nb_value);
+
+  // Test direct lambda launch
+  {
+    Span<const Int64> a_view(a.to1DSpan());
+    Span<Int64> b_view(a.to1DSpan());
+    auto lambda1 = [=] ARCCORE_HOST_DEVICE(Int64 index) {
+      b_view[index] = a_view[index];
+    };
+
+    {
+      std::cout << "Test lambda direct\n";
+      RunCommand command = makeCommand(queue);
+      SimpleForLoopRanges<1,Int64> loop_range(nb_value);
+      launchRunCommand(command, loop_range, lambda1);
+    }
+
+    for (Int32 k = 0; k < nb_value; ++k) {
+      ASSERT_EQ(a_view[k], b_view[k]) << " Index1=" << k;
+    }
+  }
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void
+_doTestLambda(RunQueue queue)
+{
+  _doTestLambda1(queue);
+  _doTestLambda2(queue);
 }
 
 /*---------------------------------------------------------------------------*/

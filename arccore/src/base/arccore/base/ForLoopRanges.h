@@ -114,6 +114,8 @@ class SimpleForLoopRanges
 template <int N, typename IndexType_>
 class ComplexForLoopRanges
 {
+  template <int OtherN, typename OtherIndexType> friend class ComplexForLoopRanges;
+
  public:
 
   using ArrayBoundsType = ArrayBounds<typename MDDimType<N, IndexType_>::DimType>;
@@ -130,8 +132,26 @@ class ComplexForLoopRanges
   : m_lower_bounds(lower.asStdArray())
   , m_extents(extents)
   {}
-  explicit(false) ComplexForLoopRanges(const SimpleForLoopRanges<N>& bounds)
+  explicit(false) ComplexForLoopRanges(const SimpleForLoopRanges<N, IndexType_>& bounds)
   : m_extents(bounds.m_bounds)
+  {}
+
+ public:
+
+  //! Convert from loop with different index type
+  template <typename OtherIndexType> static ComplexForLoopRanges
+  fromOther(const ComplexForLoopRanges<N, OtherIndexType>& other_loop)
+  {
+    auto a = MDIndexType::fromOther(other_loop.m_lower_bounds);
+    auto b = ArrayBoundsType::fromOther(other_loop.m_extents);
+    return ComplexForLoopRanges(a, b);
+  }
+
+ private:
+
+  ComplexForLoopRanges(MDIndexType lower, ArrayBoundsType extents)
+  : m_lower_bounds(lower)
+  , m_extents(extents)
   {}
 
  public:
@@ -150,7 +170,7 @@ class ComplexForLoopRanges
 
  private:
 
-  ArrayIndexType m_lower_bounds;
+  MDIndexType m_lower_bounds;
   ArrayBoundsType m_extents;
 };
 

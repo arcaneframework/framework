@@ -7,15 +7,8 @@
 
 #include <gtest/gtest.h>
 
-#include "arccore/base/PlatformUtils.h"
-
 #include "arccore/common/accelerator/Runner.h"
-#include "arccore/common/accelerator/RunQueue.h"
-#include "arccore/common/NumArray.h"
 
-#include "arccore/accelerator/NumArrayViews.h"
-#include "arccore/accelerator/RunCommandLoop.h"
-#include "arccore/accelerator/Reduce.h"
 #include "arccore/accelerator/internal/Initializer.h"
 
 #include "./TestCommon.h"
