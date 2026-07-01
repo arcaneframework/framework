@@ -37,6 +37,7 @@ class ArrayBoundsBase
   using BaseClass::asStdArray;
   using BaseClass::constExtent;
   using BaseClass::getIndices;
+  using BaseClass::dynamicExtents;
   using MDIndexType = BaseClass::MDIndexType;
   using LoopIndexType = BaseClass::LoopIndexType;
   using ExtentIndexType = Extents::ExtentIndexType;
@@ -59,7 +60,11 @@ class ArrayBoundsBase
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE Int64 nbElement() const { return this->totalNbElement(); }
+  constexpr Int64 nbElement() const { return this->totalNbElement(); }
+
+ protected:
+
+  using BaseClass::asOtherStdArray;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -71,6 +76,8 @@ template <typename Extents>
 class ArrayBounds
 : public ArrayBoundsBase<Extents>
 {
+  template <typename OtherExtents> friend class ArrayBounds;
+
  public:
 
   using ExtentsType = Extents;
@@ -111,6 +118,14 @@ class ArrayBounds
   constexpr explicit ArrayBounds(std::array<ExtentIndexType, Extents::nb_dynamic>& v)
   : BaseClass(v)
   {
+  }
+
+  //! Convert to a ArrayBound with same Extent buf with a different index type
+  template <typename OtherArrayBounds> static constexpr ArrayBounds
+  fromOther(const OtherArrayBounds& rhs)
+  {
+    std::array<ExtentIndexType, Extents::nb_dynamic> x = rhs.template asOtherStdArray<ExtentIndexType>();
+    return ArrayBounds(x);
   }
 };
 

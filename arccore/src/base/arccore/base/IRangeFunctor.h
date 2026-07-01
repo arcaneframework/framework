@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRangeFunctor.h                                             (C) 2000-2025 */
+/* IRangeFunctor.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Interface of a functor on an iteration interval.                          */
 /*---------------------------------------------------------------------------*/
@@ -48,7 +48,6 @@ class ARCCORE_BASE_EXPORT IRangeFunctor
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Interface of a functor on a multi-dimensional iteration interval
  * of dimension \a RankValue

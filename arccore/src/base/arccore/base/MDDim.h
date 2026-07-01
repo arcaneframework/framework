@@ -40,6 +40,9 @@ using MDDim3 = ExtentsV<Int32, DynExtent, DynExtent, DynExtent>;
 //! Constant for a rank 4 dynamic array
 using MDDim4 = ExtentsV<Int32, DynExtent, DynExtent, DynExtent, DynExtent>;
 
+//! 1D Dynamic Extent with a specific index type
+template<typename IndexType_> using MDDim1Ext = ExtentsV<IndexType_, DynExtent>;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

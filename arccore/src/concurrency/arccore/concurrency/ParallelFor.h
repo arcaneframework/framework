@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelFor.h                                               (C) 2000-2025 */
+/* ParallelFor.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Parallel loop management.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -78,13 +78,12 @@ class ARCCORE_CONCURRENCY_EXPORT ParallelFor1DLoopInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Applies the lambda function \a lambda_function concurrently
  * over the iteration interval given by \a loop_ranges.
  */
-template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
-arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType, typename... ReducerArgs> inline void
+arccoreParallelFor(const ComplexForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const ForLoopRunInfo& run_info,
                    const LambdaType& lambda_function,
                    const ReducerArgs&... reducer_args)
@@ -99,13 +98,20 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   // of reducers (Reduce2), this privatization is no longer useful. Once
   // we have removed the old classes managing reductions (Reduce),
   // we can remove this privatization
+
+  // The final loop is always with index of type 'Int32'
+  // (because ITaskImplementation only support that) so we convert the loop
+  // if needed.
+  // TODO: Only do the conversion if needed
+  // TODO: Add support for Int64 loop in TaskFactory
+  auto final_loop_ranges = ComplexForLoopRanges<RankValue, Int32>::fromOther(loop_ranges);
   auto xfunc = [&lambda_function, reducer_args...](const ComplexForLoopRanges<RankValue>& sub_bounds) {
     using Type = typename std::remove_reference<LambdaType>::type;
     Type private_lambda(lambda_function);
     arccoreSequentialFor(sub_bounds, private_lambda, reducer_args...);
   };
   LambdaMDRangeFunctor<RankValue, decltype(xfunc)> ipf(xfunc);
-  TaskFactory::executeParallelFor(loop_ranges, run_info, &ipf);
+  TaskFactory::executeParallelFor(final_loop_ranges, run_info, &ipf);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -115,8 +121,8 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
  * \brief Applies the lambda function \a lambda_function concurrently
  * over the iteration interval given by \a loop_ranges.
  */
-template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
-arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType, typename... ReducerArgs> inline void
+arccoreParallelFor(const ComplexForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const ParallelLoopOptions& options,
                    const LambdaType& lambda_function,
                    const ReducerArgs&... reducer_args)
@@ -126,47 +132,44 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Applies the lambda function \a lambda_function concurrently
  * over the iteration interval given by \a loop_ranges.
  */
-template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
-arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType, typename... ReducerArgs> inline void
+arccoreParallelFor(const SimpleForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const ForLoopRunInfo& run_info,
                    const LambdaType& lambda_function,
                    const ReducerArgs&... reducer_args)
 {
-  ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
+  ComplexForLoopRanges<RankValue, IndexType_> complex_loop_ranges{ loop_ranges };
   arccoreParallelFor(complex_loop_ranges, run_info, lambda_function, reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Applies the lambda function \a lambda_function concurrently
  * over the iteration interval given by \a loop_ranges.
  */
-template <int RankValue, typename LambdaType, typename... ReducerArgs> inline void
-arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType, typename... ReducerArgs> inline void
+arccoreParallelFor(const SimpleForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const ParallelLoopOptions& options,
                    const LambdaType& lambda_function,
                    const ReducerArgs&... reducer_args)
 {
-  ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
+  ComplexForLoopRanges<RankValue, IndexType_> complex_loop_ranges{ loop_ranges };
   arccoreParallelFor(complex_loop_ranges, ForLoopRunInfo(options), lambda_function, reducer_args...);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Applies the lambda function \a lambda_function concurrently
  * over the iteration interval given by \a loop_ranges.
  */
-template <int RankValue, typename LambdaType> inline void
-arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType> inline void
+arccoreParallelFor(const ComplexForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const LambdaType& lambda_function)
 {
   ParallelLoopOptions options;
@@ -175,17 +178,16 @@ arccoreParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Applies the lambda function \a lambda_function concurrently
  * over the iteration interval given by \a loop_ranges.
  */
-template <int RankValue, typename LambdaType> inline void
-arccoreParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
+template <int RankValue, typename IndexType_, typename LambdaType> inline void
+arccoreParallelFor(const SimpleForLoopRanges<RankValue, IndexType_>& loop_ranges,
                    const LambdaType& lambda_function)
 {
   ParallelLoopOptions options;
-  ComplexForLoopRanges<RankValue> complex_loop_ranges{ loop_ranges };
+  ComplexForLoopRanges<RankValue, IndexType_> complex_loop_ranges{ loop_ranges };
   arccoreParallelFor(complex_loop_ranges, options, lambda_function);
 }
 
