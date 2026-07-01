@@ -12,7 +12,7 @@ if (ARCCORE_ENABLE_TBB)
       message(STATUS "[arcane_thread] Using OneTBB 2021+ implementation")
       set(ARCANE_HAS_ONETBB TRUE)
     else ()
-      message(FATAL_ERROR "[arcane_thread] Your version '${TBB_VERSION} of TBB is too old. Version 2020+ is required."
+      message(FATAL_ERROR "[arcane_thread] Your version '${TBB_VERSION} of TBB is too old. Version 2021+ is required."
         " Install a recent version of TBB or disable TBB support using -DARCCORE_ENABLE_TBB=FALSE when running cmake command")
     endif ()
   elseif (TBB_FOUND)
@@ -24,7 +24,7 @@ if (ARCCORE_ENABLE_TBB)
   else ()
     message(FATAL_ERROR
       "[arccore_concurrency] Can not find OneTBB."
-      "Install a recent version of TBB or disable TBB support using -DARCCORE_ENABLE_TBB=FALSE when running cmake command"
+      "Install a recent version (2021+) of TBB or disable TBB support using -DARCCORE_ENABLE_TBB=FALSE when running cmake command"
     )
   endif ()
 endif ()
