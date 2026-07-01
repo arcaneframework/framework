@@ -43,7 +43,7 @@ class HostSpecificMemoryCopyList
 
   HostSpecificMemoryCopyList()
   {
-    using impl::ExtentValue;
+    using Impl::ExtentValue;
     //! Adds specific implementations for common sizes
     addCopier<SpecificType<std::byte, ExtentValue<1>>>(); // 1
     addCopier<SpecificType<Int16, ExtentValue<1>>>(); // 2

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ForLoopRanges.h                                             (C) 2000-2025 */
+/* ForLoopRanges.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Iteration ranges for loops.                                               */
 /*---------------------------------------------------------------------------*/
@@ -24,13 +24,16 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Iteration range for a loop.
  */
 template <typename IndexType_>
 class ForLoopRange
 {
+ public:
+
+  using ExtentIndexType = IndexType_;
+
  public:
 
   //! Creates an interval between *[lower_bound,lower_bound+size[*
@@ -58,7 +61,6 @@ class ForLoopRange
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Simple iteration range.
  *
@@ -67,18 +69,21 @@ class ForLoopRange
 template <int N, typename IndexType_>
 class SimpleForLoopRanges
 {
-  friend class ComplexForLoopRanges<N>;
+  friend class ComplexForLoopRanges<N, IndexType_>;
 
  public:
 
-  using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
-  using ArrayIndexType = ArrayBoundsType::MDIndexType;
+  using ArrayBoundsType = ArrayBounds<typename MDDimType<N, IndexType_>::DimType>;
+  using MDIndexType = ArrayBoundsType::MDIndexType;
+  using ArrayIndexType = MDIndexType;
   using LoopIndexType = ArrayIndexType;
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'LoopIndexType' instead") = LoopIndexType;
+  using ExtentIndexType = IndexType_;
+
+  using IndexType ARCCORE_DEPRECATED_REASON("Use 'MDIndexType' instead") = MDIndexType;
 
  public:
 
-  explicit SimpleForLoopRanges(std::array<Int32, N> b)
+  explicit SimpleForLoopRanges(std::array<ExtentIndexType, N> b)
   : m_bounds(b)
   {}
   explicit(false) SimpleForLoopRanges(ArrayBoundsType b)
@@ -87,11 +92,11 @@ class SimpleForLoopRanges
 
  public:
 
-  template <Int32 I> static constexpr Int32 lowerBound() { return 0; }
-  template <Int32 I> constexpr Int32 upperBound() const { return m_bounds.template constExtent<I>(); }
-  template <Int32 I> constexpr Int32 extent() const { return m_bounds.template constExtent<I>(); }
+  template <Int32 I> static constexpr ExtentIndexType lowerBound() { return 0; }
+  template <Int32 I> constexpr ExtentIndexType upperBound() const { return m_bounds.template constExtent<I>(); }
+  template <Int32 I> constexpr ExtentIndexType extent() const { return m_bounds.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_bounds.nbElement(); }
-  constexpr ArrayIndexType getIndices(Int32 i) const { return m_bounds.getIndices(i); }
+  constexpr MDIndexType getIndices(Int32 i) const { return m_bounds.getIndices(i); }
 
  private:
 
@@ -100,9 +105,7 @@ class SimpleForLoopRanges
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \internal
  * \brief Complex iteration range.
  *
  * The starting indices for each dimension are specified by \a lower and
@@ -113,10 +116,13 @@ class ComplexForLoopRanges
 {
  public:
 
-  using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
-  using ArrayIndexType = ArrayBoundsType::MDIndexType;
+  using ArrayBoundsType = ArrayBounds<typename MDDimType<N, IndexType_>::DimType>;
+  using MDIndexType = ArrayBoundsType::MDIndexType;
+  using ArrayIndexType = MDIndexType;
   using LoopIndexType = ArrayIndexType;
-  using IndexType ARCCORE_DEPRECATED_REASON("Use 'LoopIndexType' instead") = LoopIndexType;
+  using ExtentIndexType = IndexType_;
+
+  using IndexType ARCCORE_DEPRECATED_REASON("Use 'MDIndexType' instead") = MDIndexType;
 
  public:
 
@@ -134,7 +140,7 @@ class ComplexForLoopRanges
   template <Int32 I> constexpr Int32 upperBound() const { return m_lower_bounds[I] + m_extents.template constExtent<I>(); }
   template <Int32 I> constexpr Int32 extent() const { return m_extents.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_extents.nbElement(); }
-  constexpr ArrayIndexType getIndices(Int32 i) const
+  constexpr MDIndexType getIndices(Int32 i) const
   {
     auto x = m_extents.getIndices(i);
     x.add(m_lower_bounds);
@@ -242,7 +248,7 @@ makeLoopRanges(ForLoopRange<Int32> n1, ForLoopRange<Int32> n2, ForLoopRange<Int3
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

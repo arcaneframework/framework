@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayBounds.h                                               (C) 2000-2025 */
+/* ArrayBounds.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Handling of iterations on N-dimensional arrays                            */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,9 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Base class for bounds of multidimensional array.
+ */
 template <typename Extents>
 class ArrayBoundsBase
 : private ArrayExtents<Extents>
@@ -35,11 +37,12 @@ class ArrayBoundsBase
   using BaseClass::asStdArray;
   using BaseClass::constExtent;
   using BaseClass::getIndices;
-  using MDIndexType = typename BaseClass::MDIndexType;
-  using LoopIndexType = typename BaseClass::LoopIndexType;
-  using ArrayExtentType = Arcane::ArrayExtents<Extents>;
+  using MDIndexType = BaseClass::MDIndexType;
+  using LoopIndexType = BaseClass::LoopIndexType;
+  using ExtentIndexType = Extents::ExtentIndexType;
+  using ArrayExtentType = ArrayExtents<Extents>;
 
-  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'LoopIndexType' or 'MDIndexType' instead") = LoopIndexType;
+  using IndexType ARCCORE_DEPRECATED_REASON("Y2025: Use 'MDIndexType' instead") = LoopIndexType;
 
  public:
 
@@ -49,7 +52,7 @@ class ArrayBoundsBase
   {
   }
 
-  constexpr explicit ArrayBoundsBase(const std::array<Int32, Extents::nb_dynamic>& v)
+  constexpr explicit ArrayBoundsBase(const std::array<ExtentIndexType, Extents::nb_dynamic>& v)
   : BaseClass(v)
   {
   }
@@ -61,7 +64,9 @@ class ArrayBoundsBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Represents the bounds of a multidimensional array.
+ */
 template <typename Extents>
 class ArrayBounds
 : public ArrayBoundsBase<Extents>
@@ -69,31 +74,31 @@ class ArrayBounds
  public:
 
   using ExtentsType = Extents;
+  using ExtentIndexType = Extents::ExtentIndexType;
   using BaseClass = ArrayBoundsBase<ExtentsType>;
   using ArrayExtentsType = ArrayExtents<ExtentsType>;
+  using LoopIndexType = BaseClass::LoopIndexType;
 
  public:
 
-  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
-  constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3, Int32 dim4)
+  constexpr ArrayBounds(ExtentIndexType dim1, ExtentIndexType dim2,
+                        ExtentIndexType dim3, ExtentIndexType dim4) requires(Extents::nb_dynamic == 4)
   : BaseClass(ArrayExtentsType(dim1, dim2, dim3, dim4))
   {
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
-  constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3)
+  constexpr ArrayBounds(ExtentIndexType dim1, ExtentIndexType dim2,
+                        ExtentIndexType dim3) requires(Extents::nb_dynamic == 3)
   : BaseClass(ArrayExtentsType(dim1, dim2, dim3))
   {
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
-  constexpr ArrayBounds(Int32 dim1, Int32 dim2)
+  constexpr ArrayBounds(ExtentIndexType dim1, ExtentIndexType dim2) requires(Extents::nb_dynamic == 2)
   : BaseClass(ArrayExtentsType(dim1, dim2))
   {
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
-  constexpr ArrayBounds(Int32 dim1)
+  constexpr ArrayBounds(ExtentIndexType dim1) requires(Extents::nb_dynamic == 1)
   : BaseClass(ArrayExtentsType(dim1))
   {
   }
@@ -103,7 +108,7 @@ class ArrayBounds
   {
   }
 
-  constexpr explicit ArrayBounds(std::array<Int32, Extents::nb_dynamic>& v)
+  constexpr explicit ArrayBounds(std::array<ExtentIndexType, Extents::nb_dynamic>& v)
   : BaseClass(v)
   {
   }
