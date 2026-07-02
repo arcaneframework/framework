@@ -53,7 +53,7 @@ concept NumArrayDataTypeConcept = std::is_trivially_copyable_v<T>;
  */
 template <typename DataType, typename Extents, typename LayoutPolicy>
 class NumArray
-: private Impl::NumArrayBaseCommon
+: private Arcane::Impl::NumArrayBaseCommon
 {
  public:
 
@@ -69,7 +69,7 @@ class NumArray
   using DynamicDimsType = ExtentsType::DynamicDimsType;
   using ConstMDSpanType = MDSpan<const DataType, ExtentsType, LayoutPolicy>;
   using MDSpanType = MDSpan<DataType, ExtentsType, LayoutPolicy>;
-  using ArrayWrapper = Impl::NumArrayContainer<DataType>;
+  using ArrayWrapper = Arcane::Impl::NumArrayContainer<DataType>;
   using ArrayBoundsIndexType = MDSpanType::ArrayBoundsIndexType;
   using value_type = DataType;
   using LayoutPolicyType = LayoutPolicy;
