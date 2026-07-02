@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Profiling.h                                                 (C) 2000-2025 */
+/* Profiling.h                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Classes to manage profiling.                                              */
 /*---------------------------------------------------------------------------*/
@@ -159,7 +159,7 @@ class ARCCORE_BASE_EXPORT ProfilingRegistry
    * instead.
    */
   ARCCORE_DEPRECATED_REASON("Y2023: Use _threadLocalForLoopInstance() instead")
-  static Impl::ForLoopStatInfoList* threadLocalInstance();
+  static Arcane::Impl::ForLoopStatInfoList* threadLocalInstance();
 
   /*!
    * \brief Sets the profiling level.
@@ -182,7 +182,7 @@ class ARCCORE_BASE_EXPORT ProfilingRegistry
    *
    * This method must not be called if loops are currently executing.
    */
-  static void visitLoopStat(const std::function<void(const Impl::ForLoopStatInfoList&)>& f);
+  static void visitLoopStat(const std::function<void(const Arcane::Impl::ForLoopStatInfoList&)>& f);
 
   /*!
    * \brief Visits the accelerator statistics list
@@ -192,7 +192,7 @@ class ARCCORE_BASE_EXPORT ProfilingRegistry
    *
    * This method must not be called when profiling is active.
    */
-  static void visitAcceleratorStat(const std::function<void(const Impl::AcceleratorStatInfoList&)>& f);
+  static void visitAcceleratorStat(const std::function<void(const Arcane::Impl::AcceleratorStatInfoList&)>& f);
 
   static const Impl::ForLoopCumulativeStat& globalLoopStat();
 
@@ -204,13 +204,13 @@ class ARCCORE_BASE_EXPORT ProfilingRegistry
    * \internal.
    * Thread-local instance of the loop statistics manager
    */
-  static Impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
+  static Arcane::Impl::ForLoopStatInfoList* _threadLocalForLoopInstance();
 
   /*!
    * \internal.
    * Thread-local instance of the accelerator statistics manager
    */
-  static Impl::AcceleratorStatInfoList* _threadLocalAcceleratorInstance();
+  static Arcane::Impl::AcceleratorStatInfoList* _threadLocalAcceleratorInstance();
 
  private:
 

@@ -32,10 +32,10 @@ template <typename IndexType, template <int T, typename> class LoopBoundType,
 void arccoreSequentialFor(LoopBoundType<1, IndexType> bounds, Lambda func,
                           RemainingArgs... remaining_args)
 {
-  Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
+  Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
   for (IndexType i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     func(MDIndex<1, IndexType>(i0), remaining_args...);
-  Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
+  Arcane::Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
 }
 
 /*---------------------------------------------------------------------------*/
