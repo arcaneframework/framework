@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ForLoopRanges.h                                             (C) 2000-2025 */
+/* ForLoopRanges.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Iteration ranges for loops.                                               */
 /*---------------------------------------------------------------------------*/
@@ -31,10 +31,10 @@ template <typename IndexType, template <int T, typename> class LoopBoundType,
           typename Lambda, typename... RemainingArgs>
 void arcaneSequentialFor(LoopBoundType<1, IndexType> bounds, const Lambda& func, RemainingArgs... remaining_args)
 {
-  Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
+  Arcane::Impl::HostKernelRemainingArgsHelper::applyAtBegin(remaining_args...);
   for (Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0)
     func(MDIndex<1>(i0), remaining_args...);
-  Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
+  Arcane::Impl::HostKernelRemainingArgsHelper::applyAtEnd(remaining_args...);
 }
 
 //! Applies the functor \a func on a 2D loop.

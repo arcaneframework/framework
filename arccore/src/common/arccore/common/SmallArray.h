@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SmallArray.h                                                (C) 2000-2025 */
+/* SmallArray.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* 1D data array with pre-allocated buffer.                                  */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,6 @@ namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \internal
  * \brief Allocator with pre-allocated buffer.
@@ -237,7 +236,7 @@ class SmallArray final
  private:
 
   char m_stack_buffer[MemorySize];
-  Impl::StackMemoryAllocator m_stack_allocator;
+  Arcane::Impl::StackMemoryAllocator m_stack_allocator;
 };
 
 /*---------------------------------------------------------------------------*/
