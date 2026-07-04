@@ -26,17 +26,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*
- * ATTENTION:
- *
- * All classes in this file are experimental and the API is not
- * fixed. DO NOT USE OUTSIDE OF ARCANE.
- */
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -76,7 +66,7 @@ class MeshMDVariableRefWrapperT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -86,11 +76,8 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Base class managing a multi-dimensional variable on a mesh entity.
- *
- * \warning API is under definition. Do not use outside of Arcane.
  */
 template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefBaseT
@@ -133,17 +120,19 @@ class MeshMDVariableRefBaseT
 
  protected:
 
-  impl::MeshMDVariableRefWrapperT<ItemType, DataType> m_underlying_var;
+  Arcane::Impl::MeshMDVariableRefWrapperT<ItemType, DataType> m_underlying_var;
   MDSpanType m_mdspan;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Class managing a multi-dimensional variable on a mesh entity.
  *
- * \warning API is under definition. Do not use outside of Arcane.
+ * \warning You need to call the method reshape() before using this kind
+ * of variables.
+ *
+ * For more information, see \ref arcanedoc_core_types_axl_md_variable_use.
  */
 template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefT
@@ -168,50 +157,46 @@ class MeshMDVariableRefT
 
  public:
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
-  DataType& operator()(ItemLocalIdType id)
+  DataType& operator()(ItemLocalIdType id) requires(Extents::rank() == 0)
   {
     return this->m_mdspan(id.localId());
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
-  const DataType& operator()(ItemLocalIdType id) const
+  const DataType& operator()(ItemLocalIdType id) const requires(Extents::rank() == 0)
   {
     return this->m_mdspan(id.localId());
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
-  DataType& operator()(ItemLocalIdType id, Int32 i1)
+  DataType& operator()(ItemLocalIdType id, Int32 i1) requires(Extents::rank() == 1)
   {
     return this->m_mdspan(id.localId(), i1);
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
-  const DataType& operator()(ItemLocalIdType id, Int32 i1) const
+  const DataType& operator()(ItemLocalIdType id, Int32 i1) const requires(Extents::rank() == 1)
   {
     return this->m_mdspan(id.localId(), i1);
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
   DataType& operator()(ItemLocalIdType id, Int32 i1, Int32 i2)
+  requires(Extents::rank() == 2)
   {
     return this->m_mdspan(id.localId(), i1, i2);
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
   const DataType& operator()(ItemLocalIdType id, Int32 i1, Int32 i2) const
+  requires(Extents::rank() == 2)
   {
     return this->m_mdspan(id.localId(), i1, i2);
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 3, void>>
   DataType& operator()(ItemLocalIdType id, Int32 i, Int32 j, Int32 k)
+  requires(Extents::rank() == 3)
   {
     return this->m_mdspan(id.localId(), i, j, k);
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 3, void>>
   const DataType& operator()(ItemLocalIdType id, Int32 i, Int32 j, Int32 k) const
+  requires(Extents::rank() == 3)
   {
     return this->m_mdspan(id.localId(), i, j, k);
   }
@@ -231,11 +216,13 @@ class MeshMDVariableRefT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Class managing a multi-dimensional 'NumVector' type variable on a mesh entity.
+ * \brief Class managing a multi-dimensional NumVector type variable on a mesh entity.
  *
- * \warning API is under definition. Do not use outside of Arcane.
+ * \warning You need to call the method reshape() before using this kind
+ * of variables.
+ *
+ * For more information, see \ref arcanedoc_core_types_axl_md_variable_use.
  */
 template <typename ItemType, typename DataType, int Size, typename Extents>
 class MeshVectorMDVariableRefT
@@ -270,47 +257,56 @@ class MeshVectorMDVariableRefT
 
  public:
 
+  //! \name Operations for variable of dimension MDDim0
+  ///@{
   //! Accesses the data for reading/writing
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
   ReferenceType operator()(ItemLocalIdType id)
+  requires(Extents::rank() == 0)
   {
     return ReferenceType(m_vector_mdspan.ptrAt(id.localId()));
   }
 
   //! Accesses the data for reading
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
   ConstReferenceType operator()(ItemLocalIdType id) const
+  requires(Extents::rank() == 0)
   {
     return ConstReferenceType(m_vector_mdspan.ptrAt(id.localId()));
   }
+  ///@}
 
+  //! \name Operations for variable of dimension MDDim1
+  ///@{
   //! Accesses the data for reading/writing
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   ReferenceType operator()(ItemLocalIdType id, Int32 i1)
+  requires(Extents::rank() == 1)
   {
     return ReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1));
   }
 
   //! Accesses the data for reading
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   ConstReferenceType operator()(ItemLocalIdType id, Int32 i1) const
+  requires(Extents::rank() == 1)
   {
     return ConstReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1));
   }
+  ///@}
 
+  //! \name Operations for variable of dimension MDDim2
+  ///@{
   //! Accesses the data for reading/writing
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
   ReferenceType operator()(ItemLocalIdType id, Int32 i1, Int32 i2)
+  requires(Extents::rank() == 2)
   {
     return ReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1, i2));
   }
 
   //! Accesses the data for reading
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
   ConstReferenceType operator()(ItemLocalIdType id, Int32 i1, Int32 i2) const
+  requires(Extents::rank() == 2)
   {
     return ConstReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1, i2));
   }
+  ///@}
 
   /*!
    * \brief Changes the data shape.
@@ -350,19 +346,24 @@ class MeshVectorMDVariableRefT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Class managing a multi-dimensional 'NumMatrix' type variable on a
+ * \brief Class managing a multi-dimensional NumMatrix type variable on a
  * mesh entity.
  *
- * \warning API is under definition. Do not use outside of Arcane.
+ * The dimension of the matrix is fixed and is given by (Row,Column).
+ *
+ * \warning You need to call the method reshape() before using this kind
+ * of variables.
+ *
+ * For more information, see \ref arcanedoc_core_types_axl_md_variable_use.
  */
-template <typename ItemType, typename DataType, int Row, int Column, typename Extents>
+template <typename ItemType, typename DataType_, int Row, int Column, typename Extents>
 class MeshMatrixMDVariableRefT
-: public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>>
+: public MeshMDVariableRefBaseT<ItemType, DataType_, typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>>
 {
  public:
 
+  using DataType = DataType_;
   using NumMatrixType = NumMatrix<DataType, Row, Column>;
 
  private:
@@ -390,29 +391,63 @@ class MeshMatrixMDVariableRefT
 
  public:
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
-  ReferenceType operator()(ItemLocalIdType id)
+  //! \name Operations for variable of dimension MDDim0
+  ///@{
+  //! Mutable view of the matrix for item \a id
+  ReferenceType operator()(ItemLocalIdType id) requires(Extents::rank()==0)
   {
     return ReferenceType(m_matrix_mdspan.ptrAt(id.localId()));
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
-  ConstReferenceType operator()(ItemLocalIdType id) const
+  //! Read-only view of the matrix for item \a id
+  ConstReferenceType operator()(ItemLocalIdType id) const requires(Extents::rank()==0)
   {
     return ReferenceType(m_matrix_mdspan.ptrAt(id.localId()));
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
-  ReferenceType operator()(ItemLocalIdType id, Int32 i1)
+  //! Mutable view of the element (i,j) of the matrix for item \a id
+  DataType& operator()(ItemLocalIdType id, Int32 i, Int32 j) requires(Extents::rank() == 0)
   {
-    return ReferenceType(m_matrix_mdspan.ptrAt(id.localId(), i1));
+    return m_matrix_mdspan(id.localId())(i, j);
   }
 
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
-  ConstReferenceType operator()(ItemLocalIdType id, Int32 i1) const
+  //! Read-only view of the element (i,j) of the matrix for item \a id
+  DataType operator()(ItemLocalIdType id, Int32 i, Int32 j) const requires(Extents::rank() == 0)
   {
-    return ReferenceType(m_matrix_mdspan.ptrAt(id.localId(), i1));
+    return m_matrix_mdspan(id.localId())(i, j);
   }
+  ///@}
+
+  //! \name Operations for variable of dimension MDDim1
+  ///@{
+  //! Mutable view of the matrix of index \a index for item \a id
+  ReferenceType operator()(ItemLocalIdType id, Int32 index)
+  requires(Extents::rank() == 1)
+  {
+    return ReferenceType(m_matrix_mdspan.ptrAt(id.localId(), index));
+  }
+
+  //! Read-only view of the matrix of index \a index for item \a id
+  ConstReferenceType operator()(ItemLocalIdType id, Int32 index) const
+  requires(Extents::rank() == 1)
+  {
+    return ReferenceType(m_matrix_mdspan.ptrAt(id.localId(), index));
+  }
+
+  //! Mutable view of the element (i,j) of the matrix for item \a id and index \a index
+  DataType& operator()(ItemLocalIdType id, Int32 index, Int32 i, Int32 j)
+  requires(Extents::rank() == 1)
+  {
+    return m_matrix_mdspan(id.localId(), index)(i, j);
+  }
+
+  //! Read-only view of the element (i,j) of the matrix for item \a id and index \a index
+  DataType operator()(ItemLocalIdType id, Int32 index, Int32 i, Int32 j) const
+  requires(Extents::rank() == 1)
+  {
+    return m_matrix_mdspan(id.localId(), index)(i, j);
+  }
+  ///@}
 
   /*!
    * \brief Changes the data shape.
