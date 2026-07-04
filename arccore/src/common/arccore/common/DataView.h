@@ -18,14 +18,12 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \file DataView.h
  *
  * This file contains the type declarations for managing
  * views for accelerators.
  */
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -38,7 +36,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Class for accessing an element of a read view.
  */
@@ -57,7 +54,6 @@ class DataViewGetter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Class for accessing an element of a write view.
  */
@@ -219,11 +215,13 @@ class DataViewSetter
   /*!
    * \brief Applies the operator operator[] on the type.
    *
-   * The operation is only valid if X::operator[](Int32) exists.
+   * The operation is only valid if DataType::operator[](Int32) exists.
+   * \return a DataViewSetter on the returned value of operator()(Int32).
    */
-  template <typename X = DataType, typename SubscriptType = decltype(std::declval<const X>()[0])>
-  ARCCORE_HOST_DEVICE DataViewSetter<SubscriptType> operator[](Int32 index)
+  ARCCORE_HOST_DEVICE auto operator[](Int32 index)
+  requires(requires() { std::declval<const DataType>()(0); })
   {
+    using SubscriptType = decltype(std::declval<const DataType>()[0]);
     return DataViewSetter<SubscriptType>(&m_ptr->operator[](index));
   }
 
@@ -234,7 +232,6 @@ class DataViewSetter
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Class for accessing an element of a read/write view.
  *
@@ -262,6 +259,7 @@ class DataViewGetterSetter
   ARCCORE_HOST_DEVICE DataViewGetterSetter(const DataViewGetterSetter& v)
   : BaseType(v)
   {}
+  //! Operator to convert to the underlying type for read-only operation
   ARCCORE_HOST_DEVICE operator DataType() const
   {
     return *m_ptr;
@@ -283,25 +281,45 @@ class DataViewGetterSetter
     return AccessorReturnType(ptr);
   }
 
-  //! Applies, if it exists, the operator operator[](Int32) on the type
-  template <typename X = DataType, typename SubscriptType = decltype(std::declval<const X>()[0])>
-  ARCCORE_HOST_DEVICE DataViewGetterSetter<SubscriptType> operator[](Int32 index)
+  /*!
+   * \brief Applies, if it exists, the operator operator[](Int32) on the type.
+   *
+   * \return a DataViewGetterSetter on the returned value of operator[](Int32).
+   */
+  ARCCORE_HOST_DEVICE auto operator[](Int32 index)
+  requires(requires() { std::declval<const DataType>()[0]; })
   {
-    return DataViewGetterSetter<SubscriptType>(&m_ptr->operator[](index));
+    using DataTypeReturnType = decltype(std::declval<const DataType>()[0]);
+    return DataViewGetterSetter<DataTypeReturnType>(&m_ptr->operator[](index));
   }
 
-  //! Applies, if it exists, the operator operator()(Int32) on the type
-  template <typename X = DataType, typename DataTypeReturnType = decltype(std::declval<const X>()(0))>
-  constexpr ARCCORE_HOST_DEVICE DataViewGetterSetter<DataTypeReturnType> operator()(Int32 i0)
+  /*!
+   * \brief Applies, if it exists, the operator operator()(Int32) on the type.
+   *
+   * \return a DataViewGetterSetter on the returned value of operator()(Int32).
+   */
+  constexpr ARCCORE_HOST_DEVICE auto operator()(Int32 i0)
+  requires(requires() { std::declval<const DataType>()(0); })
   {
+    using DataTypeReturnType = decltype(std::declval<const DataType>()(0));
     return DataViewGetterSetter<DataTypeReturnType>(&m_ptr->operator()(i0));
   }
 
-  //! Applies, if it exists, the operator operator()(Int32,Int32) on the type
-  template <typename X = DataType, typename DataTypeReturnType = decltype(std::declval<const X>()(0, 0))>
-  constexpr ARCCORE_HOST_DEVICE DataViewGetterSetter<DataTypeReturnType> operator()(Int32 i0, Int32 i1)
+  /*!
+   * \brief Applies, if it exists, the operator operator()(Int32,Int32) on DataType.
+   *
+   * \return a DataViewGetterSetter on the returned value of operator()(Int32,Int32).
+   */
+  constexpr ARCCORE_HOST_DEVICE auto operator()(Int32 i0, Int32 i1)
+  requires(requires() { std::declval<const DataType>()(0, 0); })
   {
+    using DataTypeReturnType = decltype(std::declval<const DataType>()(0, 0));
     return DataViewGetterSetter<DataTypeReturnType>(&m_ptr->operator()(i0, i1));
+  }
+  friend std::ostream& operator<<(std::ostream& o, const DataViewGetterSetter& v)
+  {
+    o << *(v.m_ptr);
+    return o;
   }
 
  private:
