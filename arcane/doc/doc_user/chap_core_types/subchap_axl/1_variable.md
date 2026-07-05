@@ -501,9 +501,11 @@ Usage is similar regardless of the element type. Access is done via the
 `operator()` because it allows for multiple arguments. Starting from C++23, it
 will also be possible to use the `operator[]`.
 
-Before using these variables, it is necessary to call the
-\arcane{MeshMDVariableRefT::reshape()} method. The number of values to specify
-must be identical to the variable's dimension.
+\warning Before using these variables, it is necessary to call the
+\arcane{MeshMDVariableRefT::reshape()} method. The memory associated
+to the variable is not allocated until you call this method. The
+number of values to specify must be identical to the variable's
+dynamic dimension.
 
 Example for scalar multi-dimensional variables:
 

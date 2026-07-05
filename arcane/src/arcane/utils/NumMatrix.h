@@ -26,7 +26,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Small fixed-size matrix containing RowSize rows and ColumnSize columns.
  *
@@ -330,6 +329,24 @@ class NumMatrix
   {
     ARCCORE_CHECK_AT(i, RowSize);
     m_values[i] = v;
+  }
+
+  //! Fill the matrix with the value \a v
+  ARCCORE_HOST_DEVICE void fill(const T& v)
+  {
+    for (int i = 0; i < Size; ++i) {
+      m_values[i].fill(v);
+    }
+  }
+
+  friend std::ostream& operator<<(std::ostream& o, const NumMatrix& t)
+  {
+    for (int i = 0; i < Size; ++i) {
+      if (i != 0)
+        o << ' ';
+      o << t.m_values[i];
+    }
+    return o;
   }
 
  public:

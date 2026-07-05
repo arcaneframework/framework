@@ -387,11 +387,11 @@ samples3()
   //
   // The equivalent declaration in the AXL file is:
   // <variable field-name="cell_var_2d" name="Var1"
-  //           data-type="real" item-kind="cell" shape-dim="2"
+  //           data-type="real" item-kind="cell" shape-dim="0"
   //           extent0="2" extent1="5"
   // />
-  Arcane::VariableBuildInfo vbi(VariableBuildInfo(mesh(), "Var1"));
-  Arcane::MeshMatrixMDVariableRefT<Cell, Real, 2, 5, MDDim1> cell_var_2d(vbi);
+  Arcane::VariableBuildInfo vbi1(VariableBuildInfo(mesh(), "Var1"));
+  Arcane::MeshMatrixMDVariableRefT<Cell, Real, 2, 5, MDDim1> cell_var_2d(vbi1);
 
   // Positions the dimension to 9.
   // Each cell will have 9 values of 2x5 = 10 reals
@@ -401,11 +401,41 @@ samples3()
     Arcane::NumMatrix<Real, 2, 5> v({ 1.1, 2.2, 3.3, 4.4, 5.5 },
                                     { 1.0, 2.0, 3.0, 4.0, 5.0 });
 
-    // Positions the value for index (2,1)
+    // Set the value for the index 7 of the cell.
     cell_var_2d(icell, 7) = v;
 
-    // Displays the value of (1,4) of the matrix for index (6)
+    // Displays the value of (1,4) of the matrix for index 6
     info() << cell_var_2d(icell, 6)(1, 4);
+
+    // Another way to displays the value of (1,4) of the matrix for index 6
+    info() << cell_var_2d(icell, 6, 1, 4);
+  }
+
+  // Declares a 0D variable on cells of a 3x4 Real matrix
+  //
+  // The equivalent declaration in the AXL file is:
+  // <variable field-name="cell_matrix_3x4" name="Var1"
+  //           data-type="real" item-kind="cell" shape-dim="0"
+  //           extent0="3" extent1="4"
+  // />
+  Arcane::VariableBuildInfo vbi2(VariableBuildInfo(mesh(), "Var2"));
+  Arcane::MeshMatrixMDVariableRefT<Cell, Real, 3, 4, MDDim0> cell_matrix_3x4(vbi2);
+
+  cell_matrix_3x4.reshape({});
+
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Arcane::NumMatrix<Real, 3, 4> v({ 1.1, 2.2, 3.3, 4.4 },
+                                    { 1.0, 2.0, 3.0, 4.0 },
+                                    { -1.0, -2.0, -3.0, -4.0 });
+
+    // Set the value for current cell
+    cell_matrix_3x4(icell) = v;
+
+    // Displays the value of (2,3) of the matrix
+    info() << cell_matrix_3x4(icell)(2, 3);
+
+    // Another way to display the value of (1,2) of the matrix
+    info() << cell_matrix_3x4(icell, 1, 2);
   }
   //![SampleMDVariableMatrix]
 }

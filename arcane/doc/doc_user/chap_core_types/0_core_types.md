@@ -27,26 +27,29 @@ Table of Contents for this chapter:
 2. \subpage arcanedoc_core_types_service <br>
   Presents the concept of a service in %Arcane.
 
-3. \subpage arcanedoc_core_types_axl <br>
+3. \subpage arcanedoc_core_types_axl_variable <br>
+  Presents the concept of a variable in %Arcane.
+
+4. \subpage arcanedoc_core_types_axl <br>
   Presents everything you need to know about module/service descriptors
   (represented by files with the .axl extension). This subsection presents the
   concepts of \ref arcanedoc_core_types_axl_variable and
   \ref arcanedoc_core_types_axl_entrypoint.
 
-4. \subpage arcanedoc_core_types_casefile <br>
+5. \subpage arcanedoc_core_types_casefile <br>
   Presents the syntax of the data set (represented by files with the .arc
   extension).
 
-5. \subpage arcanedoc_core_types_codeconfig <br>
+6. \subpage arcanedoc_core_types_codeconfig <br>
   Presents the global code configuration file.
 
-6. \subpage arcanedoc_core_types_timeloop <br>
+7. \subpage arcanedoc_core_types_timeloop <br>
   Describes the concept of a time loop.
 
-7. \subpage arcanedoc_core_types_array_usage <br>
+8. \subpage arcanedoc_core_types_array_usage <br>
   Describes the use of array types.
 
-8. \subpage arcanedoc_core_types_numarray <br>
+9. \subpage arcanedoc_core_types_numarray <br>
   Describes the use of the NumArray class and associated types.
 
 ____
