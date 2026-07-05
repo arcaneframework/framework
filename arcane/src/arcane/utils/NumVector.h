@@ -27,7 +27,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Small fixed-size vector of N numerical data points.
  *
@@ -181,6 +180,14 @@ class NumVector
     return v;
   }
 
+  //! Fill the vector with the value \a v
+  ARCCORE_HOST_DEVICE void fill(const T& v)
+  {
+    for (int i = 0; i < Size; ++i) {
+      m_values[i] = v;
+    }
+  }
+
   //! Adds \a b to each component of the instance
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator+=(T b)
   {
@@ -295,6 +302,16 @@ class NumVector
       if (!_eq(a.m_values[i], b.m_values[i]))
         return false;
     return true;
+  }
+
+  friend std::ostream& operator<<(std::ostream& o, const NumVector& t)
+  {
+    for (int i = 0; i < Size; ++i) {
+      if (i != 0)
+        o << ' ';
+      o << t.m_values[i];
+    }
+    return o;
   }
 
   /*!
