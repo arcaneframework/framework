@@ -9,23 +9,28 @@
 // Axlstar version <#= Version #>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_MODULE_<#= Xml.CppHeaderGuardName #>_H
 #define ARCANE_MODULE_<#= Xml.CppHeaderGuardName #>_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableTypes.h"
-#include "arcane/EntryPoint.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ModuleBuildInfo.h"
-#include "arcane/ModuleFactory.h"
-#include "arcane/ServiceRegisterer.h"
-#include "arcane/BasicModule.h"
-#include "arcane/ServiceInfo.h"
+#include "arcane/core/VariableTypes.h"
+#include "arcane/core/EntryPoint.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ModuleBuildInfo.h"
+#include "arcane/core/ModuleFactory.h"
+#include "arcane/core/ServiceRegisterer.h"
+#include "arcane/core/BasicModule.h"
+#include "arcane/core/ServiceInfo.h"
 <#  if (Module.HasMultiDimVariable) { #>
-#include "arcane/MeshMDVariableRef.h"
+#include "arcane/core/MeshMDVariableRef.h"
+// These two headers are added in July 2026
+#if __has_include("arcane/core/MeshMatrixMDVariableRef.h")
+#include "arcane/core/MeshMatrixMDVariableRef.h"
+#endif
+#if __has_include("arcane/core/MeshVectorMDVariableRef.h")
+#include "arcane/core/MeshVectorMDVariableRef.h"
+#endif
 <# } #>
 
 /*---------------------------------------------------------------------------*/
