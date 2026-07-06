@@ -141,7 +141,7 @@ class NumMatrix
     return Real2x2(m_values[0], m_values[1]);
   }
 
-  operator Real3x3() const requires(isSquare3())
+  constexpr operator Real3x3() const requires(isSquare3())
   {
     return Real3x3(m_values[0], m_values[1], m_values[2]);
   }

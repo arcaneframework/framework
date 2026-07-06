@@ -31,6 +31,23 @@ template <typename DataType_, int Row, int Column>
 class NumMatrixDataViewGetter
 : public DataViewGetter<NumMatrix<DataType_, Row, Column>>
 {
+ public:
+
+  using NumMatrixType = NumMatrix<DataType_, Row, Column>;
+
+ public:
+
+  explicit ARCCORE_HOST_DEVICE NumMatrixDataViewGetter(const NumMatrixType* ptr)
+  : m_ptr(ptr)
+  {}
+
+ public:
+
+  constexpr operator const NumMatrixType&() const { return *m_ptr; }
+
+ private:
+
+  const NumMatrixType* m_ptr = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

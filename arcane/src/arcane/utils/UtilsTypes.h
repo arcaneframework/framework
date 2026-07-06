@@ -61,6 +61,10 @@ using Int64x2 = Vector2<Int64>;
 using Int32x2 = Vector2<Int32>;
 template <typename T, int Size> class NumVector;
 template <typename T, int RowSize, int ColumnSize = RowSize> class NumMatrix;
+template <typename DataType_, int RowSize, int ColumnSize>
+class NumMatrixDataViewGetter;
+template <typename DataType_, int RowSize, int ColumnSize>
+class NumMatrixDataViewGetterSetter;
 using RealN2 = NumVector<Real, 2>;
 using RealN3 = NumVector<Real, 3>;
 using RealN2x2 = NumMatrix<Real, 2>;

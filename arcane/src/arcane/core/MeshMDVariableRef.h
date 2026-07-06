@@ -100,6 +100,8 @@ class MeshMDVariableRefBaseT
   }
 
   //! Associated underlying variable.
+  const UnderlyingVariableType& underlyingVariable() const { return m_underlying_var; }
+  //! Associated underlying variable.
   UnderlyingVariableType& underlyingVariable() { return m_underlying_var; }
 
   //! Full shape (static + dynamic) of the variable.

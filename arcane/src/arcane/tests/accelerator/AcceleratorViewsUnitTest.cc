@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorViewsUnitTest.cc                                 (C) 2000-2025 */
+/* AcceleratorViewsUnitTest.cc                                 (C) 2000-2026 */
 /*                                                                           */
 /* Test service for accelerator views.                                       */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,8 @@
 #include "arcane/core/ServiceFactory.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IMesh.h"
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/core/MeshMatrixMDVariableRef.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -26,9 +28,9 @@
 
 #include "arcane/accelerator/RunCommandLoop.h"
 #include "arcane/accelerator/VariableViews.h"
+#include "arcane/accelerator/MDVariableViews.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
-#include "arcane/materials/ComponentSimd.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +42,6 @@ namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Test service for the 'AcceleratorViews' class.
  */
@@ -59,8 +60,8 @@ class AcceleratorViewsUnitTest
 
  private:
 
-  ax::Runner m_runner;
-  ax::RunQueue m_queue;
+  Runner m_runner;
+  RunQueue m_queue;
   VariableCellArrayReal m_cell_array1;
   VariableCellArrayReal m_cell_array2;
   VariableCellReal2 m_cell1_real2;
@@ -96,6 +97,7 @@ class AcceleratorViewsUnitTest
   void _checkResultReal3x3(Real to_add);
   void _executeTestGroupIndexTable();
   void _executeTestMultiArray();
+  void _executeTestMDMatrixVariable();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -215,6 +217,7 @@ executeTest()
   _executeTestVariableCopy();
   _executeTestVariableFill();
   _executeTestMultiArray();
+  _executeTestMDMatrixVariable();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -997,6 +1000,58 @@ _executeTestMultiArray()
     };
   }
   vc.areEqualArray(result_values.to1DSpan(), expected_result_values.to1DSpan(), "Result");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorViewsUnitTest::
+_executeTestMDMatrixVariable()
+{
+  info() << "Test MDMatrix variable";
+  MeshMatrixMDVariableRefT<Cell, Real, 3, 3, MDDim0> cell_matrix(VariableBuildInfo(mesh(), "CellMatrix"));
+  cell_matrix.reshape({});
+
+  VariableCellReal cell_matrix_determinant_ref(VariableBuildInfo(mesh(), "CellMatrixDeterminant"));
+  VariableCellReal cell_matrix_determinant(VariableBuildInfo(mesh(), "CellMatrixDeterminantRef"));
+
+  // Compute the determinant of the matrix on host
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Real r0 = static_cast<Real>(icell.itemLocalId() + 1);
+    NumMatrix<Real, 3, 3> x({ r0, r0 + 1.5, r0 - 1.2 },
+                            { r0 + 2.3, r0 - 4.3, r0 + 4.2 },
+                            { r0, r0 + 1.0, r0 + 2.0 });
+    cell_matrix(icell) = x;
+    Real3x3 r = x;
+    cell_matrix_determinant_ref[icell] = 2.0 * r.determinant();
+  }
+
+  // Compute the determinant of the matrix on RunQueue device
+  // The determinant is computed in two ways
+  // - using direct access to NumMatrix.
+  // - using each component of the NumMatrix
+  {
+    auto command = makeCommand(m_queue);
+    auto in_cell_matrix = viewIn(command, cell_matrix);
+    auto out_cell_matrix_determinant = viewOut(command, cell_matrix_determinant);
+    command << RUNCOMMAND_ENUMERATE (CellLocalId, cell_id, allCells())
+    {
+      NumMatrix<Real, 3, 3> x = in_cell_matrix(cell_id);
+      Real3x3 r1 = x;
+      Real3 v1(in_cell_matrix(cell_id, 0, 0), in_cell_matrix(cell_id, 0, 1), in_cell_matrix(cell_id, 0, 2));
+      Real3 v2(in_cell_matrix(cell_id, 1, 0), in_cell_matrix(cell_id, 1, 1), in_cell_matrix(cell_id, 1, 2));
+      Real3 v3(in_cell_matrix(cell_id, 2, 0), in_cell_matrix(cell_id, 2, 1), in_cell_matrix(cell_id, 2, 2));
+      Real3x3 r2(v1, v2, v3);
+      out_cell_matrix_determinant(cell_id) = r1.determinant() + r2.determinant();
+    };
+  }
+  // Check the result
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Real determinant_ref = cell_matrix_determinant_ref[icell];
+    Real determinant = cell_matrix_determinant[icell];
+    if (!math::isNearlyEqualWithEpsilon(determinant, determinant_ref, 1.0e-10))
+      ARCANE_FATAL("Bad determinant cell={0} v={1} ref={2}", ItemPrinter(*icell), determinant, determinant_ref);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
