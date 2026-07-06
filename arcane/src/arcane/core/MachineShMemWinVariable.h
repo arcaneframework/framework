@@ -10,12 +10,12 @@
 /* Classes allowing the use of the MachineShMemWinVariable object pointed    */
 /*  to by the shared memory variable memory area.                            */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_CORE_MACHINESHMEMWINVARIABLE_H
 #define ARCANE_CORE_MACHINESHMEMWINVARIABLE_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arccore/base/FixedArray.h"
 
 #include "arcane/core/ArcaneTypes.h"
 
@@ -23,8 +23,9 @@
 #include "arcane/utils/NumArray.h"
 
 #include "arcane/core/MeshMDVariableRef.h"
+#include "arcane/core/MeshMatrixMDVariableRef.h"
+#include "arcane/core/MeshVectorMDVariableRef.h"
 
-#include "arccore/base/FixedArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

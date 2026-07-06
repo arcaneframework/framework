@@ -537,6 +537,9 @@ set(ARCANE_ORIGINAL_SOURCES
   MeshCriteriaLoadBalanceMng.cc
   MeshCriteriaLoadBalanceMng.h
   MeshMDVariableRef.h
+  MeshMDVariableRef.cc
+  MeshMatrixMDVariableRef.h
+  MeshVectorMDVariableRef.h
   MeshEvents.h
   MeshHandle.cc
   MeshKind.h
@@ -813,12 +816,6 @@ set(ARCANE_ORIGINAL_SOURCES
   VarRefEnumerator.h
   RawCopy.h
   )
-
-if (ARCANE_HAS_ACCELERATOR_API)
-  list(APPEND ARCANE_ORIGINAL_SOURCES
-    MeshMDVariableRef.cc
-  )
-endif()
 
 set(ARCANE_SOURCES
   ${ARCANE_ORIGINAL_SOURCES}

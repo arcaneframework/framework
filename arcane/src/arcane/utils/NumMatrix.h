@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* NumMatrix.h                                                 (C) 2000-2026 */
 /*                                                                           */
-/* Fixed-size square matrix of numeric types.                                */
+/* Fixed-size mathematical matrix of numeric types.                          */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_NUMMATRIX_H
 #define ARCANE_UTILS_NUMMATRIX_H
