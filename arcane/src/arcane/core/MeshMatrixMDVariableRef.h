@@ -42,6 +42,9 @@ template <typename ItemType, typename DataType_, int Row, int Column, typename E
 class MeshMatrixMDVariableRefT
 : public MeshMDVariableRefBaseT<ItemType, DataType_, typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>>
 {
+  // To access m_matrix_mdspan
+  friend class Arcane::Accelerator::MeshMatrixMDVariableInView<ItemType, DataType_, Row, Column, Extents>;
+
  public:
 
   using DataType = DataType_;
@@ -83,7 +86,7 @@ class MeshMatrixMDVariableRefT
   //! Read-only view of the matrix for item \a id
   ConstReferenceType operator()(ItemLocalIdType id) const requires(Extents::rank() == 0)
   {
-    return ReferenceType(m_matrix_mdspan.ptrAt(id.localId()));
+    return ConstReferenceType(m_matrix_mdspan.ptrAt(id.localId()));
   }
 
   //! Mutable view of the element (i,j) of the matrix for item \a id
@@ -112,7 +115,7 @@ class MeshMatrixMDVariableRefT
   ConstReferenceType operator()(ItemLocalIdType id, Int32 index) const
   requires(Extents::rank() == 1)
   {
-    return ReferenceType(m_matrix_mdspan.ptrAt(id.localId(), index));
+    return ConstReferenceType(m_matrix_mdspan.ptrAt(id.localId(), index));
   }
 
   //! Mutable view of the element (i,j) of the matrix for item \a id and index \a index

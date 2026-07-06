@@ -12,7 +12,7 @@ set(ACCELERATOR_FILES
 # Check whether tests on virtual methods are performed
 set(DO_TEST_VIRTUAL FALSE)
 # These tests are only valid for CUDA and HIP
-if ((ARCANE_ACCELERATOR_MODE STREQUAL "CUDA") OR (ARCANE_ACCELERATOR_MODE STREQUAL "ROCM"))
+if (ARCCORE_HAS_CUDA OR ARCCORE_HAS_HIP)
   set(DO_TEST_VIRTUAL TRUE)
 endif ()
 # We do not test virtual methods with CUDA/Clang because

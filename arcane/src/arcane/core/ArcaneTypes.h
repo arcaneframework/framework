@@ -501,6 +501,10 @@ template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefBaseT;
 template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefT;
+template <typename ItemType, typename DataType_, int Row, int Column, typename Extents>
+class MeshMatrixMDVariableRefT;
+template <typename ItemType, typename DataType_, int Size, typename Extents>
+class MeshVectorMDVariableRefT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -652,6 +656,8 @@ namespace Accelerator
 {
   class IAcceleratorMng;
   class AcceleratorRuntimeInitialisationInfo;
+  template <typename ItemType_, typename DataType_, int Row, int Column, typename Extents>
+  class MeshMatrixMDVariableInView;
 } // namespace Accelerator
 using Accelerator::AcceleratorRuntimeInitialisationInfo;
 using Accelerator::IAcceleratorMng;

@@ -24,6 +24,11 @@
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/ServiceFactory.h"
 
+// These two files are added to make sure this file compiles
+// event if 'axlstar' is old and does not include them.
+#include "arcane/core/MeshMatrixMDVariableRef.h"
+#include "arcane/core/MeshVectorMDVariableRef.h"
+
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MDVariableUnitTest_axl.h"
 

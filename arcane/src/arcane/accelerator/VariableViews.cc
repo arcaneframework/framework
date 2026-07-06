@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableViews.cc                                            (C) 2000-2025 */
+/* VariableViews.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Management of views on variables for accelerators.                        */
 /*---------------------------------------------------------------------------*/
@@ -19,17 +19,16 @@
 #include "arccore/common/accelerator/internal/IRunQueueStream.h"
 
 #include "arcane/core/VariableUtils.h"
+#include "arcane/accelerator/MDVariableViews.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \file VariableViews.h
  *
  * This file contains the type declarations for managing
  * views for mesh variable accelerators.
  */
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

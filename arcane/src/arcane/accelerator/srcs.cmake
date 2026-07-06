@@ -16,6 +16,7 @@
   KernelLauncher.h
   MaterialVariableViews.h
   MaterialVariableViews.cc
+  MDVariableViews.h
   NumArray.h
   NumArrayViews.h
   Reduce.h

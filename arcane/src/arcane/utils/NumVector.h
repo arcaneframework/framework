@@ -141,9 +141,15 @@ class NumVector
     return (*this);
   }
 
-  operator Real2() const requires(Size == 2) { return Real2(m_values[0], m_values[1]); }
+  constexpr operator Real2() const requires(Size == 2)
+  {
+    return Real2(m_values[0], m_values[1]);
+  }
 
-  operator Real3() const requires(Size == 3) { return Real3(m_values[0], m_values[1], m_values[2]); }
+  constexpr operator Real3() const requires(Size == 3)
+  {
+    return Real3(m_values[0], m_values[1], m_values[2]);
+  }
 
  public:
 
