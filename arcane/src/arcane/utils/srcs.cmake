@@ -91,6 +91,8 @@ set(ARCANE_SOURCES
   NumArrayUtils.cc
   NumericTraits.h
   NumMatrix.h
+  NumMatrixDataView.h
+  NumMatrix.cc
   NumVector.h
   Observable.h
   Observer.h

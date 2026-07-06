@@ -246,6 +246,10 @@ class DataViewGetterSetter
   using BaseType::m_ptr;
   friend class Arcane::Accelerator::Impl::AtomicImpl;
 
+  // Add friend for specific views which need access to m_ptr.
+  template <typename DataType_, int Row, int Column>
+  friend class NumMatrixDataViewGetterSetter;
+
  public:
 
   using ValueType = DataType;

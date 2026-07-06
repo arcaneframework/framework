@@ -5,16 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMDVariableRef.cc                                        (C) 2000-2022 */
+/* MeshMDVariableRef.cc                                        (C) 2000-2026 */
 /*                                                                           */
 /* Class managing a multi-dimensional variable on a mesh entity.             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/MeshMDVariableRef.h"
+#include "arcane/core/MeshMDVariableRef.h"
 
 #include "arcane/utils/MDDim.h"
+
 #include "arcane/core/Item.h"
+#include "arcane/core/MeshMatrixMDVariableRef.h"
+#include "arcane/core/MeshVectorMDVariableRef.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MDVariableUnitTest.cc                                       (C) 2000-2023 */
+/* MDVariableUnitTest.cc                                       (C) 2000-2026 */
 /*                                                                           */
 /* Multi-dimensional variable test service.                                  */
 /*---------------------------------------------------------------------------*/
@@ -227,6 +227,7 @@ _testVectorMDVariable()
 void MDVariableUnitTest::
 _testMatrixMDVariable()
 {
+  ValueChecker vc(A_FUNCINFO);
   info() << "TEST MATRIX VARIABLE";
 
   // 0D Variable
@@ -261,7 +262,28 @@ _testMatrixMDVariable()
         ARCANE_FATAL("Bad value (5)");
     }
   }
+  {
+    Arcane::VariableBuildInfo vbi(VariableBuildInfo(mesh(), "Var2"));
+    Arcane::MeshMatrixMDVariableRefT<Cell, Real, 3, 4, MDDim0> cell_matrix_3x4(vbi);
+    constexpr int NbRow = 3;
+    constexpr int NbColumn = 4;
+    using NumMatrixType = NumMatrix<Real, 3, 4>;
+    cell_matrix_3x4.reshape({});
+    NumMatrixType null_matrix;
+    null_matrix.fill(0.0);
+    for (int i = 0; i < NbRow; ++i)
+      for (int j = 0; j < NbColumn; ++j)
+        if (null_matrix(i, j) != 0.0)
+          ARCANE_FATAL("Bad value v='{0}'for NumMatrix i={1} j={2}", null_matrix(i, j), i, j);
 
+    ENUMERATE_ (Cell, icell, allCells()) {
+      cell_matrix_3x4(icell).fill(0.0);
+      for (int i = 0; i < NbRow; ++i)
+        for (int j = 0; j < NbColumn; ++j)
+          if (cell_matrix_3x4(icell, i, j) != 0.0)
+            ARCANE_FATAL("Bad value v='{0}'for NumMatrix i={1} j={2}", cell_matrix_3x4(icell, i, j), i, j);
+    }
+  }
   // 1D Variable
   {
     const Int32 size2 = 7;
@@ -427,6 +449,9 @@ samples3()
     Arcane::NumMatrix<Real, 3, 4> v({ 1.1, 2.2, 3.3, 4.4 },
                                     { 1.0, 2.0, 3.0, 4.0 },
                                     { -1.0, -2.0, -3.0, -4.0 });
+
+    // Fill the matrix for current cell with the value 0.0.
+    cell_matrix_3x4(icell).fill(0.0);
 
     // Set the value for current cell
     cell_matrix_3x4(icell) = v;
