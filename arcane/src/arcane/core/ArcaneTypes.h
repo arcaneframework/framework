@@ -658,6 +658,8 @@ namespace Accelerator
   class AcceleratorRuntimeInitialisationInfo;
   template <typename ItemType_, typename DataType_, int Row, int Column, typename Extents>
   class MeshMatrixMDVariableInView;
+  template <typename ItemType_, typename DataType_, typename Extents>
+  class MeshMDVariableInView;
 } // namespace Accelerator
 using Accelerator::AcceleratorRuntimeInitialisationInfo;
 using Accelerator::IAcceleratorMng;

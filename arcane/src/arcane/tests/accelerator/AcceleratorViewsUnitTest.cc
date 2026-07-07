@@ -1012,6 +1012,8 @@ _executeTestMDMatrixVariable()
   MeshMatrixMDVariableRefT<Cell, Real, 3, 3, MDDim0> cell_matrix(VariableBuildInfo(mesh(), "CellMatrix"));
   cell_matrix.reshape({});
 
+  MeshMDVariableRefT<Cell, Real, MDDim2> cell_matrix_as_dim2(VariableBuildInfo(mesh(), "CellMatrix"));
+
   VariableCellReal cell_matrix_determinant_ref(VariableBuildInfo(mesh(), "CellMatrixDeterminant"));
   VariableCellReal cell_matrix_determinant(VariableBuildInfo(mesh(), "CellMatrixDeterminantRef"));
 
@@ -1033,14 +1035,15 @@ _executeTestMDMatrixVariable()
   {
     auto command = makeCommand(m_queue);
     auto in_cell_matrix = viewIn(command, cell_matrix);
+    auto in_cell_matrix_as_dim2 = viewIn(command, cell_matrix_as_dim2);
     auto out_cell_matrix_determinant = viewOut(command, cell_matrix_determinant);
     command << RUNCOMMAND_ENUMERATE (CellLocalId, cell_id, allCells())
     {
       NumMatrix<Real, 3, 3> x = in_cell_matrix(cell_id);
       Real3x3 r1 = x;
-      Real3 v1(in_cell_matrix(cell_id, 0, 0), in_cell_matrix(cell_id, 0, 1), in_cell_matrix(cell_id, 0, 2));
-      Real3 v2(in_cell_matrix(cell_id, 1, 0), in_cell_matrix(cell_id, 1, 1), in_cell_matrix(cell_id, 1, 2));
-      Real3 v3(in_cell_matrix(cell_id, 2, 0), in_cell_matrix(cell_id, 2, 1), in_cell_matrix(cell_id, 2, 2));
+      Real3 v1(in_cell_matrix(cell_id, 0, 0), in_cell_matrix_as_dim2(cell_id, 0, 1), in_cell_matrix(cell_id, 0, 2));
+      Real3 v2(in_cell_matrix(cell_id, 1, 0), in_cell_matrix_as_dim2(cell_id, 1, 1), in_cell_matrix(cell_id, 1, 2));
+      Real3 v3(in_cell_matrix(cell_id, 2, 0), in_cell_matrix_as_dim2(cell_id, 2, 1), in_cell_matrix(cell_id, 2, 2));
       Real3x3 r2(v1, v2, v3);
       out_cell_matrix_determinant(cell_id) = r1.determinant() + r2.determinant();
     };

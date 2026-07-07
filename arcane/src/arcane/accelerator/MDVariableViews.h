@@ -25,6 +25,65 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Read-only view of multi-dimensional variable over a mesh item.
+ */
+template <typename ItemType_, typename DataType_, typename Extents>
+class MeshMDVariableInView
+: public VariableViewBase
+{
+ public:
+
+  using ItemType = ItemType_;
+  using DataType = DataType_;
+  using ExtentsType = Extents;
+  using ItemLocalIdType = ItemType::LocalIdType;
+  using VariableRefType = MeshMDVariableRefT<ItemType, DataType, Extents>;
+
+ private:
+
+  using MDSpanType = VariableRefType::MDSpanType;
+
+ public:
+
+  MeshMDVariableInView(const ViewBuildInfo& view_bi, IVariable* var, const VariableRefType& var_values)
+  : VariableViewBase(view_bi, var)
+  , m_mdspan(var_values.m_mdspan)
+  {
+  }
+
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE const DataType& operator()(ItemLocalIdType id) const
+  requires(Extents::rank() == 0)
+  {
+    return this->m_mdspan(id.localId());
+  }
+  constexpr ARCCORE_HOST_DEVICE const DataType& operator()(ItemLocalIdType id, Int32 i1) const
+  requires(Extents::rank() == 1)
+  {
+    return this->m_mdspan(id.localId(), i1);
+  }
+
+  constexpr ARCCORE_HOST_DEVICE const DataType& operator()(ItemLocalIdType id, Int32 i1, Int32 i2) const
+  requires(Extents::rank() == 2)
+  {
+    return this->m_mdspan(id.localId(), i1, i2);
+  }
+
+  constexpr ARCCORE_HOST_DEVICE const DataType& operator()(ItemLocalIdType id, Int32 i, Int32 j, Int32 k) const
+  requires(Extents::rank() == 3)
+  {
+    return this->m_mdspan(id.localId(), i, j, k);
+  }
+
+ private:
+
+  MDSpanType m_mdspan;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Read-only view of multi-dimensional matrix variable over a mesh item.
  */
 template <typename ItemType_, typename DataType_, int Row, int Column, typename Extents>
@@ -37,7 +96,6 @@ class MeshMatrixMDVariableInView
   using DataType = DataType_;
   using ItemLocalIdType = ItemType::LocalIdType;
   using ConstReferenceType = NumMatrixDataViewGetter<DataType, Row, Column>;
-
   using VariableRefType = MeshMatrixMDVariableRefT<ItemType, DataType, Row, Column, Extents>;
 
  private:
@@ -104,6 +162,18 @@ auto viewIn(const ViewBuildInfo& command, const MeshMatrixMDVariableRefT<ItemTyp
 {
   IVariable* v = var.underlyingVariable().variable();
   return MeshMatrixMDVariableInView<ItemType, DataType, Row, Column, Extents>(command, v, var);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Read-only view of matrix multi-dimensional mesh variable
+ */
+template <typename ItemType, typename DataType, typename Extents>
+auto viewIn(const ViewBuildInfo& command, const MeshMDVariableRefT<ItemType, DataType, Extents>& var)
+{
+  IVariable* v = var.underlyingVariable().variable();
+  return MeshMDVariableInView<ItemType, DataType, Extents>(command, v, var);
 }
 
 /*---------------------------------------------------------------------------*/

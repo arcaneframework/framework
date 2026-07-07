@@ -140,6 +140,9 @@ template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefT
 : public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstExtentsType<DynExtent>>
 {
+  // To access m_mdspan
+  friend class Arcane::Accelerator::MeshMDVariableInView<ItemType, DataType, Extents>;
+
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
   using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
   static_assert(Extents::rank() >= 0 && Extents::rank() <= 3, "Only Extents of rank 0, 1, 2 or 3 are implemented");
