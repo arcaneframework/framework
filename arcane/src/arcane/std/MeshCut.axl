@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" ?>
+
+<service name="MeshCut" type="caseoption" type2="subdomain">
+  <description>
+    TODO
+  </description>
+
+  <interface name="Arcane::IMeshSection" inherited="true"/>
+
+  <variables>
+  </variables>
+
+  <options>
+  </options>
+
+</service>
