@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkPolyhedralMeshIOService.cc                               (C) 2000-2025 */
+/* VtkPolyhedralMeshIOService.cc                               (C) 2000-2026 */
 /*                                                                           */
 /* Read/write fools for polyhedral mesh with vtk file format                 */
 /*---------------------------------------------------------------------------*/
@@ -630,6 +630,13 @@ struct ToArcaneType<long long>
 {
   using type = Int64;
 };
+
+template <>
+struct ToArcaneType<long> {
+  using type = Int32;
+};
+
+
 
 template <typename T> using to_arcane_type_t = typename ToArcaneType<T>::type;
 /*---------------------------------------------------------------------------*/
