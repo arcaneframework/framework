@@ -9,7 +9,7 @@ are listed here: \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Version 4.1+ (March 2026) {#arcanedoc_version410}
+## Arcane Version 4.1.16.0 (July 8, 2026) {#arcanedoc_version410}
 
 ### New Features/Improvements
 
@@ -52,6 +52,19 @@ ___
 - Adds support for using MPI windows as allocators for variables (\pr{2482})
 - Adds experimental support for changing the allocator of an \arcane{Array}
   (\pr{2493})
+- Adds support for face and cell groups and families in MED files, including
+  options to disable face group creation and tests for first-order 3D MED files
+  (\pr{2583}, \pr{2584}).
+- Adds support for quadratic hexahedron (`Hexaedron20`) in MED files and uses
+    MED numbering for nodes (\pr{2585}, \pr{2586}).
+- Adds simple heat and Poisson test modules to exercise linear solvers and
+  polygonal meshes (\pr{2591}, \pr{2593}).
+- Adds support for polygonal cells in standard meshes, MED reader and VTK
+  legacy writer, including tests for polygon types and simple heat module
+  (\pr{2590}, \pr{2591}, \pr{2592}, \pr{2593}).
+- Adds support for multi-dimensional mesh variables and matrix variables, with
+  new headers and accelerator read-only views for `MeshVectorMDVariable` and
+  `MeshMatrixMDVariable` (\pr{2676}, \pr{2677}, \pr{2679}).
 
 ### Accelerator API
 
@@ -88,6 +101,20 @@ ___
   allows tests to be removed and calculation to be accelerated (\pr{2450})
 - Adds support for constructing \arcane{NumArray<T,MDDim1>} from an
   \arcane{Span} whose memory may be on CPU or GPU (\pr{2491})
+- Adds function `launchRunCommand()` in the accelerator API to launch `RunCommand` 
+  for simple or complex loops, and allows non-const lambdas in accelerator loops (\pr{2670}).
+- Adds methods `fill()` and `operator<<` for `NumMatrix` and `NumVector`, and
+  uses C++20 concepts instead of SFINAE for multi-dimensional variables and
+  `DataSetter`/`DataGetterSetter` (\pr{2675}).
+- Adds convenient methods `begin()`, `end()` and `data()` for `NumArray` and
+  exposes `ArrayExtents::extents` methods publicly to ease usage of
+  multi-dimensional arrays (\pr{2666}).
+- Adds support for `NumArray` with index types other than `Int32` (e.g.
+  `Int64`, `size_t`) and improves support for array extents and `MDIndex`
+  (\pr{2668}, \pr{2671}, \pr{2672}).
+- Adds new samples demonstrating accelerator usage: standalone subdomain with
+  accelerator loops, mixed accelerator back-ends, and a mini n-body sample using
+  only %Arccore (\pr{2651}, \pr{2654}, \pr{2680}).
 
 ### Changes
 
@@ -112,6 +139,7 @@ ___
   (\pr{2315})
 - Prevents calling \arcane{IPrimaryMesh::allocateCells()} if
   \arcane{IMeshModifier::endUpdate()} has already been called (\pr{2354})
+- Fix minor issues in polyhedral exchange items (\pr{2649})
 
 ### Internal
 
@@ -144,6 +172,16 @@ ___
   \pr{2490})
 - By default, disables the display of deprecated methods during compilation
   (\pr{2488})
+- Updates CI workflows and buildsystem for Arcane and Alien, including
+  support for Ubuntu 26.04 images, GPU runners, AdaptiveCPP tests, Intel MPI
+  environment tuning, and self-hosted runners (\pr{2540}, \pr{2545}, \pr{2548},
+  \pr{2549}, \pr{2555}, \pr{2563}, \pr{2565}, \pr{2653}, \pr{2655}).
+- Updates app_buildsystem and VS2022 support, including missing .NET DLLs and
+  CMake fixes for Visual Studio 2022 (\pr{2561}, \pr{2562}).
+- Improves Lima and HDF5 build configuration when using MPI and multiple
+  formats, ensuring correct package loading and compilation (\pr{2560},
+  \pr{2572}, \pr{2661}).
+- Fix Windows build with vtk and remove incremental build on Alien (\pr{2678}).
 
 ### Arccore
 
@@ -156,7 +194,41 @@ ___
   using a static dimension (\pr{2241})
 - Moves JSON handling classes from `arcane_utils` to `arccore_common`
   (\pr{2391})
-
+- Uses concepts instead of SFINAE to check add/remove methods in reference
+  management and removes default template arguments and SFINAE-based
+  `RefTraits` for \arccore{Ref} (\pr{2587}, \pr{2588}, \pr{2589}).
+- Uses concepts instead of SFINAE for `NumVector` and `NumMatrix` utilities
+  (\pr{2535}).
+- Adds `CSRMatrixView`, row-range iterators, and distributed matrix support in
+  the `alina` component, including fixes for CUDA sequential backend and
+  distributed direct solver pointer sizes (\pr{2576}, \pr{2578}, \pr{2579},
+  \pr{2580}, \pr{2581}, \pr{2582}).
+- Introduces the `Alina` numerical component, removes Eigen-based distributed
+  solvers, and replaces OpenMP usage with Arccore concurrency in matrix
+  operations and solvers (\pr{2564}, \pr{2566}, \pr{2567}, \pr{2568}, \pr{2569},
+  \pr{2570}, \pr{2571}).
+- Adds support for Arccore concurrency in tests and matrix utilities, including
+  `MatrixOperationsImpl`, `CSRMatrixOperations`, `BuiltinBackend`, and
+  distributed spectral radius computations (\pr{2568}, \pr{2569}).
+- Adds environment variable support to control cooperative kernel ratio and
+  improves accelerator memory pool management by using `Int64` for sizes and
+  moving profiling dump from %Arcane to %Arccore (\pr{2529}, \pr{2550}, \pr{2543}).
+- Adds `AcceleratorInitializer` and device memory bandwidth information, and
+  presets to compile only %Arccore with or without accelerator support
+  (\pr{2524}, \pr{2525}, \pr{2527}, \pr{2528}).
+- Adds support for `NumArray` with index types other than `Int32` and
+  sequential loops over `Int64` and `size_t` indices, including tests for
+  `arccoreSequentialFor()` and 1D `NumArray` (\pr{2668}, \pr{2671},
+  \pr{2672}).
+- Adds methods `begin()`, `end()`, and `data()` for `NumArray` and exposes
+  `ArrayExtents::extents*` methods publicly (\pr{2666}).
+- Uses `std::barrier` for `StdThreadBarrier`, adds a legacy std-thread
+  implementation service, and changes `IThreadBarrier::wait()` to return
+  `void` (\pr{2512}, \pr{2513}).
+- Uses trace mutex in `TraceMng::finishInitialize()` to make initialization
+  thread-safe (\pr{2511}).
+- Puts `ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED` in the CMake cache to
+  simplify configuration (\pr{2568}).
 ### Alien
 
 - Updates default values with GMRES for PETSc (\pr{2251})
@@ -164,10 +236,27 @@ ___
 - Adds support for using CUDA in the Hypre and PETSc GAMG solver (\pr{2369},
   \pr{2403})
 - Cleans up `PETScPrecomp.h` to accelerate compilation (\pr{2405})
-- Improves GPU support for multiple back-ends (\pr{2409}, \pr{2410}, \pr{2413},
+ Improves GPU support for multiple back-ends (\pr{2409}, \pr{2410}, \pr{2413},
   \pr{2426}, \pr{2428}, \pr{2435}, \pr{2443}, \pr{2449}, \pr{2453}, \pr{2458},
   \pr{2473}, \pr{2485})
+- Fixes performance regression against IFPSolver and MCGSolver 2.5.5 and
+  corrects potential uninitialized vectors when using preconditioners in
+  matvec operations (\pr{2594}, \pr{2593}). 
+- Fixes compilation with PETSc 3.25+ and removes a header no longer present in
+  Trilinos 16 (\pr{2669}). 
+- Adds BOM and updates headers in Alien standalone ArcaneInterface, replacing
+  anonymous enums with `enum class` for better type safety (\pr{2538}).
+- Adds support for local direct solver in AlienCore, including bug fixes in
+  CSR vector handling and DOK tests (\pr{2516}, \pr{2517}, \pr{2518}).
+- Adds support for GPU in Alien buildsystem and updates Alien build scripts for
+  improved GPU support (\pr{2514}).
 
+### Arctools
+- Refactors documentation generation workflows and create ADoc tooling in arctools folder, 
+  including theme updates, header generation, README additions, and Doxygen 1.14.0+
+  support (\pr{2595}, \pr{2596}, \pr{2597}, \pr{2598}, \pr{2599}, \pr{2563}).
+- Fix some issues in Neo for parallel polyhedral mesh support (\pr{2465},\pr{2466},\pr{2467},
+  \pr{2468},\pr{2474},\pr{2477},\pr{2645},\pr{2647})
 ___
 
 ## Arcane Version 4.0.0 (October 15, 2025) {#arcanedoc_version4000}
