@@ -20,7 +20,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Materials::Impl
+namespace Arcane::Materials::MatImpl
 {
 
 /*---------------------------------------------------------------------------*/
@@ -179,7 +179,7 @@ class ConstituentItemIndexedSelectionView
 
   using ItemVecView = ContainerView_;
   using ThatClass = ConstituentItemIndexedSelectionView;
-  using TraitsType = Impl::ConstituentItemIndexedSelectionViewTraits<ContainerView_>;
+  using TraitsType = Arcane::Materials::MatImpl::ConstituentItemIndexedSelectionViewTraits<ContainerView_>;
   using ValueType = TraitsType::ValueType;
   static constexpr bool IsSpanContainer() { return TraitsType::IsSpan(); }
 

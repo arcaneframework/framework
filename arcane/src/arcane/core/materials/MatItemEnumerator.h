@@ -675,7 +675,7 @@ arcaneImplCreateConstituentEnumerator(EnvPartCell, IMeshEnvironment* c, eMatPart
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Impl
+namespace MatImpl
 {
 
   /*!
@@ -720,7 +720,7 @@ namespace Impl
   ::Arcane::Materials::EnumeratorBuilder<::Arcane::Materials::ClassName_>::create(__VA_ARGS__)
 
 #define A_ENUMERATEBUILDER_HELPER2(ConstituentItemNameType, env_or_mat_container, ...) \
-  ::Arcane::Materials::Impl::makeConstituentItemEnumeratorLoop(ConstituentItemNameType(), env_or_mat_container __VA_OPT__(, __VA_ARGS__))
+  ::Arcane::Materials::MatImpl::makeConstituentItemEnumeratorLoop(ConstituentItemNameType(), env_or_mat_container __VA_OPT__(, __VA_ARGS__))
 
 #define A_ENUMERATE_COMPONENTCELL(ClassName_, iname, env_or_mat_container, ...) \
   for (A_TRACE_COMPONENT_DIRECT_CLASS(decltype(A_ENUMERATEBUILDER_HELPER2(ClassName_, env_or_mat_container __VA_OPT__(, __VA_ARGS__)))) \
