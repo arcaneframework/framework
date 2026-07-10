@@ -194,7 +194,7 @@ class ARCCORE_BASE_EXPORT ProfilingRegistry
    */
   static void visitAcceleratorStat(const std::function<void(const Arcane::Impl::AcceleratorStatInfoList&)>& f);
 
-  static const Impl::ForLoopCumulativeStat& globalLoopStat();
+  static const Arcane::Impl::ForLoopCumulativeStat& globalLoopStat();
 
  public:
 
