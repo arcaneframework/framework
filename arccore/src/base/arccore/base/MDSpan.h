@@ -38,18 +38,21 @@ namespace Arcane
  *
  * For more information, refer to the page \ref arcanedoc_core_types_numarray.
  */
-template <typename DataType, typename Extents, typename LayoutPolicy>
+template <typename DataType_, typename Extents_, typename LayoutPolicy_>
 class MDSpan
 {
-  using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArray<UnqualifiedValueType, Extents, LayoutPolicy>;
+  using UnqualifiedValueType = std::remove_cv_t<DataType_>;
+  friend class NumArray<UnqualifiedValueType, Extents_, LayoutPolicy_>;
   // For MDSpan<const T> to access MDSpan<T>
-  friend class MDSpan<const UnqualifiedValueType, Extents, LayoutPolicy>;
-  using ThatClass = MDSpan<DataType, Extents, LayoutPolicy>;
-  static constexpr bool IsConst = std::is_const_v<DataType>;
+  friend class MDSpan<const UnqualifiedValueType, Extents_, LayoutPolicy_>;
+  using ThatClass = MDSpan<DataType_, Extents_, LayoutPolicy_>;
+  static constexpr bool IsConst = std::is_const_v<DataType_>;
 
  public:
 
+  using DataType = DataType_;
+  using Extents = Extents_;
+  using LayoutPolicy = LayoutPolicy_;
   using value_type = DataType;
   using ExtentsType = Extents;
   using ExtentIndexType = Extents::ExtentIndexType;
@@ -59,7 +62,7 @@ class MDSpan
   using ArrayExtentsWithOffsetType = ArrayExtentsWithOffset<Extents, LayoutPolicy>;
   using DynamicDimsType = typename Extents::DynamicDimsType;
   using RemovedFirstExtentsType = typename Extents::RemovedFirstExtentsType;
-
+  using ConstMDSpanType = MDSpan<const DataType, Extents, LayoutPolicy>;
   // For compatibility. To be removed for consistency with other 'using'
   using ArrayBoundsIndexType = typename Extents::MDIndexType;
   using IndexType = typename Extents::MDIndexType;
@@ -67,52 +70,78 @@ class MDSpan
  public:
 
   MDSpan() = default;
-  constexpr MDSpan(DataType* ptr, ArrayExtentsWithOffsetType extents)
+  ~MDSpan() = default;
+  constexpr MDSpan(DataType* ptr, ArrayExtentsWithOffsetType extents) noexcept
   : m_ptr(ptr)
   , m_extents(extents)
   {
   }
-  constexpr MDSpan(DataType* ptr, const DynamicDimsType& dims)
+  constexpr MDSpan(DataType* ptr, const DynamicDimsType& dims) noexcept
   : m_ptr(ptr)
   , m_extents(dims)
   {}
-  // Constructor MDSpan<const T> from an MDSpan<T>
-  template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
-  constexpr MDSpan(const MDSpan<X, Extents>& rhs)
+  constexpr MDSpan(const MDSpan<UnqualifiedValueType, Extents, LayoutPolicy>& rhs) noexcept requires(IsConst)
   : m_ptr(rhs.m_ptr)
   , m_extents(rhs.m_extents)
   {}
-  constexpr MDSpan(SmallSpan<DataType> v)
-  requires(Extents::isDynamic1D() && !IsConst)
+  MDSpan(const MDSpan<DataType, Extents, LayoutPolicy>& rhs) = default;
+  constexpr MDSpan(SmallSpan<DataType> v) noexcept
+  requires(Extents::isDynamic1D())
   : m_ptr(v.data())
   , m_extents(DynamicDimsType(v.size()))
   {}
-  constexpr MDSpan(SmallSpan<const DataType> v)
+  constexpr MDSpan(ArrayView<UnqualifiedValueType> v) noexcept
+  requires(Extents::isDynamic1D())
+  : m_ptr(v.data())
+  , m_extents(DynamicDimsType(v.size()))
+  {}
+  constexpr MDSpan(SmallSpan<UnqualifiedValueType> v) noexcept
   requires(Extents::isDynamic1D() && IsConst)
   : m_ptr(v.data())
   , m_extents(DynamicDimsType(v.size()))
   {}
-  constexpr ThatClass& operator=(SmallSpan<DataType> v)
-  requires(Extents::isDynamic1D() && !IsConst)
+  constexpr MDSpan(ConstArrayView<UnqualifiedValueType> v) noexcept
+  requires(Extents::isDynamic1D() && IsConst)
+  : m_ptr(v.data())
+  , m_extents(DynamicDimsType(v.size()))
+  {}
+  constexpr ThatClass& operator=(SmallSpan<DataType> v) noexcept
+  requires(Extents::isDynamic1D())
   {
     m_ptr = v.data();
     m_extents = DynamicDimsType(v.size());
     return (*this);
   }
-  constexpr ThatClass& operator=(SmallSpan<const DataType> v)
+  constexpr ThatClass& operator=(SmallSpan<UnqualifiedValueType> v) noexcept
   requires(Extents::isDynamic1D() && IsConst)
   {
     m_ptr = v.data();
     m_extents = DynamicDimsType(v.size());
     return (*this);
   }
+  constexpr ThatClass& operator=(ArrayView<UnqualifiedValueType> v) noexcept
+  requires(Extents::isDynamic1D())
+  {
+    m_ptr = v.data();
+    m_extents = DynamicDimsType(v.size());
+    return (*this);
+  }
+  constexpr ThatClass& operator=(ConstArrayView<UnqualifiedValueType> v) noexcept
+  requires(Extents::isDynamic1D() && IsConst)
+  {
+    m_ptr = v.data();
+    m_extents = DynamicDimsType(v.size());
+    return (*this);
+  }
+  MDSpan& operator=(const MDSpan& v) = default;
+  MDSpan& operator=(MDSpan&& v) noexcept = default;
 
  public:
 
   //! Base pointer for allocated memory
-  constexpr DataType* data() { return m_ptr; }
+  constexpr DataType* data() noexcept { return m_ptr; }
   //! Base pointer for allocated memory
-  constexpr const DataType* data() const { return m_ptr; }
+  constexpr const DataType* data() const noexcept { return m_ptr; }
 
  public:
 

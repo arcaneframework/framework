@@ -11,6 +11,7 @@
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/Array3View.h"
 #include "arccore/base/Array4View.h"
+#include "arccore/base/MDSpan.h"
 
 #include <vector>
 #include <type_traits>
@@ -765,6 +766,61 @@ TEST(Span, FixedValue)
   ASSERT_EQ(fixed_span_only_const_ptr.data(), vlist.data());
 }
 
+TEST(MDSpan, Misc)
+{
+  using namespace Arcane;
+  Int32 v1[4] = { 1, 3, -5, 2 };
+
+  MDSpan<Int32, MDDim1> mdspan1;
+  ASSERT_EQ(mdspan1.extent0(),0);
+
+  mdspan1 = MDSpan<Int32,MDDim1>(v1,4);
+  ASSERT_EQ(mdspan1.extent0(),4);
+  ASSERT_EQ(mdspan1.data(),v1);
+  ASSERT_EQ(mdspan1[0],1);
+  ASSERT_EQ(mdspan1[1],3);
+  ASSERT_EQ(mdspan1[2],-5);
+  ASSERT_EQ(mdspan1[3],2);
+
+  MDSpan<const Int32, MDDim1> const_mdspan1(mdspan1);
+  ASSERT_EQ(const_mdspan1.data(), mdspan1.data());
+  ASSERT_EQ(const_mdspan1.extent0(), mdspan1.extent0());
+
+  // Convert from ArrayView
+  {
+    ArrayView arrayview1(4,v1);
+
+    MDSpan<Int32, MDDim1> mdspan2(arrayview1);
+    ASSERT_EQ(mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(mdspan2.extent0(), mdspan1.extent0());
+
+    MDSpan<const Int32, MDDim1> const_mdspan2(arrayview1);
+    ASSERT_EQ(const_mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(const_mdspan2.extent0(), mdspan1.extent0());
+
+    mdspan2 = arrayview1;
+    ASSERT_EQ(mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(mdspan2.extent0(), mdspan1.extent0());
+
+    const_mdspan2 = arrayview1;
+    ASSERT_EQ(const_mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(const_mdspan2.extent0(), mdspan1.extent0());
+  }
+
+  // Convert from ConstArrayView
+  {
+    ConstArrayView const_arrayview1(4,v1);
+
+    MDSpan<const Int32, MDDim1> const_mdspan2(const_arrayview1);
+    ASSERT_EQ(const_mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(const_mdspan2.extent0(), mdspan1.extent0());
+
+    const_mdspan2 = const_arrayview1;
+    ASSERT_EQ(const_mdspan2.data(), mdspan1.data());
+    ASSERT_EQ(const_mdspan2.extent0(), mdspan1.extent0());
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -804,6 +860,11 @@ template class SmallSpan2<Int32>;
 template class SmallSpan2<const Int32>;
 template class SmallSpan2<double>;
 template class SmallSpan2<const double>;
+
+template class MDSpan<Int32,MDDim1>;
+template class MDSpan<Int32,MDDim2>;
+template class MDSpan<Int32,MDDim3>;
+template class MDSpan<Int32,MDDim4>;
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/

@@ -97,10 +97,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class NumArray<Real, MDDim4>;
-template class NumArray<Real, MDDim3>;
-template class NumArray<Real, MDDim2>;
 template class NumArray<Real, MDDim1>;
+template class NumArray<Real, MDDim2>;
+template class NumArray<Real, MDDim3>;
+template class NumArray<Real, MDDim4>;
 
 template class ArrayStridesBase<1>;
 template class ArrayStridesBase<2>;
