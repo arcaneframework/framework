@@ -165,7 +165,7 @@ class ArrayExtentsValue<IndexType_, X0>
 
  protected:
 
-  Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
+  Arcane::Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -271,8 +271,8 @@ class ArrayExtentsValue<IndexType_, X0, X1>
 
  protected:
 
-  Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
-  Impl::ExtentValue<X1, ExtentIndexType> m_extent1;
+  Arcane::Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
+  Arcane::Impl::ExtentValue<X1, ExtentIndexType> m_extent1;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -390,9 +390,9 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2>
 
  protected:
 
-  Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
-  Impl::ExtentValue<X1, ExtentIndexType> m_extent1;
-  Impl::ExtentValue<X2, ExtentIndexType> m_extent2;
+  Arcane::Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
+  Arcane::Impl::ExtentValue<X1, ExtentIndexType> m_extent1;
+  Arcane::Impl::ExtentValue<X2, ExtentIndexType> m_extent2;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -451,11 +451,11 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
   constexpr MDIndexType getIndices(ExtentIndexType i) const
   {
     // Compute base indices
-    ExtentIndexType i3 = Impl::fastmod(i, m_extent3.v);
+    ExtentIndexType i3 = Arcane::Impl::fastmod(i, m_extent3.v);
     ExtentIndexType fac = m_extent3.v;
-    ExtentIndexType i2 = Impl::fastmod(i / fac, m_extent2.v);
+    ExtentIndexType i2 = Arcane::Impl::fastmod(i / fac, m_extent2.v);
     fac *= m_extent2.v;
-    ExtentIndexType i1 = Impl::fastmod(i / fac, m_extent1.v);
+    ExtentIndexType i1 = Arcane::Impl::fastmod(i / fac, m_extent1.v);
     fac *= m_extent1.v;
     ExtentIndexType i0 = i / fac;
     return { i0, i1, i2, i3 };
@@ -525,10 +525,10 @@ class ArrayExtentsValue<IndexType_, X0, X1, X2, X3>
 
  protected:
 
-  Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
-  Impl::ExtentValue<X1, ExtentIndexType> m_extent1;
-  Impl::ExtentValue<X2, ExtentIndexType> m_extent2;
-  Impl::ExtentValue<X3, ExtentIndexType> m_extent3;
+  Arcane::Impl::ExtentValue<X0, ExtentIndexType> m_extent0;
+  Arcane::Impl::ExtentValue<X1, ExtentIndexType> m_extent1;
+  Arcane::Impl::ExtentValue<X2, ExtentIndexType> m_extent2;
+  Arcane::Impl::ExtentValue<X3, ExtentIndexType> m_extent3;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -49,7 +49,7 @@ class ExtentsV<IndexType_>
 {
  public:
 
-  using ArrayExtentsValueType = Impl::ArrayExtentsValue<IndexType_>;
+  using ArrayExtentsValueType = Arcane::Impl::ArrayExtentsValue<IndexType_>;
   using ExtentIndexType = IndexType_;
 
  public:
@@ -74,13 +74,13 @@ class ExtentsV<IndexType_, X0>
  public:
 
   static constexpr int rank() { return 1; }
-  static constexpr int nb_dynamic = Impl::extent::nbDynamic(X0);
+  static constexpr int nb_dynamic = Arcane::Impl::extent::nbDynamic(X0);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 1); }
   static constexpr bool isDynamic1D() { return (nb_dynamic == 1); }
 
   using ExtentIndexType = IndexType_;
   using MDIndexType = MDIndex<1, IndexType_>;
-  using ArrayExtentsValueType = Impl::ArrayExtentsValue<IndexType_, X0>;
+  using ArrayExtentsValueType = Arcane::Impl::ArrayExtentsValue<IndexType_, X0>;
   using RemovedFirstExtentsType = ExtentsV<IndexType_>;
   using DynamicDimsType = MDIndex<nb_dynamic, IndexType_>;
   template <int X> using AddedFirstExtentsType = ExtentsV<IndexType_, X, X0>;
@@ -101,13 +101,13 @@ class ExtentsV<IndexType_, X0, X1>
  public:
 
   static constexpr int rank() { return 2; }
-  static constexpr int nb_dynamic = Impl::extent::nbDynamic(X0, X1);
+  static constexpr int nb_dynamic = Arcane::Impl::extent::nbDynamic(X0, X1);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 2); }
   static constexpr bool isDynamic1D() { return false; }
 
   using ExtentIndexType = IndexType_;
   using MDIndexType = MDIndex<2, IndexType_>;
-  using ArrayExtentsValueType = Impl::ArrayExtentsValue<IndexType_, X0, X1>;
+  using ArrayExtentsValueType = Arcane::Impl::ArrayExtentsValue<IndexType_, X0, X1>;
   using RemovedFirstExtentsType = ExtentsV<IndexType_, X1>;
   using DynamicDimsType = MDIndex<nb_dynamic, IndexType_>;
   template <int X> using AddedFirstExtentsType = ExtentsV<IndexType_, X, X0, X1>;
@@ -127,13 +127,13 @@ class ExtentsV<IndexType_, X0, X1, X2>
  public:
 
   static constexpr int rank() { return 3; }
-  static constexpr int nb_dynamic = Impl::extent::nbDynamic(X0, X1, X2);
+  static constexpr int nb_dynamic = Arcane::Impl::extent::nbDynamic(X0, X1, X2);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 3); }
   static constexpr bool isDynamic1D() { return false; }
 
   using ExtentIndexType = IndexType_;
   using MDIndexType = MDIndex<3, IndexType_>;
-  using ArrayExtentsValueType = Impl::ArrayExtentsValue<IndexType_, X0, X1, X2>;
+  using ArrayExtentsValueType = Arcane::Impl::ArrayExtentsValue<IndexType_, X0, X1, X2>;
   using RemovedFirstExtentsType = ExtentsV<IndexType_, X1, X2>;
   using DynamicDimsType = MDIndex<nb_dynamic, IndexType_>;
   template <int X> using AddedFirstExtentsType = ExtentsV<IndexType_, X, X0, X1, X2>;
@@ -152,13 +152,13 @@ class ExtentsV<IndexType_, X0, X1, X2, X3>
  public:
 
   static constexpr int rank() { return 4; }
-  static constexpr int nb_dynamic = Impl::extent::nbDynamic(X0, X1, X2, X3);
+  static constexpr int nb_dynamic = Arcane::Impl::extent::nbDynamic(X0, X1, X2, X3);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 4); }
   static constexpr bool isDynamic1D() { return false; }
 
   using ExtentIndexType = IndexType_;
   using MDIndexType = MDIndex<4, IndexType_>;
-  using ArrayExtentsValueType = Impl::ArrayExtentsValue<IndexType_, X0, X1, X2, X3>;
+  using ArrayExtentsValueType = Arcane::Impl::ArrayExtentsValue<IndexType_, X0, X1, X2, X3>;
   using RemovedFirstExtentsType = ExtentsV<IndexType_, X1, X2, X3>;
   using DynamicDimsType = MDIndex<nb_dynamic, IndexType_>;
 
