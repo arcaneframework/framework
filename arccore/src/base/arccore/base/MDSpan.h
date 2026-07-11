@@ -70,80 +70,78 @@ class MDSpan
  public:
 
   MDSpan() = default;
-  constexpr MDSpan(DataType* ptr, ArrayExtentsWithOffsetType extents)
+  ~MDSpan() = default;
+  constexpr MDSpan(DataType* ptr, ArrayExtentsWithOffsetType extents) noexcept
   : m_ptr(ptr)
   , m_extents(extents)
   {
   }
-  constexpr MDSpan(DataType* ptr, const DynamicDimsType& dims)
+  constexpr MDSpan(DataType* ptr, const DynamicDimsType& dims) noexcept
   : m_ptr(ptr)
   , m_extents(dims)
   {}
-  constexpr MDSpan(const MDSpan<UnqualifiedValueType, Extents, LayoutPolicy>& rhs) requires(IsConst)
+  constexpr MDSpan(const MDSpan<UnqualifiedValueType, Extents, LayoutPolicy>& rhs) noexcept requires(IsConst)
   : m_ptr(rhs.m_ptr)
   , m_extents(rhs.m_extents)
   {}
-  constexpr MDSpan(const MDSpan<DataType, Extents, LayoutPolicy>& rhs)
-  : m_ptr(rhs.m_ptr)
-  , m_extents(rhs.m_extents)
-  {}
-  constexpr MDSpan(SmallSpan<DataType> v)
+  MDSpan(const MDSpan<DataType, Extents, LayoutPolicy>& rhs) = default;
+  constexpr MDSpan(SmallSpan<DataType> v) noexcept
   requires(Extents::isDynamic1D())
   : m_ptr(v.data())
   , m_extents(DynamicDimsType(v.size()))
   {}
-  constexpr MDSpan(ArrayView<UnqualifiedValueType> v)
+  constexpr MDSpan(ArrayView<UnqualifiedValueType> v) noexcept
   requires(Extents::isDynamic1D())
   : m_ptr(v.data())
   , m_extents(DynamicDimsType(v.size()))
   {}
-  constexpr MDSpan(SmallSpan<UnqualifiedValueType> v)
+  constexpr MDSpan(SmallSpan<UnqualifiedValueType> v) noexcept
   requires(Extents::isDynamic1D() && IsConst)
   : m_ptr(v.data())
   , m_extents(DynamicDimsType(v.size()))
   {}
-  constexpr MDSpan(ConstArrayView<UnqualifiedValueType> v)
+  constexpr MDSpan(ConstArrayView<UnqualifiedValueType> v) noexcept
   requires(Extents::isDynamic1D() && IsConst)
   : m_ptr(v.data())
   , m_extents(DynamicDimsType(v.size()))
   {}
-  constexpr ThatClass& operator=(SmallSpan<DataType> v)
+  constexpr ThatClass& operator=(SmallSpan<DataType> v) noexcept
   requires(Extents::isDynamic1D())
   {
     m_ptr = v.data();
     m_extents = DynamicDimsType(v.size());
     return (*this);
   }
-  constexpr ThatClass& operator=(SmallSpan<UnqualifiedValueType> v)
+  constexpr ThatClass& operator=(SmallSpan<UnqualifiedValueType> v) noexcept
   requires(Extents::isDynamic1D() && IsConst)
   {
     m_ptr = v.data();
     m_extents = DynamicDimsType(v.size());
     return (*this);
   }
-  constexpr ThatClass& operator=(ArrayView<UnqualifiedValueType> v)
+  constexpr ThatClass& operator=(ArrayView<UnqualifiedValueType> v) noexcept
   requires(Extents::isDynamic1D())
   {
     m_ptr = v.data();
     m_extents = DynamicDimsType(v.size());
     return (*this);
   }
-  constexpr ThatClass& operator=(ConstArrayView<UnqualifiedValueType> v)
+  constexpr ThatClass& operator=(ConstArrayView<UnqualifiedValueType> v) noexcept
   requires(Extents::isDynamic1D() && IsConst)
   {
     m_ptr = v.data();
     m_extents = DynamicDimsType(v.size());
     return (*this);
   }
-  constexpr MDSpan& operator=(const MDSpan& v) = default;
-  constexpr MDSpan& operator=(MDSpan&& v) = default;
+  MDSpan& operator=(const MDSpan& v) = default;
+  MDSpan& operator=(MDSpan&& v) noexcept = default;
 
  public:
 
   //! Base pointer for allocated memory
-  constexpr DataType* data() { return m_ptr; }
+  constexpr DataType* data() noexcept { return m_ptr; }
   //! Base pointer for allocated memory
-  constexpr const DataType* data() const { return m_ptr; }
+  constexpr const DataType* data() const noexcept { return m_ptr; }
 
  public:
 
