@@ -178,7 +178,7 @@ class NumArray
   }
 
   //! Constructs an instance from a view (only dynamic 1D arrays)
-  NumArray(SmallSpan<const DataType> v)
+  explicit NumArray(SmallSpan<const DataType> v)
   requires(Extents::isDynamic1D())
   : NumArray(v.size())
   {
@@ -186,7 +186,7 @@ class NumArray
   }
 
   //! Constructs an instance from a view (only dynamic 1D arrays)
-  NumArray(Span<const DataType> v)
+  explicit NumArray(Span<const DataType> v)
   requires(Extents::isDynamic1D())
   {
     copy(v.smallView());
@@ -453,17 +453,6 @@ class NumArray
    * This operation is valid regardless of the memory associated
    * with the instance.
    */
-  void copy(SmallSpan<const DataType> rhs) requires(Extents::isDynamic1D())
-  {
-    copy(rhs, nullptr);
-  }
-
-  /*!
-   * \brief Copies the values from \a rhs into the instance.
-   *
-   * This operation is valid regardless of the memory associated
-   * with the instance.
-   */
   void copy(ConstMDSpanType rhs) { copy(rhs, nullptr); }
 
   /*!
@@ -483,38 +472,9 @@ class NumArray
    * \a queue can be null. If the queue is asynchronous, it must be
    * synchronized before the instance can be used.
    */
-  void copy(SmallSpan<const DataType> rhs, const RunQueue* queue) requires(Extents::isDynamic1D())
-  {
-    _resizeAndCopy(ConstMDSpanType(rhs), eMemoryResource::Unknown, queue);
-  }
-
-  /*!
-   * \brief Copies the values from \a rhs into the instance via the
-   * queue \a queue.
-   *
-   * This operation is valid regardless of the memory associated
-   * with the instance.
-   * \a queue can be null. If the queue is asynchronous, it must be
-   * synchronized before the instance can be used.
-   */
   void copy(ConstMDSpanType rhs, const RunQueue* queue)
   {
     _resizeAndCopy(rhs, eMemoryResource::Unknown, queue);
-  }
-
-  /*!
-   * \brief Copies the values from \a rhs into the instance via the
-   * queue \a queue.
-   *
-   * This operation is valid regardless of the memory associated
-   * with the instance.
-   * \a queue can be null, in which case the copy is performed on the host.
-   * If the queue is asynchronous, it must be synchronized before the instance
-   * can be used.
-   */
-  void copy(SmallSpan<const DataType> rhs, const RunQueue& queue) requires(Extents::isDynamic1D())
-  {
-    _resizeAndCopy(ConstMDSpanType(rhs), eMemoryResource::Unknown, &queue);
   }
 
   /*!
