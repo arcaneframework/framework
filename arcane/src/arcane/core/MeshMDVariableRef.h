@@ -142,6 +142,7 @@ class MeshMDVariableRefT
 {
   // To access m_mdspan
   friend class Arcane::Accelerator::MeshMDVariableInView<ItemType, DataType, Extents>;
+  friend class Arcane::Accelerator::MeshMDVariableInOutView<ItemType, DataType, Extents>;
 
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
   using BasicType = typename DataTypeTraitsT<DataType>::BasicType;

@@ -43,6 +43,7 @@ class MeshMatrixMDVariableRefT
 : public MeshMDVariableRefBaseT<ItemType, DataType_, typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>>
 {
   // To access m_matrix_mdspan
+  friend class Arcane::Accelerator::MeshMatrixMDVariableInOutView<ItemType, DataType_, Row, Column, Extents>;
   friend class Arcane::Accelerator::MeshMatrixMDVariableInView<ItemType, DataType_, Row, Column, Extents>;
 
  public:

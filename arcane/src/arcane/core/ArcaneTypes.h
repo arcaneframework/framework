@@ -658,8 +658,22 @@ namespace Accelerator
   class AcceleratorRuntimeInitialisationInfo;
   template <typename ItemType_, typename DataType_, int Row, int Column, typename Extents>
   class MeshMatrixMDVariableInView;
+  template <typename ItemType_, typename DataType_, int Row, int Column, typename Extents>
+  class MeshMatrixMDVariableInOutView;
+  template <typename ItemType_, typename DataType_, int Row, int Column, typename Extents>
+  class MeshMatrixMDVariableOutView;
+  template <typename ItemType_, typename DataType_, int Row, typename Extents>
+  class MeshVectorMDVariableInView;
+  template <typename ItemType_, typename DataType_, int Row, typename Extents>
+  class MeshVectorMDVariableInOutView;
+  template <typename ItemType_, typename DataType_, int Row, typename Extents>
+  class MeshVectorMDVariableOutView;
   template <typename ItemType_, typename DataType_, typename Extents>
   class MeshMDVariableInView;
+  template <typename ItemType_, typename DataType_, typename Extents>
+  class MeshMDVariableInOutView;
+  template <typename ItemType_, typename DataType_, typename Extents>
+  class MeshMDVariableOutView;
 } // namespace Accelerator
 using Accelerator::AcceleratorRuntimeInitialisationInfo;
 using Accelerator::IAcceleratorMng;

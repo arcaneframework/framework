@@ -1017,15 +1017,28 @@ _executeTestMDMatrixVariable()
   VariableCellReal cell_matrix_determinant_ref(VariableBuildInfo(mesh(), "CellMatrixDeterminant"));
   VariableCellReal cell_matrix_determinant(VariableBuildInfo(mesh(), "CellMatrixDeterminantRef"));
 
-  // Compute the determinant of the matrix on host
-  ENUMERATE_ (Cell, icell, allCells()) {
-    Real r0 = static_cast<Real>(icell.itemLocalId() + 1);
+  auto getMatrix = [] ARCCORE_HOST_DEVICE(Int32 id) -> NumMatrix<Real, 3, 3> {
+    Real r0 = static_cast<Real>(id + 1);
     NumMatrix<Real, 3, 3> x({ r0, r0 + 1.5, r0 - 1.2 },
                             { r0 + 2.3, r0 - 4.3, r0 + 4.2 },
                             { r0, r0 + 1.0, r0 + 2.0 });
+    return x;
+  };
+
+  // Compute the determinant of the matrix on host
+  ENUMERATE_ (Cell, icell, allCells()) {
+    NumMatrix<Real, 3, 3> x = getMatrix(icell.itemLocalId());
     cell_matrix(icell) = x;
     Real3x3 r = x;
     cell_matrix_determinant_ref[icell] = 2.0 * r.determinant();
+  }
+  {
+    auto command = makeCommand(m_queue);
+    auto inout_cell_matrix = viewInOut(command, cell_matrix);
+    command << RUNCOMMAND_ENUMERATE (CellLocalId, cell_id, allCells())
+    {
+      inout_cell_matrix(cell_id) = getMatrix(cell_id);
+    };
   }
 
   // Compute the determinant of the matrix on RunQueue device
@@ -1036,13 +1049,14 @@ _executeTestMDMatrixVariable()
     auto command = makeCommand(m_queue);
     auto in_cell_matrix = viewIn(command, cell_matrix);
     auto in_cell_matrix_as_dim2 = viewIn(command, cell_matrix_as_dim2);
+    auto inout_cell_matrix_as_dim2 = viewInOut(command, cell_matrix_as_dim2);
     auto out_cell_matrix_determinant = viewOut(command, cell_matrix_determinant);
     command << RUNCOMMAND_ENUMERATE (CellLocalId, cell_id, allCells())
     {
       NumMatrix<Real, 3, 3> x = in_cell_matrix(cell_id);
       Real3x3 r1 = x;
       Real3 v1(in_cell_matrix(cell_id, 0, 0), in_cell_matrix_as_dim2(cell_id, 0, 1), in_cell_matrix(cell_id, 0, 2));
-      Real3 v2(in_cell_matrix(cell_id, 1, 0), in_cell_matrix_as_dim2(cell_id, 1, 1), in_cell_matrix(cell_id, 1, 2));
+      Real3 v2(in_cell_matrix(cell_id, 1, 0), in_cell_matrix_as_dim2(cell_id, 1, 1), inout_cell_matrix_as_dim2(cell_id, 1, 2));
       Real3 v3(in_cell_matrix(cell_id, 2, 0), in_cell_matrix_as_dim2(cell_id, 2, 1), in_cell_matrix(cell_id, 2, 2));
       Real3x3 r2(v1, v2, v3);
       out_cell_matrix_determinant(cell_id) = r1.determinant() + r2.determinant();
