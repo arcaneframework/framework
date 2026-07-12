@@ -29,11 +29,15 @@ namespace Arcane
  */
 template <typename DataType_, int Row, int Column>
 class NumMatrixDataViewGetter
-: public DataViewGetter<NumMatrix<DataType_, Row, Column>>
 {
  public:
 
+  //! Type of the matrix
   using NumMatrixType = NumMatrix<DataType_, Row, Column>;
+  //! Accessor for the matrix
+  using AccessorReturnType = const NumMatrixType&;
+  //! Accessor for one element of the matrix
+  using MatrixElemenAccessor = DataViewGetter<DataType_>;
 
  public:
 
@@ -43,7 +47,14 @@ class NumMatrixDataViewGetter
 
  public:
 
-  constexpr operator const NumMatrixType&() const { return *m_ptr; }
+  static constexpr ARCCORE_HOST_DEVICE AccessorReturnType build(const NumMatrixType* ptr)
+  {
+    return { *ptr };
+  }
+
+ public:
+
+  constexpr operator AccessorReturnType() const noexcept { return *m_ptr; }
 
  private:
 
@@ -63,8 +74,10 @@ class NumMatrixDataViewGetterSetter
 
  public:
 
-  using DataType = DataType_;
+  //! Type of the matrix
   using NumMatrixType = NumMatrix<DataType_, Row, Column>;
+  //! Accessor for one element of the matrix
+  using MatrixElemenAccessor = DataViewGetterSetter<DataType_>;
 
  public:
 
@@ -80,7 +93,7 @@ class NumMatrixDataViewGetterSetter
     return (*this);
   }
 
-  void fill(const DataType& v)
+  void fill(const DataType_& v)
   {
     this->m_ptr->fill(v);
   }
