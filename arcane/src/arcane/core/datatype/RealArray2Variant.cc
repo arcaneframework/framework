@@ -78,7 +78,7 @@ _arcaneTestRealArray2Variant()
     for (Integer j = 0; j < 3; ++j)
       std::cout << "V1=" << i << " " << j << " v=" << m33(i, j) << "\n";
   for (Integer i = 0; i < 3; ++i) {
-    auto lc = m33(i);
+    auto lc = m33.row(i);
     for (Integer j = 0; j < 3; ++j)
       std::cout << "V2=" << i << " " << j << " v=" << lc(j) << "\n";
   }
