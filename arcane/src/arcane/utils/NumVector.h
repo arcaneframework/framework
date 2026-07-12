@@ -28,11 +28,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Small fixed-size vector of N numerical data points.
- *
- * \note Currently only implemented for the Real type.
- *
- * \warning API is currently under definition. Do not use outside of Arcane.
+ * \brief Small fixed-size vector of Size numerical data points.
  *
  * It is possible to access each component of the vector using 'operator[]'
  * or 'operator()' or via the methods vx(), vy(), vz() if the dimension is
@@ -41,13 +37,13 @@ namespace Arcane
 template <typename T, int Size>
 class NumVector
 {
-  static_assert(Size > 1, "Size has to be strictly greater than 1");
-  static_assert(std::is_same_v<T, Real>, "Only type 'Real' is allowed");
+  static_assert(Size > 0, "Size has to be strictly greater than 0");
 
  public:
 
   using ThatClass = NumVector<T, Size>;
   using DataType = T;
+  static constexpr bool isRealType() { return std::is_same_v<T, Real>; }
 
  public:
 
@@ -91,6 +87,17 @@ class NumVector
     m_values[4] = a5;
   }
 
+  //! Constructs with the sextuplet (a1,a2,a3,a4,a5,a6)
+  constexpr ARCCORE_HOST_DEVICE NumVector(T a1, T a2, T a3, T a4, T a5, T a6) requires(Size == 6)
+  {
+    m_values[0] = a1;
+    m_values[1] = a2;
+    m_values[2] = a3;
+    m_values[3] = a4;
+    m_values[4] = a5;
+    m_values[5] = a6;
+  }
+
   //! Constructs the instance with the value \a v for each component
   template <bool = true>
   explicit constexpr ARCCORE_HOST_DEVICE NumVector(const T (&v)[Size])
@@ -113,31 +120,33 @@ class NumVector
       m_values[i] = v;
   }
 
-  explicit constexpr ARCCORE_HOST_DEVICE NumVector(Real2 v) requires(Size == 2)
+  explicit constexpr ARCCORE_HOST_DEVICE NumVector(Real2 v) requires(Size == 2 && isRealType())
   : NumVector(v.x, v.y)
   {}
 
-  explicit constexpr ARCCORE_HOST_DEVICE NumVector(Real3 v) requires(Size == 3)
+  explicit constexpr ARCCORE_HOST_DEVICE NumVector(Real3 v) requires(Size == 3 && isRealType())
   : NumVector(v.x, v.y, v.z)
   {}
 
-  //! Assigns the triplet (v,v,v) to the instance.
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(Real v)
+  //! Assigns value to all components of the vector
+  constexpr ARCCORE_HOST_DEVICE NumVector& operator=(const DataType& value)
   {
     for (int i = 0; i < Size; ++i)
-      m_values[i] = v;
+      m_values[i] = value;
     return (*this);
   }
 
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real2& v) requires(Size == 2)
+  constexpr ARCCORE_HOST_DEVICE NumVector& operator=(const Real2& v)
+  requires(Size == 2 && isRealType())
   {
-    *this = ThatClass(v);
+    *this = NumVector(v);
     return (*this);
   }
 
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real3& v) requires(Size == 3)
+  constexpr ARCCORE_HOST_DEVICE NumVector& operator=(const Real3& v)
+  requires(Size == 3 && isRealType())
   {
-    *this = ThatClass(v);
+    *this = NumVector(v);
     return (*this);
   }
 
@@ -153,144 +162,124 @@ class NumVector
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE static ThatClass zero() { return ThatClass(); }
+  constexpr ARCCORE_HOST_DEVICE static NumVector zero() { return NumVector(); }
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const
-  {
-    bool is_nearly_zero = true;
-    for (int i = 0; i < Size; ++i)
-      is_nearly_zero = is_nearly_zero && math::isNearlyZero(m_values[i]);
-    return is_nearly_zero;
-  }
-
-  //! Returns the square of the L2 norm of the triplet \f$x^2+y^2+z^2\f$
-  constexpr ARCCORE_HOST_DEVICE Real squareNormL2() const
-  {
-    T v = T();
-    for (int i = 0; i < Size; ++i)
-      v += m_values[i] * m_values[i];
-    return v;
-  }
-
-  //! Returns the L2 norm of the triplet \f$\sqrt{x^2+y^2+z^2}\f$
-  ARCCORE_HOST_DEVICE Real normL2() const { return _sqrt(squareNormL2()); }
-
   //! Absolute value component by component.
-  ARCCORE_HOST_DEVICE ThatClass absolute() const
+  ARCCORE_HOST_DEVICE NumVector absolute() const
   {
-    ThatClass v;
+    NumVector v;
     for (int i = 0; i < Size; ++i)
       v.m_values[i] = math::abs(m_values[i]);
     return v;
   }
 
   //! Fill the vector with the value \a v
-  ARCCORE_HOST_DEVICE void fill(const T& v)
+  constexpr ARCCORE_HOST_DEVICE void fill(const T& v)
   {
     for (int i = 0; i < Size; ++i) {
       m_values[i] = v;
     }
   }
 
-  //! Adds \a b to each component of the instance
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator+=(T b)
+  //! Adds \a b to each component of \a a
+  friend constexpr ARCCORE_HOST_DEVICE NumVector& operator+=(NumVector& a, T b)
   {
     for (int i = 0; i < Size; ++i)
-      m_values[i] += b;
-    return (*this);
+      a.m_values[i] += b;
+    return a;
   }
 
-  //! Adds \a b to the instance
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator+=(const ThatClass& b)
+  //! Adds \a b to \a a
+  friend constexpr ARCCORE_HOST_DEVICE NumVector& operator+=(NumVector& a, const NumVector& b)
   {
     for (int i = 0; i < Size; ++i)
-      m_values[i] += b.m_values[i];
-    return (*this);
+      a.m_values[i] += b.m_values[i];
+    return a;
   }
 
-  //! Subtracts \a b from each component of the instance
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator-=(T b)
+  //! Subtracts \a b from each component of \a a
+  friend constexpr ARCCORE_HOST_DEVICE NumVector& operator-=(NumVector& a, T b)
   {
     for (int i = 0; i < Size; ++i)
-      m_values[i] -= b;
-    return (*this);
+      a.m_values[i] -= b;
+    return a;
   }
 
-  //! Subtracts \a b from the instance
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator-=(const ThatClass& b)
+  //! Subtracts \a b from each component of \a a
+  friend constexpr ARCCORE_HOST_DEVICE NumVector& operator-=(NumVector& a, const NumVector& b)
   {
     for (int i = 0; i < Size; ++i)
-      m_values[i] -= b.m_values[i];
-    return (*this);
+      a.m_values[i] -= b.m_values[i];
+    return a;
   }
 
-  //! Multiplies each component by \a b
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator*=(T b)
+  //! Multiplies each component of \a a by \a b
+  friend constexpr ARCCORE_HOST_DEVICE NumVector& operator*=(NumVector& a, T b)
   {
     for (int i = 0; i < Size; ++i)
-      m_values[i] *= b;
-    return (*this);
+      a.m_values[i] *= b;
+    return a;
   }
 
-  //! Divides each component by \a b
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator/=(T b)
+  //! Divides each component of \a a by \a b
+  friend constexpr ARCCORE_HOST_DEVICE NumVector& operator/=(NumVector& a, T b)
   {
     for (int i = 0; i < Size; ++i)
-      m_values[i] /= b;
-    return (*this);
+      a.m_values[i] /= b;
+    return a;
   }
 
   //! Creates a triplet that equals this triplet added to \a b
-  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator+(const ThatClass& a, const ThatClass& b)
+  friend constexpr ARCCORE_HOST_DEVICE NumVector operator+(const NumVector& a, const NumVector& b)
   {
-    ThatClass v;
+    NumVector v;
     for (int i = 0; i < Size; ++i)
       v.m_values[i] = a.m_values[i] + b.m_values[i];
     return v;
   }
 
   //! Creates a triplet that equals \a b subtracted from this triplet
-  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator-(const ThatClass& a, const ThatClass& b)
+  friend constexpr ARCCORE_HOST_DEVICE NumVector operator-(const NumVector& a, const NumVector& b)
   {
-    ThatClass v;
+    NumVector v;
     for (int i = 0; i < Size; ++i)
       v.m_values[i] = a.m_values[i] - b.m_values[i];
     return v;
   }
 
   //! Creates a triplet opposite to the current triplet
-  constexpr ARCCORE_HOST_DEVICE ThatClass operator-() const
+  constexpr ARCCORE_HOST_DEVICE NumVector operator-() const
   {
-    ThatClass v;
+    NumVector v;
     for (int i = 0; i < Size; ++i)
       v.m_values[i] = -m_values[i];
     return v;
   }
 
   //! Multiplication by a scalar.
-  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(T a, const ThatClass& vec)
+  friend constexpr ARCCORE_HOST_DEVICE NumVector operator*(T a, const NumVector& vec)
   {
-    ThatClass v;
+    NumVector v;
     for (int i = 0; i < Size; ++i)
       v.m_values[i] = a * vec.m_values[i];
     return v;
   }
 
   //! Multiplication by a scalar.
-  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const ThatClass& vec, T b)
+  friend constexpr ARCCORE_HOST_DEVICE NumVector operator*(const NumVector& vec, T b)
   {
-    ThatClass v;
+    NumVector v;
     for (int i = 0; i < Size; ++i)
       v.m_values[i] = vec.m_values[i] * b;
     return v;
   }
 
   //! Division by a scalar.
-  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator/(const ThatClass& vec, T b)
+  friend constexpr ARCCORE_HOST_DEVICE NumVector operator/(const NumVector& vec, T b)
   {
-    ThatClass v;
+    NumVector v;
     for (int i = 0; i < Size; ++i)
       v.m_values[i] = vec.m_values[i] / b;
     return v;
@@ -302,7 +291,7 @@ class NumVector
    * \retval true if this.x==b.x and this.y==b.y and this.z==b.z.
    * \retval false otherwise.
    */
-  friend constexpr ARCCORE_HOST_DEVICE bool operator==(const ThatClass& a, const ThatClass& b)
+  friend constexpr ARCCORE_HOST_DEVICE bool operator==(const NumVector& a, const NumVector& b)
   {
     for (int i = 0; i < Size; ++i)
       if (!_eq(a.m_values[i], b.m_values[i]))
@@ -324,7 +313,7 @@ class NumVector
    * \brief Compares two vectors
    * For the notion of equality, see operator==()
    */
-  friend constexpr ARCCORE_HOST_DEVICE bool operator!=(const ThatClass& a, const ThatClass& b)
+  friend constexpr ARCCORE_HOST_DEVICE bool operator!=(const NumVector& a, const NumVector& b)
   {
     return !(a == b);
   }
@@ -344,41 +333,41 @@ class NumVector
     ARCCORE_CHECK_AT(i, Size);
     return m_values[i];
   }
-  constexpr ARCCORE_HOST_DEVICE T operator[](Int32 i) const
+  constexpr ARCCORE_HOST_DEVICE DataType operator[](Int32 i) const
   {
     ARCCORE_CHECK_AT(i, Size);
     return m_values[i];
   }
 
   //! Value of the first component
-  T& vx() requires(Size >= 1)
+  constexpr ARCCORE_HOST_DEVICE DataType& vx() requires(Size >= 1)
   {
     return m_values[0];
   }
   //! Value of the first component
-  T vx() const requires(Size >= 1)
+  constexpr ARCCORE_HOST_DEVICE DataType vx() const requires(Size >= 1)
   {
     return m_values[0];
   }
 
   //! Value of the second component
-  T& vy() requires(Size >= 2)
+  constexpr ARCCORE_HOST_DEVICE DataType& vy() requires(Size >= 2)
   {
     return m_values[1];
   }
   //! Value of the second component
-  T vy() const requires(Size >= 2)
+  constexpr ARCCORE_HOST_DEVICE DataType vy() const requires(Size >= 2)
   {
     return m_values[1];
   }
 
   //! Value of the third component
-  T& vz() requires(Size >= 3)
+  constexpr ARCCORE_HOST_DEVICE DataType& vz() requires(Size >= 3)
   {
     return m_values[2];
   }
   //! Value of the third component
-  T vz() const requires(Size >= 3)
+  constexpr ARCCORE_HOST_DEVICE DataType vz() const requires(Size >= 3)
   {
     return m_values[2];
   }
@@ -391,7 +380,8 @@ class NumVector
  private:
 
   /*!
-   * \brief Compares the values of \a a and \a b using the TypeEqualT comparator
+   * \brief Compares the values of \a a and \a b using the TypeEqualT comparator.
+   *
    * \retval true if \a a and \a b are equal,
    * \retval false otherwise.
    */
@@ -400,18 +390,59 @@ class NumVector
   {
     return math::isEqual(a, b);
   }
-
-  //! Returns the square root of \a a
-  ARCCORE_HOST_DEVICE static T _sqrt(T a)
-  {
-    return math::sqrt(a);
-  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::math
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Compares the vector with the vector zero.
+ *
+ * The matrix is nearly zero if and only if each of its components
+ * is less than a given epsilon. The epsilon value used is that
+ * of FloatInfo<DataType>::nearlyEpsilon():
+ * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon,|A.z|<\epsilon \f]
+ */
+template <typename DataType, int Size>
+constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const NumVector<DataType, Size>& v)
+{
+  bool is_nearly_zero = true;
+  for (int i = 0; i < Size; ++i)
+    is_nearly_zero = is_nearly_zero && math::isNearlyZero(v[i]);
+  return is_nearly_zero;
+}
+
+//! Returns the square of the L2 norm of the triplet \f$x^2+y^2+z^2\f$
+template <typename DataType, int Size>
+constexpr ARCCORE_HOST_DEVICE Real squareNormL2(const NumVector<DataType, Size>& v)
+{
+  DataType norm = {};
+  for (int i = 0; i < Size; ++i)
+    norm += v[i] * v[i];
+  return norm;
+}
+
+//! Returns the L2 norm of the triplet \f$\sqrt{x^2+y^2+z^2}\f$
+template <typename DataType, int Size>
+ARCCORE_HOST_DEVICE Real normL2(const NumVector<DataType, Size>& v)
+{
+  return Arcane::math::sqrt(squareNormL2(v));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::math
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

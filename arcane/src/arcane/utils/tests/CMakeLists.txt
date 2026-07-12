@@ -3,6 +3,7 @@
   TestDependencyInjection.cc
   TestEvent.cc
   TestRealN.cc
+  TestNumMatrix.cc
   TestNumVector.cc
   TestValueConvert.cc
   TestCollections.cc
