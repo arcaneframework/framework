@@ -370,6 +370,9 @@ struct FalseType
 #define ARCCORE_DEPRECATED_2018 ARCCORE_DEPRECATED
 #define ARCCORE_DEPRECATED_2019(reason) [[deprecated(reason)]]
 #define ARCCORE_DEPRECATED_2020(reason) [[deprecated(reason)]]
+#ifndef ARCCORE_DEPRECATED_2021
+#define ARCCORE_DEPRECATED_2021(reason) [[deprecated(reason)]]
+#endif
 #define ARCCORE_DEPRECATED_REASON(reason) [[deprecated(reason)]]
 
 // Define this macro if you wish to suppress obsolete

@@ -515,10 +515,6 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 #define ARCANE_DEPRECATED_2018 ARCANE_DEPRECATED
 #define ARCANE_DEPRECATED_2018_R(reason) [[deprecated(reason)]]
 
-#ifndef ARCCORE_DEPRECATED_2021
-#define ARCCORE_DEPRECATED_2021(reason) [[deprecated(reason)]]
-#endif
-
 #define ARCANE_DEPRECATED_REASON(reason) [[deprecated(reason)]]
 
 #ifdef ARCANE_NO_DEPRECATED_LONG_TERM

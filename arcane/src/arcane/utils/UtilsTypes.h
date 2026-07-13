@@ -49,26 +49,16 @@ template <typename DataType> class SharedMultiArray2;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class Real2;
-class Real3;
-class Real2x2;
-class Real3x3;
 template <typename T> class Vector2;
 template <typename T> class Vector3;
 using Int64x3 = Vector3<Int64>;
 using Int32x3 = Vector3<Int32>;
 using Int64x2 = Vector2<Int64>;
 using Int32x2 = Vector2<Int32>;
-template <typename T, int Size> class NumVector;
-template <typename T, int RowSize, int ColumnSize = RowSize> class NumMatrix;
 template <typename DataType_, int RowSize, int ColumnSize>
 class NumMatrixDataViewGetter;
 template <typename DataType_, int RowSize, int ColumnSize>
 class NumMatrixDataViewGetterSetter;
-using RealN2 = NumVector<Real, 2>;
-using RealN3 = NumVector<Real, 3>;
-using RealN2x2 = NumMatrix<Real, 2>;
-using RealN3x3 = NumMatrix<Real, 3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
