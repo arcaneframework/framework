@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayViewCommon.h                                           (C) 2000-2025 */
+/* ArrayViewCommon.h                                           (C) 2000-2026 */
 /*                                                                           */
 /* Common declarations for the ArrayView, ConstArrayView, and Span classes.  */
 /*---------------------------------------------------------------------------*/
@@ -16,24 +16,41 @@
 
 #include "arccore/base/ArrayIterator.h"
 
-#include <iostream>
+// This header file is only required when we want to print values of the view.
+// We can remove it but in this case all user code has to explicitly include
+// it so it may break source compatibility. So at the moment (July 2026)
+// we include it.
+#include "arccore/base/ArrayViewDumper.h"
 
+#include <iosfwd>
 // 'assert' is necessary for accelerator code
 #include <assert.h>
 
+#ifndef ARCCORE_COMPILING_FRAMEWORK
+// This header is not needed and will be removed in July 2027
+#include <iostream>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template <typename ViewType>
+class ArrayViewDumper;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Sub-view corresponding to the interval `index` over `nb_interval`
-template <typename ViewType> ARCCORE_HOST_DEVICE auto subViewInterval(ViewType view,
-                                                                      typename ViewType::size_type index,
-                                                                      typename ViewType::size_type nb_interval) -> ViewType
+template <typename ViewType> ARCCORE_HOST_DEVICE auto
+subViewInterval(ViewType view,
+                typename ViewType::size_type index,
+                typename ViewType::size_type nb_interval) -> ViewType
 {
   using size_type = typename ViewType::size_type;
   if (nb_interval <= 0)
@@ -51,7 +68,6 @@ template <typename ViewType> ARCCORE_HOST_DEVICE auto subViewInterval(ViewType v
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Displays the values of the view.
  *
@@ -62,28 +78,7 @@ template <typename ViewType> ARCCORE_HOST_DEVICE auto subViewInterval(ViewType v
 template <typename ViewType> inline void
 dumpArray(std::ostream& o, ViewType val, int max_print)
 {
-  using size_type = typename ViewType::size_type;
-  size_type n = val.size();
-  if (max_print > 0 && n > max_print) {
-    // Only displays the first (max_print/2) and the last (max_print/2)
-    // otherwise if the array is very large it can generate enormous
-    // output listings.
-    size_type z = (max_print / 2);
-    size_type z2 = n - z;
-    o << "[0]=\"" << val[0] << '"';
-    for (size_type i = 1; i < z; ++i)
-      o << " [" << i << "]=\"" << val[i] << '"';
-    o << " ... ... (skipping indexes " << z << " to " << z2 << " ) ... ... ";
-    for (size_type i = (z2 + 1); i < n; ++i)
-      o << " [" << i << "]=\"" << val[i] << '"';
-  }
-  else {
-    for (size_type i = 0; i < n; ++i) {
-      if (i != 0)
-        o << ' ';
-      o << "[" << i << "]=\"" << val[i] << '"';
-    }
-  }
+  ArrayViewDumper<ViewType>::dumpArray(o, val, max_print);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -151,7 +146,7 @@ arccoreCheckIsPositive(Int64 size)
 #ifdef ARCCORE_DEVICE_CODE
     assert("'size' is negative");
 #else
-    impl::arccoreThrowNegativeSize(size);
+    Arcane::Impl::arccoreThrowNegativeSize(size);
 #endif
   }
 }
@@ -164,7 +159,7 @@ arccoreCheckIsValidInteger(Int64 size)
 #ifdef ARCCORE_DEVICE_CODE
     assert("'size' is bigger than ARCCORE_INTEGER_MAX");
 #else
-    impl::arccoreThrowTooBigInteger(size);
+    Arcane::Impl::arccoreThrowTooBigInteger(size);
 #endif
   }
 }
@@ -177,7 +172,7 @@ arccoreCheckIsValidInt64(size_t size)
 #ifdef ARCCORE_DEVICE_CODE
     assert("'size' is bigger than ARCCORE_INT64_MAX");
 #else
-    impl::arccoreThrowTooBigInt64(size);
+    Arcane::Impl::arccoreThrowTooBigInt64(size);
 #endif
   }
 }
@@ -202,7 +197,7 @@ namespace Arcane
 inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(unsigned long long size)
 {
-  impl::arccoreCheckIsValidInteger(size);
+  Arcane::Impl::arccoreCheckIsValidInteger(size);
   return static_cast<Integer>(size);
 }
 
@@ -215,8 +210,8 @@ arccoreCheckArraySize(unsigned long long size)
 inline constexpr Integer
 arccoreCheckArraySize(long long size)
 {
-  impl::arccoreCheckIsValidInteger(size);
-  impl::arccoreCheckIsPositive(size);
+  Arcane::Impl::arccoreCheckIsValidInteger(size);
+  Arcane::Impl::arccoreCheckIsPositive(size);
   return static_cast<Integer>(size);
 }
 
@@ -229,7 +224,7 @@ arccoreCheckArraySize(long long size)
 inline constexpr ARCCORE_BASE_EXPORT Integer
 arccoreCheckArraySize(unsigned long size)
 {
-  impl::arccoreCheckIsValidInteger(size);
+  Arcane::Impl::arccoreCheckIsValidInteger(size);
   return static_cast<Integer>(size);
 }
 
@@ -243,8 +238,8 @@ arccoreCheckArraySize(unsigned long size)
 inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(long size)
 {
-  impl::arccoreCheckIsValidInteger(size);
-  impl::arccoreCheckIsPositive(size);
+  Arcane::Impl::arccoreCheckIsValidInteger(size);
+  Arcane::Impl::arccoreCheckIsPositive(size);
   return static_cast<Integer>(size);
 }
 
@@ -257,7 +252,7 @@ arccoreCheckArraySize(long size)
 inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(unsigned int size)
 {
-  impl::arccoreCheckIsValidInteger(size);
+  Arcane::Impl::arccoreCheckIsValidInteger(size);
   return static_cast<Integer>(size);
 }
 
@@ -270,8 +265,8 @@ arccoreCheckArraySize(unsigned int size)
 inline constexpr ARCCORE_HOST_DEVICE Integer
 arccoreCheckArraySize(int size)
 {
-  impl::arccoreCheckIsValidInteger(size);
-  impl::arccoreCheckIsPositive(size);
+  Arcane::Impl::arccoreCheckIsValidInteger(size);
+  Arcane::Impl::arccoreCheckIsPositive(size);
   return static_cast<Integer>(size);
 }
 
@@ -285,7 +280,7 @@ arccoreCheckArraySize(int size)
 inline constexpr ARCCORE_HOST_DEVICE Int64
 arccoreCheckLargeArraySize(size_t size)
 {
-  impl::arccoreCheckIsValidInt64(size);
+  Arcane::Impl::arccoreCheckIsValidInt64(size);
   return static_cast<Int64>(size);
 }
 
@@ -328,16 +323,16 @@ class ArraySizeChecker<Int64>
 
 namespace Arccore::impl
 {
-using Arcane::impl::arccoreCheckIsPositive;
-using Arcane::impl::arccoreCheckIsValidInt64;
-using Arcane::impl::arccoreCheckIsValidInteger;
-using Arcane::impl::arccoreThrowNegativeSize;
-using Arcane::impl::arccoreThrowTooBigInt64;
-using Arcane::impl::arccoreThrowTooBigInteger;
-using Arcane::impl::areEqual;
-using Arcane::impl::areEqual2D;
-using Arcane::impl::dumpArray;
-using Arcane::impl::subViewInterval;
+using Arcane::Impl::arccoreCheckIsPositive;
+using Arcane::Impl::arccoreCheckIsValidInt64;
+using Arcane::Impl::arccoreCheckIsValidInteger;
+using Arcane::Impl::arccoreThrowNegativeSize;
+using Arcane::Impl::arccoreThrowTooBigInt64;
+using Arcane::Impl::arccoreThrowTooBigInteger;
+using Arcane::Impl::areEqual;
+using Arcane::Impl::areEqual2D;
+using Arcane::Impl::dumpArray;
+using Arcane::Impl::subViewInterval;
 } // namespace Arccore::impl
 
 namespace Arccore

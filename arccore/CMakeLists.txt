@@ -157,6 +157,9 @@ install(TARGETS arccore_build_compile_flags EXPORT ${ARCCORE_EXPORT_TARGET})
 
 add_library(Arccore::arccore_build_compile_flags ALIAS arccore_build_compile_flags)
 
+# Macro pour indiquer qu'on est en train de compiler le projet
+target_compile_definitions(arccore_build_compile_flags INTERFACE ARCCORE_COMPILING_FRAMEWORK)
+
 # ----------------------------------------------------------------------------
 # N'exporte pas par défaut les symboles
 if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)

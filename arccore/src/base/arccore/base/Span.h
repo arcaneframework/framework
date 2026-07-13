@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Span.h                                                      (C) 2000-2025 */
+/* Span.h                                                      (C) 2000-2026 */
 /*                                                                           */
 /* Views on C arrays.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -67,7 +67,6 @@ class SpanTypeFromSize<T, Int64>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Class to store the size of a SpanImpl.
  *
@@ -170,7 +169,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \ingroup Collection
  * \brief View of an array of elements of type \a T.
@@ -451,19 +449,19 @@ class SpanImpl
   ARCCORE_DEPRECATED_REASON("Y2023: use subSpanInterval() instead")
   constexpr SubSpanType subViewInterval(SizeType index, SizeType nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr SubSpanType subSpanInterval(SizeType index, SizeType nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr SubSpanType subPartInterval(SizeType index, SizeType nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   /*!
@@ -542,7 +540,7 @@ class SpanImpl
   template <typename X, SizeType Extent2, typename = std::enable_if_t<std::is_same_v<X, value_type>>> friend bool
   operator==(const SpanImpl<T, SizeType, Extent>& rhs, const SpanImpl<X, SizeType, Extent2>& lhs)
   {
-    return impl::areEqual(SpanImpl<T, SizeType>(rhs), SpanImpl<T, SizeType>(lhs));
+    return Arcane::Impl::areEqual(SpanImpl<T, SizeType>(rhs), SpanImpl<T, SizeType>(lhs));
   }
 
   //! Inequality operator (valid if T is const but not X)
@@ -556,7 +554,7 @@ class SpanImpl
   template <SizeType Extent2> friend bool
   operator==(const SpanImpl<T, SizeType, Extent>& rhs, const SpanImpl<T, SizeType, Extent2>& lhs)
   {
-    return impl::areEqual(SpanImpl<T, SizeType>(rhs), SpanImpl<T, SizeType>(lhs));
+    return Arcane::Impl::areEqual(SpanImpl<T, SizeType>(rhs), SpanImpl<T, SizeType>(lhs));
   }
 
   //! Inequality operator
@@ -568,7 +566,7 @@ class SpanImpl
 
   friend inline std::ostream& operator<<(std::ostream& o, const ThatClass& val)
   {
-    impl::dumpArray(o, Span<const T, DynExtent>(val.data(), val.size()), 500);
+    Arcane::Impl::dumpArray(o, Span<const T, DynExtent>(val.data(), val.size()), 500);
     return o;
   }
 
@@ -753,13 +751,13 @@ class Span
   //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ARCCORE_HOST_DEVICE Span<T, DynExtent> subSpanInterval(Int64 index, Int64 nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ARCCORE_HOST_DEVICE Span<T, DynExtent> subPartInterval(Int64 index, Int64 nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   /*!
@@ -779,7 +777,7 @@ class Span
   ARCCORE_DEPRECATED_REASON("Y2023: use subSpanInterval() instead")
   constexpr ARCCORE_HOST_DEVICE Span<T> subViewInterval(Int64 index, Int64 nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 };
 
@@ -916,7 +914,7 @@ class SmallSpan
   //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T, DynExtent> subSpanInterval(Int32 index, Int32 nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sub-view corresponding to the interval \a index over \a nb_interval
@@ -942,7 +940,7 @@ class SmallSpan
   ARCCORE_DEPRECATED_REASON("Y2023: use subPartInterval() instead")
   constexpr ARCCORE_HOST_DEVICE SmallSpan<T> subViewInterval(Int32 index, Int32 nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 };
 
@@ -960,7 +958,7 @@ class SmallSpan
 template <typename T, typename SizeType> inline void
 dumpArray(std::ostream& o, SpanImpl<const T, SizeType> val, int max_print)
 {
-  impl::dumpArray(o, val, max_print);
+  Arcane::Impl::dumpArray(o, val, max_print);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1084,9 +1082,8 @@ asWritableBytes(const ArrayView<DataType>& s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace impl
+namespace Impl
 {
-
   template <typename ByteType, typename DataType, Int64 Extent> inline Span<DataType>
   asSpanInternal(Span<ByteType, Extent> bytes)
   {
@@ -1112,8 +1109,7 @@ namespace impl
     auto* ptr = reinterpret_cast<DataType*>(bytes.data());
     return { ptr, size / data_type_size };
   }
-
-} // namespace impl
+} // namespace Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1125,7 +1121,7 @@ namespace impl
 template <typename DataType, Int64 Extent> inline Span<DataType>
 asSpan(Span<std::byte, Extent> bytes)
 {
-  return impl::asSpanInternal<std::byte, DataType, Extent>(bytes);
+  return Arcane::Impl::asSpanInternal<std::byte, DataType, Extent>(bytes);
 }
 
 /*!
@@ -1135,7 +1131,7 @@ asSpan(Span<std::byte, Extent> bytes)
 template <typename DataType, Int64 Extent> inline Span<const DataType>
 asSpan(Span<const std::byte, Extent> bytes)
 {
-  return impl::asSpanInternal<const std::byte, const DataType, Extent>(bytes);
+  return Arcane::Impl::asSpanInternal<const std::byte, const DataType, Extent>(bytes);
 }
 
 /*!
@@ -1145,7 +1141,7 @@ asSpan(Span<const std::byte, Extent> bytes)
 template <typename DataType, Int32 Extent> inline SmallSpan<DataType>
 asSmallSpan(SmallSpan<std::byte, Extent> bytes)
 {
-  return impl::asSmallSpanInternal<std::byte, DataType, Extent>(bytes);
+  return Arcane::Impl::asSmallSpanInternal<std::byte, DataType, Extent>(bytes);
 }
 
 /*!
@@ -1155,7 +1151,7 @@ asSmallSpan(SmallSpan<std::byte, Extent> bytes)
 template <typename DataType, Int32 Extent> inline SmallSpan<const DataType>
 asSmallSpan(SmallSpan<const std::byte, Extent> bytes)
 {
-  return impl::asSmallSpanInternal<const std::byte, const DataType, Extent>(bytes);
+  return Arcane::Impl::asSmallSpanInternal<const std::byte, const DataType, Extent>(bytes);
 }
 
 /*---------------------------------------------------------------------------*/
