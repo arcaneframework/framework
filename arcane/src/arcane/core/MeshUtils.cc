@@ -1941,7 +1941,7 @@ generateHashUniqueId(SmallSpan<const Int64> nodes_unique_id)
     Int64 next_hash = Hasher::hashfunc(nodes_unique_id[i]);
     hash ^= next_hash + 0x9e3779b9 + (hash << 6) + (hash >> 2);
   }
-  Int64 new_uid = abs(hash);
+  Int64 new_uid = math::abs(hash);
   ARCANE_ASSERT(new_uid >= 0, ("UniqueId is not >= 0"));
   return new_uid;
 }
