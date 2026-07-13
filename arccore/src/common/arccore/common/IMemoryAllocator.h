@@ -16,6 +16,8 @@
 
 #include "arccore/common/MemoryAllocationArgs.h"
 
+#include <cstddef>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -114,7 +116,7 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
    *
    * If there is no guarantee, it returns 0.
    */
-  virtual size_t guaranteedAlignment(MemoryAllocationArgs args) const = 0;
+  virtual std::size_t guaranteedAlignment(MemoryAllocationArgs args) const = 0;
 
   /*!
    * \brief Value of the alignment guaranteed by the allocator.
@@ -122,7 +124,7 @@ class ARCCORE_COMMON_EXPORT IMemoryAllocator
    * \sa guaranteedAlignment()
    */
   ARCCORE_DEPRECATED_REASON("Y2024: Use guaranteedAlignment() instead")
-  virtual size_t guarantedAlignment(MemoryAllocationArgs args) const;
+  virtual std::size_t guarantedAlignment(MemoryAllocationArgs args) const;
 
   /*!
    * \brief Notifies of a change in instance-specific arguments.
