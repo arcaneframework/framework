@@ -32,12 +32,14 @@ class CommandLineArguments;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Class for directly executing code without
  * going through the time loop.
  *
  * Only one instance of this class must exist at any given time.
+ *
+ * This class is internal to %Arcane. If you want to have a standalone
+ * execution, use ArcaneLauncher instead.
  *
  * Instances of this class use the value of
  * ArcaneMain::defaultApplicationInfo() to initialize themselves and notably
@@ -66,6 +68,8 @@ class ARCANE_IMPL_EXPORT ArcaneSimpleExecutor
 
   int initialize();
   ISubDomain* createSubDomain(const String& case_file_name);
+  ISubDomain* createSubDomain(const String& case_file_name,
+                              Span<const std::byte> file_content);
   int runCode(IFunctor* f);
 
  private:

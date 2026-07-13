@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneLauncher.cc                                           (C) 2000-2025 */
+/* ArcaneLauncher.cc                                           (C) 2000-2026 */
 /*                                                                           */
 /* Class managing the execution launch.                                      */
 /*---------------------------------------------------------------------------*/
@@ -423,11 +423,11 @@ createStandaloneAcceleratorMng()
 /*---------------------------------------------------------------------------*/
 
 StandaloneSubDomain ArcaneLauncher::
-createStandaloneSubDomain(const String& case_file_name)
+createStandaloneSubDomain(const String& case_file_name, Span<const std::byte> file_content)
 {
   _initStandalone();
   StandaloneSubDomain s;
-  s._initUniqueInstance(case_file_name);
+  s._initUniqueInstance(case_file_name, file_content);
   return s;
 }
 
