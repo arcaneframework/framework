@@ -48,6 +48,7 @@
   Float16.h
   Float128.h
   FloatConversion.h
+  FloatInfo.h
   FixedArray.h
   ForLoopRunInfo.h
   ForLoopRanges.h
@@ -66,6 +67,7 @@
   IObservable.h
   IRangeFunctor.h
   RangeFunctor.h
+  MathBase.h
   MDDim.h
   MDIndex.h
   MDSpan.h
@@ -108,6 +110,7 @@
   TraceInfo.h
   TimeoutException.h
   TimeoutException.cc
+  TypeEqual.h
   ValueFiller.h
 
   IFunctor.h
