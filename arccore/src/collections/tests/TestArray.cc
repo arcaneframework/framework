@@ -14,6 +14,8 @@
 
 #include "TestArrayCommon.h"
 
+#include <iostream>
+
 using namespace Arccore;
 using namespace TestArccore;
 

@@ -28,8 +28,8 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ExternalRef::Handle::
-~Handle()
+ExternalRef::ExternalHandle::
+~ExternalHandle()
 {
   if (!handle)
     return;

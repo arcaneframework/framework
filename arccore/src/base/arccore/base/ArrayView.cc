@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayView.cc                                                (C) 2000-2025 */
+/* ArrayView.cc                                                (C) 2000-2026 */
 /*                                                                           */
 /* General declarations for Arccore.                                         */
 /*---------------------------------------------------------------------------*/
@@ -68,20 +68,20 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 //! Throws an 'ArgumentException'
-ARCCORE_BASE_EXPORT void impl::
+ARCCORE_BASE_EXPORT void Impl::
 arccoreThrowTooBigInteger [[noreturn]] (std::size_t size)
 {
   ARCCORE_THROW(ArgumentException, "value '{0}' too big for Array size", size);
 }
 
 //! Throws an 'ArgumentException'
-ARCCORE_BASE_EXPORT void impl::
+ARCCORE_BASE_EXPORT void Impl::
 arccoreThrowTooBigInt64 [[noreturn]] (std::size_t size)
 {
   ARCCORE_THROW(ArgumentException, "value '{0}' too big to fit in Int64", size);
 }
 
-ARCCORE_BASE_EXPORT void impl::
+ARCCORE_BASE_EXPORT void Impl::
 arccoreThrowNegativeSize [[noreturn]] (Int64 size)
 {
   ARCCORE_THROW(ArgumentException, "invalid negative value '{0}' for Array size", size);

@@ -6,6 +6,7 @@
   ArrayIterator.h
   ArrayRange.h
   ArrayViewCommon.h
+  ArrayViewDumper.h
   ArrayView.h
   ArrayView.cc
   Array2View.h

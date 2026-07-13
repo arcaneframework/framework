@@ -18,6 +18,7 @@
 #include "arccore/base/PlatformUtils.h"
 
 #include <charconv>
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,20 +61,6 @@ StringView _removeLeadingSpaces(StringView s, Int64 pos)
       break;
   }
   return s.subView(pos, nb_byte);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-StringViewInputStream::
-StringViewInputStream(StringView v)
-: m_view(v)
-, m_stream(this)
-{
-  auto b = v.bytes();
-  char* begin_ptr = const_cast<char*>(reinterpret_cast<const char*>(b.data()));
-  char* end_ptr = begin_ptr + b.size();
-  setg(begin_ptr, begin_ptr, end_ptr);
 }
 
 /*---------------------------------------------------------------------------*/

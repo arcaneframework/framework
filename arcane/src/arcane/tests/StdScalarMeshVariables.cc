@@ -5,13 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdScalarMeshVariables.cc                                   (C) 2000-2024 */
+/* StdScalarMeshVariables.cc                                   (C) 2000-2026 */
 /*                                                                           */
 /* Definition of scalar mesh variables for tests.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/ItemGroup.h"

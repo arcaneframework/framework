@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONUnitTest.cc                                             (C) 2000-2025 */
+/* JSONUnitTest.cc                                             (C) 2000-2026 */
 /*                                                                           */
 /* JSON reader/writer test.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -27,6 +27,8 @@
 #include "arccore/common/internal/json/rapidjson/writer.h"
 #include "arccore/common/internal/json/rapidjson/document.h"
 #include "arccore/common/internal/json/rapidjson/stringbuffer.h"
+
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

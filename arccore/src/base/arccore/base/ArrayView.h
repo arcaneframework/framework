@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayView.h                                                 (C) 2000-2025 */
+/* ArrayView.h                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Types defining C array views.                                             */
 /*---------------------------------------------------------------------------*/
@@ -369,13 +369,13 @@ class ArrayView
   //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ArrayView<T> subViewInterval(Integer index, Integer nb_interval)
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ThatClass subPartInterval(Integer index, Integer nb_interval)
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   /*!
@@ -463,7 +463,7 @@ class ArrayView
 
   friend inline bool operator==(const ArrayView<T>& rhs, const ArrayView<T>& lhs)
   {
-    return impl::areEqual(rhs, lhs);
+    return Arcane::Impl::areEqual(rhs, lhs);
   }
 
   friend inline bool operator!=(const ArrayView<T>& rhs, const ArrayView<T>& lhs)
@@ -473,7 +473,7 @@ class ArrayView
 
   friend std::ostream& operator<<(std::ostream& o, const ArrayView<T>& val)
   {
-    impl::dumpArray(o, val, 500);
+    Arcane::Impl::dumpArray(o, val, 500);
     return o;
   }
 
@@ -686,13 +686,13 @@ class ConstArrayView
   //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ConstArrayView<T> subViewInterval(Integer index, Integer nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Sub-view corresponding to the interval \a index over \a nb_interval
   constexpr ThatClass subPartInterval(Integer index, Integer nb_interval) const
   {
-    return impl::subViewInterval<ThatClass>(*this, index, nb_interval);
+    return Arcane::Impl::subViewInterval<ThatClass>(*this, index, nb_interval);
   }
 
   //! Address of the index-th element
@@ -795,7 +795,7 @@ class ConstArrayView
 
   friend inline bool operator==(const ConstArrayView<T>& rhs, const ConstArrayView<T>& lhs)
   {
-    return Arcane::impl::areEqual(rhs, lhs);
+    return Arcane::Impl::areEqual(rhs, lhs);
   }
 
   friend inline bool operator!=(const ConstArrayView<T>& rhs, const ConstArrayView<T>& lhs)
@@ -805,7 +805,7 @@ class ConstArrayView
 
   friend std::ostream& operator<<(std::ostream& o, const ConstArrayView<T>& val)
   {
-    Arcane::impl::dumpArray(o, val, 500);
+    Arcane::Impl::dumpArray(o, val, 500);
     return o;
   }
 
@@ -824,7 +824,6 @@ class ConstArrayView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Displays the values of array \a val to the stream \a o.
  *
@@ -836,7 +835,7 @@ class ConstArrayView
 template <typename T> inline void
 dumpArray(std::ostream& o, ConstArrayView<T> val, int max_print)
 {
-  impl::dumpArray(o, val, max_print);
+  Arcane::Impl::dumpArray(o, val, max_print);
 }
 
 /*---------------------------------------------------------------------------*/

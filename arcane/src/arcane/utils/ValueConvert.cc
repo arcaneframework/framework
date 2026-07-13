@@ -45,7 +45,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::StringViewInputStream::
+Impl::StringViewInputStream::
 StringViewInputStream(StringView v)
 : m_view(v)
 , m_stream(this)
@@ -182,7 +182,7 @@ builtInGetValue(Real2& v, StringView s)
     p = Convert::Impl::StringViewToDoubleConverter::_getDoubleValue(v.y, s);
     return (p == (-1) || (p != s.size()));
   }
-  return impl::builtInGetValueGeneric(v, s);
+  return Impl::builtInGetValueGeneric(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
@@ -209,19 +209,19 @@ builtInGetValue(Real3& v, StringView s)
     p = Convert::Impl::StringViewToDoubleConverter::_getDoubleValue(v.z, s);
     return (p == (-1) || (p != s.size()));
   }
-  return impl::builtInGetValueGeneric(v, s);
+  return Impl::builtInGetValueGeneric(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real2x2& v, StringView s)
 {
-  return impl::builtInGetValueGeneric(v, s);
+  return Impl::builtInGetValueGeneric(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
 builtInGetValue(Real3x3& v, StringView s)
 {
-  return impl::builtInGetValueGeneric(v, s);
+  return Impl::builtInGetValueGeneric(v, s);
 }
 
 template <> ARCANE_UTILS_EXPORT bool
@@ -311,7 +311,7 @@ namespace
   {
     std::string s2;
     String read_val = String();
-    impl::StringViewInputStream svis(s);
+    Impl::StringViewInputStream svis(s);
     std::istream& sbuf = svis.stream();
     while (!sbuf.eof()) {
       sbuf >> s2;

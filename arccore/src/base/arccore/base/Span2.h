@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Span2.h                                                     (C) 2000-2025 */
+/* Span2.h                                                     (C) 2000-2026 */
 /*                                                                           */
 /* View of a 2D array whose dimensions use Int64.                            */
 /*---------------------------------------------------------------------------*/
@@ -93,11 +93,7 @@ class Span2Impl
   , m_dim2_size(dim2_size)
   {}
   //! Creates an empty 2D view.
-  ARCCORE_HOST_DEVICE Span2Impl()
-  : m_ptr(nullptr)
-  , m_dim1_size(0)
-  , m_dim2_size(0)
-  {}
+  Span2Impl() = default;
   // Constructor from a ConstArrayView. This is only allowed
   // if T is const.
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, value_type>>>
@@ -204,32 +200,32 @@ class Span2Impl
   template <typename X, SizeType XExtent1, SizeType XExtent2, typename = std::enable_if_t<std::is_same_v<X, value_type>>>
   friend bool operator==(const ThatClass& lhs, const Span2Impl<X, SizeType, XExtent1, XExtent2>& rhs)
   {
-    return impl::areEqual2D(rhs, lhs);
+    return Arcane::Impl::areEqual2D(rhs, lhs);
   }
   //! Inequality operator (valid if T is const but not X)
   template <typename X, SizeType XExtent1, SizeType XExtent2, typename = std::enable_if_t<std::is_same_v<X, value_type>>>
   friend bool operator!=(const ThatClass& lhs, const Span2Impl<X, SizeType, XExtent1, XExtent2>& rhs)
   {
-    return !impl::areEqual2D(rhs, lhs);
+    return !Arcane::Impl::areEqual2D(rhs, lhs);
   }
   //! Equality operator
   template <SizeType XExtent1, SizeType XExtent2>
   friend bool operator==(const ThatClass& lhs, const Span2Impl<T, SizeType, XExtent1, XExtent2>& rhs)
   {
-    return impl::areEqual2D(rhs, lhs);
+    return Arcane::Impl::areEqual2D(rhs, lhs);
   }
   //! Inequality operator
   template <SizeType XExtent1, SizeType XExtent2>
   friend bool operator!=(const ThatClass& lhs, const Span2Impl<T, SizeType, XExtent1, XExtent2>& rhs)
   {
-    return !impl::areEqual2D(rhs, lhs);
+    return !Arcane::Impl::areEqual2D(rhs, lhs);
   }
 
  protected:
 
-  ElementType* m_ptr;
-  SizeType m_dim1_size;
-  SizeType m_dim2_size;
+  ElementType* m_ptr = nullptr;
+  SizeType m_dim1_size = 0;
+  SizeType m_dim2_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/

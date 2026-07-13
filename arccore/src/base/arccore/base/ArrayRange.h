@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayRange.h                                                (C) 2000-2025 */
+/* ArrayRange.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* Interval over Array, ArrayView, ConstArrayView, ...                       */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Interval over %Arccore array classes.
  *
@@ -34,30 +33,31 @@ namespace Arcane
 template <typename T>
 class ArrayRange
 {
+ protected:
+
+  using TraitsType_ = Arcane::Impl::ArrayIteratorTraits<T>;
+
  public:
 
-  typedef std::iterator_traits<T> _TraitsType;
+  using value_type = TraitsType_::value_type;
+  using difference_type = TraitsType_::difference_type;
+  using reference = TraitsType_::reference;
+  using pointer = TraitsType_::pointer;
 
- public:
-
-  typedef typename _TraitsType::value_type value_type;
-  typedef typename _TraitsType::difference_type difference_type;
-  typedef typename _TraitsType::reference reference;
-  typedef typename _TraitsType::pointer pointer;
-  typedef const value_type* const_pointer;
+  using const_pointer = const value_type*;
   //! Type of the iterator for an element of the array
-  typedef ArrayIterator<pointer> iterator;
+  using iterator = ArrayIterator<pointer>;
   //! Type of the constant iterator for an element of the array
-  typedef ArrayIterator<const_pointer> const_iterator;
+  using const_iterator = ArrayIterator<const_pointer>;
 
  public:
 
   //! Constructs an empty range.
-  ArrayRange() ARCCORE_NOEXCEPT : m_begin(nullptr)
-  , m_end(nullptr)
-  {}
+  ArrayRange() = default;
+
   //! Constructs a range going from \a abegin to \a aend.
-  ArrayRange(pointer abegin, pointer aend) ARCCORE_NOEXCEPT : m_begin(abegin)
+  ArrayRange(pointer abegin, pointer aend) noexcept
+  : m_begin(abegin)
   , m_end(aend)
   {}
 
@@ -81,8 +81,8 @@ class ArrayRange
 
  private:
 
-  T m_begin;
-  T m_end;
+  T m_begin = nullptr;
+  T m_end  = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

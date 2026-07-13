@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionsTesterModule.cc                                  (C) 2000-2025 */
+/* CaseOptionsTesterModule.cc                                  (C) 2000-2026 */
 /*                                                                           */
 /* Data set options test module.                                             */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/EntryPoint.h"
 #include "arcane/core/ISubDomain.h"

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCheckpointModule.cc                                   (C) 2000-2020 */
+/* ArcaneCheckpointModule.cc                                   (C) 2000-2026 */
 /*                                                                           */
 /* Module managing protections/restorations.                                 */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/EntryPoint.h"

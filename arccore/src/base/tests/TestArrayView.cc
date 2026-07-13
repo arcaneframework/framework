@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <type_traits>
+#include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -165,6 +166,13 @@ TEST(ArrayView, Iterator)
 
   Span<const Int32> values4(vector_values.data(), vector_values.size());
   _testIterator(values4);
+
+  // Make sure Array iterators are for type random_access_iterator
+  // Also, the function std::sort requires a random iterator so we can test
+  // it with our view.
+  static_assert(std::random_access_iterator<ArrayView<Int32>::iterator>);
+  static_assert(std::random_access_iterator<ArrayView<Int32>::const_iterator>);
+  std::sort(values1.begin(),values1.end());
 }
 
 /*---------------------------------------------------------------------------*/

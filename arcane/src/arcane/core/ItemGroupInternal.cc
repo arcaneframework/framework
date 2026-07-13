@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupInternal.cc                                        (C) 2000-2025 */
+/* ItemGroupInternal.cc                                        (C) 2000-2026 */
 /*                                                                           */
 /* Internal part of Arcane's ItemGroup.                                      */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArrayUtils.h"
 #include "arcane/utils/ArgumentException.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/ItemGroupObserver.h"
 #include "arcane/core/IItemFamily.h"

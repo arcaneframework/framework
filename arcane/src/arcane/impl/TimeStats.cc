@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeStats.cc                                                (C) 2000-2025 */
+/* TimeStats.cc                                                (C) 2000-2026 */
 /*                                                                           */
 /* Statistics on execution times.                                            */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/Exception.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/Timer.h"
 #include "arcane/core/IParallelMng.h"

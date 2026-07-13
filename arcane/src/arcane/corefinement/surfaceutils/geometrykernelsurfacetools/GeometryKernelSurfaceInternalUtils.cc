@@ -12,6 +12,8 @@
 #include "arcane/utils/NotImplementedException.h"
 #include <GeometryKernel/tools/surface/triangulation-topo-tools.h>
 
+#include <fstream>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

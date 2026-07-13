@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Convert.h                                                   (C) 2000-2025 */
+/* Convert.h                                                   (C) 2000-2026 */
 /*                                                                           */
 /* Functions to convert a character string into a given type.                */
 /*---------------------------------------------------------------------------*/
@@ -16,46 +16,11 @@
 
 #include "arccore/base/StringView.h"
 
+#ifndef ARCCORE_COMPILING_FRAMEWORK
+// This header is not needed and will be removed in July 2027
 #include <iostream>
+#endif
 #include <optional>
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Convert::Impl
-{
-
-/*!
- * \brief Encapsulates an std::istream for a StringView.
- *
- * Currently (C++20) std::istringstream uses an
- * input std::string, which requires an instance of this type
- * and thus a potential allocation. This class serves to avoid
- * this by directly using the memory pointed to by the instance
- * of StringView passed in the constructor. The latter must
- * remain valid throughout the use of this class.
- */
-class ARCCORE_BASE_EXPORT StringViewInputStream
-: private std::streambuf
-{
- public:
-
-  explicit StringViewInputStream(StringView v);
-
- public:
-
-  std::istream& stream() { return m_stream; }
-
- private:
-
-  StringView m_view;
-  std::istream m_stream;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane::Convert::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -176,12 +141,11 @@ toReal(unsigned long long r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Template class for converting a type.
  *
  * Currently, this is only available via a specialization
- * for the types 'Int32', 'Int64', and 'Real3'.
+ * for the types 'Int32', 'Int64', and 'Real'.
  */
 template <typename T>
 class Type;

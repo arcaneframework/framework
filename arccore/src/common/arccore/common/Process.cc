@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Process.cc                                                  (C) 2000-2025 */
+/* Process.cc                                                  (C) 2000-2026 */
 /*                                                                           */
 /* Process management.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,8 @@
 
 #include "arccore/base/NotImplementedException.h"
 #include "arccore/base/FixedArray.h"
+
+#include <iostream>
 
 /*
  * NOTE: for now this class is only implemented for Linux

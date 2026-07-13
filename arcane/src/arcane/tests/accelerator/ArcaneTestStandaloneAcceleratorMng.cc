@@ -24,6 +24,9 @@
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
+#include <iostream>
+#include <iomanip>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

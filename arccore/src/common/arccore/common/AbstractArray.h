@@ -27,7 +27,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Internal base class for arrays.
  *
@@ -72,6 +71,8 @@ class ARCCORE_COMMON_EXPORT AbstractArrayBase
   void setDebugName(const String& name);
   //! Debug name (null if no name specified)
   String debugName() const;
+
+  void printInfos(std::ostream& o);
 
  protected:
 
@@ -572,13 +573,6 @@ class AbstractArray
   {
     _setMPCast(m_md->_changeAllocator(options, _currentMemoryInfo(), typeSize(), _nullRunQueue()));
     _updateReferences();
-  }
-
- public:
-
-  void printInfos(std::ostream& o)
-  {
-    o << " Infos: size=" << m_md->size << " capacity=" << m_md->capacity << '\n';
   }
 
  protected:

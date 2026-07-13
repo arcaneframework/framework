@@ -883,7 +883,7 @@ planarSymmetric(Real3 u, Real3 n)
   Real3 u_tilde;
 #ifdef ARCANE_CHECK
   if (n.normL2() == 0) {
-    arcaneMathError(Convert::toDouble(n.normL2()), "planarSymetric");
+    arcaneMathError(static_cast<double>(n.normL2()), "planarSymetric");
   }
 #endif
   Real3 norm = n / n.normL2();
@@ -904,7 +904,7 @@ axisSymmetric(Real3 u, Real3 a)
   Real3 u_tilde;
 #ifdef ARCANE_CHECK
   if (a.normL2() == 0) {
-    arcaneMathError(Convert::toDouble(a.normL2()), "axisSymetric");
+    arcaneMathError(static_cast<double>(a.normL2()), "axisSymetric");
   }
 #endif
   Real3 norm = a / a.normL2();

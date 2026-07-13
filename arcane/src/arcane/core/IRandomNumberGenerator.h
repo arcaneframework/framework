@@ -5,20 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRandomNumberGenerator.h                                    (C) 2000-2022 */
+/* IRandomNumberGenerator.h                                    (C) 2000-2026 */
 /*                                                                           */
 /* Interface for random number generator.                                    */
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#ifndef ARCANE_IRANDOMNUMBERGENERATOR_H
-#define ARCANE_IRANDOMNUMBERGENERATOR_H
-
+#ifndef ARCANE_CORE_IRANDOMNUMBERGENERATOR_H
+#define ARCANE_CORE_IRANDOMNUMBERGENERATOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/UtilsTypes.h"
+
+#include <cstring>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -111,7 +110,7 @@ class ARCANE_CORE_EXPORT RNGSeedHelper
       return false;
     }
     value_out = 0;
-    memcpy(&value_out, m_seed.data(), std::min(m_seed.size(), (Integer)sizeof(T)));
+    std::memcpy(&value_out, m_seed.data(), std::min(m_seed.size(), (Integer)sizeof(T)));
     return true;
   }
 

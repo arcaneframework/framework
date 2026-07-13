@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdArrayMeshVariables.cc                                    (C) 2000-2024 */
+/* StdArrayMeshVariables.cc                                    (C) 2000-2026 */
 /*                                                                           */
 /* Definition of mesh array variables for testing.                           */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,7 @@
 
 #include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/ItemGroup.h"

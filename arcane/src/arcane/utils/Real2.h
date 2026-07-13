@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Numeric.h"
+#include "arcane/utils/ArrayView.h"
 
 #include <iosfwd>
 

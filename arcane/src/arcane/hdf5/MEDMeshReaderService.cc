@@ -14,6 +14,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/SmallArray.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/IMeshReader.h"
 #include "arcane/core/BasicService.h"

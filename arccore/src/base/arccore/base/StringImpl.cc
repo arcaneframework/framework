@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringImpl.cc                                               (C) 2000-2025 */
+/* StringImpl.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of a UTF-8 or UTF-16 character string.                     */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arccore/base/StringView.h"
 
 #include <cstring>
+#include <iostream>
 
 //#define ARCCORE_DEBUG_UNISTRING
 

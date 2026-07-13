@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelTopology.cc                                         (C) 2000-2011 */
+/* ParallelTopology.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Information on the core allocation topology.                              */
 /*---------------------------------------------------------------------------*/
@@ -23,6 +23,7 @@
 
 #include <map>
 #include <algorithm>
+#include <cstring>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,7 +76,7 @@ namespace
     Int64 pid;
     bool operator<(const NamePid& b) const
     {
-      int s = ::strcmp((const char*)name.data(), (const char*)b.name.data());
+      int s = std::strcmp((const char*)name.data(), (const char*)b.name.data());
       if (s != 0)
         return s > 0;
       return pid > b.pid;

@@ -776,7 +776,7 @@ allReduce(eReduceType op, Type send_buf)
 {
   m_reduce_infos.reduce_value = send_buf;
   //pinfo() << "ALL REDUCE BEGIN RANK=" << m_global_rank << " TYPE=" << (int)op << " MY=" << send_buf;
-  cout.flush();
+  std::cout.flush();
   _collectiveBarrier();
   if (m_local_rank == 0) {
     Type ret = m_all_dispatchs[0]->m_reduce_infos.reduce_value;

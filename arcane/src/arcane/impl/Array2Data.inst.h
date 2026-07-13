@@ -13,6 +13,8 @@
 
 #include "arcane/impl/internal/Array2Data.h"
 
+#include "arccore/common/AlignedMemoryAllocator.h"
+
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/Real2x2.h"

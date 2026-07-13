@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicGenericReader.cc                                       (C) 2000-2024 */
+/* BasicGenericReader.cc                                       (C) 2000-2026 */
 /*                                                                           */
 /* Simple reading for protections/recoveries.                                */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,8 @@
 #include "arcane/core/ArcaneException.h"
 #include "arcane/core/ISerializedData.h"
 #include "arcane/core/XmlNodeList.h"
+
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

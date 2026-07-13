@@ -35,6 +35,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <iostream>
 
 #ifdef ARCCORE_HAS_ROCTX
 #include <roctx.h>

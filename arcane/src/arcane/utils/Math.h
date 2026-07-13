@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Math.h                                                      (C) 2000-2024 */
+/* Math.h                                                      (C) 2000-2026 */
 /*                                                                           */
 /* Diverse mathematical functions.                                           */
 /*---------------------------------------------------------------------------*/
@@ -15,7 +15,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#ifndef ARCCORE_COMPILING_FRAMEWORK
 #include "arcane/utils/Convert.h"
+#endif
 
 #include <cmath>
 #include <cstdlib>
@@ -24,11 +26,11 @@
 /*---------------------------------------------------------------------------*/
 
 /*!
-  \brief Namespace for mathematical functions.
- 
-  This namespace contains all mathematical functions used
-  by the code.
-*/
+ * \brief Namespace for mathematical functions.
+ *
+ * This namespace contains all mathematical functions used
+ * by the code.
+ */
 namespace Arcane::math
 {
 

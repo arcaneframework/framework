@@ -51,7 +51,7 @@ builtInGetArrayValueFromStream(Array<T>& v, std::istream& sbuf)
 template <typename T> inline bool
 builtInGetArrayValue(Array<T>& v, StringView s)
 {
-  impl::StringViewInputStream svis(s);
+  Arcane::Impl::StringViewInputStream svis(s);
   std::istream& sbuf = svis.stream();
   return builtInGetArrayValueFromStream(v, sbuf);
 }

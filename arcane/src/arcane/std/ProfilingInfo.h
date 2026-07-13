@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfilingInfo.h                                             (C) 2000-2024 */
+/* ProfilingInfo.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Structures for profiling information.                                     */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 
 #include <map>
 #include <set>
+#include <cstring>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,7 +96,7 @@ class ProfStackInfo
 
   bool operator<(const ProfStackInfo& pfi) const
   {
-    return ::memcmp(m_funcs_info_indexes, pfi.m_funcs_info_indexes, MAX_STACK * sizeof(Int32)) < 0;
+    return std::memcmp(m_funcs_info_indexes, pfi.m_funcs_info_indexes, MAX_STACK * sizeof(Int32)) < 0;
   }
 
  public:
@@ -202,7 +203,7 @@ class StaticAlloc
     //TODO: make atomic + check overflow
     ++m_buf_index;
     if (m_buf_index >= (int)(0.9 * MAX_STATIC_ALLOC))
-      cout << "** WARNING: allocate near max memory\n";
+      std::cout << "** WARNING: allocate near max memory\n";
     if (m_buf_index >= MAX_STATIC_ALLOC)
       throw FatalErrorException("StaticAlloc", "max static alloc reached");
     return p;

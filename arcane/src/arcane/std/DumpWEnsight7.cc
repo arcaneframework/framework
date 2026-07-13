@@ -23,6 +23,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/CStringUtils.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/IDataWriter.h"
 #include "arcane/core/Item.h"
