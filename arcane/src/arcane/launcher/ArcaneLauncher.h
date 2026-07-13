@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneLauncher.h                                            (C) 2000-2025 */
+/* ArcaneLauncher.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Class managing execution.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -205,10 +205,16 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    * If this method is called, you must not call other ArcaneLauncher execution
    * methods (for example ArcaneLauncher::run()).
    *
-   * \a case_file_name is the name of the file containing the dataset. If null,
-   * there is no dataset.
+   * \a case_file_name is the name of the file containing the dataset
+   * and \a file_content is the content of this file. If both are null,
+   * there is no dataset. If \a file_content is empty, then the content of
+   * \a case_file_name will be collectively read and used as case file.
+   *
+   * This method is collective and if \a file_content is not empty, it has to have
+   * the same value across all ranks.
    */
-  static StandaloneSubDomain createStandaloneSubDomain(const String& case_file_name);
+  static StandaloneSubDomain createStandaloneSubDomain(const String& case_file_name,
+                                                       Span<const std::byte> file_content = {});
 
   /*!
    * \brief Requests help with the "--help" or "-h" option.

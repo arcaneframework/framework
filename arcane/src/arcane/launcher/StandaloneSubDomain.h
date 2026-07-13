@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StandaloneSubDomain.h                                       (C) 2000-2023 */
+/* StandaloneSubDomain.h                                       (C) 2000-2026 */
 /*                                                                           */
 /* Standalone implementation of a sub-domain.                                */
 /*---------------------------------------------------------------------------*/
@@ -67,7 +67,7 @@ class ARCANE_LAUNCHER_EXPORT StandaloneSubDomain
  private:
 
   // For ArcaneLauncher.
-  void _initUniqueInstance(const String& case_file_name);
+  void _initUniqueInstance(const String& case_file_name, Span<const std::byte> file_content);
   bool _isValid();
   static void _notifyRemoveStandaloneSubDomain();
 };

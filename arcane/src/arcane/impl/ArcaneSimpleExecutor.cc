@@ -206,7 +206,7 @@ applicationBuildInfo() const
 /*---------------------------------------------------------------------------*/
 
 ISubDomain* ArcaneSimpleExecutor::
-createSubDomain(const String& case_file_name)
+createSubDomain(const String& case_file_name, Span<const std::byte> file_content)
 {
   _checkInit();
   IApplication* app = m_p->m_arcane_main->arcaneMainClass()->application();
@@ -226,16 +226,24 @@ createSubDomain(const String& case_file_name)
   UniqueArray<Byte> case_bytes;
   bool has_case_file = !case_file_name.empty();
   if (has_case_file) {
-    bool is_bad = app->ioMng()->collectiveRead(case_file_name, case_bytes);
-    if (is_bad)
-      ARCANE_FATAL("Can not read case file '{0}'", case_file_name);
     sdbi.setCaseFileName(case_file_name);
-    sdbi.setCaseBytes(case_bytes);
-    tr->info() << "Create sub domain with case file '" << case_file_name << "'";
+    if (file_content.empty()) {
+      bool is_bad = app->ioMng()->collectiveRead(case_file_name, case_bytes);
+      if (is_bad)
+        ARCANE_FATAL("Can not read case file '{0}'", case_file_name);
+      sdbi.setCaseBytes(case_bytes);
+      tr->info() << "Create sub domain with case file '" << case_file_name << "'";
+    }
+    else {
+      sdbi.setCaseContent(file_content);
+    }
   }
   else {
-    sdbi.setCaseFileName(String());
-    sdbi.setCaseBytes(ByteConstArrayView());
+    sdbi.setCaseFileName({});
+    if (file_content.empty())
+      sdbi.setCaseBytes({});
+    else
+      sdbi.setCaseContent(file_content);
   }
   // The statistics service must be explicitly destroyed
   ITimeStats* time_stat = main_factory->createTimeStats(world_pm->timerMng(), tr, "Stats");
@@ -248,6 +256,15 @@ createSubDomain(const String& case_file_name)
     code_service->initCase(sub_domain, false);
   }
   return sub_domain;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ISubDomain* ArcaneSimpleExecutor::
+createSubDomain(const String& case_file_name)
+{
+  return createSubDomain(case_file_name, {});
 }
 
 /*---------------------------------------------------------------------------*/
