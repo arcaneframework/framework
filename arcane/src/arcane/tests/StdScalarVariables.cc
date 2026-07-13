@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StdScalarVariables.cc                                       (C) 2000-2019 */
+/* StdScalarVariables.cc                                       (C) 2000-2026 */
 /*                                                                           */
 /* Definition of scalar variables for tests.                                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Convert.h"
+
 #include "arcane/core/IMesh.h"
 
 #include "arcane/tests/StdScalarVariables.h"

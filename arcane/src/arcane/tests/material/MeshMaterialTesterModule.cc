@@ -17,6 +17,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/SimdOperation.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/ITimeLoopMng.h"
 #include "arcane/core/ITimeLoop.h"

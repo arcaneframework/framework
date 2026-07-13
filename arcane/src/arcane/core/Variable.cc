@@ -29,6 +29,7 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/ItemGroupObserver.h"
 #include "arcane/core/Variable.h"

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUnitTest.cc                                             (C) 2000-2025 */
+/* MeshUnitTest.cc                                             (C) 2000-2026 */
 /*                                                                           */
 /* Mesh testing service.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arcane/utils/TestLogger.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/SHA3HashAlgorithm.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/AbstractItemOperationByBasicType.h"

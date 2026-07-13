@@ -19,6 +19,7 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Event.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/ItemPrinter.h"

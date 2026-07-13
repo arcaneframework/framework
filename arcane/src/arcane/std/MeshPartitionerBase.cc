@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartitionerBase.cc                                      (C) 2000-2025 */
+/* MeshPartitionerBase.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Base class for a mesh partitioner                                         */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/MultiArray2.h"
+#include "arcane/utils/Convert.h"
 
 #define INSURE_CONSTRAINTS
 

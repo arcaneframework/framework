@@ -19,6 +19,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/IOException.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/ArcaneException.h"
 #include "arcane/core/IParallelMng.h"

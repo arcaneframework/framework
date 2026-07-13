@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupSubPartsByType.cc                                  (C) 2000-2025 */
+/* ItemGroupSubPartsByType.cc                                  (C) 2000-2026 */
 /*                                                                           */
 /* Management of group sub-parts based on the type of its elements.          */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/core/internal/ItemGroupInternal.h"
 
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IMesh.h"

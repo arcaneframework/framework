@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeHistoryMngInternal.h                                    (C) 2000-2025 */
+/* TimeHistoryMngInternal.h                                    (C) 2000-2026 */
 /*                                                                           */
 /* Internal class managing a history of values.                              */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/IIOMng.h"
 #include "arcane/core/CommonVariables.h"

@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/IOnlineDebuggerService.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/BasicTimeLoopService.h"
 #include "arcane/core/ITimeLoopMng.h"

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PropertiesUnitTest.cc                                       (C) 2000-2021 */
+/* PropertiesUnitTest.cc                                       (C) 2000-2026 */
 /*                                                                           */
 /* Property test service.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/MD5HashAlgorithm.h"
+#include "arcane/utils/Convert.h"
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/FactoryService.h"
