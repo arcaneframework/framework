@@ -332,11 +332,7 @@ class NumMatrix
 
   friend std::ostream& operator<<(std::ostream& o, const NumMatrix& t)
   {
-    for (int i = 0; i < RowSize; ++i) {
-      if (i != 0)
-        o << ' ';
-      o << t.m_values[i];
-    }
+    t.print(o);
     return o;
   }
 
@@ -371,6 +367,15 @@ class NumMatrix
   constexpr ARCCORE_HOST_DEVICE static bool _eq(T a, T b)
   {
     return TypeEqualT<T>::isEqual(a, b);
+  }
+  template<typename Stream>
+  void print(Stream& o) const
+  {
+    for (int i = 0; i < RowSize; ++i) {
+      if (i != 0)
+        o << ' ';
+      o << m_values[i];
+    }
   }
 };
 

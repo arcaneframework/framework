@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TBBTaskImplementation.cc                                    (C) 2000-2025 */
+/* TBBTaskImplementation.cc                                    (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of tasks using TBB (Intel Threads Building Blocks).        */
 /*---------------------------------------------------------------------------*/
@@ -33,6 +33,7 @@
 #include <new>
 #include <stack>
 #include <vector>
+#include <iostream>
 
 // This macro must be defined for the class 'blocked_rangeNd' to be available
 

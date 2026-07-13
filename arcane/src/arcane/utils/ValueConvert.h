@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ValueConvert.h                                              (C) 2000-2025 */
+/* ValueConvert.h                                              (C) 2000-2026 */
 /*                                                                           */
 /* Functions to convert a character string into a given type.                */
 /*---------------------------------------------------------------------------*/
@@ -23,12 +23,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane::Impl
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Encapsulates an std::istream for a StringView.
  *
@@ -70,7 +69,7 @@ template <class T> inline bool
 builtInGetValueGeneric(T& v, StringView s)
 {
   T read_val = T();
-  impl::StringViewInputStream svis(s);
+  Arcane::Impl::StringViewInputStream svis(s);
   std::istream& sbuf = svis.stream();
   sbuf >> read_val;
   if (sbuf.fail() || sbuf.bad())
@@ -84,7 +83,7 @@ builtInGetValueGeneric(T& v, StringView s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::impl
+} // namespace Arcane::Impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -105,7 +104,7 @@ namespace Arcane
 template <class T> inline bool
 builtInGetValue(T& v, StringView s)
 {
-  return impl::builtInGetValueGeneric(v, s);
+  return Arcane::Impl::builtInGetValueGeneric(v, s);
 }
 
 /*---------------------------------------------------------------------------*/

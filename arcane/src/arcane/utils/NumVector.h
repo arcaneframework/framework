@@ -301,11 +301,7 @@ class NumVector
 
   friend std::ostream& operator<<(std::ostream& o, const NumVector& t)
   {
-    for (int i = 0; i < Size; ++i) {
-      if (i != 0)
-        o << ' ';
-      o << t.m_values[i];
-    }
+    t.print(o);
     return o;
   }
 
@@ -389,6 +385,15 @@ class NumVector
   _eq(T a, T b)
   {
     return math::isEqual(a, b);
+  }
+  template<typename Stream>
+  void print(Stream& o) const
+  {
+    for (int i = 0; i < Size; ++i) {
+      if (i != 0)
+        o << ' ';
+      o << m_values[i];
+    }
   }
 };
 

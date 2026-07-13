@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Runner.cc                                                   (C) 2000-2025 */
+/* Runner.cc                                                   (C) 2000-2026 */
 /*                                                                           */
 /* Accelerator execution management.                                         */
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,8 @@
 #include "arccore/common/accelerator/internal/AcceleratorCoreGlobalInternal.h"
 #include "arccore/common/accelerator/internal/RunQueueImpl.h"
 #include "arccore/common/accelerator/internal/RunnerImpl.h"
+
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
