@@ -48,6 +48,7 @@
   Float16.h
   Float128.h
   FloatConversion.h
+  FloatInfo.h
   FixedArray.h
   ForLoopRunInfo.h
   ForLoopRanges.h
