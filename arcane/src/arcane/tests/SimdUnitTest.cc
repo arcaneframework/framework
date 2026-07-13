@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimdUnitTest.cc                                             (C) 2000-2023 */
+/* SimdUnitTest.cc                                             (C) 2000-2026 */
 /*                                                                           */
 /* Test service for classes managing vectorization.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arccore/common/AlignedMemoryAllocator.h"
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArgumentException.h"

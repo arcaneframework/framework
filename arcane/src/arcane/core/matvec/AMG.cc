@@ -21,6 +21,7 @@
 #include "arcane/core/matvec/Matrix.h"
 
 #include <set>
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -439,7 +440,7 @@ applyGalerkinOperator(const Matrix& left_matrix, const Matrix& matrix,
   static Integer total_rap_size = 0;
   total_rap_size += jj_counter;
 
-  cout << "** RAP_SIZE=" << jj_counter << " TOTAL=" << total_rap_size << '\n';
+  std::cout << "** RAP_SIZE=" << jj_counter << " TOTAL=" << total_rap_size << '\n';
   Matrix new_matrix(nb_final_row, nb_final_row);
   new_matrix.setRowsSize(new_matrix_rows_size);
 
@@ -1489,10 +1490,10 @@ _buildCoarsePoints(Real alpha,
       ++nb_coarse;
       undefined_points.erase(max_point);
       if (m_is_verbose)
-        cout << "MARK COARSE point=" << max_value_index
-             << " measure=" << max_value
-             << " left=" << (nb_row - nb_done)
-             << "\n";
+        std::cout << "MARK COARSE point=" << max_value_index
+                  << " measure=" << max_value
+                  << " left=" << (nb_row - nb_done)
+                  << "\n";
       IntegerConstArrayView point_influences = influences[max_value_index];
       for (Integer i = 0, is = point_influences.size(); i < is; ++i) {
         //for( Integer i=0, is=depends[max_value_index].size(); i<is; ++i ){
@@ -1504,10 +1505,10 @@ _buildCoarsePoints(Real alpha,
           ++nb_fine;
           undefined_points.erase(PointInfo(lambdas[pt], pt));
           if (m_is_verbose)
-            cout << "MARK FINE point=" << pt
-                 << " measure=" << lambdas[pt]
-                 << " left=" << (nb_row - nb_done)
-                 << "\n";
+            std::cout << "MARK FINE point=" << pt
+                      << " measure=" << lambdas[pt]
+                      << " left=" << (nb_row - nb_done)
+                      << "\n";
           for (Integer z = 0, zs = depends[pt].size(); z < zs; ++z) {
             Integer pt2 = depends[pt][z];
             //for( Integer z=0, zs=point_influences.size(); z<zs; ++z ){
@@ -1615,7 +1616,7 @@ _buildCoarsePoints(Real alpha,
     fname += matrix_number;
     std::ifstream ifile(fname.toString().localstr());
     Integer nb_read_point = 0;
-    ifile >> ws >> nb_read_point >> ws;
+    ifile >> std::ws >> nb_read_point >> std::ws;
     if (nb_read_point != nb_row)
       fatal() << "Bad number of points for reading Hypre CF_marker read=" << nb_read_point
               << " expected=" << nb_row << " matrix_number=" << matrix_number;

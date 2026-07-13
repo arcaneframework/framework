@@ -585,7 +585,7 @@ allReduce(eReduceType op, Type send_buf)
 {
   m_reduce_infos.reduce_value = send_buf;
   //cout << "ALL REDUCE BEGIN RANk=" << m_rank << " TYPE=" << (int)op << " MY=" << send_buf << '\n';
-  cout.flush();
+  std::cout.flush();
   _collectiveBarrier();
   Type ret = m_all_dispatchs[0]->m_reduce_infos.reduce_value;
   switch (op) {

@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/common/AlignedMemoryAllocator.h"
+
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/Event.h"
 #include "arcane/utils/ITraceMng.h"

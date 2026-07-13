@@ -68,14 +68,14 @@ namespace
       return;
     char buf[8192];
     HYPRE_DescribeError(error_code, buf);
-    cout << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-         << "\nHYPRE ERROR in function "
-         << hypre_func
-         << "\nError_code=" << error_code
-         << "\nMessage=" << buf
-         << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-         << "\n"
-         << std::flush;
+    std::cout << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+              << "\nHYPRE ERROR in function "
+              << hypre_func
+              << "\nError_code=" << error_code
+              << "\nMessage=" << buf
+              << "\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+              << "\n"
+              << std::flush;
     throw Exception("HYPRE Check", hypre_func);
   }
 
@@ -101,8 +101,8 @@ namespace
     check(hypre_func, error_code);
     HYPRE_Int r = HYPRE_GetError();
     if (r != 0)
-      cout << "HYPRE GET ERROR r=" << r
-           << " error_code=" << error_code << " func=" << hypre_func << '\n';
+      std::cout << "HYPRE GET ERROR r=" << r
+                << " error_code=" << error_code << " func=" << hypre_func << '\n';
   }
 
 } // namespace

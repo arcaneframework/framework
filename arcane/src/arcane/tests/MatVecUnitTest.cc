@@ -135,10 +135,10 @@ _testArcaneMatrix1()
   Integer s = 5;
   Matrix m(s, s);
   Matrix m1(Matrix::read("test.mat"));
-  cout << "** o=" << m.nbRow() << '\n';
-  cout << "** M1=";
-  m1.dump(cout);
-  cout << '\n';
+  std::cout << "** o=" << m.nbRow() << '\n';
+  std::cout << "** M1=";
+  m1.dump(std::cout);
+  std::cout << '\n';
   Vector v1(10);
   for (Integer i = 0; i < 10; ++i) {
     v1.values()[i] = (Real)(i + 1);
@@ -208,8 +208,8 @@ _testArcaneMatrix1()
   columns[11] = 0;
   columns[12] = 4;
   m.setValues(columns, values);
-  m.dump(cout);
-  cout << '\n';
+  m.dump(std::cout);
+  std::cout << '\n';
   Vector b(5);
   RealArrayView rav(b.values());
   rav[0] = 1.0;

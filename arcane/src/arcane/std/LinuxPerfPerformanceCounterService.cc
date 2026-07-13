@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LinuxPerfPerformanceCounterService.cc                       (C) 2000-2022 */
+/* LinuxPerfPerformanceCounterService.cc                       (C) 2000-2026 */
 /*                                                                           */
 /* Hardware counter retrieval via the Linux 'perf' API.                      */
 /*---------------------------------------------------------------------------*/
@@ -23,6 +23,8 @@
 #include <unistd.h>
 #include <syscall.h>
 #include <sys/ioctl.h>
+
+#include <cstring>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,7 +63,7 @@ class LinuxPerfPerformanceCounterService
   bool _addEvent(int event_type, int event_config, bool is_optional = false)
   {
     struct perf_event_attr attr;
-    memset(&attr, 0, sizeof(attr));
+    std::memset(&attr, 0, sizeof(attr));
 
     attr.type = event_type,
     attr.config = event_config;
@@ -79,7 +81,7 @@ class LinuxPerfPerformanceCounterService
     if (long_fd == (-1)) {
       if (is_optional)
         return true;
-      ARCANE_FATAL("ERROR for event type={0} id={1} error={2}", attr.type, attr.config, strerror(errno));
+      ARCANE_FATAL("ERROR for event type={0} id={1} error={2}", attr.type, attr.config, std::strerror(errno));
     }
     int fd = static_cast<int>(long_fd);
     m_events_file_descriptor.add(fd);

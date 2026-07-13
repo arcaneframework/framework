@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AxlOptionsBuilder.cc                                        (C) 2000-2025 */
+/* AxlOptionsBuilder.cc                                        (C) 2000-2026 */
 /*                                                                           */
 /* Classes to dynamically create data set options.                           */
 /*---------------------------------------------------------------------------*/
@@ -22,6 +22,9 @@
 #include "arcane/core/XmlNode.h"
 #include "arcane/core/IXmlDocumentHolder.h"
 #include "arcane/core/CaseNodeNames.h"
+
+#include <fstream>
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

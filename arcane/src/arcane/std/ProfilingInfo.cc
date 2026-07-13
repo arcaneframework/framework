@@ -5,14 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfilingInfo.cc                                            (C) 2000-2023 */
+/* ProfilingInfo.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Profiling information.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcaneGlobal.h"
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/String.h"
@@ -24,6 +23,7 @@
 
 #include <set>
 #include <array>
+#include <fstream>
 
 #include "arcane_packages.h"
 
@@ -725,7 +725,7 @@ _addEvent(void* address, int overflow_event[MAX_COUNTER], int nb_overflow_event,
     if (overflow_event[i] == 0)
       is_counter0 = true;
     if (overflow_event[i] < 0 || overflow_event[i] >= MAX_COUNTER)
-      cerr << "arcane_papi_handler: EVENT ERROR n=" << overflow_event[i] << '\n';
+      std::cerr << "arcane_papi_handler: EVENT ERROR n=" << overflow_event[i] << '\n';
   }
 
   bool do_stack = false;
@@ -749,7 +749,7 @@ _addEvent(void* address, int overflow_event[MAX_COUNTER], int nb_overflow_event,
       ProfFuncInfo* papi_func_info = nullptr;
       if (func == m_func_map.end()) {
         if (m_current_func_info >= MAX_FUNC) {
-          cerr << "arcane_papi_handler: MAX_FUNC reached !\n";
+          std::cerr << "arcane_papi_handler: MAX_FUNC reached !\n";
           break;
         }
         papi_func_info = _getNextFuncInfo();

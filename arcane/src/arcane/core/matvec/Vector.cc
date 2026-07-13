@@ -17,6 +17,8 @@
 
 #include "arcane/core/matvec/Vector.h"
 
+#include <fstream>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -245,14 +247,14 @@ readHypre(const String& file_name)
     ARCANE_FATAL("Can not read Hypre vector file='{0}'", file_name);
   Integer xmin = 0;
   Integer xmax = 0;
-  ifile >> ws >> xmin >> ws >> xmax;
+  ifile >> std::ws >> xmin >> std::ws >> xmax;
   Integer nb = (xmax - xmin) + 1;
   Vector vec(nb);
   RealArrayView values = vec.values();
   for (Integer i = 0; i < nb; ++i) {
     Integer column_id = 0;
     Real v = 0.0;
-    ifile >> ws >> column_id >> ws >> v;
+    ifile >> std::ws >> column_id >> std::ws >> v;
     values[column_id] = v;
   }
   return vec;

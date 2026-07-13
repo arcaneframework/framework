@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HashTableMap.h                                              (C) 2000-2024 */
+/* HashTableMap.h                                              (C) 2000-2026 */
 /*                                                                           */
 /* Associative array using a hash table.                                     */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/HashTable.h"
+
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,19 +35,20 @@ class HashTableMapEnumeratorT;
 /*!
  * \internal
  * \brief Hash table for associative arrays.
- 
- This table allows storing a value based on a key. The key is of type \a KeyType and the value is \a ValueType.
-
- For now, this table only allows adding values.
- The memory associated with each entry in the array is managed by
- a MultiBufferT.
-
- It is possible to specify a hash function different from
- the default function by specifying the third template parameter \a KeyTraitsType.
-
- For performance reasons, it is preferable that the size
- of the table (buckets) is a prime number.
-*/
+ *
+ * This table allows storing a value based on a key.
+ * The key is of type \a KeyType and the value is \a ValueType.
+ *
+ * For now, this table only allows adding values.
+ * The memory associated with each entry in the array is managed by
+ * a MultiBufferT.
+ *
+ * It is possible to specify a hash function different from
+ * the default function by specifying the third template parameter \a KeyTraitsType.
+ *
+ * For performance reasons, it is preferable that the size
+ * of the table (buckets) is a prime number.
+ */
 template <typename KeyType, typename ValueType, typename KeyTraitsType = HashTraitsT<KeyType>>
 class HashTableMapT
 : public HashTableBase
@@ -435,7 +438,7 @@ class HashTableMapT
 
  private:
 
-  MultiBufferT<Data>* m_buffer; //!< Value allocation buffer
+  MultiBufferT<Data>* m_buffer = nullptr; //!< Value allocation buffer
   Data* m_first_free = nullptr; //!< Pointer to the first usable Data
 
  public:
@@ -571,7 +574,7 @@ class HashTableMapT
       //     << " bucket=" << m_nb_bucket  << " m_max_count=" << m_max_count
       //     << " memory=" << (m_buckets.capacity()*sizeof(Data*)) << '\n';
       //_print(Printable());
-      std::cout.flush();
+      //std::cout.flush();
     }
   }
 
@@ -583,7 +586,7 @@ class HashTableMapT
   {
     for (Integer z = 0, zs = m_buckets.size(); z < zs; ++z) {
       for (Data* i = m_buckets[z]; i; i = i->next()) {
-        cout << "* KEY=" << i->key() << " bucket=" << z << '\n';
+        std::cout << "* KEY=" << i->key() << " bucket=" << z << '\n';
       }
     }
   }
