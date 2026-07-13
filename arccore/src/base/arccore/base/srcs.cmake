@@ -88,6 +88,12 @@
   PlatformUtils.cc
   Profiling.h
   Profiling.cc
+  Real2.h
+  Real2.cc
+  Real3.h
+  Real3.cc
+  MathReal2.h
+  MathReal3.h
   ReferenceCounter.h
   ReferenceCounterImpl.h
   Ref.h

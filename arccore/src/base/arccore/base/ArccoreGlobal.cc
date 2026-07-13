@@ -35,6 +35,8 @@
 #include "arccore/base/FloatInfo.h"
 #include "arccore/base/TypeEqual.h"
 #include "arccore/base/MathBase.h"
+#include "arccore/base/MathReal2.h"
+#include "arccore/base/MathReal3.h"
 
 #include <iostream>
 #include <cstring>
