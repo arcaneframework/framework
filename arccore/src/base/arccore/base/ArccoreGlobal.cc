@@ -34,6 +34,7 @@
 #include "arccore/base/internal/IDynamicLibraryLoader.h"
 #include "arccore/base/FloatInfo.h"
 #include "arccore/base/TypeEqual.h"
+#include "arccore/base/MathBase.h"
 
 #include <iostream>
 #include <cstring>

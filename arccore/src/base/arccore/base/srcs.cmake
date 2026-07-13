@@ -67,6 +67,7 @@
   IObservable.h
   IRangeFunctor.h
   RangeFunctor.h
+  MathBase.h
   MDDim.h
   MDIndex.h
   MDSpan.h
