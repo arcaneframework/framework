@@ -33,6 +33,7 @@
 #include "arccore/base/ISymbolizerService.h"
 #include "arccore/base/internal/IDynamicLibraryLoader.h"
 #include "arccore/base/FloatInfo.h"
+#include "arccore/base/TypeEqual.h"
 
 #include <iostream>
 #include <cstring>

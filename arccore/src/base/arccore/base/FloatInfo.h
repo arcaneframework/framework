@@ -35,8 +35,8 @@ class FloatInfo
 {
  public:
 
-  //! Indicates if the instantiation is for a floating-point type.
-  typedef FalseType _IsFloatType;
+  //! Indicates that the instantiation is for a floating-point type.
+  static constexpr bool isFloatType() { return false; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -50,16 +50,16 @@ class FloatInfo<float>
  public:
 
   //! Indicates that the instantiation is for a floating-point type.
-  typedef TrueType _IsFloatType;
+  static constexpr bool isFloatType() { return true; }
 
  public:
 
-  ARCCORE_HOST_DEVICE static constexpr unsigned int precision() { return 1; }
-  ARCCORE_HOST_DEVICE static constexpr unsigned int maxDigit() { return FLT_DIG; }
-  ARCCORE_HOST_DEVICE static constexpr float epsilon() { return FLT_EPSILON; }
-  ARCCORE_HOST_DEVICE static constexpr float nearlyEpsilon() { return FLT_EPSILON * 10.0f; }
-  ARCCORE_HOST_DEVICE static constexpr float maxValue() { return FLT_MAX; }
-  ARCCORE_HOST_DEVICE static constexpr float zero() { return 0.0f; }
+  static constexpr unsigned int precision() { return 1; }
+  static constexpr unsigned int maxDigit() { return FLT_DIG; }
+  static constexpr float epsilon() { return FLT_EPSILON; }
+  static constexpr float nearlyEpsilon() { return FLT_EPSILON * 10.0f; }
+  static constexpr float maxValue() { return FLT_MAX; }
+  static constexpr float zero() { return 0.0f; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ class FloatInfo<double>
  public:
 
   //! Indicates that the instantiation is for a floating-point type.
-  typedef TrueType _IsFloatType;
+  static constexpr bool isFloatType() { return true; }
 
  public:
 
@@ -97,7 +97,7 @@ class FloatInfo<long double>
  public:
 
   //! Indicates that the instantiation is for a floating-point type.
-  typedef TrueType _IsFloatType;
+  static constexpr bool isFloatType() { return true; }
 
  public:
 
@@ -125,7 +125,9 @@ class FloatInfo<apfloat>
  public:
 
   //! Indicates that the instantiation is for a floating-point type.
-  typedef TrueType _IsFloatType;
+  //typedef TrueType _IsFloatType;
+  //! Indicates that the instantiation is for a floating-point type.
+  static constexpr bool isFloatType() { return true; }
 
  public:
 

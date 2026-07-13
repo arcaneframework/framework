@@ -109,6 +109,7 @@
   TraceInfo.h
   TimeoutException.h
   TimeoutException.cc
+  TypeEqual.h
   ValueFiller.h
 
   IFunctor.h
