@@ -45,15 +45,13 @@ class ARCCORE_BASE_EXPORT ExternalRef
 {
  private:
 
-  struct Handle
+  struct ExternalHandle
   {
-    Handle()
-    : handle(nullptr)
-    {}
-    Handle(void* h)
+    ExternalHandle() = default;
+    explicit ExternalHandle(void* h)
     : handle(h)
     {}
-    ~Handle();
+    ~ExternalHandle();
     void addReference() { ++m_nb_ref; }
     void removeReference()
     {
@@ -61,7 +59,7 @@ class ARCCORE_BASE_EXPORT ExternalRef
       if (v == 1)
         delete this;
     }
-    void* handle;
+    void* handle = nullptr;
     std::atomic<int> m_nb_ref = 0;
   };
 
@@ -73,14 +71,14 @@ class ARCCORE_BASE_EXPORT ExternalRef
 
   ExternalRef() = default;
   ExternalRef(void* handle)
-  : m_handle(new Handle(handle))
+  : m_handle(new ExternalHandle(handle))
   {}
 
  public:
 
   bool isValid() const
   {
-    Handle* p = m_handle.get();
+    ExternalHandle* p = m_handle.get();
     if (!p)
       return false;
     return _internalHandle() != nullptr;
@@ -89,7 +87,7 @@ class ARCCORE_BASE_EXPORT ExternalRef
 
  private:
 
-  Arccore::ReferenceCounter<Handle> m_handle;
+  Arccore::ReferenceCounter<ExternalHandle> m_handle;
 };
 
 /*---------------------------------------------------------------------------*/
