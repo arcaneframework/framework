@@ -79,6 +79,8 @@
   NotImplementedException.h
   NotImplementedException.cc
   NumericTraits.h
+  NumVector.h
+  NumMatrix.h
   Observer.h
   Observer.cc
   Observable.h
@@ -96,6 +98,7 @@
   Real3.cc
   Real3x3.h
   Real3x3.cc
+  MathNumeric.h
   MathReal2.h
   MathReal3.h
   MathReal2x2.h

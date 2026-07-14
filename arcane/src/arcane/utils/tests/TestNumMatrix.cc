@@ -9,6 +9,7 @@
 
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/NumMatrix.h"
+#include "arccore/base/MathNumeric.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
