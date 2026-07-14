@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayTraits.h                                               (C) 2000-2025 */
+/* ArrayTraits.h                                               (C) 2000-2026 */
 /*                                                                           */
 /* Characteristics of a 1D array.                                            */
 /*---------------------------------------------------------------------------*/
@@ -113,6 +113,38 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
 ARCCORE_DEFINE_ARRAY_PODTYPE(std::byte);
 ARCCORE_DEFINE_ARRAY_PODTYPE(Float16);
 ARCCORE_DEFINE_ARRAY_PODTYPE(BFloat16);
+
+// Not POD by default for legacy compatibility
+// but it may improve performance making them PODs.
+#if defined(ARCCORE_USE_POD_FOR_REALN_TYPE)
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Real2);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Real3);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Real2x2);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::Real3x3);
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Specialization for NumVector which are considered a POD Type
+template <typename DataType, int Size>
+class ArrayTraits<Arcane::NumVector<DataType, Size>>
+{
+ public:
+
+  using ConstReferenceType = const Arcane::NumVector<DataType, Size>&;
+  using IsPODType = TrueType;
+};
+
+//! Specialization for NumMatrix which are considered a POD Type
+template <typename DataType, int Row, int Column>
+class ArrayTraits<Arcane::NumMatrix<DataType, Row, Column>>
+{
+ public:
+
+  using ConstReferenceType = const Arcane::NumMatrix<DataType, Row, Column>&;
+  using IsPODType = TrueType;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
