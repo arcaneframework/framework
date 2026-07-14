@@ -32,11 +32,9 @@
 #include "arccore/base/ParallelLoopOptions.h"
 #include "arccore/base/ISymbolizerService.h"
 #include "arccore/base/internal/IDynamicLibraryLoader.h"
-#include "arccore/base/FloatInfo.h"
-#include "arccore/base/TypeEqual.h"
-#include "arccore/base/MathBase.h"
-#include "arccore/base/MathReal2.h"
-#include "arccore/base/MathReal3.h"
+#include "arccore/base/NumVector.h"
+#include "arccore/base/NumMatrix.h"
+#include "arccore/base/MathNumeric.h"
 
 #include <iostream>
 #include <cstring>

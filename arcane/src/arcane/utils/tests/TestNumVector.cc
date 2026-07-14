@@ -10,6 +10,7 @@
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/NumVector.h"
 #include "arcane/utils/NumMatrix.h"
+#include "arccore/base/MathNumeric.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -496,6 +497,13 @@ TEST(TestNumVector, Int32x3)
   ASSERT_EQ(s[0], 10);
   ASSERT_EQ(s[1], 14);
   ASSERT_EQ(s[2], 18);
+
+  struct A
+  {
+    Int64 x;
+    Int32 z;
+  };
+  std::cout << "SIZEOF_A=" << sizeof(A) << "\n";
 }
 
 /*---------------------------------------------------------------------------*/
