@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/FloatInfo.h"
+#include "arccore/base/BaseTypes.h"
 
 // For 'std::abs'.
 #include <cstdlib>
@@ -219,14 +220,14 @@ namespace Arcane::math
  * In the case of real types, the two numbers are considered equal
  * if and only if the absolute value of their relative difference is
  * less than a given epsilon. This
- * epsilon is equal to float_info<_Type>::nearlyEpsilon().
+ * epsilon is equal to float_info<Type>::nearlyEpsilon().
  * \retval true if the two values are equal,
  * \retval false otherwise.
  */
-template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isNearlyEqual(const _Type& a, const _Type& b)
+template <class Type> constexpr ARCCORE_HOST_DEVICE inline bool
+isNearlyEqual(const Type& a, const Type& b)
 {
-  return TypeEqualT<_Type>::isNearlyEqual(a, b);
+  return TypeEqualT<Type>::isNearlyEqual(a, b);
 }
 
 //! Overload for reals
@@ -246,10 +247,10 @@ isNearlyEqual(Real a, Real b)
  * \retval true if the two values are equal,
  * \retval false otherwise.
  */
-template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isNearlyEqualWithEpsilon(const _Type& a, const _Type& b, const _Type& epsilon)
+template <class Type> constexpr ARCCORE_HOST_DEVICE inline bool
+isNearlyEqualWithEpsilon(const Type& a, const Type& b, const Type& epsilon)
 {
-  return TypeEqualT<_Type>::isNearlyEqualWithEpsilon(a, b, epsilon);
+  return TypeEqualT<Type>::isNearlyEqualWithEpsilon(a, b, epsilon);
 }
 
 //! Overload for reals
@@ -264,10 +265,10 @@ isNearlyEqualWithEpsilon(Real a, Real b, Real epsilon)
  * \retval true if the two values are equal,
  * \retval false otherwise.
  */
-template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isEqual(const _Type& a, const _Type& b)
+template <class Type> constexpr ARCCORE_HOST_DEVICE inline bool
+isEqual(const Type& a, const Type& b)
 {
-  return TypeEqualT<_Type>::isEqual(a, b);
+  return TypeEqualT<Type>::isEqual(a, b);
 }
 
 //! Overload for reals
@@ -283,27 +284,27 @@ isEqual(Real a, Real b)
  * For integer types, this function is equivalent to IsZero().
  * In the case of real types, the value is considered equal to
  * zero if and only if its absolute value is less than an epsilon
- * given by the function float_info<_Type>::nearlyEpsilon().
+ * given by the function float_info<Type>::nearlyEpsilon().
  * \retval true if the two values are equal,
  * \retval false otherwise.
  */
-template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isNearlyZeroWithEpsilon(const _Type& a, const _Type& epsilon)
+template <class Type> constexpr ARCCORE_HOST_DEVICE inline bool
+isNearlyZeroWithEpsilon(const Type& a, const Type& epsilon)
 {
-  return TypeEqualT<_Type>::isNearlyZeroWithEpsilon(a, epsilon);
+  return TypeEqualT<Type>::isNearlyZeroWithEpsilon(a, epsilon);
 }
 
 /*!
  * \brief Tests if a value is approximately equal to zero using the standard epsilon.
  *
- * The standard epsilon is the one returned by FloatInfo<_Type>::nearlyEpsilon().
+ * The standard epsilon is the one returned by FloatInfo<Type>::nearlyEpsilon().
  *
- * \sa isNearlyZero(const _Type& a,const _Type& epsilon).
+ * \sa isNearlyZero(const Type& a,const Type& epsilon).
  */
-template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isNearlyZero(const _Type& a)
+template <class Type> constexpr ARCCORE_HOST_DEVICE inline bool
+isNearlyZero(const Type& a)
 {
-  return TypeEqualT<_Type>::isNearlyZero(a);
+  return TypeEqualT<Type>::isNearlyZero(a);
 }
 
 /*!
@@ -311,11 +312,27 @@ isNearlyZero(const _Type& a)
  * \retval true if \a is zero,
  * \retval false otherwise.
  */
-template <class _Type> constexpr ARCCORE_HOST_DEVICE inline bool
-isZero(const _Type& a)
+template <class Type> constexpr ARCCORE_HOST_DEVICE inline bool
+isZero(const Type& a)
 {
-  return TypeEqualT<_Type>::isZero(a);
+  return TypeEqualT<Type>::isZero(a);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// These methods are defined in MathNumeric.h.
+// We put their declaration here to make sure we do not use the
+// generic templated TypeEqual
+
+constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real2& a);
+constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real3& a);
+constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real2x2& a);
+constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real3x3& a);
+
+template <typename DataType, int Size> constexpr ARCCORE_HOST_DEVICE bool
+isNearlyZero(const NumVector<DataType, Size>& v);
+template <typename DataType, int RowSize, int ColumnSize> constexpr ARCCORE_HOST_DEVICE bool
+isNearlyZero(const NumMatrix<DataType, RowSize, ColumnSize>& v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
