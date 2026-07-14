@@ -5,15 +5,43 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real3x3.cc                                                  (C) 2000-2023 */
+/* MathReal2x2.h                                               (C) 2000-2026 */
 /*                                                                           */
-/* 3x3 matrix of 'Real'.                                                     */
+/* Mathematical operations on Real2x2.                                       */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCCORE_BASE_MATHREAL2X2_H
+#define ARCCORE_BASE_MATHREAL2X2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Real3x3Proxy.h"
+#include "arccore/base/Real2x2.h"
+#include "arccore/base/MathReal2.h"
 
-#include <iostream>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::math
+{
+/*!
+ * \brief Compares the matrix with the zero matrix.
+ *
+ * The matrix is zero if and only if each of its components
+ * is less than a given epsilon. The epsilon value used is that
+ * of float_info<value_type>::nearlyEpsilon():
+ * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon\f]
+ *
+ * \retval true if the matrix is equal to the zero matrix,
+ * \retval false otherwise.
+ */
+constexpr ARCCORE_HOST_DEVICE bool isNearlyZero(const Real2x2& v)
+{
+  return math::isNearlyZero(v.x) && math::isNearlyZero(v.y);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::math
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,29 +52,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::istream& Real3x3Proxy::
-assign(std::istream& i)
+inline constexpr ARCCORE_HOST_DEVICE bool Real2x2::
+isNearlyZero() const
 {
-  // TODO mark access
-  return m_value.assign(i);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-std::ostream& Real3x3Proxy::
-print(std::ostream& o) const
-{
-  return getValue().print(o);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-std::ostream& Real3x3Proxy::
-printXyz(std::ostream& o) const
-{
-  return getValue().printXyz(o);
+  return math::isNearlyZero(*this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -56,3 +65,5 @@ printXyz(std::ostream& o) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif

@@ -112,12 +112,11 @@ set(ARCANE_SOURCES
   Ptr.h
   Ref.h
   Real2.h
-  Real2x2.cc
   Real2x2.h
   Real3.h
   Real3.cc
-  Real3x3.cc
   Real3x3.h
+  Real3x3.cc
   SignalException.cc
   SignalException.h
   Simd.cc

@@ -90,10 +90,16 @@
   Profiling.cc
   Real2.h
   Real2.cc
+  Real2x2.h
+  Real2x2.cc
   Real3.h
   Real3.cc
+  Real3x3.h
+  Real3x3.cc
   MathReal2.h
   MathReal3.h
+  MathReal2x2.h
+  MathReal3x3.h
   ReferenceCounter.h
   ReferenceCounterImpl.h
   Ref.h
