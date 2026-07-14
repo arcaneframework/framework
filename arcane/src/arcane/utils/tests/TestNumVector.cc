@@ -17,6 +17,9 @@
 
 using namespace Arcane;
 
+//! Make sure NumVector is a POD for arrays (no initialization)
+static_assert(std::is_same_v<TrueType,ArrayTraits<NumVector<double,4>>::IsPODType>);
+
 TEST(TestNumVector, RealN2)
 {
   std::cout << "   sizeof(NumVector<double,2>) = " << sizeof(NumVector<double, 2>) << "\n";

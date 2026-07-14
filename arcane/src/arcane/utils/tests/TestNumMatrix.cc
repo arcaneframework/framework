@@ -16,6 +16,9 @@
 
 using namespace Arcane;
 
+//! Make sure NumMatrix is a POD for arrays (no initialization)
+static_assert(std::is_same_v<TrueType,ArrayTraits<NumMatrix<double,4,2>>::IsPODType>);
+
 TEST(TestNumMatrix, Real2x2)
 {
   RealN2 zero;
