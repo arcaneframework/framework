@@ -57,6 +57,7 @@
   ProfilingInfo.h
   MasterModule.cc
   MeshCutService.cc
+  MeshSectionService.cc
   UnitTestModule.cc
   ArcaneStdRegisterer.h
   TextReader.h
@@ -157,4 +158,5 @@ set(AXL_FILES
   KdiPostProcessor
   VtkPolyhedralMeshIO
   MeshCut
+  MeshSection
   )
