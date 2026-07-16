@@ -2,7 +2,7 @@
 
 <service name="MeshCut" type="caseoption" type2="subdomain">
   <description>
-    TODO
+    Service allowing the creation of a mesh with a cut of another mesh.
   </description>
 
   <interface name="Arcane::IMeshSection" inherited="true"/>

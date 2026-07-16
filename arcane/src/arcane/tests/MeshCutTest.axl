@@ -1,0 +1,14 @@
+﻿<?xml version="1.0"?>
+<service name="MeshCutTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
+         namespace-name="ArcaneTest">
+  <interface name="Arcane::IUnitTest" inherited="false"/>
+
+  <options>
+    <complex name="plane" type="Plane" minOccurs="0" maxOccurs="unbounded">
+      <simple name="p0" type="real3">
+      </simple>
+      <simple name="normal" type="real3">
+      </simple>
+    </complex>
+  </options>
+</service>

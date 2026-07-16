@@ -2,7 +2,7 @@
 
 <service name="MeshSection" type="caseoption" type2="subdomain">
   <description>
-    TODO
+    Service allowing the creation of a mesh with a section of another mesh.
   </description>
 
   <interface name="Arcane::IMeshSection" inherited="true"/>
