@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshCutService.cc                                           (C) 2000-2026 */
 /*                                                                           */
-/* TODO.                                        */
+/* Service allowing the creation of a mesh with a cut of another mesh.       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,6 +30,13 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Service allowing the creation of a mesh with a cut of another mesh.
+ *
+ * For each plan, a cut will be realized. All cuts will be stored in the mesh
+ * created by this service. To get this mesh, you can call \a meshSection()
+ * method.
+ */
 class MeshCutService
 : public ArcaneMeshCutObject
 {
@@ -41,17 +48,17 @@ class MeshCutService
 
  public:
 
-  void addPlan(const Real3& p0, const Real3& normal) override;
-
- public:
+  void addPlane(const Real3& p0, const Real3& normal) override;
 
   void setVariables(VariableCollection variables) override;
+
   void updateSection() override;
 
   MeshHandle meshSection() override
   {
     return m_cloned_mesh->handle();
   }
+
   VariableCollection variables() override { return {}; }
 
  private:
@@ -62,7 +69,7 @@ class MeshCutService
 
  private:
 
-  VariableCollection m_variables_ori;
+  // VariableCollection m_variables_ori;
   IPrimaryMesh* m_cloned_mesh = nullptr;
   UniqueArray<std::pair<Real3, Real3>> m_plans;
 };
@@ -78,13 +85,12 @@ ARCANE_REGISTER_SERVICE_MESHCUT(MeshCutService, MeshCutService);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-struct NodeIntersection
+struct EdgeLite
 {
-  NodeIntersection(const Node aa, const Node bb, const Real3& inter)
-  : m_intersection_pos(inter)
+  EdgeLite(const Node first_node, const Node second_node)
   {
-    const Int32 a = aa.localId();
-    const Int32 b = bb.localId();
+    const Int32 a = first_node.localId();
+    const Int32 b = second_node.localId();
     if (a < b) {
       m_lid_node0 = a;
       m_lid_node1 = b;
@@ -95,9 +101,9 @@ struct NodeIntersection
     }
   }
 
-  NodeIntersection() = default;
+  EdgeLite() = default;
 
-  bool operator<(const NodeIntersection& other) const
+  bool operator<(const EdgeLite& other) const
   {
     if (m_lid_node0 != other.m_lid_node0) {
       return m_lid_node0 < other.m_lid_node0;
@@ -105,15 +111,40 @@ struct NodeIntersection
     return m_lid_node1 < other.m_lid_node1;
   }
 
-  bool operator==(const NodeIntersection& other) const
+  bool operator==(const EdgeLite& other) const
   {
     return m_lid_node0 == other.m_lid_node0 && m_lid_node1 == other.m_lid_node1;
   }
 
   Int32 m_lid_node0 = -1;
   Int32 m_lid_node1 = -1;
-  Real3 m_intersection_pos{ -1 };
   Int64 m_uid_new_node = -1;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+struct NodeIntersection
+{
+  NodeIntersection(const Node first_node, const Node second_node, const Real3& intersection_pos)
+  : m_edge(first_node, second_node)
+  ,m_intersection_pos(intersection_pos)
+  {}
+
+  NodeIntersection() = default;
+
+  bool operator<(const NodeIntersection& other) const
+  {
+    return m_edge.operator<(other.m_edge);
+  }
+
+  bool operator==(const NodeIntersection& other) const
+  {
+    return m_edge.operator==(other.m_edge);
+  }
+
+  EdgeLite m_edge{};
+  Real3 m_intersection_pos{ -1 };
 };
 
 /*---------------------------------------------------------------------------*/
@@ -123,7 +154,7 @@ struct NodeIntersection
 /*---------------------------------------------------------------------------*/
 
 void MeshCutService::
-addPlan(const Real3& p0, const Real3& normal)
+addPlane(const Real3& p0, const Real3& normal)
 {
   m_plans.add({ p0, math::normalizeReal3(normal) });
 }
@@ -134,7 +165,9 @@ addPlan(const Real3& p0, const Real3& normal)
 void MeshCutService::
 setVariables(VariableCollection variables)
 {
-  m_variables_ori = variables;
+  ARCANE_UNUSED(variables);
+  ARCANE_NOT_YET_IMPLEMENTED("Not supported yet");
+  // m_variables_ori = variables;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -181,6 +214,8 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
 {
   auto [p0, normal] = m_plans[plan_pos];
 
+  const Int32 mesh_dim = mesh()->dimension();
+
   VariableNodeReal3& node_coord = mesh()->nodesCoordinates();
   VariableNodeReal node_dist(VariableBuildInfo(mesh(), "NodeDist"));
 
@@ -188,70 +223,97 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
 
   // Calcul de la distance signée de chaque noeud par rapport au plan de coupe.
   ENUMERATE_ (Node, inode, allNodes()) {
-    node_dist[inode] = math::dot({ node_coord[inode] - p0 }, normal);
+    Real d = math::dot({ node_coord[inode] - p0 }, normal);
+    node_dist[inode] = math::isNearlyZero(d) ? 0 : d;
   }
 
-  UniqueArray<NodeIntersection> point_coords;
+
+  // Tableau qui contiendra tous les noeuds d'une future maille.
+  // Une maille 3D, si elle est coupée par le plan, donnera forcément une
+  // maille 2D. Les noeuds de cette maille seront stockés dans ce tableau,
+  // ainsi que, pour chaque noeud, sa position et l'arête dont il est issu
+  // (pour éviter les doublons).
   UniqueArray<NodeIntersection> point_coords_tmp;
 
+  // Tableau qui contiendra tous les noeuds du maillage futur.
+  UniqueArray<EdgeLite> point_coords;
+
   ENUMERATE_ (Cell, icell, ownCells()) {
-    ItemWithNodes cell = *icell;
+    Cell cell = *icell;
 
-    // On regarde si la maille traverse le plan ou si une de ces faces est collé dessus.
-    bool colineaire = false;
+    bool has_face_on_plane = false;
     {
-      bool cont = true;
+      bool cell_useful = true;
+      Int32 nb_node_on_plane = 0;
 
-      // Si au moins un noeud est sur le plan, peut-être que la face est colinéaire.
-      bool has_egal = false;
+      // On regarde si la maille traverse le plan ou si des noeuds sont sur le
+      // plan.
       {
-        // On vérifie que la maille est dans le plan.
-        bool has_neg = false, has_pos = false;
+        bool has_neg = false;
+        bool has_pos = false;
         for (Node node : cell.nodes()) {
           Real d = node_dist[node];
           if (d < 0)
             has_neg = true;
           else if (d > 0)
             has_pos = true;
-          else
-            has_egal = true;
+          else {
+            nb_node_on_plane++;
+          }
         }
+
+        // Tous les noeuds sont du même coté du plan.
         if (!(has_neg && has_pos))
-          cont = false;
+          cell_useful = false;
       }
-      // On vérifie si une des faces est sur le plan.
-      if (!cont && has_egal) {
-        for (Face face : icell->faces()) {
-          has_egal = true;
+
+      // Si le nombre de noeuds sur le plan correspond au nombre de noeuds
+      // minimum d'une face, il s'agit peut-être d'une face confondue au plan.
+      // Dans ce cas, il est nécessaire de faire un traitement spécial pour
+      // éviter un doublon de mailles dans le maillage final.
+      if (nb_node_on_plane >= mesh_dim) {
+        for (Face face : cell.faces()) {
+          if (face.nbNode() != nb_node_on_plane)
+            continue;
+
+          bool has_egal = true;
           for (Node node : face.nodes()) {
-            if (!math::isNearlyZero(node_dist[node])) {
+            if (node_dist[node] != 0) {
               has_egal = false;
               break;
             }
           }
+
+          // On a trouvé la face confondue.
           if (has_egal) {
+
+            // Si elle a déjà été traitée, on passe pour éviter un doublon.
             if (face_already_computed.contains(face.localId())) {
-              cont = false;
+              cell_useful = false;
               break;
             }
+
+            // On sait que la face est confondue au plan et que la future
+            // maille créée grâce à cette face n'existe pas encore.
+            // On peut donc directement ajouter les noeuds de la face dans la
+            // liste des noeuds de la future maille.
             face_already_computed.add(face.localId());
             for (Node node : face.nodes()) {
               auto ni = NodeIntersection{ node, node, node_coord[node] };
               point_coords_tmp.add(ni);
             }
-            cont = true;
-            cell = face;
-            colineaire = true;
+            has_face_on_plane = true;
+            cell_useful = true;
             break;
           }
         }
       }
-      if (!cont) {
+
+      if (!cell_useful)
         continue;
-      }
     }
 
-    if (!colineaire) {
+    if (!has_face_on_plane) {
       // Tableaux définissant les arêtes pour chaque type d'élément.
       // hexa_edge: 12 arêtes pour un hexaédre (8 noeuds), chaque arête = [n0, n1] indices locaux.
       static constexpr Integer hexa_edge[12][2] = {
@@ -292,7 +354,7 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
         edge_def = tri_edge;
       }
       else {
-        ARCANE_FATAL("Type de maille non supporté: nbNode={0}", nb_node);
+        ARCANE_FATAL("Cell type not supported -- nbNode: {0}", nb_node);
       }
 
       // Itère sur toutes les arêtes de la maille.
@@ -300,10 +362,10 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
         Node node0 = cell.node(edge_def[i][0]);
         Node node1 = cell.node(edge_def[i][1]);
 
-        bool aaaa = true;
+        bool need_compute_intersection = true;
 
         // Si le noeud 0 est sur le plan.
-        if (math::isNearlyZero(node_dist[node0])) {
+        if (node_dist[node0] == 0) {
           const Real3 p = node_coord[node0];
 
           auto ni = NodeIntersection{ node0, node0, p };
@@ -311,11 +373,11 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
           if (!point_coords_tmp.contains(ni)) {
             point_coords_tmp.add(ni);
           }
-          aaaa = false;
+          need_compute_intersection = false;
         }
 
         // Si le noeud 1 est sur le plan.
-        if (math::isNearlyZero(node_dist[node1])) {
+        if (node_dist[node1] == 0) {
           const Real3 p = node_coord[node1];
 
           auto ni = NodeIntersection{ node1, node1, p };
@@ -323,11 +385,11 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
           if (!point_coords_tmp.contains(ni)) {
             point_coords_tmp.add(ni);
           }
-          aaaa = false;
+          need_compute_intersection = false;
         }
 
         // Si l'arrête passe à travers le plan.
-        if (aaaa && node_dist[node0] * node_dist[node1] < 0) {
+        if (need_compute_intersection && node_dist[node0] * node_dist[node1] < 0) {
 
           // Paramètre d'interpolation t dans [0,1] pour le point d'intersection
           // le long de l'arête de node0 à node1.
@@ -348,22 +410,23 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
       }
     }
 
-    if (point_coords_tmp.size() >= 3) {
+    // Si le nombre de futurs noeuds est suffisant pour en faire une maille.
+    if (point_coords_tmp.size() >= mesh_dim) {
+
       // On ajoute le uniqueId du nouveau noeud. Si ce noeud a déjà été créé, on récupère son uniqueId.
-      {
-        for (auto& new_node : point_coords_tmp) {
-          auto pos = point_coords.span().findFirst(new_node);
-          if (pos) {
-            new_node.m_uid_new_node = point_coords[pos.value()].m_uid_new_node;
-          }
-          else {
-            new_node.m_uid_new_node = sd_nb_node++;
-            pos_node.add(new_node.m_intersection_pos);
-            point_coords.add(new_node);
-          }
+      for (auto& new_node : point_coords_tmp) {
+        std::optional<long> pos = point_coords.span().findFirst(new_node.m_edge);
+        if (pos) {
+          new_node.m_edge.m_uid_new_node = point_coords[pos.value()].m_uid_new_node;
+        }
+        else {
+          new_node.m_edge.m_uid_new_node = sd_nb_node++;
+          pos_node.add(new_node.m_intersection_pos);
+          point_coords.add(new_node.m_edge);
         }
       }
 
+      // Type cell.
       if (point_coords_tmp.size() == 3)
         cells_infos.add(ITI_Triangle3);
       else if (point_coords_tmp.size() == 4)
@@ -375,6 +438,7 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
       else
         ARCANE_FATAL("Pas implem : {0}", point_coords_tmp.size());
 
+      // UID cell.
       cells_infos.add(sd_nb_cell);
 
       {
@@ -402,7 +466,7 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
         }
 
         std::sort(indices.begin(), indices.end(),
-                  [&](Int64 ia, Int64 ib) {
+                  [&](const Int64 ia, const Int64 ib) {
                     const Real3& pa = point_coords_tmp[ia].m_intersection_pos;
                     const Real3& pb = point_coords_tmp[ib].m_intersection_pos;
 
@@ -425,8 +489,8 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
                   });
 
         for (Int64 idx : indices) {
-          ARCANE_FATAL_IF(point_coords_tmp[idx].m_uid_new_node == -1, "aaa {0}", point_coords_tmp[idx].m_uid_new_node);
-          cells_infos.add(point_coords_tmp[idx].m_uid_new_node);
+          ARCANE_FATAL_IF(point_coords_tmp[idx].m_edge.m_uid_new_node == -1, "Node UID not initialized -- NodeUID: {0}", point_coords_tmp[idx].m_edge.m_uid_new_node);
+          cells_infos.add(point_coords_tmp[idx].m_edge.m_uid_new_node);
         }
       }
       sd_nb_cell++;

@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MeshSectionService.cc                                       (C) 2000-2026 */
 /*                                                                           */
-/* TODO.                                        */
+/* Service allowing the creation of a mesh with a section of another mesh.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,6 +30,15 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Service allowing the creation of a mesh with a section of another
+ * mesh.
+ *
+ * You can define a section of mesh with the method \a addPlan(). All cells
+ * (their barycenter) between these planes will be copied in a second mesh
+ * created by this service. You can get this mesh with the method
+ * \a meshSection().
+ */
 class MeshSectionService
 : public ArcaneMeshSectionObject
 {
@@ -41,9 +50,7 @@ class MeshSectionService
 
  public:
 
-  void addPlan(const Real3& p0, const Real3& normal) override;
-
- public:
+  void addPlane(const Real3& p0, const Real3& normal) override;
 
   void setVariables(VariableCollection variables) override;
   void updateSection() override;
@@ -62,7 +69,7 @@ class MeshSectionService
 
  private:
 
-  VariableCollection m_variables_ori;
+  // VariableCollection m_variables_ori;
   IPrimaryMesh* m_cloned_mesh = nullptr;
   UniqueArray<std::pair<Real3, Real3>> m_plans;
 };
@@ -79,7 +86,7 @@ ARCANE_REGISTER_SERVICE_MESHSECTION(MeshSectionService, MeshSectionService);
 /*---------------------------------------------------------------------------*/
 
 void MeshSectionService::
-addPlan(const Real3& p0, const Real3& normal)
+addPlane(const Real3& p0, const Real3& normal)
 {
   m_plans.add({ p0, math::normalizeReal3(normal) });
 }
@@ -90,7 +97,9 @@ addPlan(const Real3& p0, const Real3& normal)
 void MeshSectionService::
 setVariables(VariableCollection variables)
 {
-  m_variables_ori = variables;
+  ARCANE_UNUSED(variables);
+  ARCANE_NOT_YET_IMPLEMENTED("Not supported yet");
+  // m_variables_ori = variables;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -140,17 +149,19 @@ _createCells(Int32& sd_nb_cell, UniqueArray<Int64>& cells_infos, std::unordered_
     }
     b /= icell->nbNode();
 
-    bool in_cut = true;
-    for (auto& [p0, normal] : m_plans) {
-      const Real dist = math::dot({ b - p0 }, normal);
-      if (dist < 0) {
-        in_cut = false;
-        break;
+    {
+      bool in_plan = true;
+      for (auto& [p0, normal] : m_plans) {
+        const Real dist = math::dot({ b - p0 }, normal);
+        if (dist < 0) {
+          in_plan = false;
+          break;
+        }
       }
-    }
 
-    if (!in_cut)
-      continue;
+      if (!in_plan)
+        continue;
+    }
 
     Int16 cell_type = icell->itemTypeId();
     cells_infos.add(cell_type);
