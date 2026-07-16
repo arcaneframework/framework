@@ -129,6 +129,11 @@ class ParticleFamilyTester
     for (Integer i = 0; i < comm_size; ++i)
       m_extra_ghost_particles_to_send[i].clear();
     if (pm->isParallel()) {
+      // This method is called from a call to IPrimaryMesh::updateGhostLayers()
+      // and the cell family may have changed so we have to make
+      // sure endUpdate() has been called.
+      // NOTE GG: see if this has to done directly in DynamicMesh
+      m_family->mesh()->cellFamily()->endUpdate();
       CellGroup own_cells = m_family->mesh()->ownCells();
       std::map<Int32, std::set<Int32>> boundary_cells_neighbs;
       ENUMERATE_CELL (icell, own_cells) {
