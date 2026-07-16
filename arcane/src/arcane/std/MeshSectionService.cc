@@ -64,7 +64,7 @@ class MeshSectionService
  private:
 
   void _createMesh();
-  void _createCells(Int32& nb_cell, UniqueArray<Int64>& cells_infos, std::unordered_map<Int64, Real3>& pos_node);
+  void _createCells(Int32& nb_cell, UniqueArray<Int64>& cells_infos, Int32& nb_face, UniqueArray<Int64>& faces_infos, std::unordered_map<Int64, Real3>& pos_node);
   void _compute();
 
  private:
@@ -138,18 +138,21 @@ _createMesh()
 /*---------------------------------------------------------------------------*/
 
 void MeshSectionService::
-_createCells(Int32& sd_nb_cell, UniqueArray<Int64>& cells_infos, std::unordered_map<Int64, Real3>& pos_node)
+_createCells(Int32& sd_nb_cell, UniqueArray<Int64>& cells_infos, Int32& sd_nb_face, UniqueArray<Int64>& faces_infos, std::unordered_map<Int64, Real3>& pos_node)
 {
   VariableNodeReal3& node_coord = mesh()->nodesCoordinates();
 
-  ENUMERATE_ (Cell, icell, allCells()) {
-    Real3 b{ 0 };
-    for (Node node : icell->nodes()) {
-      b += node_coord[node];
-    }
-    b /= icell->nbNode();
+  VariableFaceBool is_added(VariableBuildInfo(mesh(), "IsAdded"));
+  is_added.fill(false);
 
+  ENUMERATE_ (Cell, icell, ownCells()) {
     {
+      Real3 b{ 0 };
+      for (Node node : icell->nodes()) {
+        b += node_coord[node];
+      }
+      b /= icell->nbNode();
+
       bool in_plan = true;
       for (auto& [p0, normal] : m_plans) {
         const Real dist = math::dot({ b - p0 }, normal);
@@ -175,6 +178,24 @@ _createCells(Int32& sd_nb_cell, UniqueArray<Int64>& cells_infos, std::unordered_
       pos_node[node.uniqueId()] = node_coord[node];
     }
     ++sd_nb_cell;
+
+    for (Face face : icell->faces()) {
+      if (is_added[face]) continue;
+      is_added[face] = true;
+
+      Int16 face_type = face.itemTypeId();
+      faces_infos.add(face_type);
+
+      Int64 face_uid = face.uniqueId().asInt64();
+      faces_infos.add(face_uid);
+
+      for (Node node : face.nodes()) {
+        Int64 node_uid = node.uniqueId().asInt64();
+        faces_infos.add(node_uid);
+        pos_node[node.uniqueId()] = node_coord[node];
+      }
+      ++sd_nb_face;
+    }
   }
 }
 
@@ -187,12 +208,17 @@ _compute()
   UniqueArray<Int64> cells_infos;
   cells_infos.reserve(10000);
 
+  UniqueArray<Int64> faces_infos;
+  faces_infos.reserve(10000);
+
   std::unordered_map<Int64, Real3> coord_map;
 
   Int32 nb_cell = 0;
+  Int32 nb_face = 0;
 
-  _createCells(nb_cell, cells_infos, coord_map);
+  _createCells(nb_cell, cells_infos, nb_face, faces_infos, coord_map);
 
+  m_cloned_mesh->modifier()->addFaces(nb_face, faces_infos);
   m_cloned_mesh->modifier()->addCells(nb_cell, cells_infos);
   m_cloned_mesh->modifier()->endUpdate();
 

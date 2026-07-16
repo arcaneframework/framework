@@ -11,6 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/core/IGhostLayerMng.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IMeshFactoryMng.h"
 #include "arcane/core/IMeshMng.h"
@@ -176,6 +177,9 @@ setVariables(VariableCollection variables)
 void MeshCutService::
 updateSection()
 {
+  if (mesh()->ghostLayerMng()->nbGhostLayer() < 1) {
+    ARCANE_FATAL("A ghost layer is required for this service");
+  }
   if (m_cloned_mesh == nullptr) {
     _createMesh();
   }

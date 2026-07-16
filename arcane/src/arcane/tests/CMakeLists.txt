@@ -1422,8 +1422,8 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-arcane_add_test_sequential(meshcut1 testMeshCut-1.arc)
-arcane_add_test_sequential(meshsection1 testMeshSection-1.arc)
+arcane_add_test(meshcut1 testMeshCut-1.arc)
+arcane_add_test(meshsection1 testMeshSection-1.arc)
 
 # ----------------------------------------------------------------------------
 
