@@ -245,6 +245,9 @@ init()
       if (pos.z > max_pos.z)
         max_pos.z = pos.z;
     }
+    IParallelMng* pm = parallelMng();
+    min_pos = pm->reduce(Parallel::ReduceMin,min_pos);
+    max_pos = pm->reduce(Parallel::ReduceMax,max_pos);
     center = Real(0.5) * (min_pos + max_pos);
     info() << "Mesh bounds: min=" << min_pos << " max=" << max_pos;
   }
@@ -687,6 +690,10 @@ _updateConservative()
     out_momentum[cid] = new_momentum;
     out_energy[cid] = new_energy;
   };
+
+  m_density.synchronize();
+  m_momentum.synchronize();
+  m_energy.synchronize();
 }
 
 /*---------------------------------------------------------------------------*/
