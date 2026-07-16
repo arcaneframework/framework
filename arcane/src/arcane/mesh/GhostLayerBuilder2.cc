@@ -466,7 +466,8 @@ _markBoundaryNodes(ArrayView<Int32> node_layer)
 void GhostLayerBuilder2::
 _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
 {
-  info() << "Processing ghost layer " << current_layer;
+  info() << "Processing ghost layer " << current_layer
+         << " node_layer_size=" << node_layer.size();
 
   SharedArray<BoundaryNodeInfo> boundary_node_list;
   //boundary_node_list.reserve(boundary_nodes_uid_count);
@@ -494,8 +495,10 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
   // NOTE: for the layer above 1, only one value must be sent.
   cells_map.eachItem([&](Cell cell) {
     // Do not process cells that do not belong to me
-    if (m_version >= 4 && cell.owner() != my_rank)
-      return;
+    // FIXME: (july 2026) temporarily disable this check because it does not work
+    // when we have 2 or more ghost layers.
+    //if (m_version >= 4 && cell.owner() != my_rank)
+    //return;
     Int64 cell_uid = cell.uniqueId();
     for (Node node : cell.nodes()) {
       Int32 node_lid = node.localId();
