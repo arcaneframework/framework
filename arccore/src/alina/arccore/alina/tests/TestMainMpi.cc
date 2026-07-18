@@ -22,8 +22,8 @@ using namespace AlinaTest;
 
 namespace
 {
-char** global_argv = nullptr;
-int global_argc = 0;
+char*** global_argv = nullptr;
+int* global_argc = 0;
 
 class MPIEnvironment
 : public ::testing::Environment
@@ -34,7 +34,7 @@ class MPIEnvironment
   {
     int thread_required = MPI_THREAD_SERIALIZED;
     int thread_provided = 0;
-    int mpi_error = ::MPI_Init_thread(&global_argc, &global_argv, thread_required, &thread_provided);
+    int mpi_error = ::MPI_Init_thread(global_argc, global_argv, thread_required, &thread_provided);
     ASSERT_EQ(mpi_error, MPI_SUCCESS);
 
     global_mpi_comm_world = MPI_COMM_WORLD;
@@ -57,8 +57,8 @@ class MPIEnvironment
 
 int main(int argc, char* argv[])
 {
-  global_argc = argc;
-  global_argv = argv;
+  global_argc = &argc;
+  global_argv = &argv;
   ::testing::InitGoogleTest(&argc, argv);
   ::testing::AddGlobalTestEnvironment(new MPIEnvironment());
   return RUN_ALL_TESTS();

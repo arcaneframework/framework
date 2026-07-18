@@ -29,8 +29,8 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-using Backend = Alina::BuiltinBackend<double>;
-//using Backend = Alina::BuiltinBackend<double,Int32,Int32>;
+//using Backend = Alina::BuiltinBackend<double>;
+using Backend = Alina::BuiltinBackend<double,Int32,Int32>;
 using PreconditionerType = Alina::AMG<Backend, Alina::CoarseningRuntime, Alina::RelaxationRuntime>;
 using SequentialSolverType = Alina::PreconditionedSolver<PreconditionerType, Alina::SolverRuntime<Backend>>;
 typedef Alina::PropertyTree Params;
@@ -344,8 +344,8 @@ struct deflation_vectors
 AlinaDistributedSolver* AlinaLib::
 solver_mpi_create(MPI_Comm comm,
                   ptrdiff_t n,
-                  const ptrdiff_t* ptr,
-                  const ptrdiff_t* col,
+                  const int* ptr,
+                  const int* col,
                   const double* val,
                   int n_def_vec,
                   AlinaDefVecFunction def_vec_func,
@@ -357,8 +357,8 @@ solver_mpi_create(MPI_Comm comm,
   prm.put("num_def_vec", n_def_vec);
   prm.put("def_vec", &dv);
 
-  SmallSpan<const ptrdiff_t> ptr_range(ptr, n + 1);
-  SmallSpan<const ptrdiff_t> col_range(col, ptr[n]);
+  SmallSpan<const int> ptr_range(ptr, n + 1);
+  SmallSpan<const int> col_range(col, ptr[n]);
   SmallSpan<const double> val_range(val, ptr[n]);
 
   auto A = std::make_tuple(n, ptr_range, col_range, val_range);
@@ -385,9 +385,9 @@ solver_mpi_solve(AlinaDistributedSolver* handle,
 
   AlinaConvergenceInfo cnv;
 
-  std::tie(cnv.iterations, cnv.residual) = (*solver)(rhs_range, x_range);
+  Alina::SolverResult r = (*solver)(rhs_range, x_range);
 
-  return cnv;
+  return _toConvInfo(r);
 }
 
 /*---------------------------------------------------------------------------*/
