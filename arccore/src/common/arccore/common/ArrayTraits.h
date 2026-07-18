@@ -27,7 +27,6 @@ namespace Arccore
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Characteristics for an array.
  *
@@ -113,6 +112,7 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
 ARCCORE_DEFINE_ARRAY_PODTYPE(std::byte);
 ARCCORE_DEFINE_ARRAY_PODTYPE(Float16);
 ARCCORE_DEFINE_ARRAY_PODTYPE(BFloat16);
+ARCCORE_DEFINE_ARRAY_PODTYPE(Arcane::HPReal);
 
 // Not POD by default for legacy compatibility
 // but it may improve performance making them PODs.
