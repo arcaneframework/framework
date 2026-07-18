@@ -31,7 +31,7 @@ if (Boost_FOUND)
   target_include_directories(arccore_alina SYSTEM PUBLIC
     ${Boost_INCLUDE_DIRS}
   )
-  target_link_libraries(arccore_alina PUBLIC Boost::headers)
+  target_link_libraries(arccore_alina PRIVATE Boost::headers)
 else()
   target_compile_definitions(arccore_alina INTERFACE ARCCORE_ALINA_NO_BOOST)
 endif()
