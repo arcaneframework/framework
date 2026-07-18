@@ -87,6 +87,7 @@ using RealN2 = NumVector<Real, 2>;
 using RealN3 = NumVector<Real, 3>;
 using RealN2x2 = NumMatrix<Real, 2>;
 using RealN3x3 = NumMatrix<Real, 3>;
+class HPReal;
 
 class IRangeFunctor;
 template <int RankValue> class IMDRangeFunctor;

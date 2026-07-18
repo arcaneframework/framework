@@ -58,7 +58,6 @@ set(ARCANE_SOURCES
   HashAlgorithm.cc
   HashTable.cc
   HashTable.h
-  HPReal.cc
   HPReal.h
   InvalidArgumentException.cc
   InvalidArgumentException.h

@@ -5,15 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HPReal.cc                                                   (C) 2000-2018 */
+/* HPReal.cc                                                   (C) 2000-2026 */
 /*                                                                           */
 /* High-precision real number.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-#include "arcane/utils/Iostream.h"
-#include "arcane/utils/HPReal.h"
+#include "arccore/base/HPReal.h"
+
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,7 +27,7 @@ namespace Arcane
 std::istream& HPReal::
 assign(std::istream& i)
 {
-  i >> m_value >> ws >> m_correction;
+  i >> m_value >> std::ws >> m_correction;
   return i;
 }
 
