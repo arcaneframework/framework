@@ -42,6 +42,8 @@ class NumVector
   using ThatClass = NumVector<T, Size>;
   using DataType = T;
   static constexpr bool isRealType() { return std::is_same_v<T, Real>; }
+  struct InitTag
+  {};
 
  public:
 
@@ -116,6 +118,13 @@ class NumVector
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] = v;
+  }
+
+  //! Constructs the instance with the value \a v for each component
+  constexpr ARCCORE_HOST_DEVICE NumVector(const DataType* v,InitTag)
+  {
+    for (int i = 0; i < Size; ++i)
+      m_values[i] = v[i];
   }
 
   explicit constexpr ARCCORE_HOST_DEVICE NumVector(Real2 v) requires(Size == 2 && isRealType())
