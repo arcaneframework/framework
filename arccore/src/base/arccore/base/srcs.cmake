@@ -57,6 +57,8 @@
   GenericRegisterer.h
   GenericRegisterer.cc
   GlibDynamicLibraryLoader.cc
+  HPReal.cc
+  HPReal.h
   Iterator.h
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
