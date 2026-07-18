@@ -115,8 +115,8 @@ class ARCCORE_ALINA_EXPORT AlinaLib
   // Create distributed solver.
   static AlinaDistributedSolver* solver_mpi_create(MPI_Comm comm,
                                                    ptrdiff_t n,
-                                                   const ptrdiff_t* ptr,
-                                                   const ptrdiff_t* col,
+                                                   const int* ptr,
+                                                   const int* col,
                                                    const double* val,
                                                    int n_def_vec,
                                                    AlinaDefVecFunction def_vec_func,

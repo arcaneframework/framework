@@ -76,8 +76,14 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   }
 
   // Assemble
-  std::vector<ptrdiff_t> ptr;
-  std::vector<ptrdiff_t> col;
+
+  // For 32 bit indexing
+  using ColumnType = Int32;
+  // For 64 bit indexing
+  // using ColumnType = Int64;
+
+  std::vector<ColumnType> ptr;
+  std::vector<ColumnType> col;
   std::vector<double> val;
   std::vector<double> rhs;
 
