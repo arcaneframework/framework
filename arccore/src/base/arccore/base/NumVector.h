@@ -169,7 +169,7 @@ class NumVector
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE static NumVector zero() { return NumVector(); }
+  constexpr ARCCORE_HOST_DEVICE static NumVector zero() { return NumVector({}); }
 
  public:
 
@@ -378,7 +378,7 @@ class NumVector
  private:
 
   //! Vector values
-  T m_values[Size] = {};
+  T m_values[Size];
 
  private:
 

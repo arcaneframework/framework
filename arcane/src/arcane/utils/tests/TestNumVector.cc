@@ -25,7 +25,7 @@ TEST(TestNumVector, RealN2)
   std::cout << "   sizeof(NumVector<double,2>) = " << sizeof(NumVector<double, 2>) << "\n";
   std::cout << "   sizeof(NumVector<double,3>) = " << sizeof(NumVector<double, 3>) << "\n";
   {
-    RealN2 v1;
+    RealN2 v1{0.0};
     ASSERT_EQ(v1.vx(), 0.0);
     ASSERT_EQ(v1.vy(), 0.0);
   }
@@ -76,7 +76,7 @@ TEST(TestNumVector, RealN2)
 TEST(TestNumVector, Real3)
 {
   {
-    RealN3 v1;
+    RealN3 v1{0.0};
     ASSERT_EQ(v1.vx(), 0.0);
     ASSERT_EQ(v1.vy(), 0.0);
     ASSERT_EQ(v1.vz(), 0.0);
@@ -208,7 +208,7 @@ TEST(TestNumVector, RealN2Absolute)
 
 TEST(TestNumVector, RealN2NearlyZero)
 {
-  RealN2 v;
+  RealN2 v{0.0};
   ASSERT_TRUE(math::isNearlyZero(v));
   v.vx() = 1e-20;
   ASSERT_TRUE(math::isNearlyZero(v));
@@ -352,7 +352,7 @@ TEST(TestNumVector, RealN3Absolute)
 
 TEST(TestNumVector, RealN3NearlyZero)
 {
-  RealN3 v;
+  RealN3 v{0.0};
   ASSERT_TRUE(math::isNearlyZero(v));
   v.vz() = 1e-20;
   ASSERT_TRUE(math::isNearlyZero(v));
@@ -479,7 +479,7 @@ TEST(TestNumVector, Size6)
 TEST(TestNumVector, Int32x3)
 {
   using V3i = NumVector<Int32, 3>;
-  V3i v;
+  V3i v{0};
   ASSERT_EQ(v[0], 0);
   ASSERT_EQ(v[1], 0);
   ASSERT_EQ(v[2], 0);
