@@ -21,9 +21,9 @@ static_assert(std::is_same_v<TrueType,ArrayTraits<NumMatrix<double,4,2>>::IsPODT
 
 TEST(TestNumMatrix, Real2x2)
 {
-  RealN2 zero;
+  auto zero = RealN2::zero();
   {
-    RealN2x2 v1;
+    RealN2x2 v1{0.0};
     ASSERT_EQ(v1.vx(), zero);
     ASSERT_EQ(v1.vy(), zero);
   }
@@ -104,7 +104,7 @@ TEST(TestNumMatrix, Real2x2Fill)
 TEST(TestNumMatrix, Real2x2Zero)
 {
   RealN2x2 m = RealN2x2::zero();
-  RealN2 zero;
+  RealN2 zero{0.0};
   ASSERT_EQ(m.vx(), zero);
   ASSERT_EQ(m.vy(), zero);
   ASSERT_TRUE(math::isNearlyZero(m));
@@ -218,9 +218,9 @@ TEST(TestNumMatrix, Real2x2Conversion)
 
 TEST(TestNumMatrix, Real3x3)
 {
-  RealN3 zero;
+  RealN3 zero{0.0};
   {
-    RealN3x3 v1;
+    RealN3x3 v1{0.0};
     ASSERT_EQ(v1.vx(), zero);
     ASSERT_EQ(v1.vy(), zero);
     ASSERT_EQ(v1.vz(), zero);
@@ -397,7 +397,7 @@ TEST(TestNumMatrix, Real3x3Fill)
 
 TEST(TestNumMatrix, Real3x3NearlyZero)
 {
-  RealN3x3 m;
+  RealN3x3 m{0.0};
   ASSERT_TRUE(math::isNearlyZero(m));
   m(0, 0) = 1e-20;
   ASSERT_TRUE(math::isNearlyZero(m));
@@ -462,7 +462,7 @@ TEST(TestNumMatrix, Int32x2)
 {
   using Int32x2 = NumMatrix<Int32, 2, 2>;
 
-  Int32x2 m;
+  Int32x2 m{{}};
   ASSERT_EQ(m(0, 0), 0);
   ASSERT_EQ(m(1, 1), 0);
 

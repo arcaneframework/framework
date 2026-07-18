@@ -167,7 +167,7 @@ class NumMatrix
   //! Constructs the zero matrix
   constexpr ARCCORE_HOST_DEVICE static ThatClass zero()
   {
-    return ThatClass();
+    return ThatClass({});
   }
 
   //! Constructs the matrix ((ax,bx,cx), (ay,by,cy), (az,bz,cz)).
@@ -381,7 +381,7 @@ class NumMatrix
  private:
 
   //! Matrix values
-  DataType m_values[NbElement] = {};
+  DataType m_values[NbElement];
 
  private:
 
