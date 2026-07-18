@@ -3,6 +3,7 @@
   TestProcess.cc
   TestSequentialFor.cc
   TestStringVector.cc
+  TestProgramOptions.cc
 )
 
 target_link_libraries(arccore_common.tests PUBLIC arccore_common GTest::GTest GTest::Main)

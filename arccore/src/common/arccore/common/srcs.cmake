@@ -45,6 +45,7 @@
   ParameterList.h
   ParameterList.cc
   Process.cc
+  ProgramOptions.cc
   Property.cc
   SequentialFor.h
   SmallArray.h
@@ -66,6 +67,7 @@
   internal/MemoryUtilsInternal.h
   internal/ParameterListPropertyReader.h
   internal/Process.h
+  internal/ProgramOptions.h
   internal/Property.h
   internal/PropertyDeclarations.h
   internal/SpecificMemoryCopyList.h
