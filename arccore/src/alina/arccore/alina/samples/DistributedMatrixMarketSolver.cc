@@ -32,8 +32,6 @@
 
 #include <boost/scope_exit.hpp>
 
-#include <boost/program_options.hpp>
-
 #include "arccore/alina/AMG.h"
 #include "arccore/alina/CoarseningRuntime.h"
 #include "arccore/alina/RelaxationRuntime.h"
@@ -41,6 +39,8 @@
 #include "arccore/alina/DistributedSolverRuntime.h"
 #include "arccore/alina/DistributedDirectSolverRuntime.h"
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 using namespace Arcane;
 using namespace Arcane::Alina;
@@ -246,7 +246,7 @@ int main(int argc, char* argv[])
   std::string part_file = "partition.mtx";
   std::string out_file;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")(

@@ -20,8 +20,6 @@
 #include <vector>
 #include <string>
 
-#include <boost/program_options.hpp>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/StaticMatrix.h"
 #include "arccore/alina/Adapters.h"
@@ -32,6 +30,8 @@
 
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 #include "arcane/utils/Exception.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -274,7 +274,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   tm->info() << "World size: " << comm.size;
 
   // Read configuration from command line
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   auto default_partitioner_type = Alina::eMatrixPartitionerType::merge;

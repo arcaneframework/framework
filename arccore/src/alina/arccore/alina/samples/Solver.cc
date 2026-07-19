@@ -24,7 +24,6 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
 
-#include <boost/program_options.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 
@@ -59,8 +58,9 @@ using Backend = Arcane::Alina::BuiltinBackend<double, Arcane::Int32>;
 #include "arccore/alina/AMG.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/IO.h"
-
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 #include "SampleProblemCommon.h"
 
@@ -278,7 +278,7 @@ solve(const Alina::PropertyTree& prm,
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   using std::string;

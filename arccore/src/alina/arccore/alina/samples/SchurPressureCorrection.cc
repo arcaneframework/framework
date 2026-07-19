@@ -19,7 +19,6 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 
 #if defined(SOLVER_BACKEND_CUDA)
@@ -49,7 +48,9 @@ template <class T> using Backend = Arcane::Alina::BuiltinBackend<T>;
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Profiler.h"
 
-   using namespace Arcane;
+#include "arccore/common/internal/ProgramOptions.h"
+
+using namespace Arcane;
 using namespace Arcane::Alina;
 
 #ifndef ARCCORE_ALINA_BLOCK_SIZES
@@ -157,7 +158,7 @@ int main(int argc, char* argv[])
   using std::string;
   using std::vector;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   po::options_description desc("Options");

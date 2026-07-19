@@ -20,14 +20,15 @@
 #include <string>
 #include <complex>
 
-#include <boost/program_options.hpp>
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/ValueTypeComplex.h"
 #include "arccore/alina/IO.h"
 
+#include "arccore/common/internal/ProgramOptions.h"
+
 using namespace Arcane;
 namespace io = Alina::IO;
-namespace po = boost::program_options;
+namespace po = Arcane::ProgramOptions;
 using Alina::precondition;
 
 //---------------------------------------------------------------------------

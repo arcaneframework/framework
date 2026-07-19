@@ -31,7 +31,7 @@
 
 #include "AlinaSamplesCommon.h"
 
-#include <boost/program_options.hpp>
+#include "arccore/common/internal/ProgramOptions.h"
 
 using namespace Arcane;
 
@@ -45,7 +45,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   tm->info() << "World size: " << comm.size;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")("size,n",

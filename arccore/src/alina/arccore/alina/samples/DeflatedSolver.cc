@@ -19,8 +19,6 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/RelaxationRuntime.h"
 #include "arccore/alina/CoarseningRuntime.h"
@@ -30,8 +28,9 @@
 #include "arccore/alina/AMG.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/IO.h"
-
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 using namespace Arcane;
 
@@ -42,7 +41,7 @@ int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   using std::string;
