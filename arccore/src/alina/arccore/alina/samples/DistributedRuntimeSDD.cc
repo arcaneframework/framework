@@ -39,7 +39,6 @@ class rounding_error
 
 #include <boost/scope_exit.hpp>
 #include <memory>
-#include <boost/program_options.hpp>
 
 #include <boost/multi_array.hpp>
 #if defined(SOLVER_BACKEND_CUDA)
@@ -64,6 +63,9 @@ typedef Arcane::Alina::BuiltinBackend<double> Backend;
 #include "arccore/alina/DistributedSubDomainDeflation.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
+
 #include "AlinaSamplesCommon.h"
 
 using namespace Arcane;
@@ -478,7 +480,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   std::string parameter_file;
   std::string out_file;
 
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")(

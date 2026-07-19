@@ -23,10 +23,9 @@
 #include <numeric>
 #include <cassert>
 
-#include <boost/program_options.hpp>
-
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/IO.h"
+#include "arccore/common/internal/ProgramOptions.h"
 
 extern "C" {
 #include <metis.h>
@@ -229,7 +228,7 @@ partition(int n, int nparts, int block_size,
 //---------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
 
   try {
     std::string ifile;

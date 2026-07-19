@@ -28,7 +28,6 @@
 #include <numeric>
 #include <cmath>
 
-#include <boost/program_options.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/scope_exit.hpp>
 
@@ -56,6 +55,8 @@ typedef Arcane::Alina::BuiltinBackend<double> Backend;
 #include "arccore/alina/DistributedSolverRuntime.h"
 #include "arccore/alina/DistributedDirectSolverRuntime.h"
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 using namespace Arcane;
 using namespace Arcane::Alina;
@@ -194,7 +195,7 @@ int main(int argc, char* argv[])
     std::cout << "World size: " << world.size << std::endl;
 
   // Read configuration from command line
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   using std::string;
   po::options_description desc("Options");
 

@@ -21,8 +21,6 @@
 #include <string>
 #include <complex>
 
-#include <boost/program_options.hpp>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/ValueTypeComplex.h"
 #include "arccore/alina/Adapters.h"
@@ -34,10 +32,10 @@
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Profiler.h"
 
+#include "arccore/common/internal/ProgramOptions.h"
+
 using namespace Arcane;
 using namespace Arcane::Alina;
-
-namespace math = Alina::math;
 
 //---------------------------------------------------------------------------
 ptrdiff_t
@@ -162,7 +160,7 @@ int main(int argc, char* argv[])
     std::cout << "World size: " << comm.size << std::endl;
 
   // Read configuration from command line
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")(

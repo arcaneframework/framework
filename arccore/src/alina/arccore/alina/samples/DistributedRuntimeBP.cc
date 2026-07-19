@@ -22,7 +22,6 @@
 #include <utility>
 #include <numeric>
 
-#include <boost/program_options.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/scope_exit.hpp>
 
@@ -40,6 +39,8 @@
 
 // For compilation test only
 #include "arccore/alina/DistributedRelaxationRuntime.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 #include "DomainPartition.h"
 
@@ -101,7 +102,7 @@ solve(const Alina::mpi_communicator& comm,
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
 
   using std::string;
   using std::vector;

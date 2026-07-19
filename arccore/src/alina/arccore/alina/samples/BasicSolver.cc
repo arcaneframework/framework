@@ -19,8 +19,6 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/StaticMatrix.h"
 #include "arccore/alina/Adapters.h"
@@ -41,6 +39,8 @@
 #include "arccore/alina/PreconditionerRuntime.h"
 
 #include "arccore/alina/Profiler.h"
+
+#include "arccore/common/internal/ProgramOptions.h"
 
 #include "AlinaSamplesCommon.h"
 #include "arccore/trace/ITraceMng.h"
@@ -125,7 +125,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   ITraceMng* tm = ctx.traceMng();
 
   auto& prof = Alina::Profiler::globalProfiler();
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   using std::string;

@@ -24,7 +24,6 @@
 #include <vector>
 #include <string>
 
-#include <boost/program_options.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 
 #include "arccore/alina/BuiltinBackend.h"
@@ -47,6 +46,7 @@
 
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Profiler.h"
+#include "arccore/common/internal/ProgramOptions.h"
 
 #ifndef ARCCORE_ALINA_BLOCK_SIZES
 #  define ARCCORE_ALINA_BLOCK_SIZES (3)(4)
@@ -450,7 +450,7 @@ int main(int argc, char* argv[])
     std::cout << "World size: " << comm.size << std::endl;
 
   // Read configuration from command line
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
   desc.add_options()("help,h", "show help")("matrix,A",

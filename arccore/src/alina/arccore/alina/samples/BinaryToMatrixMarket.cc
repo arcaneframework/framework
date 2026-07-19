@@ -16,17 +16,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <iostream>
-#include <string>
-
-#include <boost/program_options.hpp>
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/IO.h"
 
+#include "arccore/common/internal/ProgramOptions.h"
+
+#include <iostream>
+#include <string>
+
 int main(int argc, char* argv[])
 {
-  namespace po = boost::program_options;
+  namespace po = Arcane::ProgramOptions;
   namespace io = Arcane::Alina::IO;
 
   using Arcane::Alina::precondition;
