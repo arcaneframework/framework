@@ -89,8 +89,10 @@ jobs:
         shell: bash
         # Build, using cov-build and cov-int directory as output (mandatory)
         run: |
+          apt-get update
+          apt-get install -y file
           export PATH="${PWD}/coverity-tool/bin:${PATH}"
-          cov-build --dir cov-int make -C build -j $(nproc)
+          cov-build --dir cov-int make -C build
 
       - name: Upload log artifact
         uses: actions/upload-artifact@v7
