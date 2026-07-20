@@ -20,7 +20,8 @@
 
 #include <vector>
 #include <random>
-#include <boost/multi_array.hpp>
+
+#include "arccore/common/NumArray.h"
 
 #include "arccore/alina/QRFactorizationImpl.h"
 #include "arccore/alina/ValueTypeInterface.h"
@@ -75,16 +76,16 @@ void qr_factorize(int n, int m)
 {
   std::cout << "factorize " << n << " " << m << std::endl;
   typedef typename std::conditional<order == Alina::detail::row_major,
-                                    boost::c_storage_order,
-                                    boost::fortran_storage_order>::type ma_storage_order;
+                                    RightLayout,
+                                    LeftLayout>::type WantedLayout;
 
-  boost::multi_array<value_type, 2> A0(boost::extents[n][m], ma_storage_order());
+  NumArray<value_type, MDDim2, WantedLayout> A0(n, m);
 
   for (int i = 0; i < n; ++i)
     for (int j = 0; j < m; ++j)
-      A0[i][j] = random<value_type>();
+      A0(i, j) = random<value_type>();
 
-  boost::multi_array<value_type, 2> A = A0;
+  NumArray<value_type, MDDim2, WantedLayout> A = A0;
 
   Alina::detail::QRFactorization<value_type> qr;
 
@@ -99,7 +100,7 @@ void qr_factorize(int n, int m)
       for (int k = 0; k < p; ++k)
         sum += qr.Q(i, k) * qr.R(k, j);
 
-      sum -= A0[i][j];
+      sum -= A0(i, j);
 
       ASSERT_NEAR(Alina::math::norm(sum), 0.0, 1e-8);
     }
@@ -111,18 +112,18 @@ void qr_solve(int n, int m)
 {
   std::cout << "solve " << n << " " << m << std::endl;
   typedef typename std::conditional<order == Alina::detail::row_major,
-                                    boost::c_storage_order,
-                                    boost::fortran_storage_order>::type ma_storage_order;
+                                    RightLayout,
+                                    LeftLayout>::type WantedLayout;
 
   typedef typename Alina::math::rhs_of<value_type>::type rhs_type;
 
-  boost::multi_array<value_type, 2> A0(boost::extents[n][m], ma_storage_order());
+  NumArray<value_type, MDDim2, WantedLayout> A0(n, m);
 
   for (int i = 0; i < n; ++i)
     for (int j = 0; j < m; ++j)
-      A0[i][j] = random<value_type>();
+      A0(i, j) = random<value_type>();
 
-  boost::multi_array<value_type, 2> A = A0;
+  NumArray<value_type, MDDim2, WantedLayout> A = A0;
 
   Alina::detail::QRFactorization<value_type> qr;
 
@@ -137,7 +138,7 @@ void qr_solve(int n, int m)
   for (int i = 0; i < n; ++i) {
     rhs_type sum = Alina::math::zero<rhs_type>();
     for (int j = 0; j < m; ++j)
-      sum += A0[i][j] * x[j];
+      sum += A0(i, j) * x[j];
 
     Ax[i] = sum;
 
@@ -152,8 +153,8 @@ void qr_solve(int n, int m)
       rhs_type sumf = Alina::math::zero<rhs_type>();
 
       for (int j = 0; j < n; ++j) {
-        sumx += Alina::math::adjoint(A0[j][i]) * Ax[j];
-        sumf += Alina::math::adjoint(A0[j][i]) * f0[j];
+        sumx += Alina::math::adjoint(A0(j, i)) * Ax[j];
+        sumf += Alina::math::adjoint(A0(j, i)) * f0[j];
       }
 
       rhs_type delta = sumx - sumf;
@@ -207,13 +208,13 @@ TEST(alina_test_qr, test_qr_solve)
 
 TEST(alina_test_qr, qr_issue_39)
 {
-  boost::multi_array<double, 2> A0(boost::extents[2][2]);
-  A0[0][0] = 1e+0;
-  A0[0][1] = 1e+0;
-  A0[1][0] = 1e-8;
-  A0[1][1] = 1e+0;
+  NumArray<double, MDDim2> A0(2, 2);
+  A0(0, 0) = 1e+0;
+  A0(0, 1) = 1e+0;
+  A0(1, 0) = 1e-8;
+  A0(1, 1) = 1e+0;
 
-  boost::multi_array<double, 2> A = A0;
+  NumArray<double, MDDim2> A = A0;
 
   Alina::detail::QRFactorization<double> qr;
 
@@ -226,7 +227,7 @@ TEST(alina_test_qr, qr_issue_39)
       for (int k = 0; k < 2; ++k)
         sum += qr.Q(i, k) * qr.R(k, j);
 
-      sum -= A0[i][j];
+      sum -= A0(i, j);
 
       ASSERT_NEAR(sum, 0.0, 1e-8);
     }
