@@ -16,11 +16,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <iostream>
-#include <vector>
-
-#include <boost/scope_exit.hpp>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/StaticMatrix.h"
 #include "arccore/alina/Adapters.h"
@@ -28,6 +23,9 @@
 #include "arccore/alina/IO.h"
 
 #include "arccore/alina/Profiler.h"
+
+#include <iostream>
+#include <vector>
 
 using namespace Arcane;
 
@@ -75,9 +73,13 @@ void assemble(int n, int beg, int end,
 template <class Val>
 void test()
 {
-  typedef typename math::rhs_of<Val>::type Rhs;
+  // In case of block, Rhs may be a StaticMatrix.
+  using Rhs = math::rhs_of<Val>::type;
+  using ScalarRhs = math::scalar_of<Rhs>::type;
+  int nb_scalar_for_rhs = sizeof(Rhs) / sizeof(ScalarRhs);
 
   Alina::mpi_communicator comm(MPI_COMM_WORLD);
+  IMessagePassingMng* pm = comm.m_message_passing_mng.get();
 
   int n = 16;
   int chunk_len = (n + comm.size - 1) / comm.size;
@@ -85,11 +87,9 @@ void test()
   int chunk_end = std::min(n, chunk_len * (comm.rank + 1));
   int chunk = chunk_end - chunk_beg;
 
-  std::vector<int> chunks(comm.size);
-  MPI_Allgather(&chunk, 1, MPI_INT, &chunks[0], 1, MPI_INT, comm);
-  std::vector<int> displ(comm.size, 0);
-  for (int i = 1; i < comm.size; ++i)
-    displ[i] = displ[i - 1] + chunks[i - 1];
+  UniqueArray<int> chunks(comm.size);
+  ConstArrayView<int> sent_chunk(1,&chunk);
+  mpAllGather(pm,sent_chunk,chunks);
 
   std::vector<int> ptr;
   std::vector<int> col;
@@ -112,11 +112,23 @@ void test()
 
   Alina::backend::spmv(1, *B, x, 0, y);
 
-  std::vector<Rhs> X(n), R(n);
-  MPI_Gatherv(&x[0], chunk, Alina::mpi_datatype<Rhs>(), &X[0], &chunks[0], &displ[0], Alina::mpi_datatype<Rhs>(), 0, comm);
-  MPI_Gatherv(&y[0], chunk, Alina::mpi_datatype<Rhs>(), &R[0], &chunks[0], &displ[0], Alina::mpi_datatype<Rhs>(), 0, comm);
+  // Because Rhs may be a StaticMatrix and it is not a basic type
+  // we convert it to an array of basic type (which is math::scalar_of<Rhs>::type).
+  UniqueArray<ScalarRhs> scalarX;
+  UniqueArray<ScalarRhs> scalarR;
+  Span<const ScalarRhs> scalar_x_view(reinterpret_cast<ScalarRhs*>(x.data()), x.size() * nb_scalar_for_rhs);
+  Span<const ScalarRhs> scalar_r_view(reinterpret_cast<ScalarRhs*>(y.data()), y.size() * nb_scalar_for_rhs);
+  mpGatherVariable(pm, scalar_x_view, scalarX, 0);
+  mpGatherVariable(pm, scalar_r_view, scalarR, 0);
 
   if (comm.rank == 0) {
+    std::cout << "Doing verification size=" << scalarX.size() << "\n";
+    Rhs* scalar_x_begin = reinterpret_cast<Rhs*>(scalarX.data());
+    std::vector<Rhs> X(scalar_x_begin, scalar_x_begin + n);
+
+    Rhs* scalar_r_begin = reinterpret_cast<Rhs*>(scalarR.data());
+    std::vector<Rhs> R(scalar_r_begin, scalar_r_begin + n);
+
     std::vector<Rhs> Y(n);
     assemble(n, 0, n, ptr, col, val);
 
@@ -135,12 +147,8 @@ void test()
 int main(int argc, char* argv[])
 {
   MPI_Init(&argc, &argv);
-  BOOST_SCOPE_EXIT(void)
-  {
-    MPI_Finalize();
-  }
-  BOOST_SCOPE_EXIT_END
 
   test<double>();
   test<Alina::StaticMatrix<double, 2, 2>>();
+  MPI_Finalize();
 }
