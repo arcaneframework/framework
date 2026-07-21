@@ -42,9 +42,12 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 {
   ITraceMng* tm = ctx.traceMng();
 
-  int rank, size;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  Alina::mpi_communicator world(MPI_COMM_WORLD);
+
+  int rank = world.rank;
+  int size = world.size;
+  //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  //MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   if (rank == 0)
     tm->info() << "World size: " << size;
@@ -60,7 +63,9 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   ptrdiff_t chunk = part.size(rank);
 
   std::vector<ptrdiff_t> domain(size + 1);
-  MPI_Allgather(&chunk, 1, Alina::mpi_datatype<ptrdiff_t>(), &domain[1], 1, Alina::mpi_datatype<ptrdiff_t>(), MPI_COMM_WORLD);
+  ConstArrayView<ptrdiff_t> send_buf(1, &chunk);
+  ArrayView<ptrdiff_t> receive_buf(size, &domain[1]);
+  mpAllGather(world.m_message_passing_mng.get(), send_buf, receive_buf);
   std::partial_sum(domain.begin(), domain.end(), domain.begin());
 
   ptrdiff_t chunk_start = domain[rank];
