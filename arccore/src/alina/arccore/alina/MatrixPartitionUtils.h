@@ -255,9 +255,9 @@ mpi_graph_perm_index(mpi_communicator comm, int npart, const std::vector<Idx>& p
 
   for (Idx p : part)
     ++loc_part_cnt[p];
-
-  MPI_Exscan(&loc_part_cnt[0], &loc_part_beg[0], npart, mpi_datatype<ptrdiff_t>(), MPI_SUM, comm);
-  MPI_Allreduce(&loc_part_cnt[0], &glo_part_cnt[0], npart, mpi_datatype<ptrdiff_t>(), MPI_SUM, comm);
+  MPI_Datatype ptr_datatype = MPI_LONG_LONG; //mpi_datatype<ptrdiff_t>();
+  MPI_Exscan(&loc_part_cnt[0], &loc_part_beg[0], npart, ptr_datatype, MPI_SUM, comm);
+  MPI_Allreduce(&loc_part_cnt[0], &glo_part_cnt[0], npart, ptr_datatype, MPI_SUM, comm);
 
   glo_part_beg[0] = 0;
   std::partial_sum(glo_part_cnt.begin(), glo_part_cnt.end(), glo_part_beg.begin() + 1);

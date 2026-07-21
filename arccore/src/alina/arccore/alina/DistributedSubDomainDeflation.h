@@ -221,7 +221,13 @@ class DistributedSubDomainDeflation
 
     // Lets see how many deflation vectors are there.
     std::vector<ptrdiff_t> dv_size(comm.size);
-    MPI_Allgather(&ndv, 1, mpi_datatype<ptrdiff_t>(), &dv_size[0], 1, mpi_datatype<ptrdiff_t>(), comm);
+
+    {
+      ConstArrayView<ptrdiff_t> send_buf(1, &ndv);
+      ArrayView<ptrdiff_t> receive_buf(comm.size, &dv_size[0]);
+
+      mpAllGather(comm.m_message_passing_mng.get(), send_buf, receive_buf);
+    }
 
     std::partial_sum(dv_size.begin(), dv_size.end(), dv_start.begin() + 1);
     nz = dv_start.back();

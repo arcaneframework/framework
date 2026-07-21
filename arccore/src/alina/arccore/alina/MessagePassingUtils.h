@@ -44,119 +44,6 @@
 namespace Arcane::Alina
 {
 
-/// Converts C type to MPI datatype.
-template <class T, class Enable = void>
-struct mpi_datatype_impl
-{
-  static MPI_Datatype get()
-  {
-    static const MPI_Datatype t = create();
-    return t;
-  }
-
-  static MPI_Datatype create()
-  {
-    static_assert(false,"BAD");
-    typedef typename math::scalar_of<T>::type S;
-    MPI_Datatype t;
-    int n = sizeof(T) / sizeof(S);
-    MPI_Type_contiguous(n, mpi_datatype_impl<S>::get(), &t);
-    MPI_Type_commit(&t);
-    return t;
-  }
-};
-
-template <>
-struct mpi_datatype_impl<float>
-{
-  static MPI_Datatype get() { return MPI_FLOAT; }
-};
-
-template <>
-struct mpi_datatype_impl<double>
-{
-  static MPI_Datatype get() { return MPI_DOUBLE; }
-};
-
-template <>
-struct mpi_datatype_impl<long double>
-{
-  static MPI_Datatype get() { return MPI_LONG_DOUBLE; }
-};
-
-template <>
-struct mpi_datatype_impl<int>
-{
-  static MPI_Datatype get() { return MPI_INT; }
-};
-
-template <>
-struct mpi_datatype_impl<unsigned>
-{
-  static MPI_Datatype get() { return MPI_UNSIGNED; }
-};
-
-template <>
-struct mpi_datatype_impl<long long>
-{
-  static MPI_Datatype get() { return MPI_LONG_LONG_INT; }
-};
-
-template <>
-struct mpi_datatype_impl<unsigned long long>
-{
-  static MPI_Datatype get() { return MPI_UNSIGNED_LONG_LONG; }
-};
-
-#if (MPI_VERSION > 2) || (MPI_VERSION == 2 && MPI_SUBVERSION >= 2)
-template <>
-struct mpi_datatype_impl<std::complex<double>>
-{
-  static MPI_Datatype get() { return MPI_CXX_DOUBLE_COMPLEX; }
-};
-
-template <>
-struct mpi_datatype_impl<std::complex<float>>
-{
-  static MPI_Datatype get() { return MPI_CXX_FLOAT_COMPLEX; }
-};
-#endif
-
-template <typename T>
-struct mpi_datatype_impl<T,
-                         typename std::enable_if<
-                         std::is_same<T, ptrdiff_t>::value &&
-                         !std::is_same<ptrdiff_t, long long>::value &&
-                         !std::is_same<ptrdiff_t, int>::value>::type> : std::conditional<sizeof(ptrdiff_t) == sizeof(int), mpi_datatype_impl<int>, mpi_datatype_impl<long long>>::type
-{};
-
-template <typename T>
-struct mpi_datatype_impl<T,
-                         typename std::enable_if<
-                         std::is_same<T, size_t>::value &&
-                         !std::is_same<size_t, unsigned long long>::value &&
-                         !std::is_same<ptrdiff_t, unsigned int>::value>::type>
-: std::conditional<
-  sizeof(size_t) == sizeof(unsigned), mpi_datatype_impl<unsigned>, mpi_datatype_impl<unsigned long long>>::type
-{};
-
-template <>
-struct mpi_datatype_impl<char>
-{
-  static MPI_Datatype get() { return MPI_CHAR; }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Wrapper to obtain the equivalent MPI datatype for a datatype.
- */
-template <typename T>
-MPI_Datatype mpi_datatype()
-{
-  return mpi_datatype_impl<T>::get();
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -277,7 +164,7 @@ struct mpi_communicator
     int lc = static_cast<int>(cond);
     int gc = _reduce(MPI_PROD, lc);
 
-    if (!gc) {
+    if (gc==0) {
       IMessagePassingMng* pm = m_message_passing_mng.get();
       UniqueArray<int> c(size);
       if (rank == 0)
@@ -339,12 +226,11 @@ struct mpi_communicator
 
  private:
 
-  template <typename T> T _reduce(MPI_Op op, const T& lval) const
+  int _reduce(MPI_Op op, int lval) const
   {
-    const int elems = math::static_rows<T>::value * math::static_cols<T>::value;
-    T gval;
+    int gval = 0;
 
-    MPI_Allreduce((void*)&lval, &gval, elems, mpi_datatype<T>(), op, comm);
+    MPI_Allreduce((void*)&lval, &gval, 1, MPI_INT, op, comm);
     return gval;
   }
 
