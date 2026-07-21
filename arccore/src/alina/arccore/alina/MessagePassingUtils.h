@@ -56,6 +56,7 @@ struct mpi_datatype_impl
 
   static MPI_Datatype create()
   {
+    static_assert(false,"BAD");
     typedef typename math::scalar_of<T>::type S;
     MPI_Datatype t;
     int n = sizeof(T) / sizeof(S);
@@ -225,7 +226,10 @@ struct mpi_communicator
     // TODO: Use scan.
     std::vector<T> v(size + 1);
     v[0] = 0;
-    MPI_Allgather(&n, 1, mpi_datatype<T>(), &v[1], 1, mpi_datatype<T>(), comm);
+    T v0 = n;
+    ConstArrayView<T> v0_view(1, &v0);
+    ArrayView<T> out_view(static_cast<Int32>(v.size()), &v[1]);
+    mpAllGather(m_message_passing_mng.get(), v0_view, out_view);
     std::partial_sum(v.begin(), v.end(), v.begin());
     return v;
   }
@@ -274,8 +278,12 @@ struct mpi_communicator
     int gc = _reduce(MPI_PROD, lc);
 
     if (!gc) {
-      std::vector<int> c(size);
-      MPI_Gather(&lc, 1, MPI_INT, &c[0], size, MPI_INT, 0, comm);
+      IMessagePassingMng* pm = m_message_passing_mng.get();
+      UniqueArray<int> c(size);
+      if (rank == 0)
+        c.resize(size);
+      ConstArrayView<int> in_view(1, &lc);
+      mpGather(pm, in_view, c, 0);
       if (rank == 0) {
         std::cerr << "Failed assumption: " << message << std::endl;
         std::cerr << "Offending processes:";
@@ -284,7 +292,7 @@ struct mpi_communicator
             std::cerr << " " << i;
         std::cerr << std::endl;
       }
-      MPI_Barrier(comm);
+      mpBarrier(pm);
       ARCCORE_FATAL("CheckError in MessagePassingUtils: {0}", message);
     }
   }
