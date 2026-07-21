@@ -21,12 +21,82 @@
 #include "arcane/core/MeshBuildInfo.h"
 
 #include "arcane/std/MeshCut_axl.h"
+#include "arccore/base/StringBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+struct EdgeLite
+{
+  EdgeLite(const Node first_node, const Node second_node)
+  {
+    const Int64 a = first_node.uniqueId();
+    const Int64 b = second_node.uniqueId();
+    if (a < b) {
+      m_uid_node0 = a;
+      m_uid_node1 = b;
+    }
+    else {
+      m_uid_node0 = b;
+      m_uid_node1 = a;
+    }
+  }
+
+  EdgeLite() = default;
+
+  bool operator<(const EdgeLite& other) const
+  {
+    if (m_uid_node0 != other.m_uid_node0) {
+      return m_uid_node0 < other.m_uid_node0;
+    }
+    return m_uid_node1 < other.m_uid_node1;
+  }
+
+  bool operator==(const EdgeLite& other) const
+  {
+    return m_uid_node0 == other.m_uid_node0 && m_uid_node1 == other.m_uid_node1;
+  }
+
+  Int64 m_uid_node0 = -1;
+  Int64 m_uid_node1 = -1;
+  Int64 m_uid_new_node = -1;
+  Int32 m_owner_new_node = -1;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+struct NodeIntersection
+{
+  NodeIntersection(const Node first_node, const Node second_node, const Real3& intersection_pos)
+  : m_edge(first_node, second_node)
+  ,m_intersection_pos(intersection_pos)
+  {}
+
+  NodeIntersection() = default;
+
+  bool operator<(const NodeIntersection& other) const
+  {
+    return m_edge.operator<(other.m_edge);
+  }
+
+  bool operator==(const NodeIntersection& other) const
+  {
+    return m_edge.operator==(other.m_edge);
+  }
+
+  EdgeLite m_edge{};
+  Real3 m_intersection_pos{ -1 };
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,8 +135,10 @@ class MeshCutService
  private:
 
   void _createMesh();
-  void _createCells(Int32 plan_pos, Int32& nb_cell, Int32& nb_node, UniqueArray<Int64>& cells_infos, UniqueArray<Real3>& pos_node);
+  void _createCells(Int32 plan_pos, Int32& nb_node, Int32& nb_cell, UniqueArray<Int64>& cells_infos, Int32& sd_nb_face, UniqueArray<Int64>& faces_infos, std::unordered_map<Int64, Real3>& pos_node);
   void _compute();
+
+  Int64 _edgeUid(Int64 node0_uid, Int64 node1_uid);
 
  private:
 
@@ -79,74 +151,6 @@ class MeshCutService
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE_MESHCUT(MeshCutService, MeshCutService);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-struct EdgeLite
-{
-  EdgeLite(const Node first_node, const Node second_node)
-  {
-    const Int32 a = first_node.localId();
-    const Int32 b = second_node.localId();
-    if (a < b) {
-      m_lid_node0 = a;
-      m_lid_node1 = b;
-    }
-    else {
-      m_lid_node0 = b;
-      m_lid_node1 = a;
-    }
-  }
-
-  EdgeLite() = default;
-
-  bool operator<(const EdgeLite& other) const
-  {
-    if (m_lid_node0 != other.m_lid_node0) {
-      return m_lid_node0 < other.m_lid_node0;
-    }
-    return m_lid_node1 < other.m_lid_node1;
-  }
-
-  bool operator==(const EdgeLite& other) const
-  {
-    return m_lid_node0 == other.m_lid_node0 && m_lid_node1 == other.m_lid_node1;
-  }
-
-  Int32 m_lid_node0 = -1;
-  Int32 m_lid_node1 = -1;
-  Int64 m_uid_new_node = -1;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-struct NodeIntersection
-{
-  NodeIntersection(const Node first_node, const Node second_node, const Real3& intersection_pos)
-  : m_edge(first_node, second_node)
-  ,m_intersection_pos(intersection_pos)
-  {}
-
-  NodeIntersection() = default;
-
-  bool operator<(const NodeIntersection& other) const
-  {
-    return m_edge.operator<(other.m_edge);
-  }
-
-  bool operator==(const NodeIntersection& other) const
-  {
-    return m_edge.operator==(other.m_edge);
-  }
-
-  EdgeLite m_edge{};
-  Real3 m_intersection_pos{ -1 };
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -214,7 +218,7 @@ _createMesh()
 /*---------------------------------------------------------------------------*/
 
 void MeshCutService::
-_createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<Int64>& cells_infos, UniqueArray<Real3>& pos_node)
+_createCells(Int32 plan_pos, Int32& sd_nb_node, Int32& sd_nb_cell, UniqueArray<Int64>& cells_infos, Int32& sd_nb_face, UniqueArray<Int64>& faces_infos, std::unordered_map<Int64, Real3>& pos_node)
 {
   auto [p0, normal] = m_plans[plan_pos];
 
@@ -424,8 +428,11 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
           new_node.m_edge.m_uid_new_node = point_coords[pos.value()].m_uid_new_node;
         }
         else {
-          new_node.m_edge.m_uid_new_node = sd_nb_node++;
-          pos_node.add(new_node.m_intersection_pos);
+          //info() << "Old UID : " << sd_nb_node++ << " -- New UID : " << _edgeUid(new_node.m_edge.m_uid_node0, new_node.m_edge.m_uid_node1);
+          //new_node.m_edge.m_uid_new_node = sd_nb_node++;
+          new_node.m_edge.m_uid_new_node = _edgeUid(new_node.m_edge.m_uid_node0, new_node.m_edge.m_uid_node1);
+          // pos_node.add(new_node.m_intersection_pos);
+          pos_node[new_node.m_edge.m_uid_new_node] = new_node.m_intersection_pos;
           point_coords.add(new_node.m_edge);
         }
       }
@@ -492,9 +499,18 @@ _createCells(Int32 plan_pos, Int32& sd_nb_cell, Int32& sd_nb_node, UniqueArray<I
                     return angle_a < angle_b;
                   });
 
+        Int64 inode = indices[indices.size()-1];
         for (Int64 idx : indices) {
           ARCANE_FATAL_IF(point_coords_tmp[idx].m_edge.m_uid_new_node == -1, "Node UID not initialized -- NodeUID: {0}", point_coords_tmp[idx].m_edge.m_uid_new_node);
           cells_infos.add(point_coords_tmp[idx].m_edge.m_uid_new_node);
+
+          faces_infos.add(ITI_Line2);
+          faces_infos.add(_edgeUid(point_coords_tmp[inode].m_edge.m_uid_new_node, point_coords_tmp[idx].m_edge.m_uid_new_node));
+          faces_infos.add(point_coords_tmp[inode].m_edge.m_uid_new_node);
+          faces_infos.add(point_coords_tmp[idx].m_edge.m_uid_new_node);
+          sd_nb_face++;
+
+          inode = idx;
         }
       }
       sd_nb_cell++;
@@ -516,16 +532,21 @@ _compute()
   UniqueArray<Int64> cells_infos;
   cells_infos.reserve(10000);
 
-  UniqueArray<Real3> pos_node;
+  UniqueArray<Int64> faces_infos;
+  faces_infos.reserve(10000);
+
+  std::unordered_map<Int64, Real3> pos_node;
   pos_node.reserve(10000);
 
   Int32 nb_cell = 0;
   Int32 nb_node = 0;
+  Int32 nb_face = 0;
 
   for (Int32 i = 0; i < m_plans.size(); ++i) {
-    _createCells(i, nb_cell, nb_node, cells_infos, pos_node);
+    _createCells(i, nb_node, nb_cell, cells_infos, nb_face, faces_infos, pos_node);
   }
 
+  m_cloned_mesh->modifier()->addFaces(nb_face, faces_infos);
   m_cloned_mesh->modifier()->addCells(nb_cell, cells_infos);
   m_cloned_mesh->modifier()->endUpdate();
 
@@ -537,6 +558,41 @@ _compute()
   }
 
   info() << "New mesh -- NbNode : " << m_cloned_mesh->nbNode() << " -- NbCells : " << m_cloned_mesh->nbCell();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 MeshCutService::
+_edgeUid(Int64 node0_uid, Int64 node1_uid)
+{
+  if (node0_uid > node1_uid) {
+    const Int64 tmp = node1_uid;
+    node1_uid = node0_uid;
+    node0_uid = tmp;
+  }
+
+  Int32 num[100];
+
+  Int32 i = 0;
+  while (node1_uid != 0) {
+    num[i] = static_cast<Int32>(node1_uid % 9);
+    node1_uid = node1_uid / 9;
+    i++;
+  }
+  num[i++] = 9;
+  while (node0_uid != 0) {
+    num[i] = static_cast<Int32>(node0_uid % 9);
+    node0_uid = node0_uid / 9;
+    i++;
+  }
+
+  StringBuilder sb;
+  for (int j = i - 1; j >= 0; j--) {
+    sb.append(String::fromNumber(num[j]));
+  }
+
+  return std::stol(sb.toString().localstr());
 }
 
 /*---------------------------------------------------------------------------*/
