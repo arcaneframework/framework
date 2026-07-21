@@ -566,8 +566,9 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   ptrdiff_t chunk = part.size(world.rank);
 
   std::vector<ptrdiff_t> domain(world.size + 1);
-  MPI_Allgather(&chunk, 1, Alina::mpi_datatype<ptrdiff_t>(),
-                &domain[1], 1, Alina::mpi_datatype<ptrdiff_t>(), world);
+  ConstArrayView<ptrdiff_t> send_buf(1, &chunk);
+  ArrayView<ptrdiff_t> receive_buf(world.size, &domain[1]);
+  mpAllGather(world.m_message_passing_mng.get(), send_buf, receive_buf);
   std::partial_sum(domain.begin(), domain.end(), domain.begin());
 
   lo = part.domain(world.rank).min_corner();
