@@ -34,6 +34,15 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+/*!
+ * \brief Noeud sur arête.
+ * Représente le noeud à l'intersection entre une arête du maillage 3D et
+ * un plan.
+ * Si les deux noeuds de la struct sont identiques, c'est qu'il y a un
+ * noeud du maillage 3D qui est sur le plan.
+ */
 struct NodeOnEdge
 {
   NodeOnEdge(const Node first_node, const Node second_node)
@@ -81,10 +90,12 @@ struct NodeOnEdge
     return m_uid_node0 == other.m_uid_node0 && m_uid_node1 == other.m_uid_node1;
   }
 
-  Node m_node0{};
-  Node m_node1{};
+  Node m_node0;
+  Node m_node1;
+
   Int64 m_uid_node0 = -1;
   Int64 m_uid_node1 = -1;
+
   Int64 m_uid_new_node = -1;
   Int32 m_owner_new_node = -1;
 };
@@ -92,6 +103,9 @@ struct NodeOnEdge
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Face du maillage 2D issue de deux noeuds d'arêtes.
+ */
 struct FaceLite
 {
   FaceLite(const Ref<NodeOnEdge>& node0, const Ref<NodeOnEdge>& node1)
@@ -111,6 +125,7 @@ struct FaceLite
 
   Ref<NodeOnEdge> m_node0;
   Ref<NodeOnEdge> m_node1;
+
   Int64 m_uid_new_face = -1;
   Int32 m_owner_new_face = -1;
 };
@@ -118,6 +133,9 @@ struct FaceLite
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Position d'un noeud d'arête.
+ */
 struct NodeIntersection
 {
   NodeIntersection(const Node first_node, const Node second_node, const Real3& intersection_pos)
@@ -145,6 +163,7 @@ struct NodeIntersection
   Ref<NodeOnEdge> m_new_node;
   Real3 m_intersection_pos{ -1 };
 };
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -187,11 +206,11 @@ class MeshCutService
 
   void _createMesh();
   void _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32& sd_nb_cell, UniqueArray<Int64>& new_cells, Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces);
-  Int32 _makeUniqueCellUID(Int32 sd_nb_cell, UniqueArray<Int64>& new_cells, UniqueArray<NodeIntersection>& new_nodes);
+  void _makeUniqueCellUID(Int32 sd_nb_cell, UniqueArray<Int64>& new_cells, UniqueArray<NodeIntersection>& new_nodes);
 
-  void _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 current_plan);
+  void _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 current_plan_pos);
   Int32 _makeUniqueNodeUID(Int32 sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 current_plan);
-  void _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_plan);
+  void _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_plan_pos);
   Int32 _makeUniqueFaceUID(Int32 sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_plan);
   void _compute();
 
@@ -339,7 +358,7 @@ _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersec
       // éviter un doublon de mailles dans le maillage final.
       if (nb_node_on_plane >= mesh_dim) {
         for (Face face : cell.faces()) {
-          // Pour éviter que deux processus créés la même maille.
+          // Pour éviter que deux processus créent la même maille.
           if (!face.isOwn())
             continue;
           if (face.nbNode() != nb_node_on_plane)
@@ -384,46 +403,45 @@ _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersec
 
     if (!has_face_on_plane) {
       // Tableaux définissant les arêtes pour chaque type d'élément.
-      // hexa_edge: 12 arêtes pour un hexaédre (8 noeuds), chaque arête = [n0, n1] indices locaux.
-      static constexpr Integer hexa_edge[12][2] = {
-        { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }, { 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 }, { 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 }
-      };
-      // tetra_edge: 6 arêtes pour un tétraèdre (4 noeuds).
-      static constexpr Integer tetra_edge[6][2] = {
+      // Chaque arête = [n0, n1] indices noeuds locaux de maille.
+      //
+      static constexpr Integer edges_tetraedron4[6][2] = {
         { 0, 1 }, { 0, 2 }, { 0, 3 }, { 1, 2 }, { 1, 3 }, { 2, 3 }
       };
-      // quad_edge: 4 arêtes pour un quadrangle (4 noeuds).
-      static constexpr Integer quad_edge[4][2] = {
-        { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }
+      static constexpr Integer edges_pyramid5[8][2] = {
+        { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }, { 0, 4 }, { 1, 4 }, { 2, 4 }, { 3, 4 }
       };
-      // tri_edge: 3 arêtes pour un triangle (3 noeuds).
-      static constexpr Integer tri_edge[3][2] = {
-        { 0, 1 }, { 1, 2 }, { 2, 0 }
+      static constexpr Integer edges_pentaedron6[9][2] = {
+        { 0, 1 }, { 1, 2 }, { 2, 0 }, { 0, 3 }, { 1, 4 }, { 2, 5 }, { 3, 4 }, { 4, 5 }, { 5, 3 }
+      };
+      static constexpr Integer edges_hexaedron8[12][2] = {
+        { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }, { 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 }, { 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 }
       };
 
       Integer nb_edges = 0;
       const Integer(*edge_def)[2] = nullptr;
 
-      Integer nb_node = cell.nbNode();
+      auto type = cell.itemTypeId();
 
-      if (nb_node == 8) {
-        nb_edges = 12;
-        edge_def = hexa_edge;
-      }
-      else if (nb_node == 4) {
+      if (type == ITI_Tetraedron4) {
         nb_edges = 6;
-        edge_def = tetra_edge;
+        edge_def = edges_tetraedron4;
       }
-      else if (nb_node == 4) {
-        nb_edges = 4;
-        edge_def = quad_edge;
+      else if (type == ITI_Pyramid5) {
+        nb_edges = 8;
+        edge_def = edges_pyramid5;
       }
-      else if (nb_node == 3) {
-        nb_edges = 3;
-        edge_def = tri_edge;
+      else if (type == ITI_Pentaedron6) {
+        nb_edges = 9;
+        edge_def = edges_pentaedron6;
       }
+      else if (type == ITI_Hexaedron8) {
+        nb_edges = 12;
+        edge_def = edges_hexaedron8;
+      }
+
       else {
-        ARCANE_FATAL("Cell type not supported -- nbNode: {0}", nb_node);
+        ARCANE_FATAL("Cell type not supported -- type: {0}", type);
       }
 
       // Itère sur toutes les arêtes de la maille.
@@ -536,22 +554,40 @@ _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersec
                     return angle_a < angle_b;
                   });
 
+        // On crée la nouvelle maille.
+        // On en profite pour modifier le tableau "indices" :
+        // - avant la boucle, ce tableau contient les indices de positions de
+        //   noeuds dans le tableau point_coords_tmp.
+        // - après la boucle, ce tableau contiendra les indices de positions
+        //   de ces mêmes noeuds mais dans le tableau "global" new_nodes.
         for (Int64& idx : indices) {
+          // On regarde si le noeud est déjà présent dans le tableau "global".
           std::optional<Int64> pos = new_nodes.span().findFirst(point_coords_tmp[idx]);
           if (pos) {
+            // Attention : on ajoute la position du noeud dans le tableau
+            // "global", pas le UID de celui-ci ! En effet, on ne le connait
+            // pas encore, ce sera ajusté dans la méthode
+            // "_makeUniqueCellUID()".
             new_cells.add(static_cast<Int32>(pos.value()));
             idx = pos.value();
           }
+          // S'il n'est pas présent, on le crée.
           else {
-            auto& elem = point_coords_tmp[idx];
+            NodeIntersection& elem = point_coords_tmp[idx];
 
-            // Si les deux noeuds sont à nous, on est sûr d'être le propriétaire du nouveau noeud.
+            // Si les deux noeuds ont le même proprio, on sait que le nouveau noeud aura le même proprio.
             if (elem.m_new_node->m_node0.owner() == elem.m_new_node->m_node1.owner()) {
-              elem.m_new_node->m_owner_new_node = elem.m_new_node->m_node0.owner(); //bof
+              elem.m_new_node->m_owner_new_node = elem.m_new_node->m_node0.owner();
+              // Si les deux noeuds sont à nous, on est sûr d'être le
+              // propriétaire du nouveau noeud. C'est donc à nous de donner le
+              // UniqueID (unique pour ce processus, la correction sera faite
+              // plus tard, quand on saura le nombre de noeuds de chaque
+              // processus).
               if (elem.m_new_node->m_node0.isOwn()) {
                 elem.m_new_node->m_uid_new_node = sd_nb_node++;
               }
               else {
+                // -2 = nécessite d'être ajouté plus tard.
                 elem.m_new_node->m_uid_new_node = -2;
               }
             }
@@ -561,19 +597,25 @@ _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersec
           }
         }
 
+        // Maintenant, on ajoute les faces.
         Int64 idxm1 = indices[indices.size() - 1];
         for (Int64 idx : indices) {
           FaceLite fl(new_nodes[idx].m_new_node, new_nodes[idxm1].m_new_node);
           if (!new_faces.contains(fl)) {
-            info() << "Add face"
-                   << " -- N00 " << fl.m_node0->m_uid_node0
-                   << " -- N01 " << fl.m_node0->m_uid_node1
-                   << " -- N10 " << fl.m_node1->m_uid_node0
-                   << " -- N11 " << fl.m_node1->m_uid_node1;
+            // info() << "Add face"
+            //        << " -- N00 " << fl.m_node0->m_uid_node0
+            //        << " -- N01 " << fl.m_node0->m_uid_node1
+            //        << " -- N10 " << fl.m_node1->m_uid_node0
+            //        << " -- N11 " << fl.m_node1->m_uid_node1;
+
+            // Même principe qu'avec les noeuds juste au-dessus.
             if (new_nodes[idx].m_new_node->m_owner_new_node == new_nodes[idxm1].m_new_node->m_owner_new_node) {
               fl.m_owner_new_face = new_nodes[idx].m_new_node->m_owner_new_node;
               if (fl.m_owner_new_face == subDomain()->subDomainId()) {
                 fl.m_uid_new_face = sd_nb_face++;
+              }
+              else {
+                fl.m_uid_new_face = -2;
               }
             }
             new_faces.add(fl);
@@ -590,7 +632,7 @@ _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersec
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MeshCutService::
+void MeshCutService::
 _makeUniqueCellUID(Int32 sd_nb_cell, UniqueArray<Int64>& new_cells, UniqueArray<NodeIntersection>& new_nodes)
 {
   IParallelMng* pm = subDomain()->parallelMng();
@@ -598,13 +640,16 @@ _makeUniqueCellUID(Int32 sd_nb_cell, UniqueArray<Int64>& new_cells, UniqueArray<
   Int32 decal = sd_nb_cell;
   pm->scan(MessagePassing::ReduceSum, ArrayView{ 1, &decal });
 
-  Int32 nb_cells_global = decal;
-  pm->broadcast(ArrayView{ 1, &nb_cells_global }, pm->commSize() - 1);
+  // Int32 nb_cells_global = decal;
+  // pm->broadcast(ArrayView{ 1, &nb_cells_global }, pm->commSize() - 1);
 
   decal -= sd_nb_cell;
 
-  info() << "[" << pm->commRank() << "] Scan result (rectified) : " << decal;
+  // info() << "[" << pm->commRank() << "] Scan result (rectified) : " << decal;
 
+  // En plus de décaler les uids des mailles pour les rendre unique sur tout le
+  // domaine, on ajoute les vrais UID des noeuds à la place des positions des
+  // noeuds dans le tableau "new_nodes".
   Int32 pos0 = 0;
   while (pos0 < new_cells.size()) {
     Int64 type = new_cells[pos0++];
@@ -615,26 +660,35 @@ _makeUniqueCellUID(Int32 sd_nb_cell, UniqueArray<Int64>& new_cells, UniqueArray<
       pos_to_uid = new_nodes[pos_to_uid].m_new_node->m_uid_new_node;
     }
   }
-  return nb_cells_global;
+  // return nb_cells_global;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshCutService::
-_fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 current_plan)
+_fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 current_plan_pos)
 {
   IParallelMng* pm = subDomain()->parallelMng();
-  Int32 my_proc = pm->commRank();
+  // Int32 my_proc = pm->commRank();
   UniqueArray<UniqueArray<Int64>> request_uid(subDomain()->nbSubDomain());
 
-  Span<NodeIntersection> current_plan_new_nodes = new_nodes.subView(current_plan, new_nodes.size() - current_plan);
+  // On souhaite mettre à jour uniquement les nouveaux noeuds, on crée donc
+  // une vue qui regroupe uniquement les nouveau noeuds.
+  // Ça permet uniquement de réduire le nombre d'itération de la boucle juste
+  // après et le temps de recherche (à la fin de la méthode). En effet, les
+  // "anciens" noeuds ont tous un UID >= 0, ils ne passent donc pas la
+  // première condition.
+  Span<NodeIntersection> current_plan_new_nodes = new_nodes.subView(current_plan_pos, new_nodes.size() - current_plan_pos);
 
   // On détermine le futur proprio de chaque noeud.
   for (auto& elem : current_plan_new_nodes) {
+    // Si le uid est déjà mis, pas besoin de le rechercher...
     if (elem.m_new_node->m_uid_new_node >= 0) {
       continue;
     }
+
+    // Si le proprio n'est pas définit, on doit faire une recherche.
     if (elem.m_new_node->m_owner_new_node < 0) {
 
       Node node0 = elem.m_new_node->m_node0;
@@ -642,6 +696,8 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
 
       // Le propriétaire du noeud est le propriétaire de la maille ayant le plus
       // petit UID, parmi les mailles en commun entre les deux noeuds d'origine.
+
+      // TODO Ajouter traitement particulier pour le cas où node0 == node1
       Int64 min_uid = INT64_MAX;
       Int32 owner_min = -1;
       for (Cell cell0 : node0.cells()) {
@@ -655,34 +711,44 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
         }
       }
 
+      // S'il l'on est le proprio, on peut définir le uid du noeud.
       if (owner_min == subDomain()->subDomainId()) {
         elem.m_new_node->m_owner_new_node = subDomain()->subDomainId();
         elem.m_new_node->m_uid_new_node = sd_nb_node++;
       }
+
+      // Sinon, on doit aller demander le uid au proprio.
       else {
         elem.m_new_node->m_owner_new_node = owner_min;
         elem.m_new_node->m_uid_new_node = -2;
+
+        // Une requête est composée uniquement des deux UID des noeuds de
+        // l'arête dont est issue le nouveau noeud. C'est le seul moyen
+        // d'identifier ce noeud pour l'instant (si on exclut l'identification
+        // par sa position).
         request_uid[elem.m_new_node->m_owner_new_node].add(elem.m_new_node->m_uid_node0);
         request_uid[elem.m_new_node->m_owner_new_node].add(elem.m_new_node->m_uid_node1);
 
-        info() << "[" << my_proc << "] Ask1"
-               << " -- UID0 : " << elem.m_new_node->m_uid_node0
-               << " -- UID1 : " << elem.m_new_node->m_uid_node1;
+        // info() << "[" << my_proc << "] Ask1"
+        //        << " -- UID0 : " << elem.m_new_node->m_uid_node0
+        //        << " -- UID1 : " << elem.m_new_node->m_uid_node1;
       }
     }
+
+    // Si le proprio est déjà défini, on doit lui demander le uid du noeud.
     else {
       request_uid[elem.m_new_node->m_owner_new_node].add(elem.m_new_node->m_uid_node0);
       request_uid[elem.m_new_node->m_owner_new_node].add(elem.m_new_node->m_uid_node1);
 
-      info() << "[" << my_proc << "] Ask2"
-             << " -- UID0 : " << elem.m_new_node->m_uid_node0
-             << " -- UID1 : " << elem.m_new_node->m_uid_node1;
+      // info() << "[" << my_proc << "] Ask2"
+      //        << " -- UID0 : " << elem.m_new_node->m_uid_node0
+      //        << " -- UID1 : " << elem.m_new_node->m_uid_node1;
     }
   }
 
   UniqueArray<Parallel::Request> requests(subDomain()->nbSubDomain() * 2);
 
-  // Si le noeud n'est pas à nous, il faut demander son UID au processus proprio.
+  // On envoie les requêtes.
   for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
     if (sr == subDomain()->subDomainId()) {
       continue;
@@ -690,7 +756,7 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
     Int32 size = request_uid[sr].size();
     requests[sr * 2] = pm->send(ArrayView{ 1, &size }, sr, false);
     requests[sr * 2 + 1] = pm->send(request_uid[sr], sr, false);
-    info() << "[" << my_proc << " -> " << sr << "] Requests : " << request_uid[sr];
+    // info() << "[" << my_proc << " -> " << sr << "] Requests : " << request_uid[sr];
   }
 
   pm->waitAllRequests(requests);
@@ -703,23 +769,34 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
     if (sr == subDomain()->subDomainId()) {
       continue;
     }
+
     Int32 size = 0;
     pm->recv(ArrayView{ 1, &size }, sr);
     UniqueArray<Int64> requested_uid(size);
     pm->recv(requested_uid, sr);
 
+    // On traite chaque paire de noeud.
     for (Int32 ipair_uid = 0; ipair_uid < requested_uid.size(); ipair_uid += 2) {
+
+      // On est forcé de rechercher dans tout le tableau parce que les plans
+      // peuvent avoir des noeuds en communs.
       std::optional<Int64> pos = new_nodes.span().findFirst(NodeIntersection{ requested_uid[ipair_uid], requested_uid[ipair_uid + 1], Real3{ 0 } });
       if (pos) {
         answers_uid[sr].add(new_nodes[pos.value()].m_new_node->m_uid_new_node);
-        info() << "[" << my_proc << "] Found"
-               << " -- UID0 : " << requested_uid[ipair_uid]
-               << " -- UID1 : " << requested_uid[ipair_uid + 1]
-               << " -- New UID : " << new_nodes[pos.value()].m_new_node->m_uid_new_node;
+        // info() << "[" << my_proc << "] Found"
+        //        << " -- UID0 : " << requested_uid[ipair_uid]
+        //        << " -- UID1 : " << requested_uid[ipair_uid + 1]
+        //        << " -- New UID : " << new_nodes[pos.value()].m_new_node->m_uid_new_node;
       }
+
+      // En théorie, ça ne devrait pas arriver : au-dessus, on itère sur les
+      // mailles en commun pour les deux noeuds de l'arête, ce qui doit
+      // normalement nous donner toutes les mailles qui possèdent cette arête
+      // (= "edge.cells()").
       else {
-        warning() << "Not found";
-        answers_uid[sr].add(-1);
+        ARCANE_FATAL("Node not found -- internal error in the algorithm");
+        // warning() << "Not found";
+        // answers_uid[sr].add(-1);
       }
     }
   }
@@ -749,15 +826,20 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
     UniqueArray<Int64> answered_uid(size);
     pm->recv(answered_uid, sr);
 
+    // On reprend les pairs de nos requêtes du début.
     for (Int32 ipair_uid = 0; ipair_uid < request_uid[sr].size(); ipair_uid += 2) {
+      // On retrouve le noeud correspondant à la requête.
+      // TODO : Sauvegarder les noeuds dans un tableau pour éviter la recherche ?
       std::optional<Int64> pos = current_plan_new_nodes.findFirst(NodeIntersection{ request_uid[sr][ipair_uid], request_uid[sr][ipair_uid + 1], Real3{ 0 } });
       if (pos) {
         current_plan_new_nodes[pos.value()].m_new_node->m_uid_new_node = answered_uid[ipair_uid / 2];
-        info() << "[" << my_proc << "] Apply"
-               << " -- UID0 : " << current_plan_new_nodes[pos.value()].m_new_node->m_uid_node0
-               << " -- UID1 : " << current_plan_new_nodes[pos.value()].m_new_node->m_uid_node1
-               << " -- New UID : " << current_plan_new_nodes[pos.value()].m_new_node->m_uid_new_node;
+        // info() << "[" << my_proc << "] Apply"
+        //        << " -- UID0 : " << current_plan_new_nodes[pos.value()].m_new_node->m_uid_node0
+        //        << " -- UID1 : " << current_plan_new_nodes[pos.value()].m_new_node->m_uid_node1
+        //        << " -- New UID : " << current_plan_new_nodes[pos.value()].m_new_node->m_uid_new_node;
       }
+
+      // Pas normal.
       else {
         ARCANE_FATAL("GL");
       }
@@ -783,16 +865,13 @@ _makeUniqueNodeUID(Int32 sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, I
     sum += old;
   }
 
-  info() << "[" << pm->commRank() << "] Gather result (rectified) : " << all_nb_node;
+  // info() << "[" << pm->commRank() << "] Gather result (rectified) : " << all_nb_node;
 
-  info() << "current_plan : " << current_plan << " -- new_nodes.size() : " << new_nodes.size();
-
-  ArrayView<NodeIntersection> current_plan_new_nodes = new_nodes.subView(current_plan, new_nodes.size() - current_plan);
+  // On ne doit traiter que les nouveaux noeuds.
+  Span<NodeIntersection> current_plan_new_nodes = new_nodes.subView(current_plan, new_nodes.size() - current_plan);
 
   for (auto& elem : current_plan_new_nodes) {
-    // info() << "[" << pm->commRank() << "] Old UID : " << elem.m_new_node->m_uid_new_node;
     elem.m_new_node->m_uid_new_node += all_nb_node[elem.m_new_node->m_owner_new_node];
-    // info() << "[" << pm->commRank() << "] New UID : " << elem.m_new_node->m_uid_new_node;
   }
   return sum;
 }
@@ -801,13 +880,14 @@ _makeUniqueNodeUID(Int32 sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, I
 /*---------------------------------------------------------------------------*/
 
 void MeshCutService::
-_fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_plan)
+_fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_plan_pos)
 {
+  // Cet algo est repris de celui traitant les noeuds.
   IParallelMng* pm = subDomain()->parallelMng();
-  Int32 my_proc = pm->commRank();
+  // Int32 my_proc = pm->commRank();
   UniqueArray<UniqueArray<Int64>> request_uid(subDomain()->nbSubDomain());
 
-  Span<FaceLite> current_plan_new_faces = new_faces.subView(current_plan, new_faces.size() - current_plan);
+  Span<FaceLite> current_plan_new_faces = new_faces.subView(current_plan_pos, new_faces.size() - current_plan_pos);
 
   for (auto& elem : current_plan_new_faces) {
 
@@ -850,24 +930,23 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
         request_uid[elem.m_owner_new_face].add(elem.m_node0->m_uid_new_node);
         request_uid[elem.m_owner_new_face].add(elem.m_node1->m_uid_new_node);
 
-        info() << "[" << my_proc << "] Ask3"
-               << " -- UID0 : " << elem.m_node0->m_uid_new_node
-               << " -- UID1 : " << elem.m_node1->m_uid_new_node;
+        // info() << "[" << my_proc << "] Ask3"
+        //        << " -- UID0 : " << elem.m_node0->m_uid_new_node
+        //        << " -- UID1 : " << elem.m_node1->m_uid_new_node;
       }
     }
     else {
       request_uid[elem.m_owner_new_face].add(elem.m_node0->m_uid_new_node);
       request_uid[elem.m_owner_new_face].add(elem.m_node1->m_uid_new_node);
 
-      info() << "[" << my_proc << "] Ask4"
-             << " -- UID0 : " << elem.m_node0->m_uid_new_node
-             << " -- UID1 : " << elem.m_node1->m_uid_new_node;
+      // info() << "[" << my_proc << "] Ask4"
+      //        << " -- UID0 : " << elem.m_node0->m_uid_new_node
+      //        << " -- UID1 : " << elem.m_node1->m_uid_new_node;
     }
   }
 
   UniqueArray<Parallel::Request> requests(subDomain()->nbSubDomain() * 2);
 
-  // Si le noeud n'est pas à nous, il faut demander son UID au processus proprio.
   for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
     if (sr == subDomain()->subDomainId()) {
       continue;
@@ -875,11 +954,10 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
     Int32 size = request_uid[sr].size();
     requests[sr * 2] = pm->send(ArrayView{ 1, &size }, sr, false);
     requests[sr * 2 + 1] = pm->send(request_uid[sr], sr, false);
-    info() << "[" << my_proc << " -> " << sr << "] Requests : " << request_uid[sr];
+    // info() << "[" << my_proc << " -> " << sr << "] Requests : " << request_uid[sr];
   }
 
   pm->waitAllRequests(requests);
-  // pm->freeRequests(requests);
 
   UniqueArray<UniqueArray<Int64>> answers_uid(subDomain()->nbSubDomain());
 
@@ -897,14 +975,15 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
       std::optional<Int64> pos = _find(new_faces, requested_uid[ipair_uid], requested_uid[ipair_uid + 1]);
       if (pos) {
         answers_uid[sr].add(new_faces[pos.value()].m_uid_new_face);
-        info() << "[" << my_proc << "] Found"
-               << " -- UID0 : " << requested_uid[ipair_uid]
-               << " -- UID1 : " << requested_uid[ipair_uid + 1]
-               << " -- New UID : " << new_faces[pos.value()].m_uid_new_face;
+        // info() << "[" << my_proc << "] Found"
+        //        << " -- UID0 : " << requested_uid[ipair_uid]
+        //        << " -- UID1 : " << requested_uid[ipair_uid + 1]
+        //        << " -- New UID : " << new_faces[pos.value()].m_uid_new_face;
       }
       else {
-        warning() << "Not found";
-        answers_uid[sr].add(-1);
+        ARCANE_FATAL("Face not found -- internal error in the algorithm");
+        // warning() << "Not found";
+        // answers_uid[sr].add(-1);
       }
     }
   }
@@ -921,7 +1000,6 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
   }
 
   pm->waitAllRequests(requests);
-  // pm->freeRequests(requests);
 
   // On reçoit et traite les réponses.
   for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
@@ -938,10 +1016,10 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
       std::optional<Int64> pos = _find(current_plan_new_faces, request_uid[sr][ipair_uid], request_uid[sr][ipair_uid + 1]);
       if (pos) {
         current_plan_new_faces[pos.value()].m_uid_new_face = answered_uid[ipair_uid / 2];
-        info() << "[" << my_proc << "] Apply"
-               << " -- UID0 : " << current_plan_new_faces[pos.value()].m_node0->m_uid_new_node
-               << " -- UID1 : " << current_plan_new_faces[pos.value()].m_node1->m_uid_new_node
-               << " -- New UID : " << current_plan_new_faces[pos.value()].m_uid_new_face;
+        // info() << "[" << my_proc << "] Apply"
+        //        << " -- UID0 : " << current_plan_new_faces[pos.value()].m_node0->m_uid_new_node
+        //        << " -- UID1 : " << current_plan_new_faces[pos.value()].m_node1->m_uid_new_node
+        //        << " -- New UID : " << current_plan_new_faces[pos.value()].m_uid_new_face;
       }
       else {
         ARCANE_FATAL("GL");
@@ -968,14 +1046,12 @@ _makeUniqueFaceUID(Int32 sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 cur
     sum += old;
   }
 
-  info() << "[" << pm->commRank() << "] Gather result (rectified) : " << all_nb_node;
+  // info() << "[" << pm->commRank() << "] Gather result (rectified) : " << all_nb_node;
 
   Span<FaceLite> current_plan_new_faces = new_faces.subView(current_plan, new_faces.size() - current_plan);
 
   for (auto& elem : current_plan_new_faces) {
-    // info() << "[" << pm->commRank() << "] Old UID : " << elem.m_new_node->m_uid_new_node;
     elem.m_uid_new_face += all_nb_node[elem.m_owner_new_face];
-    // info() << "[" << pm->commRank() << "] New UID : " << elem.m_new_node->m_uid_new_node;
   }
   return sum;
 }
@@ -997,8 +1073,8 @@ _compute()
 
   for (Int32 i = 0; i < m_plans.size(); ++i) {
 
-    Int32 size_of_new_nodes = new_nodes.size();
-    Int32 size_of_new_faces = new_faces.size();
+    Int32 previous_size_new_nodes = new_nodes.size();
+    Int32 previous_size_new_faces = new_faces.size();
 
     Int32 previous_g_nb_node = g_nb_node;
     Int32 previous_g_nb_face = g_nb_face;
@@ -1008,70 +1084,61 @@ _compute()
 
     _createNodesAndCells(i, g_nb_node, new_nodes, nb_cell, new_cells, g_nb_face, new_faces);
 
-    info() << "qaaaaa";
-
-    _fillNodeUID(g_nb_node, new_nodes, size_of_new_nodes);
+    _fillNodeUID(g_nb_node, new_nodes, previous_size_new_nodes);
     nb_node_for_this_plan = g_nb_node - nb_node_for_this_plan;
 
-    info() << "nb_node_for_this_plan : " << nb_node_for_this_plan;
-
-    nb_node_for_this_plan = _makeUniqueNodeUID(nb_node_for_this_plan, new_nodes, size_of_new_nodes);
+    nb_node_for_this_plan = _makeUniqueNodeUID(nb_node_for_this_plan, new_nodes, previous_size_new_nodes);
     g_nb_node = previous_g_nb_node + nb_node_for_this_plan;
 
-    for (auto& elem : new_nodes) {
-      info() << "New node"
-             << " -- UID : " << elem.m_new_node->m_uid_new_node
-             << " -- Owner : " << elem.m_new_node->m_owner_new_node
-             << " -- Pos : " << elem.m_intersection_pos
-             << " -- Edge node0 : " << elem.m_new_node->m_uid_node0
-             << " -- Edge node1 : " << elem.m_new_node->m_uid_node1;
-    }
+    // for (auto& elem : new_nodes) {
+    //   info() << "New node"
+    //          << " -- UID : " << elem.m_new_node->m_uid_new_node
+    //          << " -- Owner : " << elem.m_new_node->m_owner_new_node
+    //          << " -- Pos : " << elem.m_intersection_pos
+    //          << " -- Edge node0 : " << elem.m_new_node->m_uid_node0
+    //          << " -- Edge node1 : " << elem.m_new_node->m_uid_node1;
+    // }
 
-    Int32 nb_face = 0;
 
-    _fillFaceUID(g_nb_face, new_faces, size_of_new_faces);
+    _fillFaceUID(g_nb_face, new_faces, previous_size_new_faces);
     nb_face_for_this_plan = g_nb_face - nb_face_for_this_plan;
 
-    info() << "nb_face_for_this_plan : " << nb_face_for_this_plan;
-
-    nb_face_for_this_plan = _makeUniqueFaceUID(nb_face_for_this_plan, new_faces, size_of_new_faces);
+    nb_face_for_this_plan = _makeUniqueFaceUID(nb_face_for_this_plan, new_faces, previous_size_new_faces);
     g_nb_face = previous_g_nb_face + nb_face_for_this_plan;
 
-    for (auto& elem : new_faces) {
-      info() << "New face"
-             << " -- UID : " << elem.m_uid_new_face
-             << " -- Owner : " << elem.m_owner_new_face
-             << " -- Node0 : " << elem.m_node0->m_uid_new_node
-             << " -- Node00 : " << elem.m_node0->m_uid_node0
-             << " -- Node01 : " << elem.m_node0->m_uid_node1
-             << " -- Node1 : " << elem.m_node1->m_uid_new_node
-             << " -- Node10 : " << elem.m_node1->m_uid_node0
-             << " -- Node11 : " << elem.m_node1->m_uid_node1;
-    }
+    // for (auto& elem : new_faces) {
+    //   info() << "New face"
+    //          << " -- UID : " << elem.m_uid_new_face
+    //          << " -- Owner : " << elem.m_owner_new_face
+    //          << " -- Node0 : " << elem.m_node0->m_uid_new_node
+    //          << " -- Node00 : " << elem.m_node0->m_uid_node0
+    //          << " -- Node01 : " << elem.m_node0->m_uid_node1
+    //          << " -- Node1 : " << elem.m_node1->m_uid_new_node
+    //          << " -- Node10 : " << elem.m_node1->m_uid_node0
+    //          << " -- Node11 : " << elem.m_node1->m_uid_node1;
+    // }
   }
-
-  info() << "new_cells : " << new_cells;
 
   _makeUniqueCellUID(nb_cell, new_cells, new_nodes);
 
   {
-    Int32 pos0 = 0;
-    while (pos0 < new_cells.size()) {
-      StringBuilder logs;
-      logs += "New cell -- Type : ";
-      Int64 type = new_cells[pos0++];
-      logs += type;
-      logs += " -- UID : ";
-      logs += new_cells[pos0++];
-
-      for (Int32 i = 0; i < type; ++i) {
-        logs += " -- Node";
-        logs += i;
-        logs += " : ";
-        logs += new_cells[pos0++];
-      }
-      info() << logs;
-    }
+    // Int32 pos0 = 0;
+    // while (pos0 < new_cells.size()) {
+    //   StringBuilder logs;
+    //   logs += "New cell -- Type : ";
+    //   Int64 type = new_cells[pos0++];
+    //   logs += type;
+    //   logs += " -- UID : ";
+    //   logs += new_cells[pos0++];
+    //
+    //   for (Int32 i = 0; i < type; ++i) {
+    //     logs += " -- Node";
+    //     logs += i;
+    //     logs += " : ";
+    //     logs += new_cells[pos0++];
+    //   }
+    //   info() << logs;
+    // }
   }
 
   _addFaces(new_faces);
@@ -1107,7 +1174,7 @@ void MeshCutService::
 _addFaces(UniqueArray<FaceLite>& new_faces) const
 {
   UniqueArray<Int64> faces_infos;
-  faces_infos.reserve(10000);
+  faces_infos.reserve(new_faces.size() * 4);
 
   Int32 nb_faces = 0;
 
@@ -1128,36 +1195,29 @@ _addFaces(UniqueArray<FaceLite>& new_faces) const
 void MeshCutService::
 _addCells(UniqueArray<Int64>& new_cells)
 {
-  UniqueArray<Int64> cells_infos;
-  cells_infos.reserve(10000);
-
   Int32 nb_cells = 0;
 
   Int32 pos0 = 0;
   while (pos0 < new_cells.size()) {
-    Int64 type = new_cells[pos0++];
-    Int64 uid = new_cells[pos0++];
+    const Int64 type = new_cells[pos0];
 
     if (type == 3)
-      cells_infos.add(ITI_Triangle3);
+      new_cells[pos0++] = ITI_Triangle3;
     else if (type == 4)
-      cells_infos.add(ITI_Quad4);
+      new_cells[pos0++] = ITI_Quad4;
     else if (type == 5)
-      cells_infos.add(ITI_Pentagon5);
+      new_cells[pos0++] = ITI_Pentagon5;
     else if (type == 6)
-      cells_infos.add(ITI_Hexagon6);
+      new_cells[pos0++] = ITI_Hexagon6;
     else
       ARCANE_FATAL("Pas implem : {0}", type);
 
-    cells_infos.add(uid);
+    pos0 += 1 + static_cast<Int32>(type); // (1)=UID + (type)=UIDNodes
 
-    for (Int32 i = 0; i < type; ++i) {
-      cells_infos.add(new_cells[pos0++]);
-    }
     nb_cells++;
   }
 
-  m_cloned_mesh->modifier()->addCells(nb_cells, cells_infos);
+  m_cloned_mesh->modifier()->addCells(nb_cells, new_cells);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1173,7 +1233,7 @@ _setCoordNodesAndOwner(UniqueArray<NodeIntersection>& new_nodes)
       if (elem.m_new_node->m_uid_new_node == uid) {
         node_coords[inode] = elem.m_intersection_pos;
         inode->mutableItemBase().setOwner(elem.m_new_node->m_owner_new_node, subDomain()->subDomainId());
-        info() << "NodeUID : " << uid << " -- Coord : " << node_coords[inode];
+        // info() << "NodeUID : " << uid << " -- Coord : " << node_coords[inode];
       }
     }
   }
