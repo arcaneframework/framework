@@ -71,6 +71,14 @@ class ARCANE_CORE_EXPORT IMeshSection
   virtual VariableCollection variables() = 0;
 
   /*!
+   * \brief Method allowing to set a unique id allowing to create multiple
+   * section services for a mesh.
+   *
+   * \param unique_id Mesh unique id to apply.
+   */
+  virtual void setServiceMeshUniqueId(Int32 unique_id) = 0;
+
+  /*!
    * \brief Method allowing to update the mesh section with all planes.
    *
    * If a previous call has edited the mesh, all the cells will be destroyed

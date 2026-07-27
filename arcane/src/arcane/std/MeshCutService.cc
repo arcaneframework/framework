@@ -212,6 +212,7 @@ class MeshCutService
 
   explicit MeshCutService(const ServiceBuildInfo& sbi)
   : ArcaneMeshCutObject(sbi)
+  , m_creation_type(sbi.creationType())
   {}
 
  public:
@@ -220,14 +221,16 @@ class MeshCutService
 
   void setVariables(VariableCollection variables) override;
 
+  void setServiceMeshUniqueId(Int32 unique_id) override;
+
+  VariableCollection variables() override { return {}; }
+
   void updateSection() override;
 
   MeshHandle meshSection() override
   {
     return m_cloned_mesh->handle();
   }
-
-  VariableCollection variables() override { return {}; }
 
  private:
 
@@ -250,9 +253,11 @@ class MeshCutService
 
  private:
 
+  eServiceType m_creation_type;
   // VariableCollection m_variables_ori;
   IPrimaryMesh* m_cloned_mesh = nullptr;
   UniqueArray<std::pair<Real3, Real3>> m_plans;
+  Int32 m_mesh_uid = -1;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -287,17 +292,21 @@ setVariables(VariableCollection variables)
 /*---------------------------------------------------------------------------*/
 
 void MeshCutService::
+setServiceMeshUniqueId(Int32 unique_id)
+{
+  m_mesh_uid = unique_id;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshCutService::
 updateSection()
 {
   if (mesh()->ghostLayerMng()->nbGhostLayer() < 1) {
     ARCANE_FATAL("A ghost layer is required for this service");
   }
-  if (m_cloned_mesh == nullptr) {
-    _createMesh();
-  }
-  else {
-    m_cloned_mesh->modifier()->clearItems();
-  }
+  _createMesh();
   _compute();
 }
 
@@ -307,19 +316,42 @@ updateSection()
 void MeshCutService::
 _createMesh()
 {
+  if (m_cloned_mesh != nullptr) {
+    m_cloned_mesh->modifier()->clearItems();
+  }
+
   if (mesh()->dimension() != 3) {
     ARCANE_FATAL("Only 3D meshes are supported");
   }
 
   IMeshMng* mm = subDomain()->meshMng();
-  IParallelMng* pm = subDomain()->parallelMng();
-  // TODO gérer cas où il y a plusieurs services pour même maillage.
-  MeshBuildInfo mbi(mesh()->name() + "_MeshCut");
-  mbi.addParallelMng(makeRef(pm));
-  m_cloned_mesh = mm->meshFactoryMng()->createMesh(mbi);
-  m_cloned_mesh->modifier()->setDynamic(true);
-  m_cloned_mesh->setDimension(2);
-  m_cloned_mesh->endAllocate();
+
+  if (m_mesh_uid == -1) {
+    if (m_creation_type == ST_CaseOption) {
+      m_mesh_uid = options()->getUniqueIdServiceMesh();
+    }
+    else {
+      m_mesh_uid = 0;
+    }
+  }
+
+  String service_mesh_name = mesh()->name() + "_MeshCut" + m_mesh_uid;
+
+  MeshHandle* mesh_handle = mm->findMeshHandle(service_mesh_name, false);
+
+  if (mesh_handle == nullptr) {
+    IParallelMng* pm = subDomain()->parallelMng();
+    MeshBuildInfo mbi(service_mesh_name);
+    mbi.addParallelMng(makeRef(pm));
+    m_cloned_mesh = mm->meshFactoryMng()->createMesh(mbi);
+    m_cloned_mesh->modifier()->setDynamic(true);
+    m_cloned_mesh->setDimension(2);
+    m_cloned_mesh->endAllocate();
+  }
+  else {
+    m_cloned_mesh = mesh_handle->mesh()->toPrimaryMesh();
+    m_cloned_mesh->modifier()->clearItems();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

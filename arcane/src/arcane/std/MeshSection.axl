@@ -11,6 +11,11 @@
   </variables>
 
   <options>
+    <simple name="unique-id-service-mesh" type="int32" default="0">
+      <description>
+        UniqueID of service mesh. Useful if you need to create multiple instances of this service for a mesh.
+      </description>
+    </simple>
   </options>
 
 </service>

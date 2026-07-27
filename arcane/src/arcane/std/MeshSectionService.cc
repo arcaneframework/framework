@@ -46,6 +46,7 @@ class MeshSectionService
 
   explicit MeshSectionService(const ServiceBuildInfo& sbi)
   : ArcaneMeshSectionObject(sbi)
+  , m_creation_type(sbi.creationType())
   {}
 
  public:
@@ -53,13 +54,14 @@ class MeshSectionService
   void addPlane(const Real3& p0, const Real3& normal) override;
 
   void setVariables(VariableCollection variables) override;
+  VariableCollection variables() override { return {}; }
+  void setServiceMeshUniqueId(Int32 unique_id) override;
   void updateSection() override;
 
   MeshHandle meshSection() override
   {
     return m_cloned_mesh->handle();
   }
-  VariableCollection variables() override { return {}; }
 
  private:
 
@@ -72,6 +74,8 @@ class MeshSectionService
   // VariableCollection m_variables_ori;
   IPrimaryMesh* m_cloned_mesh = nullptr;
   UniqueArray<std::pair<Real3, Real3>> m_plans;
+  Int32 m_mesh_uid = -1;
+  eServiceType m_creation_type;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -106,14 +110,18 @@ setVariables(VariableCollection variables)
 /*---------------------------------------------------------------------------*/
 
 void MeshSectionService::
+setServiceMeshUniqueId(Int32 unique_id)
+{
+  m_mesh_uid = unique_id;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshSectionService::
 updateSection()
 {
-  if (m_cloned_mesh == nullptr) {
-    _createMesh();
-  }
-  else {
-    m_cloned_mesh->modifier()->clearItems();
-  }
+  _createMesh();
   _compute();
 }
 
@@ -123,15 +131,38 @@ updateSection()
 void MeshSectionService::
 _createMesh()
 {
+  if (m_cloned_mesh != nullptr) {
+    m_cloned_mesh->modifier()->clearItems();
+  }
+
   IMeshMng* mm = subDomain()->meshMng();
-  IParallelMng* pm = subDomain()->parallelMng();
-  // TODO gérer cas où il y a plusieurs services pour même maillage.
-  MeshBuildInfo mbi(mesh()->name() + "_MeshSection");
-  mbi.addParallelMng(makeRef(pm));
-  m_cloned_mesh = mm->meshFactoryMng()->createMesh(mbi);
-  m_cloned_mesh->modifier()->setDynamic(true);
-  m_cloned_mesh->setDimension(mesh()->dimension());
-  m_cloned_mesh->endAllocate();
+
+  if (m_mesh_uid == -1) {
+    if (m_creation_type == ST_CaseOption) {
+      m_mesh_uid = options()->getUniqueIdServiceMesh();
+    }
+    else {
+      m_mesh_uid = 0;
+    }
+  }
+
+  String service_mesh_name = mesh()->name() + "_MeshSection" + m_mesh_uid;
+
+  MeshHandle* mesh_handle = mm->findMeshHandle(service_mesh_name, false);
+
+  if (mesh_handle == nullptr) {
+    IParallelMng* pm = subDomain()->parallelMng();
+    MeshBuildInfo mbi(service_mesh_name);
+    mbi.addParallelMng(makeRef(pm));
+    m_cloned_mesh = mm->meshFactoryMng()->createMesh(mbi);
+    m_cloned_mesh->modifier()->setDynamic(true);
+    m_cloned_mesh->setDimension(mesh()->dimension());
+    m_cloned_mesh->endAllocate();
+  }
+  else {
+    m_cloned_mesh = mesh_handle->mesh()->toPrimaryMesh();
+    m_cloned_mesh->modifier()->clearItems();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
