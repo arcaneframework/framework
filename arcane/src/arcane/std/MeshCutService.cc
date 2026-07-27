@@ -111,11 +111,38 @@ struct FaceLite
   FaceLite(const Ref<NodeOnEdge>& node0, const Ref<NodeOnEdge>& node1)
   : m_node0(node0->m_uid_node0 < node1->m_uid_node0 ? node0 : node1)
   , m_node1(node0->m_uid_node0 < node1->m_uid_node0 ? node1 : node0)
-  {}
+  {
+    const Int64 node00 = node0->m_uid_node0;
+    const Int64 node01 = node0->m_uid_node1;
+    const Int64 node10 = node1->m_uid_node0;
+    const Int64 node11 = node1->m_uid_node1;
+
+    if (node00 < node10) {
+      m_node0 = node0;
+      m_node1 = node1;
+    }
+    else if (node00 > node10) {
+      m_node0 = node1;
+      m_node1 = node0;
+    }
+    else {
+      if (node01 == node11) {
+        ARCANE_FATAL("Impossible (normalement...)");
+      }
+      if (node01 < node11) {
+        m_node0 = node0;
+        m_node1 = node1;
+      }
+      else {
+        m_node0 = node1;
+        m_node1 = node0;
+      }
+    }
+  }
 
   bool operator<(const FaceLite& other) const
   {
-    return m_node0->operator<(*(other.m_node0.get())) && m_node1->operator<(*(other.m_node1.get()));
+    return m_node0->operator<(*(other.m_node0.get())) || (m_node0->operator==(*(other.m_node0.get())) && m_node1->operator<(*(other.m_node1.get())));
   }
 
   bool operator==(const FaceLite& other) const
@@ -313,7 +340,7 @@ _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersec
   // Calcul de la distance signée de chaque noeud par rapport au plan de coupe.
   ENUMERATE_ (Node, inode, allNodes()) {
     Real d = math::dot({ node_coord[inode] - p0 }, normal);
-    node_dist[inode] = math::isNearlyZero(d) ? 0 : d;
+    node_dist[inode] = math::isNearlyZeroWithEpsilon(d, 1e-10) ? 0 : d;
   }
 
   // Tableau qui contiendra tous les noeuds d'une future maille.
