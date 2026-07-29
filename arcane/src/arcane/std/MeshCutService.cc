@@ -741,26 +741,82 @@ _makeUniqueCellUID(Int32 sd_nb_cell, UniqueArray<Int64>& new_cells, UniqueArray<
 void MeshCutService::
 _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 current_plan_pos)
 {
+
+  // À partir d'ici, nous avons un tableau de noeuds. Les noeuds dont on est
+  // sûr qu'ils nous appartiennent ont déjà un UID/Owner.
+  //
+  // Il y a deux autres types de noeuds :
+  // - le noeud dont on pense connaitre le proprio à qui demander le UID,
+  // - le noeud dont on ne connait pas encore le proprio ni le UID.
+
   IParallelMng* pm = subDomain()->parallelMng();
   Int32 my_proc = pm->commRank();
   UniqueArray<UniqueArray<Ref<NodeOnEdge>>> requested_nodes(subDomain()->nbSubDomain());
 
-  // On souhaite mettre à jour uniquement les nouveaux noeuds, on crée donc
-  // une vue qui regroupe uniquement les nouveau noeuds.
-  // Ça permet uniquement de réduire le nombre d'itération de la boucle juste
-  // après et le temps de recherche (à la fin de la méthode). En effet, les
-  // "anciens" noeuds ont tous un UID >= 0, ils ne passent donc pas la
-  // première condition.
-  Span<NodeIntersection> current_plan_new_nodes = new_nodes.subView(current_plan_pos, new_nodes.size() - current_plan_pos);
-
-
+  //
+  //
+  // Première étape : détermination des proprios potentiels et création des
+  // requêtes.
+  //
+  // Détermination des proprios :
+  // Si un noeud n'a pas encore de proprio, on choisit le proprio parmi les
+  // mailles des noeuds (N0 et N1) de l'arête dont est issu notre noeud (NN).
+  //
+  // N0      NN      N1
+  // *-------*-------*
+  //
+  // NN = elem.m_new_node
+  // N0 = elem.m_new_node->m_node0
+  // N1 = elem.m_new_node->m_node1
+  //
+  // Il peut y avoir des cas où le proprio choisi ne possède pas le noeud.
+  // Ce cas sera traité plus tard dans la méthode.
+  //
+  // À partir de là, on a un proprio pour tous les noeuds.
+  //
+  // Création des requêtes :
+  // On a un message pour chaque processus.
+  // Ce message est composé de pairs de UID : les UID des noeuds de l'arête
+  // dont est issu notre noeud (seul moyen d'identifier notre noeud sur tous
+  // les processus (si l'on ne souhaite pas utiliser sa position)).
+  //
+  // Exemple :
+  // request_uid[][] :
+  // P0 : --Nous--
+  // P1 : [NN09_N0_UID, NN09_N1_UID, NN01_N0_UID, NN01_N1_UID, NN00_N0_UID, NN00_N1_UID]
+  // P2 : [NN14_N0_UID, NN14_N1_UID, NN15_N0_UID, NN15_N1_UID]
+  // P3 : []
+  //
+  // request_uid[][] :
+  // P0 : []
+  // P1 : [NN09_N0_UID, NN09_N1_UID]
+  // P2 : --Nous--
+  // P3 : []
+  //
+  // request_uid[][] :
+  // P0 : []
+  // P1 : [NN00_N0_UID, NN00_N1_UID]
+  // P2 : []
+  // P3 : --Nous--
+  //
+  // On stocke aussi, dans un autre tableau, les NodeOnEdge correspondant
+  // aux paires de UID, afin de les retrouver facilement lorsque l'on aura
+  // reçu les réponses des processus.
+  //
+  // Exemple :
+  // requested_nodes[][] :
+  // P0 : --Nous--
+  // P1 : [NN09, NN01, NN00]
+  // P2 : [NN14, NN15]
+  // P3 : []
+  //
+  //
   {
     UniqueArray<UniqueArray<Int64>> request_uid(subDomain()->nbSubDomain());
 
-    // On détermine le futur proprio de chaque noeud.
     info() << "[Node][" << my_proc << "] Step 1";
 
-    for (auto& elem : current_plan_new_nodes) {
+    for (auto& elem : new_nodes) {
       // Si le uid est déjà mis, pas besoin de le rechercher...
       if (elem.m_new_node->m_uid_new_node >= 0) {
         continue;
@@ -833,11 +889,11 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
       }
     }
 
+    // On envoie les requêtes.
     {
       UniqueArray<Parallel::Request> requests(subDomain()->nbSubDomain() * 2);
 
-      // On envoie les requêtes.
-      info() << "[Node][" << my_proc << "] Step 2";
+      info() << "[Node][" << my_proc << "] Step 1.2";
 
       for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
         if (sr == subDomain()->subDomainId()) {
@@ -850,111 +906,298 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
       }
 
       pm->waitAllRequests(requests);
-      // pm->freeRequests(requests);
     }
   }
 
-  UniqueArray<UniqueArray<Int64>> answers_uid(subDomain()->nbSubDomain());
-
-  UniqueArray<UnknownNode> unknown_node;
-
-  // On reçoit et traite les demandes.
-  info() << "[Node][" << my_proc << "] Step 3";
-
-  for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
-    if (sr == subDomain()->subDomainId()) {
-      continue;
-    }
-    Int32 size = 0;
-    pm->recv(ArrayView{ 1, &size }, sr);
-    UniqueArray<Int64> requested_uid(size);
-    pm->recv(requested_uid, sr);
-
-    answers_uid[sr].add(0);
-
-    // On traite chaque paire de noeud.
-    for (Int32 ipair_uid = 0; ipair_uid < requested_uid.size(); ipair_uid += 2) {
-
-      // On est forcé de rechercher dans tout le tableau parce que les plans
-      // peuvent avoir des noeuds en communs.
-      std::optional<Int64> pos = new_nodes.span().findFirst(NodeIntersection{ requested_uid[ipair_uid], requested_uid[ipair_uid + 1], Real3{ 0 } });
-      if (pos) {
-        answers_uid[sr].add(new_nodes[pos.value()].m_new_node->m_uid_new_node);
-        info() << "[Node][" << my_proc << " <- " << sr << "] Found"
-               << " -- UID0 : " << requested_uid[ipair_uid]
-               << " -- UID1 : " << requested_uid[ipair_uid + 1]
-               << " -- New UID : " << new_nodes[pos.value()].m_new_node->m_uid_new_node;
-      }
-
-      // Il peut arriver que l'on nous demande un noeud que nous n'avons pas.
-      // Par exemple, si un plan arrive pile sur une des arêtes de nos mailles.
-      // Par contre, on sait qui en a besoin, donc qui possède une maille avec
-      // le noeud en question.
-      // Pour donner cette information, on va ajouter "-1" puis, à la fin de
-      // la réponse, on va placer les processus en question.
-      else {
-        answers_uid[sr].add(-1);
-        unknown_node.add({requested_uid[ipair_uid], requested_uid[ipair_uid + 1], sr});
-        info() << "[Node][" << my_proc << " <- " << sr << "] NOT Found"
-               << " -- UID0 : " << requested_uid[ipair_uid]
-               << " -- UID1 : " << requested_uid[ipair_uid + 1];
-      }
-    }
-    answers_uid[sr][0] = answers_uid[sr].size()-1;
-  }
-
-  UniqueArray<Int64> who;
-  for (Int32 i = 0; i < unknown_node.size(); ++i) {
-    if (unknown_node[i].null())continue;
-    who.clear();
-    who.add(unknown_node[i].m_who);
-    unknown_node[i].m_who = -1;
-    for (Int32 j = i+1; j < unknown_node.size(); ++j) {
-      if (unknown_node[j].null()) continue;
-      if (unknown_node[j] == unknown_node[i]) {
-        who.add(unknown_node[j].m_who);
-        unknown_node[j].m_who = -1;
-      }
-    }
-    info() << "[Node] Additionnal infos -- Node0UID : " << unknown_node[i].m_node0_uid << " -- Node1UID : " << unknown_node[i].m_node1_uid << " -- Who : " << who;
-    for (auto proc : who) {
-      answers_uid[proc].add(unknown_node[i].m_node0_uid);
-      answers_uid[proc].add(unknown_node[i].m_node1_uid);
-      answers_uid[proc].add(who.size());
-      answers_uid[proc].addRange(who);
-    }
-  }
-
+  //
+  //
+  // Deuxième étape : traitement des requêtes des autres processus et gestion
+  // des inconnus.
+  //
+  // Traitement des requêtes :
+  //
+  // On effectue le traitement à la réception (donc processus par processus).
+  // Pour chaque paire de UID (N0-N1), on la recherche dans notre tableau des
+  // noeuds.
+  // On l'a trouve, parfait, on place l'UID du noeud (NN) dans le tableau de
+  // réponse.
+  //
+  // Gestion des inconnus :
+  //
+  // Si on ne trouve pas la paire dans notre tableau, on est dans le cas où le
+  // noeud NN est placé sur un noeud du maillage 3D (donc N0 == N1 et
+  // position(N0) == position(NN)).
+  // Lorsque l'on itère sur les mailles de N0, on peut tomber sur des mailles
+  // qui ne sont pas coupées par le plan, donc qui ne possède pas le noeud.
+  //
+  // On n'a pas le noeud dans notre tableau. Par contre, on sait qui demande
+  // ce noeud ! Grâce aux mailles fantômes, on est sûr que tous les processus
+  // qui souhaite le UID du noeud NN vont le demander au même processus. Nous
+  // pouvons donc construire la liste de ces processus demandeurs. Processus
+  // demandeurs dont on est sûr qu'ils possèdent le noeud NN !
+  // Nous allons donc leur envoyer cette liste et il se débrouilleront pour
+  // trouver le bon proprio parmi les processus de cette liste !
+  //
+  // Réponses :
+  //
+  // Le tableau des réponses doit donc contenir deux parties :
+  // - les UIDs, s'ils sont trouvés,
+  // - les processus possédant les noeuds inconnus.
+  //
+  // Pour avoir la limite entre ces deux parties, on place la taille de la
+  // première partie en première position du tableau de réponse.
+  //
+  // Si un UID est trouvé, on l'ajoute. S'il n'est pas trouvé, on place "-1".
+  //
+  // La seconde partie est structurée ainsi :
+  // - Pour chaque inconnu (pour chaque "-1") :
+  //   - UID du noeud N0
+  //   - UID du noeud N1
+  //   - Nombre de processus demandeurs (donc possédant forcément le noeud NN),
+  //   - Rangs des processus demandeurs.
+  //
+  // TODO : A changer :
+  // L'ordre de la seconde partie n'a pas d'importance.
+  // En effet, l'ordre de cette partie est le même pour tous les processus (il
+  // n'y a pas de tri par processus selon l'ordre des requêtes (qui
+  // correspondrait à l'ordre des "-1")).
+  // C'est pour ça qu'il y a la présence des "UID du noeud N0" et "UID du
+  // noeud N1".
+  // (trier avant envoi économiserait de la mémoire et réduirait la taille de
+  // la réponse, donc TODO).
+  //
+  //
+  // (Pour l'exemple, on suit le précédent exemple)
+  // answers_uid[][] :
+  // P0 : [3,    -1, NN01_UID, -1,    NN09_N0_UID, NN09_N1_UID, 2, 0, 2, NN00_N0_UID, NN00_N1_UID, 2, 0, 3]
+  // P1 : --Nous--
+  // P2 : [1,    -1,                  NN09_N0_UID, NN09_N1_UID, 2, 0, 2                                   ]
+  // P3 : [1,    -1,                  NN00_N0_UID, NN00_N1_UID, 2, 0, 3                                   ]
+  //
+  //
   {
-    UniqueArray<Parallel::Request> requests(subDomain()->nbSubDomain() * 2);
+    UniqueArray<UniqueArray<Int64>> answers_uid(subDomain()->nbSubDomain());
+    {
+      UniqueArray<UnknownNode> unknown_node;
+      info() << "[Node][" << my_proc << "] Step 2";
 
-    // On envoie les réponses.
-    info() << "[Node][" << my_proc << "] Step 4";
-    for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
-      if (sr == subDomain()->subDomainId()) {
-        continue;
+      for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
+        if (sr == subDomain()->subDomainId()) {
+          continue;
+        }
+        Int32 size = 0;
+        pm->recv(ArrayView{ 1, &size }, sr);
+        UniqueArray<Int64> requested_uid(size);
+        pm->recv(requested_uid, sr);
+
+        // Taille de la première partie.
+        answers_uid[sr].add(0);
+
+        // On traite chaque paire de noeud de la requête.
+        for (Int32 ipair_uid = 0; ipair_uid < requested_uid.size(); ipair_uid += 2) {
+
+          std::optional<Int64> pos = new_nodes.span().findFirst(NodeIntersection{ requested_uid[ipair_uid], requested_uid[ipair_uid + 1], Real3{ 0 } });
+          if (pos) {
+            answers_uid[sr].add(new_nodes[pos.value()].m_new_node->m_uid_new_node);
+            info() << "[Node][" << my_proc << " <- " << sr << "] Found"
+                   << " -- UID0 : " << requested_uid[ipair_uid]
+                   << " -- UID1 : " << requested_uid[ipair_uid + 1]
+                   << " -- New UID : " << new_nodes[pos.value()].m_new_node->m_uid_new_node;
+          }
+
+          // Il peut arriver que l'on nous demande un noeud que nous n'avons pas.
+          // Par exemple, si un plan arrive pile sur une des arêtes de nos mailles.
+          // Par contre, on sait qui en a besoin, donc qui possède une maille avec
+          // le noeud en question.
+          // Pour donner cette information, on va ajouter "-1" puis, à la fin de
+          // la réponse, on va placer les processus en question.
+          else {
+            answers_uid[sr].add(-1);
+            unknown_node.add({ requested_uid[ipair_uid], requested_uid[ipair_uid + 1], sr });
+            info() << "[Node][" << my_proc << " <- " << sr << "] NOT Found"
+                   << " -- UID0 : " << requested_uid[ipair_uid]
+                   << " -- UID1 : " << requested_uid[ipair_uid + 1];
+          }
+        }
+        answers_uid[sr][0] = answers_uid[sr].size() - 1;
       }
 
-      Int32 size = answers_uid[sr].size();
-      requests[sr * 2] = pm->send(ArrayView{ 1, &size }, sr, false);
-      requests[sr * 2 + 1] = pm->send(answers_uid[sr], sr, false);
+      UniqueArray<Int64> who;
+      info() << "[Node][" << my_proc << "] Step 2.2";
 
-      info() << "[Node][" << my_proc << " -> " << sr << "] Send " << answers_uid[sr];
+      // Dès qu'il y a eu une paire de noeuds inconnus dans une requête, il y
+      // a eu un enregistrement de fait dans le tableau unknown_node.
+      // Il faut maintenant lister, pour chaque paire, qui l'a aussi demandé
+      // (rechercher les doublons) et envoyer cette liste à chacun d'entre eux.
+      for (Int32 i = 0; i < unknown_node.size(); ++i) {
+        if (unknown_node[i].null())
+          continue;
+        who.clear();
+        who.add(unknown_node[i].m_who);
+        unknown_node[i].m_who = -1;
+        for (Int32 j = i + 1; j < unknown_node.size(); ++j) {
+          if (unknown_node[j].null())
+            continue;
+          if (unknown_node[j] == unknown_node[i]) {
+            who.add(unknown_node[j].m_who);
+            unknown_node[j].m_who = -1;
+          }
+        }
+        info() << "[Node] Additionnal infos -- Node0UID : " << unknown_node[i].m_node0_uid << " -- Node1UID : " << unknown_node[i].m_node1_uid << " -- Who : " << who;
+        for (auto proc : who) {
+          answers_uid[proc].add(unknown_node[i].m_node0_uid);
+          answers_uid[proc].add(unknown_node[i].m_node1_uid);
+          answers_uid[proc].add(who.size());
+          answers_uid[proc].addRange(who);
+        }
+      }
     }
 
-    pm->waitAllRequests(requests);
-    // pm->freeRequests(requests);
+    {
+      UniqueArray<Parallel::Request> requests(subDomain()->nbSubDomain() * 2);
+
+      // On envoie les réponses.
+      info() << "[Node][" << my_proc << "] Step 2.3";
+      for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
+        if (sr == subDomain()->subDomainId()) {
+          continue;
+        }
+
+        Int32 size = answers_uid[sr].size();
+        requests[sr * 2] = pm->send(ArrayView{ 1, &size }, sr, false);
+        requests[sr * 2 + 1] = pm->send(answers_uid[sr], sr, false);
+
+        info() << "[Node][" << my_proc << " -> " << sr << "] Send " << answers_uid[sr];
+      }
+
+      pm->waitAllRequests(requests);
+    }
   }
 
 
+  //
+  //
+  // Troisième étape : Mise à jour des UIDs des noeuds et recherche
+  // complémentaire de proprios.
+  //
+  // On commence par découper la réponse en deux, pour retrouver les deux
+  // parties tèl que défini plus haut.
+  // On itère sur la première partie. L'ordre des UIDs reçus est le même que
+  // l'ordre des noeuds du tableau "requested_nodes" complété dans la première
+  // partie. On peut ainsi aisément récupérer l'objet correspondant
+  // (`node_on_edge` dans le code juste en dessous).
+  //
+  // Si nous avons reçu un UID valide, on met à jour le noeud correspondant
+  // et on passe au suivant.
+  //
+  // Si nous avons "-1", c'est que le propriétaire que nous avons défini dans
+  // la première partie n'est pas le bon. Nous devons donc organiser un nouvel
+  // envoi.
+  //
+  // Recherche complémentaire de proprios :
+  //
+  // Comme l'ordre des infos complémentaires de la seconde partie du message
+  // n'est pas forcément le même que l'ordre de la première partie (voir TODO
+  // au dessus), on doit d'abord rechercher, dans la seconde partie, la paire
+  // de UID correspondant au noeud que nous traitons actuellement.
+  //
+  // On trouve forcément une correspondance.
+  //
+  // On est sûr que l'ordre dans lequel est organisée la seconde partie est le
+  // même pour tous. On va donc se caler sur cette ordre pour transmettre le
+  // prochain message.
+  //
+  // Lorsqu'une correspondance est trouvée, on modifie le message. On remplace
+  // UID0 par la position de l'objet `Ref<NodeOnEdge>` dans le tableau
+  // `requested_nodes` (pour éviter une seconde recherche).
+  //
+  // Exemple :
+  // Rappel tableau requested_nodes[][] (Première étape de la méthode) :
+  // requested_nodes[][] :
+  // P0 : --Nous--
+  // P1 : [NN09, NN01, NN00]
+  //
+  // Avant modif :
+  // answered_uid[] :
+  // P0 : --Nous--
+  // P1 : [3,    -1, NN01_UID, -1,    NN09_N0_UID, NN09_N1_UID, 2, 0, 2,   NN00_N0_UID, NN00_N1_UID, 2, 0, 3]
+  //
+  // Après modif :
+  // answered_uid[] :
+  // P0 : --Nous--
+  // P1 : [3,    -1, NN01_UID, -1,    0,           NN09_N1_UID, 2, 0, 2,   2,           NN00_N1_UID, 2, 0, 3]
+  //
+  // Explication de l'exemple :
+  // On remplace "NN09_N0_UID" par "0" car le noeud "NN09" se trouve à la
+  // position 0 du tableau `requested_nodes[1][]` (le premier indice est le
+  // rang du processus cible (donc 1 ici)).
+  // On remplace "NN00_N0_UID" par "2" car le noeud "NN00" se trouve à la
+  // position 2 du tableau `requested_nodes[1][]`.
+  //
+  // Cette algorithme est en deux étapes pour préserver simplement l'ordre de
+  // la seconde partie de la réponse.
+  //
+  // Une fois `answered_uid[1]` modifié (donc une fois que l'on a fini
+  // d'itérer sur la première partie de la réponse), on passe à la recherche
+  // du propriétaire des noeuds restants.
+  //
+  // On itère sur la seconde partie de la réponse. Tous les processus
+  // itèreront dans le même ordre !
+  //
+  // On récupère l'objet `Ref<NodeOnEdge>` à l'aide de sa position dans le
+  // tableau `requested_nodes`. On reproduit l'algo de recherche de proprio de
+  // la première étape de la méthode en s'assurant de tomber sur un proprio de
+  // la liste des proprios potentiels.
+  //
+  // Par rapport à la première étape de la méthode, on sait de qui recevoir
+  // des informations et on sait dans quel ordre les interpréter. Donc inutile
+  // d'envoyer des messages vides si aucune infos n'est nécessaire.
+  //
+  // On va utiliser le tableau "request_uid" pour stocker les messages à
+  // envoyer mais aussi la taille des messages que l'on devra recevoir.
+  //
+  // Pour les messages à envoyer, on stocke uniquement les UIDs qui devront
+  // être appliqués.
+  // Pour chaque UID stocké du coté du processus envoyeur, l'objet
+  // `Ref<NodeOnEdge>` correspondant est stocké dans le tableau
+  // `requested_nodes2` du coté du processus receveur.
+  //
+  // Exemple :
+  // L'algo a déterminé que
+  // - "NN09" appartient à "2" (et non à "0") et
+  // - "NN00" appartient à "0" (et non à "3").
+  // 
+  // request_uid[][] :
+  // P0 : --Nous-- [0, 0, 1, 0]
+  // P1 :          []
+  // P2 :          []
+  // P3 :          [NN00_UID]
+  //
+  // (à lire : P0 attend un message de taille 1 de la part de P2)
+  // (         P0 envoie NN00_UID à P3)
+  //
+  // request_uid[][] :
+  // P0 :          [NN09_UID]
+  // P1 :          []
+  // P2 : --Nous-- [0, 0, 0, 0]
+  // P3 :          []
+  //
+  // request_uid[][] :
+  // P0 :          []
+  // P1 :          []
+  // P2 :          []
+  // P3 : --Nous-- [1, 0, 0, 0]
+  //
+  //
   UniqueArray<UniqueArray<Int64>> request_uid(subDomain()->nbSubDomain());
   UniqueArray<UniqueArray<Ref<NodeOnEdge>>> requested_nodes2(subDomain()->nbSubDomain());
 
   // On reçoit et traite les réponses.
-  info() << "[Node][" << my_proc << "] Step 5";
+  info() << "[Node][" << my_proc << "] Step 3";
 
-  Int32 iter_requested_nodes = 0;
+  // Permet de savoir si les prochaines étapes sont utiles.
   bool need_more_comm = false;
+
   for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
     if (sr == subDomain()->subDomainId()) {
       continue;
@@ -966,7 +1209,7 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
     UniqueArray<Int64> answered_uid(total_size);
     pm->recv(answered_uid, sr);
 
-    Int32 answer_to_request_size = answered_uid[0];
+    Int32 answer_to_request_size = static_cast<Int32>(answered_uid[0]);
 
     Span<Int64> answer_to_request = answered_uid.subView(1, answer_to_request_size);
     Span<Int64> additionnal_answer = answered_uid.subView(answer_to_request_size+1, answered_uid.size() - (answer_to_request_size+1));
@@ -987,53 +1230,68 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
                << " -- New UID : " << node_on_edge->m_uid_new_node;
       }
       else {
-        need_more_comm = true;
-        Span<Int64> sub_additionnal_answer;
 
-        Int32 pos_sort = 0;
         Int64 pos = 0;
         while (pos < additionnal_answer.size()) {
-          Int64 uid0 = additionnal_answer[pos++];
+          Int64& uid0 = additionnal_answer[pos++];
           Int64 uid1 = additionnal_answer[pos++];
           Int64 decal = additionnal_answer[pos++];
           if (uid0 == node_on_edge->m_uid_node0 && uid1 == node_on_edge->m_uid_node1) {
-            sub_additionnal_answer = additionnal_answer.subSpan(pos, decal);
+            uid0 = answer;
             break;
           }
           pos += decal;
-          pos_sort++;
         }
-        if (sub_additionnal_answer.data() == nullptr) {
+        if (pos >= additionnal_answer.size()) {
           ARCANE_FATAL("Unknown node -- UID0 : {0} -- UID1 : {1}", node_on_edge->m_uid_node0, node_on_edge->m_uid_node1);
         }
+      }
+    }
 
-        info() << "[Node][" << my_proc << " <- " << sr << "] Sub"
-               << " -- sub_additionnal_answer : " << sub_additionnal_answer;
+    Int32 pos = 0;
+    Span<Int64> sub_additionnal_answer;
 
-        Node node0 = node_on_edge->m_node0;
-        Node node1 = node_on_edge->m_node1;
+    while (pos < additionnal_answer.size()) {
+      Int64 pos_node_in_array = additionnal_answer[pos++];
+      pos++;
+      Int64 decal = additionnal_answer[pos++];
 
-        // Le propriétaire du noeud est le propriétaire de la maille ayant le plus
-        // petit UID, parmi les mailles en commun entre les deux noeuds d'origine.
+      Ref<NodeOnEdge> node_on_edge = requested_nodes[sr][pos_node_in_array];
+      sub_additionnal_answer = additionnal_answer.subSpan(pos, decal);
 
-        // TODO Ajouter traitement particulier pour le cas où node0 == node1
-        Int64 min_uid = INT64_MAX;
-        Int32 owner_min = -1;
-        for (Cell cell0 : node0.cells()) {
-          for (Cell cell1 : node1.cells()) {
-            if (cell0 == cell1) {
-              if (cell0.uniqueId() < min_uid && sub_additionnal_answer.contains(cell0.owner())) {
-                min_uid = cell0.uniqueId();
-                owner_min = cell0.owner();
-              }
+      pos += decal;
+
+      info() << "[Node][" << my_proc << " <- " << sr << "] Sub"
+             << " -- sub_additionnal_answer : " << sub_additionnal_answer;
+
+      Node node0 = node_on_edge->m_node0;
+      Node node1 = node_on_edge->m_node1;
+
+      // Le propriétaire du noeud est le propriétaire de la maille ayant le plus
+      // petit UID, parmi les mailles en commun entre les deux noeuds d'origine.
+
+      // TODO Ajouter traitement particulier pour le cas où node0 == node1
+      Int64 min_uid = INT64_MAX;
+      Int32 owner_min = -1;
+      for (Cell cell0 : node0.cells()) {
+        for (Cell cell1 : node1.cells()) {
+          if (cell0 == cell1) {
+            if (cell0.uniqueId() < min_uid && sub_additionnal_answer.contains(cell0.owner())) {
+              min_uid = cell0.uniqueId();
+              owner_min = cell0.owner();
             }
           }
         }
+      }
 
-        // S'il l'on est le proprio, on peut définir le uid du noeud.
-        if (owner_min == subDomain()->subDomainId()) {
-          node_on_edge->m_owner_new_node = subDomain()->subDomainId();
-          node_on_edge->m_uid_new_node = sd_nb_node++;
+      // S'il l'on est le proprio, on peut définir le uid du noeud.
+      if (owner_min == subDomain()->subDomainId()) {
+        node_on_edge->m_owner_new_node = subDomain()->subDomainId();
+        node_on_edge->m_uid_new_node = sd_nb_node++;
+
+        // On enregistre le UID à envoyer.
+        if (sub_additionnal_answer.size() > 1) {
+          need_more_comm = true;
 
           info() << "[Node][" << my_proc << "] Send"
                  << " -- UID : " << node_on_edge->m_uid_new_node
@@ -1042,38 +1300,43 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
                  << " -- to : " << sub_additionnal_answer;
 
           for (auto proc : sub_additionnal_answer) {
-            if (proc == my_proc)continue;
+            if (proc == my_proc)
+              continue;
             request_uid[proc].add(node_on_edge->m_uid_new_node);
           }
         }
-
-        // Sinon, on doit aller demander le uid au proprio.
-        else {
-          node_on_edge->m_owner_new_node = owner_min;
-          node_on_edge->m_uid_new_node = -2;
-
-          request_uid[my_proc].add(owner_min);
-          // request_uid[my_proc].add(iter_requested_nodes);
-          request_uid[my_proc].add(pos_sort);
-
-          requested_nodes2[owner_min].add(node_on_edge);
-
-
-          info() << "[Node][" << my_proc << " -> " << node_on_edge->m_owner_new_node << "] Recv UID for Node"
-                 << " -- UID0 : " << node_on_edge->m_uid_node0
-                 << " -- UID1 : " << node_on_edge->m_uid_node1;
-        }
       }
-      iter_requested_nodes++;
+
+      // Sinon, on doit aller demander le uid au proprio.
+      else {
+        need_more_comm = true;
+        node_on_edge->m_owner_new_node = owner_min;
+        node_on_edge->m_uid_new_node = -2;
+
+        if (request_uid[my_proc].empty()) {
+          request_uid[my_proc].resize(subDomain()->nbSubDomain(), 0);
+        }
+
+        request_uid[my_proc][owner_min]++;
+
+        requested_nodes2[owner_min].add(node_on_edge);
+
+        info() << "[Node][" << my_proc << " -> " << node_on_edge->m_owner_new_node << "] Recv UID for Node"
+               << " -- UID0 : " << node_on_edge->m_uid_node0
+               << " -- UID1 : " << node_on_edge->m_uid_node1;
+      }
     }
   }
 
+  // Si nous n'avons pas de UID manquants et que personne n'a besoin de l'un
+  // de nos UIDs, on passe cette étape.
+  // Sinon :
   if (need_more_comm) {
     {
       UniqueArray<Parallel::Request> requests(subDomain()->nbSubDomain());
 
       // On envoie les UID complémentaires.
-      info() << "[Node][" << my_proc << "] Step 6";
+      info() << "[Node][" << my_proc << "] Step 3.2";
 
       for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
         if (sr == subDomain()->subDomainId()) {
@@ -1088,22 +1351,27 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
       pm->waitAllRequests(requests);
     }
 
+    //
+    //
+    // Quatrième étape : Mise à jour des UIDs manquants.
+    //
+    // On est sûr d'avoir une réponse complète, donc c'est plus simple.
+    // On récupère le nombre de messages à recevoir de la part de l'autre
+    // processus et on traite son message dans l'ordre. Le tableau
+    // `requested_nodes2[][]` est dans le même ordre ce qui facilite les
+    // choses.
+    //
+    //
+
     // On reçoit et traite les UID complémentaires.
-    info() << "[Node][" << my_proc << "] Step 7";
-    
+    info() << "[Node][" << my_proc << "] Step 4";
+
     for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
       if (sr == subDomain()->subDomainId()) {
         continue;
       }
 
-      Int32 size = 0;
-
-      for (Int32 i = 0; i < request_uid[my_proc].size(); i += 2) {
-        if (request_uid[my_proc][i] == sr) {
-          size++;
-        }
-      }
-
+      Int64 size = request_uid[my_proc][sr];
       if (size == 0) continue;
 
       info() << "[Node][" << my_proc << " -> " << sr << "] Size recv : " << size;
@@ -1112,19 +1380,16 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
       UniqueArray<Int64> requested_uid(size);
       pm->recv(requested_uid, sr);
 
-      for (Int32 i = 0, ii = 0; i < request_uid[my_proc].size(); i += 2, ++ii) {
-        if (request_uid[my_proc][i] == sr) {
-          Ref<NodeOnEdge> node_on_edge = requested_nodes2[sr][ii];
-          node_on_edge->m_uid_new_node = requested_uid[request_uid[my_proc][i+1]];
-          info() << "[Node][" << my_proc << "] Apply2"
-                 << " -- UID0 : " << node_on_edge->m_uid_node0
-                 << " -- UID1 : " << node_on_edge->m_uid_node1
-                 << " -- New UID : " << node_on_edge->m_uid_new_node;
-        }
+      for (Int32 i = 0; i < size; i += 1) {
+        Ref<NodeOnEdge> node_on_edge = requested_nodes2[sr][i];
+        node_on_edge->m_uid_new_node = requested_uid[i];
+        info() << "[Node][" << my_proc << "] Apply2"
+               << " -- UID0 : " << node_on_edge->m_uid_node0
+               << " -- UID1 : " << node_on_edge->m_uid_node1
+               << " -- New UID : " << node_on_edge->m_uid_new_node;
       }
     }
   }
-
 
   info() << "[Node][" << subDomain()->parallelMng()->commRank() << "]";
   subDomain()->parallelMng()->barrier();
