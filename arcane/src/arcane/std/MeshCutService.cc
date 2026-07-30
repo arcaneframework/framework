@@ -248,9 +248,9 @@ class MeshCutService
   void _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 ajust_node_pos, Int32& sd_nb_cell, UniqueArray<Int64>& new_cells, Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces);
   void _makeUniqueCellUID(Int32 sd_nb_cell, UniqueArray<Int64>& new_cells, UniqueArray<NodeIntersection>& new_nodes);
 
-  void _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 current_plan_pos);
+  void _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes);
   Int32 _makeUniqueNodeUID(Int32 sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 current_plan);
-  void _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_plan_pos);
+  void _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces);
   Int32 _makeUniqueFaceUID(Int32 sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_plan);
   void _compute();
 
@@ -739,7 +739,7 @@ _makeUniqueCellUID(Int32 sd_nb_cell, UniqueArray<Int64>& new_cells, UniqueArray<
 /*---------------------------------------------------------------------------*/
 
 void MeshCutService::
-_fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 current_plan_pos)
+_fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes)
 {
 
   // À partir d'ici, nous avons un tableau de noeuds. Les noeuds dont on est
@@ -987,6 +987,7 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
         }
         Int32 size = 0;
         pm->recv(ArrayView{ 1, &size }, sr);
+
         UniqueArray<Int64> requested_uid(size);
         pm->recv(requested_uid, sr);
 
@@ -1209,6 +1210,10 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
     UniqueArray<Int64> answered_uid(total_size);
     pm->recv(answered_uid, sr);
 
+    if (total_size == 1) {
+      continue;
+    }
+
     Int32 answer_to_request_size = static_cast<Int32>(answered_uid[0]);
 
     Span<Int64> answer_to_request = answered_uid.subView(1, answer_to_request_size);
@@ -1230,7 +1235,6 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
                << " -- New UID : " << node_on_edge->m_uid_new_node;
       }
       else {
-
         Int64 pos = 0;
         while (pos < additionnal_answer.size()) {
           Int64& uid0 = additionnal_answer[pos++];
@@ -1248,7 +1252,7 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
       }
     }
 
-    Int32 pos = 0;
+    Int64 pos = 0;
     Span<Int64> sub_additionnal_answer;
 
     while (pos < additionnal_answer.size()) {
@@ -1363,36 +1367,35 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 
     //
     //
 
-    // On reçoit et traite les UID complémentaires.
-    info() << "[Node][" << my_proc << "] Step 4";
+    if (!request_uid[my_proc].empty()) {
+      // On reçoit et traite les UID complémentaires.
+      info() << "[Node][" << my_proc << "] Step 4";
 
-    for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
-      if (sr == subDomain()->subDomainId()) {
-        continue;
-      }
+      for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
+        if (sr == subDomain()->subDomainId()) {
+          continue;
+        }
 
-      Int64 size = request_uid[my_proc][sr];
-      if (size == 0) continue;
+        Int64 size = request_uid[my_proc][sr];
+        if (size == 0) continue;
 
-      info() << "[Node][" << my_proc << " -> " << sr << "] Size recv : " << size;
+        info() << "[Node][" << my_proc << " -> " << sr << "] Size recv : " << size;
 
 
-      UniqueArray<Int64> requested_uid(size);
-      pm->recv(requested_uid, sr);
+        UniqueArray<Int64> requested_uid(size);
+        pm->recv(requested_uid, sr);
 
-      for (Int32 i = 0; i < size; i += 1) {
-        Ref<NodeOnEdge> node_on_edge = requested_nodes2[sr][i];
-        node_on_edge->m_uid_new_node = requested_uid[i];
-        info() << "[Node][" << my_proc << "] Apply2"
-               << " -- UID0 : " << node_on_edge->m_uid_node0
-               << " -- UID1 : " << node_on_edge->m_uid_node1
-               << " -- New UID : " << node_on_edge->m_uid_new_node;
+        for (Int32 i = 0; i < size; ++i) {
+          Ref<NodeOnEdge> node_on_edge = requested_nodes2[sr][i];
+          node_on_edge->m_uid_new_node = requested_uid[i];
+          info() << "[Node][" << my_proc << "] Apply2"
+                 << " -- UID0 : " << node_on_edge->m_uid_node0
+                 << " -- UID1 : " << node_on_edge->m_uid_node1
+                 << " -- New UID : " << node_on_edge->m_uid_new_node;
+        }
       }
     }
   }
-
-  info() << "[Node][" << subDomain()->parallelMng()->commRank() << "]";
-  subDomain()->parallelMng()->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1428,14 +1431,12 @@ _makeUniqueNodeUID(Int32 sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, I
 /*---------------------------------------------------------------------------*/
 
 void MeshCutService::
-_fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_plan_pos)
+_fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces)
 {
   // Cet algo est repris de celui traitant les noeuds.
   IParallelMng* pm = subDomain()->parallelMng();
   Int32 my_proc = pm->commRank();
   UniqueArray<UniqueArray<Int32>> requested_faces(subDomain()->nbSubDomain());
-
-  Span<FaceLite> current_plan_new_faces = new_faces.subView(current_plan_pos, new_faces.size() - current_plan_pos);
 
   {
     Int32 iter = -1;
@@ -1443,7 +1444,7 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
 
     info() << "[Face][" << my_proc << "] Step 1";
 
-    for (auto& elem : current_plan_new_faces) {
+    for (auto& elem : new_faces) {
       iter++;
       if (elem.m_uid_new_face >= 0) {
         continue;
@@ -1512,7 +1513,7 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
       UniqueArray<Parallel::Request> requests(subDomain()->nbSubDomain() * 2);
 
       // On envoie les requêtes.
-      info() << "[Face][" << my_proc << "] Step 2";
+      info() << "[Face][" << my_proc << "] Step 1.2";
 
       for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
         if (sr == subDomain()->subDomainId()) {
@@ -1528,101 +1529,105 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
     }
   }
 
-  UniqueArray<UniqueArray<Int64>> answers_uid(subDomain()->nbSubDomain());
-
-  UniqueArray<UnknownNode> unknown_face;
-
-  // On reçoit et traite les demandes.
-  info() << "[Face][" << my_proc << "] Step 3";
-
-  for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
-    if (sr == subDomain()->subDomainId()) {
-      continue;
-    }
-    Int32 size = 0;
-    pm->recv(ArrayView{ 1, &size }, sr);
-    UniqueArray<Int64> requested_uid(size);
-    pm->recv(requested_uid, sr);
-
-    answers_uid[sr].add(0);
-
-    for (Int32 ipair_uid = 0; ipair_uid < requested_uid.size(); ipair_uid += 2) {
-      std::optional<Int64> pos = _find(new_faces, requested_uid[ipair_uid], requested_uid[ipair_uid + 1]);
-      if (pos) {
-        answers_uid[sr].add(new_faces[pos.value()].m_uid_new_face);
-        info() << "[Face][" << my_proc << " <- " << sr << "] Found"
-               << " -- UID0 : " << requested_uid[ipair_uid]
-               << " -- UID1 : " << requested_uid[ipair_uid + 1]
-               << " -- New UID : " << new_faces[pos.value()].m_uid_new_face;
-      }
-
-      // Il peut arriver que l'on nous demande une face que nous n'avons pas.
-      // Par exemple, si un plan arrive pile sur une des arêtes de nos mailles.
-      // Par contre, on sait qui en a besoin, donc qui possède une maille avec
-      // la face en question.
-      // Pour donner cette information, on va ajouter "-1" puis, à la fin de
-      // la réponse, on va placer les processus en question.
-      else {
-        answers_uid[sr].add(-1);
-        unknown_face.add({ requested_uid[ipair_uid], requested_uid[ipair_uid + 1], sr });
-        info() << "[Face][" << my_proc << " <- " << sr << "] NOT Found"
-               << " -- UID0 : " << requested_uid[ipair_uid]
-               << " -- UID1 : " << requested_uid[ipair_uid + 1];
-      }
-    }
-    answers_uid[sr][0] = answers_uid[sr].size() - 1;
-  }
-
-  UniqueArray<Int64> who;
-  for (Int32 i = 0; i < unknown_face.size(); ++i) {
-    if (unknown_face[i].null())
-      continue;
-    who.clear();
-    who.add(unknown_face[i].m_who);
-    unknown_face[i].m_who = -1;
-    for (Int32 j = i + 1; j < unknown_face.size(); ++j) {
-      if (unknown_face[j].null())
-        continue;
-      if (unknown_face[j] == unknown_face[i]) {
-        who.add(unknown_face[j].m_who);
-        unknown_face[j].m_who = -1;
-      }
-    }
-    info() << "[Face] Additionnal infos -- Node0UID : " << unknown_face[i].m_node0_uid << " -- Node1UID : " << unknown_face[i].m_node1_uid << " -- Who : " << who;
-    for (auto proc : who) {
-      answers_uid[proc].add(unknown_face[i].m_node0_uid);
-      answers_uid[proc].add(unknown_face[i].m_node1_uid);
-      answers_uid[proc].add(who.size());
-      answers_uid[proc].addRange(who);
-    }
-  }
-
   {
-    UniqueArray<Parallel::Request> requests(subDomain()->nbSubDomain() * 2);
+    UniqueArray<UniqueArray<Int64>> answers_uid(subDomain()->nbSubDomain());
+    {
+      UniqueArray<UnknownNode> unknown_face;
+      info() << "[Face][" << my_proc << "] Step 2";
 
-    // On envoie les réponses.
-    info() << "[Face][" << my_proc << "] Step 4";
-    for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
-      if (sr == subDomain()->subDomainId()) {
-        continue;
+      for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
+        if (sr == subDomain()->subDomainId()) {
+          continue;
+        }
+        Int32 size = 0;
+        pm->recv(ArrayView{ 1, &size }, sr);
+
+        UniqueArray<Int64> requested_uid(size);
+        pm->recv(requested_uid, sr);
+
+        answers_uid[sr].add(0);
+
+        for (Int32 ipair_uid = 0; ipair_uid < requested_uid.size(); ipair_uid += 2) {
+          std::optional<Int64> pos = _find(new_faces, requested_uid[ipair_uid], requested_uid[ipair_uid + 1]);
+          if (pos) {
+            answers_uid[sr].add(new_faces[pos.value()].m_uid_new_face);
+            info() << "[Face][" << my_proc << " <- " << sr << "] Found"
+                   << " -- UID0 : " << requested_uid[ipair_uid]
+                   << " -- UID1 : " << requested_uid[ipair_uid + 1]
+                   << " -- New UID : " << new_faces[pos.value()].m_uid_new_face;
+          }
+
+          // Il peut arriver que l'on nous demande une face que nous n'avons pas.
+          // Par exemple, si un plan arrive pile sur une des arêtes de nos mailles.
+          // Par contre, on sait qui en a besoin, donc qui possède une maille avec
+          // la face en question.
+          // Pour donner cette information, on va ajouter "-1" puis, à la fin de
+          // la réponse, on va placer les processus en question.
+          else {
+            answers_uid[sr].add(-1);
+            unknown_face.add({ requested_uid[ipair_uid], requested_uid[ipair_uid + 1], sr });
+            info() << "[Face][" << my_proc << " <- " << sr << "] NOT Found"
+                   << " -- UID0 : " << requested_uid[ipair_uid]
+                   << " -- UID1 : " << requested_uid[ipair_uid + 1];
+          }
+        }
+        answers_uid[sr][0] = answers_uid[sr].size() - 1;
       }
 
-      Int32 size = answers_uid[sr].size();
-      requests[sr * 2] = pm->send(ArrayView{ 1, &size }, sr, false);
-      requests[sr * 2 + 1] = pm->send(answers_uid[sr], sr, false);
+      UniqueArray<Int64> who;
+      info() << "[Face][" << my_proc << "] Step 2.2";
+
+      for (Int32 i = 0; i < unknown_face.size(); ++i) {
+        if (unknown_face[i].null())
+          continue;
+        who.clear();
+        who.add(unknown_face[i].m_who);
+        unknown_face[i].m_who = -1;
+        for (Int32 j = i + 1; j < unknown_face.size(); ++j) {
+          if (unknown_face[j].null())
+            continue;
+          if (unknown_face[j] == unknown_face[i]) {
+            who.add(unknown_face[j].m_who);
+            unknown_face[j].m_who = -1;
+          }
+        }
+        info() << "[Face] Additionnal infos -- Node0UID : " << unknown_face[i].m_node0_uid << " -- Node1UID : " << unknown_face[i].m_node1_uid << " -- Who : " << who;
+        for (auto proc : who) {
+          answers_uid[proc].add(unknown_face[i].m_node0_uid);
+          answers_uid[proc].add(unknown_face[i].m_node1_uid);
+          answers_uid[proc].add(who.size());
+          answers_uid[proc].addRange(who);
+        }
+      }
     }
 
-    pm->waitAllRequests(requests);
+    {
+      UniqueArray<Parallel::Request> requests(subDomain()->nbSubDomain() * 2);
+
+      // On envoie les réponses.
+      info() << "[Face][" << my_proc << "] Step 2.3";
+      for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
+        if (sr == subDomain()->subDomainId()) {
+          continue;
+        }
+
+        Int32 size = answers_uid[sr].size();
+        requests[sr * 2] = pm->send(ArrayView{ 1, &size }, sr, false);
+        requests[sr * 2 + 1] = pm->send(answers_uid[sr], sr, false);
+      }
+
+      pm->waitAllRequests(requests);
+    }
   }
 
   UniqueArray<UniqueArray<Int64>> request_uid(subDomain()->nbSubDomain());
   UniqueArray<UniqueArray<Int32>> requested_faces2(subDomain()->nbSubDomain());
 
   // On reçoit et traite les réponses.
-  info() << "[Face][" << my_proc << "] Step 5";
+  info() << "[Face][" << my_proc << "] Step 3";
 
-  Int32 iter_requested_faces = 0;
   bool need_more_comm = false;
+
   for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
     if (sr == subDomain()->subDomainId()) {
       continue;
@@ -1634,7 +1639,11 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
     UniqueArray<Int64> answered_uid(total_size);
     pm->recv(answered_uid, sr);
 
-    Int32 answer_to_request_size = answered_uid[0];
+    if (total_size == 1) {
+      continue;
+    }
+
+    Int32 answer_to_request_size = static_cast<Int32>(answered_uid[0]);
 
     Span<Int64> answer_to_request = answered_uid.subView(1, answer_to_request_size);
     Span<Int64> additionnal_answer = answered_uid.subView(answer_to_request_size + 1, answered_uid.size() - (answer_to_request_size + 1));
@@ -1654,56 +1663,72 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
                << " -- New UID : " << face_lite.m_uid_new_face;
       }
       else {
-        need_more_comm = true;
-        Span<Int64> sub_additionnal_answer;
-
-        Int32 pos_sort = 0;
         Int64 pos = 0;
         while (pos < additionnal_answer.size()) {
-          Int64 uid0 = additionnal_answer[pos++];
+          Int64& uid0 = additionnal_answer[pos++];
           Int64 uid1 = additionnal_answer[pos++];
           Int64 decal = additionnal_answer[pos++];
           if (uid0 == face_lite.m_node0->m_uid_new_node && uid1 == face_lite.m_node1->m_uid_new_node) {
-            sub_additionnal_answer = additionnal_answer.subSpan(pos, decal);
+            uid0 = answer;
             break;
           }
           pos += decal;
-          pos_sort++;
         }
-        if (sub_additionnal_answer.data() == nullptr) {
+        if (pos >= additionnal_answer.size()) {
           ARCANE_FATAL("Unknown face -- UID0 : {0} -- UID1 : {1}", face_lite.m_node0->m_uid_new_node, face_lite.m_node1->m_uid_new_node);
         }
+      }
+    }
 
-        info() << "[Face][" << my_proc << " <- " << sr << "] Sub"
-               << " -- sub_additionnal_answer : " << sub_additionnal_answer;
+    Int64 pos = 0;
+    Span<Int64> sub_additionnal_answer;
 
-        Node node00 = face_lite.m_node0->m_node0;
-        Node node01 = face_lite.m_node0->m_node1;
-        Node node10 = face_lite.m_node1->m_node0;
-        Node node11 = face_lite.m_node1->m_node1;
+    while (pos < additionnal_answer.size()) {
+      Int64 pos_node_in_array = additionnal_answer[pos++];
+      pos++;
+      Int64 decal = additionnal_answer[pos++];
 
-        Int64 min_uid = INT64_MAX;
-        Int32 owner_min = -1;
+      FaceLite& face_lite = new_faces[requested_faces[sr][pos_node_in_array]];
+      sub_additionnal_answer = additionnal_answer.subSpan(pos, decal);
 
-        // TODO AH : C'est quand même TURBO moche
-        for (Cell cell00 : node00.cells()) {
-          for (Cell cell01 : node01.cells()) {
-            for (Cell cell10 : node10.cells()) {
-              for (Cell cell11 : node11.cells()) {
-                if (cell00 == cell01 && cell00 == cell10 && cell00 == cell11) {
-                  if (cell00.uniqueId() < min_uid && sub_additionnal_answer.contains(cell00.owner())) {
-                    min_uid = cell00.uniqueId();
-                    owner_min = cell00.owner();
-                  }
+      pos += decal;
+      
+
+      info() << "[Face][" << my_proc << " <- " << sr << "] Sub"
+             << " -- sub_additionnal_answer : " << sub_additionnal_answer;
+
+      Node node00 = face_lite.m_node0->m_node0;
+      Node node01 = face_lite.m_node0->m_node1;
+      Node node10 = face_lite.m_node1->m_node0;
+      Node node11 = face_lite.m_node1->m_node1;
+
+      Int64 min_uid = INT64_MAX;
+      Int32 owner_min = -1;
+
+      // TODO AH : C'est quand même TURBO moche
+      for (Cell cell00 : node00.cells()) {
+        for (Cell cell01 : node01.cells()) {
+          for (Cell cell10 : node10.cells()) {
+            for (Cell cell11 : node11.cells()) {
+              if (cell00 == cell01 && cell00 == cell10 && cell00 == cell11) {
+                if (cell00.uniqueId() < min_uid && sub_additionnal_answer.contains(cell00.owner())) {
+                  min_uid = cell00.uniqueId();
+                  owner_min = cell00.owner();
                 }
               }
             }
           }
         }
+      }
 
-        if (owner_min == subDomain()->subDomainId()) {
-          face_lite.m_owner_new_face = subDomain()->subDomainId();
-          face_lite.m_uid_new_face = sd_nb_face++;
+      // S'il l'on est le proprio, on peut définir le uid du noeud.
+      if (owner_min == subDomain()->subDomainId()) {
+        face_lite.m_owner_new_face = subDomain()->subDomainId();
+        face_lite.m_uid_new_face = sd_nb_face++;
+
+        // On enregistre le UID à envoyer.
+        if (sub_additionnal_answer.size() > 1) {
+          need_more_comm = true;
 
           info() << "[Face][" << my_proc << "] Send"
                  << " -- UID : " << face_lite.m_uid_new_face
@@ -1717,32 +1742,35 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
             request_uid[proc].add(face_lite.m_uid_new_face);
           }
         }
-
-        // Sinon, on doit aller demander le uid au proprio.
-        else {
-          face_lite.m_owner_new_face = owner_min;
-          face_lite.m_uid_new_face = -2;
-
-          request_uid[my_proc].add(owner_min);
-          // request_uid[my_proc].add(iter_requested_faces);
-          request_uid[my_proc].add(pos_sort);
-
-          requested_faces2[owner_min].add(requested_faces[sr][answer]);
-
-          info() << "[Face][" << my_proc << " -> " << face_lite.m_owner_new_face << "] Recv UID for Node"
-                 << " -- UID0 : " << face_lite.m_node0->m_uid_new_node
-                 << " -- UID1 : " << face_lite.m_node1->m_uid_new_node;
-        }
       }
-      iter_requested_faces++;
+
+      // Sinon, on doit aller demander le uid au proprio.
+      else {
+        need_more_comm = true;
+        face_lite.m_owner_new_face = owner_min;
+        face_lite.m_uid_new_face = -2;
+
+        if (request_uid[my_proc].empty()) {
+          request_uid[my_proc].resize(subDomain()->nbSubDomain(), 0);
+        }
+
+        request_uid[my_proc][owner_min]++;
+
+        requested_faces2[owner_min].add(requested_faces[sr][pos_node_in_array]);
+
+        info() << "[Face][" << my_proc << " -> " << face_lite.m_owner_new_face << "] Recv UID for Node"
+               << " -- UID0 : " << face_lite.m_node0->m_uid_new_node
+               << " -- UID1 : " << face_lite.m_node1->m_uid_new_node;
+      }
     }
   }
 
   if (need_more_comm) {
     {
       UniqueArray<Parallel::Request> requests(subDomain()->nbSubDomain());
+
       // On envoie les UID complémentaires.
-      info() << "[Face][" << my_proc << "] Step 6";
+      info() << "[Face][" << my_proc << "] Step 3.2";
 
       for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
         if (sr == subDomain()->subDomainId()) {
@@ -1760,31 +1788,24 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
     // On reçoit et traite les UID complémentaires.
     info() << "[Face][" << my_proc << "] Step 7";
 
-    for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
-      if (sr == subDomain()->subDomainId()) {
-        continue;
-      }
-
-      Int32 size = 0;
-
-      for (Int32 i = 0; i < request_uid[my_proc].size(); i += 2) {
-        if (request_uid[my_proc][i] == sr) {
-          size++;
+    if (!request_uid[my_proc].empty()) {
+      for (Int32 sr = 0; sr < subDomain()->nbSubDomain(); ++sr) {
+        if (sr == subDomain()->subDomainId()) {
+          continue;
         }
-      }
-      
-      if (size == 0) continue;
 
-      info() << "[Face][" << my_proc << " -> " << sr << "] Size recv : " << size;
+        Int64 size = request_uid[my_proc][sr];
+        if (size == 0) continue;
 
-      UniqueArray<Int64> requested_uid(size);
-      pm->recv(requested_uid, sr);
+        info() << "[Face][" << my_proc << " -> " << sr << "] Size recv : " << size;
 
-      for (Int32 i = 0, ii = 0; i < request_uid[my_proc].size(); i += 2, ++ii) {
-        if (request_uid[my_proc][i] == sr) {
-          FaceLite& face_lite = new_faces[requested_faces2[sr][ii]];
 
-          face_lite.m_uid_new_face = requested_uid[request_uid[my_proc][i+1]];
+        UniqueArray<Int64> requested_uid(size);
+        pm->recv(requested_uid, sr);
+
+        for (Int32 i = 0; i < size; ++i) {
+          FaceLite& face_lite = new_faces[requested_faces2[sr][i]];
+          face_lite.m_uid_new_face = requested_uid[i];
           info() << "[Face][" << my_proc << "] Apply2"
                  << " -- UID0 : " << face_lite.m_node0->m_uid_new_node
                  << " -- UID1 : " << face_lite.m_node1->m_uid_new_node
@@ -1793,9 +1814,6 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, Int32 current_
       }
     }
   }
-
-  info() << "[Face][" << subDomain()->parallelMng()->commRank() << "]";
-  subDomain()->parallelMng()->barrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1869,7 +1887,7 @@ _compute()
     }
 
     info() << "[" << subDomain()->parallelMng()->commRank() << "] _fillNodeUID";
-    _fillNodeUID(g_nb_node, plan_new_nodes, 0);
+    _fillNodeUID(g_nb_node, plan_new_nodes);
     nb_node_for_this_plan = g_nb_node - nb_node_for_this_plan;
 
     nb_node_for_this_plan = _makeUniqueNodeUID(nb_node_for_this_plan, plan_new_nodes, 0);
@@ -1895,7 +1913,7 @@ _compute()
              << " -- Node10 : " << elem.m_node1->m_uid_node0
              << " -- Node11 : " << elem.m_node1->m_uid_node1;
     }
-    _fillFaceUID(g_nb_face, plan_new_faces, 0);
+    _fillFaceUID(g_nb_face, plan_new_faces);
     nb_face_for_this_plan = g_nb_face - nb_face_for_this_plan;
 
     nb_face_for_this_plan = _makeUniqueFaceUID(nb_face_for_this_plan, plan_new_faces, 0);
