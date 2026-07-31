@@ -86,7 +86,7 @@ executeTest()
   times.add(m_global_time());
 
   ServiceBuilder<IMeshSection> spp0(mesh()->handle());
-  Ref<IMeshSection> pp0 = spp0.createReference("MeshSectionService");
+  Ref<IMeshSection> pp0 = spp0.createReference("MeshSection");
 
   for (auto plane : options()->plane()) {
     pp0->addPlane(plane->p0(), plane->normal());

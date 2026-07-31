@@ -15,10 +15,10 @@
 #include "arcane/core/IMeshFactoryMng.h"
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IMeshModifier.h"
-#include "arcane/core/IMeshSection.h"
 #include "arcane/core/IPrimaryMesh.h"
 #include "arcane/core/MeshBuildInfo.h"
 
+#include "arcane/core/IMeshSection.h"
 #include "arcane/std/MeshSection_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -81,7 +81,7 @@ class MeshSectionService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_MESHSECTION(MeshSectionService, MeshSectionService);
+ARCANE_REGISTER_SERVICE_MESHSECTION(MeshSection, MeshSectionService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

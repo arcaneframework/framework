@@ -19,10 +19,10 @@
 #include "arcane/core/IMeshFactoryMng.h"
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IMeshModifier.h"
-#include "arcane/core/IMeshSection.h"
 #include "arcane/core/IPrimaryMesh.h"
 #include "arcane/core/MeshBuildInfo.h"
 
+#include "arcane/core/IMeshSection.h"
 #include "arcane/std/MeshCut_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -276,7 +276,7 @@ class MeshCutService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_MESHCUT(MeshCutService, MeshCutService);
+ARCANE_REGISTER_SERVICE_MESHCUT(MeshCut, MeshCutService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

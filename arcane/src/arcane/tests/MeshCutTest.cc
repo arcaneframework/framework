@@ -118,7 +118,7 @@ compute()
   // MeshHandle meshhsection;
   // {
   //   ServiceBuilder<IMeshSection> spp0(mesh()->handle());
-  //   Ref<IMeshSection> pp0 = spp0.createReference("MeshSectionService");
+  //   Ref<IMeshSection> pp0 = spp0.createReference("MeshSection");
   //
   //   pp0->addPlane({0.95, 0, 0}, {1, 0, 0});
   //   pp0->addPlane({0.97, 0, 0}, {-1, 0, 0});
@@ -154,7 +154,7 @@ compute()
   {
     ServiceBuilder<IMeshSection> spp0(mesh()->handle());
     // ServiceBuilder<IMeshSection> spp0(meshhsection);
-    Ref<IMeshSection> pp0 = spp0.createReference("MeshCutService");
+    Ref<IMeshSection> pp0 = spp0.createReference("MeshCut");
 
     for (auto plane : options()->plane()) {
       pp0->addPlane(plane->p0() + (plane->p0Velocity() * globalIteration()), plane->normal());
