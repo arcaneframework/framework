@@ -1462,12 +1462,16 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces)
         // TODO AH : C'est quand même TURBO moche
         for (Cell cell00 : node00.cells()) {
           for (Cell cell01 : node01.cells()) {
-            for (Cell cell10 : node10.cells()) {
-              for (Cell cell11 : node11.cells()) {
-                if (cell00 == cell01 && cell00 == cell10 && cell00 == cell11) {
-                  if (cell00.uniqueId() < min_uid) {
-                    min_uid = cell00.uniqueId();
-                    owner_min = cell00.owner();
+            if (cell00 == cell01) {
+              for (Cell cell10 : node10.cells()) {
+                if (cell01 == cell10 ) {
+                  for (Cell cell11 : node11.cells()) {
+                    if (cell10 == cell11) {
+                      if (cell11.uniqueId() < min_uid) {
+                        min_uid = cell11.uniqueId();
+                        owner_min = cell11.owner();
+                      }
+                    }
                   }
                 }
               }
@@ -1708,12 +1712,16 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces)
       // TODO AH : C'est quand même TURBO moche
       for (Cell cell00 : node00.cells()) {
         for (Cell cell01 : node01.cells()) {
-          for (Cell cell10 : node10.cells()) {
-            for (Cell cell11 : node11.cells()) {
-              if (cell00 == cell01 && cell00 == cell10 && cell00 == cell11) {
-                if (cell00.uniqueId() < min_uid && sub_additionnal_answer.contains(cell00.owner())) {
-                  min_uid = cell00.uniqueId();
-                  owner_min = cell00.owner();
+          if (cell00 == cell01) {
+            for (Cell cell10 : node10.cells()) {
+              if (cell01 == cell10) {
+                for (Cell cell11 : node11.cells()) {
+                  if (cell10 == cell11) {
+                    if (cell11.uniqueId() < min_uid && sub_additionnal_answer.contains(cell11.owner())) {
+                      min_uid = cell11.uniqueId();
+                      owner_min = cell11.owner();
+                    }
+                  }
                 }
               }
             }
