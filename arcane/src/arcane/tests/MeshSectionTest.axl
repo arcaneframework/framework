@@ -4,6 +4,8 @@
   <interface name="Arcane::IUnitTest" inherited="false"/>
 
   <options>
+    <simple name="enable-post-processing" type="bool" default="false">
+    </simple>
     <complex name="plane" type="Plane" minOccurs="0" maxOccurs="unbounded">
       <simple name="p0" type="real3">
       </simple>

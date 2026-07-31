@@ -11,9 +11,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/List.h"
+
 #include "arcane/core/BasicUnitTest.h"
-#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/Directory.h"
 #include "arcane/core/IMeshSection.h"
+#include "arcane/core/IPostProcessorWriter.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/ServiceBuilder.h"
 
 #include "arcane/tests/MeshSectionTest_axl.h"
 
@@ -44,6 +49,10 @@ class MeshSectionTest
 
   void initializeTest() override;
   void executeTest() override;
+
+private:
+
+  UniqueArray<Real> times;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -74,6 +83,8 @@ initializeTest()
 void MeshSectionTest::
 executeTest()
 {
+  times.add(m_global_time());
+
   ServiceBuilder<IMeshSection> spp0(mesh()->handle());
   Ref<IMeshSection> pp0 = spp0.createReference("MeshSectionService");
 
@@ -84,6 +95,51 @@ executeTest()
   pp0->updateSection();
   MeshHandle meshsh = pp0->meshSection();
   IMesh* meshs = meshsh.mesh();
+
+
+  if (options()->enablePostProcessing())
+  {
+    ServiceBuilder<IPostProcessorWriter> spp(meshsh);
+    Ref<IPostProcessorWriter> pp = spp.createReference("VtkHdfV2PostProcessor");
+    Directory output_directory = Directory(subDomain()->exportDirectory(), "amrtestpost1");
+    output_directory.createDirectory();
+    pp->setBaseDirectoryName(output_directory.path());
+    IPostProcessorWriter* post_processor = pp.get();
+    post_processor->setTimes(times);
+
+    VariableList variables;
+    variables.add(meshs->nodesCoordinates().variable());
+    post_processor->setVariables(variables);
+
+    ItemGroupList groups;
+    groups.add(meshs->allNodes());
+    post_processor->setGroups(groups);
+
+    IVariableMng* vm = meshs->variableMng();
+    vm->writePostProcessing(post_processor);
+  }
+
+  if (options()->enablePostProcessing())
+  {
+    ServiceBuilder<IPostProcessorWriter> spp(mesh()->handle());
+    Ref<IPostProcessorWriter> pp = spp.createReference("VtkHdfV2PostProcessor");
+    Directory output_directory = Directory(subDomain()->exportDirectory(), "amrtestpost1");
+    output_directory.createDirectory();
+    pp->setBaseDirectoryName(output_directory.path());
+    IPostProcessorWriter* post_processor = pp.get();
+    post_processor->setTimes(times);
+
+    VariableList variables;
+    variables.add(mesh()->nodesCoordinates().variable());
+    post_processor->setVariables(variables);
+
+    ItemGroupList groups;
+    groups.add(mesh()->allNodes());
+    post_processor->setGroups(groups);
+
+    IVariableMng* vm = mesh()->variableMng();
+    vm->writePostProcessing(post_processor);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
