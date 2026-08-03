@@ -131,6 +131,7 @@ class IMeshBase;
 class IMeshPartitionConstraint;
 class IUserDataList;
 class IMeshBuilder;
+class IMeshSection;
 class MeshHandle;
 class MeshHandleOrMesh;
 class MeshBuildInfo;

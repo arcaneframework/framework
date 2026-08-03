@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" ?>
+
+<service name="MeshSection" type="caseoption" type2="subdomain">
+  <description>
+    Service allowing the creation of a mesh with a section of another mesh.
+  </description>
+
+  <interface name="Arcane::IMeshSection" inherited="true"/>
+
+  <variables>
+  </variables>
+
+  <options>
+    <simple name="unique-id-service-mesh" type="int32" default="0">
+      <description>
+        UniqueID of service mesh. Useful if you need to create multiple instances of this service for a mesh.
+      </description>
+    </simple>
+  </options>
+
+</service>

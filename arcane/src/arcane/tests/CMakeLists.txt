@@ -1422,6 +1422,12 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
+arcane_add_test(meshcut1 testMeshCut-1.arc "-m 1")
+arcane_add_test(meshcut2 testMeshCut-2.arc "-m 20")
+arcane_add_test(meshsection1 testMeshSection-1.arc)
+
+# ----------------------------------------------------------------------------
+
 include(accelerator/tests.cmake)
 include(cartesianmesh/tests.cmake)
 include(geometry/tests.cmake)

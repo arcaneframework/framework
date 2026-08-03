@@ -248,6 +248,7 @@ set(ARCANE_ORIGINAL_SOURCES
   IMeshPartitionConstraintMng.h
   IMeshPartitioner.h
   IMeshPartitionerBase.h
+  IMeshSection.h
   IMeshStats.h
   IMeshSubMeshTransition.h
   IMeshUniqueIdMng.h

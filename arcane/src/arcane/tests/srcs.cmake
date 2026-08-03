@@ -89,6 +89,8 @@ set(ARCANE_SOURCES
   HyodaMixedCellsUnitTest.cc
   HllcSchemeTypes.h
   HllcSchemeModule.cc
+  MeshCutTest.cc
+  MeshSectionTest.cc
 )
 set(ARCANE_ACCELERATOR_SOURCES
   ArcaneTestStandaloneSubDomain.cc
@@ -146,4 +148,6 @@ set(AXL_FILES
   RayMeshIntersectionUnitTest
   HyodaMixedCellsUnitTest
   HllcScheme
+  MeshCutTest
+  MeshSectionTest
 )

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0"?>
+<service name="MeshSectionTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
+         namespace-name="ArcaneTest">
+  <interface name="Arcane::IUnitTest" inherited="false"/>
+
+  <options>
+    <simple name="enable-post-processing" type="bool" default="false">
+    </simple>
+    <complex name="plane" type="Plane" minOccurs="0" maxOccurs="unbounded">
+      <simple name="p0" type="real3">
+      </simple>
+      <simple name="normal" type="real3">
+      </simple>
+    </complex>
+  </options>
+</service>

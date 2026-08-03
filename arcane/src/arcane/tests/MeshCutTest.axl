@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" ?>
+<module name="MeshCutTest" version="1.0" namespace-name="ArcaneTest">
+<description>
+  Test module
+</description>
+
+<variables>
+</variables>
+
+<entry-points>
+  <entry-point method-name="compute" name="Compute" where="compute-loop" property="none"/>
+</entry-points>
+
+<options>
+  <simple name="enable-post-processing" type="bool" default="false">
+  </simple>
+  <complex name="plane" type="Plane" minOccurs="0" maxOccurs="unbounded">
+    <simple name="p0" type="real3">
+    </simple>
+    <simple name="p0-velocity" type="real3" default="0 0 0">
+    </simple>
+    <simple name="normal" type="real3">
+    </simple>
+  </complex>
+</options>
+</module>
