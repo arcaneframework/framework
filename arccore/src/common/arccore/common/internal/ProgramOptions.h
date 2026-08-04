@@ -499,7 +499,8 @@ class ARCCORE_COMMON_EXPORT variables_map
 
     variable_value() = default;
 
-    explicit variable_value(std::any value, bool is_default = false)
+    // explicit do not build with gcc-12
+    variable_value(std::any value, bool is_default = false)
     : m_value(std::move(value))
     , m_is_default(is_default)
     {}
