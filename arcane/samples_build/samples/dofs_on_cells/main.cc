@@ -58,11 +58,11 @@ class FemDoFsOnCells
 
  public:
 
-  void initialize(IMesh* mesh);
+  void initialize(const CellGroup& cells, const String& dof_family_name);
 
- public:
+ public :
 
-  IndexedCellDoFConnectivityView cellDoFConnecvitiyView() const
+ IndexedCellDoFConnectivityView cellDoFConnecvitiyView() const
   {
     return m_cell_dof_connectivity->view();
   }
@@ -76,12 +76,17 @@ class FemDoFsOnCells
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Create a DoF family for cells of group `cells`.
+ *
+ * The number of DoFs per cell is equal to the number of nodes of the cell.
+ */
 void FemDoFsOnCells::
-initialize(IMesh* mesh)
+initialize(const CellGroup& cells, const String& dof_family_name)
 {
-  IItemFamily* cell_family = mesh->cellFamily();
-  IItemFamily* dof_family_interface = mesh->findItemFamily(Arcane::IK_DoF, "DoFCellFamily", true);
+  IMesh* mesh = cells.mesh();
+  IItemFamily* cell_family = cells.itemFamily();
+  IItemFamily* dof_family_interface = mesh->findItemFamily(Arcane::IK_DoF, dof_family_name, true);
   IDoFFamily* dof_family = ARCANE_CHECK_POINTER(dof_family_interface->toDoFFamily());
   m_dof_family = dof_family_interface;
 
@@ -89,17 +94,17 @@ initialize(IMesh* mesh)
   // This will be used to compute the uniqueId of the DoF and make sure they
   // are always the same.
   Int32 max_nb_dof_per_cell = cell_family->globalConnectivityInfos()->maxNodePerItem();
+  info() << "Create DoF family '" << dof_family_name << "' for cells of group '" << cells.name() << "'";
   info() << "MAX_NB_DOF_PER_CELL=" << max_nb_dof_per_cell;
 
-  ItemGroup all_cells = cell_family->allItems();
   // Create the DoFs
-  UniqueArray<Int64> uids(all_cells.size() * max_nb_dof_per_cell);
+  UniqueArray<Int64> uids(cells.size() * max_nb_dof_per_cell);
   {
     Integer dof_index = 0;
     // Use a mask to make sure the uniqueId() of the dof
     // can not be negative if we multiply the uniqueId().
     const UInt64 uid_mask = (1 << 28) - 1;
-    ENUMERATE_ (Cell, icell, all_cells) {
+    ENUMERATE_ (Cell, icell, cells) {
       Cell cell = *icell;
       Int32 nb_dof_per_cell = cell.nbNode();
       Int64 cell_unique_id = cell.uniqueId().asInt64();
@@ -110,18 +115,18 @@ initialize(IMesh* mesh)
     }
     uids.resize(dof_index);
   }
-  //info() << "ADD_Dofs list=" << uids;
+
   Int32UniqueArray dof_lids(uids.size());
   dof_family->addDoFs(uids, dof_lids);
   dof_family->endUpdate();
   info() << "NB_DOF=" << dof_family->allItems().size();
 
   // Create Cell -> DoF connectivity.
-  m_cell_dof_connectivity = mesh->indexedConnectivityMng()->findOrCreateConnectivity(mesh->cellFamily(), m_dof_family, "DoFCell");
+  m_cell_dof_connectivity = mesh->indexedConnectivityMng()->findOrCreateConnectivity(mesh->cellFamily(), m_dof_family, dof_family_name + "DoFCell");
   auto* cn = m_cell_dof_connectivity->connectivity();
   {
     Integer dof_index = 0;
-    ENUMERATE_ (Cell, icell, all_cells) {
+    ENUMERATE_ (Cell, icell, cells) {
       Cell cell = *icell;
       Int32 nb_dof_per_cell = cell.nbNode();
       for (Integer i = 0; i < nb_dof_per_cell; ++i) {
@@ -187,7 +192,7 @@ void executeSample(const String& case_file)
     }
     cell_center /= cell.nbNode();
     bool is_in_mat1 = cell_center.x < 0.65;
-    //tm->info() << "Cell=" << cell.uniqueId() << " center=" << cell_center << " nb_node=" << cell.nbNode() << " is_mat1=" << is_in_mat1;
+    tm->info() << "Cell=" << cell.uniqueId() << " center=" << cell_center << " nb_node=" << cell.nbNode() << " is_mat1=" << is_in_mat1;
     if (is_in_mat1)
       mat1_cells_id.add(cell.localId());
     else
@@ -200,28 +205,56 @@ void executeSample(const String& case_file)
   tm->info() << "NB_MAT1=" << mat1_cells.size();
   tm->info() << "NB_MAT2=" << mat2_cells.size();
 
-  // Create the dofs on cells.
-  FemDoFsOnCells dofs_on_cells(tm);
-  dofs_on_cells.initialize(mesh);
+  // Create the dofs on cells on Mat1
+  FemDoFsOnCells dofs_on_cells_mat1(tm);
+  dofs_on_cells_mat1.initialize(mat1_cells, "DoFCellFamilyMat1");
+
+  // Create the dofs on cells on Mat2
+  FemDoFsOnCells dofs_on_cells_mat2(tm);
+  dofs_on_cells_mat2.initialize(mat2_cells, "DoFCellFamilyMat2");
 
   // Declare a variable on DoFs and fill the value with the uniqueId() of the DoF.
   // The variable will be destroyed when the instance var_on_dof goes out of scope
   // because there is no remaining reference on it
-  IItemFamily* dof_family = dofs_on_cells.dofFamily();
-  VariableDoFReal var_on_dof(VariableBuildInfo(dof_family, "MyVarOnDoF"));
-  ENUMERATE_ (DoF, idof, dof_family->allItems()) {
+  IItemFamily* dof_family_mat1 = dofs_on_cells_mat1.dofFamily();
+  VariableDoFReal var_on_dof_mat1(VariableBuildInfo(dof_family_mat1, "MyVarOnDoFMat1"));
+  ENUMERATE_ (DoF, idof, dof_family_mat1->allItems()) {
     DoF dof = *idof;
-    var_on_dof[dof] = static_cast<Real>(dof.uniqueId().asInt64());
+    var_on_dof_mat1[dof] = static_cast<Real>(dof.uniqueId().asInt64());
+  }
+
+  IItemFamily* dof_family_mat2 = dofs_on_cells_mat2.dofFamily();
+  VariableDoFReal var_on_dof_mat2(VariableBuildInfo(dof_family_mat2, "MyVarOnDoFMat2"));
+  ENUMERATE_ (DoF, idof, dof_family_mat2->allItems()) {
+    DoF dof = *idof;
+    var_on_dof_mat2[dof] = static_cast<Real>(dof.uniqueId().asInt64() + 1);
   }
 
   {
+    tm->info() << "Iterate on DoF for Mat1";
     // Iterate over the DoFs of cells of group Mat1.
-    IndexedCellDoFConnectivityView cell_dof(dofs_on_cells.cellDoFConnecvitiyView());
-    DoFInfoListView dofs_view(dof_family);
+    IndexedCellDoFConnectivityView cell_dof(dofs_on_cells_mat1.cellDoFConnecvitiyView());
+    DoFInfoListView dofs_view(dof_family_mat1);
     ENUMERATE_ (Cell, icell, mat1_cells) {
       Cell cell = *icell;
       for (DoFLocalId dof : cell_dof.dofs(cell)) {
-        tm->info() << "Cell=" << cell.uniqueId() << " dof_value=" << var_on_dof[dof] << " dof_uid=" << dofs_view[dof].uniqueId();
+        tm->info() << "Mat1 Cell=" << cell.uniqueId()
+                   << " dof_value=" << var_on_dof_mat1[dof]
+                   << " dof_uid=" << dofs_view[dof].uniqueId();
+      }
+    }
+  }
+  {
+    tm->info() << "Iterate on DoF for Mat2";
+    // Iterate over the DoFs of cells of group Mat2.
+    IndexedCellDoFConnectivityView cell_dof(dofs_on_cells_mat2.cellDoFConnecvitiyView());
+    DoFInfoListView dofs_view(dof_family_mat2);
+    ENUMERATE_ (Cell, icell, mat2_cells) {
+      Cell cell = *icell;
+      for (DoFLocalId dof : cell_dof.dofs(cell)) {
+        tm->info() << "Mat2 Cell=" << cell.uniqueId()
+                   << " dof_value=" << var_on_dof_mat2[dof]
+                   << " dof_uid+1=" << (dofs_view[dof].uniqueId().asInt64() + 1);
       }
     }
   }

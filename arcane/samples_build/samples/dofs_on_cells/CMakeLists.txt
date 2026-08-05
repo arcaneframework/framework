@@ -12,10 +12,16 @@ enable_testing()
 
 # ----------------------------------------------------------------------------
 # Add tests with hybrid mesh
-add_test(NAME standalone_subdomain_test2 COMMAND DoFsOnCells data.arc)
+add_test(NAME dofs_on_cells_test1 COMMAND DoFsOnCells data.arc)
+
+if(MPIEXEC_EXECUTABLE)
+  add_test(NAME dofs_on_cells_test1_p4
+    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 4 ./DoFsOnCells data.arc
+  )
+endif()
 
 # ----------------------------------------------------------------------------
-# Local Variables:
+
 # tab-width: 2
 # indent-tabs-mode: nil
 # coding: utf-8-with-signature
