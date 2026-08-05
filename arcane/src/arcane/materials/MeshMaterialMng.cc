@@ -232,14 +232,16 @@ build()
   // Indicate whether the accelerator API is used for calculating
   // ConstituentItemVectorImpl entities
   {
-    if (auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)) {
+    bool force_enable = false;
+    if (const auto v = Convert::Type<Real>::tryParseFromEnvironment("ARCANE_MATERIALMNG_USE_ACCELERATOR_FOR_CONSTITUENTITEMVECTOR", true)) {
       m_is_use_accelerator_for_constituent_item_vector = (v.value() != 0);
+      force_enable = m_is_use_accelerator_for_constituent_item_vector;
     }
     // Do not activate the use of RunQueue for calculating
     // 'ComponentItemVector' if multi-threading is active. Currently,
     // using the same RunQueue is not multi-threaded (and therefore
     // ComponentItemVector cannot be created concurrently)
-    if (TaskFactory::isActive())
+    if (!force_enable && TaskFactory::isActive())
       m_is_use_accelerator_for_constituent_item_vector = false;
     info() << "Use accelerator API for 'ConstituentItemVectorImpl' = " << m_is_use_accelerator_for_constituent_item_vector;
   }
