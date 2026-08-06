@@ -1,20 +1,23 @@
-enable_language(Fortran)
+include(CheckLanguage)
 
 createLibrary(alien_interface_c
   EXPORT alien/AlienInterfaceCExport.h
   )
 
-
-if (TARGET mpifort)
+if(ENABLE_FORTRAN)
+  if(TARGET mpifort OR TARGET ifort)
+    enable_language(Fortran)
     addSources(alien_interface_c
-               alien/c/alienc.cc
-               alien/fortran/alienf.c
-               alien/fortran/M_AlienModule.f90
-              )
+      alien/c/alienc.cc
+      alien/fortran/alienf.c
+      alien/fortran/M_AlienModule.f90
+    )
+  endif()
 else ()
-    addSources(alien_interface_c
-               alien/c/alienc.cc
-            )
+  check_language(c)
+  addSources(alien_interface_c
+    alien/c/alienc.cc
+  )
 endif ()
 
 linkLibraries(alien_interface_c Alien::alien_core)

@@ -57,7 +57,6 @@ addSources(alien_interface_fortran_param.exe
            )
 
 linkLibraries(alien_interface_fortran_param.exe
-        mpifort
         Boost::boost
         Alien::alien_core
         Alien::alien_semantic_ref
@@ -94,6 +93,10 @@ endif ()
 
 if (TARGET mpifort)
     linkLibraries(alien_interface_fortran_param.exe mpifort)
+endif ()
+
+if (TARGET ifort)
+  linkLibraries(alien_interface_fortran_param.exe ifort)
 endif ()
 
 linkLibraries(alien_interface_fortran_param.exe MPI::MPI_Fortran)
