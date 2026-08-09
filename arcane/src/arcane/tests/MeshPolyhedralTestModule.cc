@@ -417,8 +417,11 @@ _testGroups(IMesh* mesh)
   if (subDomain()->parallelMng()->isParallel()) {
     nb_internal_group = 27;
   }
-  auto nb_group = nb_internal_group + options()->nbMeshGroup;
-  vc.areEqual(nb_group, mesh->groups().count(), "check number of groups in the mesh");
+  if (options()->nbMeshGroup.isPresent())
+  {
+    auto nb_group = nb_internal_group + options()->nbMeshGroup[0];
+    vc.areEqual(nb_group, mesh->groups().count(), "check number of groups in the mesh");
+  }
 
   for (const auto& boundary_face_group_name : options()->getCheckBoundaryFaceGroup()) {
     _checkBoundaryFaceGroup(mesh, boundary_face_group_name);
