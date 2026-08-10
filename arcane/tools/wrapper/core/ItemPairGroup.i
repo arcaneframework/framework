@@ -19,7 +19,7 @@
 %typemap(csin) Arcane::ItemPairEnumerator "$csinput"
 %typemap(csout) Arcane::ItemPairEnumerator { return $imcall;  }
 %typemap(imtype) Arcane::ItemPairEnumerator "Arcane.ItemPairEnumerator"
-%typemap(out) Arcane::ItemPairEnumerator %{ $result = ($1); %}
+%typemap(out, null="{}") Arcane::ItemPairEnumerator %{ $result = ($1); %}
 %typemap(in) Arcane::ItemPairEnumerator %{$1 = $input; %}
 
 %typemap(cscode) Arcane::ItemPairEnumerator

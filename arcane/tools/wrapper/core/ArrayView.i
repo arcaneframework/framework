@@ -94,7 +94,7 @@ namespace Arcane
    $input .m_size = result_ref_$input.size();
    $input .m_ptr = result_ref_$input.data();
 %}
-%typemap(out) Arcane::ConstArrayView<CTYPE >
+%typemap(out, null="{}") Arcane::ConstArrayView<CTYPE >
 %{
    Arcane::ConstArrayView<CTYPE> result_ref = $1;
    $result .m_size = result_ref.size();
@@ -145,7 +145,7 @@ namespace Arcane
    $input .m_size = result_ref_$input.size();
    $input .m_ptr = result_ref_$input.data();
 %}
-%typemap(out) Arcane::ArrayView<CTYPE >
+%typemap(out, null="{}") Arcane::ArrayView<CTYPE >
 %{
    Arcane::ArrayView<CTYPE> result_ref = $1;
    $result .m_size = result_ref.size();
@@ -279,14 +279,14 @@ namespace Arcane
 %typemap(csout) Arcane::ConstArray2View<CTYPE > { return $imcall;  }
 %typemap(in) Arcane::Array2View<CTYPE > %{$1 = Arcane::Array2View<CNAME>($input.m_ptr,$input.m_dim1_size,$input.m_dim2_size); %}
 %typemap(in) Arcane::ConstArray2View<CTYPE > %{$1 = Arcane::ConstArray2View<CNAME>($input.m_ptr,$input.m_dim1_size,$input.m_dim2_size); %}
-%typemap(out) Arcane::Array2View<CTYPE >
+%typemap(out, null="{}") Arcane::Array2View<CTYPE >
 %{
    Arcane::Array2View<CTYPE> result_ref = $1;
    $result .m_ptr = result_ref.unguardedBasePointer();
    $result .m_dim1_size = result_ref.dim1Size();
    $result .m_dim2_size = result_ref.dim2Size();
 %}
-%typemap(out) Arcane::ConstArray2View<CTYPE >
+%typemap(out, null="{}") Arcane::ConstArray2View<CTYPE >
 %{
    Arcane::ConstArray2View<CTYPE> result_ref = $1;
    $result .m_ptr = result_ref.unguardedBasePointer();

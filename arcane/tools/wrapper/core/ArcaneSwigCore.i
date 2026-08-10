@@ -408,7 +408,7 @@ ARCANE_SWIG_OVERRIDE_GETCPTR(Arcane::ItemGroupT<Arcane::Cell>,Arcane)
 %typemap(cstype) ItemInternalArrayView "Arcane.ItemInternalArrayView"
 %typemap(imtype) ItemInternalArrayView "Arcane.ItemInternalArrayView"
 %typemap(csin) ItemInternalArrayView "$csinput"
-%typemap(out) ItemInternalArrayView
+%typemap(out, null="{}") ItemInternalArrayView
 %{
    $result = $1;
 %}
@@ -434,7 +434,7 @@ namespace Arcane
 %typemap(cstype) Arcane::ItemInfoListView "Arcane.ItemInfoListView"
 %typemap(imtype) Arcane::ItemInfoListView "Arcane.ItemInfoListView"
 %typemap(csin) Arcane::ItemInfoListView "$csinput"
-%typemap(out) Arcane::ItemInfoListView
+%typemap(out, null="{}") Arcane::ItemInfoListView
 %{
    $result = $1;
 %}

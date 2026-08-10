@@ -51,7 +51,7 @@ ARCANE_SWIG_SPECIALIZE_CONSTARRAYVIEW(Arcane::Materials::IMeshEnvironmentPtr,Arc
     return ret;
   }
 %typemap(ctype, out="Arcane::Materials::ComponentItemVectorViewPOD") CTYPE %{ CSHARP_TYPE %}
-%typemap(out) CTYPE
+%typemap(out, null="{}") CTYPE
 %{
    Arcane::Materials::ComponentItemVectorView result_ref = ($1);
    $result = _createComponentItemVectorViewPOD(result_ref);
