@@ -25,6 +25,9 @@
 #include "arcane/core/IMeshSection.h"
 #include "arcane/std/MeshCut_axl.h"
 
+#include <unordered_map>
+#include <unordered_set>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -383,7 +386,7 @@ _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersec
   VariableNodeReal3& node_coord = mesh()->nodesCoordinates();
   VariableNodeReal node_dist(VariableBuildInfo(mesh(), "NodeDist"));
 
-  UniqueArray<Int32> face_already_computed;
+  std::unordered_set<Int32> face_already_computed;
 
   // Calcul de la distance signée de chaque noeud par rapport au plan de coupe.
   ENUMERATE_ (Node, inode, allNodes()) {
@@ -460,7 +463,7 @@ _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersec
             // maille créée grâce à cette face n'existe pas encore.
             // On peut donc directement ajouter les noeuds de la face dans la
             // liste des noeuds de la future maille.
-            face_already_computed.add(face.localId());
+            face_already_computed.insert(face.localId());
             for (Node node : face.nodes()) {
               auto ni = NodeIntersection{ node, node, node_coord[node] };
               point_coords_tmp.add(ni);
@@ -606,28 +609,22 @@ _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersec
           indices.add(i);
         }
 
-        std::sort(indices.begin(), indices.end(),
-                  [&](const Int64 ia, const Int64 ib) {
-                    const Real3& pa = point_coords_tmp[ia].m_intersection_pos;
-                    const Real3& pb = point_coords_tmp[ib].m_intersection_pos;
+        {
+          // Précalcul des angles.
+          UniqueArray<Real> angles(point_coords_tmp.size());
+          for (Int64 i = 0; i < point_coords_tmp.size(); ++i) {
+            const Real3& p = point_coords_tmp[i].m_intersection_pos;
+            const Real3 vvec{ p - bary };
+            const Real x = math::dot(vvec, u);
+            const Real y = math::dot(vvec, v);
+            angles[i] = std::atan2(y, x);
+          }
 
-                    // Vecteurs allant du barycentre vers chaque point.
-                    const Real3 va{ pa - bary };
-                    const Real3 vb{ pb - bary };
-
-                    // Projeter sur la base 2D du plan (u, v).
-                    const Real a_x = math::dot(va, u);
-                    const Real a_y = math::dot(va, v);
-
-                    const Real b_x = math::dot(vb, u);
-                    const Real b_y = math::dot(vb, v);
-
-                    // Comparer les angles en utilisant atan2.
-                    const Real angle_a = std::atan2(a_y, a_x);
-                    const Real angle_b = std::atan2(b_y, b_x);
-
-                    return angle_a < angle_b;
-                  });
+          std::sort(indices.begin(), indices.end(),
+                    [&](const Int64 ia, const Int64 ib) {
+                      return angles[ia] < angles[ib];
+                    });
+        }
 
         // On crée la nouvelle maille.
         // On en profite pour modifier le tableau "indices" :
@@ -834,15 +831,24 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes)
         // Le propriétaire du noeud est le propriétaire de la maille ayant le plus
         // petit UID, parmi les mailles en commun entre les deux noeuds d'origine.
 
-        // TODO Ajouter traitement particulier pour le cas où node0 == node1
         Int64 min_uid = INT64_MAX;
         Int32 owner_min = -1;
-        for (Cell cell0 : node0.cells()) {
-          for (Cell cell1 : node1.cells()) {
-            if (cell0 == cell1) {
-              if (cell0.uniqueId() < min_uid) {
-                min_uid = cell0.uniqueId();
-                owner_min = cell0.owner();
+        if (node0 == node1) {
+          for (Cell cell : node0.cells()) {
+            if (cell.uniqueId() < min_uid) {
+              min_uid = cell.uniqueId();
+              owner_min = cell.owner();
+            }
+          }
+        }
+        else {
+          for (Cell cell0 : node0.cells()) {
+            for (Cell cell1 : node1.cells()) {
+              if (cell0 == cell1) {
+                if (cell0.uniqueId() < min_uid) {
+                  min_uid = cell0.uniqueId();
+                  owner_min = cell0.owner();
+                }
               }
             }
           }
@@ -1277,15 +1283,24 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes)
       // Le propriétaire du noeud est le propriétaire de la maille ayant le plus
       // petit UID, parmi les mailles en commun entre les deux noeuds d'origine.
 
-      // TODO Ajouter traitement particulier pour le cas où node0 == node1
       Int64 min_uid = INT64_MAX;
       Int32 owner_min = -1;
-      for (Cell cell0 : node0.cells()) {
-        for (Cell cell1 : node1.cells()) {
-          if (cell0 == cell1) {
-            if (cell0.uniqueId() < min_uid && sub_additionnal_answer.contains(cell0.owner())) {
-              min_uid = cell0.uniqueId();
-              owner_min = cell0.owner();
+      if (node0 == node1) {
+        for (Cell cell : node0.cells()) {
+          if (cell.uniqueId() < min_uid && sub_additionnal_answer.contains(cell.owner())) {
+            min_uid = cell.uniqueId();
+            owner_min = cell.owner();
+          }
+        }
+      }
+      else {
+        for (Cell cell0 : node0.cells()) {
+          for (Cell cell1 : node1.cells()) {
+            if (cell0 == cell1) {
+              if (cell0.uniqueId() < min_uid && sub_additionnal_answer.contains(cell0.owner())) {
+                min_uid = cell0.uniqueId();
+                owner_min = cell0.owner();
+              }
             }
           }
         }
@@ -1459,22 +1474,24 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces)
         Int64 min_uid = INT64_MAX;
         Int32 owner_min = -1;
 
-        // TODO AH : C'est quand même TURBO moche
-        for (Cell cell00 : node00.cells()) {
-          for (Cell cell01 : node01.cells()) {
-            if (cell00 == cell01) {
-              for (Cell cell10 : node10.cells()) {
-                if (cell01 == cell10 ) {
-                  for (Cell cell11 : node11.cells()) {
-                    if (cell10 == cell11) {
-                      if (cell11.uniqueId() < min_uid) {
-                        min_uid = cell11.uniqueId();
-                        owner_min = cell11.owner();
-                      }
-                    }
-                  }
-                }
-              }
+        for (Cell cell : node00.cells()) {
+          bool has01 = false;
+          bool has10 = false;
+          bool has11 = false;
+          for (Node n : cell.nodes()) {
+            if (n == node01)
+              has01 = true;
+            if (n == node10)
+              has10 = true;
+            if (n == node11)
+              has11 = true;
+            if (has01 && has10 && has11)
+              break;
+          }
+          if (has01 && has10 && has11) {
+            if (cell.uniqueId() < min_uid) {
+              min_uid = cell.uniqueId();
+              owner_min = cell.owner();
             }
           }
         }
@@ -1709,22 +1726,24 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces)
       Int64 min_uid = INT64_MAX;
       Int32 owner_min = -1;
 
-      // TODO AH : C'est quand même TURBO moche
-      for (Cell cell00 : node00.cells()) {
-        for (Cell cell01 : node01.cells()) {
-          if (cell00 == cell01) {
-            for (Cell cell10 : node10.cells()) {
-              if (cell01 == cell10) {
-                for (Cell cell11 : node11.cells()) {
-                  if (cell10 == cell11) {
-                    if (cell11.uniqueId() < min_uid && sub_additionnal_answer.contains(cell11.owner())) {
-                      min_uid = cell11.uniqueId();
-                      owner_min = cell11.owner();
-                    }
-                  }
-                }
-              }
-            }
+      for (Cell cell : node00.cells()) {
+        bool has01 = false;
+        bool has10 = false;
+        bool has11 = false;
+        for (Node n : cell.nodes()) {
+          if (n == node01)
+            has01 = true;
+          if (n == node10)
+            has10 = true;
+          if (n == node11)
+            has11 = true;
+          if (has01 && has10 && has11)
+            break;
+        }
+        if (has01 && has10 && has11) {
+          if (cell.uniqueId() < min_uid && sub_additionnal_answer.contains(cell.owner())) {
+            min_uid = cell.uniqueId();
+            owner_min = cell.owner();
           }
         }
       }
@@ -2049,14 +2068,18 @@ void MeshCutService::
 _setCoordNodesAndOwner(UniqueArray<NodeIntersection>& new_nodes)
 {
   VariableNodeReal3& node_coords(m_cloned_mesh->nodesCoordinates());
+  std::unordered_map<Int64, const NodeIntersection*> node_map;
+  node_map.reserve(new_nodes.size());
+  for (const auto& elem : new_nodes) {
+    node_map[elem.m_new_node->m_uid_new_node] = &elem;
+  }
   ENUMERATE_ (Node, inode, m_cloned_mesh->allNodes()) {
     const Int64 uid = inode->uniqueId();
-    for (const auto& elem : new_nodes) {
-      if (elem.m_new_node->m_uid_new_node == uid) {
-        node_coords[inode] = elem.m_intersection_pos;
-        inode->mutableItemBase().setOwner(elem.m_new_node->m_owner_new_node, subDomain()->subDomainId());
-        // debug() << "NodeUID : " << uid << " -- Coord : " << node_coords[inode];
-      }
+    auto it = node_map.find(uid);
+    if (it != node_map.end()) {
+      const NodeIntersection* elem = it->second;
+      node_coords[inode] = elem->m_intersection_pos;
+      inode->mutableItemBase().setOwner(elem->m_new_node->m_owner_new_node, subDomain()->subDomainId());
     }
   }
 }
@@ -2067,12 +2090,16 @@ _setCoordNodesAndOwner(UniqueArray<NodeIntersection>& new_nodes)
 void MeshCutService::
 _setFacesOwner(UniqueArray<FaceLite>& new_faces)
 {
+  std::unordered_map<Int64, const FaceLite*> face_map;
+  face_map.reserve(new_faces.size());
+  for (const auto& elem : new_faces) {
+    face_map[elem.m_uid_new_face] = &elem;
+  }
   ENUMERATE_ (Face, iface, m_cloned_mesh->allFaces()) {
     const Int64 uid = iface->uniqueId();
-    for (const auto& elem : new_faces) {
-      if (elem.m_uid_new_face == uid) {
-        iface->mutableItemBase().setOwner(elem.m_owner_new_face, subDomain()->subDomainId());
-      }
+    auto it = face_map.find(uid);
+    if (it != face_map.end()) {
+      iface->mutableItemBase().setOwner(it->second->m_owner_new_face, subDomain()->subDomainId());
     }
   }
 }
