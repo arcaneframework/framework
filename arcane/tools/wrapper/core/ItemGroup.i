@@ -19,7 +19,7 @@
     ItemVectorView ret = $imcall;$excode
     return ret;
   }
-%typemap(out) Arcane::ItemVectorView
+%typemap(out, null="{}") Arcane::ItemVectorView
 %{
    Arcane::ItemVectorView result_ref = ($1);
    result_ref._internalSwigSet(& $result);
@@ -97,7 +97,7 @@
     ItemEnumerator ret = $imcall;$excode
     return ret;
   }
-%typemap(out) Arcane::ItemEnumerator
+%typemap(out, null="{}") Arcane::ItemEnumerator
 %{
   Arcane::ItemEnumerator result_ref = ($1);
    _arcaneInternalItemEnumeratorSwigSet(&result_ref, & $result);
