@@ -152,6 +152,12 @@
                     <description>Block Jacobi preconditioner for MPI</description>
                 </enumvalue>
             </enumeration>
+            <simple name="mxp" type="bool" default="false">
+                <description>
+                    Mixed precision preconditioner: vector operands are fp64
+                    but preconditioner application is done with fp32.
+                </description>
+            </simple>
         </complex>
 
         <complex name="ILUk" type="ILUkOptType" minOccurs="0" maxOccurs="1">
@@ -160,17 +166,23 @@
                 <description>fill level</description>
             </simple>
             <simple name="sp" type="bool" default="true">
-                <description>Use single precision ILU matrix</description>
+                <description>Use fp32 ILU matrix but triangular solve is done with fp64</description>
+            </simple>
+            <simple name="mxp" type="bool" default="false">
+                <description>
+                    Mixed precision preconditioner: vector operands are fp64
+                    but preconditioner application is done with fp32.
+                </description>
             </simple>
             <enumeration name="ordering" type="MCGSolver::Graph::Ordering::eType" default="None">
                 <enumvalue name="None" genvalue="MCGSolver::Graph::Ordering::None">
                     <description>No ordering</description>
                 </enumvalue>
                 <enumvalue name="RCM" genvalue="MCGSolver::Graph::Ordering::RCM">
-                    <description>Reverse Cuthill–McKee ordering</description>
+                    <description>Reverse Cuthill-McKee ordering</description>
                 </enumvalue>
                 <enumvalue name="CM" genvalue="MCGSolver::Graph::Ordering::CM">
-                    <description>Cuthill–McKee ordering</description>
+                    <description>Cuthill-McKee ordering</description>
                 </enumvalue>
             </enumeration>
         </complex>
@@ -233,6 +245,12 @@
             </simple>
             <simple name="dir" type="string" default="+Z">
                 <description>Coloring preferential direction</description>
+            </simple>
+            <simple name="mxp" type="bool" default="false">
+                <description>
+                    Mixed precision preconditioner: vector operands are fp64
+                    but preconditioner application is done with fp32.
+                </description>
             </simple>
         </complex>
 
