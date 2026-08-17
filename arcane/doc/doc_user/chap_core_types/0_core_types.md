@@ -50,7 +50,10 @@ Table of Contents for this chapter:
   Describes the use of array types.
 
 9. \subpage arcanedoc_core_types_numarray <br>
-  Describes the use of the NumArray class and associated types.
+  Describes the use of the \arcane{NumArray} class and associated types.
+
+10. \subpage arcanedoc_core_types_array_views <br>
+  Describes the use of the classes \arcane{ArrayView}, \arcane{ConstArrayView}, \arcane{Span}, \arcane{SmallSpan}
 
 ____
 

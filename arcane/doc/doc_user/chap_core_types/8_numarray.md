@@ -82,13 +82,14 @@ For example:
 
 \snippet NumArrayUnitTest.cc SampleNumArrayDeclarationsIndexation
 
+
 ____
 
 <div class="section_buttons">
 <span class="back_section_button">
 \ref arcanedoc_core_types_array_usage
 </span>
-<!-- <span class="next_section_button">
-\ref arcanedoc_core_types_axl_caseoptions
-</span> -->
+<span class="next_section_button">
+\ref arcanedoc_core_types_array_views
+</span>
 </div>
