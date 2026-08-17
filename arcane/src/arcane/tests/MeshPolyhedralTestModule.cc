@@ -25,6 +25,8 @@
 
 #include <numeric>
 
+#include "arcane/core/ItemPrinter.h"
+#include "arcane/geometry/ItemGroupBuilder.h"
 #include "arcane/tests/MeshPolyhedralTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -44,6 +46,30 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
   : ArcaneMeshPolyhedralTestObject(sbi)
   {}
 
+private:
+  ItemGroup m_subdomain_boundary_faces;
+  void _computeSubdomainBoundaryFaces()
+  {
+    m_subdomain_boundary_faces = mesh()->faceFamily()->createGroup("SubdomainBoundaryFaces");
+    Int32UniqueArray subdomain_boundary_face_lids;
+    FaceGroup all_boundary_faces = mesh()->allCells().outerFaceGroup();
+    subdomain_boundary_face_lids.reserve(all_boundary_faces.size());
+    VariableFaceInt32 face_nb_cells(VariableBuildInfo(mesh(),"FaceNbCells"));
+    ENUMERATE_(Face,iface,all_boundary_faces)
+    {
+      face_nb_cells[iface] = iface->nbCell();
+    }
+    face_nb_cells.synchronize();
+    ENUMERATE_(Face,iface,all_boundary_faces)
+    {
+      if (face_nb_cells[iface] == 2)
+      {
+        subdomain_boundary_face_lids.add(iface.localId());
+      }
+    }
+    m_subdomain_boundary_faces.addItems(subdomain_boundary_face_lids);
+    info() << "== Case has " << m_subdomain_boundary_faces.size() << " ghost boundary faces";
+  }
  public:
 
   void init()
@@ -65,6 +91,7 @@ class MeshPolyhedralTestModule : public ArcaneMeshPolyhedralTestObject
       info() << "No Mesh";
 
     subDomain()->timeLoopMng()->stopComputeLoop(true);
+    _computeSubdomainBoundaryFaces();
   }
 
  private:
@@ -180,6 +207,8 @@ _testEnumerationAndConnectivities(IMesh* mesh)
     }
     // check boundaryCell
     if (iface->cells().size() == 1 && !iface->isSubDomainBoundary()) {
+      info() << ItemPrinter(*iface) << " should be boundary face." << " " << iface->cells();
+      info() << "All cells are " << allCells().view().localIds();
       ARCANE_FATAL("A face with one cell is boundary.");
     }
     if (iface->isSubDomainBoundary()) {
