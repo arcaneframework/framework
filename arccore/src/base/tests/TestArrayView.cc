@@ -29,6 +29,14 @@ TEST(Array2View, Misc)
   for (size_t i = 0, n = buf.size(); i < n; ++i)
     buf[i] = (Int32)(i + 1);
 
+  Array2View<Int32> v0(buf.data(), nb_x, nb_y);
+  const Array2View<Int32> const_v0(v0);
+  ASSERT_EQ(v0.data(), buf.data());
+  ASSERT_EQ(const_v0.data(), v0.data());
+
+  ASSERT_EQ(v0.unguardedBasePointer(), buf.data());
+  ASSERT_EQ(const_v0.unguardedBasePointer(), v0.data());
+
   ConstArray2View<Int32> v(buf.data(), nb_x, nb_y);
   Integer global_index = 0;
   for (Integer x = 0, xn = v.dim1Size(); x < xn; ++x) {
