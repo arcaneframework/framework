@@ -292,8 +292,8 @@ MCGInternalLinearSolver::init()
     m_solver->setOpt(MCGSolver::eOptType::UseMXP, m_options->ILUk()[0]->mxp());
   }
 
-  if (!m_options->ColorILU().empty()) {
-    m_solver->setOpt(MCGSolver::eOptType::UseMXP, m_options->ColorILU()[0]->mxp());
+  if (!m_options->ColorILU0().empty()) {
+    m_solver->setOpt(MCGSolver::eOptType::UseMXP, m_options->ColorILU0()[0]->mxp());
   }
 
   if (!m_options->CprAmg().empty()) {
