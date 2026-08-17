@@ -851,6 +851,49 @@ namespace mesh
                                     ++current_face_index;
                                   }
                                 });
+        // Add an algorithm to update Face flags when a connected cell is removed
+        auto const isolated_items_property_name = m_mesh._isolatedItemLidsPropertyName(source_family,target_family);
+        std::string const flag_update_output_property_name{ "EndOfFlagUpdate" };
+        source_family.addScalarProperty<Neo::utils::Int32>(flag_update_output_property_name);
+
+        mesh_graph.addAlgorithm(Neo::MeshKernel::InProperty{ source_family, isolated_items_property_name },
+                                Neo::MeshKernel::OutProperty{ source_family, flag_update_output_property_name },
+                                "UpdateFaceFlagsAfterCellRemoval",
+                                [arcane_source_item_family,&source_family,connectivity_name](Neo::MeshScalarPropertyT<Neo::utils::Int32> const&, Neo::ScalarPropertyT<Neo::utils::Int32> const&) {
+                                  auto const rank = arcane_source_item_family->mesh()->parallelMng()->commRank();
+                                  Neo::printer(rank) << "==Algorithm update Face flags after cell removal" << Neo::endline;
+                                  // todo should be an input property
+                                  auto const removed_target_item_index_prop_name = Neo::Mesh::removedTargetItemIndexfilteredItemPropertyName(connectivity_name.localstr());
+                                  auto& null_item_connected = source_family.getConcreteProperty<Neo::MeshArrayPropertyT<Neo::utils::Int32>>(removed_target_item_index_prop_name);
+                                  null_item_connected.debugPrint(rank);
+                                  ENUMERATE_(Face,iface,arcane_source_item_family->allItems())
+                                  {
+                                    Face current_face = *iface;
+                                    auto null_items_connected_to_face = null_item_connected[iface.localId()];
+                                    if (null_items_connected_to_face.size() > 2)
+                                    {
+                                      ARCANE_FATAL("More than one null item connected to face {0}",iface.localId());
+                                    }
+                                    // If no cell removed nothing to do
+                                    if (null_items_connected_to_face.size() == 0)
+                                      continue;
+                                    // If only one cell, check if back or front remains
+                                    // front cell remains
+                                    if (null_items_connected_to_face[0] == 0)
+                                    {
+                                      _setFaceInfos(ItemFlags::II_Boundary|ItemFlags::II_SubDomainBoundary|
+                                        ItemFlags::II_HasFrontCell|ItemFlags::II_FrontCellIsFirst,current_face);
+                                    }
+                                    else if (null_items_connected_to_face[0] == 1)
+                                    {
+                                      _setFaceInfos(ItemFlags::II_Boundary|ItemFlags::II_SubDomainBoundary|
+                                        ItemFlags::II_HasBackCell|ItemFlags::II_BackCellIsFirst,current_face);
+                                    }
+                                  }
+
+                                },
+                                Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution
+        );
       }
       // Add an algorithm to remove items isolated after a connectivity update. Add it only once, when connectivity is added
       if (operation == Neo::Mesh::ConnectivityOperation::Modify)
@@ -874,7 +917,7 @@ namespace mesh
           }
           std::sort(isolated_item_lids.begin(), isolated_item_lids.end());
           arcane_source_item_family->traceMng()->info() << "Remove isolated in Arcane for family "
-            << " lids : " << isolated_item_lids;
+            << arcane_source_item_family->name() << " lids : " << isolated_item_lids;
             isolated_items_lids_property.debugPrint();
           arcane_source_item_family->removeItems(isolated_item_lids);
         }, Neo::MeshKernel::AlgorithmPropertyGraph::AlgorithmPersistence::KeepAfterExecution);
