@@ -289,11 +289,17 @@ MCGInternalLinearSolver::init()
   if (!m_options->ILUk().empty()) {
     m_solver->setOpt(MCGSolver::eOptType::ILUkLevel, m_options->ILUk()[0]->levelOfFill());
     m_solver->setOpt(MCGSolver::eOptType::ILUkSp, m_options->ILUk()[0]->sp());
+    m_solver->setOpt(MCGSolver::eOptType::UseMXP, m_options->ILUk()[0]->mxp());
+  }
+
+  if (!m_options->ColorILU().empty()) {
+    m_solver->setOpt(MCGSolver::eOptType::UseMXP, m_options->ColorILU()[0]->mxp());
   }
 
   if (!m_options->CprAmg().empty()) {
     m_solver->setOpt(MCGSolver::eOptType::CxrSolver, m_options->CprAmg()[0]->cxrSolver());
     m_solver->setOpt(MCGSolver::eOptType::RelaxSolver, m_options->CprAmg()[0]->relaxSolver());
+    m_solver->setOpt(MCGSolver::eOptType::UseMXP, m_options->CprAmg()[0]->mxp());
   }
 
   if (!m_options->amgx().empty()) {
