@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2View.h                                                (C) 2000-2025 */
+/* Array2View.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* View of a 2D array.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \ingroup Collection
  *
@@ -55,11 +54,7 @@ class Array2View
   , m_dim2_size(dim2_size)
   {}
   //! Creates an empty 2D view.
-  constexpr Array2View()
-  : m_ptr(nullptr)
-  , m_dim1_size(0)
-  , m_dim2_size(0)
-  {}
+  Array2View() = default;
 
  public:
 
@@ -123,29 +118,27 @@ class Array2View
 
  public:
 
-  /*!
-   * \brief Pointer to the allocated memory.
-   */
-  constexpr inline DataType* unguardedBasePointer()
-  {
-    return m_ptr;
-  }
+  //! Pointer to the allocated memory.
+  constexpr DataType* unguardedBasePointer() { return m_ptr; }
 
-  /*!
-   * \brief Pointer to the allocated memory.
-   */
-  constexpr inline DataType* data() { return m_ptr; }
+  //! Pointer to the allocated memory.
+  constexpr DataType* data() { return m_ptr; }
+
+  //! Read-only pointer to the allocated memory.
+  constexpr const DataType* unguardedBasePointer() const { return m_ptr; }
+
+  //! Read-only pointer to the allocated memory.
+  constexpr const DataType* data() const { return m_ptr; }
 
  private:
 
-  DataType* m_ptr;
-  Integer m_dim1_size;
-  Integer m_dim2_size;
+  DataType* m_ptr = nullptr;
+  Integer m_dim1_size = 0;
+  Integer m_dim2_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \ingroup Collection
  * \brief View for a constant 2D array.
@@ -170,12 +163,7 @@ class ConstArray2View
   , m_dim2_size(rhs.m_dim2_size)
   {
   }
-  constexpr ConstArray2View()
-  : m_ptr(0)
-  , m_dim1_size(0)
-  , m_dim2_size(0)
-  {
-  }
+  ConstArray2View() = default;
 
  public:
 
@@ -220,9 +208,9 @@ class ConstArray2View
 
  private:
 
-  const DataType* m_ptr;
-  Integer m_dim1_size;
-  Integer m_dim2_size;
+  const DataType* m_ptr = nullptr;
+  Integer m_dim1_size = 0;
+  Integer m_dim2_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
