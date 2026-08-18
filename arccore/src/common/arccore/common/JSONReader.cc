@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONReader.cc                                               (C) 2000-2025 */
+/* JSONReader.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* JSON format reader.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -193,7 +193,6 @@ valueAsReal() const
   if (!m_p)
     return 0;
   auto x = m_p->toValue();
-  std::cout << "TYPE=" << x->GetType() << "\n";
   if (x->IsDouble())
     return x->GetDouble();
   if (x->GetType() == rapidjson::kStringType) {
@@ -204,6 +203,17 @@ valueAsReal() const
       return r;
   }
   return 0.0;
+}
+
+UInt64 JSONValue::
+valueAsUInt64() const
+{
+  if (!m_p)
+    return 0;
+  auto x = m_p->toValue();
+  if (x->IsUint64())
+    return x->GetUint64();
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -322,6 +332,54 @@ keyValueChildren() const
   return values;
 }
 
+bool JSONValue::
+isNull() const
+{
+  if (!m_p)
+    return true;
+  return m_p->toValue()->IsNull();
+}
+
+bool JSONValue::
+isBool() const
+{
+  if (!m_p)
+    return false;
+  return m_p->toValue()->IsBool();
+}
+
+bool JSONValue::
+isString() const
+{
+  if (!m_p)
+    return false;
+  return m_p->toValue()->IsString();
+}
+
+bool JSONValue::
+isNumber() const
+{
+  if (!m_p)
+    return false;
+  return m_p->toValue()->IsNumber();
+}
+
+bool JSONValue::
+isInt64() const
+{
+  if (!m_p)
+    return false;
+  return m_p->toValue()->IsInt64();
+}
+
+bool JSONValue::
+isUint64() const
+{
+  if (!m_p)
+    return false;
+  return m_p->toValue()->IsUint64();
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -347,7 +405,6 @@ class JSONDocument::Impl
 
 JSONDocument::
 JSONDocument()
-: m_p(nullptr)
 {
   m_p = new Impl();
 }

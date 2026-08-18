@@ -180,6 +180,10 @@ class CSRRowRangeIterator
     : m_end(v)
     {}
 
+   public:
+
+    constexpr IndexType end() const { return m_end; }
+
    private:
 
     IndexType m_end = -1;
@@ -213,7 +217,7 @@ class CSRRowRangeIterator
   }
   friend bool operator!=(const CSRRowRangeIterator& a, const Sentinel& b)
   {
-    return a.m_index != b.m_end;
+    return a.m_index != b.end();
   }
 
  private:

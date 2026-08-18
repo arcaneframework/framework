@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* JSONReader.h                                                (C) 2000-2025 */
+/* JSONReader.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* JSON format reader.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -27,7 +27,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \internal
  * \brief Represents a JSON value.
@@ -51,9 +50,7 @@ class ARCCORE_COMMON_EXPORT JSONValue
 
  public:
 
-  JSONValue()
-  : m_p(nullptr)
-  {}
+  JSONValue() = default;
 
  public:
 
@@ -81,6 +78,8 @@ class ARCCORE_COMMON_EXPORT JSONValue
   Int64 valueAsInt64() const;
   //! Value in Int64 format. Returns 0 if 'null()' is true.
   Int32 valueAsInt32() const;
+  //! Value in UInt64 format. Returns 0 if 'null()' is true.
+  UInt64 valueAsUInt64() const;
   //! Value in boolean format. Returns false if 'null()' is true.
   bool valueAsBool() const;
   JSONValueList valueAsArray() const;
@@ -100,15 +99,26 @@ class ARCCORE_COMMON_EXPORT JSONValue
 
   bool isArray() const;
   bool isObject() const;
+  //! True if the value is of 'null' type
+  bool isNull() const;
+  //! True if the value is a boolean
+  bool isBool() const;
+  //! True if the value is a string
+  bool isString() const;
+  //! True if the value is a number
+  bool isNumber() const;
+  //! True if the value is an integer in the 'Int64' range
+  bool isInt64() const;
+  //! True if the value is an integer in the 'UInt64' range
+  bool isUint64() const;
 
  private:
 
-  Impl* m_p;
+  Impl* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \internal
  * \brief Represents a (key,value) pair of JSON.
@@ -131,9 +141,7 @@ class ARCCORE_COMMON_EXPORT JSONKeyValue
 
  public:
 
-  JSONKeyValue()
-  : m_p(nullptr)
-  {}
+  JSONKeyValue() = default;
 
  public:
 
@@ -148,7 +156,7 @@ class ARCCORE_COMMON_EXPORT JSONKeyValue
 
  private:
 
-  Impl* m_p;
+  Impl* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -252,7 +260,7 @@ class ARCCORE_COMMON_EXPORT JSONDocument
 
  private:
 
-  Impl* m_p;
+  Impl* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

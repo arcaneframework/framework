@@ -101,21 +101,24 @@ namespace detail
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-// Class to wrap 'boost::property_tree::ptree' to ease removing it
+/*!
+ * \brief Class to store parameters as a hierarchical key/value tree.
+ *
+ *
+ * It wraps the internal implementation 'detail::PropertyTreeImpl'
+ * (\see 'AlinaPropertyTree.h').
+ */
 class ARCCORE_ALINA_EXPORT PropertyTree
 {
  public:
 
   friend detail::empty_params;
   friend detail::PropertyWrapper;
-  //using BoostPTree = boost::property_tree::ptree;
 
  public:
 
   PropertyTree();
   PropertyTree(const PropertyTree& rhs);
-  //explicit PropertyTree(const BoostPTree& x);
   ~PropertyTree();
 
  public:
@@ -168,7 +171,7 @@ class ARCCORE_ALINA_EXPORT PropertyTree
     put(path, ostr.str());
   }
 
-  // Put parameter in form "key=value" into a boost::property_tree::ptree
+  // Put parameter in form "key=value" into the property tree
   void putKeyValue(const std::string& param);
 
   PropertyTree get_child_empty(const std::string& path) const;
@@ -516,7 +519,7 @@ namespace std
 {
 
 // Read pointers from input streams.
-// This allows exchanging pointers through boost::property_tree::ptree.
+// This allows exchanging pointers through the property tree.
 template <class T>
 inline istream& operator>>(istream& is, T*& ptr)
 {
