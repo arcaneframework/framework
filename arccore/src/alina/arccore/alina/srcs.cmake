@@ -2,7 +2,6 @@
   AlinaGlobal.h
   AlinaGlobal.cc
   AlinaUtils.cc
-  AlinaPropertyTree.h
   Adapters.h
   AlinaLib.h
   AlinaLib.cc
