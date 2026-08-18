@@ -5,9 +5,14 @@
 This document describes the four non-owning array view types provided by the
 `arccore` **base** component and explains when to use each of them.
 
-- \arcane{ArrayView} / \arcane{ConstArrayView} — `arccore/base/ArrayView.h`
+- \arcane{ArrayView} / \arcane{ConstArrayView} — `arccore/base/ArrayView.h`.
+Those are the **original %Arcane API** (2000s). They are used pervasively in
+the public Arcane framework API, e.g. mesh variables
+(`ArrayView<double>` returned by `CellVariable<double>::values()`), mesh readers, I/O, etc.
 - \arcane{Span} / \arcane{SmallSpan} — `arccore/base/Span.h`
-- Common types and forward declarations — `arccore/base/BaseTypes.h`
+
+You can also add forward declarations for these classes using the header file
+arccore/base/BaseTypes.h`.
 
 ---
 
@@ -73,10 +78,6 @@ class ArrayView
   default build.
 - **Host code only** — no `ARCCORE_HOST_DEVICE` annotations, so it is not part
   of the accelerator (GPU) API surface.
-- This is the **original %Arcane API** (2000s). It is used pervasively in the
-  public Arcane framework API, e.g. mesh variables
-  (`ArrayView<double>` returned by `CellVariable<double>::values()`), mesh
-  readers, I/O, etc.
 
 ### Typical API
 
@@ -134,8 +135,7 @@ class ConstArrayView
 
 ## 4. `Span<T, Extent>` — the C++20-style, Int64-sized view
 
-The class \arcane{Span} is defined in `arccore/base/Span.h` (inherits from
-`SpanImpl<T, Int64, Extent>` at `Span.h`).
+The class \arcane{Span} is defined in `arccore/base/Span.h`.
 
 ```cpp
 template <typename T, Int64 Extent = DynExtent>
