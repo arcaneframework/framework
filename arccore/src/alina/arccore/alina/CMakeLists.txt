@@ -14,42 +14,9 @@ if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)
 endif()
 
 #----------------------------------------------------------------------------
-# Find Boost
-#----------------------------------------------------------------------------
-option(Boost_USE_STATIC_LIBS "Use static versions of Boost libraries" OFF)
-if (WIN32)
-  set(Boost_USE_STATIC_LIBS ON)
-endif ()
-
-find_package(Boost REQUIRED COMPONENTS
-  headers
-  program_options
-)
-
-if (Boost_FOUND)
-  message(STATUS "Found boost")
-  target_include_directories(arccore_alina SYSTEM PUBLIC
-    ${Boost_INCLUDE_DIRS}
-  )
-  target_link_libraries(arccore_alina PRIVATE Boost::headers)
-else()
-  target_compile_definitions(arccore_alina INTERFACE ARCCORE_ALINA_NO_BOOST)
-endif()
-
-#----------------------------------------------------------------------------
 # Add Arccore MPI
 # In the future, it will not be needed. Only 'arccore_message_passing' will be needed
 target_link_libraries(arccore_alina PUBLIC Arccore::arccore_message_passing_mpi)
-
-#----------------------------------------------------------------------------
-# Eigen backend
-#----------------------------------------------------------------------------
-find_path(EIGEN_INCLUDE Eigen/SparseCore PATH_SUFFIXES eigen3)
-if (EIGEN_INCLUDE)
-  add_library(eigen_target INTERFACE)
-  target_include_directories(eigen_target INTERFACE ${EIGEN_INCLUDE})
-  target_compile_definitions(eigen_target INTERFACE ARCCORE_ALINA_HAVE_EIGEN)
-endif()
 
 #----------------------------------------------------------------------------
 # Find CUDA
@@ -65,9 +32,9 @@ if (ARCCORE_HAS_CUDA)
 endif()
 
 #----------------------------------------------------------------------------
-# Find Pastix
+# Find Metis/Parmetis
 #----------------------------------------------------------------------------
-find_package(Metis  QUIET)
+find_package(Metis QUIET)
 
 arcane_find_package(Parmetis)
 if(Parmetis_FOUND)
@@ -75,6 +42,10 @@ if(Parmetis_FOUND)
   target_compile_definitions(arccore_alina PUBLIC ARCCORE_ALINA_HAVE_PARMETIS ARCCORE_ALINA_HAVE_PARMETIS)
   target_link_libraries(arccore_alina PUBLIC arccon::Parmetis)
 endif()
+
+#----------------------------------------------------------------------------
+# Check compilation of tests and samples
+#----------------------------------------------------------------------------
 
 option(ARCCORE_ALINA_BUILD_TESTS "Build Alina tests" ON)
 option(ARCCORE_ALINA_BUILD_SAMPLES "Build Alina samples" ON)
