@@ -24,19 +24,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <type_traits>
-#include <vector>
-#include <tuple>
-
-#include <boost/iterator/permutation_iterator.hpp>
-
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/ValueTypeInterface.h"
 #include "arccore/alina/MatrixOperationsImpl.h"
 #include "arccore/alina/CuthillMcKeeReorderer.h"
 
-#include <span>
+#include <type_traits>
+#include <vector>
+#include <tuple>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -689,6 +685,144 @@ struct reordered_matrix
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Random-access iterator over a sequence viewed through a permutation.
+ *
+ * The element at offset \a i of the underlying sequence \c base is
+ * \c base[perm[i]], where \c perm is a pointer to a permutation table of
+ * \c ptrdiff_t. This is an internal replacement for
+ * 'boost::permutation_iterator'.
+ */
+template <class BaseIterator>
+class permutation_iterator
+{
+ public:
+
+  typedef std::random_access_iterator_tag iterator_category;
+  typedef typename std::iterator_traits<BaseIterator>::value_type value_type;
+  typedef typename std::iterator_traits<BaseIterator>::difference_type difference_type;
+  typedef typename std::iterator_traits<BaseIterator>::reference reference;
+  typedef value_type* pointer;
+
+  permutation_iterator()
+  : m_base()
+  , m_perm(nullptr)
+  {}
+
+  permutation_iterator(BaseIterator base, const ptrdiff_t* perm)
+  : m_base(base)
+  , m_perm(perm)
+  {}
+
+  reference operator*() const
+  {
+    return m_base[*m_perm];
+  }
+
+  reference operator[](difference_type i) const
+  {
+    return m_base[m_perm[i]];
+  }
+
+  permutation_iterator& operator++()
+  {
+    ++m_perm;
+    return *this;
+  }
+
+  permutation_iterator operator++(int)
+  {
+    permutation_iterator tmp(*this);
+    ++m_perm;
+    return tmp;
+  }
+
+  permutation_iterator& operator--()
+  {
+    --m_perm;
+    return *this;
+  }
+
+  permutation_iterator operator--(int)
+  {
+    permutation_iterator tmp(*this);
+    --m_perm;
+    return tmp;
+  }
+
+  permutation_iterator& operator+=(difference_type n)
+  {
+    m_perm += n;
+    return *this;
+  }
+
+  permutation_iterator& operator-=(difference_type n)
+  {
+    m_perm -= n;
+    return *this;
+  }
+
+  friend permutation_iterator operator+(permutation_iterator it, difference_type n)
+  {
+    it += n;
+    return it;
+  }
+
+  friend permutation_iterator operator+(difference_type n, permutation_iterator it)
+  {
+    it += n;
+    return it;
+  }
+
+  friend permutation_iterator operator-(permutation_iterator it, difference_type n)
+  {
+    it -= n;
+    return it;
+  }
+
+  friend difference_type operator-(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm - b.m_perm;
+  }
+
+  friend bool operator==(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm == b.m_perm;
+  }
+
+  friend bool operator!=(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm != b.m_perm;
+  }
+
+  friend bool operator<(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm < b.m_perm;
+  }
+
+  friend bool operator<=(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm <= b.m_perm;
+  }
+
+  friend bool operator>(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm > b.m_perm;
+  }
+
+  friend bool operator>=(const permutation_iterator& a, const permutation_iterator& b)
+  {
+    return a.m_perm >= b.m_perm;
+  }
+
+ private:
+
+  BaseIterator m_base;
+  const ptrdiff_t* m_perm;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template <class Vector>
 struct reordered_vector
@@ -714,28 +848,28 @@ struct reordered_vector
     return x[perm[i]];
   }
 
-  boost::permutation_iterator<typename std::decay_t<Vector>::iterator, const ptrdiff_t*>
+  permutation_iterator<typename std::decay_t<Vector>::iterator>
   begin()
   {
-    return boost::make_permutation_iterator(std::begin(x), perm);
+    return permutation_iterator<typename std::decay_t<Vector>::iterator>(std::begin(x), perm);
   }
 
-  boost::permutation_iterator<typename std::decay_t<Vector>::const_iterator, const ptrdiff_t*>
+  permutation_iterator<typename std::decay_t<Vector>::const_iterator>
   begin() const
   {
-    return boost::make_permutation_iterator(std::begin(x), perm);
+    return permutation_iterator<typename std::decay_t<Vector>::const_iterator>(std::begin(x), perm);
   }
 
-  boost::permutation_iterator<typename std::decay_t<Vector>::iterator, const ptrdiff_t*>
+  permutation_iterator<typename std::decay_t<Vector>::iterator>
   end()
   {
-    return boost::make_permutation_iterator(std::end(x), perm + size());
+    return permutation_iterator<typename std::decay_t<Vector>::iterator>(std::begin(x), perm + size());
   }
 
-  boost::permutation_iterator<typename std::decay_t<Vector>::const_iterator, const ptrdiff_t*>
+  permutation_iterator<typename std::decay_t<Vector>::const_iterator>
   end() const
   {
-    return boost::make_permutation_iterator(std::end(x), perm + size());
+    return permutation_iterator<typename std::decay_t<Vector>::const_iterator>(std::begin(x), perm + size());
   }
 };
 
