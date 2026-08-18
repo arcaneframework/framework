@@ -1,4 +1,21 @@
 ﻿
+#----------------------------------------------------------------------------
+# Boost is required for some samples
+#
+# TODO: disable samples needing boost if not found
+#----------------------------------------------------------------------------
+
+find_package(Boost REQUIRED COMPONENTS
+  headers
+)
+
+if (NOT Boost_FOUND)
+  message(FATAL_ERROR
+    "[arccore_alina] Can not find Boost::headers for compiling samples."
+    "You have to install Boost::headers or disable compilation of samples -DARCCORE_ALINA_BUILD_SAMPLES=FALSE when running cmake command"
+    )
+endif()
+
 set(ARCCORE_ALINA_BLOCK_SIZES "3;4" CACHE STRING "Block sizes for block solvers in examples")
 set(ARCCORE_ALINA_BLOCK_SIZES_SEQ "")
 foreach(B ${ARCCORE_ALINA_BLOCK_SIZES})
@@ -13,13 +30,14 @@ add_library(arccore_alina_samples_lib
 arcane_target_set_standard_path(arccore_alina_samples_lib)
 target_link_libraries(arccore_alina_samples_lib PRIVATE arcane_launcher arcane_full)
 target_link_libraries(arccore_alina_samples_lib PUBLIC arccore_alina)
+target_link_libraries(arccore_alina_samples_lib PRIVATE Boost::headers)
 target_include_directories(arccore_alina_samples_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(ALINA_SAMPLE_BUILD_DIR "${CMAKE_BINARY_DIR}/alina_samples")
 function(add_arccore_alina_example_no_test EXAMPLE SOURCES)
   add_executable(${EXAMPLE} ${SOURCES})
   set_target_properties(${EXAMPLE} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}")
-  target_link_libraries(${EXAMPLE} PUBLIC arccore_alina_samples_lib Boost::program_options)
+  target_link_libraries(${EXAMPLE} PUBLIC arccore_alina_samples_lib)
   target_include_directories(${EXAMPLE} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../tests")
   target_compile_definitions(${EXAMPLE} PUBLIC "ARCCORE_ALINA_BLOCK_SIZES=${ARCCORE_ALINA_BLOCK_SIZES_SEQ}")
 endfunction()
@@ -67,13 +85,13 @@ add_arccore_alina_example_no_test(schurpc_mixed SCHURPreconditionerMixed.cc)
 add_arccore_alina_example_no_test(deflated_solver DeflatedSolver.cc)
 add_arccore_alina_example(poisson2d Poisson2D.cc)
 
-if (TARGET eigen_target)
+if (TARGET alina_eigen_target)
   add_arccore_alina_example(solver_eigen Solver.cc)
-  target_link_libraries(solver_eigen PUBLIC eigen_target)
+  target_link_libraries(solver_eigen PUBLIC alina_eigen_target)
   target_compile_definitions(solver_eigen PRIVATE SOLVER_BACKEND_EIGEN)
 
   add_arccore_alina_example_no_test(schurpc_mixed_eigen SCHURPreconditionerMixed.cc)
-  target_link_libraries(schurpc_mixed_eigen PUBLIC eigen_target)
+  target_link_libraries(schurpc_mixed_eigen PUBLIC alina_eigen_target)
   target_compile_definitions(schurpc_mixed_eigen PRIVATE BLOCK_TYPE_EIGEN)
 endif()
 
@@ -92,7 +110,6 @@ if (TARGET cuda_target)
       arccore_alina
       arccore_accelerator
       cuda_target
-      Boost::program_options
       )
     add_test(NAME alina_${example}_cuda COMMAND ${example}_cuda ${SAMPLE_MATRIX_ARGS})
   endfunction()
@@ -107,12 +124,11 @@ endif()
 # Handle samples using MPI
 
 add_library(arccore_alina_mpi_example INTERFACE)
-target_link_libraries(arccore_alina_mpi_example INTERFACE
-  arccore_alina ${Boost_PROGRAM_OPTIONS_LIBRARY})
+target_link_libraries(arccore_alina_mpi_example INTERFACE arccore_alina)
 target_compile_definitions(arccore_alina_mpi_example INTERFACE "ARCCORE_ALINA_BLOCK_SIZES=${ARCCORE_ALINA_BLOCK_SIZES_SEQ}")
 
-if (TARGET eigen_target)
-  target_link_libraries(arccore_alina_mpi_example INTERFACE eigen_target)
+if (TARGET alina_eigen_target)
+  target_link_libraries(arccore_alina_mpi_example INTERFACE alina_eigen_target)
 endif()
 
 function(add_mpi_example_test target test_name nb_core)
@@ -161,12 +177,11 @@ add_mpi_example_no_test(schur_pc_mpi DistributedSCHUR.cc)
 # We need a partition file for the test
 add_mpi_example_no_test(solve_mm_mpi DistributedMatrixMarketSolver.cc)
 
-# Exception in boost during the test
 add_mpi_example_no_test(cpr_mpi DistributedCPR.cc)
 
 if (TARGET arccon::Parmetis)
   add_mpi_example_no_test(partition DistributedPartition.cc 2)
-  target_link_libraries(partition PUBLIC arccon::Parmetis ${Boost_PROGRAM_OPTIONS_LIBRARY})
+  target_link_libraries(partition PUBLIC arccon::Parmetis)
 endif()
 
 # At the moment the samples with CUDA and MPI do not work
@@ -184,7 +199,6 @@ if (DO_CUDA_MPI AND TARGET cuda_target)
       arccore_alina
       arccore_accelerator
       cuda_target
-      Boost::program_options
     )
   endforeach()
 endif()

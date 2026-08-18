@@ -3,9 +3,15 @@
 #----------------------------------------------------------------------------
 add_library(arccore_alina_test INTERFACE)
 
-if (NOT Boost_USE_STATIC_LIBS)
-  target_compile_definitions(arccore_alina_test INTERFACE BOOST_TEST_DYN_LINK)
-endif ()
+#----------------------------------------------------------------------------
+# Add test if Eigen is found
+#----------------------------------------------------------------------------
+find_path(EIGEN_INCLUDE Eigen/SparseCore PATH_SUFFIXES eigen3)
+if (EIGEN_INCLUDE)
+  add_library(alina_eigen_target INTERFACE)
+  target_include_directories(alina_eigen_target INTERFACE ${EIGEN_INCLUDE})
+  target_compile_definitions(alina_eigen_target INTERFACE ARCCORE_ALINA_HAVE_EIGEN)
+endif()
 
 # ----------------------------------------------------------------------------
 
@@ -22,7 +28,7 @@ set(SOURCE_FILES
   TestIO.cc
   TestStaticMatrix.cc
 )
-if (TARGET eigen_target)
+if (TARGET alina_eigen_target)
   list(APPEND SOURCE_FILES
     TestEigenSolver.cc
     TestSolverEigen.cc
@@ -36,19 +42,16 @@ set(ACCELERATOR_FILES
 arccore_add_component_test_executable(alina
   FILES ${SOURCE_FILES} ${ACCELERATOR_FILES}
 )
-target_include_directories(arccore_alina.tests INTERFACE ${Boost_INCLUDE_DIRS})
 
 target_link_libraries(arccore_alina.tests PUBLIC
   arccore_alina
   arccore_accelerator
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
   GTest::GTest
   GTest::Main
 )
 
-if (TARGET eigen_target)
-  target_link_libraries(arccore_alina.tests PUBLIC eigen_target)
+if (TARGET alina_eigen_target)
+  target_link_libraries(arccore_alina.tests PUBLIC alina_eigen_target)
 endif()
 if (ARCCORE_ENABLE_TBB)
   target_compile_definitions(arccore_alina.tests PRIVATE ARCCORE_HAS_ACCELERATOR_THREAD)
@@ -77,7 +80,6 @@ arccore_add_component_test_executable(alina_mpi
   FILES
   ${MPI_SOURCE_FILES}
   )
-target_include_directories(arccore_alina_mpi.tests PRIVATE ${Boost_INCLUDE_DIRS})
 target_link_libraries(arccore_alina_mpi.tests PRIVATE arccore_alina GTest::GTest)
 
 # Since the tests must be run with 'mpiexec', we do not use 'gtest_discover_tests'
