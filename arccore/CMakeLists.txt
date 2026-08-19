@@ -406,6 +406,13 @@ if (ARCCORE_ENABLE_MPI)
 endif()
 
 # ----------------------------------------------------------------------------
+# Handling of Alina. At the moment it is experimental and not enabled by default
+option (ARCCORE_ENABLE_ALINA "Is Alina (linear algebra) component enabled?" OFF)
+if (ARCCORE_ENABLE_ALINA)
+  arccore_add_component_directory(alina)
+endif()
+
+# ----------------------------------------------------------------------------
 # Génère le fichier de configuration.
 # Il faut le faire après la détection de toutes les options pour que les '#define'
 # soient bien positionnés

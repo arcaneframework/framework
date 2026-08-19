@@ -283,7 +283,7 @@ Int64 parseInteger(const std::string& s, const char* name)
     return 0;
   Int64 v = 0;
   if (!tryParseInt64(s, v))
-    ARCANE_FATAL("Can not convert value '{0}' to integer for parameter '{1}'", s, name);
+    ARCCORE_FATAL("Can not convert value '{0}' to integer for parameter '{1}'", s, name);
   return v;
 }
 
@@ -292,7 +292,7 @@ Int32 parseInt32(const std::string& s, const char* name)
   Int64 v = parseInteger(s, name);
   if (v < static_cast<Int64>(std::numeric_limits<Int32>::min()) ||
       v > static_cast<Int64>(std::numeric_limits<Int32>::max()))
-    ARCANE_FATAL("Value '{0}' is out of range for parameter '{1}'", s, name);
+    ARCCORE_FATAL("Value '{0}' is out of range for parameter '{1}'", s, name);
   return static_cast<Int32>(v);
 }
 
@@ -304,7 +304,7 @@ double parseReal(const std::string& s, const char* name)
     return 0.0;
   double v = 0.0;
   if (!tryParseDouble(s, v))
-    ARCANE_FATAL("Can not convert value '{0}' to real for parameter '{1}'", s, name);
+    ARCCORE_FATAL("Can not convert value '{0}' to real for parameter '{1}'", s, name);
   return v;
 }
 
@@ -315,7 +315,7 @@ void* parsePointer(const std::string& s, const char* name)
   // The value is a hexadecimal number with an optional '0x' prefix.
   auto x = Convert::ScalarType<Int64>::tryParse(StringView(s));
   if (!x)
-    ARCANE_FATAL("Can not convert value '{0}' to pointer for parameter '{1}'", s, name);
+    ARCCORE_FATAL("Can not convert value '{0}' to pointer for parameter '{1}'", s, name);
   return reinterpret_cast<void*>(static_cast<std::uintptr_t>(*x));
 }
 
@@ -516,7 +516,7 @@ read_json(const std::string& filename)
 {
   std::ifstream is(filename, std::ios::binary);
   if (!is)
-    ARCANE_FATAL("Can not read JSON file '{0}'", filename);
+    ARCCORE_FATAL("Can not read JSON file '{0}'", filename);
   std::string content((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 
   JSONDocument doc;
@@ -627,7 +627,7 @@ check_params(const std::set<std::string>& names) const
     }
   }
   if (has_error)
-    ARCANE_FATAL("Invalid parameters");
+    ARCCORE_FATAL("Invalid parameters");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -657,7 +657,7 @@ check_params(const std::set<std::string>& names,
     }
   }
   if (has_error)
-    ARCANE_FATAL("Invalid parameters");
+    ARCCORE_FATAL("Invalid parameters");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -668,7 +668,7 @@ putKeyValue(const std::string& param)
 {
   size_t eq_pos = param.find('=');
   if (eq_pos == std::string::npos)
-    ARCANE_FATAL("param in put() should have \"key=value\" format (param='{0}')", param);
+    ARCCORE_FATAL("param in put() should have \"key=value\" format (param='{0}')", param);
   toImpl(this).put(param.substr(0, eq_pos), param.substr(eq_pos + 1));
 }
 

@@ -199,31 +199,7 @@ endmacro()
 # Par défaut, le répertoire est '${CMAKE_BINARY_DIR}/lib'
 #
 function(arcane_target_set_standard_path target)
-  set(options        )
-  set(oneValueArgs   PATH)
-  set(multiValueArgs)
-
-  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-  if (ARGS_PATH)
-    set(_libpath ${ARGS_PATH})
-  else()
-    set(_libpath ${CMAKE_BINARY_DIR}/lib)
-  endif()
-  message(STATUS "arcane_target_set_standard_path target='${target}'")
-  set_target_properties(${target}
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${_libpath}
-    LIBRARY_OUTPUT_DIRECTORY ${_libpath}
-    LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_libpath}
-    LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
-    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
-    LIBRARY_OUTPUT_DIRECTORY_MINSIZERELEASE ${_libpath}
-    RUNTIME_OUTPUT_DIRECTORY_MINSIZERELEASE ${_libpath}
-    )
+  arccore_target_set_standard_path(${target} ${ARGN})
 endfunction()
 
 # ----------------------------------------------------------------------------

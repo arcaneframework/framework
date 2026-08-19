@@ -242,7 +242,7 @@ struct RelaxationRuntime
   void _throwBadTypeType [[noreturn]] () const
   {
     int v = static_cast<int>(m_relaxation_type);
-    ARCANE_FATAL("Unsupported relaxation type '{0}'", v);
+    ARCCORE_FATAL("Unsupported relaxation type '{0}'", v);
   }
   void _throwUnsupportedBackendType [[noreturn]] () const
   {

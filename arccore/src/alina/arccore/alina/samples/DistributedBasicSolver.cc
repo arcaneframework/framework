@@ -16,10 +16,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <iostream>
-#include <vector>
-#include <string>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/StaticMatrix.h"
 #include "arccore/alina/Adapters.h"
@@ -33,14 +29,13 @@
 
 #include "arccore/common/internal/ProgramOptions.h"
 
-#include "arcane/utils/Exception.h"
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/launcher/ArcaneLauncher.h"
-#include "arcane/core/ISubDomain.h"
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/IProfilingService.h"
+#include "arccore/trace/ITraceMng.h"
 
 #include "AlinaSamplesCommon.h"
+
+#include <iostream>
+#include <vector>
+#include <string>
 
 using namespace Arcane;
 

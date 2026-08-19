@@ -13,7 +13,7 @@
 
 #include "arccore/alina/Profiler.h"
 
-#include "arcane/utils/PlatformUtils.h"
+#include "arccore/base/PlatformUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

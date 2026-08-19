@@ -145,7 +145,7 @@ class ARCCORE_ALINA_EXPORT PropertyTree
     DataType enum_value;
     istr >> enum_value;
     if (istr.bad())
-      ARCANE_FATAL("Can not convert '{0}' to enumeration", s);
+      ARCCORE_FATAL("Can not convert '{0}' to enumeration", s);
     return enum_value;
   }
 

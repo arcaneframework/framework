@@ -14,15 +14,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arccore/base/ArccoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #ifdef ARCANE_COMPONENT_arcane_alina
-#define ARCCORE_ALINA_EXPORT ARCANE_EXPORT
+#define ARCCORE_ALINA_EXPORT ARCCORE_EXPORT
 #else
-#define ARCCORE_ALINA_EXPORT ARCANE_IMPORT
+#define ARCCORE_ALINA_EXPORT ARCCORE_IMPORT
 #endif
 
 /*---------------------------------------------------------------------------*/

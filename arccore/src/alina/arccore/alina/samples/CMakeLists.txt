@@ -27,7 +27,7 @@ add_library(arccore_alina_samples_lib
   AlinaSamplesCommon.h
   AlinaSamplesCommon.cc
 )
-arcane_target_set_standard_path(arccore_alina_samples_lib)
+arccore_target_set_standard_path(arccore_alina_samples_lib)
 target_link_libraries(arccore_alina_samples_lib PRIVATE arcane_launcher arcane_full)
 target_link_libraries(arccore_alina_samples_lib PUBLIC arccore_alina)
 target_link_libraries(arccore_alina_samples_lib PRIVATE Boost::headers)
@@ -59,16 +59,18 @@ endfunction()
 add_arccore_alina_example_no_test(mm2bin MatrixMarkerToBinary.cc)
 add_arccore_alina_example_no_test(bin2mm BinaryToMatrixMarket.cc)
 
-arcane_find_package(Hypre)
+find_package(Hypre)
 
 add_arccore_alina_example(basic_solver BasicSolver.cc)
-target_sources(basic_solver PUBLIC HypreComparer.cc)
-arcane_add_arccon_packages(basic_solver PRIVATE Hypre)
-
+if (Hypre_FOUND)
+  target_sources(basic_solver PUBLIC HypreComparer.cc)
+  target_link_libraries(basic_solver PRIVATE arccon::Hypre)
+endif()
 add_arccore_alina_example(solver Solver.cc)
-target_sources(solver PUBLIC HypreComparer.cc)
-arcane_add_arccon_packages(solver PRIVATE Hypre)
-
+if (Hypre_FOUND)
+  target_sources(solver PUBLIC HypreComparer.cc)
+  target_link_libraries(solver PRIVATE arccon::Hypre)
+endif()
 add_arccore_alina_example(solver_complex SolverComplex.cc)
 add_arccore_alina_example(crs_builder AdapterCSRBuilder.cc)
 add_arccore_alina_example(custom_adapter CustomAdapter.cc)

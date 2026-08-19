@@ -19,10 +19,9 @@
 #ifndef TESTS_SAMPLE_PROBLEM_HPP
 #define TESTS_SAMPLE_PROBLEM_HPP
 
-#include <complex>
-#include <type_traits>
-#include <cstddef>
 #include "arccore/alina/ValueTypeInterface.h"
+
+#include <vector>
 
 // Generates matrix for poisson problem in a unit cube.
 template <typename ValueType, typename ColType, typename PtrType, typename RhsType>

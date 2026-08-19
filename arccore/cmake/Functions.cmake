@@ -207,6 +207,40 @@ function(arccore_add_component_directory name)
 endfunction()
 
 # ----------------------------------------------------------------------------
+# Fonction pour positionner le chemin d'installation d'une cible
+# dans le même répertoire quel que soit son type (library/executable)
+# et la configuration (debug, release, ...).
+# Par défaut, le répertoire est '${CMAKE_BINARY_DIR}/lib'
+#
+function(arccore_target_set_standard_path target)
+  set(options        )
+  set(oneValueArgs   PATH)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (ARGS_PATH)
+    set(_libpath ${ARGS_PATH})
+  else()
+    set(_libpath ${CMAKE_BINARY_DIR}/lib)
+  endif()
+  message(STATUS "arcane_target_set_standard_path target='${target}'")
+  set_target_properties(${target}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${_libpath}
+    LIBRARY_OUTPUT_DIRECTORY_MINSIZERELEASE ${_libpath}
+    RUNTIME_OUTPUT_DIRECTORY_MINSIZERELEASE ${_libpath}
+    )
+endfunction()
+
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Indique que les fichiers passés en argument doivent être compilés avec
 # le support accélérateur correspondant.
