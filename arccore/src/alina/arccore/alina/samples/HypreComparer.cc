@@ -104,8 +104,8 @@ gpu_calloc(size_t num, size_t size)
 #include <vector>
 #include <iostream>
 
-#include "arcane/utils/Convert.h"
-#include "arcane/utils/FatalErrorException.h"
+#include "arccore/base/Convert.h"
+#include "arccore/base/FatalErrorException.h"
 #include "arccore/alina/Profiler.h"
 
 using namespace Arcane;
@@ -603,7 +603,7 @@ _doHypreSolver(int nb_row,
   }
   else {
     if (myid == 0) {
-      ARCANE_FATAL("Invalid solver id '{0}' specified.", solver_id);
+      ARCCORE_FATAL("Invalid solver id '{0}' specified.", solver_id);
     }
   }
 

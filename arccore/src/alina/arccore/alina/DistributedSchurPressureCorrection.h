@@ -140,7 +140,7 @@ class DistributedSchurPressureCorrection
         pmask.assign(static_cast<char*>(pm), static_cast<char*>(pm) + n);
       }
       else {
-        ARCANE_FATAL("Error in schur_complement parameters:  neither pmask_pattern, nor pmask is set");
+        ARCCORE_FATAL("Error in schur_complement parameters:  neither pmask_pattern, nor pmask is set");
       }
 
       p.check_params({ "usolver", "psolver", "type", "approx_schur", "simplec_dia", "pmask_size", "verbose" },

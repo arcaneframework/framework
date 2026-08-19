@@ -46,9 +46,9 @@ using Backend = Arcane::Alina::BuiltinBackend<double, Arcane::Int32>;
 //using Backend = Arcane::Alina::BuiltinBackend<double>;
 #endif
 
-#include <arcane/utils/PlatformUtils.h>
-#include <arcane/utils/String.h>
-#include <arcane/utils/Convert.h>
+#include <arccore/base/PlatformUtils.h>
+#include <arccore/base/String.h>
+#include <arccore/base/Convert.h>
 
 #include "arccore/alina/RelaxationRuntime.h"
 #include "arccore/alina/CoarseningRuntime.h"

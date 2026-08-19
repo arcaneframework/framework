@@ -19,14 +19,13 @@
 #include <iostream>
 #include <string>
 
+#include "arccore/base/PlatformUtils.h"
+#include "arccore/base/String.h"
+#include "arccore/base/Convert.h"
+
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/StaticMatrix.h"
 #include "arccore/alina/Adapters.h"
-
-#include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/Convert.h"
-
 #include "arccore/alina/Relaxation.h"
 #include "arccore/alina/Coarsening.h"
 #include "arccore/alina/BiCGStabSolver.h"
