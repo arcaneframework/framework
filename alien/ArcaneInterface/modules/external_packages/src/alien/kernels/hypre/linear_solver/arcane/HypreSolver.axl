@@ -37,6 +37,26 @@
             <description>Requested accuracy</description>
       </simple>
 
+      <simple name="ilu-type" type="integer" default="0">
+            <description>ilu type ILUK:0, ILUT:1, 10, 11, 20, 21, 30, 31, 40, 41, 50</description>
+      </simple>
+
+      <simple name="ilu-max-iter" type="integer" default="0">
+            <description>ilu max iterl</description>
+      </simple>
+
+      <simple name="ilu-tol" type="real" default="0.">
+            <description>ilu fill in level</description>
+      </simple>
+
+      <simple name="ilu-reordering" type="integer" default="0">
+            <description>ilu ordering  0: none, 1: RCM </description>
+      </simple>
+
+      <simple name="ilu-print-level" type="integer" default="3">
+            <description>ilu ordering  0: none, 1: RCM </description>
+      </simple>
+
       <simple name="iluk-level" type="integer" default="0">
             <description>ilu fill in level</description>
       </simple>
@@ -47,6 +67,18 @@
 
       <simple name="ilut-max-nnz" type="integer" default="0">
             <description>ilut max nnz per row</description>
+      </simple>
+
+      <simple name="fsai-max-steps" type="integer" default="5">
+            <description>FSAI max steps</description>
+      </simple>
+
+      <simple name="fsai-max-step-size" type="integer" default="3">
+            <description>FSAI max step size</description>
+      </simple>
+
+      <simple name="fsai-kap-tolerance" type="real" default="1.e-3">
+            <description>FSAI kap tolerance</description>
       </simple>
 
       <simple name="amg-coarsen-type" type="string" default="PMIS">
