@@ -16,14 +16,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/alina/AlinaLib.h"
+#include "./SampleProblemCommon.h"
+
 #include <iostream>
 #include <vector>
 
-#include <../AlinaLib.h>
-#include "SampleProblemCommon.h"
+#include <gtest/gtest.h>
 
-int main()
+TEST(alina_test_alina_lib, basic)
 {
+  std::cout << "Testing AlinaLib\n";
+
   std::vector<int> ptr;
   std::vector<int> col;
   std::vector<double> val;
@@ -51,9 +55,8 @@ int main()
 
   // Solve same problem again, but explicitly provide the matrix this time:
   std::fill(x.begin(), x.end(), 0);
-  cnv = AlinaLib::solver_solve_matrix(
-  solver, ptr.data(), col.data(), val.data(),
-  rhs.data(), x.data());
+  cnv = AlinaLib::solver_solve_matrix(solver, ptr.data(), col.data(), val.data(),
+                                      rhs.data(), x.data());
 
   std::cout << "Iterations: " << cnv.iterations << std::endl
             << "Error:      " << cnv.residual << std::endl;

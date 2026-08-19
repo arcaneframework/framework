@@ -17,6 +17,7 @@ endif()
 
 set(SOURCE_FILES
   SampleProblemCommon.h
+  TestAlinaLib.cc
   TestCSRMatrixView.cc
   TestQR.cc
   TestSkylineLU.cc

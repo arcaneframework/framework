@@ -97,8 +97,6 @@ if (TARGET alina_eigen_target)
   target_compile_definitions(schurpc_mixed_eigen PRIVATE BLOCK_TYPE_EIGEN)
 endif()
 
-add_arccore_alina_example(call_lib AlinaLibraryUsage.cc)
-
 if (TARGET cuda_target)
   enable_language(CUDA)
   function(add_cuda_example example)
