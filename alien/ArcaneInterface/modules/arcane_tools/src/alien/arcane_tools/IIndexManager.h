@@ -1,9 +1,14 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
+/* IIndexMng                                                 (C) 2000-2026   */
+/*                                                                           */
+/* Interface for Alien IndexMng                                              */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 #ifndef ALIEN_IINDEX_MANAGER_H
 #define ALIEN_IINDEX_MANAGER_H
 
@@ -329,6 +334,13 @@ namespace ArcaneTools {
     /*! Uniquement valide après \a prepare */
     virtual Arccore::Integer localSize() const = 0;
 
+    //! Mode de tri pour les entrées
+    enum class EntrySortMode
+    {
+      KindUidsCreationIndex, //!< Tri par type, puis par UID, puis par index de création
+      KindCreationIndex      //!< Tri par type, puis par index de création
+    };
+
     //! Construction d'un enumerateur sur les \a Entry
     virtual EntryEnumerator enumerateEntry() const = 0;
 
@@ -363,17 +375,33 @@ namespace ArcaneTools {
     // virtual VectorIndexSet buildVectorIndexSet(const String name, const
     // Arcane::ItemGroup
     // & itemGroup, const Integer n) = 0;
-    //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
+    //! Construit une nouvelle entrée vectorielle sur un ensemble d'entités abstraites
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
     virtual VectorIndexSet buildVectorIndexSet(const Arccore::String name,
         const Arccore::ConstArrayView<Arccore::Integer> localIds,
         const IAbstractFamily& family, const Arccore::Integer n) = 0;
 
-    //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
-    //! abstraite
+    //! Construit une nouvelle entrée vectorielle sur un ensemble d'entités abstraites
+    /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel
+     *  \param sort mode de tri des entrées
+     */
+    virtual VectorIndexSet buildVectorIndexSet(const Arccore::String name,
+        const Arccore::ConstArrayView<Arccore::Integer> localIds,
+        const IAbstractFamily& family, const Arccore::Integer n,
+        const EntrySortMode sort) = 0;
+
+    //! Construit une nouvelle entrée vectorielle sur l'ensemble des entités d'une famille abstraite
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
     virtual VectorIndexSet buildVectorIndexSet(const Arccore::String name,
         const IAbstractFamily& family, const Arccore::Integer n) = 0;
+
+    //! Construit une nouvelle entrée vectorielle sur l'ensemble des entités d'une famille abstraite
+    /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel
+     *  \param sort mode de tri des entrées
+     */
+    virtual VectorIndexSet buildVectorIndexSet(const Arccore::String name,
+        const IAbstractFamily& family, const Arccore::Integer n,
+        const EntrySortMode sort) = 0;
 
     //! Demande de dé-indexation d'une partie d'une entrée
     /*! Utilisable uniquement avant prepare */
