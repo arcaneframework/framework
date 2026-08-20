@@ -25,111 +25,162 @@
 
 #include "arccore/alina/AlinaGlobal.h"
 
+#include <memory>
+
 #include <mpi.h>
 
 // Convergence info
 struct ARCCORE_ALINA_EXPORT AlinaConvergenceInfo
 {
-  int iterations;
-  double residual;
+  int iterations = 0;
+  double residual = 0.0;
 };
 
-typedef double(* AlinaDefVecFunction)(int vec, ptrdiff_t coo, void* data);
+typedef double (*AlinaDefVecFunction)(int vec, ptrdiff_t coo, void* data);
 
-//! Handle parameters.
-struct AlinaParameters;
+class AlinaLib;
+class AlinaPreconditioner;
+class AlinaParametersImpl;
+class AlinaPreconditionerImpl;
+class AlinaSequentialSolver;
+class AlinaSequentialSolverImpl;
+class AlinaDistributedSolver;
+class AlinaDistributedSolverImpl;
 
-//! Handle preconditioner
-struct AlinaPreconditioner;
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Handle parameters for Alina.
+ *
+ * This class uses a reference semantic for copy.
+ */
+class ARCCORE_ALINA_EXPORT AlinaParameters
+{
+  friend AlinaLib;
+  friend AlinaPreconditioner;
+  friend AlinaSequentialSolver;
+  friend AlinaDistributedSolver;
 
-//! Sequential solver;
-struct AlinaSequentialSolver;
+ public:
 
-//! Distributed solver;
-struct AlinaDistributedSolver;
+  AlinaParameters();
 
-class ARCCORE_ALINA_EXPORT AlinaLib
+ public:
+
+  //! Set Int32 parameter in the parameter list
+  void setInt32(const char* name, Arcane::Int32 value);
+
+  //! Set Int64 parameter in the parameter list
+  void setInt64(const char* name, Arcane::Int64 value);
+
+  //! Set floating point parameter in the parameter list
+  void setReal(const char* name, Arcane::Real value);
+
+  //! Set floating point parameter in the parameter list
+  void setString(const char* name, const char* value);
+
+  //! Read parameters from a JSON file
+  void readFromJSON(const char* fname);
+
+ private:
+
+  std::shared_ptr<AlinaParametersImpl> m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Handle preconditioner for a solver
+ *
+ * This class uses a reference semantic for copy.
+ */
+class ARCCORE_ALINA_EXPORT AlinaPreconditioner
+{
+  friend AlinaLib;
+
+ public:
+
+  AlinaPreconditioner(int n,
+                      const int* ptr,
+                      const int* col,
+                      const double* val,
+                      const AlinaParameters* prm);
+
+ public:
+
+  //! Apply AMG preconditioner (x = M^(-1) * rhs).
+  void apply(const double* rhs, double* x);
+
+  //! Printout preconditioner structure
+  void report();
+
+ private:
+
+  std::shared_ptr<AlinaPreconditionerImpl> m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Sequential solver.
+ */
+class ARCCORE_ALINA_EXPORT AlinaSequentialSolver
 {
  public:
 
-  // Set integer parameter in a parameter list.
-  static void params_set_int(AlinaParameters* prm, const char* name, int value);
+  AlinaSequentialSolver(int n,
+                        const int* ptr,
+                        const int* col,
+                        const double* val,
+                        const AlinaParameters* parameters);
 
-  // Set floating point parameter in a parameter list.
-  static void params_set_float(AlinaParameters* prm, const char* name, float value);
+ public:
 
-  // Set floating point parameter in a parameter list.
-  static void params_set_string(AlinaParameters* prm, const char* name, const char* value);
+  //! Solve the problem for the given right-hand side.
+  AlinaConvergenceInfo solve(double const* rhs,
+                             double* x);
 
-  // Read parameters from a JSON file
-  static void params_read_json(AlinaParameters* prm, const char* fname);
+  //! Solve the problem for the given matrix and the right-hand side.
+  AlinaConvergenceInfo solveMatrix(int const* A_ptr,
+                                   int const* A_col,
+                                   double const* A_val,
+                                   double const* rhs,
+                                   double* x);
 
-  // Destroy parameter list.
-  static void params_destroy(AlinaParameters* prm);
+  //! Printout solver structure
+  void report();
 
-  // Create parameter list.
-  static AlinaParameters* params_create();
+ private:
 
-  // Create AMG preconditioner.
-  static AlinaPreconditioner* preconditioner_create(int n,
-                                                          const int* ptr,
-                                                          const int* col,
-                                                          const double* val,
-                                                          AlinaParameters* parameters);
+  std::shared_ptr<AlinaSequentialSolverImpl> m_p;
+};
 
-  // Apply AMG preconditioner (x = M^(-1) * rhs).
-  static void preconditioner_apply(AlinaPreconditioner* amg, const double* rhs, double* x);
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Distributed solver.
+ */
+class ARCCORE_ALINA_EXPORT AlinaDistributedSolver
+{
+ public:
 
-  // Printout preconditioner structure
-  static void preconditioner_report(AlinaPreconditioner* amg);
+  //! Create distributed solver.
+  AlinaDistributedSolver(MPI_Comm comm,
+                         ptrdiff_t n,
+                         const int* ptr,
+                         const int* col,
+                         const double* val,
+                         int n_def_vec,
+                         AlinaDefVecFunction def_vec_func,
+                         void* def_vec_data,
+                         const AlinaParameters& params);
 
-  // Destroy AMG preconditioner
-  static void preconditioner_destroy(AlinaPreconditioner* amg);
+  //! Find solution for the given RHS.
+  AlinaConvergenceInfo solve(double const* rhs, double* x);
 
-  // Create iterative solver preconditioned by AMG.
-  static AlinaSequentialSolver* solver_create(int n,
-                                              const int* ptr,
-                                              const int* col,
-                                              const double* val,
-                                              AlinaParameters* parameters);
+ public:
 
-  // Solve the problem for the given right-hand side.
-  static AlinaConvergenceInfo solver_solve(AlinaSequentialSolver* solver,
-                                double const* rhs,
-                                double* x);
-
-  // Solve the problem for the given matrix and the right-hand side.
-  static AlinaConvergenceInfo solver_solve_matrix(AlinaSequentialSolver* solver,
-                                       int const* A_ptr,
-                                       int const* A_col,
-                                       double const* A_val,
-                                       double const* rhs,
-                                       double* x);
-
-  // Printout solver structure
-  static void solver_report(AlinaSequentialSolver* solver);
-
-  // Destroy iterative solver.
-  static void solver_destroy(AlinaSequentialSolver* solver);
-
-  // Create distributed solver.
-  static AlinaDistributedSolver* solver_mpi_create(MPI_Comm comm,
-                                                   ptrdiff_t n,
-                                                   const int* ptr,
-                                                   const int* col,
-                                                   const double* val,
-                                                   int n_def_vec,
-                                                   AlinaDefVecFunction def_vec_func,
-                                                   void* def_vec_data,
-                                                   AlinaParameters* params);
-
-  // Find solution for the given RHS.
-  static AlinaConvergenceInfo solver_mpi_solve(AlinaDistributedSolver* solver,
-                                    double const* rhs,
-                                    double* x);
-
-  // Destroy the distributed solver.
-  static void solver_mpi_destroy(AlinaDistributedSolver* solver);
+  std::shared_ptr<AlinaDistributedSolverImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/

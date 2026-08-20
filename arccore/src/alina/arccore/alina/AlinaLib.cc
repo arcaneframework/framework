@@ -22,6 +22,8 @@
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/AlinaLib.h"
 
+#include "arccore/concurrency/Mutex.h"
+
 #include <iostream>
 
 using namespace Arcane;
@@ -44,60 +46,8 @@ using DistributedSolverType = Alina::DistributedSubDomainDeflation<Preconditione
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-struct AlinaParameters
+namespace
 {
-  Params m_properties;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-struct AlinaPreconditioner
-{
-  explicit AlinaPreconditioner(PreconditionerType* preconditioner)
-  : m_preconditioner(preconditioner)
-  {}
-  ~AlinaPreconditioner()
-
-  {
-    delete m_preconditioner;
-  }
-  PreconditionerType* m_preconditioner = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-struct AlinaSequentialSolver
-{
-  explicit AlinaSequentialSolver(SequentialSolverType* solver)
-  : m_solver(solver)
-  {}
-  ~AlinaSequentialSolver()
-  {
-    delete m_solver;
-  }
-  SequentialSolverType* m_solver = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-struct AlinaDistributedSolver
-{
-  explicit AlinaDistributedSolver(DistributedSolverType* solver)
-  : m_solver(solver)
-  {}
-  ~AlinaDistributedSolver()
-  {
-    delete m_solver;
-  }
-  DistributedSolverType* m_solver = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 AlinaConvergenceInfo
 _toConvInfo(const Alina::SolverResult& r)
 {
@@ -106,71 +56,87 @@ _toConvInfo(const Alina::SolverResult& r)
   x.residual = r.residual();
   return x;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AlinaParameters* AlinaLib::
-params_create()
-{
-  return new AlinaParameters();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AlinaLib::
-params_set_int(AlinaParameters* prm, const char* name, int value)
+class AlinaParametersImpl
 {
-  prm->m_properties.put(name, value);
+ public:
+
+  Params m_properties;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AlinaParameters::
+AlinaParameters()
+: m_p(std::make_shared<AlinaParametersImpl>())
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AlinaParameters::
+setInt32(const char* name, Arcane::Int32 value)
+{
+  m_p->m_properties.put(name, value);
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void AlinaLib::
-params_set_float(AlinaParameters* prm, const char* name, float value)
+void AlinaParameters::
+setInt64(const char* name, Arcane::Int64 value)
 {
-  prm->m_properties.put(name, value);
+  m_p->m_properties.put(name, value);
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void AlinaLib::
-params_set_string(AlinaParameters* prm, const char* name, const char* value)
+void AlinaParameters::
+setReal(const char* name, Arcane::Real value)
 {
-  prm->m_properties.put(name, value);
+  m_p->m_properties.put(name, value);
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void AlinaLib::
-params_read_json(AlinaParameters* prm, const char* fname)
+void AlinaParameters::
+setString(const char* name, const char* value)
 {
-  Params& p = prm->m_properties;
+  m_p->m_properties.put(name, value);
+}
+
+void AlinaParameters::
+readFromJSON(const char* fname)
+{
+  Params& p = m_p->m_properties;
   p.read_json(fname);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AlinaLib::
-params_destroy(AlinaParameters* prm)
+class AlinaPreconditionerImpl
 {
-  delete prm;
-}
+ public:
+
+  explicit AlinaPreconditionerImpl(PreconditionerType* preconditioner)
+  : m_preconditioner(preconditioner)
+  {}
+  ~AlinaPreconditionerImpl()
+  {
+    delete m_preconditioner;
+  }
+
+  PreconditionerType* m_preconditioner = nullptr;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AlinaPreconditioner* AlinaLib::
-preconditioner_create(int n,
-                      const int* ptr,
-                      const int* col,
-                      const double* val,
-                      AlinaParameters* prm)
+AlinaPreconditioner::
+AlinaPreconditioner(int n,
+                    const int* ptr,
+                    const int* col,
+                    const double* val,
+                    const AlinaParameters* prm)
 {
   SmallSpan<const int> ptr_range(ptr, n + 1);
   SmallSpan<const int> col_range(col, ptr[n]);
@@ -180,19 +146,19 @@ preconditioner_create(int n,
 
   PreconditionerType* amg = nullptr;
   if (prm)
-    amg = new PreconditionerType(A, prm->m_properties);
+    amg = new PreconditionerType(A, prm->m_p->m_properties);
   else
     amg = new PreconditionerType(A);
-  return new AlinaPreconditioner(amg);
+  m_p = std::make_shared<AlinaPreconditionerImpl>(amg);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AlinaLib::
-preconditioner_apply(AlinaPreconditioner* handle, const double* rhs, double* x)
+void AlinaPreconditioner::
+apply(const double* rhs, double* x)
 {
-  PreconditionerType* amg = handle->m_preconditioner;
+  PreconditionerType* amg = m_p->m_preconditioner;
 
   size_t n = Alina::backend::nbRow(amg->system_matrix());
 
@@ -205,29 +171,38 @@ preconditioner_apply(AlinaPreconditioner* handle, const double* rhs, double* x)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AlinaLib::
-preconditioner_report(AlinaPreconditioner* handle)
+void AlinaPreconditioner::
+report()
 {
-  std::cout << *(handle->m_preconditioner) << std::endl;
+  std::cout << *(m_p->m_preconditioner) << std::endl;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AlinaLib::
-preconditioner_destroy(AlinaPreconditioner* handle)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+struct AlinaSequentialSolverImpl
 {
-  delete handle;
-}
+  explicit AlinaSequentialSolverImpl(SequentialSolverType* solver)
+  : m_solver(solver)
+  {}
+  ~AlinaSequentialSolverImpl()
+  {
+    delete m_solver;
+  }
+  SequentialSolverType* m_solver = nullptr;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AlinaSequentialSolver* AlinaLib::
-solver_create(int n, const int* ptr,
-              const int* col,
-              const double* val,
-              AlinaParameters* prm)
+AlinaSequentialSolver::
+AlinaSequentialSolver(int n, const int* ptr,
+                      const int* col,
+                      const double* val,
+                      const AlinaParameters* prm)
 {
   SmallSpan<const int> ptr_range(ptr, n + 1);
   SmallSpan<const int> col_range(col, ptr[n]);
@@ -235,9 +210,9 @@ solver_create(int n, const int* ptr,
 
   auto A = std::make_tuple(n, ptr_range, col_range, val_range);
 
-  SequentialSolverType* solver = new SequentialSolverType(A);
+  auto* solver = new SequentialSolverType(A);
   if (prm)
-    solver = new SequentialSolverType(A, prm->m_properties);
+    solver = new SequentialSolverType(A, prm->m_p->m_properties);
   else
     solver = new SequentialSolverType(A);
   std::cout << "Printing solver infos\n";
@@ -245,16 +220,16 @@ solver_create(int n, const int* ptr,
   Alina::PropertyTree ptree;
   solver->prm.get(ptree);
   std::cout << "SOLVER_PARAMS: " << ptree << "\n";
-  return new AlinaSequentialSolver(solver);
+  m_p = std::make_shared<AlinaSequentialSolverImpl>(solver);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AlinaLib::
-solver_report(AlinaSequentialSolver* handle)
+void AlinaSequentialSolver::
+report()
 {
-  SequentialSolverType* slv = handle->m_solver;
+  SequentialSolverType* slv = m_p->m_solver;
 
   std::cout << slv->precond() << std::endl;
 }
@@ -262,21 +237,10 @@ solver_report(AlinaSequentialSolver* handle)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AlinaLib::
-solver_destroy(AlinaSequentialSolver* handle)
+AlinaConvergenceInfo AlinaSequentialSolver::
+solve(const double* rhs, double* x)
 {
-  delete handle;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AlinaConvergenceInfo AlinaLib::
-solver_solve(AlinaSequentialSolver* handle,
-             const double* rhs,
-             double* x)
-{
-  SequentialSolverType* slv = handle->m_solver;
+  SequentialSolverType* slv = m_p->m_solver;
 
   size_t n = slv->size();
 
@@ -291,15 +255,14 @@ solver_solve(AlinaSequentialSolver* handle,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AlinaConvergenceInfo AlinaLib::
-solver_solve_matrix(AlinaSequentialSolver* handle,
-                    int const* A_ptr,
+AlinaConvergenceInfo AlinaSequentialSolver::
+solveMatrix(int const* A_ptr,
                     int const* A_col,
                     double const* A_val,
                     const double* rhs,
                     double* x)
 {
-  SequentialSolverType* slv = handle->m_solver;
+  SequentialSolverType* slv = m_p->m_solver;
 
   size_t n = slv->size();
 
@@ -340,20 +303,40 @@ struct deflation_vectors
   }
 };
 
-//---------------------------------------------------------------------------
-AlinaDistributedSolver* AlinaLib::
-solver_mpi_create(MPI_Comm comm,
-                  ptrdiff_t n,
-                  const int* ptr,
-                  const int* col,
-                  const double* val,
-                  int n_def_vec,
-                  AlinaDefVecFunction def_vec_func,
-                  void* def_vec_data,
-                  AlinaParameters* params)
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class AlinaDistributedSolverImpl
+{
+ public:
+
+  explicit AlinaDistributedSolverImpl(DistributedSolverType* solver)
+  : m_solver(solver)
+  {}
+  ~AlinaDistributedSolverImpl()
+  {
+    delete m_solver;
+  }
+  DistributedSolverType* m_solver = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AlinaDistributedSolver::
+AlinaDistributedSolver(MPI_Comm comm,
+                       ptrdiff_t n,
+                       const int* ptr,
+                       const int* col,
+                       const double* val,
+                       int n_def_vec,
+                       AlinaDefVecFunction def_vec_func,
+                       void* def_vec_data,
+                       const AlinaParameters& params)
 {
   std::function<double(ptrdiff_t, unsigned)> dv = deflation_vectors(n_def_vec, def_vec_func, def_vec_data);
-  Alina::PropertyTree prm = params->m_properties;
+  Alina::PropertyTree prm = params.m_p->m_properties;
   prm.put("num_def_vec", n_def_vec);
   prm.put("def_vec", &dv);
 
@@ -365,18 +348,16 @@ solver_mpi_create(MPI_Comm comm,
   Alina::mpi_communicator mpi_comm(comm);
   auto* p = new DistributedSolverType(mpi_comm, A, prm);
 
-  return new AlinaDistributedSolver(p);
+  m_p = std::make_shared<AlinaDistributedSolverImpl>(p);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AlinaConvergenceInfo AlinaLib::
-solver_mpi_solve(AlinaDistributedSolver* handle,
-                 double const* rhs,
-                 double* x)
+AlinaConvergenceInfo AlinaDistributedSolver::
+solve(double const* rhs, double* x)
 {
-  DistributedSolverType* solver = handle->m_solver;
+  DistributedSolverType* solver = m_p->m_solver;
 
   size_t n = solver->size();
 
@@ -388,15 +369,6 @@ solver_mpi_solve(AlinaDistributedSolver* handle,
   Alina::SolverResult r = (*solver)(rhs_range, x_range);
 
   return _toConvInfo(r);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void AlinaLib::
-solver_mpi_destroy(AlinaDistributedSolver* handle)
-{
-  delete handle;
 }
 
 /*---------------------------------------------------------------------------*/
