@@ -55,6 +55,9 @@ Table of Contents for this chapter:
 10. \subpage arcanedoc_core_types_array_views <br>
   Describes the use of the classes \arcane{ArrayView}, \arcane{ConstArrayView}, \arcane{Span}, \arcane{SmallSpan}
 
+11. \subpage arcanedoc_core_types_subdomain <br>
+  Describes the \arcane{ISubDomain} class, the interface of the subdomain manager.
+
 ____
 
 <div class="section_buttons">

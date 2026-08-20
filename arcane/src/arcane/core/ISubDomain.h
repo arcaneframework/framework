@@ -69,6 +69,9 @@ class MeshHandle;
 
 /*!
  * \brief Interface of the subdomain manager.
+ *
+ * The page \ref arcanedoc_core_types_subdomain provides a detailed
+ * description of this class.
  */
 class ARCANE_CORE_EXPORT ISubDomain
 : public IBase
