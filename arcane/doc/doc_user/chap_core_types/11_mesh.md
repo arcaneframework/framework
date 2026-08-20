@@ -148,13 +148,16 @@ as an argument. To create a mesh on a single processor, you can use
 \arcane{IParallelMng::sequentialParallelMng()}. The mesh dimension must be set
 with \arcane{IPrimaryMesh::setDimension()} before allocating cells.
 
-It is also possible to read a mesh directly from a file using an
-implementation of \arcane{IMeshReader}:
+It is also possible to read a mesh directly from a file using the
+\arcane{MeshReaderMng} class. The reader used is selected based on the
+extension of the file name, and the mesh is created by the call:
 
 ```cpp
-IMeshReader* reader = ServiceBuilder<IMeshReader>::createInstance(sd, "VtkLegacyMeshReader");
-reader->readMeshFromFile(new_mesh, XmlNode(), "sod.vtk", "/tmp", false);
-delete reader;
+// sd is the current subdomain.
+MeshReaderMng mrm(sd);
+IMesh* mesh = mrm.readMesh("Mesh2", "sod.vtk");
+// To read the mesh on a specific group of subdomains:
+IMesh* mesh3 = mrm.readMesh("Mesh3", "sod.vtk", sd->parallelMng());
 ```
 
 ## Mesh Properties {#arcanedoc_core_types_mesh_properties}
