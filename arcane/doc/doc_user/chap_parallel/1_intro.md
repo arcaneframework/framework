@@ -12,6 +12,11 @@ layers of ghost cells that represent a duplication of entities for which
 synchronization will be required. Each processor performs calculations on a
 subdomain and regularly synchronizes its variables with the other processors.
 
+The subdomain is exposed to the application code through the
+\arcane{ISubDomain} interface, which provides access to the local variables,
+meshes, modules and managers of the computation unit. See
+\ref arcanedoc_core_types_subdomain for a detailed description of this class.
+
 Generally, there is no single solution to the synchronization problem:
 - for certain variables, it is possible either to perform the calculation over
   the entire subdomain, meaning on both ghost entities and native entities, or

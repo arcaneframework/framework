@@ -78,6 +78,8 @@ namespace Arcane
  * To retain a reference to an entity, you must either use a group (ItemGroup)
  * or keep its unique number and use itemsUniqueIdToLocalId().
  *
+ * The page \ref arcanedoc_core_types_item_family provides a detailed
+ * description of this class.
  */
 class ARCANE_CORE_EXPORT IItemFamily
 {

@@ -78,3 +78,9 @@ The available chapters are:
 
 - \subpage arcanedoc_services_modules <br>
   Presents the services and modules made available to users
+
+- \subpage arcanedoc_glossary <br>
+  Glossary of the main concepts of %Arcane (subdomain, mesh, Cartesian mesh,
+  mesh item, item family, item group, parallel manager, variable, variable
+  manager, module, service, material manager, material, constituent,
+  environment and block).

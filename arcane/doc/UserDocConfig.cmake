@@ -35,6 +35,7 @@ macro(adoc_userdoc_config_adoc_variables)
     ${ARCANESRCROOT}/doc/doc_user/chap_execution
     ${ARCANESRCROOT}/doc/doc_user/chap_general
     ${ARCANESRCROOT}/doc/doc_user/chap_getting_started
+    ${ARCANESRCROOT}/doc/doc_user/chap_glossary
     ${ARCANESRCROOT}/doc/doc_user/chap_io
     ${ARCANESRCROOT}/doc/doc_user/chap_io/subchap_timehistory
     ${ARCANESRCROOT}/doc/doc_user/chap_materials
