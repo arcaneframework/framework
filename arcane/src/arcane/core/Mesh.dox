@@ -16,6 +16,9 @@ ARCANE_BEGIN_NAMESPACE
   
   Interface of a mesh.
 
+  The page \ref arcanedoc_core_types_mesh provides a detailed
+  description of this class.
+
   There are two types of meshes that implement this interface:
   - primary meshes, which also implement the IPrimaryMesh interface
     and which can be created dynamically or by reading a file

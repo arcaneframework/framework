@@ -58,6 +58,12 @@ Table of Contents for this chapter:
 11. \subpage arcanedoc_core_types_subdomain <br>
   Describes the \arcane{ISubDomain} class, the interface of the subdomain manager.
 
+12. \subpage arcanedoc_core_types_mesh <br>
+  Describes the \arcane{IMesh} class, the interface of a mesh.
+
+13. \subpage arcanedoc_core_types_item_family <br>
+  Describes the \arcane{IItemFamily} class, the interface of an entity family.
+
 ____
 
 <div class="section_buttons">

@@ -59,7 +59,9 @@ owned by the subdomain. They are grouped here by category:
 
 \arcane{ISubDomain} is therefore the place to look for anything that is "mine"
 in the application: *my* variables, *my* mesh, *my* parallel group, *my* case
-options.
+options. For a detailed description of the mesh and of the entity families it
+contains, refer to \ref arcanedoc_core_types_mesh and
+\ref arcanedoc_core_types_item_family.
 
 ## Mesh-related Methods {#arcanedoc_core_types_subdomain_mesh}
 
@@ -190,5 +192,8 @@ ____
 <div class="section_buttons">
 <span class="back_section_button">
 \ref arcanedoc_core_types_array_views
+</span>
+<span class="next_section_button">
+\ref arcanedoc_core_types_mesh
 </span>
 </div>

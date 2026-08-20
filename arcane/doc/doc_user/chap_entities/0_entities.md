@@ -4,6 +4,10 @@ This chapter presents the concept of meshing present in %Arcane, with examples
 such as Cartesian meshes and the different types of cells available. It also
 presents the management of entity connectivities and the management of geometry.
 
+For a general presentation of the \arcane{IMesh} interface and of the
+\arcane{IItemFamily} interface, refer to the pages
+\ref arcanedoc_core_types_mesh and \ref arcanedoc_core_types_item_family.
+
 <br>
 
 Table of Contents for this chapter:
