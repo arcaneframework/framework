@@ -33,6 +33,7 @@
 #include <new>
 #include <stack>
 #include <vector>
+#include <unordered_set>
 #include <iostream>
 
 // This macro must be defined for the class 'blocked_rangeNd' to be available
@@ -547,11 +548,17 @@ class TBBTaskImplementation::Impl
  private:
 
   Int32 m_nb_allowed_thread = 0;
+  //! Counter to know how many times the observer has been called
+  std::atomic<Int32> m_nb_observed = 0;
 
  public:
 
   void terminate()
   {
+    int v = m_is_terminate_called.fetch_add(1);
+    if (v >= 1)
+      return;
+
     for (auto x : m_sub_arena_list) {
       if (x)
         x->terminate();
@@ -567,6 +574,11 @@ class TBBTaskImplementation::Impl
 
   void notifyThreadCreated(bool is_worker)
   {
+    // If we have called the observer for all the allowed thread there
+    // is nothing left to do.
+    if (m_nb_observed >= m_nb_allowed_thread)
+      return;
+
     std::thread::id my_thread_id = std::this_thread::get_id();
 
     // With OneTBB, this method is called every time we enter
@@ -574,9 +586,14 @@ class TBBTaskImplementation::Impl
     // we use a set to keep track of the threads already created.
     // NOTE: This method cannot be used with the historical TBB version
     // (2018) because this 'contains' method does not exist
-    if (m_constructed_thread_map.contains(my_thread_id))
-      return;
-    m_constructed_thread_map.insert(my_thread_id);
+    {
+      std::scoped_lock sl(m_thread_created_mutex);
+      if (m_constructed_thread_map.contains(my_thread_id))
+        return;
+      m_constructed_thread_map.insert(my_thread_id);
+    }
+
+    Int32 nb_observed = ++m_nb_observed;
 
     {
       if (TaskFactory::verboseLevel() >= 1) {
@@ -587,6 +604,7 @@ class TBBTaskImplementation::Impl
              << " id=" << my_thread_id
              << " arena_id=" << _currentTaskTreadIndex()
              << " is_worker=" << is_worker
+             << " nb_observed=" << nb_observed
              << "\n";
         std::cout << ostr.str();
       }
@@ -621,7 +639,11 @@ class TBBTaskImplementation::Impl
   TaskObserver m_task_observer;
   std::mutex m_thread_created_mutex;
   std::vector<TaskThreadInfo> m_thread_task_infos;
-  tbb::concurrent_set<std::thread::id> m_constructed_thread_map;
+  std::unordered_set<std::thread::id> m_constructed_thread_map;
+  std::atomic<Int32> m_is_terminate_called = 0;
+
+ private:
+
   void _init()
   {
     ConcurrencyBase::_setMaxAllowedThread(m_nb_allowed_thread);
@@ -1040,6 +1062,7 @@ class TBBTaskImplementation::MDParallelForExecute
 TBBTaskImplementation::
 ~TBBTaskImplementation()
 {
+  m_p->terminate();
   delete m_p;
 }
 
