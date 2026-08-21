@@ -46,14 +46,16 @@ TEST(alina_test_alina_lib, basic)
   prm.setInt32("solver.L", 1);
   prm.setInt32("solver.maxiter", 100);
 
-  AlinaSequentialSolver solver(n, ptr.data(), col.data(), val.data(), &prm);
+  AlinaCSRMatrixView matrix_view(n, ptr.data(), col.data(), val.data());
+
+  AlinaSequentialSolver solver(matrix_view, &prm);
 
   std::vector<double> x(n, 0);
   AlinaConvergenceInfo cnv = solver.solve(rhs.data(), x.data());
 
   // Solve same problem again, but explicitly provide the matrix this time:
   std::fill(x.begin(), x.end(), 0);
-  cnv = solver.solveMatrix(ptr.data(), col.data(), val.data(), rhs.data(), x.data());
+  cnv = solver.solveMatrix(matrix_view, rhs.data(), x.data());
 
   std::cout << "Iterations: " << cnv.iterations << std::endl
             << "Error:      " << cnv.residual << std::endl;

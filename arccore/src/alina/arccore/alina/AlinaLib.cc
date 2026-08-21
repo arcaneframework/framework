@@ -113,6 +113,25 @@ readFromJSON(const char* fname)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void AlinaCSRMatrixView::
+checkSizes() const
+{
+  Int32 nb_row = nbRow();
+  Int32 n1 = m_row_indexes.size();
+  if (n1 != (nb_row + 1))
+    ARCCORE_FATAL("Bad size '{0}' for rowIndexes() (expected value = {1})",n1, nb_row+1);
+  Int32 nb_value = m_row_indexes[nb_row];
+  Int32 n2 = m_columns.size();
+  Int32 n3 = m_values.size();
+  if (n2 != nb_value)
+    ARCCORE_FATAL("Bad size '{0}' for columns() (expected value = {1})",n2, nb_value);
+  if (n3 != nb_value)
+    ARCCORE_FATAL("Bad size '{0}' for values() (expected value = {1})",n3, nb_value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class AlinaPreconditionerImpl
 {
  public:
@@ -199,16 +218,12 @@ struct AlinaSequentialSolverImpl
 /*---------------------------------------------------------------------------*/
 
 AlinaSequentialSolver::
-AlinaSequentialSolver(int n, const int* ptr,
-                      const int* col,
-                      const double* val,
+AlinaSequentialSolver(const AlinaCSRMatrixView& matrix_view,
                       const AlinaParameters* prm)
 {
-  SmallSpan<const int> ptr_range(ptr, n + 1);
-  SmallSpan<const int> col_range(col, ptr[n]);
-  SmallSpan<const double> val_range(val, ptr[n]);
-
-  auto A = std::make_tuple(n, ptr_range, col_range, val_range);
+  matrix_view.checkSizes();
+  auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
+                           matrix_view.columns(), matrix_view.values());
 
   auto* solver = new SequentialSolverType(A);
   if (prm)
@@ -256,24 +271,23 @@ solve(const double* rhs, double* x)
 /*---------------------------------------------------------------------------*/
 
 AlinaConvergenceInfo AlinaSequentialSolver::
-solveMatrix(int const* A_ptr,
-                    int const* A_col,
-                    double const* A_val,
-                    const double* rhs,
-                    double* x)
+solveMatrix(const AlinaCSRMatrixView& matrix_view,
+            const double* rhs,
+            double* x)
 {
   SequentialSolverType* slv = m_p->m_solver;
 
-  size_t n = slv->size();
+  Int32 n = slv->size();
+  matrix_view.checkSizes();
+
+  if (n != matrix_view.nbRow())
+    ARCCORE_FATAL("Bad number of rows v={0} expected={1}", matrix_view.nbRow(), n);
 
   SmallSpan<double> x_range(x, n);
   SmallSpan<const double> rhs_range(rhs, n);
 
-  SmallSpan<const int> ptr_range(A_ptr, n + 1);
-  SmallSpan<const int> col_range(A_col, A_ptr[n]);
-  SmallSpan<const double> val_range(A_val, A_ptr[n]);
-
-  auto A = std::make_tuple(n, ptr_range, col_range, val_range);
+  auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
+                           matrix_view.columns(), matrix_view.values());
 
   Alina::SolverResult r = (*slv)(A, rhs_range, x_range);
 
@@ -326,10 +340,11 @@ class AlinaDistributedSolverImpl
 
 AlinaDistributedSolver::
 AlinaDistributedSolver(MPI_Comm comm,
-                       ptrdiff_t n,
-                       const int* ptr,
-                       const int* col,
-                       const double* val,
+                       const AlinaCSRMatrixView& matrix_view,
+                       //ptrdiff_t n,
+                       //const int* ptr,
+                       //const int* col,
+                       //const double* val,
                        int n_def_vec,
                        AlinaDefVecFunction def_vec_func,
                        void* def_vec_data,
@@ -339,12 +354,11 @@ AlinaDistributedSolver(MPI_Comm comm,
   Alina::PropertyTree prm = params.m_p->m_properties;
   prm.put("num_def_vec", n_def_vec);
   prm.put("def_vec", &dv);
+  matrix_view.checkSizes();
 
-  SmallSpan<const int> ptr_range(ptr, n + 1);
-  SmallSpan<const int> col_range(col, ptr[n]);
-  SmallSpan<const double> val_range(val, ptr[n]);
+  auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
+                           matrix_view.columns(), matrix_view.values());
 
-  auto A = std::make_tuple(n, ptr_range, col_range, val_range);
   Alina::mpi_communicator mpi_comm(comm);
   auto* p = new DistributedSolverType(mpi_comm, A, prm);
 

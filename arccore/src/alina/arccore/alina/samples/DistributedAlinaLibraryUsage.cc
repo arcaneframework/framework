@@ -146,8 +146,8 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   // Solve
   {
-    AlinaDistributedSolver solver(MPI_COMM_WORLD,
-                                  chunk, ptr.data(), col.data(), val.data(),
+    AlinaCSRMatrixView matrix_view(chunk, ptr.data(), col.data(), val.data());
+    AlinaDistributedSolver solver(MPI_COMM_WORLD, matrix_view,
                                   1, constant_deflation, nullptr, prm);
     AlinaConvergenceInfo cnv = solver.solve(rhs.data(), x.data());
 

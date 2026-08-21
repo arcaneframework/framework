@@ -25,6 +25,8 @@
 
 #include "arccore/alina/AlinaGlobal.h"
 
+#include "arccore/base/Span.h"
+
 #include <memory>
 
 #include <mpi.h>
@@ -90,6 +92,58 @@ class ARCCORE_ALINA_EXPORT AlinaParameters
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief CSR Matrix view used in AlinaLib.
+ */
+class ARCCORE_ALINA_EXPORT AlinaCSRMatrixView
+{
+ public:
+
+  using Int32 = Arcane::Int32;
+
+ public:
+
+  AlinaCSRMatrixView(Int32 nb_row, const Int32* row_indexes, const Int32* columns, const double* values)
+  : m_nb_row(nb_row)
+  , m_row_indexes(row_indexes, nb_row + 1)
+  , m_columns(columns, row_indexes[nb_row])
+  , m_values(values, row_indexes[nb_row])
+  {}
+  AlinaCSRMatrixView(Arcane::SmallSpan<const Int32> row_indexes,
+                     Arcane::SmallSpan<const Int32> columns, Arcane::SmallSpan<const double> values)
+  : m_nb_row(row_indexes.size() - 1)
+  , m_row_indexes(row_indexes)
+  , m_columns(columns)
+  , m_values(values)
+  {}
+
+ public:
+
+  constexpr Int32 nbRow() const { return m_nb_row; }
+  constexpr Arcane::SmallSpan<const Int32> rowIndexes() const { return m_row_indexes; }
+  constexpr Arcane::SmallSpan<const Int32> columns() const { return m_columns; }
+  constexpr Arcane::SmallSpan<const double> values() const { return m_values; }
+
+ public:
+
+  /*!
+   * \brief Check that sizes are valid:
+   * - rowIndexes().size() = nbRow() + 1;
+   * - columns().size() = rowIndexes[nbRow()];
+   * - values().size() = rowIndexes[nbRow()];
+   */
+  void checkSizes() const;
+
+ private:
+
+  Int32 m_nb_row = 0;
+  Arcane::SmallSpan<const Int32> m_row_indexes;
+  Arcane::SmallSpan<const Int32> m_columns;
+  Arcane::SmallSpan<const double> m_values;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Handle preconditioner for a solver
  *
  * This class uses a reference semantic for copy.
@@ -128,10 +182,14 @@ class ARCCORE_ALINA_EXPORT AlinaSequentialSolver
 {
  public:
 
-  AlinaSequentialSolver(int n,
-                        const int* ptr,
-                        const int* col,
-                        const double* val,
+  /*!
+   * \brief Build a solver for matrix \a matrix.
+   *
+   * The matrix view \a matrix_view passed as arguments must remain valid
+   * for as long as this instance is alive.
+   * \a parameters may be null. In this case we use the default parameters.
+   */
+  AlinaSequentialSolver(const AlinaCSRMatrixView& matrix_view,
                         const AlinaParameters* parameters);
 
  public:
@@ -141,9 +199,7 @@ class ARCCORE_ALINA_EXPORT AlinaSequentialSolver
                              double* x);
 
   //! Solve the problem for the given matrix and the right-hand side.
-  AlinaConvergenceInfo solveMatrix(int const* A_ptr,
-                                   int const* A_col,
-                                   double const* A_val,
+  AlinaConvergenceInfo solveMatrix(const AlinaCSRMatrixView& matrix_view,
                                    double const* rhs,
                                    double* x);
 
@@ -164,12 +220,14 @@ class ARCCORE_ALINA_EXPORT AlinaDistributedSolver
 {
  public:
 
-  //! Create distributed solver.
+  /*!
+   * \brief Create distributed solver.
+   *
+   * The matrix view \a matrix_view passed as arguments must remain valid
+   * for as long as this instance is alive.
+   */
   AlinaDistributedSolver(MPI_Comm comm,
-                         ptrdiff_t n,
-                         const int* ptr,
-                         const int* col,
-                         const double* val,
+                         const AlinaCSRMatrixView& matrix_view,
                          int n_def_vec,
                          AlinaDefVecFunction def_vec_func,
                          void* def_vec_data,
