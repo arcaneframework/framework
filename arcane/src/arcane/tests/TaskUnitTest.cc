@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TaskUnitTest.cc                                             (C) 2000-2025 */
+/* TaskUnitTest.cc                                             (C) 2000-2026 */
 /*                                                                           */
 /* Task testing service.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -90,6 +90,60 @@ namespace TaskTest
       //ITask* master_task = TaskFactory::createTask(&functor);
       for (Integer i = 0; i < nb_task; ++i) {
         ITask* t = TaskFactory::createChildTask(parent_task, this, &Test2::_testCallback);
+        tasks[i] = t;
+      }
+      parent_task->launchAndWait(tasks);
+    }
+
+   private:
+
+    void _testCallback()
+    {
+      ++m_nb;
+    }
+    std::atomic<Int32> m_nb = 0;
+    Integer m_wanted_nb_task = 0;
+  };
+
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
+  // Test creation of child tasks
+  class Test2_2
+  : public TraceAccessor
+  {
+   public:
+
+    explicit Test2_2(ITraceMng* tm)
+    : TraceAccessor(tm)
+    , m_wanted_nb_task(0)
+    {}
+
+   public:
+
+    void exec()
+    {
+      m_nb = 0;
+
+      ITask* master_task = TaskFactory::createTask(this, &Test2_2::_createSubTasks);
+      m_wanted_nb_task = 100;
+
+      master_task->launch();
+      master_task->wait();
+
+      Int32 val = m_nb.load();
+      info() << "** END_MY TEST2_2 n=" << val;
+      if (val != m_wanted_nb_task)
+        ARCANE_FATAL("Bad value v={0} expected={1}", val, m_wanted_nb_task);
+    }
+
+    void _createSubTasks(const TaskContext& ctx)
+    {
+      Int32 nb_task = m_wanted_nb_task;
+      UniqueArray<ITask*> tasks(nb_task);
+      ITask* parent_task = ctx.task();
+      for (Integer i = 0; i < nb_task; ++i) {
+        ITask* t = TaskFactory::createChildTask(parent_task, this, &Test2_2::_testCallback);
         tasks[i] = t;
       }
       parent_task->launchAndWait(tasks);
@@ -740,6 +794,10 @@ executeTest()
   {
     TaskTest::Test2 t2(traceMng());
     t2.exec();
+  }
+  {
+    TaskTest::Test2_2 t2_2(traceMng());
+    t2_2.exec();
   }
   {
     TaskTest::Test3 t3(traceMng(), mesh());
