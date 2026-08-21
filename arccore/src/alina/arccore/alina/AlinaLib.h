@@ -195,13 +195,13 @@ class ARCCORE_ALINA_EXPORT AlinaSequentialSolver
  public:
 
   //! Solve the problem for the given right-hand side.
-  AlinaConvergenceInfo solve(double const* rhs,
-                             double* x);
+  AlinaConvergenceInfo solve(Arcane::SmallSpan<const double> rhs,
+                             Arcane::SmallSpan<double> x);
 
   //! Solve the problem for the given matrix and the right-hand side.
   AlinaConvergenceInfo solveMatrix(const AlinaCSRMatrixView& matrix_view,
-                                   double const* rhs,
-                                   double* x);
+                                   Arcane::SmallSpan<const double> rhs,
+                                   Arcane::SmallSpan<double> x);
 
   //! Printout solver structure
   void report();
@@ -234,7 +234,8 @@ class ARCCORE_ALINA_EXPORT AlinaDistributedSolver
                          const AlinaParameters& params);
 
   //! Find solution for the given RHS.
-  AlinaConvergenceInfo solve(double const* rhs, double* x);
+  AlinaConvergenceInfo solve(Arcane::SmallSpan<const double> rhs,
+                             Arcane::SmallSpan<double> x);
 
  public:
 

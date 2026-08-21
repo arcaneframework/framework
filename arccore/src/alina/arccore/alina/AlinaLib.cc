@@ -253,16 +253,11 @@ report()
 /*---------------------------------------------------------------------------*/
 
 AlinaConvergenceInfo AlinaSequentialSolver::
-solve(const double* rhs, double* x)
+solve(SmallSpan<const double> rhs, SmallSpan<double> x)
 {
   SequentialSolverType* slv = m_p->m_solver;
 
-  size_t n = slv->size();
-
-  SmallSpan<double> x_range(x, n);
-  SmallSpan<const double> rhs_range(rhs, n);
-
-  Alina::SolverResult r = (*slv)(rhs_range, x_range);
+  Alina::SolverResult r = (*slv)(rhs, x);
 
   return _toConvInfo(r);
 }
@@ -272,8 +267,8 @@ solve(const double* rhs, double* x)
 
 AlinaConvergenceInfo AlinaSequentialSolver::
 solveMatrix(const AlinaCSRMatrixView& matrix_view,
-            const double* rhs,
-            double* x)
+            SmallSpan<const double> rhs,
+            SmallSpan<double> x)
 {
   SequentialSolverType* slv = m_p->m_solver;
 
@@ -283,13 +278,10 @@ solveMatrix(const AlinaCSRMatrixView& matrix_view,
   if (n != matrix_view.nbRow())
     ARCCORE_FATAL("Bad number of rows v={0} expected={1}", matrix_view.nbRow(), n);
 
-  SmallSpan<double> x_range(x, n);
-  SmallSpan<const double> rhs_range(rhs, n);
-
   auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
                            matrix_view.columns(), matrix_view.values());
 
-  Alina::SolverResult r = (*slv)(A, rhs_range, x_range);
+  Alina::SolverResult r = (*slv)(A, rhs, x);
 
   return _toConvInfo(r);
 }
@@ -369,18 +361,15 @@ AlinaDistributedSolver(MPI_Comm comm,
 /*---------------------------------------------------------------------------*/
 
 AlinaConvergenceInfo AlinaDistributedSolver::
-solve(double const* rhs, double* x)
+solve(SmallSpan<const double> rhs, SmallSpan<double> x)
 {
   DistributedSolverType* solver = m_p->m_solver;
 
   size_t n = solver->size();
 
-  SmallSpan<double> x_range(x, n);
-  SmallSpan<const double> rhs_range(rhs, n);
-
   AlinaConvergenceInfo cnv;
 
-  Alina::SolverResult r = (*solver)(rhs_range, x_range);
+  Alina::SolverResult r = (*solver)(rhs, x);
 
   return _toConvInfo(r);
 }
