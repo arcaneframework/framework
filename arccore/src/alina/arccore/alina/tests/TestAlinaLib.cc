@@ -17,6 +17,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/alina/AlinaLib.h"
+#include "arccore/common/Array.h"
+
 #include "./SampleProblemCommon.h"
 
 #include <iostream>
@@ -26,6 +28,7 @@
 
 TEST(alina_test_alina_lib, basic)
 {
+  using namespace Arcane;
   std::cout << "Testing AlinaLib\n";
 
   std::vector<int> ptr;
@@ -46,14 +49,17 @@ TEST(alina_test_alina_lib, basic)
   prm.setInt32("solver.L", 1);
   prm.setInt32("solver.maxiter", 100);
 
-  AlinaSequentialSolver solver(n, ptr.data(), col.data(), val.data(), &prm);
+  AlinaCSRMatrixView matrix_view(n, ptr.data(), col.data(), val.data());
+  SmallSpan<const double> rhs_view(rhs.data(), rhs.size());
+  AlinaSequentialSolver solver(matrix_view, &prm);
 
-  std::vector<double> x(n, 0);
-  AlinaConvergenceInfo cnv = solver.solve(rhs.data(), x.data());
+  UniqueArray<double> x(n);
+  x.fill(0.0);
+  AlinaConvergenceInfo cnv = solver.solve(rhs_view, x.smallSpan());
 
   // Solve same problem again, but explicitly provide the matrix this time:
   std::fill(x.begin(), x.end(), 0);
-  cnv = solver.solveMatrix(ptr.data(), col.data(), val.data(), rhs.data(), x.data());
+  cnv = solver.solveMatrix(matrix_view, rhs_view, x.smallSpan());
 
   std::cout << "Iterations: " << cnv.iterations << std::endl
             << "Error:      " << cnv.residual << std::endl;

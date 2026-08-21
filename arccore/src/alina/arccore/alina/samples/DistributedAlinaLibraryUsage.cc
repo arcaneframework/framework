@@ -22,8 +22,6 @@
 #include <vector>
 #include <numeric>
 
-#include <boost/scope_exit.hpp>
-
 #include "arccore/alina/MessagePassingUtils.h"
 #include "arccore/alina/AlinaLib.h"
 #include "AlinaSamplesCommon.h"
@@ -46,8 +44,6 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   int rank = world.rank;
   int size = world.size;
-  //MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  //MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   if (rank == 0)
     tm->info() << "World size: " << size;
@@ -142,14 +138,16 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   prm.setString("isolver.type", "bicgstabl");
   prm.setString("dsolver.type", "skyline_lu");
 
-  std::vector<double> x(chunk, 0);
+  UniqueArray<double> x(chunk);
+  x.fill(0.0);
 
   // Solve
   {
-    AlinaDistributedSolver solver(MPI_COMM_WORLD,
-                                  chunk, ptr.data(), col.data(), val.data(),
+    AlinaCSRMatrixView matrix_view(chunk, ptr.data(), col.data(), val.data());
+    AlinaDistributedSolver solver(MPI_COMM_WORLD, matrix_view,
                                   1, constant_deflation, nullptr, prm);
-    AlinaConvergenceInfo cnv = solver.solve(rhs.data(), x.data());
+    SmallSpan<const double> rhs_view(rhs.data(),rhs.size());
+    AlinaConvergenceInfo cnv = solver.solve(rhs_view, x.smallSpan());
 
     std::cout << "Iterations: " << cnv.iterations << std::endl
               << "Error:      " << cnv.residual << std::endl;
