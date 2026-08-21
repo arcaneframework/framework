@@ -35,31 +35,26 @@ TEST(alina_test_alina_lib, basic)
 
   int n = sample_problem(12l, val, col, ptr, rhs);
 
-  AlinaParameters* prm = AlinaLib::params_create();
+  AlinaParameters prm;
 
-  AlinaLib::params_set_int(prm, "precond.coarse_enough", 1000);
-  AlinaLib::params_set_string(prm, "precond.coarsening.type", "smoothed_aggregation");
-  AlinaLib::params_set_float(prm, "precond.coarsening.aggr.eps_strong", 1e-3f);
-  AlinaLib::params_set_string(prm, "precond.relax.type", "spai0");
+  prm.setInt32("precond.coarse_enough", 1000);
+  prm.setString("precond.coarsening.type", "smoothed_aggregation");
+  prm.setReal("precond.coarsening.aggr.eps_strong", 1e-3f);
+  prm.setString("precond.relax.type", "spai0");
 
-  AlinaLib::params_set_string(prm, "solver.type", "bicgstabl");
-  AlinaLib::params_set_int(prm, "solver.L", 1);
-  AlinaLib::params_set_int(prm, "solver.maxiter", 100);
+  prm.setString("solver.type", "bicgstabl");
+  prm.setInt32("solver.L", 1);
+  prm.setInt32("solver.maxiter", 100);
 
-  AlinaSequentialSolver* solver = AlinaLib::solver_create(n, ptr.data(), col.data(), val.data(), prm);
-
-  AlinaLib::params_destroy(prm);
+  AlinaSequentialSolver solver(n, ptr.data(), col.data(), val.data(), &prm);
 
   std::vector<double> x(n, 0);
-  AlinaConvergenceInfo cnv = AlinaLib::solver_solve(solver, rhs.data(), x.data());
+  AlinaConvergenceInfo cnv = solver.solve(rhs.data(), x.data());
 
   // Solve same problem again, but explicitly provide the matrix this time:
   std::fill(x.begin(), x.end(), 0);
-  cnv = AlinaLib::solver_solve_matrix(solver, ptr.data(), col.data(), val.data(),
-                                      rhs.data(), x.data());
+  cnv = solver.solveMatrix(ptr.data(), col.data(), val.data(), rhs.data(), x.data());
 
   std::cout << "Iterations: " << cnv.iterations << std::endl
             << "Error:      " << cnv.residual << std::endl;
-
-  AlinaLib::solver_destroy(solver);
 }

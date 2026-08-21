@@ -135,27 +135,25 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   }
 
   // Setup
-  AlinaParameters* prm = AlinaLib::params_create();
+  AlinaParameters prm;
 
-  AlinaLib::params_set_string(prm, "local.coarsening.type", "smoothed_aggregation");
-  AlinaLib::params_set_string(prm, "local.relax.type", "spai0");
-  AlinaLib::params_set_string(prm, "isolver.type", "bicgstabl");
-  AlinaLib::params_set_string(prm, "dsolver.type", "skyline_lu");
+  prm.setString("local.coarsening.type", "smoothed_aggregation");
+  prm.setString("local.relax.type", "spai0");
+  prm.setString("isolver.type", "bicgstabl");
+  prm.setString("dsolver.type", "skyline_lu");
 
-  AlinaDistributedSolver* solver = AlinaLib::solver_mpi_create(MPI_COMM_WORLD,
-                                                               chunk, ptr.data(), col.data(), val.data(),
-                                                               1, constant_deflation, NULL, prm);
+  std::vector<double> x(chunk, 0);
 
   // Solve
-  std::vector<double> x(chunk, 0);
-  AlinaConvergenceInfo cnv = AlinaLib::solver_mpi_solve(solver, rhs.data(), x.data());
+  {
+    AlinaDistributedSolver solver(MPI_COMM_WORLD,
+                                  chunk, ptr.data(), col.data(), val.data(),
+                                  1, constant_deflation, nullptr, prm);
+    AlinaConvergenceInfo cnv = solver.solve(rhs.data(), x.data());
 
-  std::cout << "Iterations: " << cnv.iterations << std::endl
-            << "Error:      " << cnv.residual << std::endl;
-
-  // Clean up
-  AlinaLib::solver_mpi_destroy(solver);
-  AlinaLib::params_destroy(prm);
+    std::cout << "Iterations: " << cnv.iterations << std::endl
+              << "Error:      " << cnv.residual << std::endl;
+  }
 
   if (n <= 4096) {
     if (rank == 0) {
