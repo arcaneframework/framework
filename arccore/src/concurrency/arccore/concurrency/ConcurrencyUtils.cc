@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyUtils.cc                                         (C) 2000-2025 */
+/* ConcurrencyUtils.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Classes managing concurrency (tasks, parallel loops, ...)                 */
 /*---------------------------------------------------------------------------*/
@@ -74,6 +74,19 @@ class SerialTask
   ITask* _createChildTask(ITaskFunctor* functor) override
   {
     return new SerialTask(functor);
+  }
+  void launch() override
+  {
+    if (m_functor) {
+      ITaskFunctor* tmp_f = m_functor;
+      m_functor = nullptr;
+      TaskContext task_context(this);
+      tmp_f->executeFunctor(task_context);
+    }
+  }
+  void wait() override
+  {
+    delete this;
   }
 
  private:

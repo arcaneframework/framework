@@ -322,6 +322,9 @@ class OneTBBTask
   void launchAndWait() override;
   void launchAndWait(ConstArrayView<ITask*> tasks) override;
 
+  void launch() override;
+  void wait() override;
+
  protected:
 
   ITask* _createChildTask(ITaskFunctor* functor) override;
@@ -330,6 +333,7 @@ class OneTBBTask
 
   ITaskFunctor* m_functor = nullptr;
   FixedArray<char, FUNCTOR_CLASS_SIZE> m_functor_buf;
+  Ref<tbb::task_group> m_task_group;
 };
 using TBBTask = OneTBBTask;
 
@@ -1291,6 +1295,31 @@ launchAndWait(ConstArrayView<ITask*> tasks)
     auto* t = static_cast<OneTBBTask*>(tasks[i]);
     delete t;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void OneTBBTask::
+launch()
+{
+  if (m_task_group.isNull()) {
+    m_task_group = makeRef(new tbb::task_group());
+  }
+  m_task_group->run(taskFunctor());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void OneTBBTask::
+wait()
+{
+  if (m_task_group.isNull()) {
+    return;
+  }
+  m_task_group->wait();
+  delete this;
 }
 
 /*---------------------------------------------------------------------------*/
