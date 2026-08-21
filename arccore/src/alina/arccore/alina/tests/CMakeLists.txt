@@ -76,6 +76,7 @@ set(MPI_SOURCE_FILES
   TestMainMpi.h
   TestMainMpi.cc
   TestDistributedSolver.cc
+  TestDistributedAlinaLib.cc
 )
 arccore_add_component_test_executable(alina_mpi
   FILES
@@ -102,6 +103,9 @@ endmacro()
 alina_mpi_add_test(TEST_NAME BasicSolver NB_PROC 1)
 alina_mpi_add_test(TEST_NAME BasicSolver NB_PROC 2)
 alina_mpi_add_test(TEST_NAME BasicSolver NB_PROC 4)
+alina_mpi_add_test(TEST_NAME DistributedAlinaLib NB_PROC 1)
+alina_mpi_add_test(TEST_NAME DistributedAlinaLib NB_PROC 2)
+alina_mpi_add_test(TEST_NAME DistributedAlinaLib NB_PROC 4)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
