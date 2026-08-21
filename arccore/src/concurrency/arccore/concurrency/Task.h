@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Task.h                                                      (C) 2000-2025 */
+/* Task.h                                                      (C) 2000-2026 */
 /*                                                                           */
 /* Classes managing concurrent tasks.                                        */
 /*---------------------------------------------------------------------------*/
@@ -205,13 +205,41 @@ class ARCCORE_CONCURRENCY_EXPORT ITask
    *
    * After calling this function, the task is destroyed and must not
    * be used again.
+   *
+   * \warning Do not mix \a launchAndWait() methods and \a launch() / \a wait()
+   * methods.
    */
   virtual void launchAndWait() = 0;
+
   /*!
    * \brief Launches the child tasks \a tasks and blocks
    * until they finish.
+   *
+   * \warning Do not mix \a launchAndWait() methods and \a launch() / \a wait()
+   * methods.
    */
   virtual void launchAndWait(ConstArrayView<ITask*> tasks) = 0;
+
+  /*!
+   * \brief Method allowing to launch the task.
+   *
+   * \warming You must call \a wait() to delete this object! No warning will be
+   * displayed if you forgot to do so.
+   *
+   * \warning Do not mix \a launchAndWait() methods and \a launch() / \a wait()
+   * methods.
+   */
+  virtual void launch() = 0;
+
+  /*!
+   * \brief Method allowing to wait the end of the task.
+   *
+   * This method must be called after \a launch() method.
+   *
+   * \warning Do not mix \a launchAndWait() methods and \a launch() / \a wait()
+   * methods.
+   */
+  virtual void wait() = 0;
 
  protected:
 
