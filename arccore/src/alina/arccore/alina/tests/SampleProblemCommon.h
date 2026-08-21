@@ -22,6 +22,7 @@
 #include "arccore/alina/ValueTypeInterface.h"
 
 #include <vector>
+#include <iostream>
 
 // Generates matrix for poisson problem in a unit cube.
 template <typename ValueType, typename ColType, typename PtrType, typename RhsType>
@@ -94,6 +95,84 @@ int sample_problem(ptrdiff_t n,
   }
 
   return n3;
+}
+
+//---------------------------------------------------------------------------
+// Generates a distributed matrix for poisson problem in a unit cube
+template <typename ValueType, typename ColType, typename PtrType, typename RhsType>
+ptrdiff_t
+sample_problem_distributed(int comm_rank,int comm_size,
+                           ptrdiff_t n, int block_size,
+                           std::vector<PtrType>& ptr,
+                           std::vector<ColType>& col,
+                           std::vector<ValueType>& val,
+                           std::vector<RhsType>& rhs)
+{
+  ptrdiff_t n3 = n * n * n;
+
+  ptrdiff_t chunk = (n3 + comm_size - 1) / comm_size;
+  if (chunk % block_size != 0) {
+    chunk += block_size - chunk % block_size;
+  }
+  ptrdiff_t row_beg = std::min(n3, chunk * comm_rank);
+  ptrdiff_t row_end = std::min(n3, row_beg + chunk);
+  chunk = row_end - row_beg;
+
+  ptr.clear();
+  ptr.reserve(chunk + 1);
+  col.clear();
+  col.reserve(chunk * 7);
+  val.clear();
+  val.reserve(chunk * 7);
+
+  rhs.resize(chunk);
+  std::fill(rhs.begin(), rhs.end(), 1.0);
+
+  const double h2i = (n - 1) * (n - 1);
+  ptr.push_back(0);
+
+  for (ptrdiff_t idx = row_beg; idx < row_end; ++idx) {
+    ptrdiff_t k = idx / (n * n);
+    ptrdiff_t j = (idx / n) % n;
+    ptrdiff_t i = idx % n;
+
+    if (k > 0) {
+      col.push_back(idx - n * n);
+      val.push_back(-h2i);
+    }
+
+    if (j > 0) {
+      col.push_back(idx - n);
+      val.push_back(-h2i);
+    }
+
+    if (i > 0) {
+      col.push_back(idx - 1);
+      val.push_back(-h2i);
+    }
+
+    col.push_back(idx);
+    val.push_back(6 * h2i);
+
+    if (i + 1 < n) {
+      col.push_back(idx + 1);
+      val.push_back(-h2i);
+    }
+
+    if (j + 1 < n) {
+      col.push_back(idx + n);
+      val.push_back(-h2i);
+    }
+
+    if (k + 1 < n) {
+      col.push_back(idx + n * n);
+      val.push_back(-h2i);
+    }
+
+    ptr.push_back(col.size());
+  }
+
+  return chunk;
 }
 
 #endif

@@ -32,13 +32,13 @@ target_link_libraries(arccore_alina_samples_lib PRIVATE arcane_launcher arcane_f
 target_link_libraries(arccore_alina_samples_lib PUBLIC arccore_alina)
 target_link_libraries(arccore_alina_samples_lib PRIVATE Boost::headers)
 target_include_directories(arccore_alina_samples_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(arccore_alina_samples_lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../tests")
 
 set(ALINA_SAMPLE_BUILD_DIR "${CMAKE_BINARY_DIR}/alina_samples")
 function(add_arccore_alina_example_no_test EXAMPLE SOURCES)
   add_executable(${EXAMPLE} ${SOURCES})
   set_target_properties(${EXAMPLE} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}")
   target_link_libraries(${EXAMPLE} PUBLIC arccore_alina_samples_lib)
-  target_include_directories(${EXAMPLE} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../tests")
   target_compile_definitions(${EXAMPLE} PUBLIC "ARCCORE_ALINA_BLOCK_SIZES=${ARCCORE_ALINA_BLOCK_SIZES_SEQ}")
 endfunction()
 
