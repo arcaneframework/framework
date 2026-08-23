@@ -11,7 +11,7 @@
 
   <meshes>
     <mesh>
-      <filename>faultx2_8x8x6.vtk</filename>
+      <filename>faultx4_3x3x2.vtk</filename>
       <specific-reader name="VtkPolyhedralCaseMeshReader">
         <print-mesh-infos>true</print-mesh-infos>
         <print-debug-infos>false</print-debug-infos>
