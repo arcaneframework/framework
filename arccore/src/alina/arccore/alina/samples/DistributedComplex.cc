@@ -34,84 +34,10 @@
 
 #include "arccore/common/internal/ProgramOptions.h"
 
+#include "SampleProblemCommon.h"
+
 using namespace Arcane;
 using namespace Arcane::Alina;
-
-//---------------------------------------------------------------------------
-ptrdiff_t
-assemble_poisson3d(Alina::mpi_communicator comm,
-                   ptrdiff_t n, int block_size,
-                   std::vector<ptrdiff_t>& ptr,
-                   std::vector<ptrdiff_t>& col,
-                   std::vector<std::complex<double>>& val,
-                   std::vector<std::complex<double>>& rhs)
-{
-  ptrdiff_t n3 = n * n * n;
-
-  ptrdiff_t chunk = (n3 + comm.size - 1) / comm.size;
-  if (chunk % block_size != 0) {
-    chunk += block_size - chunk % block_size;
-  }
-  ptrdiff_t row_beg = std::min(n3, chunk * comm.rank);
-  ptrdiff_t row_end = std::min(n3, row_beg + chunk);
-  chunk = row_end - row_beg;
-
-  ptr.clear();
-  ptr.reserve(chunk + 1);
-  col.clear();
-  col.reserve(chunk * 7);
-  val.clear();
-  val.reserve(chunk * 7);
-
-  rhs.resize(chunk);
-  std::fill(rhs.begin(), rhs.end(), 1.0);
-
-  const double h2i = (n - 1) * (n - 1);
-  ptr.push_back(0);
-
-  for (ptrdiff_t idx = row_beg; idx < row_end; ++idx) {
-    ptrdiff_t k = idx / (n * n);
-    ptrdiff_t j = (idx / n) % n;
-    ptrdiff_t i = idx % n;
-
-    if (k > 0) {
-      col.push_back(idx - n * n);
-      val.push_back(-h2i);
-    }
-
-    if (j > 0) {
-      col.push_back(idx - n);
-      val.push_back(-h2i);
-    }
-
-    if (i > 0) {
-      col.push_back(idx - 1);
-      val.push_back(-h2i);
-    }
-
-    col.push_back(idx);
-    val.push_back(6 * h2i);
-
-    if (i + 1 < n) {
-      col.push_back(idx + 1);
-      val.push_back(-h2i);
-    }
-
-    if (j + 1 < n) {
-      col.push_back(idx + n);
-      val.push_back(-h2i);
-    }
-
-    if (k + 1 < n) {
-      col.push_back(idx + n * n);
-      val.push_back(-h2i);
-    }
-
-    ptr.push_back(col.size());
-  }
-
-  return chunk;
-}
 
 //---------------------------------------------------------------------------
 void solve_scalar(Alina::mpi_communicator comm,
@@ -163,18 +89,14 @@ int main(int argc, char* argv[])
   namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "show help")(
-  "size,n",
-  po::value<ptrdiff_t>()->default_value(128),
-  "domain size")("prm-file,P",
-                 po::value<std::string>(),
-                 "Parameter file in json format. ")(
-  "prm,p",
-  po::value<std::vector<std::string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
-  "  -p solver.tol=1e-3\n"
-  "  -p precond.coarse_enough=300");
+  desc.add_options()("help,h", "show help");
+  desc.add_options()("size,n", po::value<ptrdiff_t>()->default_value(128), "domain size");
+  desc.add_options()("prm-file,P", po::value<std::string>(), "Parameter file in json format. ");
+  desc.add_options()("prm,p", po::value<std::vector<std::string>>()->multitoken(),
+                     "Parameters specified as name=value pairs. "
+                     "May be provided multiple times. Examples:\n"
+                     "  -p solver.tol=1e-3\n"
+                     "  -p precond.coarse_enough=300");
 
   po::positional_options_description p;
   p.add("prm", -1);
@@ -207,7 +129,7 @@ int main(int argc, char* argv[])
   std::vector<std::complex<double>> rhs;
 
   prof.tic("assemble");
-  n = assemble_poisson3d(comm, vm["size"].as<ptrdiff_t>(), 1, ptr, col, val, rhs);
+  n = sample_problem_distributed(comm.rank, comm.size, vm["size"].as<ptrdiff_t>(), 1, ptr, col, val, rhs);
   prof.toc("assemble");
 
   solve_scalar(comm, n, ptr, col, val, prm, rhs);
