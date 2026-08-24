@@ -73,17 +73,9 @@ using namespace Arcane;
 using Alina::precondition;
 
 #ifdef SOLVER_BACKEND_BUILTIN
-extern "C++" void
-_doHypreSolver(int nb_row,
-               std::vector<ptrdiff_t> const& ptr,
-               std::vector<ptrdiff_t> const& col,
-               std::vector<double> const& val,
-               std::vector<double> const& rhs,
-               std::vector<double>& x,
-               int argc, char* argv[]);
-#endif
 
-#ifdef SOLVER_BACKEND_BUILTIN
+#include "./HypreComparer.h"
+
 //---------------------------------------------------------------------------
 template <int B> Alina::SolverResult
 block_solve(const Alina::PropertyTree& prm,
@@ -532,7 +524,8 @@ int main(int argc, char* argv[])
 #endif
   if (do_hypre) {
 #ifdef SOLVER_BACKEND_BUILTIN
-    _doHypreSolver(rows, ptr, col, val, rhs, x, argc, argv);
+    HypreComparer hypre_comparer(true);
+    hypre_comparer.solve(rows, ptr, col, val, rhs, x, argc, argv);
 #endif
   }
   else {

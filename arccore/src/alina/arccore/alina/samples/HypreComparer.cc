@@ -23,23 +23,7 @@
  * SPDX-License-Identifier: (Apache-2.0 OR MIT)
  ******************************************************************************/
 
-/*
-   Example 5
-
-   Interface:    Linear-Algebraic (IJ)
-
-   Compile with: make ex5
-
-   Sample run:   mpirun -np 4 ex5
-
-   Description:  This example solves the 2-D Laplacian problem with zero boundary
-                 conditions on an n x n grid.  The number of unknowns is N=n^2.
-                 The standard 5-point stencil is used, and we solve for the
-                 interior nodes only.
-
-                 This example solves the same problem as Example 3.  Available
-                 solvers are AMG, PCG, and PCG with AMG or Parasails
-                 preconditioners.  */
+#include "./HypreComparer.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,20 +32,6 @@
 #include "HYPRE_krylov.h"
 #include "HYPRE.h"
 #include "HYPRE_parcsr_ls.h"
-
-/******************************************************************************
- * Copyright (c) 1998 Lawrence Livermore National Security, LLC and other
- * HYPRE Project Developers. See the top-level COPYRIGHT file for details.
- *
- * SPDX-License-Identifier: (Apache-2.0 OR MIT)
- ******************************************************************************/
-
-/*--------------------------------------------------------------------------
- * Header file for examples
- *--------------------------------------------------------------------------*/
-
-#ifndef HYPRE_EXAMPLES_INCLUDES
-#define HYPRE_EXAMPLES_INCLUDES
 
 #include <HYPRE_config.h>
 
@@ -76,9 +46,9 @@
 static inline void*
 gpu_malloc(size_t size)
 {
-   void *ptr = NULL;
-   cudaMallocManaged(&ptr, size, cudaMemAttachGlobal);
-   return ptr;
+  void* ptr = NULL;
+  cudaMallocManaged(&ptr, size, cudaMemAttachGlobal);
+  return ptr;
 }
 
 static inline void*
@@ -94,11 +64,6 @@ gpu_calloc(size_t num, size_t size)
 #define calloc(num, size) gpu_calloc(num, size)
 #define free(ptr) ( cudaFree(ptr), ptr = NULL )
 #endif /* #if defined(HYPRE_EXAMPLE_USING_CUDA) */
-#endif /* #ifndef HYPRE_EXAMPLES_INCLUDES */
-
-#ifdef HYPRE_EXVIS
-#include "vis.c"
-#endif
 
 #include <memory>
 #include <vector>
@@ -115,14 +80,27 @@ int hypre_FlexGMRESModifyPCAMGExample(void *precond_data, int iterations,
 
 #define my_min(a,b)  (((a)<(b)) ? (a) : (b))
 
-extern "C++" void
-_doHypreSolver(int nb_row,
-               std::vector<ptrdiff_t> const& _ptr,
-               std::vector<ptrdiff_t> const& _col,
-               std::vector<double> const& _val,
-               std::vector<double> const& _rhs,
-               std::vector<double>& _x,
-               int argc, char* argv[])
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+HypreComparer::
+~HypreComparer()
+{
+  if (m_need_finalize)
+    MPI_Finalize();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HypreComparer::
+solve(int nb_row,
+      std::vector<ptrdiff_t> const& _ptr,
+      std::vector<ptrdiff_t> const& _col,
+      std::vector<double> const& _val,
+      std::vector<double> const& _rhs,
+      std::vector<double>& _x,
+      int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
   auto t = prof.scoped_tic("Hypre");
@@ -130,15 +108,12 @@ _doHypreSolver(int nb_row,
   std::cout << "DO_HYPRE nb_row=" << nb_row << "\n";
   int i;
   int myid, num_procs;
-  const int N = nb_row;
 
   int ilower, iupper;
   int local_size, extra;
 
   int solver_id;
-  int vis, print_system;
-
-  //double h, h2;
+  int print_system;
 
   HYPRE_IJMatrix A;
   HYPRE_ParCSRMatrix parcsr_A;
@@ -149,8 +124,12 @@ _doHypreSolver(int nb_row,
 
   HYPRE_Solver solver, precond;
 
-  /* Initialize MPI */
-  MPI_Init(&argc, &argv);
+  // Initialize MPI if requested
+  if (m_do_mpi_init_and_finalize) {
+    MPI_Init(&argc, &argv);
+    m_need_finalize = true;
+  }
+
   MPI_Comm_rank(MPI_COMM_WORLD, &myid);
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
@@ -167,7 +146,6 @@ _doHypreSolver(int nb_row,
   /* Default problem parameters */
   const int n = nb_row;
   solver_id = 0;
-  vis = 0;
   print_system = 0;
 
   /* Parse command line */
@@ -183,10 +161,6 @@ _doHypreSolver(int nb_row,
       else if (strcmp(argv[arg_index], "-solver") == 0) {
         arg_index++;
         solver_id = atoi(argv[arg_index++]);
-      }
-      else if (strcmp(argv[arg_index], "-vis") == 0) {
-        arg_index++;
-        vis = 1;
       }
       else if (strcmp(argv[arg_index], "-print_system") == 0) {
         arg_index++;
@@ -218,7 +192,6 @@ _doHypreSolver(int nb_row,
     }
 
     if (print_usage) {
-      MPI_Finalize();
       return;
     }
   }
@@ -241,8 +214,8 @@ _doHypreSolver(int nb_row,
   /* Each processor knows only of its own rows - the range is denoted by ilower
      and upper.  Here we partition the rows. We account for the fact that
      N may not divide evenly by the number of processors. */
-  local_size = N / num_procs;
-  extra = N - local_size * num_procs;
+  local_size = nb_row / num_procs;
+  extra = nb_row - local_size * num_procs;
 
   ilower = local_size * myid;
   ilower += my_min(myid, extra);
@@ -610,48 +583,6 @@ _doHypreSolver(int nb_row,
   if (print_system)
     HYPRE_IJVectorPrint(x, "IJ.out.x");
 
-  /* Save the solution for GLVis visualization, see vis/glvis-ex5.sh */
-  if (vis) {
-#ifdef HYPRE_EXVIS
-    FILE* file;
-    char filename[255];
-
-    int nvalues = local_size;
-    int* rows = (int*)calloc(nvalues, sizeof(int));
-    double* values = (double*)calloc(nvalues, sizeof(double));
-
-    for (i = 0; i < nvalues; i++) {
-      rows[i] = ilower + i;
-    }
-
-    /* get the local solution */
-    HYPRE_IJVectorGetValues(x, nvalues, rows, values);
-
-    sprintf(filename, "%s.%06d", "vis/ex5.sol", myid);
-    if ((file = fopen(filename, "w")) == NULL) {
-      printf("Error: can't open output file %s\n", filename);
-      MPI_Finalize();
-      exit(1);
-    }
-
-    /* save solution */
-    for (i = 0; i < nvalues; i++) {
-      fprintf(file, "%.14e\n", values[i]);
-    }
-
-    fflush(file);
-    fclose(file);
-
-    free(rows);
-    free(values);
-
-    /* save global finite element mesh */
-    if (myid == 0) {
-      GLVis_PrintGlobalSquareMesh("vis/ex5.mesh", n - 1);
-    }
-#endif
-  }
-
   /* Clean up */
   HYPRE_IJMatrixDestroy(A);
   HYPRE_IJVectorDestroy(b);
@@ -660,12 +591,11 @@ _doHypreSolver(int nb_row,
   /* Finalize HYPRE */
   HYPRE_Finalize();
 
-  /* Finalize MPI*/
-  MPI_Finalize();
-
   return;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------
   hypre_FlexGMRESModifyPCAMGExample -
 
