@@ -24,6 +24,7 @@ endforeach()
 
 # Add a library for common samples functions and types
 add_library(arccore_alina_samples_lib
+  HypreComparer.h
   AlinaSamplesCommon.h
   AlinaSamplesCommon.cc
 )

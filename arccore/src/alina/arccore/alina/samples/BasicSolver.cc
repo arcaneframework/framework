@@ -41,8 +41,10 @@
 
 #include "arccore/common/internal/ProgramOptions.h"
 
-#include "AlinaSamplesCommon.h"
 #include "arccore/trace/ITraceMng.h"
+
+#include "./AlinaSamplesCommon.h"
+#include "./HypreComparer.h"
 
 #include "SampleProblemCommon.h"
 
@@ -54,18 +56,6 @@ using Alina::precondition;
 
 //! Use 32 bit indexing for backend.
 using Backend = Arcane::Alina::BuiltinBackend<double, Arcane::Int32>;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" void
-_doHypreSolver(int nb_row,
-               std::vector<ptrdiff_t> const& ptr,
-               std::vector<ptrdiff_t> const& col,
-               std::vector<double> const& val,
-               std::vector<double> const& rhs,
-               std::vector<double>& x,
-               int argc, char* argv[]);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -201,7 +191,8 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   Alina::SolverResult solver_result;
   if (do_hypre) {
-    _doHypreSolver(rows, ptr, col, val, rhs, x, argc, argv);
+    HypreComparer hypre_comparer(false);
+    hypre_comparer.solve(rows, ptr, col, val, rhs, x, argc, argv);
   }
   else {
 
