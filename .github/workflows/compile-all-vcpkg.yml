@@ -210,7 +210,7 @@ jobs:
       - name: Configure build script
         shell: bash
         run: |
-          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DVCPKG_TARGET_TRIPLET='${{ matrix.triplet }}' -DBUILD_SHARED_LIBS=TRUE -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja -DARCANE_FORCE_NOASNEEDED=TRUE -DCMAKE_INSTALL_PREFIX="${{ env.CMAKE_BUILD_DIR }}/install"
+          cmake -S "${{ github.workspace }}" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DVCPKG_TARGET_TRIPLET='${{ matrix.triplet }}' -DBUILD_SHARED_LIBS=TRUE -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -DCMAKE_CXX_COMPILER_LAUNCHER="ccache" -GNinja -DARCANE_FORCE_NOASNEEDED=TRUE -DARCCORE_ENABLE_ALINA=ON -DCMAKE_INSTALL_PREFIX="${{ env.CMAKE_BUILD_DIR }}/install"
 
       - name: Dump Some Generated files
         shell: bash
@@ -250,7 +250,7 @@ jobs:
       - name: Test arcane
         shell: bash
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -E python_test
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -E 'python_test|alina'
 
       - name: Test Aleph kappa
         if: matrix.base_os != 'windows'
@@ -282,6 +282,15 @@ jobs:
         shell: bash
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R compare
+
+      # At the moment there is a bug in the test on Win32 in debug.
+      # Some tests are failing with the following error message:
+      # include\vector(122) : Assertion failed: cannot seek vector iterator after end
+      - name: Test alina
+        shell: bash
+        if: matrix.full_name == 'windows-2022-cxx20-intelmpi'
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R alina
 
       # Comme ces tests sont un peu long on ne les exécute que sous Windows.
       # Pour Linux, ils sont déjà lancés dans des CI dédiés.
