@@ -13,6 +13,7 @@
 
 // These files are not used but we need to include them to export symbols
 #include "arccore/alina/SolverBase.h"
+#include "arccore/alina/RelaxationBase.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

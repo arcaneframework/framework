@@ -19,7 +19,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_COMPONENT_arcane_alina
+#ifdef ARCCORE_COMPONENT_arccore_alina
 #define ARCCORE_ALINA_EXPORT ARCCORE_EXPORT
 #else
 #define ARCCORE_ALINA_EXPORT ARCCORE_IMPORT
