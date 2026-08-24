@@ -37,7 +37,7 @@ TEST(alina_test_mpi, DistributedAlinaLib)
   int comm_rank = world.rank;
   int comm_size = world.size;
 
-  const ptrdiff_t n = 64;
+  const Int32 n = 64;
 
   // For 32 bit indexing
   using ColumnType = Int32;

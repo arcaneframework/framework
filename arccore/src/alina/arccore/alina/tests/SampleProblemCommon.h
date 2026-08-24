@@ -25,15 +25,16 @@
 #include <iostream>
 
 // Generates matrix for poisson problem in a unit cube.
-template <typename ValueType, typename ColType, typename PtrType, typename RhsType>
-int sample_problem(ptrdiff_t n,
-                   std::vector<ValueType>& val,
-                   std::vector<ColType>& col,
-                   std::vector<PtrType>& ptr,
-                   std::vector<RhsType>& rhs,
-                   double anisotropy = 1.0)
+template <typename ValueType, typename ColType, typename PtrType, typename RhsType> PtrType
+sample_problem(Arcane::Int32 n,
+               std::vector<ValueType>& val,
+               std::vector<ColType>& col,
+               std::vector<PtrType>& ptr,
+               std::vector<RhsType>& rhs,
+               double anisotropy = 1.0)
 {
-  ptrdiff_t n3 = n * n * n;
+  // In sequential, the global size never exceed 2^31.
+  PtrType n3 = n * n * n;
 
   ptr.clear();
   col.clear();
@@ -52,9 +53,9 @@ int sample_problem(ptrdiff_t n,
   double hz = hy * anisotropy;
 
   ptr.push_back(0);
-  for (ptrdiff_t k = 0, idx = 0; k < n; ++k) {
-    for (ptrdiff_t j = 0; j < n; ++j) {
-      for (ptrdiff_t i = 0; i < n; ++i, ++idx) {
+  for (ColType k = 0, idx = 0; k < n; ++k) {
+    for (int j = 0; j < n; ++j) {
+      for (int i = 0; i < n; ++i, ++idx) {
         if (k > 0) {
           col.push_back(idx - n * n);
           val.push_back(-1.0 / (hz * hz) * one);
@@ -99,23 +100,25 @@ int sample_problem(ptrdiff_t n,
 
 //---------------------------------------------------------------------------
 // Generates a distributed matrix for poisson problem in a unit cube
-template <typename ValueType, typename ColType, typename PtrType, typename RhsType>
-ptrdiff_t
-sample_problem_distributed(int comm_rank,int comm_size,
-                           ptrdiff_t n, int block_size,
+template <typename ValueType, typename ColType, typename PtrType, typename RhsType> PtrType
+sample_problem_distributed(int comm_rank, int comm_size,
+                           Arcane::Int32 n, int block_size,
                            std::vector<PtrType>& ptr,
                            std::vector<ColType>& col,
                            std::vector<ValueType>& val,
                            std::vector<RhsType>& rhs)
 {
-  ptrdiff_t n3 = n * n * n;
+  // We use `PtrType` for multiplication because the global size may exceed
+  // the maximum value of Int32
+  PtrType nx = n;
+  PtrType n3 = nx * nx * nx;
 
-  ptrdiff_t chunk = (n3 + comm_size - 1) / comm_size;
+  PtrType chunk = (n3 + comm_size - 1) / comm_size;
   if (chunk % block_size != 0) {
     chunk += block_size - chunk % block_size;
   }
-  ptrdiff_t row_beg = std::min(n3, chunk * comm_rank);
-  ptrdiff_t row_end = std::min(n3, row_beg + chunk);
+  PtrType row_beg = std::min(n3, chunk * comm_rank);
+  PtrType row_end = std::min(n3, row_beg + chunk);
   chunk = row_end - row_beg;
 
   ptr.clear();
@@ -131,10 +134,10 @@ sample_problem_distributed(int comm_rank,int comm_size,
   const double h2i = (n - 1) * (n - 1);
   ptr.push_back(0);
 
-  for (ptrdiff_t idx = row_beg; idx < row_end; ++idx) {
-    ptrdiff_t k = idx / (n * n);
-    ptrdiff_t j = (idx / n) % n;
-    ptrdiff_t i = idx % n;
+  for (PtrType idx = row_beg; idx < row_end; ++idx) {
+    PtrType k = idx / (n * n);
+    PtrType j = (idx / n) % n;
+    PtrType i = idx % n;
 
     if (k > 0) {
       col.push_back(idx - n * n);
