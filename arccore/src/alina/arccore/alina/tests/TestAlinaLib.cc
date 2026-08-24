@@ -36,7 +36,7 @@ TEST(alina_test_alina_lib, basic)
   std::vector<double> val;
   std::vector<double> rhs;
 
-  int n = sample_problem(12l, val, col, ptr, rhs);
+  int n = sample_problem(12, val, col, ptr, rhs);
 
   AlinaParameters prm;
 
