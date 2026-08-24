@@ -48,13 +48,12 @@ endif()
 # Check compilation of tests and samples
 #----------------------------------------------------------------------------
 
-option(ARCCORE_ALINA_BUILD_TESTS "Build Alina tests" ON)
-option(ARCCORE_ALINA_BUILD_SAMPLES "Build Alina samples" ON)
 
-if (ARCCORE_ALINA_BUILD_TESTS)
-  enable_testing()
+if (ARCCORE_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
+
+option(ARCCORE_ALINA_BUILD_SAMPLES "Build Alina samples" OFF)
 
 if (ARCCORE_ALINA_BUILD_SAMPLES)
   add_subdirectory(samples)
