@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.h                                                     (C) 2000-2025 */
+/* Array.h                                                     (C) 2000-2026 */
 /*                                                                           */
 /* 1D Array.                                                                 */
 /*---------------------------------------------------------------------------*/
@@ -331,6 +331,70 @@ class Array
     --m_md->size;
     m_ptr[m_md->size].~T();
   }
+
+  //! Replaces the contents of the instance with copies of those in the range [\a first, \alast).
+  template <typename InputIterator>
+  void assign(InputIterator first, InputIterator last)
+  {
+    clear();
+    for (; first != last; ++first)
+      add(*first);
+  }
+  //! Replaces the contents of the instance with \a count copies of value \a val.
+  void assign(Int64 count, ConstReferenceType val)
+  {
+    clear();
+    resize(count, val);
+  }
+
+  /*!
+   * \brief Removes the element at \a pos.
+   *
+   * This method has the same semantic than std::vector::erase(const_iterator)
+   *
+   * \return he iterator following the last removed element.
+   */
+  iterator erase(const_iterator pos)
+  {
+    Int64 index = pos - begin();
+    ARCCORE_CHECK_AT(index, m_md->size);
+    remove(index);
+    // Return the iterator following the last removed element
+    return begin() + index;
+  }
+
+  /*!
+   * \brief Removes the elements in the range [\a first, \a last).
+   *
+   * This method has the same semantic than std::vector::erase(const_iterator,const_iterator)
+   *
+   * \return he iterator following the last removed element.
+   */
+  iterator erase(const_iterator first, const_iterator last)
+  {
+    Int64 first_to_remove = first - begin();
+    Int64 last_to_remove = last - begin();
+    if (first == last)
+      return begin() + last_to_remove;
+
+    ARCCORE_CHECK_AT(first_to_remove, m_md->size);
+    ARCCORE_CHECK_AT(last_to_remove, 1 + m_md->size);
+    ARCCORE_ASSERT((first <= last), ("last is not after first"));
+
+    // Calculate the number of elements to erase
+    Int64 nb_to_remove = last - first;
+
+    // Shift all elements after 'last' to the left by 'num_elements' positions
+    for (iterator it = begin() + last_to_remove; it != end(); ++it) {
+      *(it - nb_to_remove) = *it;
+    }
+    // Reduce the size
+    Int64 new_size = m_md->size - nb_to_remove;
+    resize(new_size);
+    // Return the iterator following the last removed element.
+    return begin() + first_to_remove;
+  }
+
   //! Element at index \a i. Always checks for overflows
   T& at(Int64 i)
   {
@@ -456,11 +520,17 @@ class Array
   //! Constant iterator over the first element of the array.
   const_iterator begin() const { return const_iterator(m_ptr); }
 
+  //! Constant iterator over the first element of the array.
+  const_iterator cbegin() const noexcept { return const_iterator(m_ptr); }
+
   //! Iterator over the first element after the end of the array.
   iterator end() { return iterator(m_ptr + m_md->size); }
 
   //! Constant iterator over the first element after the end of the array.
   const_iterator end() const { return const_iterator(m_ptr + m_md->size); }
+
+  //! Constant iterator over the first element after the end of the array.
+  const_iterator cend() const noexcept { return const_iterator(m_ptr + m_md->size); }
 
   //! Reverse iterator over the first element of the array.
   reverse_iterator rbegin() { return std::make_reverse_iterator(end()); }
@@ -497,6 +567,20 @@ class Array
   void push_back(ConstReferenceType val)
   {
     this->add(val);
+  }
+  //! Removes the last entity from the array.
+  void pop_back()
+  {
+    popBack();
+  }
+  //! Emplace a new element at the end of the array
+  template <typename... Args>
+  void emplace_back(Args&&... args)
+  {
+    if (m_md->size >= m_md->capacity)
+      this->_internalRealloc(m_md->size + 1, true);
+    new (m_ptr + m_md->size) T(std::forward<Args>(args)...);
+    ++m_md->size;
   }
   //@}
 

@@ -33,7 +33,7 @@ class IntSubClass
   : m_v(v)
   {}
   IntSubClass() = default;
-  Integer m_v = 0;
+
   friend bool operator==(const IntSubClass& v, Integer iv) { return v.m_v == iv; }
   friend bool operator==(const IntSubClass& v1, const IntSubClass& v2) { return v1.m_v == v2.m_v; }
   friend bool operator!=(const IntSubClass& v1, const IntSubClass& v2) { return v1.m_v != v2.m_v; }
@@ -42,7 +42,10 @@ class IntSubClass
     o << c.m_v;
     return o;
   }
+  Integer value() const { return m_v; }
+  Integer m_v = 0;
 };
+
 class IntSubClassNoPod
 {
  public:

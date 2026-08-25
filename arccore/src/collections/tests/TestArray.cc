@@ -71,6 +71,320 @@ TEST(Array, Swap2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+template <typename ArrayType>
+void _testArrayAssign()
+{
+  using namespace Arccore;
+  using value_type = ArrayType::value_type;
+  // Test assign(count, val)
+  {
+    ArrayType a;
+    a.assign(5l, value_type(42));
+    ASSERT_EQ(a.size(), 5);
+    for (Int32 i = 0; i < 5; ++i)
+      ASSERT_EQ(a[i], 42);
+
+    // Test assign with count = 0
+    a.assign(0l, value_type(99));
+    ASSERT_EQ(a.size(), 0);
+
+    // Test assign overwriting existing data
+    a.assign(3l, value_type(1));
+    a.assign(2l, value_type(7));
+    ASSERT_EQ(a.size(), 2);
+    ASSERT_EQ(a[0], 7);
+    ASSERT_EQ(a[1], 7);
+  }
+
+  // Test assign(InputIterator first, InputIterator last)
+  {
+    ArrayType a;
+    std::vector<Int32> src = { 1, 2, 3, 4, 5 };
+    a.assign(src.begin(), src.end());
+    ASSERT_EQ(a.size(), 5);
+    for (Int32 i = 0; i < 5; ++i)
+      ASSERT_EQ(a[i], i + 1);
+
+    // Test with empty range
+    ArrayType a2;
+    std::vector<Int32> empty;
+    a2.assign(empty.begin(), empty.end());
+    ASSERT_EQ(a2.size(), 0);
+
+    // Test with array iterators
+    ArrayType a3;
+    ArrayType src_array = { 10, 20, 30 };
+    a3.assign(src_array.begin(), src_array.end());
+    ASSERT_EQ(a3.size(), 3);
+    ASSERT_EQ(a3[0], 10);
+    ASSERT_EQ(a3[1], 20);
+    ASSERT_EQ(a3[2], 30);
+
+    // Test with initializer_list (via vector)
+    ArrayType a4;
+    std::vector<Int32> il_src = { 100, 200 };
+    a4.assign(il_src.begin(), il_src.end());
+    ASSERT_EQ(a4.size(), 2);
+    ASSERT_EQ(a4[0], 100);
+    ASSERT_EQ(a4[1], 200);
+  }
+}
+
+template <typename ArrayType>
+void _testArrayErase()
+{
+  using namespace Arccore;
+  using value_type = ArrayType::value_type;
+
+  // Test erase(const_iterator pos) - single element
+  {
+    ArrayType a = { 1, 2, 3, 4, 5 };
+
+    // Erase first element
+    auto it = a.erase(a.begin());
+    ASSERT_EQ(a.size(), 4);
+    ASSERT_EQ(a[0], 2);
+    ASSERT_EQ(a[1], 3);
+    ASSERT_EQ(a[2], 4);
+    ASSERT_EQ(a[3], 5);
+    ASSERT_EQ(*it, 2); // Returned iterator points to next element
+
+    // Erase middle element
+    a = { 1, 2, 3, 4, 5 };
+    it = a.erase(a.begin() + 2); // Erase '3'
+    ASSERT_EQ(a.size(), 4);
+    ASSERT_EQ(a[0], 1);
+    ASSERT_EQ(a[1], 2);
+    ASSERT_EQ(a[2], 4);
+    ASSERT_EQ(a[3], 5);
+    ASSERT_EQ(*it, 4);
+
+    // Erase last element
+    a = { 1, 2, 3, 4, 5 };
+    it = a.erase(a.end() - 1); // Erase '5'
+    ASSERT_EQ(a.size(), 4);
+    ASSERT_EQ(a[0], 1);
+    ASSERT_EQ(a[1], 2);
+    ASSERT_EQ(a[2], 3);
+    ASSERT_EQ(a[3], 4);
+    ASSERT_EQ(it, a.end()); // Returned iterator is end()
+  }
+
+  // Test erase(const_iterator first, const_iterator last) - range
+  {
+    // Erase from beginning
+    ArrayType a = { 1, 2, 3, 4, 5 };
+    auto it = a.erase(a.begin(), a.begin() + 2); // Erase [1, 2]
+    ASSERT_EQ(a.size(), 3);
+    ASSERT_EQ(a[0], 3);
+    ASSERT_EQ(a[1], 4);
+    ASSERT_EQ(a[2], 5);
+    ASSERT_EQ(*it, 3);
+
+    // Erase from middle
+    a = { 1, 2, 3, 4, 5 };
+    it = a.erase(a.begin() + 1, a.begin() + 3); // Erase [2, 3]
+    ASSERT_EQ(a.size(), 3);
+    ASSERT_EQ(a[0], 1);
+    ASSERT_EQ(a[1], 4);
+    ASSERT_EQ(a[2], 5);
+    ASSERT_EQ(*it, 4);
+
+    // Erase to end
+    a = { 1, 2, 3, 4, 5 };
+    it = a.erase(a.begin() + 2, a.end()); // Erase [3, 4, 5]
+    ASSERT_EQ(a.size(), 2);
+    ASSERT_EQ(a[0], 1);
+    ASSERT_EQ(a[1], 2);
+    ASSERT_EQ(it, a.end());
+
+    // Erase full range
+    a = { 1, 2, 3, 4, 5 };
+    it = a.erase(a.begin(), a.end());
+    ASSERT_EQ(a.size(), 0);
+    ASSERT_EQ(it, a.end());
+
+    // Erase empty range (first == last)
+    a = { 1, 2, 3, 4, 5 };
+    it = a.erase(a.begin() + 2, a.begin() + 2);
+    ASSERT_EQ(a.size(), 5);
+    ASSERT_EQ(*it, 3); // Points to element at position 2
+  }
+
+  // Test with const_iterator (const array)
+  {
+    const UniqueArray<value_type> ca = { 1, 2, 3, 4, 5 };
+    ArrayType a = ca;
+
+    // erase with const_iterator position
+    auto it = a.erase(a.cbegin() + 1); // Erase '2'
+    ASSERT_EQ(a.size(), 4);
+    ASSERT_EQ(a[0], 1);
+    ASSERT_EQ(a[1], 3);
+    ASSERT_EQ(*it, 3);
+
+    // erase with const_iterator range
+    a = ca;
+    it = a.erase(a.cbegin() + 1, a.cbegin() + 3); // Erase [2, 3]
+    ASSERT_EQ(a.size(), 3);
+    ASSERT_EQ(a[0], 1);
+    ASSERT_EQ(a[1], 4);
+    ASSERT_EQ(*it, 4);
+  }
+}
+
+template <typename ArrayType>
+void _testArrayPopBack()
+{
+  using namespace Arccore;
+
+  ArrayType a = {1, 2, 3, 4, 5};
+  a.pop_back();
+  ASSERT_EQ(a.size(), 4);
+  ASSERT_EQ(a[3], 4);
+
+  a.pop_back();
+  ASSERT_EQ(a.size(), 3);
+  ASSERT_EQ(a[2], 3);
+
+  // Pop until empty
+  while (!a.empty())
+    a.pop_back();
+  ASSERT_EQ(a.size(), 0);
+}
+
+template <typename ArrayType>
+void _testArrayEmplaceBack()
+{
+  using namespace Arccore;
+  using value_type = ArrayType::value_type;
+  // Test with simple type
+  if constexpr(std::is_same_v<Int32,value_type>){
+    ArrayType a;
+    a.emplace_back(42);
+    ASSERT_EQ(a.size(), 1);
+    ASSERT_EQ(a[0], 42);
+
+    a.emplace_back(100);
+    ASSERT_EQ(a.size(), 2);
+    ASSERT_EQ(a[1], 100);
+  }
+
+  // Test with non-POD type (IntSubClass)
+  if constexpr(std::is_same_v<IntSubClass,value_type>){
+    ArrayType a;
+    a.emplace_back(IntSubClass(10));
+    ASSERT_EQ(a.size(), 1);
+    ASSERT_EQ(a[0].value(), 10);
+
+    a.emplace_back(IntSubClass(20));
+    ASSERT_EQ(a.size(), 2);
+    ASSERT_EQ(a[1].value(), 20);
+  }
+}
+
+template <typename ArrayType>
+void _testArrayEdgeCases()
+{
+  using namespace Arccore;
+  using value_type = ArrayType::value_type;
+
+  // Test on empty array
+  {
+    ArrayType a;
+    ASSERT_EQ(a.size(), 0);
+    // assign on empty
+    a.assign(3l, value_type(7));
+    ASSERT_EQ(a.size(), 3);
+    // pop_back on empty should not crash (but is undefined behavior in STL)
+    // We don't test pop_back on empty as it's undefined
+  }
+
+  // Test on single element array
+  {
+    ArrayType a = { 42 };
+    ASSERT_EQ(a.size(), 1);
+
+    // erase single element
+    auto it = a.erase(a.begin());
+    ASSERT_EQ(a.size(), 0);
+    ASSERT_EQ(it, a.end());
+
+    // assign on single element
+    a.assign(1l, value_type(99));
+    ASSERT_EQ(a.size(), 1);
+    ASSERT_EQ(a[0], 99);
+
+    // pop_back on single element
+    a.pop_back();
+    ASSERT_EQ(a.size(), 0);
+
+    // emplace_back on single element
+    a.emplace_back(123);
+    ASSERT_EQ(a.size(), 1);
+    ASSERT_EQ(a[0], 123);
+  }
+
+  // Test assign with self-assignment-like scenario
+  {
+    ArrayType a = { 1, 2, 3 };
+    auto begin = a.begin();
+    auto end = a.end();
+    a.assign(begin, end); // Should work but be a no-op effectively
+    ASSERT_EQ(a.size(), 3);
+    ASSERT_EQ(a[0], 1);
+    ASSERT_EQ(a[1], 2);
+    ASSERT_EQ(a[2], 3);
+  }
+}
+
+} // namespace
+
+TEST(Array, Assign)
+{
+  _testArrayAssign<UniqueArray<Int32>>();
+  _testArrayAssign<SharedArray<Int32>>();
+  _testArrayAssign<UniqueArray<IntSubClass>>();
+  _testArrayAssign<SharedArray<IntSubClass>>();
+}
+
+TEST(Array, Erase)
+{
+  _testArrayErase<UniqueArray<Int32>>();
+  _testArrayErase<SharedArray<Int32>>();
+  _testArrayErase<UniqueArray<IntSubClass>>();
+  _testArrayErase<SharedArray<IntSubClass>>();
+}
+
+TEST(Array, PopBack)
+{
+  _testArrayPopBack<UniqueArray<Int32>>();
+  _testArrayPopBack<SharedArray<Int32>>();
+  _testArrayPopBack<UniqueArray<IntSubClass>>();
+  _testArrayPopBack<SharedArray<IntSubClass>>();
+}
+
+TEST(Array, EmplaceBack)
+{
+  _testArrayEmplaceBack<UniqueArray<Int32>>();
+  _testArrayEmplaceBack<SharedArray<Int32>>();
+  _testArrayEmplaceBack<UniqueArray<IntSubClass>>();
+  _testArrayEmplaceBack<SharedArray<IntSubClass>>();
+}
+
+TEST(Array, EdgeCases)
+{
+  _testArrayEdgeCases<UniqueArray<Int32>>();
+  _testArrayEdgeCases<SharedArray<Int32>>();
+  _testArrayEdgeCases<UniqueArray<IntSubClass>>();
+  _testArrayEdgeCases<SharedArray<IntSubClass>>();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Integer IntPtrSubClass::count = 0;
 
 /*---------------------------------------------------------------------------*/
