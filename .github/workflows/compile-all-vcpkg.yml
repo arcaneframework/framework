@@ -99,6 +99,7 @@ jobs:
       CCACHE_MAXSIZE: 5G
       # Indicates the CMake build directory where project files and binaries are being produced.
       CMAKE_BUILD_DIR: ${{ github.workspace }}/builddir/
+      CTEST_ARGS : '--output-on-failure --timeout 200'
       # Indicates the location of the vcpkg as a Git submodule of the project repository.
       FRAMEWORKCI_ROOT_PATH: '${{ github.workspace }}/../../build_base'
       VCPKG_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
@@ -250,38 +251,38 @@ jobs:
       - name: Test arcane
         shell: bash
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -E 'python_test|alina'
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} ${{ matrix.ctest_specific_args }} -E 'python_test|alina'
 
       - name: Test Aleph kappa
         if: matrix.base_os != 'windows'
         shell: bash
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }} -R kappa
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} ${{ matrix.ctest_specific_args }} -R kappa
 
       # - name: Test Python wrapper
       #   shell: bash
       #   run: |
-      #     cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -V -R python_test
+      #     cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} -V -R python_test
 
       - name: Test .Net wrapper
         shell: bash
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R coreclr
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} -R coreclr
 
       - name: Test Convert Mesh
         shell: bash
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R convert_mesh
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} -R convert_mesh
 
       - name: Test command line replace
         shell: bash
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R replace
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} -R replace
 
       - name: Test compare
         shell: bash
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R compare
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} -R compare
 
       # At the moment there is a bug in the test on Win32 in debug.
       # Some tests are failing with the following error message:
@@ -290,7 +291,7 @@ jobs:
         shell: bash
         if: matrix.full_name == 'windows-2022-cxx20-intelmpi'
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R alina
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} -R alina
 
       # Comme ces tests sont un peu long on ne les exécute que sous Windows.
       # Pour Linux, ils sont déjà lancés dans des CI dédiés.
@@ -298,4 +299,4 @@ jobs:
         shell: bash
         if: matrix.full_name == 'windows-2022-cxx20-intelmpi'
         run: |
-          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure -R checkpoint
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} -R checkpoint
