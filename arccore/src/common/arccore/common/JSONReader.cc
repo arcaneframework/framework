@@ -481,7 +481,7 @@ parse(Span<const std::byte> bytes, StringView filename)
 
   Document& d = m_p->m_document;
 
-  ParseResult r = d.Parse<kflags>((const char*)bytes.data(), bytes.size());
+  ParseResult r = d.Parse<kflags>(reinterpret_cast<const char*>(bytes.data()), bytes.size());
   if (d.HasParseError()) {
     std::cout << "ERROR: " << d.GetParseError() << "\n";
     ARCCORE_FATAL("Parsing error file='{0}' ret={1} position={2} message='{3}'",
