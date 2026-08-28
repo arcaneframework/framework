@@ -252,25 +252,22 @@ class ARCCORE_COMMON_EXPORT JSONDocument
  public:
 
   JSONDocument();
+
   ~JSONDocument();
 
  public:
 
   //! Reads the file in UTF-8 format.
-  template<unsigned ParseFlags = ParseNoFlags>
-  void parse(Span<const Byte> bytes);
+  void parse(Span<const Byte> bytes, Int16 flags = ParseNoFlags);
 
   //! Reads the file in UTF-8 format.
-  template<unsigned ParseFlags = ParseNoFlags>
-  void parse(Span<const std::byte> bytes);
+  void parse(Span<const std::byte> bytes, Int16 flags = ParseNoFlags);
 
   //! Reads the file in UTF-8 format.
-  template<unsigned ParseFlags = ParseNoFlags>
-  void parse(Span<const Byte> bytes, StringView file_name);
+  void parse(Span<const Byte> bytes, StringView file_name, Int16 flags = ParseNoFlags);
 
   //! Reads the file in UTF-8 format.
-  template<unsigned ParseFlags = ParseNoFlags>
-  void parse(Span<const std::byte> bytes, StringView file_name);
+  void parse(Span<const std::byte> bytes, StringView file_name, Int16 flags = ParseNoFlags);
 
   //! Root element
   JSONValue root() const;
