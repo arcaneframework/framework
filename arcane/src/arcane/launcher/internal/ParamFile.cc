@@ -94,7 +94,7 @@ editParams(const String& param_file_name, const String& variation)
   }
 
   JSONDocument json_doc;
-  json_doc.parse<JSONDocument::ParseCommentsFlag | JSONDocument::ParseNumbersAsStringsFlag>(bytes, param_file_name);
+  json_doc.parse(bytes, param_file_name, (JSONDocument::ParseCommentsFlag | JSONDocument::ParseNumbersAsStringsFlag));
 
   const JSONValue root = json_doc.root();
 
