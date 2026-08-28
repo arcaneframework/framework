@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringDictionary.cc                                         (C) 2000-2025 */
+/* StringDictionary.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* String dictionary.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -90,7 +90,7 @@ StringDictionary::
 void StringDictionary::
 add(const String& key, const String& value)
 {
-  m_p->m_dictionary.insert(std::make_pair(key, value));
+  m_p->m_dictionary.insert_or_assign(key, value);
 }
 
 /*---------------------------------------------------------------------------*/
