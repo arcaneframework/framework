@@ -242,19 +242,33 @@ class ARCCORE_COMMON_EXPORT JSONDocument
 
  public:
 
+  // Copied from rapidjson/reader.h (values are differents).
+  enum eParseFlag {
+      ParseNoFlags = 0,                //!< No flags are set.
+      ParseCommentsFlag = 1,           //!< Allow one-line (//) and multi-line (/**/) comments.
+      ParseNumbersAsStringsFlag = 2    //!< Parse all numbers (ints/doubles) as strings.
+  };
+
+ public:
+
   JSONDocument();
+
   ~JSONDocument();
 
  public:
 
   //! Reads the file in UTF-8 format.
-  void parse(Span<const Byte> bytes);
+  void parse(Span<const Byte> bytes, Int16 flags = ParseNoFlags);
+
   //! Reads the file in UTF-8 format.
-  void parse(Span<const std::byte> bytes);
+  void parse(Span<const std::byte> bytes, Int16 flags = ParseNoFlags);
+
   //! Reads the file in UTF-8 format.
-  void parse(Span<const Byte> bytes, StringView file_name);
+  void parse(Span<const Byte> bytes, StringView file_name, Int16 flags = ParseNoFlags);
+
   //! Reads the file in UTF-8 format.
-  void parse(Span<const std::byte> bytes, StringView file_name);
+  void parse(Span<const std::byte> bytes, StringView file_name, Int16 flags = ParseNoFlags);
+
   //! Root element
   JSONValue root() const;
 

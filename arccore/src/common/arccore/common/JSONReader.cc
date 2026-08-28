@@ -470,11 +470,30 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 void JSONDocument::
-parse(Span<const std::byte> bytes, StringView filename)
+parse(Span<const std::byte> bytes, StringView filename, Int16 flags)
 {
   using namespace rapidjson;
+
   Document& d = m_p->m_document;
-  ParseResult r = d.Parse((const char*)bytes.data(), bytes.size());
+  ParseResult r;
+
+  switch (flags) {
+  case ParseNoFlags:
+    r = d.Parse<kParseNoFlags>(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+    break;
+  case ParseCommentsFlag:
+    r = d.Parse<kParseCommentsFlag>(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+    break;
+  case ParseNumbersAsStringsFlag:
+    r = d.Parse<kParseNumbersAsStringsFlag>(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+    break;
+  case (ParseCommentsFlag | ParseNumbersAsStringsFlag):
+    r = d.Parse<kParseCommentsFlag | kParseNumbersAsStringsFlag>(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+    break;
+  default:
+    ARCCORE_FATAL("Unknown flags");
+  }
+
   if (d.HasParseError()) {
     std::cout << "ERROR: " << d.GetParseError() << "\n";
     ARCCORE_FATAL("Parsing error file='{0}' ret={1} position={2} message='{3}'",
@@ -487,27 +506,27 @@ parse(Span<const std::byte> bytes, StringView filename)
 /*---------------------------------------------------------------------------*/
 
 void JSONDocument::
-parse(Span<const std::byte> bytes)
+parse(Span<const std::byte> bytes, Int16 flags)
 {
-  parse(bytes, "(Unknown)");
+  parse(bytes, "(Unknown)", flags);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void JSONDocument::
-parse(Span<const Byte> bytes)
+parse(Span<const Byte> bytes, Int16 flags)
 {
-  parse(asBytes(bytes));
+  parse(asBytes(bytes), flags);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void JSONDocument::
-parse(Span<const Byte> bytes, StringView filename)
+parse(Span<const Byte> bytes, StringView filename, Int16 flags)
 {
-  parse(asBytes(bytes), filename);
+  parse(asBytes(bytes), filename, flags);
 }
 
 /*---------------------------------------------------------------------------*/

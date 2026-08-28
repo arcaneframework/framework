@@ -16,6 +16,7 @@
 #include "arcane/launcher/IDirectExecutionContext.h"
 #include "arcane/launcher/DirectSubDomainExecutionContext.h"
 #include "arcane/launcher/GeneralHelp.h"
+#include "arcane/launcher/internal/ParamFile.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -362,6 +363,14 @@ init(const CommandLineArguments& args)
     String runtime_config_file_name = cargs.getParameter("RuntimeConfigFile");
     if (!runtime_config_file_name.empty())
       _checkReadConfigFile(runtime_config_file_name);
+
+    String param_file_name = cargs.getParameter("ParamFile");
+    if (!param_file_name.empty()) {
+      String variation_param_file_name = cargs.getParameter("Variation");
+      ParamFile::editParams(param_file_name, variation_param_file_name);
+    }
+
+
     properties::readFromParameterList<ApplicationInfo, ApplicationInfoProperties>(args.parameters(), application_info);
     auto& dotnet_info = ArcaneLauncher::dotNetRuntimeInitialisationInfo();
     properties::readFromParameterList<DotNetRuntimeInitialisationInfo, DotNetRuntimeInitialisationInfoProperties>(args.parameters(), dotnet_info);
