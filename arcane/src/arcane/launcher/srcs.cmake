@@ -15,4 +15,6 @@
   StandaloneSubDomain.cc
   internal/DirectExecutionFunctor.h
   internal/DirectExecutionFunctor.cc
+  internal/ParamFile.h
+  internal/ParamFile.cc
   )
