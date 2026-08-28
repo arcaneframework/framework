@@ -469,12 +469,19 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<unsigned ParseFlags>
 void JSONDocument::
 parse(Span<const std::byte> bytes, StringView filename)
 {
   using namespace rapidjson;
+
+  constexpr unsigned kflags =
+    (ParseFlags & static_cast<unsigned>(ParseCommentsFlag) ? kParseCommentsFlag : kParseNoFlags) |
+    (ParseFlags & static_cast<unsigned>(ParseNumbersAsStringsFlag) ? kParseNumbersAsStringsFlag : kParseNoFlags);
+
   Document& d = m_p->m_document;
-  ParseResult r = d.Parse((const char*)bytes.data(), bytes.size());
+
+  ParseResult r = d.Parse<kflags>((const char*)bytes.data(), bytes.size());
   if (d.HasParseError()) {
     std::cout << "ERROR: " << d.GetParseError() << "\n";
     ARCCORE_FATAL("Parsing error file='{0}' ret={1} position={2} message='{3}'",
@@ -486,28 +493,31 @@ parse(Span<const std::byte> bytes, StringView filename)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<unsigned ParseFlags>
 void JSONDocument::
 parse(Span<const std::byte> bytes)
 {
-  parse(bytes, "(Unknown)");
+  parse<ParseFlags>(bytes, "(Unknown)");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<unsigned ParseFlags>
 void JSONDocument::
 parse(Span<const Byte> bytes)
 {
-  parse(asBytes(bytes));
+  parse<ParseFlags>(asBytes(bytes));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<unsigned ParseFlags>
 void JSONDocument::
 parse(Span<const Byte> bytes, StringView filename)
 {
-  parse(asBytes(bytes), filename);
+  parse<ParseFlags>(asBytes(bytes), filename);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -519,6 +529,29 @@ root() const
   rapidjson::Value& d = m_p->m_document;
   return JSONWrapperUtils::build(&d);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#define ARCANE_INSTANTIATE_PARSE1(arg) \
+template void JSONDocument::parse<JSONDocument::eParseFlag::ParseNoFlags>(arg); \
+template void JSONDocument::parse<JSONDocument::eParseFlag::ParseCommentsFlag>(arg); \
+template void JSONDocument::parse<JSONDocument::eParseFlag::ParseNumbersAsStringsFlag>(arg); \
+template void JSONDocument::parse<JSONDocument::eParseFlag::ParseCommentsFlag | JSONDocument::eParseFlag::ParseNumbersAsStringsFlag>(arg);
+
+#define ARCANE_INSTANTIATE_PARSE2(arg0, arg1) \
+template void JSONDocument::parse<JSONDocument::eParseFlag::ParseNoFlags>(arg0, arg1); \
+template void JSONDocument::parse<JSONDocument::eParseFlag::ParseCommentsFlag>(arg0, arg1); \
+template void JSONDocument::parse<JSONDocument::eParseFlag::ParseNumbersAsStringsFlag>(arg0, arg1); \
+template void JSONDocument::parse<JSONDocument::eParseFlag::ParseCommentsFlag | JSONDocument::eParseFlag::ParseNumbersAsStringsFlag>(arg0, arg1);
+
+ARCANE_INSTANTIATE_PARSE2(Span<const std::byte>, StringView);
+ARCANE_INSTANTIATE_PARSE1(Span<const std::byte>);
+ARCANE_INSTANTIATE_PARSE2(Span<const Byte>, StringView);
+ARCANE_INSTANTIATE_PARSE1(Span<const Byte>);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
