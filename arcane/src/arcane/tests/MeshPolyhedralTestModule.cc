@@ -52,7 +52,8 @@ private:
   {
     m_subdomain_boundary_faces = mesh()->faceFamily()->createGroup("SubdomainBoundaryFaces");
     Int32UniqueArray subdomain_boundary_face_lids;
-    FaceGroup all_boundary_faces = mesh()->allCells().outerFaceGroup();
+    // FaceGroup all_boundary_faces = mesh()->allCells().outerFaceGroup(); // todo fix outer face group
+    FaceGroup all_boundary_faces = mesh()->allFaces();
     subdomain_boundary_face_lids.reserve(all_boundary_faces.size());
     VariableFaceInt32 face_nb_cells(VariableBuildInfo(mesh(),"FaceNbCells"));
     ENUMERATE_(Face,iface,all_boundary_faces)
@@ -62,13 +63,49 @@ private:
     face_nb_cells.synchronize();
     ENUMERATE_(Face,iface,all_boundary_faces)
     {
-      if (face_nb_cells[iface] == 2)
+      if (face_nb_cells[iface] == 2 && iface->isSubDomainBoundary())
       {
         subdomain_boundary_face_lids.add(iface.localId());
       }
     }
     m_subdomain_boundary_faces.addItems(subdomain_boundary_face_lids);
     info() << "== Case has " << m_subdomain_boundary_faces.size() << " ghost boundary faces";
+    auto nb_ghost_cell = 0;
+    auto nb_own_cell = 0;
+    ENUMERATE_(Cell,icell,mesh()->allCells())
+    {
+      if (!icell->isOwn())
+      {
+        ++nb_ghost_cell;
+        info() << "Cell " << icell->localId() << " is not owned by this subdomain but by " << icell->owner();
+      }
+      else
+        ++nb_own_cell;
+    }
+    info() << "Nb own cell " << nb_own_cell << " nb ghost cell " << nb_ghost_cell;
+  }
+
+  void _testGhostLayers()
+  {
+    // check one ghost layer (todo put in its own method)
+    auto check_2_ghost_layers = mesh()->ghostLayerMng()->nbGhostLayer() == 2;
+    ENUMERATE_(Face,iface,m_subdomain_boundary_faces)
+    {
+      auto cell_face = iface->boundaryCell();
+      if (cell_face.isOwn()) fatal() << "Subdomain boundary face " << iface->localId() << " has its boundary cell own";
+      auto connected_faces = cell_face.faces();
+      if (check_2_ghost_layers)
+      {
+        for (auto face : connected_faces)
+        {
+          for (auto cell : face.cells())
+          {
+            if (cell == cell_face) continue;
+            if (cell.isOwn()) fatal() << "Cell connected through boundary cell face cannot be own with 2 ghost layers";
+          }
+        }
+      }
+    }
   }
  public:
 
@@ -92,6 +129,7 @@ private:
 
     subDomain()->timeLoopMng()->stopComputeLoop(true);
     _computeSubdomainBoundaryFaces();
+    _testGhostLayers();
   }
 
  private:
