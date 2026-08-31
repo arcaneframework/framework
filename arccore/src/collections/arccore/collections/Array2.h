@@ -307,6 +307,14 @@ class Array2
   {
     return Span2<const DataType>(m_ptr, m_md->dim1_size, m_md->dim2_size);
   }
+  SmallSpan2<DataType> smallSpan()
+  {
+    return SmallSpan2<DataType>(m_ptr, ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size), ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size));
+  }
+  SmallSpan2<const DataType> constSmallSpan() const
+  {
+    return SmallSpan2<const DataType>(m_ptr, ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size), ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size));
+  }
 
  public:
 
