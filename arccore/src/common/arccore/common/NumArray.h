@@ -192,6 +192,12 @@ class NumArray
     copy(v.smallView());
   }
 
+  //! Constructs an instance from a MDSpan (values will be copied)
+  explicit NumArray(MDSpanType mdspan)
+  {
+    copy(mdspan);
+  }
+
   NumArray(const ThatClass& rhs)
   : m_span(rhs.m_span)
   , m_data(rhs.m_data)
