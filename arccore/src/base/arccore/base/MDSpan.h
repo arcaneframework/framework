@@ -18,6 +18,7 @@
 #include "arccore/base/ArrayBounds.h"
 #include "arccore/base/NumericTraits.h"
 #include "arccore/base/ArrayLayout.h"
+#include "arccore/base/Span2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -318,19 +319,62 @@ class MDSpan
     return { m_ptr, m_extents.totalNbElement() };
   }
 
-  constexpr SmallSpan<DataType> to1DSmallSpan() requires(Extents::rank() == 1)
+  // ARCCORE_DEPRECATED_REASON("Y2026: Use toSmallSpan() instead")
+  constexpr SmallSpan<DataType> to1DSmallSpan()
+  requires(Extents::rank() == 1)
   {
     // TODO: maybe add a test in Check mode to make sure extent0() fit in a 'Int32'
     return { _internalData(), static_cast<Int32>(extent0()) };
   }
-  constexpr SmallSpan<const DataType> to1DSmallSpan() const requires(Extents::rank() == 1)
+  // ARCCORE_DEPRECATED_REASON("Y2026: Use toSmallSpan() instead")
+  constexpr SmallSpan<const DataType> to1DSmallSpan() const
+  requires(Extents::rank() == 1)
   {
-    return to1DConstSmallSpan();
+    return toConstSmallSpan();
   }
-  constexpr SmallSpan<const DataType> to1DConstSmallSpan() const requires(Extents::rank() == 1)
+  // ARCCORE_DEPRECATED_REASON("Y2026: Use toConstSmallSpan() instead")
+  constexpr SmallSpan<const DataType> to1DConstSmallSpan() const
+  requires(Extents::rank() == 1)
   {
     // TODO: maybe add a test in Check mode to make sure extent0() fit in a 'Int32'
     return { _internalData(), static_cast<Int32>(extent0()) };
+  }
+
+
+  constexpr SmallSpan<DataType> toSmallSpan()
+  requires(Extents::rank() == 1)
+  {
+    // TODO: maybe add a test in Check mode to make sure extent0() fit in a 'Int32'
+    return { _internalData(), static_cast<Int32>(extent0()) };
+  }
+  constexpr SmallSpan<const DataType> toSmallSpan() const
+  requires(Extents::rank() == 1)
+  {
+    return toConstSmallSpan();
+  }
+  constexpr SmallSpan<const DataType> toConstSmallSpan() const
+  requires(Extents::rank() == 1)
+  {
+    // TODO: maybe add a test in Check mode to make sure extent0() fit in a 'Int32'
+    return { _internalData(), static_cast<Int32>(extent0()) };
+  }
+
+  constexpr SmallSpan2<DataType> toSmallSpan()
+  requires(Extents::rank() == 2)
+  {
+    // TODO: maybe add a test in Check mode to make sure extent0() fit in a 'Int32'
+    return { _internalData(), static_cast<Int32>(extent0()), static_cast<Int32>(extent1()) };
+  }
+  constexpr SmallSpan2<const DataType> toSmallSpan() const
+  requires(Extents::rank() == 2)
+  {
+    return toConstSmallSpan();
+  }
+  constexpr SmallSpan2<const DataType> toConstSmallSpan() const
+  requires(Extents::rank() == 2)
+  {
+    // TODO: maybe add a test in Check mode to make sure extent0() fit in a 'Int32'
+    return { _internalData(), static_cast<Int32>(extent0()), static_cast<Int32>(extent1()) };
   }
 
  private:

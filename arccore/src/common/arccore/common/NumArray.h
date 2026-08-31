@@ -652,11 +652,29 @@ class NumArray
   constexpr operator SmallSpan<const DataType>() const requires(Extents::rank() == 1) { return this->to1DSpan().constSmallView(); }
 
   //! 1D view on the instance (only if rank == 1)
-  constexpr SmallSpan<DataType> to1DSmallSpan() requires(Extents::rank() == 1) { return m_span.to1DSmallSpan(); }
+  //! ARCCORE_DEPRECATED_REASON("Y2026: Use toSmallSpan() instead")
+  constexpr SmallSpan<DataType> to1DSmallSpan() requires(Extents::rank() == 1) { return m_span.toSmallSpan(); }
   //! Constant 1D view on the instance (only if rank == 1)
-  constexpr SmallSpan<const DataType> to1DSmallSpan() const requires(Extents::rank() == 1) { return m_span.to1DSmallSpan(); }
+  //! ARCCORE_DEPRECATED_REASON("Y2026: Use toSmallSpan() instead")
+  constexpr SmallSpan<const DataType> to1DSmallSpan() const requires(Extents::rank() == 1) { return m_span.toSmallSpan(); }
   //! Constant 1D view on the instance (only if rank == 1)
-  constexpr SmallSpan<const DataType> to1DConstSmallSpan() const requires(Extents::rank() == 1) { return m_span.to1DConstSmallSpan(); }
+  //! ARCCORE_DEPRECATED_REASON("Y2026: Use toConstSmallSpan() instead")
+  constexpr SmallSpan<const DataType> to1DConstSmallSpan() const requires(Extents::rank() == 1) { return m_span.toConstSmallSpan(); }
+
+
+  //! 1D view on the instance (only if rank == 1)
+  constexpr SmallSpan<DataType> toSmallSpan() requires(Extents::rank() == 1) { return m_span.toSmallSpan(); }
+  //! Constant 1D view on the instance (only if rank == 1)
+  constexpr SmallSpan<const DataType> toSmallSpan() const requires(Extents::rank() == 1) { return m_span.toSmallSpan(); }
+  //! Constant 1D view on the instance (only if rank == 1)
+  constexpr SmallSpan<const DataType> toConstSmallSpan() const requires(Extents::rank() == 1) { return m_span.toConstSmallSpan(); }
+
+  //! 2D view on the instance (only if rank == 2)
+  constexpr SmallSpan2<DataType> toSmallSpan() requires(Extents::rank() == 2) { return m_span.toSmallSpan(); }
+  //! Constant 2D view on the instance (only if rank == 2)
+  constexpr SmallSpan2<const DataType> toSmallSpan() const requires(Extents::rank() == 2) { return m_span.toSmallSpan(); }
+  //! Constant 2D view on the instance (only if rank == 2)
+  constexpr SmallSpan2<const DataType> toConstSmallSpan() const requires(Extents::rank() == 2) { return m_span.toConstSmallSpan(); }
 
  public:
 
