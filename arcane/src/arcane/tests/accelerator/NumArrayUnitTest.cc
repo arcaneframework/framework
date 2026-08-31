@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayUnitTest.cc                                         (C) 2000-2025 */
+/* NumArrayUnitTest.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Test service for 'NumArray'.                                              */
 /*---------------------------------------------------------------------------*/
@@ -123,6 +123,8 @@ class NumArrayUnitTest
   void _executeTest3();
   void _executeTest4(eMemoryRessource mem_kind);
   void _executeTest5();
+  void _executeTest6();
+  void _executeTest7();
 
  private:
 
@@ -196,6 +198,8 @@ executeTest()
   _executeTest2();
   _executeTest3();
   _executeTest5();
+  _executeTest6();
+  _executeTest7();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -693,6 +697,68 @@ _executeTest5()
   t1.setDebugName("Bonjour");
   String str_test = "Bonjour";
   vc.areEqual(t1.debugName(), str_test, "Pas bonjour :-(");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NumArrayUnitTest::
+_executeTest6()
+{
+  // Test copy from MDSpan (constructor).
+  ValueChecker vc(A_FUNCINFO);
+
+  constexpr Int32 dim1 = 5;
+  constexpr Int32 dim2 = 4;
+
+  NumArray<Int32, MDDim2> aaa(dim1, dim2);
+
+  Span<Int32> span1d = aaa.to1DSpan();
+
+  for (Integer i = 0; i < dim1*dim2; ++i) {
+    span1d[i] = i;
+  }
+
+  NumArray<Int32, MDDim2> ddd(aaa.mdspan());
+  for (Integer i = 0; i < dim1; ++i) {
+    NumArray<Int32, MDDim1> ccc(aaa.mdspan().slice(i));
+    for (Integer j = 0; j < dim2; ++j) {
+      Integer value = i * dim2 + j;
+      if (ccc[j] != value) {
+        ARCANE_FATAL("Bad copy slice -- Expected : {0} -- Found : {1}", value, ccc[j]);
+      }
+      if (ddd(i, j) != value) {
+        ARCANE_FATAL("Bad copy -- Expected : {0} -- Found : {1}", value, ccc[j]);
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NumArrayUnitTest::
+_executeTest7()
+{
+  // Test "toSmallSpan()" method.
+  ValueChecker vc(A_FUNCINFO);
+
+  constexpr Int32 dim1 = 5;
+  constexpr Int32 dim2 = 4;
+
+  NumArray<Int32, MDDim2> aaa(dim1, dim2);
+
+  Span<Int32> span1d = aaa.to1DSpan();
+
+  for (Integer i = 0; i < dim1*dim2; ++i) {
+    span1d[i] = i;
+  }
+
+  SmallSpan2<Int32> ddd(aaa.toSmallSpan());
+
+  if (aaa.data() != ddd.data() || aaa.dim1Size() != ddd.dim1Size() || aaa.dim2Size() != ddd.dim2Size()) {
+    ARCANE_FATAL("Bad view");
+  }
 }
 
 /*---------------------------------------------------------------------------*/
