@@ -287,6 +287,16 @@ class Array2UnitTest
       _check(array.dim1Size() == 0, "Bad size (5)");
       _check(array.dim2Size() == 0, "Bad dim2size (5)");
     }
+    {
+      info() << "Test 6";
+      UniqueArray2<DataType> array;
+      array.resize(5, 8);
+      info() << array.dim1Size() << " " << array.dim2Size();
+      SmallSpan2<DataType> span = array.smallSpan();
+      _check(array.to1DSpan().data() == span.data(), "Bad ptr (6)");
+      _check(array.dim1Size() == span.dim1Size(), "Bad size (6)");
+      _check(array.dim2Size() == span.dim2Size(), "Bad dim2size (6)");
+    }
   }
   void _fill(Array2<DataType>& array)
   {
