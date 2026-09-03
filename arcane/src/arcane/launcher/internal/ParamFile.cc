@@ -40,12 +40,14 @@ namespace Arcane
     "run_opt": 0
   },
 
-  "dataset": "./dataset.arc",
   // Coucou
 
-  "common": {
-    "name": "Common",
+  "general": {
+    "file": {
+      "name": "Common"
+    },
     "arcane": {
+      "dataset": "./dataset.arc",
       "options": {
         "//meshes/mesh/filename": "aaa.msh",
         "T": 4
@@ -56,21 +58,35 @@ namespace Arcane
     }
   },
 
+  // Reserved for a next version
+  "commons": {
+  },
   "variations": {
-    "variation1": {
-      "name": "Variation1",
+  },
+
+  "cases": {
+    // Reserved symbol for names, for a next version : ":"
+    "case1": {
+      "file": {
+        "name": "Cas 1"
+      },
+
       "arcane": {
         "options": {
           "//meshes/mesh/filename": "aaa.msh",
           "T": 4
         }
       },
+
       "run_opt": {
-        "mpi": 4
+        "mpi": 2
       }
     },
-    "variation2": {
-      "name": "Variation2",
+    "case2": {
+      "file": {
+        "name": "Cas 2"
+      },
+
       "arcane": {
         "options": {
           "//meshes/mesh/filename": "bbb.msh",
@@ -82,82 +98,106 @@ namespace Arcane
 }
  */
 
+class ParamFile::Reader
+{
+ public:
+
+  void readFilePart(const JSONValue& file_part);
+  static void readArcanePart(CommandLineArguments& cargs, const JSONValue& arcane_part);
+
+ public:
+
+  StringBuilder m_name;
+  bool m_is_name_empty = true;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParamFile::Reader::
+readFilePart(const JSONValue& file_part)
+{
+  JSONValue name_var = file_part.child("name");
+  if (!name_var.isNull()) {
+    if (m_is_name_empty)
+      m_is_name_empty = false;
+    else
+      m_name += ".";
+
+    m_name += name_var.valueAsStringView();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParamFile::Reader::
+readArcanePart(CommandLineArguments& cargs, const JSONValue& arcane_part)
+{
+  const JSONValue dataset = arcane_part.child("dataset");
+  if (!dataset.isNull()) {
+    cargs.addParameterLine(String::format("CaseDatasetFileName={0}", dataset.value()));
+    //std::cout << "Dataset : " << dataset.value() << std::endl;
+  }
+
+  JSONValue arcane_params = arcane_part.child("options");
+
+  if (!arcane_params.isNull()) {
+    const JSONKeyValueList params = arcane_params.keyValueChildren();
+
+    for (auto elem : params) {
+      cargs.addParameterLine(String::format("{0}={1}", elem.name(), elem.value().valueAsStringView()));
+
+      // std::cout << "Elem : " << elem.name() << " -- val : " << elem.value().valueAsStringView() << std::endl;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ParamFile::
 editParams(const String& param_file_name, const String& variation)
 {
   CommandLineArguments cargs = ArcaneLauncher::applicationInfo().commandLineArguments();
 
-  UniqueArray<Byte> bytes;
-
-  if (platform::readAllFile(param_file_name, false, bytes)) {
-    ARCANE_FATAL("Param file not available");
-  }
-
   JSONDocument json_doc;
-  json_doc.parse(bytes, param_file_name, (JSONDocument::ParseCommentsFlag | JSONDocument::ParseNumbersAsStringsFlag));
+  {
+    UniqueArray<Byte> bytes;
+
+    if (platform::readAllFile(param_file_name, false, bytes)) {
+      ARCANE_FATAL("Param file not available");
+    }
+
+    json_doc.parse(bytes, param_file_name, (JSONDocument::ParseCommentsFlag | JSONDocument::ParseNumbersAsStringsFlag));
+  }
 
   const JSONValue root = json_doc.root();
+  Reader reader;
 
+  // "general" part
   {
-    const JSONValue dataset = root.child("dataset");
-    if (!dataset.isNull()) {
-      cargs.addParameterLine(String::format("CaseDatasetFileName={0}", dataset.value()));
-      // std::cout << "Dataset : " << dataset.value() << std::endl;
-    }
-  }
+    const JSONValue cases = root.child("general");
+    if (!cases.isNull()) {
+      // std::cout << "General part" << std::endl;
 
-  StringBuilder name;
-
-  {
-    JSONValue variations = root.child("common");
-    if (!variations.isNull()) {
-      {
-        JSONValue name_var = variations.child("name");
-        if (!name_var.isNull()) {
-          name += name_var.valueAsStringView();
-          name += ".";
-        }
-      }
-
-      JSONValue arcane_params = variations.child("arcane").child("options");
-      if (!arcane_params.isNull()) {
-        const JSONKeyValueList params = arcane_params.keyValueChildren();
-
-        for (auto elem : params) {
-          cargs.addParameterLine( String::format("{0}={1}", elem.name(), elem.value().valueAsStringView()));
-
-          // std::cout << "Elem : " << elem.name() << " -- val : " << elem.value().valueAsStringView() << std::endl;
-        }
-      }
+      reader.readFilePart(cases.child("file"));
+      Reader::readArcanePart(cargs, cases.child("arcane"));
     }
   }
 
   if (!variation.empty()) {
-    const JSONValue variations = root.child("variations");
-    if (!variations.isNull()) {
-      const JSONValue asked_var = variations.expectedChild(variation);
+    const JSONValue cases = root.child("cases").expectedChild(variation);
+    // std::cout << "Variation part : " << variation << std::endl;
 
-      {
-        const JSONValue name_var = asked_var.child("name");
-        if (!name_var.isNull()) {
-          name += name_var.valueAsStringView();
-        }
-      }
-
-      const JSONValue arcane_params = asked_var.child("arcane").child("options");
-      if (!arcane_params.isNull()) {
-        const JSONKeyValueList params = arcane_params.keyValueChildren();
-
-        for (auto elem : params) {
-          cargs.addParameterLine( String::format("{0}={1}", elem.name(), elem.value().valueAsStringView()));
-
-          // std::cout << "Elem : " << elem.name() << " -- val : " << elem.value().valueAsStringView() << std::endl;
-        }
-      }
-    }
+    reader.readFilePart(cases.child("file"));
+    Reader::readArcanePart(cargs, cases.child("arcane"));
   }
 
-  // std::cout << "Name variation : " << name << std::endl;
+  // std::cout << "Name variation : " << reader.m_name << std::endl;
 
   // StringList names;
   // StringList values;
