@@ -43,7 +43,7 @@ set(DOXYGEN_FULL_SIDEBAR
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_PROJECT_LOGO)
+if (NOT DEFINED DOXYGEN_PROJECT_LOGO)
   set(DOXYGEN_PROJECT_LOGO
     "${ADOC_SOURCE_DIR}/theme/img/arcane_framework_small.webp"
   )
@@ -51,7 +51,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT ADOC_PROJECT_ICON)
+if (NOT DEFINED ADOC_PROJECT_ICON)
   set(ADOC_PROJECT_ICON
     "${ADOC_SOURCE_DIR}/theme/img/logo_arcane.svg"
   )
@@ -59,7 +59,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_HTML_HEADER AND ${ADOC_LEGACY_THEME} STREQUAL "ON")
+if (NOT DEFINED DOXYGEN_HTML_HEADER AND ${ADOC_LEGACY_THEME} STREQUAL "ON")
   set(DOXYGEN_HTML_HEADER
     "${ADOC_SOURCE_DIR}/theme/html/header_no_theme.html"
   )
@@ -71,7 +71,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_HTML_FOOTER)
+if (NOT DEFINED DOXYGEN_HTML_FOOTER)
   set(DOXYGEN_HTML_FOOTER
     "${ADOC_SOURCE_DIR}/theme/html/footer.html"
   )
@@ -85,7 +85,7 @@ set(DOXYGEN_EXCLUDE_PATTERNS ${DOXYGEN_EXCLUDE_PATTERNS}
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_CREATE_SUBDIRS)
+if (NOT DEFINED DOXYGEN_CREATE_SUBDIRS)
   set(DOXYGEN_CREATE_SUBDIRS
     "YES"
   )
@@ -129,7 +129,7 @@ set(DOXYGEN_ABBREVIATE_BRIEF ${DOXYGEN_ABBREVIATE_BRIEF}
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_FULL_PATH_NAMES)
+if (NOT DEFINED DOXYGEN_FULL_PATH_NAMES)
   set(DOXYGEN_FULL_PATH_NAMES
     "NO"
   )
@@ -137,7 +137,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_TAB_SIZE)
+if (NOT DEFINED DOXYGEN_TAB_SIZE)
   set(DOXYGEN_TAB_SIZE
     "2"
   )
@@ -152,7 +152,7 @@ set(DOXYGEN_EXTENSION_MAPPING ${DOXYGEN_EXTENSION_MAPPING}
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_TOC_INCLUDE_HEADINGS)
+if (NOT DEFINED DOXYGEN_TOC_INCLUDE_HEADINGS)
   set(DOXYGEN_TOC_INCLUDE_HEADINGS
     "5"
   )
@@ -160,7 +160,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_TYPEDEF_HIDES_STRUCT)
+if (NOT DEFINED DOXYGEN_TYPEDEF_HIDES_STRUCT)
   set(DOXYGEN_TYPEDEF_HIDES_STRUCT
     "YES"
   )
@@ -168,7 +168,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_NUM_PROC_THREADS)
+if (NOT DEFINED DOXYGEN_NUM_PROC_THREADS)
   set(DOXYGEN_NUM_PROC_THREADS
     "0"
   )
@@ -176,7 +176,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_TIMESTAMP)
+if (NOT DEFINED DOXYGEN_TIMESTAMP)
   set(DOXYGEN_TIMESTAMP
     "YES"
   )
@@ -184,7 +184,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_CASE_SENSE_NAMES)
+if (NOT DEFINED DOXYGEN_CASE_SENSE_NAMES)
   set(DOXYGEN_CASE_SENSE_NAMES
     "YES"
   )
@@ -192,7 +192,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_GENERATE_TESTLIST)
+if (NOT DEFINED DOXYGEN_GENERATE_TESTLIST)
   set(DOXYGEN_GENERATE_TESTLIST
     "NO"
   )
@@ -200,7 +200,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_GENERATE_BUGLIST)
+if (NOT DEFINED DOXYGEN_GENERATE_BUGLIST)
   set(DOXYGEN_GENERATE_BUGLIST
     "NO"
   )
@@ -219,7 +219,7 @@ set(DOXYGEN_FILE_PATTERNS ${DOXYGEN_FILE_PATTERNS}
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_SOURCE_BROWSER)
+if (NOT DEFINED DOXYGEN_SOURCE_BROWSER)
   set(DOXYGEN_SOURCE_BROWSER
     "YES"
   )
@@ -227,7 +227,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_REFERENCED_BY_RELATION)
+if (NOT DEFINED DOXYGEN_REFERENCED_BY_RELATION)
   set(DOXYGEN_REFERENCED_BY_RELATION
     "YES"
   )
@@ -235,7 +235,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_REFERENCES_RELATION)
+if (NOT DEFINED DOXYGEN_REFERENCES_RELATION)
   set(DOXYGEN_REFERENCES_RELATION
     "YES"
   )
@@ -243,7 +243,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_HTML_COLORSTYLE)
+if (NOT DEFINED DOXYGEN_HTML_COLORSTYLE)
   set(DOXYGEN_HTML_COLORSTYLE
     "TOGGLE"
   )
@@ -251,7 +251,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_HTML_DYNAMIC_SECTIONS)
+if (NOT DEFINED DOXYGEN_HTML_DYNAMIC_SECTIONS)
   set(DOXYGEN_HTML_DYNAMIC_SECTIONS
     "YES"
   )
@@ -259,7 +259,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_HTML_FORMULA_FORMAT)
+if (NOT DEFINED DOXYGEN_HTML_FORMULA_FORMAT)
   set(DOXYGEN_HTML_FORMULA_FORMAT
     "svg"
   )
@@ -285,7 +285,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_MACRO_EXPANSION)
+if (NOT DEFINED DOXYGEN_MACRO_EXPANSION)
   set(DOXYGEN_MACRO_EXPANSION
     "YES"
   )
@@ -293,7 +293,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_EXPAND_ONLY_PREDEF)
+if (NOT DEFINED DOXYGEN_EXPAND_ONLY_PREDEF)
   set(DOXYGEN_EXPAND_ONLY_PREDEF
     "YES"
   )
@@ -301,7 +301,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_SKIP_FUNCTION_MACROS)
+if (NOT DEFINED DOXYGEN_SKIP_FUNCTION_MACROS)
   set(DOXYGEN_SKIP_FUNCTION_MACROS
     "NO"
   )
@@ -309,7 +309,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_HAVE_DOT)
+if (NOT DEFINED DOXYGEN_HAVE_DOT)
   set(DOXYGEN_HAVE_DOT
     "YES"
   )
@@ -317,7 +317,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_UML_LOOK)
+if (NOT DEFINED DOXYGEN_UML_LOOK)
   set(DOXYGEN_UML_LOOK
     "YES"
   )
@@ -325,7 +325,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_DOT_IMAGE_FORMAT)
+if (NOT DEFINED DOXYGEN_DOT_IMAGE_FORMAT)
   set(DOXYGEN_DOT_IMAGE_FORMAT
     "svg"
   )
@@ -333,7 +333,7 @@ endif ()
 
 # ----------------------------------------------------------------------------
 
-if (NOT DOXYGEN_INTERACTIVE_SVG)
+if (NOT DEFINED DOXYGEN_INTERACTIVE_SVG)
   set(DOXYGEN_INTERACTIVE_SVG
     "YES"
   )
