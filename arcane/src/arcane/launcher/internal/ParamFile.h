@@ -27,6 +27,10 @@ namespace Arcane
 
 class ARCANE_LAUNCHER_EXPORT ParamFile
 {
+ private:
+
+  class Reader;
+
  public:
 
   static void editParams(const String& param_file_name, const String& variation);
