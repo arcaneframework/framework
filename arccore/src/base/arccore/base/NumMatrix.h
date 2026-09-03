@@ -151,13 +151,13 @@ class NumMatrix
   }
 
   //! Conversion to Real2x2
-  operator Real2x2() const requires(isSquare2())
+  operator Real2x2() const requires(RowSize == 2 && ColumnSize == 2)
   {
     return Real2x2::fromLines(m_values[0], m_values[1], m_values[2], m_values[3]);
   }
 
   //! Conversion to Real3x3
-  constexpr operator Real3x3() const requires(isSquare3())
+  constexpr operator Real3x3() const requires(RowSize == 3 && ColumnSize == 3)
   {
     return Real3x3(constView());
   }
