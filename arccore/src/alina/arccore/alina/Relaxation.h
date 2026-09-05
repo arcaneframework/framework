@@ -907,7 +907,7 @@ struct ILU0Relaxation
 
     auto D = std::make_shared<numa_vector<value_type>>(n, false);
 
-    std::vector<value_type*> work(n, NULL);
+    UniqueArray<value_type*> work(n, nullptr);
 
     for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
       ptrdiff_t row_beg = A.ptr[i];
@@ -988,7 +988,7 @@ struct ILU0Relaxation
 
       // Refresh work
       for (ptrdiff_t j = row_beg; j < row_end; ++j)
-        work[A.col[j]] = NULL;
+        work[A.col[j]] = nullptr;
     }
 
     L->setNbNonZero(Lhead);
@@ -1097,23 +1097,23 @@ struct ILUKRelaxation
 
     size_t Anz = backend::nonzeros(A);
 
-    std::vector<ptrdiff_t> Lptr;
+    UniqueArray<ptrdiff_t> Lptr;
     Lptr.reserve(n + 1);
     Lptr.push_back(0);
-    std::vector<ptrdiff_t> Lcol;
+    UniqueArray<ptrdiff_t> Lcol;
     Lcol.reserve(Anz / 3);
-    std::vector<value_type> Lval;
+    UniqueArray<value_type> Lval;
     Lval.reserve(Anz / 3);
 
-    std::vector<ptrdiff_t> Uptr;
+    UniqueArray<ptrdiff_t> Uptr;
     Uptr.reserve(n + 1);
     Uptr.push_back(0);
-    std::vector<ptrdiff_t> Ucol;
+    UniqueArray<ptrdiff_t> Ucol;
     Ucol.reserve(Anz / 3);
-    std::vector<value_type> Uval;
+    UniqueArray<value_type> Uval;
     Uval.reserve(Anz / 3);
 
-    std::vector<int> Ulev;
+    UniqueArray<int> Ulev;
     Ulev.reserve(Anz / 3);
 
     auto D = std::make_shared<numa_vector<value_type>>(n, false);
@@ -1236,13 +1236,13 @@ struct ILUKRelaxation
       }
     };
 
-    typedef std::priority_queue<int, std::vector<int>, comp_indices>
+    typedef std::priority_queue<int, UniqueArray<int>, comp_indices>
     priority_queue;
 
     int lfil;
 
     std::deque<nonzero> nz;
-    std::vector<ptrdiff_t> idx;
+    UniqueArray<ptrdiff_t> idx;
     priority_queue q;
 
     ptrdiff_t dia;
@@ -1324,7 +1324,7 @@ namespace detail
     C_ptr[0] = 0;
 
     arccoreParallelFor(0, A.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      std::vector<ptrdiff_t> marker(B.ncols, -1);
+      UniqueArray<ptrdiff_t> marker(B.ncols, -1);
 
       for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
         ptrdiff_t C_cols = 0;
@@ -1347,7 +1347,7 @@ namespace detail
     auto C_col = C->col.data();
 
     arccoreParallelFor(0, A.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      std::vector<ptrdiff_t> marker(B.ncols, -1);
+      UniqueArray<ptrdiff_t> marker(B.ncols, -1);
 
       for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
         ptrdiff_t row_beg = C_ptr[ia];
@@ -1685,9 +1685,9 @@ struct ILUTRelaxation
 
     struct comp_indices
     {
-      const std::vector<nonzero>& nz;
+      const UniqueArray<nonzero>& nz;
 
-      comp_indices(const std::vector<nonzero>& nz)
+      comp_indices(const UniqueArray<nonzero>& nz)
       : nz(nz)
       {}
 
@@ -1697,10 +1697,10 @@ struct ILUTRelaxation
       }
     };
 
-    typedef std::priority_queue<int, std::vector<int>, comp_indices> priority_queue;
+    typedef std::priority_queue<int, UniqueArray<int>, comp_indices> priority_queue;
 
-    std::vector<nonzero> nz;
-    std::vector<ptrdiff_t> idx;
+    UniqueArray<nonzero> nz;
+    UniqueArray<ptrdiff_t> idx;
     priority_queue q;
 
     ptrdiff_t dia;
@@ -1732,12 +1732,12 @@ struct ILUTRelaxation
       return nz[idx[i]].val;
     }
 
-    typename std::vector<nonzero>::iterator begin()
+    typename UniqueArray<nonzero>::iterator begin()
     {
       return nz.begin();
     }
 
-    typename std::vector<nonzero>::iterator end()
+    typename UniqueArray<nonzero>::iterator end()
     {
       return nz.end();
     }
@@ -1811,7 +1811,7 @@ struct ILUTRelaxation
                  ptrdiff_t& Uhead, build_matrix& U,
                  numa_vector<value_type>& D)
     {
-      typedef typename std::vector<nonzero>::iterator ptr;
+      typedef typename UniqueArray<nonzero>::iterator ptr;
 
       ptr b = nz.begin();
       ptr e = nz.end();
@@ -1982,9 +1982,9 @@ struct SPAI1Relaxation
     auto Ainv = std::make_shared<Matrix>(A);
 
     arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      std::vector<ptrdiff_t> marker(m, -1);
-      std::vector<ptrdiff_t> I, J;
-      std::vector<value_type> B, ek;
+      UniqueArray<ptrdiff_t> marker(m, -1);
+      UniqueArray<ptrdiff_t> I, J;
+      UniqueArray<value_type> B, ek;
       Alina::detail::QRFactorization<value_type> qr;
 
       for (ptrdiff_t i = begin; i < (begin + size); ++i) {

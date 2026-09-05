@@ -96,8 +96,8 @@ struct DistributedPMISAggregation
   : prm(prm)
   {
     ptrdiff_t n = A.loc_rows();
-    std::vector<ptrdiff_t> state(n);
-    std::vector<int> owner(n);
+    UniqueArray<ptrdiff_t> state(n);
+    UniqueArray<int> owner(n);
 
     if (prm.block_size == 1) {
       conn = conn_strength(A, prm.eps_strong);
@@ -119,8 +119,8 @@ struct DistributedPMISAggregation
 
       auto conn_pw = conn_strength(A_pw, prm.eps_strong);
 
-      std::vector<ptrdiff_t> state_pw(np);
-      std::vector<int> owner_pw(np);
+      UniqueArray<ptrdiff_t> state_pw(np);
+      UniqueArray<int> owner_pw(np);
 
       ptrdiff_t naggr = aggregates(*conn_pw, state_pw, owner_pw);
 
@@ -163,7 +163,7 @@ struct DistributedPMISAggregation
 
     // Build mapping from global to local column numbers in the remote part of
     // the square matrix.
-    std::vector<ptrdiff_t> rem_cols(A_rem.nbNonZero() + A_nbr.nbNonZero());
+    UniqueArray<ptrdiff_t> rem_cols(A_rem.nbNonZero() + A_nbr.nbNonZero());
 
     std::copy(A_nbr.col.data(), A_nbr.col.data() + A_nbr.nbNonZero(),
               std::copy(A_rem.col.data(), A_rem.col.data() + A_rem.nbNonZero(), rem_cols.begin()));
@@ -194,8 +194,8 @@ struct DistributedPMISAggregation
 
     ARCCORE_ALINA_TIC("analyze");
     arccoreParallelFor(0, A_rows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      std::vector<ptrdiff_t> loc_marker(A_rows, -1);
-      std::vector<ptrdiff_t> rem_marker(n_rem_cols, -1);
+      UniqueArray<ptrdiff_t> loc_marker(A_rows, -1);
+      UniqueArray<ptrdiff_t> rem_marker(n_rem_cols, -1);
 
       for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
         ptrdiff_t loc_cols = 0;
@@ -265,8 +265,8 @@ struct DistributedPMISAggregation
 
     ARCCORE_ALINA_TIC("compute");
     arccoreParallelFor(0, A_rows, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      std::vector<ptrdiff_t> loc_marker(A_rows, -1);
-      std::vector<ptrdiff_t> rem_marker(n_rem_cols, -1);
+      UniqueArray<ptrdiff_t> loc_marker(A_rows, -1);
+      UniqueArray<ptrdiff_t> rem_marker(n_rem_cols, -1);
 
       for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
         ptrdiff_t loc_beg = S_loc.ptr[ia];
@@ -354,13 +354,14 @@ struct DistributedPMISAggregation
     auto d = diagonal(A_loc);
     numa_vector<val_type>& D = *d;
 
-    std::vector<val_type> D_loc(C.send.count());
-    std::vector<val_type> D_rem(C.recv.count());
+    UniqueArray<val_type> D_loc(C.send.count());
+    UniqueArray<val_type> D_rem(C.recv.count());
 
     for (size_t i = 0, nv = C.send.count(); i < nv; ++i)
       D_loc[i] = D[C.send.col[i]];
 
-    C.exchange(&D_loc[0], &D_rem[0]);
+    if (D_loc.size() != 0)
+      C.exchange(&D_loc[0], &D_rem[0]);
 
     auto s_loc = std::make_shared<bool_matrix>();
     auto s_rem = std::make_shared<bool_matrix>();
@@ -422,8 +423,8 @@ struct DistributedPMISAggregation
   }
 
   ptrdiff_t aggregates(const DistributedMatrix<bool_backend>& A,
-                       std::vector<ptrdiff_t>& loc_state,
-                       std::vector<int>& loc_owner)
+                       UniqueArray<ptrdiff_t>& loc_state,
+                       UniqueArray<int>& loc_owner)
   {
     ARCCORE_ALINA_TIC("PMIS");
     static const int tag_exc_cnt = 4001;
@@ -446,10 +447,10 @@ struct DistributedPMISAggregation
 
     // 2. Apply PMIS algorithm to the symbolic square.
     ptrdiff_t n_undone = 0;
-    std::vector<ptrdiff_t> rem_state(Sp.recv.count(), DistributedPMISAggregation::undone);
-    std::vector<int> rem_owner(Sp.recv.count(), -1);
-    std::vector<ptrdiff_t> send_state(Sp.send.count());
-    std::vector<int> send_owner(Sp.send.count());
+    UniqueArray<ptrdiff_t> rem_state(Sp.recv.count(), DistributedPMISAggregation::undone);
+    UniqueArray<int> rem_owner(Sp.recv.count(), -1);
+    UniqueArray<ptrdiff_t> send_state(Sp.send.count());
+    UniqueArray<int> send_owner(Sp.send.count());
 
     // Remove lonely nodes.
     std::atomic<ptrdiff_t> atomic_n_undone = 0;
@@ -475,17 +476,18 @@ struct DistributedPMISAggregation
     // Exchange state
     for (ptrdiff_t i = 0, m = Sp.send.count(); i < m; ++i)
       send_state[i] = loc_state[Sp.send.col[i]];
-    Sp.exchange(&send_state[0], &rem_state[0]);
+    if (send_state.size() != 0)
+      Sp.exchange(&send_state[0], &rem_state[0]);
 
-    std::vector<std::vector<ptrdiff_t>> send_pts(Sp.recv.nbr.size());
-    std::vector<ptrdiff_t> recv_pts;
+    UniqueArray<UniqueArray<ptrdiff_t>> send_pts(Sp.recv.nbr.size());
+    UniqueArray<ptrdiff_t> recv_pts;
 
     UniqueArray<MessagePassing::Request> send_cnt_req(Sp.recv.nbr.size());
     UniqueArray<MessagePassing::Request> send_pts_req(Sp.recv.nbr.size());
 
     ptrdiff_t naggr = 0;
 
-    std::vector<ptrdiff_t> nbr;
+    UniqueArray<ptrdiff_t> nbr;
 
     while (true) {
       for (size_t i = 0; i < Sp.recv.nbr.size(); ++i)
@@ -636,7 +638,8 @@ struct DistributedPMISAggregation
 
       for (ptrdiff_t i = 0, m = Sp.send.count(); i < m; ++i)
         send_state[i] = loc_state[Sp.send.col[i]];
-      Sp.exchange(&send_state[0], &rem_state[0]);
+      if (send_state.size() != 0)
+        Sp.exchange(&send_state[0], &rem_state[0]);
 
       if (0 == comm.reduceSum(n_undone))
         break;
@@ -647,9 +650,10 @@ struct DistributedPMISAggregation
     ARCCORE_ALINA_TIC("drop empty aggregates");
     for (ptrdiff_t i = 0, m = Sp.send.count(); i < m; ++i)
       send_owner[i] = loc_owner[Sp.send.col[i]];
-    Sp.exchange(&send_owner[0], &rem_owner[0]);
+    if (send_owner.size() != 0)
+      Sp.exchange(&send_owner[0], &rem_owner[0]);
 
-    std::vector<ptrdiff_t> new_id(naggr + 1, 0);
+    UniqueArray<ptrdiff_t> new_id(naggr + 1, 0);
     for (ptrdiff_t i = 0; i < n; ++i) {
       if (loc_owner[i] == comm.rank && loc_state[i] >= 0)
         new_id[loc_state[i] + 1] = 1;
@@ -730,7 +734,7 @@ struct DistributedPMISAggregation
 
   std::shared_ptr<matrix>
   tentative_prolongation(mpi_communicator comm, ptrdiff_t n, ptrdiff_t naggr,
-                         std::vector<ptrdiff_t>& state, std::vector<int>& owner)
+                         UniqueArray<ptrdiff_t>& state, UniqueArray<int>& owner)
   {
     auto p_loc = std::make_shared<build_matrix>();
     auto p_rem = std::make_shared<build_matrix>();
@@ -742,11 +746,11 @@ struct DistributedPMISAggregation
     if (int null_cols = prm.nullspace.cols) {
       ptrdiff_t nba = naggr / prm.block_size;
 
-      std::vector<ptrdiff_t> fdom = comm.exclusive_sum(n);
-      std::vector<ptrdiff_t> cdom = comm.exclusive_sum(naggr);
+      UniqueArray<ptrdiff_t> fdom = comm.exclusive_sum(n);
+      UniqueArray<ptrdiff_t> cdom = comm.exclusive_sum(naggr);
 
-      std::vector<int> scounts(comm.size, 0);
-      std::vector<int> rcounts(comm.size);
+      UniqueArray<int> scounts(comm.size, 0);
+      UniqueArray<int> rcounts(comm.size);
 
       // Precompute the shape of the prolongation operator.
       // Each row contains exactly nullspace.cols non-zero entries.
@@ -791,14 +795,14 @@ struct DistributedPMISAggregation
           ++rnbr;
       }
 
-      std::vector<int> send_nbr;
+      UniqueArray<int> send_nbr;
       send_nbr.reserve(snbr);
-      std::vector<int> recv_nbr;
+      UniqueArray<int> recv_nbr;
       recv_nbr.reserve(rnbr);
-      std::vector<int> send_ptr;
+      UniqueArray<int> send_ptr;
       send_ptr.reserve(snbr + 1);
       send_ptr.push_back(0);
-      std::vector<int> recv_ptr;
+      UniqueArray<int> recv_ptr;
       recv_ptr.reserve(rnbr + 1);
       recv_ptr.push_back(0);
 
@@ -816,16 +820,16 @@ struct DistributedPMISAggregation
       int send_dofs = send_ptr.back();
       int recv_dofs = recv_ptr.back();
 
-      std::vector<ptrdiff_t> send_agg(send_dofs); // IDs of the aggregates we are sending
-      std::vector<ptrdiff_t> send_dof(send_dofs); // DOFs included in the aggregates
-      std::vector<double> send_row(send_dofs * null_cols); // Rows of the nullspace matrix corresponding to the DOFs
+      UniqueArray<ptrdiff_t> send_agg(send_dofs); // IDs of the aggregates we are sending
+      UniqueArray<ptrdiff_t> send_dof(send_dofs); // DOFs included in the aggregates
+      UniqueArray<double> send_row(send_dofs * null_cols); // Rows of the nullspace matrix corresponding to the DOFs
 
-      std::vector<ptrdiff_t> recv_agg(recv_dofs); // IDs of the aggregates we are receiving
-      std::vector<ptrdiff_t> recv_dof(recv_dofs); // DOFs included in the aggregates
-      std::vector<double> recv_row(recv_dofs * null_cols); // Rows of the nullspace matrix corresponding to the DOFs
+      UniqueArray<ptrdiff_t> recv_agg(recv_dofs); // IDs of the aggregates we are receiving
+      UniqueArray<ptrdiff_t> recv_dof(recv_dofs); // DOFs included in the aggregates
+      UniqueArray<double> recv_row(recv_dofs * null_cols); // Rows of the nullspace matrix corresponding to the DOFs
 
       // Prepare the data to send
-      std::vector<ptrdiff_t> send_rank_ptr(comm.size + 1);
+      UniqueArray<ptrdiff_t> send_rank_ptr(comm.size + 1);
       send_rank_ptr[0] = 0;
       std::partial_sum(scounts.begin(), scounts.end(), send_rank_ptr.begin() + 1);
       for (ptrdiff_t i = 0; i < n; ++i) {
@@ -880,7 +884,7 @@ struct DistributedPMISAggregation
       // Sort the fine-level points by the aggregate number.
       // The order vector contains tuples of (aggr, dof, src, dst),
       // where src points to a row in B, and dst points to a row in P
-      std::vector<std::tuple<ptrdiff_t, ptrdiff_t, double*, value_type*>> order;
+      UniqueArray<std::tuple<ptrdiff_t, ptrdiff_t, double*, value_type*>> order;
       order.reserve(loc_dofs + recv_dofs);
       for (ptrdiff_t i = 0; i < n; ++i) {
         auto s = state[i];
@@ -900,19 +904,19 @@ struct DistributedPMISAggregation
       }
       std::sort(order.begin(), order.end());
 
-      std::vector<ptrdiff_t> aggr_ptr(nba + 1, 0);
+      UniqueArray<ptrdiff_t> aggr_ptr(nba + 1, 0);
       for (size_t i = 0; i < order.size(); ++i)
         ++aggr_ptr[std::get<0>(order[i]) + 1];
       std::partial_sum(aggr_ptr.begin(), aggr_ptr.end(), aggr_ptr.begin());
 
       // Compute the tentative prolongation operator and null-space vectors
       // for the coarser level.
-      std::vector<double> Bnew;
+      UniqueArray<double> Bnew;
       Bnew.resize(nba * null_cols * null_cols);
 
       arccoreParallelFor(0, nba, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
         Alina::detail::QRFactorization<double> qr;
-        std::vector<double> Bpart;
+        UniqueArray<double> Bpart;
 
         for (ptrdiff_t i = begin; i < (begin + size); ++i) {
           auto aggr_beg = aggr_ptr[i];
@@ -1009,7 +1013,7 @@ struct DistributedPMISAggregation
       std::swap(prm.nullspace.B, Bnew);
     }
     else {
-      std::vector<ptrdiff_t> dom = comm.exclusive_sum(naggr);
+      UniqueArray<ptrdiff_t> dom = comm.exclusive_sum(naggr);
 
       P_loc.set_size(n, naggr, true);
       P_rem.set_size(n, 0, true);
@@ -1069,8 +1073,8 @@ struct DistributedPMISAggregation
     C.val.resize(A.nbNonZero());
 
     arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      std::vector<ptrdiff_t> j(block_size);
-      std::vector<ptrdiff_t> e(block_size);
+      UniqueArray<ptrdiff_t> j(block_size);
+      UniqueArray<ptrdiff_t> e(block_size);
 
       for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
         ptrdiff_t ia = ip * block_size;
@@ -1107,9 +1111,9 @@ struct DistributedPMISAggregation
     C.col.resize(C.nbNonZero());
 
     arccoreParallelFor(0, np, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      std::vector<ptrdiff_t> j(block_size);
-      std::vector<ptrdiff_t> e(block_size);
-      std::vector<ptrdiff_t> h(block_size);
+      UniqueArray<ptrdiff_t> j(block_size);
+      UniqueArray<ptrdiff_t> e(block_size);
+      UniqueArray<ptrdiff_t> h(block_size);
 
       for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
         ptrdiff_t ia = ip * block_size;

@@ -57,7 +57,7 @@ class DistributedDirectSolverBase
     this->comm = comm;
     n = Astrip.nbRow();
 
-    std::vector<int> domain = comm.exclusive_sum(n);
+    UniqueArray<int> domain = comm.exclusive_sum(n);
     std::vector<int> active;
     active.reserve(comm.size);
 
