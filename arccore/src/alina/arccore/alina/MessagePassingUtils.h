@@ -108,10 +108,10 @@ struct mpi_communicator
 
   /// Exclusive sum over mpi communicator
   template <typename T>
-  std::vector<T> exclusive_sum(T n) const
+  UniqueArray<T> exclusive_sum(T n) const
   {
     // TODO: Use scan.
-    std::vector<T> v(size + 1);
+    UniqueArray<T> v(size + 1);
     v[0] = 0;
     T v0 = n;
     ConstArrayView<T> v0_view(1, &v0);

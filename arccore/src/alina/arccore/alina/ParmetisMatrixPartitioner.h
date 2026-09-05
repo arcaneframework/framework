@@ -90,7 +90,7 @@ struct ParmetisMatrixPartitioner
 
     mpi_communicator comm = A.comm();
     ptrdiff_t n = A.loc_rows();
-    std::vector<ptrdiff_t> row_dom = comm.exclusive_sum(n);
+    UniqueArray<ptrdiff_t> row_dom = comm.exclusive_sum(n);
 
     int non_empty = 0;
     ptrdiff_t min_n = std::numeric_limits<ptrdiff_t>::max();
@@ -195,7 +195,7 @@ struct ParmetisMatrixPartitioner
 
     if (active) {
       mpi_communicator sc(scomm);
-      std::vector<idx_t> vtxdist = sc.exclusive_sum(n);
+      UniqueArray<idx_t> vtxdist = sc.exclusive_sum(n);
 
       sc.check(
       METIS_OK == ParMETIS_V3_PartKway(&vtxdist[0], &ptr[0], &col[0], NULL, NULL, &wgtflag, &numflag, &ncon, &npart, &tpwgts[0], &ubvec[0], &options, &edgecut, &part[0], &scomm),

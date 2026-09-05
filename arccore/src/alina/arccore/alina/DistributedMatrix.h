@@ -101,7 +101,7 @@ class CommunicationPattern
   {
     ARCCORE_ALINA_TIC("communication pattern");
     // Get domain boundaries
-    std::vector<ptrdiff_t> domain = comm.exclusive_sum(n_loc_cols);
+    UniqueArray<ptrdiff_t> domain = comm.exclusive_sum(n_loc_cols);
     loc_beg = domain[comm.rank];
 
     // Renumber remote columns,
@@ -410,7 +410,7 @@ class DistributedMatrix
   , n_loc_nonzeros(backend::nonzeros(A))
   {
     // Get sizes of each domain in comm.
-    std::vector<ptrdiff_t> domain = comm.exclusive_sum(n_loc_cols);
+    UniqueArray<ptrdiff_t> domain = comm.exclusive_sum(n_loc_cols);
     ptrdiff_t loc_beg = domain[comm.rank];
     ptrdiff_t loc_end = domain[comm.rank + 1];
 
@@ -666,7 +666,7 @@ transpose(const DistributedMatrix<Backend>& A)
   build_matrix& t_rem = *t_ptr;
 
   // Shift to global numbering:
-  std::vector<ptrdiff_t> domain = comm.exclusive_sum(ncols);
+  UniqueArray<ptrdiff_t> domain = comm.exclusive_sum(ncols);
   ptrdiff_t loc_beg = domain[comm.rank];
   for (size_t i = 0; i < t_rem.nbNonZero(); ++i)
     t_rem.col[i] += loc_beg;

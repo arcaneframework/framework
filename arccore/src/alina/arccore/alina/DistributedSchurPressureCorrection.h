@@ -209,8 +209,8 @@ class DistributedSchurPressureCorrection
     // We know what points each of our neighbors needs from us;
     // and we know if those points are pressure or flow.
     // We can immediately provide them with our renumbering scheme.
-    std::vector<ptrdiff_t> pdomain = comm.exclusive_sum(np);
-    std::vector<ptrdiff_t> udomain = comm.exclusive_sum(nu);
+    UniqueArray<ptrdiff_t> pdomain = comm.exclusive_sum(np);
+    UniqueArray<ptrdiff_t> udomain = comm.exclusive_sum(nu);
     ptrdiff_t p_beg = pdomain[comm.rank];
     ptrdiff_t u_beg = udomain[comm.rank];
 

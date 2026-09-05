@@ -35,10 +35,10 @@ using namespace Arcane;
 struct renumbering
 {
   const DomainPartition<3>& part;
-  const std::vector<ptrdiff_t>& dom;
+  const UniqueArray<ptrdiff_t>& dom;
 
   renumbering(const DomainPartition<3>& p,
-              const std::vector<ptrdiff_t>& d)
+              const UniqueArray<ptrdiff_t>& d)
   : part(p)
   , dom(d)
   {}
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
   DomainPartition<3> part(lo, hi, world.size);
   ptrdiff_t chunk = part.size(world.rank);
 
-  std::vector<ptrdiff_t> domain = world.exclusive_sum(chunk);
+  UniqueArray<ptrdiff_t> domain = world.exclusive_sum(chunk);
 
   lo = part.domain(world.rank).min_corner();
   hi = part.domain(world.rank).max_corner();

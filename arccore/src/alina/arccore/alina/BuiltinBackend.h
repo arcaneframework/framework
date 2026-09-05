@@ -168,6 +168,10 @@ struct is_builtin_vector<std::vector<V>> : std::is_arithmetic<V>
 {};
 
 template <class V>
+struct is_builtin_vector<UniqueArray<V>> : std::is_arithmetic<V>
+{};
+
+template <class V>
 struct is_builtin_vector<SmallSpan<V>> : std::true_type
 {};
 

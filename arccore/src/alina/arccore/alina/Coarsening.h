@@ -94,7 +94,7 @@ struct nullspace_params
      * The vectors are represented as columns of a 2D matrix stored in
      * row-major order.
      */
-  std::vector<double> B;
+  UniqueArray<double> B;
 
   nullspace_params()
   : cols(0)
@@ -188,7 +188,7 @@ struct plain_aggregates
    * This is just 'values' part of CRS matrix. 'col' and 'ptr' arrays are
    * borrowed from the system matrix.
    */
-  std::vector<char> strong_connection;
+  UniqueArray<char> strong_connection;
 
   /*!
    * \brief Aggerate id that each fine-level variable belongs to.
@@ -196,7 +196,7 @@ struct plain_aggregates
    * When id[i] < 0, then variable i stays at the fine level (this could be
    * the case for a Dirichelt condition variable).
    */
-  std::vector<ptrdiff_t> id;
+  UniqueArray<ptrdiff_t> id;
 
   /*!
    * \brief Constructs aggregates for a given matrix.
@@ -250,7 +250,7 @@ struct plain_aggregates
       id[i] = state;
     }
 
-    std::vector<ptrdiff_t> neib;
+    UniqueArray<ptrdiff_t> neib;
     neib.reserve(max_neib);
 
     // Perform plain aggregation
@@ -290,7 +290,7 @@ struct plain_aggregates
 
     // Some of the aggregates could potentially vanish during expansion
     // step (*) above. We need to exclude those and renumber the rest.
-    std::vector<ptrdiff_t> cnt(count, 0);
+    UniqueArray<ptrdiff_t> cnt(count, 0);
     for (ptrdiff_t i : id)
       if (i >= 0)
         cnt[i] = 1;
@@ -313,10 +313,10 @@ namespace detail
 {
   struct skip_negative
   {
-    const std::vector<ptrdiff_t>& key;
+    const UniqueArray<ptrdiff_t>& key;
     int block_size;
 
-    skip_negative(const std::vector<ptrdiff_t>& key, int block_size)
+    skip_negative(const UniqueArray<ptrdiff_t>& key, int block_size)
     : key(key)
     , block_size(block_size)
     {}
@@ -344,7 +344,7 @@ template <class Matrix>
 std::shared_ptr<Matrix>
 tentative_prolongation(size_t n,
                        size_t naggr,
-                       const std::vector<ptrdiff_t> aggr,
+                       const UniqueArray<ptrdiff_t> aggr,
                        nullspace_params& nullspace,
                        int block_size)
 {
@@ -359,11 +359,11 @@ tentative_prolongation(size_t n,
 
     // Sort fine points by aggregate number.
     // Put points not belonging to any aggregate to the end of the list.
-    std::vector<ptrdiff_t> order(n);
+    UniqueArray<ptrdiff_t> order(n);
     for (size_t i = 0; i < n; ++i)
       order[i] = i;
     std::stable_sort(order.begin(), order.end(), detail::skip_negative(aggr, block_size));
-    std::vector<ptrdiff_t> aggr_ptr(nba + 1, 0);
+    UniqueArray<ptrdiff_t> aggr_ptr(nba + 1, 0);
     for (ptrdiff_t i = 0; i < static_cast<ptrdiff_t>(n); ++i) {
       ptrdiff_t a = aggr[order[i]];
       if (a < 0)
@@ -389,12 +389,12 @@ tentative_prolongation(size_t n,
 
     // Compute the tentative prolongation operator and null-space vectors
     // for the coarser level.
-    std::vector<double> Bnew;
+    UniqueArray<double> Bnew;
     Bnew.resize(nba * nullspace.cols * nullspace.cols);
 
     arccoreParallelFor(0, nba, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       Alina::detail::QRFactorization<double> qr;
-      std::vector<double> Bpart;
+      UniqueArray<double> Bpart;
 
       for (ptrdiff_t i = begin; i < (begin + size); ++i) {
         auto aggr_beg = aggr_ptr[i];
@@ -504,10 +504,10 @@ class pointwise_aggregates
   size_t count;
 
   /// \copydoc plain_aggregates::strong_connection
-  std::vector<char> strong_connection;
+  UniqueArray<char> strong_connection;
 
   /// \copydoc plain_aggregates::id
-  std::vector<ptrdiff_t> id;
+  UniqueArray<ptrdiff_t> id;
 
   /// \copydoc plain_aggregates::plain_aggregates
   template <class Matrix>
@@ -537,8 +537,8 @@ class pointwise_aggregates
       count = pw_aggr.count * prm.block_size;
 
       arccoreParallelFor(0, Ap.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-        std::vector<ptrdiff_t> j(prm.block_size);
-        std::vector<ptrdiff_t> e(prm.block_size);
+        UniqueArray<ptrdiff_t> j(prm.block_size);
+        UniqueArray<ptrdiff_t> e(prm.block_size);
 
         for (ptrdiff_t ip = begin; ip < (begin + size); ++ip) {
           ptrdiff_t ia = ip * prm.block_size;
@@ -580,7 +580,7 @@ class pointwise_aggregates
       return; // nothing to do
 
     // Count entries in each of the aggregates
-    std::vector<ptrdiff_t> count(aggr.count, 0);
+    UniqueArray<ptrdiff_t> count(aggr.count, 0);
 
     for (size_t i = 0; i < n; ++i) {
       ptrdiff_t id = aggr.id[i];
@@ -808,8 +808,8 @@ struct AsScalarCoarsening
 // for 2D or 3D elasticity problems.
 // The output matrix B may be transposed on demand
 // (to be used as a set of deflation vectors).
-template <class Vector>
-int rigid_body_modes(int ndim, const Vector& coo, std::vector<double>& B, bool transpose = false)
+template <typename Vector1, typename Vector2>
+int rigid_body_modes(int ndim, const Vector1& coo, Vector2& B, bool transpose = false)
 {
   precondition(ndim == 2 || ndim == 3, "Only 2D or 3D problems are supported");
   precondition(coo.size() % ndim == 0, "Coordinate vector size should be divisible by ndim");
@@ -975,7 +975,7 @@ struct RugeStubenCoarsening
 
     static const Val zero = math::zero<Val>();
 
-    std::vector<char> cf(n, 'U');
+    UniqueArray<char> cf(n, 'U');
     CSRMatrix<char, Col, Ptr> S;
 
     ARCCORE_ALINA_TIC("C/F split");
@@ -985,7 +985,7 @@ struct RugeStubenCoarsening
 
     ARCCORE_ALINA_TIC("interpolation");
     size_t nc = 0;
-    std::vector<ptrdiff_t> cidx(n);
+    UniqueArray<ptrdiff_t> cidx(n);
     for (size_t i = 0; i < n; ++i)
       if (cf[i] == 'C')
         cidx[i] = static_cast<ptrdiff_t>(nc++);
@@ -996,7 +996,7 @@ struct RugeStubenCoarsening
     auto P = std::make_shared<Matrix>();
     P->set_size(n, nc, true);
 
-    std::vector<Val> Amin, Amax;
+    UniqueArray<Val> Amin, Amax;
 
     if (prm.do_trunc) {
       Amin.resize(n);
@@ -1140,7 +1140,7 @@ struct RugeStubenCoarsening
   template <typename Val, typename Col, typename Ptr>
   static void connect(CSRMatrix<Val, Col, Ptr> const& A, float eps_strong,
                       CSRMatrix<char, Col, Ptr>& S,
-                      std::vector<char>& cf)
+                      UniqueArray<char>& cf)
   {
     typedef typename math::scalar_of<Val>::type Scalar;
 
@@ -1198,11 +1198,11 @@ struct RugeStubenCoarsening
   template <typename Val, typename Col, typename Ptr>
   static void cfsplit(CSRMatrix<Val, Col, Ptr> const& A,
                       CSRMatrix<char, Col, Ptr> const& S,
-                      std::vector<char>& cf)
+                      UniqueArray<char>& cf)
   {
     const size_t n = A.nbRow();
 
-    std::vector<Col> lambda(n);
+    UniqueArray<Col> lambda(n);
 
     // Initialize lambdas:
     for (size_t i = 0; i < n; ++i) {
@@ -1217,10 +1217,10 @@ struct RugeStubenCoarsening
     // cnt - size of a group;
     // i2n - variable number;
     // n2i - variable position in a group.
-    std::vector<Ptr> ptr(n + 1, 0);
-    std::vector<Ptr> cnt(n, 0);
-    std::vector<Ptr> i2n(n);
-    std::vector<Ptr> n2i(n);
+    UniqueArray<Ptr> ptr(n + 1, 0);
+    UniqueArray<Ptr> cnt(n, 0);
+    UniqueArray<Ptr> i2n(n);
+    UniqueArray<Ptr> n2i(n);
 
     for (size_t i = 0; i < n; ++i)
       ++ptr[lambda[i] + 1];
@@ -1435,7 +1435,7 @@ struct SmoothedAggregationCoarserning
 
     ARCCORE_ALINA_TIC("smoothing");
     arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      std::vector<ptrdiff_t> marker(P->ncols, -1);
+      UniqueArray<ptrdiff_t> marker(P->ncols, -1);
 
       // Count number of entries in P.
       for (ptrdiff_t i = begin; i < (begin + size); ++i) {
@@ -1462,7 +1462,7 @@ struct SmoothedAggregationCoarserning
     P->set_nonzeros();
 
     arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      std::vector<ptrdiff_t> marker(P->ncols, -1);
+      UniqueArray<ptrdiff_t> marker(P->ncols, -1);
 
       // Fill the interpolation matrix.
       for (ptrdiff_t i = begin; i < (begin + size); ++i) {
@@ -1586,7 +1586,7 @@ struct SmoothedAggregationEnergyMinCoarsening
     Af.set_size(backend::nbRow(A), backend::nbColumn(A));
     Af.ptr[0] = 0;
 
-    std::vector<Val> dia(Af.nbRow());
+    UniqueArray<Val> dia(Af.nbRow());
 
     arccoreParallelFor(0, Af.nbRow(), ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
       for (Idx i = begin; i < (begin + size); ++i) {
@@ -1638,7 +1638,7 @@ struct SmoothedAggregationEnergyMinCoarsening
       }
     });
 
-    std::vector<Val> omega;
+    UniqueArray<Val> omega;
 
     auto P = interpolation(Af, dia, *P_tent, omega);
     auto R = restriction(Af, dia, *P_tent, omega);
@@ -1658,9 +1658,9 @@ struct SmoothedAggregationEnergyMinCoarsening
 
   template <class AMatrix, typename Val, typename Col, typename Ptr>
   static std::shared_ptr<CSRMatrix<Val, Col, Ptr>>
-  interpolation(const AMatrix& A, const std::vector<Val>& Adia,
+  interpolation(const AMatrix& A, const UniqueArray<Val>& Adia,
                 const CSRMatrix<Val, Col, Ptr>& P_tent,
-                std::vector<Val>& omega)
+                UniqueArray<Val>& omega)
   {
     const size_t n = backend::nbRow(P_tent);
     const size_t nc = backend::nbColumn(P_tent);
@@ -1668,20 +1668,20 @@ struct SmoothedAggregationEnergyMinCoarsening
     auto AP = product(A, P_tent, /*sort rows: */ true);
 
     omega.resize(nc, math::zero<Val>());
-    std::vector<Val> denum(nc, math::zero<Val>());
+    UniqueArray<Val> denum(nc, math::zero<Val>());
 
     // TODO CONCURRENCY: remove these mutex
     std::mutex mutex1;
     std::mutex mutex2;
 
     arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      std::vector<ptrdiff_t> marker(nc, -1);
+      UniqueArray<ptrdiff_t> marker(nc, -1);
 
       // Compute A * Dinv * AP row by row and compute columnwise
       // scalar products necessary for computation of omega. The
       // actual results of matrix-matrix product are not stored.
-      std::vector<Col> adap_col(128);
-      std::vector<Val> adap_val(128);
+      UniqueArray<Col> adap_col(128);
+      UniqueArray<Val> adap_val(128);
 
       for (ptrdiff_t ia = begin; ia < (begin + size); ++ia) {
         adap_col.clear();
@@ -1707,7 +1707,8 @@ struct SmoothedAggregationEnergyMinCoarsening
           }
         }
 
-        detail::sort_row(&adap_col[0], &adap_val[0], adap_col.size());
+        if (adap_col.size() != 0)
+          detail::sort_row(&adap_col[0], &adap_val[0], adap_col.size());
 
         // Update columnwise scalar products (AP,ADAP) and (ADAP,ADAP).
         // 1. (AP, ADAP)
@@ -1787,9 +1788,9 @@ struct SmoothedAggregationEnergyMinCoarsening
 
   template <typename AMatrix, typename Val, typename Col, typename Ptr>
   static std::shared_ptr<CSRMatrix<Val, Col, Ptr>>
-  restriction(const AMatrix& A, const std::vector<Val>& Adia,
+  restriction(const AMatrix& A, const UniqueArray<Val>& Adia,
               const CSRMatrix<Val, Col, Ptr>& P_tent,
-              const std::vector<Val>& omega)
+              const UniqueArray<Val>& omega)
   {
     const size_t nc = backend::nbColumn(P_tent);
 
