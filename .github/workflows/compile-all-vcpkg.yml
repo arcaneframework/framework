@@ -284,12 +284,8 @@ jobs:
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} -R compare
 
-      # At the moment there is a bug in the test on Win32 in debug.
-      # Some tests are failing with the following error message:
-      # include\vector(122) : Assertion failed: cannot seek vector iterator after end
       - name: Test alina
         shell: bash
-        if: matrix.full_name == 'windows-2022-cxx20-intelmpi'
         run: |
           cd "${{ env.CMAKE_BUILD_DIR }}" && ctest ${{ env.CTEST_ARGS }} -R alina
 
