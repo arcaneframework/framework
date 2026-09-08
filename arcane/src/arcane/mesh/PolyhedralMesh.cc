@@ -69,6 +69,7 @@
 #include "arcane/mesh/ItemConnectivityMng.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/mesh/FaceFamily.h"
+#include "arcane/mesh/GhostLayerBuilder.h"
 
 #endif
 
@@ -1394,6 +1395,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_item_family_network{ std::make_unique<ItemFamilyNetwork>(m_trace_mng) }
 , m_ghost_layer_mng{ std::make_unique<GhostLayerMng>(m_trace_mng) }
 , m_connectivity(VariableBuildInfo{ subdomain, mbi.name() + "MeshConnectivity" })
+, m_ghost_layer_builder(std::make_unique<GhostLayerBuilder>(this))
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -2192,6 +2194,8 @@ exchangeItems()
   m_trace_mng->info() << "PolyhedralMesh::_exchangeItems() do_compact?=" << "false"
                       << " nb_exchange=" << 0 << " version=" << 0;
   _exchangeItems();
+  if (ghostLayerMng()->nbGhostLayer() > 1)
+    updateGhostLayers(true);
   String check_exchange = platform::getEnvironmentVariable("ARCANE_CHECK_EXCHANGE");
   if (!check_exchange.null()) {
     m_mesh_checker.checkGhostCells();
@@ -2278,6 +2282,90 @@ _exchangeItems()
   //   this->endUpdate(true,false);
   // else
   this->endUpdate();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+updateGhostLayers(bool remove_old_ghost)
+{
+  Trace::Setter mci(traceMng(), _className());
+  traceMng()->info() << "PolyhedralMesh::updateGhostLayers() remove_old_ghost=" << remove_old_ghost;
+
+
+  if (!m_is_dynamic)
+    ARCANE_FATAL("property isDynamic() has to be 'true'");
+
+  _internalUpdateGhost(true, remove_old_ghost);
+  _internalEndUpdateInit(true);
+  _synchronizeGroups();
+  _computeGroupSynchronizeInfos();
+  _internalEndUpdateResizeVariables();
+  _synchronizeVariables();
+  _internalEndUpdateFinal(true);
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_internalUpdateGhost(bool update_ghost_layer, bool remove_old_ghost)
+{
+  if (update_ghost_layer) {
+    if (remove_old_ghost) {
+      _removeGhostItems();
+    }
+    // In case of refinement/coarsening, the orientation might be invalid at a point: todo see if applicable (no refinement/coarsening)
+    // m_face_family->setCheckOrientation(false);
+    m_ghost_layer_builder->addGhostLayers(true);
+    // m_face_family->setCheckOrientation(true);
+    // Todo:
+    // _computeExtraGhostCells();
+    // _computeExtraGhostParticles();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_internalEndUpdateInit(bool cond)
+{
+  ;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_synchronizeGroups()
+{
+  ;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_internalEndUpdateResizeVariables()
+{
+  ;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_synchronizeVariables()
+{
+  ;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_internalEndUpdateFinal(bool cond)
+{
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_removeGhostItems()
+{
+
 }
 
 /*---------------------------------------------------------------------------*/
