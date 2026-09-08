@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.h                                            (C) 2000-2025 */
+/* PolyhedralMesh.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Polyhedral mesh implementation using Neo data structure                   */
 /*---------------------------------------------------------------------------*/
@@ -42,7 +42,8 @@
 #include <array>
 
 #include "arcane/core/IVariableMng.h"
-#include "DynamicMeshChecker.h"
+#include "arcane/mesh/DynamicMeshChecker.h"
+#include "arcane/mesh/GhostLayerBuilder.h"
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -54,6 +55,7 @@ class ISubDomain;
 class IItemFamilyNetwork;
 class IGhostLayerMng;
 class IMeshExchangeMng;
+class GhostLayerBuilder;
 } // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
@@ -99,6 +101,7 @@ class PolyhedralMesh
   MeshEventsImpl m_mesh_events;
   std::unique_ptr<PolyhedralFamilySerializerMng> m_polyhedral_family_serializer_mng;
   VariableScalarInteger m_connectivity; // todo use MeshVariables (when adding dump handling)
+  std::unique_ptr<GhostLayerBuilder> m_ghost_layer_builder = nullptr;
 
  public:
 
@@ -279,6 +282,8 @@ class PolyhedralMesh
 
   void exchangeItems() override;
 
+  void updateGhostLayers(bool remove_old_ghost) override;
+
   // For now, use _internalAPI()->polyhedralMeshModifier instead of IMeshModifier not implemented yet
   IMeshModifier* modifier() override { return this; }
   bool isDynamic() const override { return m_is_dynamic; }
@@ -352,6 +357,15 @@ class PolyhedralMesh
   PolyhedralFamily* _createItemFamily(eItemKind ik, const String& name);
   PolyhedralFamily* _itemFamily(eItemKind ik);
   PolyhedralFamily* _findItemFamily(eItemKind ik, const String& name, bool create_if_needed = false);
+
+  void _internalUpdateGhost(bool update_ghost_layer, bool remove_old_ghost);
+  void _internalEndUpdateInit(bool cond);
+  void _synchronizeGroups();
+  void _internalEndUpdateResizeVariables();
+  void _synchronizeVariables();
+  void _internalEndUpdateFinal(bool cond);
+  void _removeGhostItems();
+
   const char* _className() const { return "PolyhedralMesh"; }
 
   void _exchangeItems();
