@@ -11,14 +11,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/ArgumentException.h"
+
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IMeshFactoryMng.h"
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/IPrimaryMesh.h"
 #include "arcane/core/MeshBuildInfo.h"
-
 #include "arcane/core/IMeshSection.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableMetaData.h"
+
+#include "arcane/core/internal/IVariableInternal.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
+
 #include "arcane/std/MeshSection_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -29,6 +36,32 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+template <class T>
+struct VariableGroup
+{
+  UniqueArray<ArrayView<T>> dim1;
+  UniqueArray<Array2View<T>> dim2;
+};
+
+template <class T>
+struct VariableGroupType
+{
+  bool isCellsUsed() { return !(cells.dim1.empty() && cells.dim2.empty()); }
+  bool isFacesUsed() { return !(faces.dim1.empty() && faces.dim2.empty()); }
+  bool isNodesUsed() { return !(nodes.dim1.empty() && nodes.dim2.empty()); }
+
+  VariableGroup<T> cells;
+  VariableGroup<T> faces;
+  VariableGroup<T> nodes;
+};
+
+template <class T>
+struct VariableOriClone
+{
+  VariableGroupType<T> ori;
+  VariableGroupType<T> clone;
+};
 
 /*!
  * \brief Service allowing the creation of a mesh with a section of another
@@ -54,7 +87,7 @@ class MeshSectionService
   void addPlane(const Real3& p0, const Real3& normal) override;
 
   void setVariables(VariableCollection variables) override;
-  VariableCollection variables() override { return {}; }
+  VariableCollection variables() override;
   void setServiceMeshUniqueId(Int32 unique_id) override;
   void updateSection() override;
 
@@ -66,12 +99,21 @@ class MeshSectionService
  private:
 
   void _createMesh();
-  void _createCells(Int32& nb_cell, UniqueArray<Int64>& cells_infos, Int32& nb_face, UniqueArray<Int64>& faces_infos, std::unordered_map<Int64, Real3>& pos_node);
+  void _createVariables();
+  void _createCells(Int32& nb_cell, UniqueArray<Int64>& cells_infos, Int32& nb_face, UniqueArray<Int64>& faces_infos, std::unordered_map<Int64, Real3>& pos_node, UniqueArray<Cell>& ori_cells);
   void _compute();
+  void _updateVariables(UniqueArray<Cell>& ori_cells);
+
+  template <class T>
+  void _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T);
+
+  template <class T>
+  void _updateArrayVariable(UniqueArray<Cell>& ori_cells, T, VariableOriClone<T>& voc);
 
  private:
 
-  // VariableCollection m_variables_ori;
+  VariableCollection m_variables_ori;
+  VariableCollection m_variables_cloned;
   IPrimaryMesh* m_cloned_mesh = nullptr;
   UniqueArray<std::pair<Real3, Real3>> m_plans;
   Int32 m_mesh_uid = -1;
@@ -101,9 +143,16 @@ addPlane(const Real3& p0, const Real3& normal)
 void MeshSectionService::
 setVariables(VariableCollection variables)
 {
-  ARCANE_UNUSED(variables);
-  ARCANE_NOT_YET_IMPLEMENTED("Not supported yet");
-  // m_variables_ori = variables;
+  m_variables_ori = variables;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableCollection MeshSectionService::
+variables()
+{
+  return m_variables_cloned;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -158,6 +207,7 @@ _createMesh()
     m_cloned_mesh->modifier()->setDynamic(true);
     m_cloned_mesh->setDimension(mesh()->dimension());
     m_cloned_mesh->endAllocate();
+    _createVariables();
   }
   else {
     m_cloned_mesh = mesh_handle->mesh()->toPrimaryMesh();
@@ -169,7 +219,34 @@ _createMesh()
 /*---------------------------------------------------------------------------*/
 
 void MeshSectionService::
-_createCells(Int32& sd_nb_cell, UniqueArray<Int64>& cells_infos, Int32& sd_nb_face, UniqueArray<Int64>& faces_infos, std::unordered_map<Int64, Real3>& pos_node)
+_createVariables()
+{
+  IVariableMng* variable_mng = m_cloned_mesh->variableMng();
+  for (VariableCollection::Enumerator i(m_variables_ori); ++i;) {
+    IVariable* var = *i;
+    Ref<VariableMetaData> vmd(var->createMetaDataRef());
+    String full_type = vmd->fullType();
+    const String& base_name = vmd->baseName();
+    Integer property = vmd->property();
+    const String& group_name = vmd->itemGroupName();
+    const String& family_name = vmd->itemFamilyName();
+
+    info() << "Clone variable : " << vmd->fullName();
+
+    VariableBuildInfo vbi(m_cloned_mesh, base_name, family_name, property);
+    // vbi = VariableBuildInfo(subDomain(), base_name, m_cloned_mesh->name(), family_name, property);
+    VariableRef* variable_ref = variable_mng->_internalApi()->createVariableFromType(full_type, vbi);
+
+    info() << "Cloned variable : " << variable_ref->variable()->fullName();
+    m_variables_cloned.add(variable_ref->variable());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshSectionService::
+_createCells(Int32& sd_nb_cell, UniqueArray<Int64>& cells_infos, Int32& sd_nb_face, UniqueArray<Int64>& faces_infos, std::unordered_map<Int64, Real3>& pos_node, UniqueArray<Cell>& ori_cells)
 {
   VariableNodeReal3& node_coord = mesh()->nodesCoordinates();
 
@@ -196,6 +273,8 @@ _createCells(Int32& sd_nb_cell, UniqueArray<Int64>& cells_infos, Int32& sd_nb_fa
       if (!in_plan)
         continue;
     }
+
+    ori_cells.add(*icell);
 
     Int16 cell_type = icell->itemTypeId();
     cells_infos.add(cell_type);
@@ -242,12 +321,14 @@ _compute()
   UniqueArray<Int64> faces_infos;
   faces_infos.reserve(10000);
 
+  UniqueArray<Cell> ori_cells;
+
   std::unordered_map<Int64, Real3> coord_map;
 
   Int32 nb_cell = 0;
   Int32 nb_face = 0;
 
-  _createCells(nb_cell, cells_infos, nb_face, faces_infos, coord_map);
+  _createCells(nb_cell, cells_infos, nb_face, faces_infos, coord_map, ori_cells);
 
   m_cloned_mesh->modifier()->addFaces(nb_face, faces_infos);
   m_cloned_mesh->modifier()->addCells(nb_cell, cells_infos);
@@ -260,7 +341,182 @@ _compute()
     }
   }
 
+  _updateVariables(ori_cells);
+
   info() << "New mesh -- NbNode : " << m_cloned_mesh->nbNode() << " -- NbCells : " << m_cloned_mesh->nbCell();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshSectionService::
+_updateVariables(UniqueArray<Cell>& ori_cells)
+{
+  for (Int32 type = 0; type < NB_ARCANE_DATA_TYPE; ++type) {
+    switch (type) {
+    case DT_Byte: {
+      _updateVariablesT(ori_cells, type, Byte());
+    } break;
+    case DT_Real: {
+      _updateVariablesT(ori_cells, type, Real());
+    } break;
+    case DT_Real2: {
+      _updateVariablesT(ori_cells, type, Real2());
+    } break;
+    case DT_Real2x2: {
+      _updateVariablesT(ori_cells, type, Real2x2());
+    } break;
+    case DT_Real3: {
+      _updateVariablesT(ori_cells, type, Real3());
+    } break;
+    case DT_Real3x3: {
+      _updateVariablesT(ori_cells, type, Real3x3());
+    } break;
+    case DT_Int8: {
+      _updateVariablesT(ori_cells, type, Int8());
+    } break;
+    case DT_Int16: {
+      _updateVariablesT(ori_cells, type, Int16());
+    } break;
+    case DT_Int32: {
+      _updateVariablesT(ori_cells, type, Int32());
+    } break;
+    case DT_Int64: {
+      _updateVariablesT(ori_cells, type, Int64());
+    } break;
+    case DT_Float32: {
+      _updateVariablesT(ori_cells, type, Float32());
+    } break;
+    case DT_Float16: {
+      _updateVariablesT(ori_cells, type, Float16());
+    } break;
+    case DT_BFloat16: {
+      _updateVariablesT(ori_cells, type, BFloat16());
+    } break;
+    default:
+      break;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class T>
+void MeshSectionService::
+_updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
+{
+  VariableOriClone<T> voc;
+
+  if (m_variables_cloned.count() != m_variables_ori.count()) {
+    ARCANE_FATAL("Bad size");
+  }
+
+  VariableCollection::Enumerator iclone(m_variables_cloned);
+  VariableCollection::Enumerator iori(m_variables_ori);
+
+  while (++iclone && ++iori) {
+    IVariable* ori = *iori;
+    IVariable* clone = *iclone;
+    if (ori->dataType() == type) {
+      if (ori->dimension() == 1) {
+        auto* ori_data = dynamic_cast<IArrayDataT<T>*>(ori->data());
+        auto* clo_data = dynamic_cast<IArrayDataT<T>*>(clone->data());
+        if (ori->itemKind() == IK_Cell) {
+          voc.ori.cells.dim1.add(ori_data->view());
+          voc.clone.cells.dim1.add(clo_data->view());
+        }
+        else if (ori->itemKind() == IK_Face) {
+          voc.ori.faces.dim1.add(ori_data->view());
+          voc.clone.faces.dim1.add(clo_data->view());
+        }
+        else if (ori->itemKind() == IK_Node) {
+          voc.ori.nodes.dim1.add(ori_data->view());
+          voc.clone.nodes.dim1.add(clo_data->view());
+        }
+      }
+      else if (ori->dimension() == 2) {
+        info() << "Coucou : " << ori->fullName();
+        if (ori->itemKind() == IK_Cell) {
+          VariableResizeArgs vra(-1);
+          vra.setNewSizeDim2(ori->nbElement() / mesh()->nbCell());
+          clone->_internalApi()->resize(vra);
+          auto* ori_data = dynamic_cast<IArray2DataT<T>*>(ori->data());
+          auto* clo_data = dynamic_cast<IArray2DataT<T>*>(clone->data());
+          voc.ori.cells.dim2.add(ori_data->view());
+          voc.clone.cells.dim2.add(clo_data->view());
+        }
+        else if (ori->itemKind() == IK_Face) {
+          VariableResizeArgs vra(-1);
+          vra.setNewSizeDim2(ori->nbElement() / mesh()->nbFace());
+          clone->_internalApi()->resize(vra);
+          auto* ori_data = dynamic_cast<IArray2DataT<T>*>(ori->data());
+          auto* clo_data = dynamic_cast<IArray2DataT<T>*>(clone->data());
+          voc.ori.faces.dim2.add(ori_data->view());
+          voc.clone.faces.dim2.add(clo_data->view());
+        }
+        else if (ori->itemKind() == IK_Node) {
+          VariableResizeArgs vra(-1);
+          vra.setNewSizeDim2(ori->nbElement() / mesh()->nbNode());
+          clone->_internalApi()->resize(vra);
+          auto* ori_data = dynamic_cast<IArray2DataT<T>*>(ori->data());
+          auto* clo_data = dynamic_cast<IArray2DataT<T>*>(clone->data());
+          voc.ori.nodes.dim2.add(ori_data->view());
+          voc.clone.nodes.dim2.add(clo_data->view());
+        }
+      }
+    }
+  }
+
+  _updateArrayVariable(ori_cells, T(), voc);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class T>
+void MeshSectionService::
+_updateArrayVariable(UniqueArray<Cell>& ori_cells, T, VariableOriClone<T>& voc)
+{
+  ENUMERATE_ (Cell, icell, m_cloned_mesh->ownCells()) {
+    Cell ori_cell = ori_cells[icell.localId()];
+    if (voc.ori.isCellsUsed()) {
+      for (Int32 i = 0; i < voc.ori.cells.dim1.size(); ++i) {
+        voc.clone.cells.dim1[i][icell.localId()] = voc.ori.cells.dim1[i][ori_cell.localId()];
+      }
+      for (Int32 i = 0; i < voc.ori.cells.dim2.size(); ++i) {
+        voc.clone.cells.dim2[i][icell.localId()].copy(voc.ori.cells.dim2[i][ori_cell.localId()]);
+      }
+    }
+
+    if (voc.ori.isNodesUsed()) {
+      for (Int32 i = 0; i < icell->nbNode(); ++i) {
+        Node ori_node = ori_cell.node(i);
+        Node cloned_node = icell->node(i);
+
+        for (Int32 j = 0; j < voc.ori.nodes.dim1.size(); ++j) {
+          voc.clone.nodes.dim1[j][cloned_node.localId()] = voc.ori.nodes.dim1[j][ori_node.localId()];
+        }
+        for (Int32 j = 0; j < voc.ori.nodes.dim2.size(); ++j) {
+          voc.clone.nodes.dim2[j][cloned_node.localId()].copy(voc.ori.nodes.dim2[j][ori_node.localId()]);
+        }
+      }
+    }
+
+    if (voc.ori.isFacesUsed()) {
+      for (Int32 i = 0; i < icell->nbFace(); ++i) {
+        Face ori_face = ori_cell.face(i);
+        Face cloned_face = icell->face(i);
+
+        for (Int32 j = 0; j < voc.ori.faces.dim1.size(); ++j) {
+          voc.clone.faces.dim1[j][cloned_face.localId()] = voc.ori.faces.dim1[j][ori_face.localId()];
+        }
+        for (Int32 j = 0; j < voc.ori.faces.dim2.size(); ++j) {
+          voc.clone.faces.dim2[j][cloned_face.localId()].copy(voc.ori.faces.dim2[j][ori_face.localId()]);
+        }
+      }
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
