@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2025 */
+/* DynamicMeshIncrementalBuilder.cc                            (C) 2000-2026 */
 /*                                                                           */
 /* Incremental mesh construction.                                            */
 /*---------------------------------------------------------------------------*/
@@ -1616,7 +1616,7 @@ addGhostLayers(bool is_allocate)
 {
   debug() << "Add one ghost layer";
   if (!m_ghost_layer_builder)
-    m_ghost_layer_builder = new GhostLayerBuilder(this);
+    m_ghost_layer_builder = new GhostLayerBuilder(m_mesh);
   m_ghost_layer_builder->addGhostLayers(is_allocate);
 }
 
@@ -1629,7 +1629,7 @@ addGhostChildFromParent(Array<Int64>& ghost_cell_to_refine)
 {
   debug() << "Add one ghost layer";
   if (!m_ghost_layer_builder)
-    m_ghost_layer_builder = new GhostLayerBuilder(this);
+    m_ghost_layer_builder = new GhostLayerBuilder(m_mesh);
   m_ghost_layer_builder->addGhostChildFromParent2(ghost_cell_to_refine);
 }
 
