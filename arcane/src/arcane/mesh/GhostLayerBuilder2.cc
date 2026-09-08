@@ -28,9 +28,11 @@
 #include "arcane/core/IItemFamilyPolicyMng.h"
 #include "arcane/core/IItemFamilySerializer.h"
 #include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/internal/IMeshInternal.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
+#include "arcane/utils/ScopedPtr.h"
 
 #include <algorithm>
 #include <set>
@@ -61,7 +63,7 @@ class GhostLayerBuilder2
  public:
 
   //! Constructs an instance for the mesh \a mesh
-  GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder, bool is_allocate, Int32 version);
+  GhostLayerBuilder2(IMesh* mesh, bool is_allocate, Int32 version);
 
  public:
 
@@ -69,8 +71,8 @@ class GhostLayerBuilder2
 
  private:
 
-  DynamicMesh* m_mesh = nullptr;
-  DynamicMeshIncrementalBuilder* m_mesh_builder = nullptr;
+  IMesh* m_mesh = nullptr;
+  IMeshInternal* m_mesh_internal = nullptr;
   IParallelMng* m_parallel_mng = nullptr;
   bool m_is_verbose = false;
   bool m_is_allocate = false;
@@ -93,10 +95,10 @@ class GhostLayerBuilder2
 /*---------------------------------------------------------------------------*/
 
 GhostLayerBuilder2::
-GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder, bool is_allocate, Int32 version)
-: TraceAccessor(mesh_builder->mesh()->traceMng())
-, m_mesh(mesh_builder->mesh())
-, m_mesh_builder(mesh_builder)
+GhostLayerBuilder2(IMesh* mesh, bool is_allocate, Int32 version)
+: TraceAccessor(mesh->traceMng())
+, m_mesh(mesh)
+, m_mesh_internal(mesh->_internalApi())
 , m_parallel_mng(m_mesh->parallelMng())
 , m_is_allocate(is_allocate)
 , m_version(version)
@@ -318,8 +320,8 @@ addGhostLayers()
   if (is_non_manifold && (m_version != 3))
     ARCANE_FATAL("Only version 3 of ghostlayer builder is supported for non manifold meshes");
 
-  ItemInternalMap& cells_map = m_mesh->cellsMap();
-  ItemInternalMap& nodes_map = m_mesh->nodesMap();
+  ItemInternalMap& cells_map = m_mesh_internal->cellsMap();
+  ItemInternalMap& nodes_map = m_mesh_internal->nodesMap();
 
   Integer boundary_nodes_uid_count = 0;
 
@@ -437,7 +439,7 @@ _markBoundaryNodes(ArrayView<Int32> node_layer)
 {
   IParallelMng* pm = m_mesh->parallelMng();
   const Int32 my_rank = pm->commRank();
-  ItemInternalMap& faces_map = m_mesh->facesMap();
+  ItemInternalMap& faces_map = m_mesh_internal->facesMap();
   // TODO: check if it is correct to modify ItemFlags::II_SubDomainBoundary
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
   // Iterates over faces and marks boundary nodes, edges and faces
@@ -478,8 +480,8 @@ _addGhostLayer(Integer current_layer, Int32ConstArrayView node_layer)
 
   bool is_verbose = m_is_verbose;
 
-  ItemInternalMap& cells_map = m_mesh->cellsMap();
-  ItemInternalMap& nodes_map = m_mesh->nodesMap();
+  ItemInternalMap& cells_map = m_mesh_internal->cellsMap();
+  ItemInternalMap& nodes_map = m_mesh_internal->nodesMap();
 
   Int64 nb_added_for_different_rank = 0;
   Int64 nb_added_for_in_layer = 0;
@@ -949,9 +951,13 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
   for (Integer i = 0, ns = exchanger->nbReceiver(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* s = sm->serializer();
-    m_mesh->addCells(s);
+    // Do not use DynamicMesh but use cell serializer as in GhostLayerBuilder v1
+    // m_mesh->addCells(s);
+    s->setMode(ISerializer::ModeGet);
+    ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer());
+    cell_serializer->deserializeItems(s, nullptr);
   }
-  m_mesh_builder->printStats();
+  m_mesh_internal->printStats(TraceMessage::DEFAULT_LEVEL);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -968,7 +974,7 @@ _markBoundaryItems(ArrayView<Int32> node_layer)
 {
   IParallelMng* pm = m_mesh->parallelMng();
   Int32 my_rank = pm->commRank();
-  ItemInternalMap& faces_map = m_mesh->facesMap();
+  ItemInternalMap& faces_map = m_mesh_internal->facesMap();
 
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
 
@@ -1012,7 +1018,7 @@ _markBoundaryNodesFromEdges(ArrayView<Int32> node_layer)
   // and we mark the corresponding nodes.
   IParallelMng* pm = m_mesh->parallelMng();
   Int32 my_rank = pm->commRank();
-  ItemInternalMap& edges_map = m_mesh->edgesMap();
+  ItemInternalMap& edges_map = m_mesh_internal->edgesMap();
   edges_map.eachItem([&](Edge edge) {
     Int32 nb_cell = edge.nbCell();
     Int32 nb_dim2_cell = 0;
@@ -1039,9 +1045,9 @@ _markBoundaryNodesFromEdges(ArrayView<Int32> node_layer)
 /*---------------------------------------------------------------------------*/
 // This function handles versions 3 and 4 of ghost entity calculation.
 extern "C++" void
-_buildGhostLayerNewVersion(DynamicMesh* mesh, bool is_allocate, Int32 version)
+_buildGhostLayerNewVersion(IMesh* mesh, bool is_allocate, Int32 version)
 {
-  GhostLayerBuilder2 glb(mesh->m_mesh_builder, is_allocate, version);
+  GhostLayerBuilder2 glb(mesh, is_allocate, version);
   glb.addGhostLayers();
 }
 
