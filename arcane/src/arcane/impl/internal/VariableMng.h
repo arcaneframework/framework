@@ -140,6 +140,7 @@ class VariableMng
     IAcceleratorMng* acceleratorMng() const override { return m_variable_mng->m_accelerator_mng.get(); }
     void setAcceleratorMng(Ref<IAcceleratorMng> v) override { m_variable_mng->m_accelerator_mng = v; }
     void addAutoDestroyVariable(VariableRef* var) override { m_variable_mng->m_auto_create_variables.add(var); }
+    VariableRef* createVariableFromType(const String& full_type, const VariableBuildInfo& vbi) override { return m_variable_mng->_createVariableFromType(full_type, vbi); }
 
    private:
 
