@@ -999,7 +999,8 @@ void Variable::
 _resize(const VariableResizeArgs& resize_args)
 {
   eItemKind ik = itemKind();
-  if (ik != IK_Unknown) {
+  // If dim1 == -1, the resize is only for the dim2.
+  if (ik != IK_Unknown && resize_args.newSize() != -1) {
     ARCANE_FATAL("This call is invalid for item variable. Use resizeFromGroup() instead");
   }
   _internalResize(resize_args);

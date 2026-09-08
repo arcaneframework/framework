@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IvariableInternal.h                                         (C) 2000-2025 */
+/* IVariableInternal.h                                         (C) 2000-2026 */
 /*                                                                           */
 /* Internal part of IVariable in Arcane.                                     */
 /*---------------------------------------------------------------------------*/
@@ -54,9 +54,13 @@ class VariableResizeArgs
   Int32 nbAdditionalCapacity() const { return m_additional_capacity; }
   bool isUseNoInit() const { return m_is_use_no_init; }
 
+  void setNewSizeDim2(Int32 dim2){m_new_size_dim2 = dim2;}
+  Int32 newSizeDim2() const { return m_new_size_dim2; }
+
  private:
 
   Int32 m_new_size = 0;
+  Int32 m_new_size_dim2 = -1;
   Int32 m_additional_capacity = 0;
   bool m_is_use_no_init = false;
 };
