@@ -47,10 +47,12 @@ struct VariableGroup
 template <class T>
 struct VariableGroupType
 {
+  bool isUnknownUsed() { return !(unknown.dim1.empty() && unknown.dim2.empty()); }
   bool isCellsUsed() { return !(cells.dim1.empty() && cells.dim2.empty()); }
   bool isFacesUsed() { return !(faces.dim1.empty() && faces.dim2.empty()); }
   bool isNodesUsed() { return !(nodes.dim1.empty() && nodes.dim2.empty()); }
 
+  VariableGroup<T> unknown;
   VariableGroup<T> cells;
   VariableGroup<T> faces;
   VariableGroup<T> nodes;
@@ -207,12 +209,12 @@ _createMesh()
     m_cloned_mesh->modifier()->setDynamic(true);
     m_cloned_mesh->setDimension(mesh()->dimension());
     m_cloned_mesh->endAllocate();
-    _createVariables();
   }
   else {
     m_cloned_mesh = mesh_handle->mesh()->toPrimaryMesh();
     m_cloned_mesh->modifier()->clearItems();
   }
+  _createVariables();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -422,7 +424,11 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
       if (ori->dimension() == 1) {
         auto* ori_data = dynamic_cast<IArrayDataT<T>*>(ori->data());
         auto* clo_data = dynamic_cast<IArrayDataT<T>*>(clone->data());
-        if (ori->itemKind() == IK_Cell) {
+        if (ori->itemKind() == IK_Unknown) {
+          voc.ori.unknown.dim1.add(ori_data->view());
+          voc.clone.unknown.dim1.add(clo_data->view());
+        }
+        else if (ori->itemKind() == IK_Cell) {
           voc.ori.cells.dim1.add(ori_data->view());
           voc.clone.cells.dim1.add(clo_data->view());
         }
@@ -434,9 +440,20 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
           voc.ori.nodes.dim1.add(ori_data->view());
           voc.clone.nodes.dim1.add(clo_data->view());
         }
+        else {
+          ARCANE_FATAL("Variable type not supported -- Type : {0}", ori->itemKind());
+        }
       }
       else if (ori->dimension() == 2) {
-        info() << "Coucou : " << ori->fullName();
+        // if (ori->itemKind() == IK_Unknown) {
+        //   VariableResizeArgs vra(ori->nbElement());
+        //   clone->_internalApi()->resize(vra);
+        //   auto* ori_data = dynamic_cast<IArray2DataT<T>*>(ori->data());
+        //   auto* clo_data = dynamic_cast<IArray2DataT<T>*>(clone->data());
+        //   voc.ori.unknown.dim2.add(ori_data->view());
+        //   voc.clone.unknown.dim2.add(clo_data->view());
+        // }
+        // else
         if (ori->itemKind() == IK_Cell) {
           VariableResizeArgs vra(-1);
           vra.setNewSizeDim2(ori->nbElement() / mesh()->nbCell());
@@ -465,6 +482,9 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
           voc.clone.nodes.dim2.add(clo_data->view());
         }
       }
+      else {
+        ARCANE_FATAL("Variable dim not supported -- Dim : {0}", ori->dimension());
+      }
     }
   }
 
@@ -478,6 +498,17 @@ template <class T>
 void MeshSectionService::
 _updateArrayVariable(UniqueArray<Cell>& ori_cells, T, VariableOriClone<T>& voc)
 {
+  if (voc.ori.isUnknownUsed()) {
+    for (Int32 i = 0; i < voc.ori.unknown.dim1.size(); ++i) {
+      voc.clone.unknown.dim1[i].copy(voc.ori.unknown.dim1[i]);
+    }
+    for (Int32 i = 0; i < voc.ori.unknown.dim2.size(); ++i) {
+      for (Int32 j = 0; j < voc.ori.unknown.dim2[i].dim2Size(); ++j) {
+        voc.clone.unknown.dim2[i][j].copy(voc.ori.unknown.dim2[i][j]);
+      }
+    }
+  }
+
   ENUMERATE_ (Cell, icell, m_cloned_mesh->ownCells()) {
     Cell ori_cell = ori_cells[icell.localId()];
     if (voc.ori.isCellsUsed()) {
