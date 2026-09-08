@@ -2,6 +2,57 @@
 <service name="MeshSectionTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest"
          namespace-name="ArcaneTest">
   <interface name="Arcane::IUnitTest" inherited="false"/>
+  <variables>
+    <variable
+      field-name="on_cells0"
+      name="OnCells0"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true"/>
+    <variable
+      field-name="on_nodes0"
+      name="OnNodes0"
+      data-type="real"
+      item-kind="node"
+      dim="0"
+      dump="true"
+      need-sync="true"/>
+    <variable
+      field-name="on_faces0"
+      name="OnFaces0"
+      data-type="real"
+      item-kind="face"
+      dim="0"
+      dump="true"
+      need-sync="true"/>
+
+    <variable
+      field-name="on_cells1"
+      name="OnCells1"
+      data-type="real"
+      item-kind="cell"
+      dim="1"
+      dump="true"
+      need-sync="true"/>
+    <variable
+      field-name="on_nodes1"
+      name="OnNodes1"
+      data-type="real"
+      item-kind="node"
+      dim="1"
+      dump="true"
+      need-sync="true"/>
+    <variable
+      field-name="on_faces1"
+      name="OnFaces1"
+      data-type="real"
+      item-kind="face"
+      dim="1"
+      dump="true"
+      need-sync="true"/>
+  </variables>
 
   <options>
     <simple name="enable-post-processing" type="bool" default="false">
