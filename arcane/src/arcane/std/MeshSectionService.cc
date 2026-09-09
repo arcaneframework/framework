@@ -37,7 +37,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class T>
+namespace
+{
+
+  template <class T>
 struct VariableGroup
 {
   UniqueArray<ArrayView<T>> dim1;
@@ -64,6 +67,10 @@ struct VariableOriClone
   VariableGroupType<T> ori;
   VariableGroupType<T> clone;
 };
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*!
  * \brief Service allowing the creation of a mesh with a section of another
@@ -226,20 +233,25 @@ _createVariables()
   IVariableMng* variable_mng = m_cloned_mesh->variableMng();
   for (VariableCollection::Enumerator i(m_variables_ori); ++i;) {
     IVariable* var = *i;
-    Ref<VariableMetaData> vmd(var->createMetaDataRef());
-    String full_type = vmd->fullType();
+    Ref vmd(var->createMetaDataRef());
+    const String& mesh_name = vmd->meshName();
+    if (mesh_name.null()) {
+      ARCANE_FATAL("Only variables with support are supported.");
+    }
+    if (vmd->isPartial()) {
+      ARCANE_FATAL("Partial variables are not supported.");
+    }
+    const String& full_type = vmd->fullType();
     const String& base_name = vmd->baseName();
     Integer property = vmd->property();
-    const String& group_name = vmd->itemGroupName();
     const String& family_name = vmd->itemFamilyName();
 
-    info() << "Clone variable : " << vmd->fullName();
+    // info() << "Clone variable : " << vmd->fullName();
 
     VariableBuildInfo vbi(m_cloned_mesh, base_name, family_name, property);
-    // vbi = VariableBuildInfo(subDomain(), base_name, m_cloned_mesh->name(), family_name, property);
     VariableRef* variable_ref = variable_mng->_internalApi()->createVariableFromType(full_type, vbi);
 
-    info() << "Cloned variable : " << variable_ref->variable()->fullName();
+    // info() << "Cloned variable : " << variable_ref->variable()->fullName();
     m_variables_cloned.add(variable_ref->variable());
   }
 }
@@ -419,8 +431,8 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
 
   while (++iclone && ++iori) {
     IVariable* ori = *iori;
-    IVariable* clone = *iclone;
     if (ori->dataType() == type) {
+      IVariable* clone = *iclone;
       if (ori->dimension() == 1) {
         auto* ori_data = dynamic_cast<IArrayDataT<T>*>(ori->data());
         auto* clo_data = dynamic_cast<IArrayDataT<T>*>(clone->data());
