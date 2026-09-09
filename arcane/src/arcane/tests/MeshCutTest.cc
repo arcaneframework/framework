@@ -55,6 +55,8 @@ public:
 
   void compute() override;
 
+  void _initVars();
+
  private:
 
   UniqueArray<Real> times;
@@ -114,6 +116,8 @@ compute()
     times.add(m_global_time());
   }
 
+  _initVars();
+
   //
   // MeshHandle meshhsection;
   // {
@@ -151,6 +155,7 @@ compute()
 
 
   MeshHandle meshhcut;
+  VariableCollection cloned_var;
   {
     ServiceBuilder<IMeshSection> spp0(mesh()->handle());
     // ServiceBuilder<IMeshSection> spp0(meshhsection);
@@ -160,8 +165,15 @@ compute()
       pp0->addPlane(plane->p0() + (plane->p0Velocity() * globalIteration()), plane->normal());
     }
 
+    VariableCollection vc;
+    vc.add(m_on_cells0);
+    vc.add(m_on_cells1);
+
+    pp0->setVariables(vc);
+
     pp0->updateSection();
     meshhcut = pp0->meshSection();
+    cloned_var = pp0->variables();
   }
   IMesh* meshcut = meshhcut.mesh();
 
@@ -169,7 +181,7 @@ compute()
   if (options()->enablePostProcessing())
   {
     ServiceBuilder<IPostProcessorWriter> spp(meshhcut);
-    Ref<IPostProcessorWriter> pp = spp.createReference("VtkHdfV2PostProcessor");
+    Ref<IPostProcessorWriter> pp = spp.createReference("Ensight7PostProcessor");
     Directory output_directory = Directory(subDomain()->exportDirectory(), "amrtestpost1");
     output_directory.createDirectory();
     pp->setBaseDirectoryName(output_directory.path());
@@ -178,10 +190,14 @@ compute()
 
     VariableList variables;
     variables.add(meshcut->nodesCoordinates().variable());
+    for (VariableCollection::Enumerator i(cloned_var); ++i;) {
+      variables.add(*i);
+    }
     post_processor->setVariables(variables);
 
     ItemGroupList groups;
     groups.add(meshcut->allNodes());
+    groups.add(meshcut->allCells());
     post_processor->setGroups(groups);
 
     IVariableMng* vm = meshcut->variableMng();
@@ -191,8 +207,8 @@ compute()
   if (options()->enablePostProcessing())
   {
     ServiceBuilder<IPostProcessorWriter> spp(mesh()->handle());
-    Ref<IPostProcessorWriter> pp = spp.createReference("VtkHdfV2PostProcessor");
-    Directory output_directory = Directory(subDomain()->exportDirectory(), "amrtestpost1");
+    Ref<IPostProcessorWriter> pp = spp.createReference("Ensight7PostProcessor");
+    Directory output_directory = Directory(subDomain()->exportDirectory(), "amrtestpost2");
     output_directory.createDirectory();
     pp->setBaseDirectoryName(output_directory.path());
     IPostProcessorWriter* post_processor = pp.get();
@@ -200,14 +216,34 @@ compute()
 
     VariableList variables;
     variables.add(mesh()->nodesCoordinates().variable());
+    variables.add(m_on_cells0);
+    variables.add(m_on_cells1);
     post_processor->setVariables(variables);
 
     ItemGroupList groups;
     groups.add(mesh()->allNodes());
+    groups.add(mesh()->allCells());
     post_processor->setGroups(groups);
 
     IVariableMng* vm = mesh()->variableMng();
     vm->writePostProcessing(post_processor);
+  }
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshCutTest::
+_initVars()
+{
+  m_on_cells1.resize(3);
+
+  ENUMERATE_(Cell, icell, mesh()->allCells()){
+    m_on_cells0[icell] = icell->uniqueId().asInt32();
+    for (Integer i = 0; i < 3; ++i) {
+      m_on_cells1[icell][i] = icell->uniqueId().asInt32() * i;
+    }
   }
 }
 

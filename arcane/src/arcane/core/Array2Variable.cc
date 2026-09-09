@@ -480,6 +480,7 @@ template <typename T> void Array2VariableT<T>::
 _internalResize(const VariableResizeArgs& resize_args)
 {
   Int32 new_size = resize_args.newSize();
+  Int32 new_size_dim2 = resize_args.newSizeDim2();
   Int32 nb_additional_element = resize_args.nbAdditionalCapacity();
   bool use_no_init = resize_args.isUseNoInit();
 
@@ -492,16 +493,17 @@ _internalResize(const VariableResizeArgs& resize_args)
   ValueType& data_values = m_data->_internal()->_internalDeprecatedValue();
   ValueType& container_ref = data_values;
 
-  Integer dim2_size = data_values.dim2Size();
+  Integer dim1_size = ((new_size != -1) ? new_size : data_values.dim1Size());
+  Integer dim2_size = ((new_size_dim2 != -1) ? new_size_dim2 : data_values.dim2Size());
 
   const bool is_collective_allocator = data_values.allocator()->isCollective();
   if (is_collective_allocator) {
-    data_values.reserve(new_size + nb_additional_element * dim2_size);
+    data_values.reserve(dim1_size + nb_additional_element * dim2_size);
   }
   else if (nb_additional_element != 0) {
     Integer capacity = data_values.capacity();
-    if (new_size > capacity)
-      data_values.reserve(new_size + nb_additional_element * dim2_size);
+    if (dim1_size > capacity)
+      data_values.reserve(dim1_size + nb_additional_element * dim2_size);
   }
 
   eDataInitialisationPolicy init_policy = getGlobalDataInitialisationPolicy();
@@ -510,20 +512,20 @@ _internalResize(const VariableResizeArgs& resize_args)
   Integer current_size = data_values.dim1Size();
 
   /*info() << "RESIZE INTERNAL " << fullName()
-         << " wanted_dim1_size=" << new_size
+         << " wanted_dim1_size=" << dim1_size
          << " dim1_size=" << value().dim1Size()
          << " dim2size=" << dim2_size
          << " total=" << value().totalNbElement();*/
   if (use_no_init || (init_policy != DIP_InitWithDefault))
-    data_values.resizeNoInit(new_size, dim2_size);
+    data_values.resizeNoInit(dim1_size, dim2_size);
   else
-    data_values.resize(new_size, dim2_size);
+    data_values.resize(dim1_size, dim2_size);
 
-  if (new_size > current_size) {
+  if (dim1_size > current_size) {
     bool use_nan = (init_policy == DIP_InitWithNan);
     bool use_nan2 = (init_policy == DIP_InitInitialWithNanResizeWithDefault) && !_hasValidData();
     if (use_nan || use_nan2) {
-      for (Integer i = current_size; i < new_size; ++i)
+      for (Integer i = current_size; i < dim1_size; ++i)
         DataTypeTraitsT<T>::fillNan(data_values[i]);
     }
   }

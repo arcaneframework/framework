@@ -134,6 +134,12 @@ class ARCANE_CORE_EXPORT IVariableMngInternal
    */
   virtual void addAutoDestroyVariable(VariableRef* var) = 0;
 
+  /*!
+   * \brief Method allowing to create a variable with a VariableBuildInfo.
+   * Useful to create the same variable from a mesh to another.
+   */
+  virtual VariableRef* createVariableFromType(const String& full_type, const VariableBuildInfo& vbi) = 0;
+
  public:
 
   //! Temporary internal function to retrieve the subdomain.

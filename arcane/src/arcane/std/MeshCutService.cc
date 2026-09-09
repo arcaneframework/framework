@@ -21,8 +21,13 @@
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/IPrimaryMesh.h"
 #include "arcane/core/MeshBuildInfo.h"
-
 #include "arcane/core/IMeshSection.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/VariableMetaData.h"
+
+#include "arcane/core/internal/IVariableInternal.h"
+#include "arcane/core/internal/IVariableMngInternal.h"
+
 #include "arcane/std/MeshCut_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -203,6 +208,40 @@ struct UnknownNodeOrFace
   Int64 m_node1_uid;
   Int32 m_who;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class T>
+struct VariableGroup
+{
+  UniqueArray<ArrayView<T>> dim1;
+  UniqueArray<Array2View<T>> dim2;
+};
+
+template <class T>
+struct VariableGroupType
+{
+  bool isUnknownUsed() { return !(unknown.dim1.empty() && unknown.dim2.empty()); }
+  bool isCellsUsed() { return !(cells.dim1.empty() && cells.dim2.empty()); }
+  bool isFacesUsed() { return !(faces.dim1.empty() && faces.dim2.empty()); }
+  bool isNodesUsed() { return !(nodes.dim1.empty() && nodes.dim2.empty()); }
+
+  VariableGroup<T> unknown;
+  VariableGroup<T> cells;
+  VariableGroup<T> faces;
+  VariableGroup<T> nodes;
+};
+
+template <class T>
+struct VariableOriClone
+{
+  VariableGroupType<T> ori;
+  VariableGroupType<T> clone;
+};
 } // namespace
 
 /*---------------------------------------------------------------------------*/
@@ -236,7 +275,7 @@ class MeshCutService
 
   void setServiceMeshUniqueId(Int32 unique_id) override;
 
-  VariableCollection variables() override { return {}; }
+  VariableCollection variables() override;
 
   void updateSection() override;
 
@@ -248,7 +287,8 @@ class MeshCutService
  private:
 
   void _createMesh();
-  void _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 ajust_node_pos, Int32& sd_nb_cell, UniqueArray<Int64>& new_cells, Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces);
+  void _createVariables();
+  void _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 ajust_node_pos, Int32& sd_nb_cell, UniqueArray<Int64>& new_cells, Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, UniqueArray<Cell>& ori_cells);
   void _makeUniqueCellUID(Int32 sd_nb_cell, UniqueArray<Int64>& new_cells, UniqueArray<NodeIntersection>& new_nodes);
 
   void _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes);
@@ -264,10 +304,19 @@ class MeshCutService
   void _setCoordNodesAndOwner(UniqueArray<NodeIntersection>& new_nodes);
   void _setFacesOwner(UniqueArray<FaceLite>& new_faces);
 
+  void _updateVariables(UniqueArray<Cell>& ori_cells);
+
+  template <class T>
+  void _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T);
+
+  template <class T>
+  void _updateArrayVariable(UniqueArray<Cell>& ori_cells, T, VariableOriClone<T>& voc);
+
  private:
 
   eServiceType m_creation_type;
-  // VariableCollection m_variables_ori;
+  VariableCollection m_variables_ori;
+  VariableCollection m_variables_cloned;
   IPrimaryMesh* m_cloned_mesh = nullptr;
   UniqueArray<std::pair<Real3, Real3>> m_plans;
   Int32 m_mesh_uid = -1;
@@ -296,9 +345,7 @@ addPlane(const Real3& p0, const Real3& normal)
 void MeshCutService::
 setVariables(VariableCollection variables)
 {
-  ARCANE_UNUSED(variables);
-  ARCANE_NOT_YET_IMPLEMENTED("Not supported yet");
-  // m_variables_ori = variables;
+  m_variables_ori = variables;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -308,6 +355,15 @@ void MeshCutService::
 setServiceMeshUniqueId(Int32 unique_id)
 {
   m_mesh_uid = unique_id;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableCollection MeshCutService::
+variables()
+{
+  return m_variables_cloned;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -368,13 +424,46 @@ _createMesh()
     m_cloned_mesh = mesh_handle->mesh()->toPrimaryMesh();
     m_cloned_mesh->modifier()->clearItems();
   }
+  _createVariables();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void MeshCutService::
-_createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 ajust_node_pos, Int32& sd_nb_cell, UniqueArray<Int64>& new_cells, Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces)
+_createVariables()
+{
+  IVariableMng* variable_mng = m_cloned_mesh->variableMng();
+  for (VariableCollection::Enumerator i(m_variables_ori); ++i;) {
+    IVariable* var = *i;
+    Ref vmd(var->createMetaDataRef());
+    const String& mesh_name = vmd->meshName();
+    if (mesh_name.null()) {
+      ARCANE_FATAL("Only variables with support are supported.");
+    }
+    if (vmd->isPartial()) {
+      ARCANE_FATAL("Partial variables are not supported.");
+    }
+    const String& full_type = vmd->fullType();
+    const String& base_name = vmd->baseName();
+    Integer property = vmd->property();
+    const String& family_name = vmd->itemFamilyName();
+
+    // info() << "Clone variable : " << vmd->fullName();
+
+    VariableBuildInfo vbi(m_cloned_mesh, base_name, family_name, property);
+    VariableRef* variable_ref = variable_mng->_internalApi()->createVariableFromType(full_type, vbi);
+
+    // info() << "Cloned variable : " << variable_ref->variable()->fullName();
+    m_variables_cloned.add(variable_ref->variable());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshCutService::
+_createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes, Int32 ajust_node_pos, Int32& sd_nb_cell, UniqueArray<Int64>& new_cells, Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces, UniqueArray<Cell>& ori_cells)
 {
   auto [p0, normal] = m_plans[plan_pos];
 
@@ -581,6 +670,7 @@ _createNodesAndCells(Int32 plan_pos, Int32& sd_nb_node, UniqueArray<NodeIntersec
 
       new_cells.add(point_coords_tmp.size());
       new_cells.add(sd_nb_cell);
+      ori_cells.add(cell);
 
       {
         // Calcul du barycentre de tous les points d'intersection.
@@ -1464,7 +1554,7 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces)
           for (Cell cell01 : node01.cells()) {
             if (cell00 == cell01) {
               for (Cell cell10 : node10.cells()) {
-                if (cell01 == cell10 ) {
+                if (cell01 == cell10) {
                   for (Cell cell11 : node11.cells()) {
                     if (cell10 == cell11) {
                       if (cell11.uniqueId() < min_uid) {
@@ -1860,6 +1950,8 @@ _compute()
   Int32 g_nb_node = 0;
   Int32 g_nb_face = 0;
 
+  UniqueArray<Cell> ori_cells;
+
   UniqueArray<Int64> new_cells;
 
   UniqueArray<NodeIntersection> new_nodes;
@@ -1879,63 +1971,69 @@ _compute()
 
     Int32 nb_node_for_this_plan = g_nb_node;
     Int32 nb_face_for_this_plan = g_nb_face;
+    {
+      debug() << "[" << subDomain()->parallelMng()->commRank() << "] _createNodesAndCells";
+      _createNodesAndCells(i, g_nb_node, plan_new_nodes, ajust, nb_cell, new_cells, g_nb_face, plan_new_faces, ori_cells);
 
-    debug() << "[" << subDomain()->parallelMng()->commRank() << "] _createNodesAndCells";
-    _createNodesAndCells(i, g_nb_node, plan_new_nodes, ajust, nb_cell, new_cells, g_nb_face, plan_new_faces);
+      // for (auto& elem : plan_new_nodes) {
+      //   debug() << "New node"
+      //          << " -- UID : " << elem.m_new_node->m_uid_new_node
+      //          << " -- Owner : " << elem.m_new_node->m_owner_new_node
+      //          << " -- Pos : " << elem.m_intersection_pos
+      //          << " -- Edge node0 : " << elem.m_new_node->m_uid_node0
+      //          << " -- Edge node1 : " << elem.m_new_node->m_uid_node1;
+      // }
+    }
 
-    // for (auto& elem : plan_new_nodes) {
-    //   debug() << "New node"
-    //          << " -- UID : " << elem.m_new_node->m_uid_new_node
-    //          << " -- Owner : " << elem.m_new_node->m_owner_new_node
-    //          << " -- Pos : " << elem.m_intersection_pos
-    //          << " -- Edge node0 : " << elem.m_new_node->m_uid_node0
-    //          << " -- Edge node1 : " << elem.m_new_node->m_uid_node1;
-    // }
+    {
+      debug() << "[" << subDomain()->parallelMng()->commRank() << "] _fillNodeUID";
+      _fillNodeUID(g_nb_node, plan_new_nodes);
+      nb_node_for_this_plan = g_nb_node - nb_node_for_this_plan;
 
-    debug() << "[" << subDomain()->parallelMng()->commRank() << "] _fillNodeUID";
-    _fillNodeUID(g_nb_node, plan_new_nodes);
-    nb_node_for_this_plan = g_nb_node - nb_node_for_this_plan;
+      nb_node_for_this_plan = _makeUniqueNodeUID(nb_node_for_this_plan, plan_new_nodes);
+      g_nb_node = previous_g_nb_node + nb_node_for_this_plan;
 
-    nb_node_for_this_plan = _makeUniqueNodeUID(nb_node_for_this_plan, plan_new_nodes);
-    g_nb_node = previous_g_nb_node + nb_node_for_this_plan;
+      // for (auto& elem : plan_new_nodes) {
+      //   debug() << "Fix node"
+      //           << " -- UID : " << elem.m_new_node->m_uid_new_node
+      //           << " -- Owner : " << elem.m_new_node->m_owner_new_node
+      //           << " -- Pos : " << elem.m_intersection_pos
+      //           << " -- Edge node0 : " << elem.m_new_node->m_uid_node0
+      //           << " -- Edge node1 : " << elem.m_new_node->m_uid_node1;
+      // }
+      //
+      // for (auto& elem : plan_new_faces) {
+      //   debug() << "New face"
+      //           << " -- UID : " << elem.m_uid_new_face
+      //           << " -- Owner : " << elem.m_owner_new_face
+      //           << " -- Node0 : " << elem.m_node0->m_uid_new_node
+      //           << " -- Node00 : " << elem.m_node0->m_uid_node0
+      //           << " -- Node01 : " << elem.m_node0->m_uid_node1
+      //           << " -- Node1 : " << elem.m_node1->m_uid_new_node
+      //           << " -- Node10 : " << elem.m_node1->m_uid_node0
+      //           << " -- Node11 : " << elem.m_node1->m_uid_node1;
+      // }
+    }
 
-    // for (auto& elem : plan_new_nodes) {
-    //   debug() << "Fix node"
-    //           << " -- UID : " << elem.m_new_node->m_uid_new_node
-    //           << " -- Owner : " << elem.m_new_node->m_owner_new_node
-    //           << " -- Pos : " << elem.m_intersection_pos
-    //           << " -- Edge node0 : " << elem.m_new_node->m_uid_node0
-    //           << " -- Edge node1 : " << elem.m_new_node->m_uid_node1;
-    // }
-    //
-    // for (auto& elem : plan_new_faces) {
-    //   debug() << "New face"
-    //           << " -- UID : " << elem.m_uid_new_face
-    //           << " -- Owner : " << elem.m_owner_new_face
-    //           << " -- Node0 : " << elem.m_node0->m_uid_new_node
-    //           << " -- Node00 : " << elem.m_node0->m_uid_node0
-    //           << " -- Node01 : " << elem.m_node0->m_uid_node1
-    //           << " -- Node1 : " << elem.m_node1->m_uid_new_node
-    //           << " -- Node10 : " << elem.m_node1->m_uid_node0
-    //           << " -- Node11 : " << elem.m_node1->m_uid_node1;
-    // }
-    _fillFaceUID(g_nb_face, plan_new_faces);
-    nb_face_for_this_plan = g_nb_face - nb_face_for_this_plan;
+    {
+      _fillFaceUID(g_nb_face, plan_new_faces);
+      nb_face_for_this_plan = g_nb_face - nb_face_for_this_plan;
 
-    nb_face_for_this_plan = _makeUniqueFaceUID(nb_face_for_this_plan, plan_new_faces);
-    g_nb_face = previous_g_nb_face + nb_face_for_this_plan;
+      nb_face_for_this_plan = _makeUniqueFaceUID(nb_face_for_this_plan, plan_new_faces);
+      g_nb_face = previous_g_nb_face + nb_face_for_this_plan;
 
-    // for (auto& elem : plan_new_faces) {
-    //   debug() << "Fix face"
-    //           << " -- UID : " << elem.m_uid_new_face
-    //           << " -- Owner : " << elem.m_owner_new_face
-    //           << " -- Node0 : " << elem.m_node0->m_uid_new_node
-    //           << " -- Node00 : " << elem.m_node0->m_uid_node0
-    //           << " -- Node01 : " << elem.m_node0->m_uid_node1
-    //           << " -- Node1 : " << elem.m_node1->m_uid_new_node
-    //           << " -- Node10 : " << elem.m_node1->m_uid_node0
-    //           << " -- Node11 : " << elem.m_node1->m_uid_node1;
-    // }
+      // for (auto& elem : plan_new_faces) {
+      //   debug() << "Fix face"
+      //           << " -- UID : " << elem.m_uid_new_face
+      //           << " -- Owner : " << elem.m_owner_new_face
+      //           << " -- Node0 : " << elem.m_node0->m_uid_new_node
+      //           << " -- Node00 : " << elem.m_node0->m_uid_node0
+      //           << " -- Node01 : " << elem.m_node0->m_uid_node1
+      //           << " -- Node1 : " << elem.m_node1->m_uid_new_node
+      //           << " -- Node10 : " << elem.m_node1->m_uid_node0
+      //           << " -- Node11 : " << elem.m_node1->m_uid_node1;
+      // }
+    }
 
     new_nodes.addRange(plan_new_nodes);
     new_faces.addRange(plan_new_faces);
@@ -1968,6 +2066,8 @@ _compute()
   m_cloned_mesh->modifier()->endUpdate();
   _setCoordNodesAndOwner(new_nodes);
   _setFacesOwner(new_faces);
+
+  _updateVariables(ori_cells);
 
   m_cloned_mesh->nodeFamily()->notifyItemsOwnerChanged();
   m_cloned_mesh->faceFamily()->notifyItemsOwnerChanged();
@@ -2072,6 +2172,145 @@ _setFacesOwner(UniqueArray<FaceLite>& new_faces)
     for (const auto& elem : new_faces) {
       if (elem.m_uid_new_face == uid) {
         iface->mutableItemBase().setOwner(elem.m_owner_new_face, subDomain()->subDomainId());
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshCutService::
+_updateVariables(UniqueArray<Cell>& ori_cells)
+{
+  for (Int32 type = 0; type < NB_ARCANE_DATA_TYPE; ++type) {
+    switch (type) {
+    case DT_Byte: {
+      _updateVariablesT(ori_cells, type, Byte());
+    } break;
+    case DT_Real: {
+      _updateVariablesT(ori_cells, type, Real());
+    } break;
+    case DT_Real2: {
+      _updateVariablesT(ori_cells, type, Real2());
+    } break;
+    case DT_Real2x2: {
+      _updateVariablesT(ori_cells, type, Real2x2());
+    } break;
+    case DT_Real3: {
+      _updateVariablesT(ori_cells, type, Real3());
+    } break;
+    case DT_Real3x3: {
+      _updateVariablesT(ori_cells, type, Real3x3());
+    } break;
+    case DT_Int8: {
+      _updateVariablesT(ori_cells, type, Int8());
+    } break;
+    case DT_Int16: {
+      _updateVariablesT(ori_cells, type, Int16());
+    } break;
+    case DT_Int32: {
+      _updateVariablesT(ori_cells, type, Int32());
+    } break;
+    case DT_Int64: {
+      _updateVariablesT(ori_cells, type, Int64());
+    } break;
+    case DT_Float32: {
+      _updateVariablesT(ori_cells, type, Float32());
+    } break;
+    case DT_Float16: {
+      _updateVariablesT(ori_cells, type, Float16());
+    } break;
+    case DT_BFloat16: {
+      _updateVariablesT(ori_cells, type, BFloat16());
+    } break;
+    default:
+      break;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class T>
+void MeshCutService::
+_updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
+{
+  VariableOriClone<T> voc;
+
+  if (m_variables_cloned.count() != m_variables_ori.count()) {
+    ARCANE_FATAL("Bad size -- m_variables_cloned : {0} -- m_variables_ori : {1}", m_variables_cloned.count(), m_variables_ori.count());
+  }
+
+  VariableCollection::Enumerator iclone(m_variables_cloned);
+  VariableCollection::Enumerator iori(m_variables_ori);
+
+  while (++iclone && ++iori) {
+    IVariable* ori = *iori;
+    if (ori->dataType() == type) {
+      IVariable* clone = *iclone;
+      if (ori->dimension() == 1) {
+        auto* ori_data = dynamic_cast<IArrayDataT<T>*>(ori->data());
+        auto* clo_data = dynamic_cast<IArrayDataT<T>*>(clone->data());
+        if (ori->itemKind() == IK_Unknown) {
+          voc.ori.unknown.dim1.add(ori_data->view());
+          voc.clone.unknown.dim1.add(clo_data->view());
+        }
+        else if (ori->itemKind() == IK_Cell) {
+          voc.ori.cells.dim1.add(ori_data->view());
+          voc.clone.cells.dim1.add(clo_data->view());
+        }
+        else {
+          ARCANE_FATAL("Variable type not supported -- Type : {0}", ori->itemKind());
+        }
+      }
+      else if (ori->dimension() == 2) {
+        if (ori->itemKind() == IK_Cell) {
+          VariableResizeArgs vra(-1);
+          vra.setNewSizeDim2(ori->nbElement() / mesh()->nbCell());
+          clone->_internalApi()->resize(vra);
+          auto* ori_data = dynamic_cast<IArray2DataT<T>*>(ori->data());
+          auto* clo_data = dynamic_cast<IArray2DataT<T>*>(clone->data());
+          voc.ori.cells.dim2.add(ori_data->view());
+          voc.clone.cells.dim2.add(clo_data->view());
+        }
+      }
+      else {
+        ARCANE_FATAL("Variable dim not supported -- Dim : {0}", ori->dimension());
+      }
+    }
+  }
+
+  _updateArrayVariable(ori_cells, T(), voc);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class T>
+void MeshCutService::
+_updateArrayVariable(UniqueArray<Cell>& ori_cells, T, VariableOriClone<T>& voc)
+{
+  if (voc.ori.isUnknownUsed()) {
+    for (Int32 i = 0; i < voc.ori.unknown.dim1.size(); ++i) {
+      voc.clone.unknown.dim1[i].copy(voc.ori.unknown.dim1[i]);
+    }
+    for (Int32 i = 0; i < voc.ori.unknown.dim2.size(); ++i) {
+      for (Int32 j = 0; j < voc.ori.unknown.dim2[i].dim2Size(); ++j) {
+        voc.clone.unknown.dim2[i][j].copy(voc.ori.unknown.dim2[i][j]);
+      }
+    }
+  }
+
+  ENUMERATE_ (Cell, icell, m_cloned_mesh->ownCells()) {
+    Cell ori_cell = ori_cells[icell.localId()];
+    if (voc.ori.isCellsUsed()) {
+      for (Int32 i = 0; i < voc.ori.cells.dim1.size(); ++i) {
+        voc.clone.cells.dim1[i][icell.localId()] = voc.ori.cells.dim1[i][ori_cell.localId()];
+      }
+      for (Int32 i = 0; i < voc.ori.cells.dim2.size(); ++i) {
+        voc.clone.cells.dim2[i][icell.localId()].copy(voc.ori.cells.dim2[i][ori_cell.localId()]);
       }
     }
   }
