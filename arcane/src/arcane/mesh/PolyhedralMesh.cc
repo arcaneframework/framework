@@ -1214,8 +1214,7 @@ class mesh::PolyhedralMesh::InternalApi
 
   FaceFamily& trueFaceFamily() override
   {
-    m_mesh->traceMng()->fatal() << "PolyhedralMesh::trueFaceFamily() is not implemented. PolyhedralMesh has no concrete FaceFamily.";
-    return *m_empty_face_family;
+    ARCANE_FATAL("PolyhedralMesh::trueFaceFamily() is not implemented. PolyhedralMesh has no concrete FaceFamily.");
   }
 
   void printStats(Int32 level)
@@ -1237,7 +1236,6 @@ class mesh::PolyhedralMesh::InternalApi
   PolyhedralMesh* m_mesh = nullptr;
   std::unique_ptr<IItemConnectivityMng> m_connectivity_mng = nullptr;
   std::unique_ptr<IPolyhedralMeshModifier> m_polyhedral_mesh_modifier = nullptr;
-  FaceFamily* m_empty_face_family = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
