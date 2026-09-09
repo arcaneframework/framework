@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshInternal.cc                                      (C) 2000-2025 */
+/* DynamicMeshInternal.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Internal part of DynamicMesh for Arcane.                                  */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,8 @@
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
 #include "arcane/mesh/ItemConnectivityMng.h"
+#include "arcane/mesh/FaceFamily.h"
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -117,6 +119,38 @@ addCell(ItemUniqueId unique_id, ItemTypeId type_id, ConstArrayView<Int64> nodes_
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+ItemInternalMap& DynamicMeshInternal::nodesMap()
+{
+  return m_mesh->nodesMap();
+}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemInternalMap& DynamicMeshInternal::edgesMap()
+{
+  return m_mesh->edgesMap();
+}
+
+ItemInternalMap& DynamicMeshInternal::facesMap()
+{
+  return m_mesh->facesMap();
+}
+
+ItemInternalMap& DynamicMeshInternal::cellsMap()
+{
+  return m_mesh->cellsMap();
+}
+
+FaceFamily& DynamicMeshInternal::trueFaceFamily()
+{
+  return m_mesh->trueFaceFamily();
+}
+
+void DynamicMeshInternal::printStats(Int32 level)
+{
+  m_mesh->incrementalBuilder()->printStats(level);
+}
 
 } // namespace Arcane::mesh
 

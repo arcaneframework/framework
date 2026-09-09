@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder.h                                         (C) 2000-2024 */
+/* GhostLayerBuilder.h                                         (C) 2000-2026 */
 /*                                                                           */
 /* Construction of ghost layers.                                             */
 /*---------------------------------------------------------------------------*/
@@ -14,9 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/mesh/DynamicMeshKindInfos.h"
 #include "arcane/utils/TraceAccessor.h"
-
-#include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,7 +47,7 @@ class GhostLayerBuilder
  public:
 
   //! Constructs an instance for the \a mesh.
-  explicit GhostLayerBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
+  explicit GhostLayerBuilder(IMesh* mesh);
   virtual ~GhostLayerBuilder();
 
  public:
@@ -61,8 +60,8 @@ class GhostLayerBuilder
 
  private:
 
-  DynamicMesh* m_mesh;
-  DynamicMeshIncrementalBuilder* m_mesh_builder;
+  IMesh* m_mesh = nullptr;
+  IMeshInternal* m_mesh_internal = nullptr;
 
  private:
 

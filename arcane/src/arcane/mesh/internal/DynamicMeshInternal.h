@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshInternal.h                                       (C) 2000-2025 */
+/* DynamicMeshInternal.h                                       (C) 2000-2026 */
 /*                                                                           */
 /* Internal Arcane part of DynamicMesh.                                      */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,8 @@
 #include "arcane/core/internal/IMeshModifierInternal.h"
 
 #include "arcane/mesh/ItemConnectivityMng.h"
+
+#include "arcane/mesh/DynamicMeshKindInfos.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,7 +54,15 @@ class DynamicMeshInternal
   FaceLocalId addFace(ItemUniqueId unique_id, ItemTypeId type_id, ConstArrayView<Int64> nodes_uid) override;
   CellLocalId addCell(ItemUniqueId unique_id, ItemTypeId type_id, ConstArrayView<Int64> nodes_uid) override;
 
- private:
+  // Methods added to make GhostLayerMng independent of DynamicMesh
+  mesh::ItemInternalMap& nodesMap() override;
+  mesh::ItemInternalMap& edgesMap() override;
+  mesh::ItemInternalMap& facesMap() override;
+  mesh::ItemInternalMap& cellsMap() override;
+  FaceFamily& trueFaceFamily() override;
+  void printStats(Int32 level) override;
+
+private:
 
   DynamicMesh* m_mesh = nullptr;
   std::unique_ptr<IItemConnectivityMng> m_connectivity_mng = nullptr;

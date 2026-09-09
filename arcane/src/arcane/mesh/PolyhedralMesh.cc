@@ -65,9 +65,10 @@
 
 #include "neo/Mesh.h"
 #include "neo/Utils.h"
-#include "ItemConnectivityMng.h"
 
+#include "arcane/mesh/ItemConnectivityMng.h"
 #include "arcane/core/ItemPrinter.h"
+#include "arcane/mesh/FaceFamily.h"
 
 #endif
 
@@ -1189,6 +1190,45 @@ class mesh::PolyhedralMesh::InternalApi
   IItemFamilySerializerMngInternal* familySerializerMng() const noexcept override
   {
     return m_mesh->polyhedralFamilySerializerMng();
+  }
+
+  ItemInternalMap& nodesMap() override
+  {
+    return m_mesh->_itemFamily(IK_Node)->itemsMap();
+  }
+
+  ItemInternalMap& edgesMap() override
+  {
+    return m_mesh->_itemFamily(IK_Edge)->itemsMap();
+  }
+
+  ItemInternalMap& facesMap() override
+  {
+    return m_mesh->_itemFamily(IK_Face)->itemsMap();
+  }
+
+  ItemInternalMap& cellsMap() override
+  {
+    return m_mesh->_itemFamily(IK_Cell)->itemsMap();
+  }
+
+  FaceFamily& trueFaceFamily() override
+  {
+    ARCANE_FATAL("PolyhedralMesh::trueFaceFamily() is not implemented. PolyhedralMesh has no concrete FaceFamily.");
+  }
+
+  void printStats(Int32 level)
+  {
+    m_mesh->traceMng()->info(level) << "-- -- Statistics";
+    m_mesh->traceMng()->info(level) << "Number of nodes after addition     &: "
+                << " hashmap=" << m_mesh->_internalApi()->nodesMap().count();
+    m_mesh->traceMng()->info(level) << "Number of edges after addition     : "
+                << " hashmap=" << m_mesh->_internalApi()->edgesMap().count();
+    m_mesh->traceMng()->info(level) << "Number of faces after addition     : "
+                << " hashmap=" << m_mesh->_internalApi()->facesMap().count();
+    m_mesh->traceMng()->info(level) << "Number of cells after addition     : "
+                << " hashmap=" << m_mesh->_internalApi()->cellsMap().count();
+    m_mesh->traceMng()->info(level) << "--";
   }
 
  private:

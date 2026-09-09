@@ -25,6 +25,11 @@ namespace Arcane
 class IItemConnectivityMng;
 class IPolyhedralMeshModifier;
 class IItemFamilySerializerMngInternal;
+namespace mesh
+{
+  class ItemInternalMap;
+  class FaceFamily;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,6 +80,19 @@ class ARCANE_CORE_EXPORT IMeshInternal
    * @return This method returns nullptr if the manager does not exist.
    */
   virtual IItemFamilySerializerMngInternal* familySerializerMng() const noexcept { return nullptr; }
+
+  /*! Temporary add of DynamicMesh and DynamicMeshIncrementalBuilder methods
+   * to make GhostLayerBuilder independent of DynamicMesh.
+   * These methods may be moved to more specific interfaces.
+ */
+  virtual mesh::ItemInternalMap& nodesMap() = 0;
+  virtual mesh::ItemInternalMap& edgesMap() = 0;
+  virtual mesh::ItemInternalMap& facesMap() = 0;
+  virtual mesh::ItemInternalMap& cellsMap() = 0;
+
+  virtual mesh::FaceFamily& trueFaceFamily() = 0;
+
+  virtual void printStats(Int32 level) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

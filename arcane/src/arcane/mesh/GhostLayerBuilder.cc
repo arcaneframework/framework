@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder.cc                                        (C) 2000-2025 */
+/* GhostLayerBuilder.cc                                        (C) 2000-2026 */
 /*                                                                           */
 /* Construction of ghost layers.                                             */
 /*---------------------------------------------------------------------------*/
@@ -33,6 +33,7 @@
 #include "arcane/core/IItemFamilySerializer.h"
 #include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/IGhostLayerMng.h"
+#include "arcane/core/internal/IMeshInternal.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/GhostLayerBuilder.h"
@@ -48,7 +49,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 extern "C++" void
-_buildGhostLayerNewVersion(DynamicMesh* mesh, bool is_allocate, Int32 version);
+_buildGhostLayerNewVersion(IMesh* mesh, bool is_allocate, Int32 version);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,10 +64,10 @@ _buildGhostLayerNewVersion(DynamicMesh* mesh, bool is_allocate, Int32 version);
 /*---------------------------------------------------------------------------*/
 
 GhostLayerBuilder::
-GhostLayerBuilder(DynamicMeshIncrementalBuilder* mesh_builder)
-: TraceAccessor(mesh_builder->mesh()->traceMng())
-, m_mesh(mesh_builder->mesh())
-, m_mesh_builder(mesh_builder)
+GhostLayerBuilder(IMesh* mesh)
+: TraceAccessor(mesh->traceMng())
+, m_mesh(mesh)
+, m_mesh_internal(mesh->_internalApi())
 {
 }
 
@@ -201,10 +202,10 @@ _addOneGhostLayerV2()
 
   Integer nb_sub_domain_boundary_face = 0;
   // Marks nodes on the boundary
-  ItemInternalMap& cells_map = m_mesh->cellsMap(); // Supports mesh transfers
-  ItemInternalMap& faces_map = m_mesh->facesMap(); // Determines boundaries before transfer
-  // ItemInternalMap& edges_map = m_mesh->edgesMap(); // Not directly used by the algorithm
-  ItemInternalMap& nodes_map = m_mesh->nodesMap(); // Locates modifications
+  ItemInternalMap& cells_map = m_mesh_internal->cellsMap(); // Supports mesh transfers
+  ItemInternalMap& faces_map = m_mesh_internal->facesMap(); // Determines boundaries before transfer
+  // ItemInternalMap& edges_map = m_mesh_internal->edgesMap(); // Not directly used by the algorithm
+  ItemInternalMap& nodes_map = m_mesh_internal->nodesMap(); // Locates modifications
 
   const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
   // Iterates over faces and marks boundary nodes, edges, and faces
@@ -443,7 +444,7 @@ _addOneGhostLayerV2()
 
   // Sends and receives ghost cells
   _exchangeCells(cells_to_send, false);
-  m_mesh_builder->printStats();
+  m_mesh_internal->printStats(TraceMessage::DEFAULT_LEVEL);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -507,9 +508,9 @@ addGhostChildFromParent()
   Integer sid = pm->commRank();
 
   // Mark the nodes on the boundary
-  ItemInternalMap& cells_map = m_mesh->cellsMap();
+  ItemInternalMap& cells_map = m_mesh_internal->cellsMap();
 
-  FaceFamily& true_face_family = m_mesh->trueFaceFamily();
+  FaceFamily& true_face_family = m_mesh_internal->trueFaceFamily();
 
   //TODO: choose correct value to initialize the table
   BoundaryInfosMap boundary_infos_to_send(200, true);
@@ -580,7 +581,7 @@ addGhostChildFromParent()
   }
   // Sends and receives ghost cells
   _exchangeCells(cells_to_send, true);
-  m_mesh_builder->printStats();
+  m_mesh_internal->printStats(TraceMessage::DEFAULT_LEVEL);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -602,7 +603,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
   Integer sid = pm->commRank();
 
   // Mark the nodes on the boundary
-  ItemInternalMap& cells_map = m_mesh->cellsMap();
+  ItemInternalMap& cells_map = m_mesh_internal->cellsMap();
 
   //TODO: choose correct value to initialize the table
   BoundaryInfosMap boundary_infos_to_send(200, true);
@@ -675,7 +676,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
 
   // Sends and receives ghost cells
   _exchangeCells(cells_to_send, true);
-  m_mesh_builder->printStats();
+  m_mesh_internal->printStats(TraceMessage::DEFAULT_LEVEL);
 }
 
 /*---------------------------------------------------------------------------*/
