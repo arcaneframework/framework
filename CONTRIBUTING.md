@@ -138,6 +138,24 @@ Commit signing will become mandatory at the end of 2026. See GitHub's
 [documentation on commit signature verification](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification)
 to prepare your environment.
 
+## License and contributions
+
+Arcane Framework is distributed under the
+[Apache License, Version 2.0](LICENSE.txt). By submitting a contribution for
+inclusion in the project, you confirm that you have the right to submit it
+and, unless you explicitly state otherwise, submit it under that license, as
+provided by section 5 of the Apache License, Version 2.0.
+
+All contributors must sign the project's Contributor License Agreement (CLA)
+through [CLA Assistant](https://cla-assistant.io) before their pull request can
+be merged. The CLA grants the permissions needed to maintain and, if necessary,
+change the project's license while contributors retain copyright in their work.
+
+CLA Assistant checks every pull request. Sign the CLA when prompted; a valid
+signature is reused for later pull requests unless the CLA changes. Do not
+submit a contribution subject to terms that are incompatible with the project
+license.
+
 ## Pull requests
 
 Before requesting review:
@@ -146,6 +164,7 @@ Before requesting review:
 - Choose every label that describes the change.
 - Ensure the title clearly describes the result; add a short description when
   the title alone is insufficient.
+- Sign the Contributor License Agreement when requested by CLA Assistant.
 - Build the affected configuration and run relevant tests locally.
 - Keep the pull request focused. Explain compatibility implications, generated
   files, or intentionally untested paths in its description.
