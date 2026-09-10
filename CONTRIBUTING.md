@@ -73,6 +73,9 @@ Follow [.editorconfig](.editorconfig). In particular, C++, C#, CMake, and
 `CMakeLists.txt` files use two spaces for indentation and no trailing
 whitespace.
 
+Format every modified source file with `clang-format` before pushing. Use the
+`_clang-format` file from the relevant `arcane/` or `arccore/` directory.
+
 New or edited `.cc` and `.h` files are checked in CI for the project header,
 copyright notice, and UTF-8 with BOM encoding. Start from a nearby maintained
 source file in the same component so that these conventions are preserved.
@@ -104,28 +107,28 @@ buildable.
 Use the following subject format:
 
 ```text
-[<part>:<subdirectory>] Short imperative summary
+[<part>,<subdirectory>] Short imperative summary
 ```
 
 For example:
 
 ```text
-[arcane:cartesianmesh] Add InPatch/Overlap flags on nodes and faces
+[arcane,cartesianmesh] Add InPatch/Overlap flags on nodes and faces
 ```
 
 When a commit affects several subdirectories of the same part, list them in
 the scope:
 
 ```text
-[<part>:<subdirectory-1>,<subdirectory-2>] Short imperative summary
+[<part>,<subdirectory-1>+<subdirectory-2>] Short imperative summary
 ```
 
 When work is delivered as a small, ordered commit series, number the commits
 clearly:
 
 ```text
-[<part>:<subdirectory>] [1/2] First change
-[<part>:<subdirectory>] [2/2] Follow-up change
+[<part>,<subdirectory>] [1/2] First change
+[<part>,<subdirectory>] [2/2] Follow-up change
 ```
 
 Temporary work-in-progress commits are acceptable locally. Mark them as
