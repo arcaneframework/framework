@@ -15,6 +15,7 @@
 #include "arcane/utils/Real3.h"
 
 #include "arcane/core/Directory.h"
+#include "arcane/core/IItemFamily.h"
 #include "arcane/core/IMeshSection.h"
 #include "arcane/core/IPostProcessorWriter.h"
 #include "arcane/core/ITimeLoop.h"
@@ -56,6 +57,8 @@ public:
   void compute() override;
 
   void _initVars();
+  void _checkVars(IMesh* new_mesh);
+  Real3 _faceNormal(const Face& face, const Real3& center, VariableNodeReal3& node_coord) const;
 
  private:
 
@@ -176,7 +179,7 @@ compute()
     cloned_var = pp0->variables();
   }
   IMesh* meshcut = meshhcut.mesh();
-
+  _checkVars(meshcut);
 
   if (options()->enablePostProcessing())
   {
@@ -245,6 +248,94 @@ _initVars()
       m_on_cells1[icell][i] = icell->uniqueId().asInt32() * i;
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshCutTest::
+_checkVars(IMesh* new_mesh)
+{
+  VariableCellReal on_cells0(VariableBuildInfo(new_mesh, m_on_cells0.name()));
+  VariableCellReal3 bary_new_mesh(VariableBuildInfo(new_mesh, "Bary"));
+  bary_new_mesh.fill(Real3{ 0 });
+  VariableNodeReal3& node_coord_new_mesh = new_mesh->nodesCoordinates();
+  VariableNodeReal3& node_coord_ori_mesh = mesh()->nodesCoordinates();
+
+  UniqueArray<Int64> uid_to_check;
+  uid_to_check.reserve(new_mesh->allCells().size());
+  ENUMERATE_ (Cell, icell, new_mesh->allCells()) {
+    uid_to_check.add(on_cells0[icell]);
+    for (Node node : icell->nodes()) {
+      bary_new_mesh[icell] += node_coord_new_mesh[node];
+    }
+    bary_new_mesh[icell] /= icell->nbNode();
+  }
+
+  UniqueArray<Int32> lid_to_check(new_mesh->allCells().size());
+
+  IItemFamily* ori_mesh_cell_family = mesh()->cellFamily();
+  ori_mesh_cell_family->itemsUniqueIdToLocalId(lid_to_check, uid_to_check, true);
+
+  CellVectorView view_3d_cells = mesh()->cellFamily()->view(lid_to_check);
+
+  Int32 iter = 0;
+  ENUMERATE_ (Cell, inewcell, new_mesh->allCells()) {
+    Cell cell_3d = view_3d_cells[iter++];
+
+    Real3 bary_cell_3d{ 0 };
+    for (Node node : cell_3d.nodes()) {
+      bary_cell_3d += node_coord_ori_mesh[node];
+    }
+    bary_cell_3d /= cell_3d.nbNode();
+
+
+    for (Face face : cell_3d.faces()) {
+      Real3 bary_face{ 0 };
+      for (Node node : face.nodes()) {
+        bary_face += node_coord_ori_mesh[node];
+      }
+      bary_face /= face.nbNode();
+
+      //info() << "FaceUID : " << face.uniqueId() << " -- BaryFace : " << bary_face << " -- Bary2D : " << bary_new_mesh[inewcell];
+
+      Real3 normal = _faceNormal(face, bary_face, node_coord_ori_mesh);
+      {
+        Real d = math::dot({ bary_cell_3d - bary_face }, normal);
+        Real dd = math::isNearlyZeroWithEpsilon(d, 1e-10) ? 0 : d;
+        if (dd < 0) {
+          normal *= -1;
+        }
+      }
+
+      Real d = math::dot({ bary_new_mesh[inewcell] - bary_face }, normal);
+      Real dd = math::isNearlyZeroWithEpsilon(d, 1e-10) ? 0 : d;
+      if (dd < 0) {
+        ARCANE_FATAL("Bad 2D");
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Real3 MeshCutTest::
+_faceNormal(const Face& face, const Real3& center, VariableNodeReal3& node_coord) const
+{
+  NodeLocalIdView node_ids = face.nodeIds();
+  Int32 nb_nodes = node_ids.size();
+
+  Real3 normal = Real3::zero();
+
+  for (Int32 i = 0; i < nb_nodes; ++i) {
+    Int32 j = (i + 1) % nb_nodes;
+    Real3 pi = node_coord[node_ids[i]];
+    Real3 pj = node_coord[node_ids[j]];
+    normal += Real(0.5) * math::cross(pi - center, pj - center);
+  }
+
+  return normal;
 }
 
 /*---------------------------------------------------------------------------*/

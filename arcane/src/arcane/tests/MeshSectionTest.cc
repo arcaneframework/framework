@@ -51,6 +51,7 @@ class MeshSectionTest
   void executeTest() override;
 
   void _initVars();
+  void _checkVars(IMesh* new_mesh);
 
 private:
 
@@ -109,6 +110,7 @@ executeTest()
   MeshHandle meshsh = pp0->meshSection();
   IMesh* meshs = meshsh.mesh();
 
+  _checkVars(meshs);
 
   if (options()->enablePostProcessing())
   {
@@ -166,6 +168,10 @@ executeTest()
     vm->writePostProcessing(post_processor);
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MeshSectionTest::
 _initVars()
 {
@@ -191,6 +197,59 @@ _initVars()
     m_on_faces0[ifaces] = ifaces->uniqueId().asInt32();
     for (Integer i = 0; i < 3; ++i) {
       m_on_faces1[ifaces][i] = ifaces->uniqueId().asInt32() * i;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshSectionTest::
+_checkVars(IMesh* new_mesh)
+{
+  // Pour le MeshSection, les items copiés ont le même UID que les items originaux.
+  VariableCellReal on_cells0(VariableBuildInfo(new_mesh, m_on_cells0.name()));
+  VariableCellArrayReal on_cells1(VariableBuildInfo(new_mesh, m_on_cells1.name()));
+
+  ENUMERATE_(Cell, icell, new_mesh->allCells()){
+    if (on_cells0[icell] != icell->uniqueId().asInt32()) {
+      ARCANE_FATAL("Bad value -- Expected : {0} -- Found : {1}", icell->uniqueId().asInt32(), on_cells0[icell]);
+    }
+
+    for (Integer i = 0; i < 3; ++i) {
+      if (on_cells1[icell][i] != (icell->uniqueId().asInt32() * i)) {
+        ARCANE_FATAL("Bad value -- Expected : {0} -- Found : {1}", (icell->uniqueId().asInt32() * i), on_cells1[icell][i]);
+      }
+    }
+  }
+
+  VariableNodeReal on_nodes0(VariableBuildInfo(new_mesh, m_on_nodes0.name()));
+  VariableNodeArrayReal on_nodes1(VariableBuildInfo(new_mesh, m_on_nodes1.name()));
+
+  ENUMERATE_(Node, inode, new_mesh->allNodes()){
+    if (on_nodes0[inode] != inode->uniqueId().asInt32()) {
+      ARCANE_FATAL("Bad value -- Expected : {0} -- Found : {1}", inode->uniqueId().asInt32(), on_nodes0[inode]);
+    }
+
+    for (Integer i = 0; i < 3; ++i) {
+      if (on_nodes1[inode][i] != (inode->uniqueId().asInt32() * i)) {
+        ARCANE_FATAL("Bad value -- Expected : {0} -- Found : {1}", (inode->uniqueId().asInt32() * i), on_nodes1[inode][i]);
+      }
+    }
+  }
+
+  VariableFaceReal on_faces0(VariableBuildInfo(new_mesh, m_on_faces0.name()));
+  VariableFaceArrayReal on_faces1(VariableBuildInfo(new_mesh, m_on_faces1.name()));
+
+  ENUMERATE_(Face, iface, new_mesh->allFaces()){
+    if (on_faces0[iface] != iface->uniqueId().asInt32()) {
+      ARCANE_FATAL("Bad value -- Expected : {0} -- Found : {1}", iface->uniqueId().asInt32(), on_faces0[iface]);
+    }
+
+    for (Integer i = 0; i < 3; ++i) {
+      if (on_faces1[iface][i] != (iface->uniqueId().asInt32() * i)) {
+        ARCANE_FATAL("Bad value -- Expected : {0} -- Found : {1}", (iface->uniqueId().asInt32() * i), on_faces1[iface][i]);
+      }
     }
   }
 }
