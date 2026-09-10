@@ -1405,7 +1405,7 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes)
       }
 
       // Sinon, on doit aller demander le uid au proprio.
-      else {
+      else if (owner_min >= 0) {
         need_more_comm = true;
         node_on_edge->m_owner_new_node = owner_min;
         node_on_edge->m_uid_new_node = -2;
@@ -1421,6 +1421,10 @@ _fillNodeUID(Int32& sd_nb_node, UniqueArray<NodeIntersection>& new_nodes)
         // debug() << "[Node][" << my_proc << " -> " << node_on_edge->m_owner_new_node << "] Recv UID for Node"
         //         << " -- UID0 : " << node_on_edge->m_uid_node0
         //         << " -- UID1 : " << node_on_edge->m_uid_node1;
+      }
+
+      else {
+        ARCANE_FATAL("Node owner not found");
       }
     }
   }
@@ -1843,7 +1847,7 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces)
       }
 
       // Sinon, on doit aller demander le uid au proprio.
-      else {
+      else if (owner_min >= 0) {
         need_more_comm = true;
         face_lite.m_owner_new_face = owner_min;
         face_lite.m_uid_new_face = -2;
@@ -1859,6 +1863,9 @@ _fillFaceUID(Int32& sd_nb_face, UniqueArray<FaceLite>& new_faces)
         // debug() << "[Face][" << my_proc << " -> " << face_lite.m_owner_new_face << "] Recv UID for Node"
         //         << " -- UID0 : " << face_lite.m_node0->m_uid_new_node
         //         << " -- UID1 : " << face_lite.m_node1->m_uid_new_node;
+      }
+      else {
+        ARCANE_FATAL("Face owner not found");
       }
     }
   }
@@ -2251,8 +2258,8 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
     if (ori->dataType() == type) {
       IVariable* clone = *iclone;
       if (ori->dimension() == 1) {
-        auto* ori_data = dynamic_cast<IArrayDataT<T>*>(ori->data());
-        auto* clo_data = dynamic_cast<IArrayDataT<T>*>(clone->data());
+        auto* ori_data = ARCANE_CHECK_POINTER(dynamic_cast<IArrayDataT<T>*>(ori->data()));
+        auto* clo_data = ARCANE_CHECK_POINTER(dynamic_cast<IArrayDataT<T>*>(clone->data()));
         if (ori->itemKind() == IK_Unknown) {
           voc.ori.unknown.dim1.add(ori_data->view());
           voc.clone.unknown.dim1.add(clo_data->view());
@@ -2270,8 +2277,8 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
           VariableResizeArgs vra(-1);
           vra.setNewSizeDim2(ori->nbElement() / mesh()->nbCell());
           clone->_internalApi()->resize(vra);
-          auto* ori_data = dynamic_cast<IArray2DataT<T>*>(ori->data());
-          auto* clo_data = dynamic_cast<IArray2DataT<T>*>(clone->data());
+          auto* ori_data = ARCANE_CHECK_POINTER(dynamic_cast<IArray2DataT<T>*>(ori->data()));
+          auto* clo_data = ARCANE_CHECK_POINTER(dynamic_cast<IArray2DataT<T>*>(clone->data()));
           voc.ori.cells.dim2.add(ori_data->view());
           voc.clone.cells.dim2.add(clo_data->view());
         }

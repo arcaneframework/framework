@@ -434,8 +434,9 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
     if (ori->dataType() == type) {
       IVariable* clone = *iclone;
       if (ori->dimension() == 1) {
-        auto* ori_data = dynamic_cast<IArrayDataT<T>*>(ori->data());
-        auto* clo_data = dynamic_cast<IArrayDataT<T>*>(clone->data());
+        auto* ori_data = ARCANE_CHECK_POINTER(dynamic_cast<IArrayDataT<T>*>(ori->data()));
+        auto* clo_data = ARCANE_CHECK_POINTER(dynamic_cast<IArrayDataT<T>*>(clone->data()));
+
         if (ori->itemKind() == IK_Unknown) {
           voc.ori.unknown.dim1.add(ori_data->view());
           voc.clone.unknown.dim1.add(clo_data->view());
@@ -460,8 +461,8 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
         // if (ori->itemKind() == IK_Unknown) {
         //   VariableResizeArgs vra(ori->nbElement());
         //   clone->_internalApi()->resize(vra);
-        //   auto* ori_data = dynamic_cast<IArray2DataT<T>*>(ori->data());
-        //   auto* clo_data = dynamic_cast<IArray2DataT<T>*>(clone->data());
+        //   auto* ori_data = ARCANE_CHECK_POINTER(dynamic_cast<IArray2DataT<T>*>(ori->data()));
+        //   auto* clo_data = ARCANE_CHECK_POINTER(dynamic_cast<IArray2DataT<T>*>(clone->data()));
         //   voc.ori.unknown.dim2.add(ori_data->view());
         //   voc.clone.unknown.dim2.add(clo_data->view());
         // }
@@ -470,8 +471,8 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
           VariableResizeArgs vra(-1);
           vra.setNewSizeDim2(ori->nbElement() / mesh()->nbCell());
           clone->_internalApi()->resize(vra);
-          auto* ori_data = dynamic_cast<IArray2DataT<T>*>(ori->data());
-          auto* clo_data = dynamic_cast<IArray2DataT<T>*>(clone->data());
+          auto* ori_data = ARCANE_CHECK_POINTER(dynamic_cast<IArray2DataT<T>*>(ori->data()));
+          auto* clo_data = ARCANE_CHECK_POINTER(dynamic_cast<IArray2DataT<T>*>(clone->data()));
           voc.ori.cells.dim2.add(ori_data->view());
           voc.clone.cells.dim2.add(clo_data->view());
         }
@@ -479,8 +480,8 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
           VariableResizeArgs vra(-1);
           vra.setNewSizeDim2(ori->nbElement() / mesh()->nbFace());
           clone->_internalApi()->resize(vra);
-          auto* ori_data = dynamic_cast<IArray2DataT<T>*>(ori->data());
-          auto* clo_data = dynamic_cast<IArray2DataT<T>*>(clone->data());
+          auto* ori_data = ARCANE_CHECK_POINTER(dynamic_cast<IArray2DataT<T>*>(ori->data()));
+          auto* clo_data = ARCANE_CHECK_POINTER(dynamic_cast<IArray2DataT<T>*>(clone->data()));
           voc.ori.faces.dim2.add(ori_data->view());
           voc.clone.faces.dim2.add(clo_data->view());
         }
@@ -488,8 +489,8 @@ _updateVariablesT(UniqueArray<Cell>& ori_cells, Int32 type, T)
           VariableResizeArgs vra(-1);
           vra.setNewSizeDim2(ori->nbElement() / mesh()->nbNode());
           clone->_internalApi()->resize(vra);
-          auto* ori_data = dynamic_cast<IArray2DataT<T>*>(ori->data());
-          auto* clo_data = dynamic_cast<IArray2DataT<T>*>(clone->data());
+          auto* ori_data = ARCANE_CHECK_POINTER(dynamic_cast<IArray2DataT<T>*>(ori->data()));
+          auto* clo_data = ARCANE_CHECK_POINTER(dynamic_cast<IArray2DataT<T>*>(clone->data()));
           voc.ori.nodes.dim2.add(ori_data->view());
           voc.clone.nodes.dim2.add(clo_data->view());
         }
