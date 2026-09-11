@@ -16,6 +16,7 @@
 #include "arccore/base/CheckedConvert.h"
 #include "arccore/base/PlatformUtils.h"
 #include "arccore/base/FatalErrorException.h"
+#include "arccore/base/IStackTraceService.h"
 #include "arccore/base/internal/DependencyInjection.h"
 
 #include "arccore/trace/ITraceMng.h"
@@ -87,6 +88,7 @@ setCoreServices(const ConcurrencyApplicationBuildInfo& build_info)
     if (found_name == dbghelp_service_name)
       has_dbghelp = true;
     if (sv.get()) {
+      sv->build();
       m_stack_trace_service = sv;
       Platform::setStackTraceService(sv.get());
     }
