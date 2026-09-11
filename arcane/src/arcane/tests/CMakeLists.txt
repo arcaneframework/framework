@@ -64,7 +64,7 @@ set(ARCANE_TEST_PATH ${ARCANEBUILDROOT}/src/arcane/tests)
 # Copy the DLLs necessary for the test executable into the directory
 if (WIN32)
   add_custom_command(TARGET arcane_tests_exec POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:arcane_tests_exec> $<TARGET_FILE_DIR:arcane_tests_exec>
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:arcane_tests_exec> $<TARGET_FILE_DIR:arcane_tests_exec>
     COMMAND_EXPAND_LISTS
   )
 endif ()
@@ -244,7 +244,6 @@ arcane_copy_mesh_direct(mesh.h5)
 arcane_copy_mesh_direct(merge_nodes_2d.vtk)
 arcane_copy_mesh_direct(merge_nodes_3d.vtk)
 arcane_copy_mesh_direct(mesh1.med)
-arcane_copy_mesh_direct(mesh_box_.med)
 arcane_copy_mesh_direct(cube_hexa8.med)
 arcane_copy_mesh_direct(cube_hexa20.med)
 arcane_copy_mesh_direct(circle_cut-poly.med)
