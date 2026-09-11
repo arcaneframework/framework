@@ -48,7 +48,8 @@ jobs:
           -DARCCORE_CXX_STANDARD=20 \
           -DARCANE_DEFAULT_PARTITIONER=Metis \
           -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
-          -DCMAKE_DISABLE_FIND_PACKAGE_SWIG=ON
+          -DCMAKE_DISABLE_FIND_PACKAGE_SWIG=ON \
+          -DCMAKE_VERBOSE_MAKEFILE=TRUE
 
       # Setting up ccache from github cached files
       - name: Prepare coverity
@@ -92,7 +93,7 @@ jobs:
           apt-get update
           apt-get install -y file
           export PATH="${PWD}/coverity-tool/bin:${PATH}"
-          cov-build --dir cov-int make -C build
+          cov-build --dir cov-int make -C build -j $(nproc)
 
       - name: Upload log artifact
         uses: actions/upload-artifact@v7
