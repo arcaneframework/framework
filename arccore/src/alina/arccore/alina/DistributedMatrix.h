@@ -115,8 +115,8 @@ class CommunicationPattern
     ptrdiff_t rnbr = 0, snbr = 0, send_size = 0;
 
     {
-      std::vector<int> rcounts(comm.size, 0);
-      std::vector<int> scounts(comm.size);
+      UniqueArray<int> rcounts(comm.size, 0);
+      UniqueArray<int> scounts(comm.size);
 
       // Build index for column renumbering;
       // count how many domains send us data and how much.
@@ -148,8 +148,7 @@ class CommunicationPattern
           recv.ptr.push_back(recv.ptr.back() + rcounts[d]);
         }
       }
-
-      MPI_Alltoall(rcounts.data(), 1, MPI_INT, scounts.data(), 1, MPI_INT, comm.mpiCommunicator());
+      MessagePassing::mpAllToAll(comm.messagePassingMng(), rcounts, scounts, 1);
 
       for (ptrdiff_t d = 0; d < comm.size; ++d) {
         if (scounts[d]) {
@@ -182,7 +181,7 @@ class CommunicationPattern
     // Here is what I need from you:
     for (size_t i = 0; i < recv.nbr.size(); ++i)
       recv.req[i] = comm.doISend(&rem_cols[recv.ptr[i]], recv.ptr[i + 1] - recv.ptr[i],
-                              recv.nbr[i], tag_exc_cols);
+                                 recv.nbr[i], tag_exc_cols);
 
     ARCCORE_ALINA_TIC("MPI Wait");
     comm.waitAll(recv.req);
@@ -299,11 +298,11 @@ class CommunicationPattern
   {
     for (size_t i = 0; i < recv.nbr.size(); ++i)
       recv.req[i] = comm.doIReceive(&recv_val[recv.ptr[i]], recv.ptr[i + 1] - recv.ptr[i],
-                                 recv.nbr[i], tag_exc_vals);
+                                    recv.nbr[i], tag_exc_vals);
 
     for (size_t i = 0; i < send.nbr.size(); ++i)
       send.req[i] = comm.doISend(const_cast<T*>(&send_val[send.ptr[i]]), send.ptr[i + 1] - send.ptr[i],
-                              send.nbr[i], tag_exc_vals);
+                                 send.nbr[i], tag_exc_vals);
 
     ARCCORE_ALINA_TIC("MPI Wait");
     comm.waitAll(recv.req);
