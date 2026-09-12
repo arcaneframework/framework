@@ -40,9 +40,9 @@ namespace Arcane::Alina
  */
 struct DistributedInnerProduct
 {
-  mpi_communicator comm;
+  AlinaCommunicator comm;
 
-  explicit DistributedInnerProduct(mpi_communicator comm)
+  explicit DistributedInnerProduct(AlinaCommunicator comm)
   : comm(comm)
   {}
 

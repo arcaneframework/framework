@@ -241,7 +241,7 @@ mpi_symm_graph(const DistributedMatrix<Backend>& A,
 /*---------------------------------------------------------------------------*/
 
 template <class Idx> std::tuple<ptrdiff_t, ptrdiff_t>
-mpi_graph_perm_index(mpi_communicator comm, int npart, const std::vector<Idx>& part,
+mpi_graph_perm_index(AlinaCommunicator comm, int npart, const std::vector<Idx>& part,
                      std::vector<ptrdiff_t>& perm)
 {
   ARCCORE_ALINA_TIC("perm index");
@@ -279,7 +279,7 @@ mpi_graph_perm_index(mpi_communicator comm, int npart, const std::vector<Idx>& p
 
 template <class Backend, class Idx>
 std::shared_ptr<DistributedMatrix<Backend>>
-mpi_graph_perm_matrix(mpi_communicator comm, ptrdiff_t col_beg, ptrdiff_t col_end,
+mpi_graph_perm_matrix(AlinaCommunicator comm, ptrdiff_t col_beg, ptrdiff_t col_end,
                       const std::vector<Idx>& perm)
 {
   typedef typename Backend::value_type value_type;

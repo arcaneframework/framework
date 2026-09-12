@@ -24,8 +24,8 @@ namespace Arcane::Alina
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-mpi_communicator::
-mpi_communicator(MPI_Comm comm)
+AlinaCommunicator::
+AlinaCommunicator(MPI_Comm comm)
 : comm(comm)
 {
   MPI_Comm_rank(comm, &rank);
@@ -36,8 +36,8 @@ mpi_communicator(MPI_Comm comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-mpi_communicator::
-mpi_communicator(IMessagePassingMng* mpm_comm)
+AlinaCommunicator::
+AlinaCommunicator(IMessagePassingMng* mpm_comm)
 {
   MessagePassing::Communicator c = mpm_comm->communicator();
   if (!c.isValid())
@@ -51,7 +51,7 @@ mpi_communicator(IMessagePassingMng* mpm_comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void mpi_communicator::
+void AlinaCommunicator::
 check(bool cond, const String& message)
 {
   int lc = (cond) ? 1 : 0;

@@ -357,7 +357,7 @@ AlinaDistributedSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
   auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
                            matrix_view.columns(), matrix_view.values());
 
-  Alina::mpi_communicator mpi_comm(comm);
+  Alina::AlinaCommunicator mpi_comm(comm);
   auto* p = new DistributedSolverType(mpi_comm, A, prm);
 
   m_p = std::make_shared<AlinaDistributedSolverImpl>(p);

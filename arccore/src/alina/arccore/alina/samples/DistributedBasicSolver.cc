@@ -40,7 +40,7 @@ using namespace Arcane;
 //---------------------------------------------------------------------------
 template <class Backend, class Matrix>
 std::shared_ptr<Alina::DistributedMatrix<Backend>>
-partition(Alina::mpi_communicator comm, const Matrix& Astrip,
+partition(Alina::AlinaCommunicator comm, const Matrix& Astrip,
           typename Backend::vector& rhs, const typename Backend::params& bprm,
           Alina::eMatrixPartitionerType ptype, int block_size = 1)
 {
@@ -75,7 +75,7 @@ partition(Alina::mpi_communicator comm, const Matrix& Astrip,
 }
 
 //---------------------------------------------------------------------------
-void solve_scalar(Alina::mpi_communicator comm,
+void solve_scalar(Alina::AlinaCommunicator comm,
                   ptrdiff_t chunk,
                   const std::vector<ptrdiff_t>& ptr,
                   const std::vector<ptrdiff_t>& col,
@@ -185,7 +185,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   auto& prof = Alina::Profiler::globalProfiler();
 
   //Alina::mpi_init_thread mpi(&argc, &argv);
-  Alina::mpi_communicator comm(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
 
   tm->info() << "World size: " << comm.size;
 

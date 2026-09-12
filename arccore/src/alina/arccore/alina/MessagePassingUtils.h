@@ -84,18 +84,18 @@ struct mpi_init_thread
 /*!
  * \brief Convenience wrapper around MPI_Comm.
  */
-struct ARCCORE_ALINA_EXPORT mpi_communicator
+struct ARCCORE_ALINA_EXPORT AlinaCommunicator
 {
   MPI_Comm comm = MPI_COMM_NULL;
   int rank = 0;
   int size = 0;
   Ref<IMessagePassingMng> m_message_passing_mng;
 
-  mpi_communicator() = default;
+  AlinaCommunicator() = default;
 
-  explicit mpi_communicator(MPI_Comm comm);
+  explicit AlinaCommunicator(MPI_Comm comm);
 
-  explicit mpi_communicator(IMessagePassingMng* mpm_comm);
+  explicit AlinaCommunicator(IMessagePassingMng* mpm_comm);
 
   operator MPI_Comm() const
   {

@@ -52,7 +52,7 @@ class DistributedDirectSolverBase
 
   DistributedDirectSolverBase() {}
 
-  void init(mpi_communicator comm, const build_matrix& Astrip)
+  void init(AlinaCommunicator comm, const build_matrix& Astrip)
   {
     this->comm = comm;
     n = Astrip.nbRow();
@@ -157,7 +157,7 @@ class DistributedDirectSolverBase
       comm.waitAll(col_req);
       comm.waitAll(val_req);
 
-      solver().init(mpi_communicator(masters_comm), A);
+      solver().init(AlinaCommunicator(masters_comm), A);
     }
     else {
       comm.doSend(widths.data(), n, group_master, cnt_tag);
@@ -169,7 +169,7 @@ class DistributedDirectSolverBase
   }
 
   template <class B>
-  void init(mpi_communicator comm, const DistributedMatrix<B>& A)
+  void init(AlinaCommunicator comm, const DistributedMatrix<B>& A)
   {
     const build_matrix& A_loc = *A.local();
     const build_matrix& A_rem = *A.remote();
@@ -265,7 +265,7 @@ class DistributedDirectSolverBase
   static const int rhs_tag = 5004;
   static const int sol_tag = 5005;
 
-  mpi_communicator comm;
+  AlinaCommunicator comm;
   int n;
   int group_master;
   MPI_Comm masters_comm;

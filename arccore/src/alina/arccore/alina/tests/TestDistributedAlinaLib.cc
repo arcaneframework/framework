@@ -27,7 +27,7 @@ using namespace Arcane;
 
 TEST(alina_test_mpi, DistributedAlinaLib)
 {
-  Alina::mpi_communicator world(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator world(MPI_COMM_WORLD);
 
   int comm_rank = world.rank;
   int comm_size = world.size;

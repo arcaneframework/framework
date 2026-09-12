@@ -300,7 +300,7 @@ struct AsDistributedPreconditioner
   typedef typename backend_type::vector vector;
 
   template <class Matrix>
-  AsDistributedPreconditioner(mpi_communicator comm,
+  AsDistributedPreconditioner(AlinaCommunicator comm,
                               const Matrix& A,
                               const params& prm = params(),
                               const backend_params& bprm = backend_params())
@@ -310,7 +310,7 @@ struct AsDistributedPreconditioner
     this->A->move_to_backend(bprm);
   }
 
-  AsDistributedPreconditioner(mpi_communicator,
+  AsDistributedPreconditioner(AlinaCommunicator,
                               std::shared_ptr<matrix> A,
                               const params& prm = params(),
                               const backend_params& bprm = backend_params())

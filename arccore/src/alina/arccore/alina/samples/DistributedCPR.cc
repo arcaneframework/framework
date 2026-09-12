@@ -46,7 +46,7 @@ using Alina::precondition;
 
 //---------------------------------------------------------------------------
 ptrdiff_t
-read_matrix_market(Alina::mpi_communicator comm,
+read_matrix_market(Alina::AlinaCommunicator comm,
                    const std::string& A_file, const std::string& rhs_file, int block_size,
                    std::vector<ptrdiff_t>& ptr,
                    std::vector<ptrdiff_t>& col,
@@ -82,7 +82,7 @@ read_matrix_market(Alina::mpi_communicator comm,
 
 //---------------------------------------------------------------------------
 ptrdiff_t
-read_binary(Alina::mpi_communicator comm,
+read_binary(Alina::AlinaCommunicator comm,
             const std::string& A_file, const std::string& rhs_file, int block_size,
             std::vector<ptrdiff_t>& ptr,
             std::vector<ptrdiff_t>& col,
@@ -118,7 +118,7 @@ read_binary(Alina::mpi_communicator comm,
 //---------------------------------------------------------------------------
 template <class Backend, class Matrix>
 std::shared_ptr<Alina::DistributedMatrix<Backend>>
-partition(Alina::mpi_communicator comm, const Matrix& Astrip,
+partition(Alina::AlinaCommunicator comm, const Matrix& Astrip,
           std::vector<double>& rhs, const typename Backend::params& bprm,
           Alina::eMatrixPartitionerType ptype, int block_size = 1)
 {
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
   }
   BOOST_SCOPE_EXIT_END
 
-  Alina::mpi_communicator comm(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
 
   if (comm.rank == 0)
     std::cout << "World size: " << comm.size << std::endl;

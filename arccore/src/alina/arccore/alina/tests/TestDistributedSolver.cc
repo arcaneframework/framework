@@ -23,7 +23,7 @@ using namespace Arcane;
 
 //---------------------------------------------------------------------------
 
-void solve_scalar(Alina::mpi_communicator comm,
+void solve_scalar(Alina::AlinaCommunicator comm,
                   ptrdiff_t chunk,
                   const std::vector<ptrdiff_t>& ptr,
                   const std::vector<ptrdiff_t>& col,
@@ -96,7 +96,7 @@ void solve_scalar(Alina::mpi_communicator comm,
 
 TEST(alina_test_mpi, BasicSolver)
 {
-  Alina::mpi_communicator comm(AlinaTest::global_mpi_comm_world);
+  Alina::AlinaCommunicator comm(AlinaTest::global_mpi_comm_world);
 
   std::cout << "World size: " << comm.size << "\n";
 

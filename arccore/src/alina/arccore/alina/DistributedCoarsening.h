@@ -435,7 +435,7 @@ struct DistributedPMISAggregation
 
     ptrdiff_t n = A_loc.nbRow();
 
-    mpi_communicator comm = A.comm();
+    AlinaCommunicator comm = A.comm();
 
     // 1. Get symbolic square of the connectivity matrix.
     ARCCORE_ALINA_TIC("symbolic square");
@@ -733,7 +733,7 @@ struct DistributedPMISAggregation
   }
 
   std::shared_ptr<matrix>
-  tentative_prolongation(mpi_communicator comm, ptrdiff_t n, ptrdiff_t naggr,
+  tentative_prolongation(AlinaCommunicator comm, ptrdiff_t n, ptrdiff_t naggr,
                          UniqueArray<ptrdiff_t>& state, UniqueArray<int>& owner)
   {
     auto p_loc = std::make_shared<build_matrix>();
@@ -1309,7 +1309,7 @@ struct DistributedSmoothedAggregationCoarsening
     DistributedPMISAggregation<Backend> aggr(A, prm.aggr);
     prm.aggr.eps_strong *= 0.5;
 
-    mpi_communicator comm = A.comm();
+    AlinaCommunicator comm = A.comm();
     const build_matrix& A_loc = *A.local();
     const build_matrix& A_rem = *A.remote();
 

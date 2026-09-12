@@ -103,7 +103,7 @@ class DistributedPreconditioner
                                         MatrixPartitionerRuntime<Backend>>;
 
   template <class Matrix>
-  DistributedPreconditioner(mpi_communicator comm,
+  DistributedPreconditioner(AlinaCommunicator comm,
                             const Matrix& Astrip,
                             params prm = params(),
                             const backend_params& bprm = backend_params())
@@ -113,7 +113,7 @@ class DistributedPreconditioner
     init(std::make_shared<matrix>(comm, Astrip, backend::nbRow(Astrip)), prm, bprm);
   }
 
-  DistributedPreconditioner(mpi_communicator,
+  DistributedPreconditioner(AlinaCommunicator,
                             std::shared_ptr<matrix> A,
                             params prm = params(),
                             const backend_params& bprm = backend_params())
@@ -254,7 +254,7 @@ class DistributedBlockPreconditioner
   typedef DistributedMatrix<backend_type> matrix;
 
   template <class Matrix>
-  DistributedBlockPreconditioner(mpi_communicator comm,
+  DistributedBlockPreconditioner(AlinaCommunicator comm,
                                  const Matrix& Astrip,
                                  const params& prm = params(),
                                  const backend_params& bprm = backend_params())
@@ -265,7 +265,7 @@ class DistributedBlockPreconditioner
     A->move_to_backend(bprm);
   }
 
-  DistributedBlockPreconditioner(mpi_communicator,
+  DistributedBlockPreconditioner(AlinaCommunicator,
                                  std::shared_ptr<matrix> A,
                                  const params& prm = params(),
                                  const backend_params& bprm = backend_params())

@@ -49,7 +49,7 @@ using Alina::precondition;
 
 //---------------------------------------------------------------------------
 std::vector<ptrdiff_t>
-read_problem(const Alina::mpi_communicator& world,
+read_problem(const Alina::AlinaCommunicator& world,
              const std::string& A_file,
              const std::string& rhs_file,
              const std::string& part_file,
@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
   }
   BOOST_SCOPE_EXIT_END
 
-  Alina::mpi_communicator world(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator world(MPI_COMM_WORLD);
 
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;

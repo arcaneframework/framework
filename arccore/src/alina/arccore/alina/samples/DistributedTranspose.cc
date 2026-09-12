@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
   }
   BOOST_SCOPE_EXIT_END
 
-  Alina::mpi_communicator comm(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
 
   int n = 16;
   int chunk_len = (n + comm.size - 1) / comm.size;
