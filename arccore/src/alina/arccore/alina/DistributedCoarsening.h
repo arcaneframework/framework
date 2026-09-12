@@ -23,17 +23,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <cstddef>
-#include <tuple>
-#include <memory>
-#include <numeric>
-#include <cassert>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/Coarsening.h"
 #include "arccore/alina/MessagePassingUtils.h"
 #include "arccore/alina/DistributedMatrix.h"
+
+#include <cstddef>
+#include <tuple>
+#include <memory>
+#include <numeric>
+#include <cassert>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -776,15 +776,12 @@ struct DistributedPMISAggregation
       }
 
       // Setup the exchange
-      MPI_Request req;
-      MPI_Ialltoall(scounts.data(), 1, MPI_INT,
-                    rcounts.data(), 1, MPI_INT,
-                    comm, &req);
+      SmallSpan<const int> send_counts_view(scounts);
+      SmallSpan<int> receive_counts_view(rcounts);
+      MessagePassing::mpAllToAll(comm.messagePassingMng(), send_counts_view, receive_counts_view, 1);
 
       P_loc.set_nonzeros(P_loc.scan_row_sizes());
       P_rem.set_nonzeros(P_rem.scan_row_sizes());
-
-      MPI_Wait(&req, MPI_STATUS_IGNORE);
 
       int snbr = 0;
       int rnbr = 0;
