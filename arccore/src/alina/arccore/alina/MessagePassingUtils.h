@@ -84,7 +84,7 @@ struct mpi_init_thread
 /*!
  * \brief Convenience wrapper around MPI_Comm.
  */
-struct mpi_communicator
+struct ARCCORE_ALINA_EXPORT mpi_communicator
 {
   MPI_Comm comm = MPI_COMM_NULL;
   int rank = 0;
@@ -93,13 +93,9 @@ struct mpi_communicator
 
   mpi_communicator() = default;
 
-  explicit mpi_communicator(MPI_Comm comm)
-  : comm(comm)
-  {
-    MPI_Comm_rank(comm, &rank);
-    MPI_Comm_size(comm, &size);
-    m_message_passing_mng = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createRef(comm);
-  };
+  explicit mpi_communicator(MPI_Comm comm);
+
+  explicit mpi_communicator(IMessagePassingMng* mpm_comm);
 
   operator MPI_Comm() const
   {
@@ -237,7 +233,7 @@ struct mpi_communicator
   template <typename T> std::complex<T>
   _reduceSumForComplex(const std::complex<T>& lval) const
   {
-    // Specialisation for 'std::complex<float>' as 2 float.
+    // Specialisation for 'std::complex<T>' as 2 T.
     FixedArray<T, 2> values = { { lval.real(), lval.imag() } };
     mpAllReduce(m_message_passing_mng.get(), MessagePassing::eReduceType::ReduceSum, values.view());
     return std::complex<T>(values[0], values[1]);

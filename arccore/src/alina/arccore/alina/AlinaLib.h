@@ -26,12 +26,14 @@
 #include "arccore/alina/AlinaGlobal.h"
 
 #include "arccore/base/Span.h"
+#include "arccore/message_passing/MessagePassingGlobal.h"
 
 #include <memory>
 
-#include <mpi.h>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-// Convergence info
+//! Convergence info
 struct ARCCORE_ALINA_EXPORT AlinaConvergenceInfo
 {
   int iterations = 0;
@@ -226,7 +228,7 @@ class ARCCORE_ALINA_EXPORT AlinaDistributedSolver
    * The matrix view \a matrix_view passed as arguments must remain valid
    * for as long as this instance is alive.
    */
-  AlinaDistributedSolver(MPI_Comm comm,
+  AlinaDistributedSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
                          const AlinaCSRMatrixView& matrix_view,
                          int n_def_vec,
                          AlinaDefVecFunction def_vec_func,

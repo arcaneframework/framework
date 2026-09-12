@@ -331,12 +331,8 @@ class AlinaDistributedSolverImpl
 /*---------------------------------------------------------------------------*/
 
 AlinaDistributedSolver::
-AlinaDistributedSolver(MPI_Comm comm,
+AlinaDistributedSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
                        const AlinaCSRMatrixView& matrix_view,
-                       //ptrdiff_t n,
-                       //const int* ptr,
-                       //const int* col,
-                       //const double* val,
                        int n_def_vec,
                        AlinaDefVecFunction def_vec_func,
                        void* def_vec_data,

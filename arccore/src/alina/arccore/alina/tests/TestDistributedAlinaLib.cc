@@ -63,8 +63,9 @@ TEST(alina_test_mpi, DistributedAlinaLib)
 
   // Solve
   {
+    Ref<IMessagePassingMng> mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createRef(MPI_COMM_WORLD);
     AlinaCSRMatrixView matrix_view(chunk, ptr.data(), col.data(), val.data());
-    AlinaDistributedSolver solver(MPI_COMM_WORLD, matrix_view,
+    AlinaDistributedSolver solver(mpm.get(), matrix_view,
                                   1, constant_deflation, nullptr, prm);
     SmallSpan<const double> rhs_view(rhs.data(), rhs.size());
     AlinaConvergenceInfo cnv = solver.solve(rhs_view, x.smallSpan());

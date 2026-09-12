@@ -86,5 +86,6 @@
   ParmetisMatrixPartitioner.h
   MatrixPartitionerRuntime.h
   MatrixPartitionUtils.h
+  MessagePassingUtils.cc
   MessagePassingUtils.h
 )
