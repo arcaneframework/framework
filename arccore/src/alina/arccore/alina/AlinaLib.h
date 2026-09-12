@@ -230,9 +230,6 @@ class ARCCORE_ALINA_EXPORT AlinaDistributedSolver
    */
   AlinaDistributedSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
                          const AlinaCSRMatrixView& matrix_view,
-                         int n_def_vec,
-                         AlinaDefVecFunction def_vec_func,
-                         void* def_vec_data,
                          const AlinaParameters& params);
 
   //! Find solution for the given RHS.
