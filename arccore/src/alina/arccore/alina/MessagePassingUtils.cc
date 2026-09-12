@@ -51,6 +51,35 @@ mpi_communicator(IMessagePassingMng* mpm_comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void mpi_communicator::
+check(bool cond, const String& message)
+{
+  int lc = (cond) ? 1 : 0;
+  int gc = mpAllReduce(m_message_passing_mng.get(), MessagePassing::eReduceType::ReduceMin, cond);
+
+  if (gc != 0)
+    return;
+  IMessagePassingMng* pm = m_message_passing_mng.get();
+  UniqueArray<int> c(size);
+  if (rank == 0)
+    c.resize(size);
+  ConstArrayView<int> in_view(1, &lc);
+  mpGather(pm, in_view, c, 0);
+  if (rank == 0) {
+    std::cerr << "Failed assumption: " << message << std::endl;
+    std::cerr << "Offending processes:";
+    for (int i = 0; i < size; ++i)
+      if (!c[i])
+        std::cerr << " " << i;
+    std::cerr << std::endl;
+  }
+  mpBarrier(pm);
+  ARCCORE_FATAL("CheckError in MessagePassingUtils: {0}", message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::Alina
 
 /*---------------------------------------------------------------------------*/
