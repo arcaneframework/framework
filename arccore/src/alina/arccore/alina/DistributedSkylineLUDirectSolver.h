@@ -57,7 +57,7 @@ class DistributedSkylineLUDirectSolver
 
   /// Constructor.
   template <class Matrix>
-  DistributedSkylineLUDirectSolver(mpi_communicator comm, const Matrix& A,
+  DistributedSkylineLUDirectSolver(AlinaCommunicator comm, const Matrix& A,
                                    const params& prm = params{})
   : prm(prm)
   {
@@ -74,7 +74,7 @@ class DistributedSkylineLUDirectSolver
     return 1;
   }
 
-  void init(mpi_communicator, const build_matrix& A)
+  void init(AlinaCommunicator, const build_matrix& A)
   {
     S = std::make_shared<Solver>(A, prm);
   }

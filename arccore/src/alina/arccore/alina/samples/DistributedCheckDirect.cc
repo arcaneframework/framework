@@ -41,7 +41,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   auto& prof = Alina::Profiler::globalProfiler();
 
-  Alina::mpi_communicator comm(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
 
   tm->info() << "World size: " << comm.size;
 
@@ -92,7 +92,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   chunk = chunk_end - chunk_start;
 
   std::vector<int> domain(comm.size + 1);
-  MPI_Allgather(&chunk, 1, MPI_INT, &domain[1], 1, MPI_INT, comm);
+  MPI_Allgather(&chunk, 1, MPI_INT, &domain[1], 1, MPI_INT, comm.mpiCommunicator());
   std::partial_sum(domain.begin(), domain.end(), domain.begin());
 
   prof.tic("assemble");

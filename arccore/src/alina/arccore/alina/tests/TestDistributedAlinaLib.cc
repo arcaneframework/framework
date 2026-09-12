@@ -23,16 +23,11 @@
 
 #include <gtest/gtest.h>
 
-double constant_deflation(int, ptrdiff_t, void*)
-{
-  return 1;
-}
-
 using namespace Arcane;
 
 TEST(alina_test_mpi, DistributedAlinaLib)
 {
-  Alina::mpi_communicator world(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator world(MPI_COMM_WORLD);
 
   int comm_rank = world.rank;
   int comm_size = world.size;
@@ -63,9 +58,9 @@ TEST(alina_test_mpi, DistributedAlinaLib)
 
   // Solve
   {
+    Ref<IMessagePassingMng> mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createRef(MPI_COMM_WORLD);
     AlinaCSRMatrixView matrix_view(chunk, ptr.data(), col.data(), val.data());
-    AlinaDistributedSolver solver(MPI_COMM_WORLD, matrix_view,
-                                  1, constant_deflation, nullptr, prm);
+    AlinaDistributedSolver solver(mpm.get(), matrix_view, prm);
     SmallSpan<const double> rhs_view(rhs.data(), rhs.size());
     AlinaConvergenceInfo cnv = solver.solve(rhs_view, x.smallSpan());
 

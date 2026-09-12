@@ -460,7 +460,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
 
-  Alina::mpi_communicator world(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator world(MPI_COMM_WORLD);
 
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;

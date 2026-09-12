@@ -83,7 +83,7 @@ class DistributedDirectSolverRuntime
   using SkylineSolverType = DistributedSkylineLUDirectSolver<Backend>;
 
   template <class Matrix>
-  DistributedDirectSolverRuntime(Alina::mpi_communicator comm, const Matrix& A, params prm = params())
+  DistributedDirectSolverRuntime(Alina::AlinaCommunicator comm, const Matrix& A, params prm = params())
   : s(prm.get("type", eDistributedDirectSolverType::skyline_lu))
   {
     if (!prm.erase("type"))
@@ -137,14 +137,14 @@ class DistributedDirectSolverRuntime
 
   template <class S, class V, class Matrix>
   typename std::enable_if<std::is_same<V, float>::value || std::is_same<V, double>::value, void>::type
-  do_construct(Alina::mpi_communicator comm, const Matrix& A, const params& prm)
+  do_construct(Alina::AlinaCommunicator comm, const Matrix& A, const params& prm)
   {
     handle = static_cast<void*>(new S(comm, A, prm));
   }
 
   template <class S, class V, class Matrix>
   typename std::enable_if<!std::is_same<V, float>::value && !std::is_same<V, double>::value, void>::type
-  do_construct(Alina::mpi_communicator, const Matrix&, const params&)
+  do_construct(Alina::AlinaCommunicator, const Matrix&, const params&)
   {
     throw std::logic_error("The direct solver does not support the value type");
   }

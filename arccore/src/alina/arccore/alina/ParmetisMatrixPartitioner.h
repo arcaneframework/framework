@@ -88,7 +88,7 @@ struct ParmetisMatrixPartitioner
     if (!prm.shrink)
       return false;
 
-    mpi_communicator comm = A.comm();
+    AlinaCommunicator comm = A.comm();
     ptrdiff_t n = A.loc_rows();
     UniqueArray<ptrdiff_t> row_dom = comm.exclusive_sum(n);
 
@@ -107,7 +107,7 @@ struct ParmetisMatrixPartitioner
 
   std::shared_ptr<matrix> operator()(const matrix& A, unsigned block_size = 1) const
   {
-    mpi_communicator comm = A.comm();
+    AlinaCommunicator comm = A.comm();
     idx_t n = A.loc_rows();
     ptrdiff_t row_beg = A.loc_col_shift();
 
@@ -169,7 +169,7 @@ struct ParmetisMatrixPartitioner
   std::tuple<ptrdiff_t, ptrdiff_t>
   partition(const DistributedMatrix<B>& A, idx_t npart, std::vector<ptrdiff_t>& perm) const
   {
-    mpi_communicator comm = A.comm();
+    AlinaCommunicator comm = A.comm();
     idx_t n = A.loc_rows();
     int active = (n > 0);
 
@@ -191,10 +191,10 @@ struct ParmetisMatrixPartitioner
       part.reserve(1); // So that part.data() is not NULL
 
     MPI_Comm scomm;
-    MPI_Comm_split(comm, active ? 0 : MPI_UNDEFINED, comm.rank, &scomm);
+    MPI_Comm_split(comm.mpiCommunicator(), active ? 0 : MPI_UNDEFINED, comm.rank, &scomm);
 
     if (active) {
-      mpi_communicator sc(scomm);
+      AlinaCommunicator sc(scomm);
       UniqueArray<idx_t> vtxdist = sc.exclusive_sum(n);
 
       sc.check(

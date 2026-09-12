@@ -78,7 +78,7 @@ void test()
   using ScalarRhs = math::scalar_of<Rhs>::type;
   int nb_scalar_for_rhs = sizeof(Rhs) / sizeof(ScalarRhs);
 
-  Alina::mpi_communicator comm(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
   IMessagePassingMng* pm = comm.m_message_passing_mng.get();
 
   int n = 16;

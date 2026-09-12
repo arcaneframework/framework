@@ -23,17 +23,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <cstddef>
-#include <tuple>
-#include <memory>
-#include <numeric>
-#include <cassert>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/Coarsening.h"
 #include "arccore/alina/MessagePassingUtils.h"
 #include "arccore/alina/DistributedMatrix.h"
+
+#include <cstddef>
+#include <tuple>
+#include <memory>
+#include <numeric>
+#include <cassert>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -435,7 +435,7 @@ struct DistributedPMISAggregation
 
     ptrdiff_t n = A_loc.nbRow();
 
-    mpi_communicator comm = A.comm();
+    AlinaCommunicator comm = A.comm();
 
     // 1. Get symbolic square of the connectivity matrix.
     ARCCORE_ALINA_TIC("symbolic square");
@@ -733,7 +733,7 @@ struct DistributedPMISAggregation
   }
 
   std::shared_ptr<matrix>
-  tentative_prolongation(mpi_communicator comm, ptrdiff_t n, ptrdiff_t naggr,
+  tentative_prolongation(AlinaCommunicator comm, ptrdiff_t n, ptrdiff_t naggr,
                          UniqueArray<ptrdiff_t>& state, UniqueArray<int>& owner)
   {
     auto p_loc = std::make_shared<build_matrix>();
@@ -776,15 +776,12 @@ struct DistributedPMISAggregation
       }
 
       // Setup the exchange
-      MPI_Request req;
-      MPI_Ialltoall(scounts.data(), 1, MPI_INT,
-                    rcounts.data(), 1, MPI_INT,
-                    comm, &req);
+      SmallSpan<const int> send_counts_view(scounts);
+      SmallSpan<int> receive_counts_view(rcounts);
+      MessagePassing::mpAllToAll(comm.messagePassingMng(), send_counts_view, receive_counts_view, 1);
 
       P_loc.set_nonzeros(P_loc.scan_row_sizes());
       P_rem.set_nonzeros(P_rem.scan_row_sizes());
-
-      MPI_Wait(&req, MPI_STATUS_IGNORE);
 
       int snbr = 0;
       int rnbr = 0;
@@ -1309,7 +1306,7 @@ struct DistributedSmoothedAggregationCoarsening
     DistributedPMISAggregation<Backend> aggr(A, prm.aggr);
     prm.aggr.eps_strong *= 0.5;
 
-    mpi_communicator comm = A.comm();
+    AlinaCommunicator comm = A.comm();
     const build_matrix& A_loc = *A.local();
     const build_matrix& A_rem = *A.remote();
 

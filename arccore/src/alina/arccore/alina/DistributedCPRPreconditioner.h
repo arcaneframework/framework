@@ -90,7 +90,7 @@ class DistributedCPRPreconditioner
   };
 
   template <class Matrix>
-  DistributedCPRPreconditioner(mpi_communicator comm,
+  DistributedCPRPreconditioner(AlinaCommunicator comm,
                                const Matrix& K,
                                const params& prm = params(),
                                const backend_params& bprm = backend_params())
@@ -101,7 +101,7 @@ class DistributedCPRPreconditioner
     init(std::make_shared<matrix>(comm, K, backend::nbRow(K)), bprm);
   }
 
-  DistributedCPRPreconditioner(mpi_communicator comm,
+  DistributedCPRPreconditioner(AlinaCommunicator comm,
                                std::shared_ptr<matrix> K,
                                const params& prm = params(),
                                const backend_params& bprm = backend_params())
@@ -143,7 +143,7 @@ class DistributedCPRPreconditioner
 
  private:
 
-  mpi_communicator comm;
+  AlinaCommunicator comm;
   size_t n, np;
 
   std::shared_ptr<PPrecond> P;

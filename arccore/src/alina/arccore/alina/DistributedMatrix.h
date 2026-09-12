@@ -93,7 +93,7 @@ class CommunicationPattern
 
   std::shared_ptr<vector> x_rem;
 
-  CommunicationPattern(mpi_communicator comm,
+  CommunicationPattern(AlinaCommunicator comm,
                        ptrdiff_t n_loc_cols,
                        size_t n_rem_cols, const col_type* p_rem_cols)
   : comm(comm)
@@ -115,8 +115,8 @@ class CommunicationPattern
     ptrdiff_t rnbr = 0, snbr = 0, send_size = 0;
 
     {
-      std::vector<int> rcounts(comm.size, 0);
-      std::vector<int> scounts(comm.size);
+      UniqueArray<int> rcounts(comm.size, 0);
+      UniqueArray<int> scounts(comm.size);
 
       // Build index for column renumbering;
       // count how many domains send us data and how much.
@@ -148,8 +148,7 @@ class CommunicationPattern
           recv.ptr.push_back(recv.ptr.back() + rcounts[d]);
         }
       }
-
-      MPI_Alltoall(rcounts.data(), 1, MPI_INT, scounts.data(), 1, MPI_INT, comm);
+      MessagePassing::mpAllToAll(comm.messagePassingMng(), rcounts, scounts, 1);
 
       for (ptrdiff_t d = 0; d < comm.size; ++d) {
         if (scounts[d]) {
@@ -182,7 +181,7 @@ class CommunicationPattern
     // Here is what I need from you:
     for (size_t i = 0; i < recv.nbr.size(); ++i)
       recv.req[i] = comm.doISend(&rem_cols[recv.ptr[i]], recv.ptr[i + 1] - recv.ptr[i],
-                              recv.nbr[i], tag_exc_cols);
+                                 recv.nbr[i], tag_exc_cols);
 
     ARCCORE_ALINA_TIC("MPI Wait");
     comm.waitAll(recv.req);
@@ -299,11 +298,11 @@ class CommunicationPattern
   {
     for (size_t i = 0; i < recv.nbr.size(); ++i)
       recv.req[i] = comm.doIReceive(&recv_val[recv.ptr[i]], recv.ptr[i + 1] - recv.ptr[i],
-                                 recv.nbr[i], tag_exc_vals);
+                                    recv.nbr[i], tag_exc_vals);
 
     for (size_t i = 0; i < send.nbr.size(); ++i)
       send.req[i] = comm.doISend(const_cast<T*>(&send_val[send.ptr[i]]), send.ptr[i + 1] - send.ptr[i],
-                              send.nbr[i], tag_exc_vals);
+                                 send.nbr[i], tag_exc_vals);
 
     ARCCORE_ALINA_TIC("MPI Wait");
     comm.waitAll(recv.req);
@@ -311,7 +310,7 @@ class CommunicationPattern
     ARCCORE_ALINA_TOC("MPI Wait");
   }
 
-  mpi_communicator mpi_comm() const
+  AlinaCommunicator mpi_comm() const
   {
     return comm;
   }
@@ -329,7 +328,7 @@ class CommunicationPattern
   static const int tag_exc_cols = 1002;
   static const int tag_exc_vals = 1003;
 
-  mpi_communicator comm;
+  AlinaCommunicator comm;
 
   std::unordered_map<ptrdiff_t, std::tuple<int, int>> idx;
   std::shared_ptr<Gather> gather;
@@ -358,7 +357,7 @@ class DistributedMatrix
   typedef CommunicationPattern<Backend> CommPattern;
   typedef typename Backend::matrix build_matrix;
 
-  DistributedMatrix(mpi_communicator comm,
+  DistributedMatrix(AlinaCommunicator comm,
                     std::shared_ptr<build_matrix> a_loc,
                     std::shared_ptr<build_matrix> a_rem,
                     std::shared_ptr<CommPattern> c = std::shared_ptr<CommPattern>())
@@ -402,7 +401,7 @@ class DistributedMatrix
   }
 
   template <class Matrix>
-  DistributedMatrix(mpi_communicator comm,
+  DistributedMatrix(AlinaCommunicator comm,
                     const Matrix& A,
                     ptrdiff_t _n_loc_cols = -1)
   : n_loc_rows(backend::nbRow(A))
@@ -471,7 +470,7 @@ class DistributedMatrix
     a_rem->ncols = C->recv.count();
   }
 
-  mpi_communicator comm() const
+  AlinaCommunicator comm() const
   {
     return C->mpi_comm();
   }
@@ -628,7 +627,7 @@ transpose(const DistributedMatrix<Backend>& A)
   static const int tag_col = 2002;
   static const int tag_val = 2003;
 
-  mpi_communicator comm = A.comm();
+  AlinaCommunicator comm = A.comm();
   const CommPattern& C = A.cpat();
 
   build_matrix& A_loc = *A.local();
@@ -787,7 +786,7 @@ remote_rows(const CommunicationPattern<Backend>& C,
   static const int tag_val = 3003;
 
   ARCCORE_ALINA_TIC("remote_rows");
-  mpi_communicator comm = C.mpi_comm();
+  AlinaCommunicator comm = C.mpi_comm();
 
   build_matrix& B_loc = *B.local();
   build_matrix& B_rem = *B.remote();
@@ -1241,7 +1240,7 @@ spectral_radius(const DistributedMatrix<Backend>& A, int power_iters = 0)
   typedef typename math::scalar_of<value_type>::type scalar_type;
   typedef CSRMatrix<value_type> build_matrix;
 
-  mpi_communicator comm = A.comm();
+  AlinaCommunicator comm = A.comm();
 
   const build_matrix& A_loc = *A.local();
   const build_matrix& A_rem = *A.remote();

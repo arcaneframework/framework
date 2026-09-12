@@ -121,11 +121,11 @@ struct renumbering
   }
 };
 
-int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
+int main2(const SampleMainContext& ctx, int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
   ITraceMng* tm = ctx.traceMng();
-  Alina::mpi_communicator world(MPI_COMM_WORLD);
+  AlinaCommunicator world(MPI_COMM_WORLD);
 
   tm->info() << "World size: " << world.size;
 

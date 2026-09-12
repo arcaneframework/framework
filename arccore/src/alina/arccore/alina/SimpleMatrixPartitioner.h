@@ -81,7 +81,7 @@ struct SimpleMatrixPartitioner
     if (!prm.enable)
       return false;
 
-    mpi_communicator comm = A.comm();
+    AlinaCommunicator comm = A.comm();
     ptrdiff_t n = A.loc_rows();
     UniqueArray<ptrdiff_t> row_dom = comm.exclusive_sum(n);
 
@@ -100,7 +100,7 @@ struct SimpleMatrixPartitioner
 
   std::shared_ptr<matrix> operator()(const matrix& A, unsigned /*block_size*/ = 1) const
   {
-    mpi_communicator comm = A.comm();
+    AlinaCommunicator comm = A.comm();
     ptrdiff_t nrows = A.loc_rows();
 
     UniqueArray<ptrdiff_t> row_dom = comm.exclusive_sum(nrows);

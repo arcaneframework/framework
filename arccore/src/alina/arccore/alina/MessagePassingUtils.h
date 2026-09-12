@@ -84,27 +84,26 @@ struct mpi_init_thread
 /*!
  * \brief Convenience wrapper around MPI_Comm.
  */
-struct mpi_communicator
+struct ARCCORE_ALINA_EXPORT AlinaCommunicator
 {
-  MPI_Comm comm = MPI_COMM_NULL;
+ private:
+
+  MPI_Comm m_mpi_communicator = MPI_COMM_NULL;
+
+ public:
+
   int rank = 0;
   int size = 0;
   Ref<IMessagePassingMng> m_message_passing_mng;
 
-  mpi_communicator() = default;
+  AlinaCommunicator() = default;
 
-  explicit mpi_communicator(MPI_Comm comm)
-  : comm(comm)
-  {
-    MPI_Comm_rank(comm, &rank);
-    MPI_Comm_size(comm, &size);
-    m_message_passing_mng = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createRef(comm);
-  };
+  explicit AlinaCommunicator(MPI_Comm comm);
 
-  operator MPI_Comm() const
-  {
-    return comm;
-  }
+  explicit AlinaCommunicator(IMessagePassingMng* mpm_comm);
+
+  MPI_Comm mpiCommunicator() const { return m_mpi_communicator; }
+  IMessagePassingMng* messagePassingMng() const { return m_message_passing_mng.get(); }
 
   /// Exclusive sum over mpi communicator
   template <typename T>
@@ -158,31 +157,9 @@ struct mpi_communicator
    * provided message together with the ranks of the offending process.
    * After that each process in the communicator throws.
    */
-  template <class Condition, class Message>
-  void check(const Condition& cond, const Message& message)
-  {
-    int lc = static_cast<int>(cond);
-    int gc = _reduce(MPI_PROD, lc);
+  void check(bool cond, const String& message);
 
-    if (gc==0) {
-      IMessagePassingMng* pm = m_message_passing_mng.get();
-      UniqueArray<int> c(size);
-      if (rank == 0)
-        c.resize(size);
-      ConstArrayView<int> in_view(1, &lc);
-      mpGather(pm, in_view, c, 0);
-      if (rank == 0) {
-        std::cerr << "Failed assumption: " << message << std::endl;
-        std::cerr << "Offending processes:";
-        for (int i = 0; i < size; ++i)
-          if (!c[i])
-            std::cerr << " " << i;
-        std::cerr << std::endl;
-      }
-      mpBarrier(pm);
-      ARCCORE_FATAL("CheckError in MessagePassingUtils: {0}", message);
-    }
-  }
+  void barrier() { mpBarrier(m_message_passing_mng.get()); }
 
   template <typename T> MessagePassing::Request
   doIReceive(T* buf, int count, int source, int tag) const
@@ -226,18 +203,10 @@ struct mpi_communicator
 
  private:
 
-  int _reduce(MPI_Op op, int lval) const
-  {
-    int gval = 0;
-
-    MPI_Allreduce((void*)&lval, &gval, 1, MPI_INT, op, comm);
-    return gval;
-  }
-
   template <typename T> std::complex<T>
   _reduceSumForComplex(const std::complex<T>& lval) const
   {
-    // Specialisation for 'std::complex<float>' as 2 float.
+    // Specialisation for 'std::complex<T>' as 2 T.
     FixedArray<T, 2> values = { { lval.real(), lval.imag() } };
     mpAllReduce(m_message_passing_mng.get(), MessagePassing::eReduceType::ReduceSum, values.view());
     return std::complex<T>(values[0], values[1]);

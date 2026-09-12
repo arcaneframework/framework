@@ -40,7 +40,7 @@ using namespace Arcane;
 using namespace Arcane::Alina;
 
 //---------------------------------------------------------------------------
-void solve_scalar(Alina::mpi_communicator comm,
+void solve_scalar(Alina::AlinaCommunicator comm,
                   ptrdiff_t chunk,
                   const std::vector<ptrdiff_t>& ptr,
                   const std::vector<ptrdiff_t>& col,
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
   Alina::mpi_init_thread mpi(&argc, &argv);
-  Alina::mpi_communicator comm(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
 
   if (comm.rank == 0)
     std::cout << "World size: " << comm.size << std::endl;

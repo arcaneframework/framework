@@ -23,14 +23,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/alina/BackendInterface.h"
+#include "arccore/alina/DistributedMatrix.h"
+
+#include "arccore/message_passing/Messages.h"
+
 #include <vector>
 #include <algorithm>
 #include <numeric>
 
 #include <tuple>
-
-#include "arccore/alina/BackendInterface.h"
-#include "arccore/alina/DistributedMatrix.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -241,7 +243,7 @@ mpi_symm_graph(const DistributedMatrix<Backend>& A,
 /*---------------------------------------------------------------------------*/
 
 template <class Idx> std::tuple<ptrdiff_t, ptrdiff_t>
-mpi_graph_perm_index(mpi_communicator comm, int npart, const std::vector<Idx>& part,
+mpi_graph_perm_index(AlinaCommunicator comm, int npart, const std::vector<Idx>& part,
                      std::vector<ptrdiff_t>& perm)
 {
   ARCCORE_ALINA_TIC("perm index");
@@ -255,10 +257,13 @@ mpi_graph_perm_index(mpi_communicator comm, int npart, const std::vector<Idx>& p
 
   for (Idx p : part)
     ++loc_part_cnt[p];
-  MPI_Datatype ptr_datatype = MPI_LONG_LONG; //mpi_datatype<ptrdiff_t>();
-  MPI_Exscan(&loc_part_cnt[0], &loc_part_beg[0], npart, ptr_datatype, MPI_SUM, comm);
-  MPI_Allreduce(&loc_part_cnt[0], &glo_part_cnt[0], npart, ptr_datatype, MPI_SUM, comm);
+  MPI_Datatype ptr_datatype = MPI_LONG_LONG;
+  MPI_Exscan(loc_part_cnt.data(), loc_part_beg.data(), npart, ptr_datatype, MPI_SUM, comm.mpiCommunicator());
 
+  Span<const ptrdiff_t> loc_part_cnt_view(loc_part_cnt.data(), npart);
+  Span<ptrdiff_t> glo_part_cnt_view(glo_part_cnt.data(), npart);
+  glo_part_cnt_view.copy(loc_part_cnt_view);
+  mpAllReduce(comm.messagePassingMng(), Arcane::MessagePassing::eReduceType::ReduceSum, glo_part_cnt_view);
   glo_part_beg[0] = 0;
   std::partial_sum(glo_part_cnt.begin(), glo_part_cnt.end(), glo_part_beg.begin() + 1);
 
@@ -279,7 +284,7 @@ mpi_graph_perm_index(mpi_communicator comm, int npart, const std::vector<Idx>& p
 
 template <class Backend, class Idx>
 std::shared_ptr<DistributedMatrix<Backend>>
-mpi_graph_perm_matrix(mpi_communicator comm, ptrdiff_t col_beg, ptrdiff_t col_end,
+mpi_graph_perm_matrix(AlinaCommunicator comm, ptrdiff_t col_beg, ptrdiff_t col_end,
                       const std::vector<Idx>& perm)
 {
   typedef typename Backend::value_type value_type;

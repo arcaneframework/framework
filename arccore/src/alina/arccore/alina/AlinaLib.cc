@@ -330,19 +330,25 @@ class AlinaDistributedSolverImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+double constant_deflation(int, ptrdiff_t, void*)
+{
+  return 1;
+}
+
+}
 AlinaDistributedSolver::
-AlinaDistributedSolver(MPI_Comm comm,
+AlinaDistributedSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
                        const AlinaCSRMatrixView& matrix_view,
-                       //ptrdiff_t n,
-                       //const int* ptr,
-                       //const int* col,
-                       //const double* val,
-                       int n_def_vec,
-                       AlinaDefVecFunction def_vec_func,
-                       void* def_vec_data,
                        const AlinaParameters& params)
 {
+  int n_def_vec = 1;
+  AlinaDefVecFunction def_vec_func = constant_deflation;
+  void* def_vec_data = nullptr;
+
   std::function<double(ptrdiff_t, unsigned)> dv = deflation_vectors(n_def_vec, def_vec_func, def_vec_data);
+
   Alina::PropertyTree prm = params.m_p->m_properties;
   prm.put("num_def_vec", n_def_vec);
   prm.put("def_vec", &dv);
@@ -351,7 +357,7 @@ AlinaDistributedSolver(MPI_Comm comm,
   auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
                            matrix_view.columns(), matrix_view.values());
 
-  Alina::mpi_communicator mpi_comm(comm);
+  Alina::AlinaCommunicator mpi_comm(comm);
   auto* p = new DistributedSolverType(mpi_comm, A, prm);
 
   m_p = std::make_shared<AlinaDistributedSolverImpl>(p);

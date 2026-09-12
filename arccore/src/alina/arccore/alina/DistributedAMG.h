@@ -153,7 +153,7 @@ class DistributedAMG
   } prm;
 
   template <class Matrix>
-  DistributedAMG(mpi_communicator comm,
+  DistributedAMG(AlinaCommunicator comm,
                  const Matrix& A,
                  const params& prm = params(),
                  const backend_params& bprm = backend_params())
@@ -164,7 +164,7 @@ class DistributedAMG
     init(std::make_shared<matrix>(comm, A, backend::nbRow(A)), bprm);
   }
 
-  DistributedAMG(mpi_communicator comm,
+  DistributedAMG(AlinaCommunicator comm,
                  std::shared_ptr<matrix> A,
                  const params& prm = params(),
                  const backend_params& bprm = backend_params())
@@ -376,7 +376,7 @@ class DistributedAMG
 
   typedef typename std::list<DistributedAMGLevel>::const_iterator level_iterator;
 
-  mpi_communicator comm;
+  AlinaCommunicator comm;
   std::shared_ptr<matrix> A;
   Repartition repart;
   std::list<DistributedAMGLevel> levels;
