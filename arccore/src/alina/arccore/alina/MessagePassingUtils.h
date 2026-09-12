@@ -102,6 +102,8 @@ struct ARCCORE_ALINA_EXPORT AlinaCommunicator
     return comm;
   }
 
+  IMessagePassingMng* messagePassingMng() const { return  m_message_passing_mng.get(); }
+
   /// Exclusive sum over mpi communicator
   template <typename T>
   UniqueArray<T> exclusive_sum(T n) const

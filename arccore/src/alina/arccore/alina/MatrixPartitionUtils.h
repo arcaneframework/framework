@@ -23,14 +23,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/alina/BackendInterface.h"
+#include "arccore/alina/DistributedMatrix.h"
+
+#include "arccore/message_passing/Messages.h"
+
 #include <vector>
 #include <algorithm>
 #include <numeric>
 
 #include <tuple>
-
-#include "arccore/alina/BackendInterface.h"
-#include "arccore/alina/DistributedMatrix.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -255,10 +257,13 @@ mpi_graph_perm_index(AlinaCommunicator comm, int npart, const std::vector<Idx>& 
 
   for (Idx p : part)
     ++loc_part_cnt[p];
-  MPI_Datatype ptr_datatype = MPI_LONG_LONG; //mpi_datatype<ptrdiff_t>();
-  MPI_Exscan(&loc_part_cnt[0], &loc_part_beg[0], npart, ptr_datatype, MPI_SUM, comm);
-  MPI_Allreduce(&loc_part_cnt[0], &glo_part_cnt[0], npart, ptr_datatype, MPI_SUM, comm);
+  MPI_Datatype ptr_datatype = MPI_LONG_LONG;
+  MPI_Exscan(loc_part_cnt.data(), loc_part_beg.data(), npart, ptr_datatype, MPI_SUM, comm);
 
+  Span<const ptrdiff_t> loc_part_cnt_view(loc_part_cnt.data(), npart);
+  Span<ptrdiff_t> glo_part_cnt_view(glo_part_cnt.data(), npart);
+  glo_part_cnt_view.copy(loc_part_cnt_view);
+  mpAllReduce(comm.messagePassingMng(), Arcane::MessagePassing::eReduceType::ReduceSum, glo_part_cnt_view);
   glo_part_beg[0] = 0;
   std::partial_sum(glo_part_cnt.begin(), glo_part_cnt.end(), glo_part_beg.begin() + 1);
 
