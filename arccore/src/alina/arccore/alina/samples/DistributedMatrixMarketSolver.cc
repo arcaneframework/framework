@@ -353,7 +353,7 @@ int main(int argc, char* argv[])
         std::ostream_iterator<double> oi(f, "\n");
         std::copy(x.begin(), x.end(), oi);
       }
-      MPI_Barrier(world);
+      world.barrier();
     }
     prof.toc("save");
   }

@@ -258,7 +258,7 @@ mpi_graph_perm_index(AlinaCommunicator comm, int npart, const std::vector<Idx>& 
   for (Idx p : part)
     ++loc_part_cnt[p];
   MPI_Datatype ptr_datatype = MPI_LONG_LONG;
-  MPI_Exscan(loc_part_cnt.data(), loc_part_beg.data(), npart, ptr_datatype, MPI_SUM, comm);
+  MPI_Exscan(loc_part_cnt.data(), loc_part_beg.data(), npart, ptr_datatype, MPI_SUM, comm.mpiCommunicator());
 
   Span<const ptrdiff_t> loc_part_cnt_view(loc_part_cnt.data(), npart);
   Span<ptrdiff_t> glo_part_cnt_view(glo_part_cnt.data(), npart);

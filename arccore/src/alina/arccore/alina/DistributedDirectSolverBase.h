@@ -79,7 +79,7 @@ class DistributedDirectSolverBase
     group_master = active[group_beg];
 
     // Communicator for masters (used to solve the coarse problem):
-    MPI_Comm_split(comm,
+    MPI_Comm_split(comm.mpiCommunicator(),
                    comm.rank == group_master ? 0 : MPI_UNDEFINED,
                    comm.rank, &masters_comm);
 

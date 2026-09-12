@@ -149,7 +149,7 @@ class CommunicationPattern
         }
       }
 
-      MPI_Alltoall(rcounts.data(), 1, MPI_INT, scounts.data(), 1, MPI_INT, comm);
+      MPI_Alltoall(rcounts.data(), 1, MPI_INT, scounts.data(), 1, MPI_INT, comm.mpiCommunicator());
 
       for (ptrdiff_t d = 0; d < comm.size; ++d) {
         if (scounts[d]) {

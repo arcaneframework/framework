@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
 
   Alina::backend::clear(*x);
 
-  MPI_Barrier(world);
+  world.barrier();
 
   prof.tic("setup");
   typedef DistributedPreconditionedSolver<

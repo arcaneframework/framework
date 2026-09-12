@@ -26,7 +26,7 @@ namespace Arcane::Alina
 
 AlinaCommunicator::
 AlinaCommunicator(MPI_Comm comm)
-: comm(comm)
+: m_mpi_communicator(comm)
 {
   MPI_Comm_rank(comm, &rank);
   MPI_Comm_size(comm, &size);
@@ -42,9 +42,9 @@ AlinaCommunicator(IMessagePassingMng* mpm_comm)
   MessagePassing::Communicator c = mpm_comm->communicator();
   if (!c.isValid())
     ARCCORE_FATAL("Invalid 'IMessagePassingMng' communicator. Only MPI implementation is currently supported");
-  comm = static_cast<MPI_Comm>(c);
-  MPI_Comm_rank(comm, &rank);
-  MPI_Comm_size(comm, &size);
+  m_mpi_communicator = static_cast<MPI_Comm>(c);
+  MPI_Comm_rank(m_mpi_communicator, &rank);
+  MPI_Comm_size(m_mpi_communicator, &size);
   m_message_passing_mng = makeRef(mpm_comm);
 };
 

@@ -86,7 +86,12 @@ struct mpi_init_thread
  */
 struct ARCCORE_ALINA_EXPORT AlinaCommunicator
 {
-  MPI_Comm comm = MPI_COMM_NULL;
+ private:
+
+  MPI_Comm m_mpi_communicator = MPI_COMM_NULL;
+
+ public:
+
   int rank = 0;
   int size = 0;
   Ref<IMessagePassingMng> m_message_passing_mng;
@@ -97,12 +102,8 @@ struct ARCCORE_ALINA_EXPORT AlinaCommunicator
 
   explicit AlinaCommunicator(IMessagePassingMng* mpm_comm);
 
-  operator MPI_Comm() const
-  {
-    return comm;
-  }
-
-  IMessagePassingMng* messagePassingMng() const { return  m_message_passing_mng.get(); }
+  MPI_Comm mpiCommunicator() const { return m_mpi_communicator; }
+  IMessagePassingMng* messagePassingMng() const { return m_message_passing_mng.get(); }
 
   /// Exclusive sum over mpi communicator
   template <typename T>
@@ -157,6 +158,8 @@ struct ARCCORE_ALINA_EXPORT AlinaCommunicator
    * After that each process in the communicator throws.
    */
   void check(bool cond, const String& message);
+
+  void barrier() { mpBarrier(m_message_passing_mng.get()); }
 
   template <typename T> MessagePassing::Request
   doIReceive(T* buf, int count, int source, int tag) const

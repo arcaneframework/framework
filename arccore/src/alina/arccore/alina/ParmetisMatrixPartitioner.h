@@ -191,7 +191,7 @@ struct ParmetisMatrixPartitioner
       part.reserve(1); // So that part.data() is not NULL
 
     MPI_Comm scomm;
-    MPI_Comm_split(comm, active ? 0 : MPI_UNDEFINED, comm.rank, &scomm);
+    MPI_Comm_split(comm.mpiCommunicator(), active ? 0 : MPI_UNDEFINED, comm.rank, &scomm);
 
     if (active) {
       AlinaCommunicator sc(scomm);
