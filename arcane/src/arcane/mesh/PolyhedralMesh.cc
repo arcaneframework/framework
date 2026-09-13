@@ -2320,7 +2320,7 @@ void mesh::PolyhedralMesh::_internalUpdateGhost(bool update_ghost_layer, bool re
     // m_face_family->setCheckOrientation(false);
     m_ghost_layer_builder->addGhostLayers(true);
     // m_face_family->setCheckOrientation(true);
-    // Todo:
+    // Todo: add ExtraGhostBuilder
     // _computeExtraGhostCells();
     // _computeExtraGhostParticles();
   }
@@ -2365,6 +2365,28 @@ void mesh::PolyhedralMesh::_internalEndUpdateFinal(bool cond)
 
 void mesh::PolyhedralMesh::_removeGhostItems()
 {
+  // do we want to removeGhostItems ?
+  const Int32 sid = m_parallel_mng->commRank();
+
+  // rework the approach for polyhedral, not cell-driven...
+  //
+  // Removal of ghost items
+  for (auto& family : m_arcane_families)
+  {
+    UniqueArray<Int32> items_to_remove;
+    items_to_remove.reserve(1000);
+
+    ItemInternalMap& items_map = family->itemsMap();
+    items_map.eachItem([&](Item item) {
+      if (item.owner() != sid)
+        items_to_remove.add(item.localId());
+    });
+    m_trace_mng->info() << "Number of items " << family->itemKind() << "to remove: " << items_to_remove.size();
+    family->removeItems(items_to_remove);
+  }
+  // needed ?? done in removeItems. DynamicMesh is doing a light remove
+  // Readjusts the groups by removing entities that are no longer in the mesh
+  // _updateGroupsAfterRemove();
 
 }
 
