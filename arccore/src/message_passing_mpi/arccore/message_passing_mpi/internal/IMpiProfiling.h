@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMpiProfiling.h                                             (C) 2000-2025 */
+/* IMpiProfiling.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* Abstraction interface for MPI operations.                                 */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSINGMPI_IMPIPROFILING_H
-#define ARCCORE_MESSAGEPASSINGMPI_IMPIPROFILING_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_IMPIPROFILING_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_IMPIPROFILING_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,7 +30,6 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \internal
  * \brief Abstraction interface for MPI operations.
@@ -90,6 +89,9 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT IMpiProfiling
   // Scan
   virtual ReturnType scan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op,
                           MPI_Comm comm) = 0;
+  // Scan Exclusive
+  virtual ReturnType scanExclusive(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op,
+                                   MPI_Comm comm) = 0;
   // Sendrecv
   virtual ReturnType sendRecv(const void* sendbuf, int sendcount, MPI_Datatype sendtype, int dest,
                               int sendtag, void* recvbuf, int recvcount, MPI_Datatype recvtype,

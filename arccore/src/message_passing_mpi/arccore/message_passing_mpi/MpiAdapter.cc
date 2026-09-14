@@ -853,6 +853,21 @@ scan(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, M
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
+scanExclusive(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op)
+{
+  void* _sbuf = const_cast<void*>(send_buf);
+  int _n = _checkSize(count);
+  double begin_time = MPI_Wtime();
+  _trace(MpiInfo(eMpiName::Scan).name().localstr());
+  m_mpi_prof->scanExclusive(_sbuf, recv_buf, _n, datatype, op, m_communicator);
+  double end_time = MPI_Wtime();
+  m_stat->add(MpiInfo(eMpiName::Scan).name(), end_time - begin_time, count);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MpiAdapter::
 directSendRecv(const void* send_buffer, Int64 send_buffer_size,
                void* recv_buffer, Int64 recv_buffer_size,
                Int32 proc, Int64 elem_size, MPI_Datatype data_type)

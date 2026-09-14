@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ITypeDispatcher.h                                           (C) 2000-2025 */
+/* ITypeDispatcher.h                                           (C) 2000-2026 */
 /*                                                                           */
 /* Message handling for a data type.                                         */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,6 @@ ARCCORE_NORETURN();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \internal
  * \brief Parallel message handling for the type \a Type.
@@ -70,6 +69,10 @@ class ITypeDispatcher
                                               ConstArrayView<Int32> send_index, Span<Type> recv_buf,
                                               ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) = 0;
   virtual Request gather(GatherMessageInfo<Type>&)
+  {
+    _internalThrowNotImplementedTypeDispatcher();
+  }
+  virtual void scanExclusive(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf)
   {
     _internalThrowNotImplementedTypeDispatcher();
   }

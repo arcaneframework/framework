@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Otf2MpiProfiling.h                                          (C) 2000-2025 */
+/* Otf2MpiProfiling.h                                          (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of the IMpiProfiling interface allowing instrumentation    */
 /* in OTF2 format.                                                           */
@@ -89,6 +89,8 @@ class Otf2MpiProfiling
                        MPI_Op op, MPI_Comm comm) final;
   // Scan
   ReturnType scan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm) final;
+  // Scan
+  ReturnType scanExclusive(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm) final;
   // Sendrecv
   ReturnType sendRecv(const void* sendbuf, int sendcount, MPI_Datatype sendtype, int dest,
                       int sendtag, void* recvbuf, int recvcount, MPI_Datatype recvtype,

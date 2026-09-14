@@ -89,6 +89,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   void reduce(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op, Int32 root);
   void allReduce(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op);
   void scan(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op);
+  void scanExclusive(const void* send_buf, void* recv_buf, Int64 count, MPI_Datatype datatype, MPI_Op op);
   void directSendRecv(const void* send_buffer, Int64 send_buffer_size,
                       void* recv_buffer, Int64 recv_buffer_size,
                       Int32 proc, Int64 elem_size, MPI_Datatype data_type);

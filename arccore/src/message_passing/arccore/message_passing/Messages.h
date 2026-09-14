@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Messages.h                                                  (C) 2000-2025 */
+/* Messages.h                                                  (C) 2000-2026 */
 /*                                                                           */
 /* Interface for the message exchange manager.                               */
 /*---------------------------------------------------------------------------*/
@@ -62,6 +62,9 @@ namespace Arcane::MessagePassing
   /*! AllReduce */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
   mpAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<type> buf); \
+  /*! Scan Exclusive */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpScanExclusive(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> receive_buf); \
   /*! Non-blocking AllReduce */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT Request \
   mpNonBlockingAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> recv_buf); \
