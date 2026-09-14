@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcher.h                                         (C) 2000-2025 */
+/* MpiTypeDispatcher.h                                         (C) 2000-2026 */
 /*                                                                           */
 /* Message handling for a data type.                                         */
 /*---------------------------------------------------------------------------*/
@@ -54,6 +54,7 @@ class MpiTypeDispatcher
   Request receive(Span<Type> recv_buffer, const PointToPointMessageInfo& message) override;
   Type allReduce(eReduceType op, Type send_buf) override;
   void allReduce(eReduceType op, Span<Type> send_buf) override;
+  void scanExclusive(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf) override;
   Request nonBlockingAllReduce(eReduceType op, Span<const Type> send_buf, Span<Type> recv_buf) override;
   Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf) override;
   Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank) override;

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Otf2MpiProfiling.cc                                         (C) 2000-2025 */
+/* Otf2MpiProfiling.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of the IMpiProfiling interface allowing instrumentation    */
 /* in OTF2 format                              .                             */
@@ -355,6 +355,27 @@ scan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_O
   const uint64_t size = static_cast<uint64_t>(type_size) * static_cast<uint64_t>(count);
   OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
                                   OTF2_COLLECTIVE_OP_SCAN, 0 /* comm region */, OTF2_UNDEFINED_UINT32 /* root */,
+                                  size /* bytes provided */, size /* bytes obtained */);
+
+  _doEventLeave(eMpiName::Scan);
+  return _ret(r);
+}
+
+//! MPI_ExScan
+ReturnType Otf2MpiProfiling::
+scanExclusive(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
+{
+  _doEventEnter(eMpiName::Scan);
+
+  OTF2_EvtWriter_MpiCollectiveBegin(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime());
+
+  int r = MPI_Exscan(sendbuf, recvbuf, count, datatype, op, comm);
+
+  int type_size;
+  MPI_Type_size(datatype, &type_size);
+  const uint64_t size = static_cast<uint64_t>(type_size) * static_cast<uint64_t>(count);
+  OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
+                                  OTF2_COLLECTIVE_OP_EXSCAN, 0 /* comm region */, OTF2_UNDEFINED_UINT32 /* root */,
                                   size /* bytes provided */, size /* bytes obtained */);
 
   _doEventLeave(eMpiName::Scan);

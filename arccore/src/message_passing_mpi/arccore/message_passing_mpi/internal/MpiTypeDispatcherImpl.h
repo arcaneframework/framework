@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcherImpl.h                                     (C) 2000-2025 */
+/* MpiTypeDispatcherImpl.h                                     (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of 'MpiTypeDispatcher'.                                    */
 /*---------------------------------------------------------------------------*/
@@ -318,6 +318,21 @@ allReduce(eReduceType op, Span<Type> send_buf)
     m_adapter->allReduce(send_buf.data(), recv_buf.data(), s, type, operation);
   }
   send_buf.copy(recv_buf);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type> void MpiTypeDispatcher<Type>::
+scanExclusive(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  Int64 s = send_buf.size();
+  MPI_Op operation = m_datatype->reduceOperator(op);
+  {
+    MpiLock::Section mls(m_adapter->mpiLock());
+    m_adapter->scanExclusive(send_buf.data(), receive_buf.data(), s, type, operation);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

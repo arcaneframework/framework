@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NoMpiProfiling.h                                            (C) 2000-2025 */
+/* NoMpiProfiling.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of the IMpiProfiling interface.                            */
 /*---------------------------------------------------------------------------*/
@@ -119,6 +119,11 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT NoMpiProfiling
   ReturnType scan(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm) final
   {
     return _ret(MPI_Scan(sendbuf, recvbuf, count, datatype, op, comm));
+  }
+  // Scan exclusive
+  ReturnType scanExclusive(const void* sendbuf, void* recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm) final
+  {
+    return _ret(MPI_Exscan(sendbuf, recvbuf, count, datatype, op, comm));
   }
   // Sendrecv
   ReturnType sendRecv(const void* sendbuf, int sendcount, MPI_Datatype sendtype, int dest,

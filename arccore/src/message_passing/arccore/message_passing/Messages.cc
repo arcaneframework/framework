@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Messages.cc                                                 (C) 2000-2025 */
+/* Messages.cc                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Identifier of a point-to-point message.                                   */
 /*---------------------------------------------------------------------------*/
@@ -401,6 +401,10 @@ namespace
   void mpAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<type> buf) \
   { \
     _getDispatcher<type>(pm)->allReduce(rt, buf); \
+  } \
+  void mpScanExclusive(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> receive_buf) \
+  { \
+    _getDispatcher<type>(pm)->scanExclusive(rt, send_buf, receive_buf); \
   } \
   Request mpNonBlockingAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> recv_buf) \
   { \

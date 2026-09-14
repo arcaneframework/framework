@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MessagePassingMpiEnum.h                                     (C) 2000-2025 */
+/* MessagePassingMpiEnum.h                                     (C) 2000-2026 */
 /*                                                                           */
 /* Enumeration of different MPI operations.                                  */
 /*---------------------------------------------------------------------------*/
@@ -60,7 +60,8 @@ enum class ARCCORE_MESSAGEPASSINGMPI_EXPORT eMpiName
   Waitall = 21,
   Testsome = 22,
   Waitsome = 23,
-  NameOffset = 24 // Attention a bien laisser ce champ en dernier (avec sa valeur a jour) si on rajoute des enums !
+  ScanExclusive = 24,
+  NameOffset = 25 // Attention a bien laisser ce champ en dernier (avec sa valeur a jour) si on rajoute des enums !
 };
 
 /*---------------------------------------------------------------------------*/

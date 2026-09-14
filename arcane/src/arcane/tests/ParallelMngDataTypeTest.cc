@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDataTypeTest.cc                                  (C) 2000-2024 */
+/* ParallelMngDataTypeTest.cc                                  (C) 2000-2026 */
 /*                                                                           */
 /* Test of basic parallelism operations.                                     */
 /*---------------------------------------------------------------------------*/
@@ -46,6 +46,12 @@
 
 namespace ArcaneTest
 {
+enum class eReduceOrScanType
+{
+  Reduce,
+  ScanInclusive,
+  ScanExclusive
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -419,11 +425,11 @@ class ParallelMngDataTypeTest
   }
   void _testComputeMinMaxSum();
   void _testAllReduce();
-  void _fillAllReduceOrScanArray(Integer nb_value, CommInfo& c, Parallel::eReduceType rt, bool is_scan);
+  void _fillAllReduceOrScanArray(Integer nb_value, CommInfo& c, Parallel::eReduceType rt, eReduceOrScanType type);
   template <bool UseMessagePassingMng>
-  void _testAllReduceOrScanArray(Parallel::eReduceType rt, bool is_scan);
+  void _testAllReduceOrScanArray(Parallel::eReduceType rt, eReduceOrScanType type);
   template <bool UseMessagePassingMng>
-  void _testAllReduceOrScanArray2(bool is_scan);
+  void _testAllReduceOrScanArray2(eReduceOrScanType type);
   void _testAllReduceAndScanArray();
   template <bool UseMessagePassingMng>
   void _testAllGatherVariable3(Int32 root_rank, bool use_generic);
@@ -593,15 +599,18 @@ _testAllReduce()
  */
 template <typename DataType> void
 ParallelMngDataTypeTest<DataType>::
-_fillAllReduceOrScanArray(Integer nb_value, CommInfo& c, Parallel::eReduceType rt, bool is_scan)
+_fillAllReduceOrScanArray(Integer nb_value, CommInfo& c, Parallel::eReduceType rt, eReduceOrScanType type)
 {
   IParallelMng* pm = m_parallel_mng;
   Int32 rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
 
-  // For a scan, we stop at our own rank.
-  if (is_scan)
+  // For a inclusive scan, we stop at our own rank.
+  if (type == eReduceOrScanType::ScanInclusive)
     nb_rank = rank + 1;
+  // For a exclusive scan, we stop at rank - 1.
+  if (type == eReduceOrScanType::ScanExclusive)
+    nb_rank = rank;
 
   c.send_values.resize(nb_value);
   c.recv_values.resize(nb_value);
@@ -612,9 +621,8 @@ _fillAllReduceOrScanArray(Integer nb_value, CommInfo& c, Parallel::eReduceType r
   }
 
   c.ref_values.fill(Generator::zero());
-
   for (Integer i = 0; i < nb_value; ++i) {
-    for (Integer z = 0; z < nb_rank; ++z) {
+    for (Int32 z = 0; z < nb_rank; ++z) {
       DataType value = Generator::generateBiValue(z, i);
       if (rt == Parallel::ReduceSum) {
         // The cast is necessary for the 'short' type because
@@ -642,15 +650,20 @@ template <typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testAllReduceAndScanArray()
 {
+  IParallelMng* pm = m_parallel_mng;
   info() << "Testing AllReduceArray: use IParallelMng";
-  _testAllReduceOrScanArray2<false>(false);
+  _testAllReduceOrScanArray2<false>(eReduceOrScanType::Reduce);
   info() << "Testing AllScanArray: use IParallelMng";
-  _testAllReduceOrScanArray2<false>(true);
+  _testAllReduceOrScanArray2<false>(eReduceOrScanType::ScanInclusive);
   if constexpr (HasMessagePassingMngImplementation<DataType>::hasImpl()) {
     info() << "Testing AllReduceArray: use IMessagePassingMng";
-    _testAllReduceOrScanArray2<true>(false);
-    info() << "Testing AllScanArray: use IMessagePassingMng";
-    _testAllReduceOrScanArray2<true>(true);
+    _testAllReduceOrScanArray2<true>(eReduceOrScanType::Reduce);
+    info() << "Testing ScanArray: use IMessagePassingMng";
+    _testAllReduceOrScanArray2<true>(eReduceOrScanType::ScanInclusive);
+    if (pm->isParallel() && !pm->isThreadImplementation() && !pm->isHybridImplementation()) {
+      info() << "Testing ScanExclusive Array: use IMessagePassingMng";
+      _testAllReduceOrScanArray2<true>(eReduceOrScanType::ScanExclusive);
+    }
   }
 }
 
@@ -659,14 +672,15 @@ _testAllReduceAndScanArray()
 
 template <typename DataType> template <bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
-_testAllReduceOrScanArray2(bool is_scan)
+_testAllReduceOrScanArray2(eReduceOrScanType type)
 {
-  info() << "Testing AllReduceOrScanArray (Sum) type=" << m_datatype_name << " is_scan?=" << is_scan;
-  _testAllReduceOrScanArray<UseMessagePassingMng>(Parallel::ReduceSum, is_scan);
-  info() << "Testing AllReduceOrScanArray (Min) type=" << m_datatype_name << " is_scan?=" << is_scan;
-  _testAllReduceOrScanArray<UseMessagePassingMng>(Parallel::ReduceMin, is_scan);
-  info() << "Testing AllReduceOrScanArray (Max) type=" << m_datatype_name << " is_scan?=" << is_scan;
-  _testAllReduceOrScanArray<UseMessagePassingMng>(Parallel::ReduceMax, is_scan);
+  int itype = static_cast<int>(type);
+  info() << "Testing AllReduceOrScanArray (Sum) type=" << m_datatype_name << " is_scan?=" << itype;
+  _testAllReduceOrScanArray<UseMessagePassingMng>(Parallel::ReduceSum, type);
+  info() << "Testing AllReduceOrScanArray (Min) type=" << m_datatype_name << " is_scan?=" << itype;
+  _testAllReduceOrScanArray<UseMessagePassingMng>(Parallel::ReduceMin, type);
+  info() << "Testing AllReduceOrScanArray (Max) type=" << m_datatype_name << " is_scan?=" << itype;
+  _testAllReduceOrScanArray<UseMessagePassingMng>(Parallel::ReduceMax, type);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -674,7 +688,7 @@ _testAllReduceOrScanArray2(bool is_scan)
 
 template <typename DataType> template <bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
-_testAllReduceOrScanArray(Parallel::eReduceType rt, bool is_scan)
+_testAllReduceOrScanArray(Parallel::eReduceType rt, eReduceOrScanType type)
 {
   const Integer nb_size = 5;
   Integer _sizes[nb_size] = { 1, 9, 143, 3090, 15953 };
@@ -682,41 +696,60 @@ _testAllReduceOrScanArray(Parallel::eReduceType rt, bool is_scan)
   IntegerConstArrayView sizes(nb_size, _sizes);
 
   IParallelMng* pm = m_parallel_mng;
+  ITraceMng* tm = pm->traceMng();
   [[maybe_unused]] Arccore::MessagePassing::IMessagePassingMng* mpm = pm->messagePassingMng();
 
   ValueChecker vc(A_FUNCINFO);
 
   UniqueArray<CommInfo> comms(nb_size, CommInfo());
   for (Integer i = 0; i < nb_size; ++i) {
-    _fillAllReduceOrScanArray(sizes[i], comms[i], rt, is_scan);
+    _fillAllReduceOrScanArray(sizes[i], comms[i], rt, type);
   }
 
   // Testing blocking collectives
   for (Integer i = 0; i < nb_size; ++i) {
-    info() << "Testing AllReduceArray type=" << m_datatype_name << " size=" << sizes[i];
+    info() << "Testing AllReduceOrScanArray type=" << m_datatype_name << " size=" << sizes[i]
+           << " is_scan=" << static_cast<int>(type);
     // Since the send array is also used for reception, we copy it
     // otherwise it will no longer have the correct values for non-blocking tests.
     UniqueArray<DataType> send_copy(comms[i].send_values);
+    // False if this kind of message is not supported
+    bool has_message = true;
     if constexpr (UseMessagePassingMng) {
-      if (is_scan)
-        // mpAllScan is not yet available
+      if (type == eReduceOrScanType::ScanInclusive)
         pm->scan(rt, send_copy);
-      else
+      else if (type == eReduceOrScanType::ScanExclusive)
+        mpScanExclusive(mpm, rt, comms[i].send_values, send_copy.span());
+      else if (type == eReduceOrScanType::Reduce)
         mpAllReduce(mpm, rt, send_copy.span());
     }
     else {
-      if (is_scan)
+      if (type == eReduceOrScanType::ScanInclusive)
         pm->scan(rt, send_copy);
-      else
+      else if (type == eReduceOrScanType::ScanExclusive) {
+        // This method is not defined on all types
+        if constexpr (requires { mpScanExclusive(mpm, rt, comms[i].send_values, send_copy.span()); }) {
+          mpScanExclusive(mpm, rt, comms[i].send_values, send_copy.span());
+          tm->info() << "DoScanExclusive";
+        }
+        else
+          has_message = false;
+      }
+      else if (type == eReduceOrScanType::Reduce)
         pm->reduce(rt, send_copy);
     }
-    pm->traceMng()->flush();
+    tm->flush();
     pm->barrier();
-    vc.areEqualArray(send_copy.constView(), comms[i].ref_values.constView(), "AllReduceArray");
+    if (has_message) {
+      // The result of exclusive scan is not meaningful for rank 0.
+      bool no_compare = pm->commRank() == 0 && type == eReduceOrScanType::ScanExclusive;
+      if (!no_compare)
+        vc.areEqualArray(send_copy.constView(), comms[i].ref_values.constView(), "AllReduceOrScanArray");
+    }
   }
 
   // For now, there is no non-blocking scan
-  if (is_scan)
+  if (type != eReduceOrScanType::Reduce)
     return;
 
   // Testing non-blocking collectives
