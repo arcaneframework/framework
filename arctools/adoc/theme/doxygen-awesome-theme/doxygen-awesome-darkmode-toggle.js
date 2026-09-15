@@ -58,12 +58,10 @@ class DoxygenAwesomeDarkModeToggle extends HTMLElement {
             })
         }
 
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", initDarkMode);
-        }
-        else {
-            initDarkMode();
-        }
+        let elem = () => {
+            return document.getElementById("MSearchBox");
+        };
+        waitItem(elem, initDarkMode);
     }
 
     constructor() {
