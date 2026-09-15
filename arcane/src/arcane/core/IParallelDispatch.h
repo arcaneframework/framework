@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelDispatch.h                                         (C) 2000-2025 */
+/* IParallelDispatch.h                                         (C) 2000-2026 */
 /*                                                                           */
 /* Parallel message handling for a value type.                               */
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \internal
  * \brief Parallel message handling for the type \a Type.
@@ -61,7 +60,8 @@ class IParallelDispatchT
                                 Int32ConstArrayView send_index, ArrayView<Type> recv_buf,
                                 Int32ConstArrayView recv_count, Int32ConstArrayView recv_index) = 0;
   virtual Type allReduce(eReduceType op, Type send_buf) = 0;
-  virtual void allReduce(eReduceType op, ArrayView<Type> send_buf) = 0;
+  virtual void allReduce(eReduceType op, ArrayView<Type> send_and_receive_buf) = 0;
+  virtual void allReduce(eReduceType op, ConstArrayView<Type> send_buf, ArrayView<Type> receive_buf) = 0;
 
  public:
 

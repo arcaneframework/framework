@@ -720,8 +720,15 @@ _testAllReduceOrScanArray(Parallel::eReduceType rt, eReduceOrScanType type)
         pm->scan(rt, send_copy);
       else if (type == eReduceOrScanType::ScanExclusive)
         mpScanExclusive(mpm, rt, comms[i].send_values, send_copy.span());
-      else if (type == eReduceOrScanType::Reduce)
-        mpAllReduce(mpm, rt, send_copy.span());
+      else if (type == eReduceOrScanType::Reduce) {
+        // Check in place and not in place reduction
+        if ((i%2)==0)
+          mpAllReduce(mpm, rt, send_copy.span());
+        else{
+          tm->info() << "Do AllReduce not in place";
+          mpAllReduce(mpm, rt, comms[i].send_values, send_copy.span());
+        }
+      }
     }
     else {
       if (type == eReduceOrScanType::ScanInclusive)

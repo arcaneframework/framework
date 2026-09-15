@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelDispatch.h                                       (C) 2000-2025 */
+/* MpiParallelDispatch.h                                       (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of messages with MPI.                                      */
 /*---------------------------------------------------------------------------*/
@@ -145,6 +145,10 @@ class MpiParallelDispatchT
   void allReduce(eReduceType op, ArrayView<Type> send_buf) override
   {
     m_mp_dispatcher->allReduce(op, send_buf);
+  }
+  void allReduce(eReduceType op, ConstArrayView<Type> send_buf, ArrayView<Type> receive_buf) override
+  {
+    m_mp_dispatcher->allReduce(op, send_buf, receive_buf);
   }
 
  public:

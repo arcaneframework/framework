@@ -59,9 +59,12 @@ namespace Arcane::MessagePassing
   /*! AllReduce */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT type \
   mpAllReduce(IMessagePassingMng* pm, eReduceType rt, type v); \
-  /*! AllReduce */ \
+  /*! AllReduce in place */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
   mpAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<type> buf); \
+  /*! AllReduce */ \
+  extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
+  mpAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> receive_buf); \
   /*! Scan Exclusive */ \
   extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void \
   mpScanExclusive(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> receive_buf); \

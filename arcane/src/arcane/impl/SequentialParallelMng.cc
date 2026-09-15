@@ -276,10 +276,20 @@ class SequentialParallelDispatchT
     ARCANE_UNUSED(op);
     ARCANE_UNUSED(send_buf);
   }
+  void allReduce(eReduceType op, ConstArrayView<Type> send_buf, ArrayView<Type> receive_buf) override
+  {
+    ARCANE_UNUSED(op);
+    receive_buf.copy(send_buf);
+  }
   void allReduce(eReduceType op, Span<Type> send_buf) override
   {
     ARCANE_UNUSED(op);
     ARCANE_UNUSED(send_buf);
+  }
+  void allReduce(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf) override
+  {
+    ARCANE_UNUSED(op);
+    receive_buf.copy(send_buf);
   }
   Request nonBlockingAllReduce(eReduceType op, Span<const Type> send_buf, Span<Type> recv_buf) override
   {

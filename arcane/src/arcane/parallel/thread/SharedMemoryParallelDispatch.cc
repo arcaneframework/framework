@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelDispatch.cc                             (C) 2000-2025 */
+/* SharedMemoryParallelDispatch.cc                             (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of shared memory messages.                                 */
 /*---------------------------------------------------------------------------*/
@@ -613,12 +613,18 @@ allReduce(eReduceType op, Type send_buf)
 /*---------------------------------------------------------------------------*/
 
 template <class Type> void SharedMemoryParallelDispatch<Type>::
-_allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
+_allReduceOrScan(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf, bool is_scan)
 {
   m_reduce_infos.reduce_buf = send_buf;
   ++m_reduce_infos.m_index;
   Int64 buf_size = send_buf.size();
-  UniqueArray<Type> ret(buf_size);
+  Span<Type> final_buf = receive_buf;
+  bool use_in_place = (send_buf.data() == receive_buf.data());
+  UniqueArray<Type> receive_buf_tmp;
+  if (use_in_place) {
+    receive_buf_tmp.resize(buf_size);
+    receive_buf = receive_buf_tmp;
+  }
   //cout << "ALL REDUCE BEGIN RANk=" << m_rank << " TYPE=" << (int)op << " MY=" << send_buf << '\n';
   //cout.flush();
   _collectiveBarrier();
@@ -636,22 +642,22 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
   if (is_scan)
     nb_rank = m_rank + 1;
   for (Integer j = 0; j < buf_size; ++j)
-    ret[j] = m_all_dispatchs[0]->m_reduce_infos.reduce_buf[j];
+    receive_buf[j] = m_all_dispatchs[0]->m_reduce_infos.reduce_buf[j];
   switch (op) {
   case Parallel::ReduceMin:
     for (Integer i = 1; i < nb_rank; ++i)
       for (Integer j = 0; j < buf_size; ++j)
-        ret[j] = math::min(ret[j], m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
+        receive_buf[j] = math::min(receive_buf[j], m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
     break;
   case Parallel::ReduceMax:
     for (Integer i = 1; i < nb_rank; ++i)
       for (Integer j = 0; j < buf_size; ++j)
-        ret[j] = math::max(ret[j], m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
+        receive_buf[j] = math::max(receive_buf[j], m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
     break;
   case Parallel::ReduceSum:
     for (Integer i = 1; i < nb_rank; ++i)
       for (Integer j = 0; j < buf_size; ++j)
-        ret[j] = (Type)(ret[j] + m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
+        receive_buf[j] = (Type)(receive_buf[j] + m_all_dispatchs[i]->m_reduce_infos.reduce_buf[j]);
     break;
   default:
     ARCANE_FATAL("Bad reduce type");
@@ -659,7 +665,7 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
   //cout << "ALL REDUCE RANK=" << m_rank << " TYPE=" << (int)op << " MY=" << send_buf << " GLOBAL=" << ret << '\n';
   _collectiveBarrier();
   for (Integer j = 0; j < buf_size; ++j)
-    send_buf[j] = ret[j];
+    final_buf[j] = receive_buf[j];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -668,7 +674,16 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
 template <class Type> void SharedMemoryParallelDispatch<Type>::
 allReduce(eReduceType op, Span<Type> send_buf)
 {
-  _allReduceOrScan(op, send_buf, false);
+  _allReduceOrScan(op, send_buf, send_buf, false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type> void SharedMemoryParallelDispatch<Type>::
+allReduce(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf)
+{
+  _allReduceOrScan(op, send_buf, receive_buf, false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -763,7 +778,7 @@ scan(eReduceType op, Type send_buf)
 template <class Type> void SharedMemoryParallelDispatch<Type>::
 scan(eReduceType op, ArrayView<Type> send_buf)
 {
-  _allReduceOrScan(op, send_buf, true);
+  _allReduceOrScan(op, send_buf, send_buf, true);
 }
 
 /*---------------------------------------------------------------------------*/

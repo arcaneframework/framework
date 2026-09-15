@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridParallelDispatch.h                                    (C) 2000-2024 */
+/* HybridParallelDispatch.h                                    (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of messages in hybrid MPI/Shared Memory mode..             */
 /*---------------------------------------------------------------------------*/
@@ -129,6 +129,7 @@ class HybridParallelDispatch
   {
    public:
 
+    Span<const Type> send_buf;
     Span<Type> reduce_buf_span;
     Type reduce_value;
     int m_index;
@@ -168,6 +169,7 @@ class HybridParallelDispatch
   void gatherVariable(Span<const Type> send_buf, Array<Type>& recv_buf, Int32 rank) override;
   void scatterVariable(Span<const Type> send_buf, Span<Type> recv_buf, Int32 root) override;
   void allReduce(eReduceType op, Span<Type> send_buf) override;
+  void allReduce(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf) override;
   void allToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count) override;
   void allToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
                         ConstArrayView<Int32> send_index, Span<Type> recv_buf,
@@ -234,6 +236,10 @@ class HybridParallelDispatch
   {
     return this->allReduce(op, Span<Type>(send_buf));
   }
+  void allReduce(eReduceType op, ConstArrayView<Type> send_buf, ArrayView<Type> receive_buf) override
+  {
+    return this->allReduce(op, Span<const Type>(send_buf), Span<Type>(receive_buf));
+  }
 
   void send(ConstArrayView<Type> send_buffer, Integer proc) override;
   void recv(ArrayView<Type> recv_buffer, Integer proc) override;
@@ -289,7 +295,7 @@ class HybridParallelDispatch
  private:
 
   void _collectiveBarrier();
-  void _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan);
+  void _allReduceOrScan(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf, bool is_scan);
   void _applyReduceOperator(eReduceType op, Span<Type> result, AllDispatchView dispatch_view,
                             Int32 first_rank, Int32 last_rank);
 };
