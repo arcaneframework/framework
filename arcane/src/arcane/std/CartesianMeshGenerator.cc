@@ -660,7 +660,11 @@ generateMesh()
 
   // Création hash-table des noeuds et préparation de leurs uid
   UniqueArray<Int64> nodes_unique_id(CheckedConvert::toInteger(own_nb_node_xyz));
-  HashTableMapT<Int64, NodeInfo> nodes_infos(CheckedConvert::toInteger(own_nb_node_xyz), true);
+  // The size of a HashTableMapT is a number of buckets and not a number of
+  // entries: it rehashes as soon as its count passes 0.85 * nb_bucket, so the
+  // table is sized for the load factor and holds every node without rehashing.
+  const Int64 wanted_bucket = static_cast<Int64>(own_nb_node_xyz / 0.85) + 1;
+  HashTableMapT<Int64, NodeInfo> nodes_infos(CheckedConvert::toInteger(wanted_bucket), true);
 
   // Calcule des infos blocs et des offset associés à tous les sub_domain_id
   IntegerUniqueArray sd_x_ibl, sd_x_obl; // Numéro et offset dans le bloc
