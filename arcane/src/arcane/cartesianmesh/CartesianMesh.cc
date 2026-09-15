@@ -53,8 +53,6 @@
 #include "arcane/core/IGhostLayerMng.h"
 #include "arcane/cartesianmesh/internal/CartesianMeshNumberingMngInternal.h"
 
-#include <set>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -658,9 +656,11 @@ _computeMeshDirection(CartesianMeshPatch& cdi, eMeshDirection dir, VariableCellR
 
   // Position the faces before and after for each cell in the direction.
   // We ensure that these entities are in the group of entities for the corresponding direction
-  std::set<Int32> cells_set;
+  // A local id is dense and bounded by maxLocalId(), so one array answers the
+  // membership question the group asks here with a single allocation.
+  UniqueArray<bool> is_in_cells(m_mesh->cellFamily()->maxLocalId(), false);
   ENUMERATE_CELL (icell, all_cells) {
-    cells_set.insert(icell.itemLocalId());
+    is_in_cells[icell.itemLocalId()] = true;
   }
 
   // Calculate the front/back cells. In the case of an AMR patch, these two cells
@@ -670,14 +670,14 @@ _computeMeshDirection(CartesianMeshPatch& cdi, eMeshDirection dir, VariableCellR
     Int32 my_level = cell.level();
     Face next_face = cell.face(next_local_face);
     Cell next_cell = next_face.backCell() == cell ? next_face.frontCell() : next_face.backCell();
-    if (cells_set.find(next_cell.localId()) == cells_set.end())
+    if (next_cell.null() || !is_in_cells[next_cell.localId()])
       next_cell = Cell();
     else if (next_cell.level() != my_level)
       next_cell = Cell();
 
     Face prev_face = cell.face(prev_local_face);
     Cell prev_cell = prev_face.backCell() == cell ? prev_face.frontCell() : prev_face.backCell();
-    if (cells_set.find(prev_cell.localId()) == cells_set.end())
+    if (prev_cell.null() || !is_in_cells[prev_cell.localId()])
       prev_cell = Cell();
     else if (prev_cell.level() != my_level)
       prev_cell = Cell();
@@ -809,9 +809,9 @@ _computeMeshDirectionV2(CartesianMeshPatch& cdi, eMeshDirection dir, CellGroup a
 
   // Position the faces before and after for each cell in the direction.
   // We ensure that these entities are in the group of entities for the corresponding direction
-  std::set<Int32> cells_set;
+  UniqueArray<bool> is_in_cells(m_mesh->cellFamily()->maxLocalId(), false);
   ENUMERATE_ (Cell, icell, all_cells) {
-    cells_set.insert(icell.itemLocalId());
+    is_in_cells[icell.itemLocalId()] = true;
   }
 
   // Calculate the front/back cells. In the case of an AMR patch, these two cells
@@ -821,13 +821,13 @@ _computeMeshDirectionV2(CartesianMeshPatch& cdi, eMeshDirection dir, CellGroup a
     Int32 my_level = cell.level();
     Face next_face = cell.face(next_local_face);
     Cell next_cell = next_face.backCell() == cell ? next_face.frontCell() : next_face.backCell();
-    if (!cells_set.contains(next_cell.localId()) || next_cell.level() != my_level) {
+    if (next_cell.null() || !is_in_cells[next_cell.localId()] || next_cell.level() != my_level) {
       next_cell = Cell();
     }
 
     Face prev_face = cell.face(prev_local_face);
     Cell prev_cell = prev_face.backCell() == cell ? prev_face.frontCell() : prev_face.backCell();
-    if (!cells_set.contains(prev_cell.localId()) || prev_cell.level() != my_level) {
+    if (prev_cell.null() || !is_in_cells[prev_cell.localId()] || prev_cell.level() != my_level) {
       prev_cell = Cell();
     }
 
