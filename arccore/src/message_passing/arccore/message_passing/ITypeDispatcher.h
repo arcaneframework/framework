@@ -59,7 +59,8 @@ class ITypeDispatcher
   virtual Request receive(Span<Type> recv_buffer, Int32 rank, bool is_blocked) = 0;
   virtual Request receive(Span<Type> recv_buffer, const PointToPointMessageInfo& message) = 0;
   virtual Type allReduce(eReduceType op, Type send_buf) = 0;
-  virtual void allReduce(eReduceType op, Span<Type> send_buf) = 0;
+  virtual void allReduce(eReduceType op, Span<Type> send_and_receive_buf) = 0;
+  virtual void allReduce(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf) = 0;
   virtual Request nonBlockingAllReduce(eReduceType op, Span<const Type> send_buf, Span<Type> recv_buf) = 0;
   virtual Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf) = 0;
   virtual Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank) = 0;
@@ -72,7 +73,9 @@ class ITypeDispatcher
   {
     _internalThrowNotImplementedTypeDispatcher();
   }
-  virtual void scanExclusive(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf)
+  virtual void scanExclusive([[maybe_unused]] eReduceType op,
+                             [[maybe_unused]] Span<const Type> send_buf,
+                             [[maybe_unused]] Span<Type> receive_buf)
   {
     _internalThrowNotImplementedTypeDispatcher();
   }

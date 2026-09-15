@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelDispatch.h                              (C) 2000-2024 */
+/* SharedMemoryParallelDispatch.h                              (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of messages in shared memory.                              */
 /*---------------------------------------------------------------------------*/
@@ -231,14 +231,14 @@ class SharedMemoryParallelDispatch
   {
    public:
 
-    ResizableArrayRef(Array<Type>& v)
+    explicit ResizableArrayRef(Array<Type>& v)
     : m_array_ref(v)
     {}
 
    public:
 
-    virtual void resize(Int64 new_size) { m_array_ref.resize(new_size); }
-    virtual MutableMemoryView memoryView() const { return MutableMemoryView(m_array_ref.span()); }
+    void resize(Int64 new_size) override { m_array_ref.resize(new_size); }
+    MutableMemoryView memoryView() const override { return MutableMemoryView(m_array_ref.span()); }
 
    private:
 
@@ -249,7 +249,7 @@ class SharedMemoryParallelDispatch
   {
    public:
 
-    Span<Type> reduce_buf;
+    Span<const Type> reduce_buf;
     Type reduce_value;
     int m_index;
   };
@@ -292,7 +292,8 @@ class SharedMemoryParallelDispatch
   void gather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank) override;
   void gatherVariable(Span<const Type> send_buf, Array<Type>& recv_buf, Int32 rank) override;
   void scatterVariable(Span<const Type> send_buf, Span<Type> recv_buf, Int32 root) override;
-  void allReduce(eReduceType op, Span<Type> send_buf) override;
+  void allReduce(eReduceType op, Span<Type> send_and_receive_buf) override;
+  void allReduce(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf) override;
   void allToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count) override;
   void allToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
                         ConstArrayView<Int32> send_index, Span<Type> recv_buf,
@@ -359,6 +360,10 @@ class SharedMemoryParallelDispatch
   {
     return this->allReduce(op, Span<Type>(send_buf));
   }
+  void allReduce(eReduceType op, ConstArrayView<Type> send_buf, ArrayView<Type> receive_buf) override
+  {
+    return this->allReduce(op, Span<const Type>(send_buf), Span<Type>(receive_buf));
+  }
 
   void send(ConstArrayView<Type> send_buffer, Integer proc) override;
   void recv(ArrayView<Type> recv_buffer, Integer proc) override;
@@ -383,14 +388,13 @@ class SharedMemoryParallelDispatch
 
   ArrayView<SharedMemoryParallelDispatch<Type>*> m_all_dispatchs;
 
- private:
  public:
 
   ReduceInfo m_reduce_infos;
 
  private:
 
-  void _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan);
+  void _allReduceOrScan(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf, bool is_scan);
 };
 
 /*---------------------------------------------------------------------------*/

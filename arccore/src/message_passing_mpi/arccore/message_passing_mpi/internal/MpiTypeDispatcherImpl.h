@@ -307,17 +307,32 @@ allReduce(eReduceType op, Type send_buf)
 /*---------------------------------------------------------------------------*/
 
 template <class Type> void MpiTypeDispatcher<Type>::
-allReduce(eReduceType op, Span<Type> send_buf)
+allReduce(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf)
 {
   MPI_Datatype type = m_datatype->datatype();
   Int64 s = send_buf.size();
+  MPI_Op operation = m_datatype->reduceOperator(op);
+  {
+    MpiLock::Section mls(m_adapter->mpiLock());
+    m_adapter->allReduce(send_buf.data(), receive_buf.data(), s, type, operation);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type> void MpiTypeDispatcher<Type>::
+allReduce(eReduceType op, Span<Type> send_and_receive_buf)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  Int64 s = send_and_receive_buf.size();
   UniqueArray<Type> recv_buf(s);
   MPI_Op operation = m_datatype->reduceOperator(op);
   {
     MpiLock::Section mls(m_adapter->mpiLock());
-    m_adapter->allReduce(send_buf.data(), recv_buf.data(), s, type, operation);
+    m_adapter->allReduce(send_and_receive_buf.data(), recv_buf.data(), s, type, operation);
   }
-  send_buf.copy(recv_buf);
+  send_and_receive_buf.copy(recv_buf);
 }
 
 /*---------------------------------------------------------------------------*/

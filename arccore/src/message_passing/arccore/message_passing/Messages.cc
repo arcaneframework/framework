@@ -402,6 +402,10 @@ namespace
   { \
     _getDispatcher<type>(pm)->allReduce(rt, buf); \
   } \
+  void mpAllReduce(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> receive_buf) \
+  { \
+    _getDispatcher<type>(pm)->allReduce(rt, send_buf, receive_buf); \
+  } \
   void mpScanExclusive(IMessagePassingMng* pm, eReduceType rt, Span<const type> send_buf, Span<type> receive_buf) \
   { \
     _getDispatcher<type>(pm)->scanExclusive(rt, send_buf, receive_buf); \

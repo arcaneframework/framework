@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelDispatch.cc                                      (C) 2000-2024 */
+/* MpiParallelDispatch.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Parallelism manager using threads and MPI.                                */
 /*---------------------------------------------------------------------------*/
@@ -818,17 +818,17 @@ _applyReduceOperator(eReduceType op, Span<Type> result, AllDispatchView dispatch
   case Parallel::ReduceMin:
     for (Integer i = first_rank; i <= last_rank; ++i)
       for (Int64 j = 0; j < buf_size; ++j)
-        result[j] = math::min(result[j], dispatch_view[i]->m_reduce_infos.reduce_buf_span[j]);
+        result[j] = math::min(result[j], dispatch_view[i]->m_reduce_infos.send_buf[j]);
     break;
   case Parallel::ReduceMax:
     for (Integer i = first_rank; i <= last_rank; ++i)
       for (Int64 j = 0; j < buf_size; ++j)
-        result[j] = math::max(result[j], dispatch_view[i]->m_reduce_infos.reduce_buf_span[j]);
+        result[j] = math::max(result[j], dispatch_view[i]->m_reduce_infos.send_buf[j]);
     break;
   case Parallel::ReduceSum:
     for (Integer i = first_rank; i <= last_rank; ++i)
       for (Integer j = 0; j < buf_size; ++j) {
-        result[j] = static_cast<Type>(result[j] + dispatch_view[i]->m_reduce_infos.reduce_buf_span[j]);
+        result[j] = static_cast<Type>(result[j] + dispatch_view[i]->m_reduce_infos.send_buf[j]);
       }
     break;
   default:
@@ -840,12 +840,20 @@ _applyReduceOperator(eReduceType op, Span<Type> result, AllDispatchView dispatch
 /*---------------------------------------------------------------------------*/
 
 template <class Type> void HybridParallelDispatch<Type>::
-_allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
+_allReduceOrScan(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf, bool is_scan)
 {
-  m_reduce_infos.reduce_buf_span = send_buf;
   ++m_reduce_infos.m_index;
   Int64 buf_size = send_buf.size();
-  UniqueArray<Type> ret(buf_size);
+  Span<Type> final_buf = receive_buf;
+  bool use_in_place = (send_buf.data() == receive_buf.data());
+  UniqueArray<Type> receive_buf_tmp;
+  if (use_in_place) {
+    // If we use in place reduce we need a temporary buffer
+    receive_buf_tmp.resize(buf_size);
+    receive_buf = receive_buf_tmp;
+  }
+  m_reduce_infos.send_buf = send_buf;
+  m_reduce_infos.reduce_buf_span = final_buf;
   // Values from the previous MPI rank (used only in Scan mode)
   UniqueArray<Type> previous_rank_ret;
   MpiParallelMng* mpi_pm = m_parallel_mng->mpiParallelMng();
@@ -869,23 +877,23 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
   if (m_local_rank == 0) {
     const Int32 nb_local_rank = m_local_nb_rank;
     for (Integer j = 0; j < buf_size; ++j)
-      ret[j] = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span[j];
-    _applyReduceOperator(op, ret, m_all_dispatchs, 1, nb_local_rank - 1);
+      receive_buf[j] = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span[j];
+    _applyReduceOperator(op, receive_buf, m_all_dispatchs, 1, nb_local_rank - 1);
     if (is_scan) {
       // For scan, we need to know the scan value of the preceding rank.
       // We then use this value and apply our operator.
-      mpi_pm->scan(op, ret);
+      mpi_pm->scan(op, receive_buf.smallView());
       previous_rank_ret.resize(buf_size);
       UniqueArray<Request> requests;
       if (my_mpi_rank != 0)
         requests.add(mpi_pm->recv(previous_rank_ret, my_mpi_rank - 1, false));
       if (my_mpi_rank != (mpi_nb_rank - 1))
-        requests.add(mpi_pm->send(ret, my_mpi_rank + 1, false));
+        requests.add(mpi_pm->send(receive_buf.smallView(), my_mpi_rank + 1, false));
       mpi_pm->waitAllRequests(requests);
       if (my_mpi_rank != 0) {
         // Apply the scan to my values.
         _applyReduceOperator(op, previous_rank_ret, m_all_dispatchs, 0, 0);
-        send_buf.copy(previous_rank_ret);
+        final_buf.copy(previous_rank_ret);
       }
       else {
         // I am the first local and MPI rank. I already have the correct values
@@ -893,8 +901,9 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
       }
     }
     else {
-      mpi_pm->reduce(op, ret);
-      send_buf.copy(ret);
+      mpi_pm->reduce(op, receive_buf.smallView());
+      if (use_in_place)
+        final_buf.copy(receive_buf);
     }
   }
 
@@ -903,22 +912,24 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
   if (is_scan) {
     if (m_local_rank != 0) {
       Span<const Type> global_buf = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span;
-      ret.copy(global_buf);
+      receive_buf.copy(global_buf);
       // The scan for local rank 0 has already been applied
-      _applyReduceOperator(op, ret, m_all_dispatchs, 1, m_local_rank);
+      _applyReduceOperator(op, receive_buf, m_all_dispatchs, 1, m_local_rank);
     }
     // TODO: We could avoid this barrier if we copied the values of 'send_buf'
     // before modifying them.
-    _collectiveBarrier();
+    if (use_in_place) {
+      _collectiveBarrier();
 
-    if (m_local_rank != 0) {
-      send_buf.copy(ret);
+      if (m_local_rank != 0) {
+        final_buf.copy(receive_buf);
+      }
     }
   }
   else {
     if (m_local_rank != 0) {
       Span<const Type> global_buf = m_all_dispatchs[0]->m_reduce_infos.reduce_buf_span;
-      send_buf.copy(global_buf);
+      final_buf.copy(global_buf);
     }
   }
 
@@ -931,7 +942,16 @@ _allReduceOrScan(eReduceType op, Span<Type> send_buf, bool is_scan)
 template <class Type> void HybridParallelDispatch<Type>::
 allReduce(eReduceType op, Span<Type> send_buf)
 {
-  _allReduceOrScan(op, send_buf, false);
+  _allReduceOrScan(op, send_buf, send_buf, false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type> void HybridParallelDispatch<Type>::
+allReduce(eReduceType op, Span<const Type> send_buf, Span<Type> receive_buf)
+{
+  _allReduceOrScan(op, send_buf, receive_buf, false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1025,7 +1045,7 @@ scan(eReduceType op, Type send_buf)
 template <class Type> void HybridParallelDispatch<Type>::
 scan(eReduceType op, ArrayView<Type> send_buf)
 {
-  _allReduceOrScan(op, send_buf, true);
+  _allReduceOrScan(op, send_buf, send_buf, true);
 }
 
 /*---------------------------------------------------------------------------*/
