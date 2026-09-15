@@ -68,6 +68,7 @@
   ItemFamilyCompactPolicy.h
   ItemInternalMap.cc
   ItemInternalMap.h
+  UniqueIdKeySortFunction.cc
   ItemSharedInfoList.cc
   ItemSharedInfoList.h
   ItemTools.cc
@@ -248,6 +249,7 @@
   GraphDoFs.cc
 
   internal/DynamicMeshInternal.h
+  internal/UniqueIdKeySortFunction.h
 )
 
 set(AXL_FILES 
