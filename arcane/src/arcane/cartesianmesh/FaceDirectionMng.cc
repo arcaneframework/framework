@@ -26,8 +26,6 @@
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
-#include <set>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -125,7 +123,7 @@ _internalComputeInfos(const CellDirectionMng& cell_dm, const VariableCellReal3& 
     CellGroup all_cells = cell_dm.allCells();
     faces_lid.reserve(all_cells.size());
     // Set of faces already added
-    std::set<Int32> done_faces;
+    UniqueArray<bool> done_faces(face_family->maxLocalId(), false);
     ENUMERATE_CELL (icell, all_cells) {
       DirCellFace dcf(cell_dm.cellFace(*icell));
       Face next_face = dcf.next();
@@ -133,14 +131,14 @@ _internalComputeInfos(const CellDirectionMng& cell_dm, const VariableCellReal3& 
 
       //! Adds the previous face to the list of faces in this direction
       Int32 prev_lid = prev_face.localId();
-      if (done_faces.find(prev_lid) == done_faces.end()) {
+      if (!done_faces[prev_lid]) {
         faces_lid.add(prev_lid);
-        done_faces.insert(prev_lid);
+        done_faces[prev_lid] = true;
       }
       Int32 next_lid = next_face.localId();
-      if (done_faces.find(next_lid) == done_faces.end()) {
+      if (!done_faces[next_lid]) {
         faces_lid.add(next_lid);
-        done_faces.insert(next_lid);
+        done_faces[next_lid] = true;
       }
     }
   }
@@ -153,7 +151,7 @@ _internalComputeInfos(const CellDirectionMng& cell_dm, const VariableCellReal3& 
   ENUMERATE_FACE (iitem, all_faces) {
     Int32 lid = iitem.itemLocalId();
     Face face = *iitem;
-    // TODO: do not use nbCell() but do this via the std::set used previously
+    // TODO: do not use nbCell() but do this via the marker used previously
     if (face.nbCell() == 1)
       outer_lids.add(lid);
     else
@@ -190,7 +188,7 @@ _internalComputeInfos(const CellDirectionMng& cell_dm)
     CellGroup all_cells = cell_dm.allCells();
     faces_lid.reserve(all_cells.size());
     // Set of faces already added
-    std::set<Int32> done_faces;
+    UniqueArray<bool> done_faces(face_family->maxLocalId(), false);
     ENUMERATE_ (Cell, icell, all_cells) {
       DirCellFace dcf(cell_dm.cellFace(*icell));
       Face next_face = dcf.next();
@@ -198,14 +196,14 @@ _internalComputeInfos(const CellDirectionMng& cell_dm)
 
       //! Adds the previous face to the list of faces in this direction
       Int32 prev_lid = prev_face.localId();
-      if (done_faces.find(prev_lid) == done_faces.end()) {
+      if (!done_faces[prev_lid]) {
         faces_lid.add(prev_lid);
-        done_faces.insert(prev_lid);
+        done_faces[prev_lid] = true;
       }
       Int32 next_lid = next_face.localId();
-      if (done_faces.find(next_lid) == done_faces.end()) {
+      if (!done_faces[next_lid]) {
         faces_lid.add(next_lid);
-        done_faces.insert(next_lid);
+        done_faces[next_lid] = true;
       }
     }
   }
@@ -298,9 +296,9 @@ _computeCellInfos(const CellDirectionMng& cell_dm, const VariableCellReal3& cell
   // Create the set of cells in the patch and use it
   // to ensure that every front/back cell is in
   // this set
-  std::set<Int32> patch_cells_set;
+  UniqueArray<bool> is_patch_cell(cell_dm.allCells().itemFamily()->maxLocalId(), false);
   ENUMERATE_CELL (icell, cell_dm.allCells()) {
-    patch_cells_set.insert(icell.itemLocalId());
+    is_patch_cell[icell.itemLocalId()] = true;
   }
 
   ENUMERATE_FACE (iface, m_p->m_all_items) {
@@ -312,10 +310,10 @@ _computeCellInfos(const CellDirectionMng& cell_dm, const VariableCellReal3& cell
 
     // Checks that the cells are in our patch.
     if (!front_cell.null())
-      if (patch_cells_set.find(front_cell.localId()) == patch_cells_set.end())
+      if (!is_patch_cell[front_cell.localId()])
         front_cell = Cell();
     if (!back_cell.null())
-      if (patch_cells_set.find(back_cell.localId()) == patch_cells_set.end())
+      if (!is_patch_cell[back_cell.localId()])
         back_cell = Cell();
 
     bool is_inverse = false;
