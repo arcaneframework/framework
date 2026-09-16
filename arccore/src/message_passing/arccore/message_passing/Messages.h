@@ -226,17 +226,31 @@ mpLegacyProbe(IMessagePassingMng* pm, const PointToPointMessageInfo& message);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Creates a new instance of \a IMessagePassingMng.
+ * \brief Creates a sub communicator.
  *
  * \a keep is true if this rank is present in the new communicator.
  *
- * The returned instance must be destroyed by calling the operator
- * operator delete().
+ *  The returned value is null if \a keep is false. If not null, the returned
+ * instance must be destroyed by calling the operator operator delete().
+ *
+ * \deprecated Use mpSplitCommunicator() instead.
  */
+ARCCORE_DEPRECATED_REASON("Y2026: Use mpSplitCommunicator() instead.")
 ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng*
 mpSplit(IMessagePassingMng* pm, bool keep);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Creates a sub communicator.
+ *
+ * \a keep is true if this rank is present in the new communicator.
+ *
+ * The returned value is null if \a keep is false.
+ */
+ARCCORE_MESSAGEPASSING_EXPORT Ref<IMessagePassingMng>
+mpSplitCommunicator(IMessagePassingMng* pm, bool keep);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

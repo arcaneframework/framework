@@ -68,6 +68,16 @@ commSplit(bool keep)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Ref<IMessagePassingMng> MpiControlDispatcher::
+splitCommunicator(bool keep)
+{
+  IMessagePassingMng* mpm = m_adapter->commSplit(keep);
+  return makeRef(mpm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MpiControlDispatcher::
 barrier()
 {
