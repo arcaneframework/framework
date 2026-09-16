@@ -63,8 +63,41 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::MessagePassing
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Return the MPI communicator associated to \a mpm.
+ *
+ * If \a mpm is null or is not associated to MPI, return MPI_COMM_NULL.
+ */
+ARCCORE_MESSAGEPASSINGMPI_EXPORT MPI_Comm
+toMpiCommunicator(IMessagePassingMng* mpm);
+
+/*!
+ * \brief Set \a mpi_comm with the MPI communicator associated to \a mpm if it is valid.
+ *
+ * If \a mpm is not null and use MPI implementation, set \a mpi_comm with
+ * the MPI communicator associated to \a mpm. If is not the case, \a mpi_comm is inchanged.
+ *
+ * \return \a true if \a mpi_comm is set, \a false otherwise.
+ */
+ARCCORE_MESSAGEPASSINGMPI_EXPORT bool
+fillMpiCommunicatorIfValid(IMessagePassingMng* mpm,MPI_Comm* mpi_comm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane::MessagePassing::Mpi
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class MpiRequest;
 class MpiAdapter;
 class MpiLock;
@@ -81,6 +114,10 @@ template <typename DataType>
 class StdMpiReduceOperator;
 template <typename Type>
 class MpiTypeDispatcher;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/

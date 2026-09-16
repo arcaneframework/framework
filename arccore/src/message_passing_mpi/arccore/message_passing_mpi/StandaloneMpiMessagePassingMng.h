@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StandaloneMpiMessagePassingMng.h                            (C) 2000-2025 */
+/* StandaloneMpiMessagePassingMng.h                            (C) 2000-2026 */
 /*                                                                           */
 /* Standalone version of MpiMessagePassingMng.                               */
 /*---------------------------------------------------------------------------*/
@@ -26,28 +26,27 @@ namespace Arcane::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Standalone version of MpiMessagePassingMng.
+ * \brief Standalone version of IMessagePassingMng associated to a MPI Communicator
  *
- * Creation is done via the static method create() or createRef().
+ * Creation is done via the static method createRef() or deprectated
+ * method create().
+ *
+ * From the returned IMessagePassingMng, it is possible to retreive
+ * the associated MPI_Comm using helper functions fillMpiCommunicatorIfValid()
+ * or toMpiCommunicator().
  */
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng
-: public MpiMessagePassingMng
 {
-  class Impl;
-
- private:
-
-  StandaloneMpiMessagePassingMng(Impl* p);
-
  public:
 
-  ~StandaloneMpiMessagePassingMng() override;
-
- public:
-
-  //! Creates a manager associated with the communicator \a comm.
+  /*!
+   * \brief Creates a manager associated with the communicator \a comm.
+   *
+   * \deprecated Use createRef() instead because it has automatic memory
+   * management.
+   */
+  ARCCORE_DEPRECATED_REASON("Y2026: Use createRef() instead")
   static MpiMessagePassingMng* create(MPI_Comm comm, bool clean_comm = false);
 
   /*!
@@ -58,9 +57,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng
    */
   static Ref<IMessagePassingMng> createRef(MPI_Comm comm, bool clean_comm = false);
 
- private:
-
-  Impl* m_p;
+  /*!
+   * \brief Creates a manager associated with the MPI_WORLD_COMM communicator.
+   */
+  static Ref<IMessagePassingMng> createWorldRef();
 };
 
 /*---------------------------------------------------------------------------*/

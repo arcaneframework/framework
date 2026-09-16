@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MessagePassingMng.h                                         (C) 2000-2025 */
+/* MessagePassingMng.h                                         (C) 2000-2026 */
 /*                                                                           */
-/* Message passing manager.                                                  */
+/* Implementation of interface IMessagePassingMng.                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_MESSAGEPASSING_MESSAGEPASSINGMNG_H
 #define ARCCORE_MESSAGEPASSING_MESSAGEPASSINGMNG_H
@@ -27,11 +27,11 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Message passing manager.
+ * \brief Implementation of interface IMessagePassingMng.
  *
- * Instances of these classes must be destroyed via the mpDelete() method.
+ * This class in internal to Arccore. Uses should use the interface
+ * IMessagePassingMng.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
 : public ReferenceCounterImpl
@@ -42,7 +42,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
  public:
 
   MessagePassingMng(Int32 comm_rank, Int32 comm_size, IDispatchers* d);
-  // TODO: Rendre obsolète fin 2022: [[deprecated("Use mpDelete() instead")]]
   ~MessagePassingMng() override;
 
  public:
