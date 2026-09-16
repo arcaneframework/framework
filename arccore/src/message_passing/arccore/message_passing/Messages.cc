@@ -246,6 +246,16 @@ mpSplit(IMessagePassingMng* pm, bool keep)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Ref<IMessagePassingMng>
+mpSplitCommunicator(IMessagePassingMng* pm, bool keep)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  return d->splitCommunicator(keep);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void mpBarrier(IMessagePassingMng* pm)
 {
   auto d = pm->dispatchers()->controlDispatcher();

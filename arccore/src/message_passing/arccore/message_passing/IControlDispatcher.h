@@ -45,7 +45,10 @@ class ARCCORE_MESSAGEPASSING_EXPORT IControlDispatcher
   virtual void waitSomeRequests(ArrayView<Request> requests,
                                 ArrayView<bool> indexes, bool is_non_blocking) = 0;
 
+  ARCCORE_DEPRECATED_REASON("Y2026: Use splitCommunicator() instead.")
   virtual IMessagePassingMng* commSplit(bool keep) = 0;
+
+  virtual Ref<IMessagePassingMng> splitCommunicator(bool keep) = 0;
 
   virtual void barrier() = 0;
 

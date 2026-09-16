@@ -102,6 +102,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
     void waitSomeRequests(ArrayView<Request> requests,
                           ArrayView<bool> indexes, bool is_non_blocking) override;
     IMessagePassingMng* commSplit(bool keep) override;
+    Ref<IMessagePassingMng> splitCommunicator(bool keep) override;
     void barrier() override;
     Request nonBlockingBarrier() override;
     MessageId probe(const PointToPointMessageInfo& message) override;

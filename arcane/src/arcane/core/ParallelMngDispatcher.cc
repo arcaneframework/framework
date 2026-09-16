@@ -145,6 +145,13 @@ commSplit(bool keep)
   ARCANE_THROW(NotImplementedException, "split from MessagePassing::IControlDispatcher");
 }
 
+Ref<IMessagePassingMng> ParallelMngDispatcher::DefaultControlDispatcher::
+splitCommunicator(bool keep)
+{
+  ARCANE_UNUSED(keep);
+  ARCANE_THROW(NotImplementedException, "split from MessagePassing::IControlDispatcher");
+}
+
 void ParallelMngDispatcher::DefaultControlDispatcher::
 barrier()
 {
