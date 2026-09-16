@@ -499,7 +499,6 @@ set(ARCANE_ORIGINAL_SOURCES
   DataTypeDispatchingDataVisitor.cc
   DataTypeDispatchingDataVisitor.h
   DataView.h
-  Directory.cc
   Directory.h
   Dom.h
   DomDeclaration.h
