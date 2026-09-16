@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleCsvReaderWriter.cc                                    (C) 2000-2022 */
+/* SimpleCsvReaderWriter.cc                                    (C) 2000-2026 */
 /*                                                                           */
 /* Class allowing reading and writing a file in CSV format.                  */
 /*---------------------------------------------------------------------------*/
@@ -13,9 +13,10 @@
 
 #include "arcane/std/SimpleCsvReaderWriter.h"
 
+#include "arccore/base/Directory.h"
 #include "arcane/utils/Iostream.h"
 
-#include "arcane/core/Directory.h"
+#include <limits>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
