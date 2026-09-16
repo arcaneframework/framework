@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2025 */
+/* StandaloneMpiMessagePassingMng.cc                           (C) 2000-2026 */
 /*                                                                           */
 /* MPI implementation of the message exchange manager.                       */
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,42 @@ namespace Arcane::MessagePassing::Mpi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class StandaloneMpiMessagePassingMng::Impl
+class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng2
+: public MpiMessagePassingMng
+{
+  class Impl;
+  friend class StandaloneMpiMessagePassingMng;
+
+ private:
+
+  explicit StandaloneMpiMessagePassingMng2(Impl* p);
+
+ public:
+
+  ~StandaloneMpiMessagePassingMng2() override;
+
+ private:
+
+  //! Creates a manager associated with the communicator \a comm.
+  static MpiMessagePassingMng* create(MPI_Comm comm, bool clean_comm = false);
+
+  /*!
+   * \brief Creates a manager associated with the communicator \a comm.
+   *
+   * If \a clean_comm is true, MPI_Comm_free() is called on \a comm
+   * when the instance is destroyed.
+   */
+  static Ref<IMessagePassingMng> createRef(MPI_Comm comm, bool clean_comm = false);
+
+ private:
+
+  Impl* m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class StandaloneMpiMessagePassingMng2::Impl
 {
  public:
 
@@ -92,8 +127,8 @@ class StandaloneMpiMessagePassingMng::Impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-StandaloneMpiMessagePassingMng::
-StandaloneMpiMessagePassingMng(Impl* p)
+StandaloneMpiMessagePassingMng2::
+StandaloneMpiMessagePassingMng2(Impl* p)
 : MpiMessagePassingMng(p->buildInfo())
 , m_p(p)
 {
@@ -102,8 +137,8 @@ StandaloneMpiMessagePassingMng(Impl* p)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-StandaloneMpiMessagePassingMng::
-~StandaloneMpiMessagePassingMng()
+StandaloneMpiMessagePassingMng2::
+~StandaloneMpiMessagePassingMng2()
 {
   delete m_p;
 }
@@ -133,11 +168,11 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiMessagePassingMng* StandaloneMpiMessagePassingMng::
+MpiMessagePassingMng* StandaloneMpiMessagePassingMng2::
 create(MPI_Comm mpi_comm, bool clean_comm)
 {
   Impl* p = new Impl(mpi_comm, clean_comm);
-  auto mpm = new StandaloneMpiMessagePassingMng(p);
+  auto mpm = new StandaloneMpiMessagePassingMng2(p);
   auto adapter = p->m_adapter;
   auto dsp = p->m_dispatchers;
 
@@ -182,11 +217,38 @@ create(MPI_Comm mpi_comm, bool clean_comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<IMessagePassingMng> StandaloneMpiMessagePassingMng::
+Ref<IMessagePassingMng> StandaloneMpiMessagePassingMng2::
 createRef(MPI_Comm mpi_comm, bool clean_comm)
 {
   MpiMessagePassingMng* v = create(mpi_comm, clean_comm);
   return makeRef<IMessagePassingMng>(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MpiMessagePassingMng* StandaloneMpiMessagePassingMng::
+create(MPI_Comm mpi_comm, bool clean_comm)
+{
+  return StandaloneMpiMessagePassingMng2::create(mpi_comm, clean_comm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IMessagePassingMng> StandaloneMpiMessagePassingMng::
+createRef(MPI_Comm mpi_comm, bool clean_comm)
+{
+  return StandaloneMpiMessagePassingMng2::createRef(mpi_comm, clean_comm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IMessagePassingMng> StandaloneMpiMessagePassingMng::
+createWorldRef()
+{
+  return StandaloneMpiMessagePassingMng2::createRef(MPI_COMM_WORLD);
 }
 
 /*---------------------------------------------------------------------------*/

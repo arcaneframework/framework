@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMessagePassingMng.h                                        (C) 2000-2025 */
+/* IMessagePassingMng.h                                        (C) 2000-2026 */
 /*                                                                           */
 /* Interface of the message passing manager.                                 */
 /*---------------------------------------------------------------------------*/
@@ -24,26 +24,31 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Destroys the instance \a p.
+ * \brief Destroys the message passing instance \a p.
  *
- * The instance \a p must not be used after this call
+ * \warning This should only be used when using deprecated functions
+ * which do not return instances of Ref<IMessagePassingMng> and instead
+ * only return a IMessagePassingMng*.
  */
 extern "C++" void ARCCORE_MESSAGEPASSING_EXPORT
 mpDelete(IMessagePassingMng* p);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Interface of the message passing manager.
  *
- * This manager does not do much itself and merely
- * delegates operations via the IDispatchers interface.
+ * This class uses a semantic by reference and instances are automatically
+ * destroyed when needed.
  *
- * Instances of these classes must be destroyed via the method
- * mpDelete().
+ * Most of the operations on this class use free functions (like mpSend() or mpReceive())
+ * which are defined in file 'Messages.h'.
+ *
+ * %Arcane provides several implementation for message passing, using MPI,
+ * shared memory message passing or hybrid (MPI + shared memory) message passing.
+ * When using MPI, it is possible to create an instance of this class using
+ * the class StandaloneMpiMessagePassingMng.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
 {
@@ -52,7 +57,6 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
 
  public:
 
-  // TODO: Rendre obsolète fin 2022: [[deprecated("Use mpDelete() instead")]]
   virtual ~IMessagePassingMng() = default;
 
  public:
@@ -70,7 +74,16 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
    * \brief MPI communicator associated with this instance.
    *
    * The communicator is only valid if the instance is associated with an
-   * MPI implementation.
+   * MPI implementation. You can convert a communicator to a MPI communicator
+   * using helper methods toMpiCommunicator() and fillMpiCommunicatorIfValid()
+   * or like that:
+   *
+   * \code
+   * IMessagePassingMng* mpm = ...;
+   * Communicator comm = mpm->communicator();
+   * if (comm.isValid())
+   *   MPI_Comm mpi_comm = static_cast<MPI_Comm>(comm).
+   * \endcode
    */
   virtual Communicator communicator() const;
 
