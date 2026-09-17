@@ -5,17 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Directory.cc                                                (C) 2000-2025 */
+/* Directory.cc                                                (C) 2000-2026 */
 /*                                                                           */
 /* Directory management.                                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/String.h"
-#include "arcane/utils/StringBuilder.h"
-#include "arcane/utils/PlatformUtils.h"
+#include "arccore/base/Directory.h"
 
-#include "arcane/core/Directory.h"
+#include "arccore/base/String.h"
+#include "arccore/base/StringBuilder.h"
+#include "arccore/base/PlatformUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

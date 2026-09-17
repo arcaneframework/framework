@@ -30,6 +30,8 @@
   ConcurrencyBase.cc
   CStringUtils.h
   CStringUtils.cc
+  Directory.h
+  Directory.cc
   BaseTypes.h
   BasicDataType.h
   BasicDataType.cc
@@ -59,6 +61,7 @@
   GlibDynamicLibraryLoader.cc
   HPReal.cc
   HPReal.h
+  IDirectory.h
   Iterator.h
   IndexOutOfRangeException.cc
   IndexOutOfRangeException.h
