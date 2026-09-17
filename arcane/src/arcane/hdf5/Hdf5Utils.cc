@@ -988,6 +988,12 @@ initialize()
     m_long_id.setId(type_id);
   }
   {
+    hid_t type_id = H5Tcopy(H5T_NATIVE_LLONG);
+    H5Tset_precision(type_id, 8 * sizeof(long long));
+    H5Tset_order(type_id, H5T_ORDER_LE);
+    m_llong_id.setId(type_id);
+  }
+  {
     hid_t type_id = H5Tcopy(H5T_NATIVE_USHORT);
     H5Tset_precision(type_id, 8 * sizeof(unsigned short));
     H5Tset_order(type_id, H5T_ORDER_LE);
@@ -1004,6 +1010,12 @@ initialize()
     H5Tset_precision(type_id, 8 * sizeof(unsigned long));
     H5Tset_order(type_id, H5T_ORDER_LE);
     m_ulong_id.setId(type_id);
+  }
+  {
+    hid_t type_id = H5Tcopy(H5T_NATIVE_ULLONG);
+    H5Tset_precision(type_id, 8 * sizeof(unsigned long long));
+    H5Tset_order(type_id, H5T_ORDER_LE);
+    m_ullong_id.setId(type_id);
   }
   {
     hid_t type_id = H5Tcopy(H5T_NATIVE_FLOAT);

@@ -690,7 +690,7 @@ class ARCANE_HDF5_EXPORT StandardTypes
   }
   hid_t saveType(unsigned long long) const
   {
-    return m_ulong_id.id();
+    return m_ullong_id.id();
   }
   hid_t saveType(int) const
   {
@@ -702,7 +702,7 @@ class ARCANE_HDF5_EXPORT StandardTypes
   }
   hid_t saveType(long long) const
   {
-    return m_long_id.id();
+    return m_llong_id.id();
   }
   hid_t saveType(char) const
   {
@@ -752,8 +752,10 @@ class ARCANE_HDF5_EXPORT StandardTypes
   HType m_ushort_id; //!< HDF identifier for unsigned shorts
   HType m_int_id; //!< HDF identifier for signed integers
   HType m_long_id; //!< HDF identifier for signed longs
+  HType m_llong_id; //!< HDF identifier for signed long longs
   HType m_uint_id; //!< HDF identifier for unsigned integers
   HType m_ulong_id; //!< HDF identifier for unsigned longs
+  HType m_ullong_id; //!< HDF identifier for unsigned long longs
   HType m_real_id; //!< HDF identifier for reals
   HType m_real2_id; //!< HDF identifier for Real2
   HType m_real3_id; //!< HDF identifier for Real3
