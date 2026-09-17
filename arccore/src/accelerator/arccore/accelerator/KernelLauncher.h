@@ -16,6 +16,7 @@
 
 #include "arccore/base/CheckedConvert.h"
 #include "arccore/base/ForLoopRanges.h"
+#include "arccore/base/FatalErrorException.h"
 
 #include "arccore/common/accelerator/NativeStream.h"
 #include "arccore/common/accelerator/RunCommandLaunchInfo.h"

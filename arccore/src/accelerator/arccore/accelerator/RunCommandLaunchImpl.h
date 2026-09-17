@@ -14,7 +14,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "AcceleratorGlobal.h"
 #include "arccore/common/SequentialFor.h"
 #include "arccore/common/StridedLoopRanges.h"
 #include "arccore/common/accelerator/RunCommand.h"

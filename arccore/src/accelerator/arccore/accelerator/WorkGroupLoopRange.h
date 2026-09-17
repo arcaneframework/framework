@@ -14,7 +14,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "AcceleratorGlobal.h"
 #include "arccore/accelerator/AcceleratorUtils.h"
 
 #if defined(ARCCORE_COMPILING_CUDA)
