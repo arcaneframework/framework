@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CheckpointTesterService.cc                                  (C) 2000-2022 */
+/* CheckpointTesterService.cc                                  (C) 2000-2026 */
 /*                                                                           */
 /* Service for testing checkpoints/restorations.                             */
 /*---------------------------------------------------------------------------*/
@@ -173,6 +173,11 @@ _createParticlesVariables()
 void CheckpointTesterService::
 onTimeLoopStartInit()
 {
+  m_array_nodes.initialize();
+  m_array_edges.initialize();
+  m_array_faces.initialize();
+  m_array_cells.initialize();
+
   _checkConnectivity();
   m_global_deltat = 0.1;
   m_is_continue = false;

@@ -28,6 +28,11 @@
 namespace ArcaneTest
 {
 using namespace Arcane;
+namespace
+{
+  constexpr Int32 global_int16_max_as_int32 = 2 + 65535;
+  constexpr Int64 global_int32_max_as_int64 = 2L + 4294967295L;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -124,33 +129,32 @@ checkValues(Integer iteration, const GroupType& group)
 
     Int64ConstArrayView array_int64 = this->m_int64[item];
     for (Integer index = 0, size = array_int64.size(); index < size; ++index) {
-      Int64 expected = (Int64)(n + index);
+      Int64 expected = n + index + (index % 3) * global_int32_max_as_int64;
       CHECK_VALUE(int64);
     }
-
     Int32ConstArrayView array_int32 = this->m_int32[item];
     for (Integer index = 0, size = array_int32.size(); index < size; ++index) {
-      Int32 expected = (Int32)(n + 1 + index);
+      Int32 expected = static_cast<Int32>(n + 1 + index + (index % 3) * global_int16_max_as_int32);
       CHECK_VALUE(int32);
     }
 
     Int16ConstArrayView array_int16 = this->m_int16[item];
     for (Integer index = 0, size = array_int16.size(); index < size; ++index) {
-      Int16 expected = (Int16)(n + 2 + index);
+      Int16 expected = static_cast<Int16>(n + 2 + index);
       CHECK_VALUE(int16);
     }
 
     Real2ConstArrayView array_real2 = this->m_real2[item];
     for (Integer index = 0, size = array_real2.size(); index < size; ++index) {
       Real2 expected;
-      expected = (r + (Real)(index)) / 2.0;
+      expected = (r + static_cast<Real>(index)) / 2.0;
       CHECK_VALUE(real2);
     }
 
     Real2x2ConstArrayView array_real2x2 = this->m_real2x2[item];
     for (Integer index = 0, size = array_real2x2.size(); index < size; ++index) {
       Real2x2 expected;
-      expected = (r + (Real)(index)) / 4.0;
+      expected = (r + static_cast<Real>(index)) / 4.0;
       CHECK_VALUE(real2x2);
     }
 
@@ -208,33 +212,33 @@ checkGhostValuesOddOrEven(Integer iteration, const GroupType& group)
 
     Int64ConstArrayView array_int64 = this->m_int64[item];
     for (Integer index = 0, size = array_int64.size(); index < size; ++index) {
-      Int64 expected = (Int64)(n + index);
+      Int64 expected = n + index + (index % 3) * global_int32_max_as_int64;
       CHECK_VALUE(int64);
     }
 
     Int32ConstArrayView array_int32 = this->m_int32[item];
     for (Integer index = 0, size = array_int32.size(); index < size; ++index) {
-      Int32 expected = (Int32)(n + 1 + index);
+      Int32 expected = static_cast<Int32>(n + 1 + index + (index % 3) * global_int16_max_as_int32);
       CHECK_VALUE(int32);
     }
 
     Int16ConstArrayView array_int16 = this->m_int16[item];
     for (Integer index = 0, size = array_int16.size(); index < size; ++index) {
-      Int16 expected = (Int16)(n + 2 + index);
+      Int16 expected = static_cast<Int16>(n + 2 + index);
       CHECK_VALUE(int16);
     }
 
     Real2ConstArrayView array_real2 = this->m_real2[item];
     for (Integer index = 0, size = array_real2.size(); index < size; ++index) {
       Real2 expected;
-      expected = (r + (Real)(index)) / 2.0;
+      expected = (r + static_cast<Real>(index)) / 2.0;
       CHECK_VALUE(real2);
     }
 
     Real2x2ConstArrayView array_real2x2 = this->m_real2x2[item];
     for (Integer index = 0, size = array_real2x2.size(); index < size; ++index) {
       Real2x2 expected;
-      expected = (r + (Real)(index)) / 4.0;
+      expected = (r + static_cast<Real>(index)) / 4.0;
       CHECK_VALUE(real2x2);
     }
 
@@ -303,7 +307,7 @@ template <class ItemType> void StdArrayMeshVariables<ItemType>::
 setValue(Int64 n, ItemType item)
 {
   Real r = Convert::toReal(n);
-  Integer i = (Integer)(n);
+  Int32 i = static_cast<Int32>(n);
 
   ByteArrayView array_byte = this->m_byte[item];
   for (Integer index = 0, size = array_byte.size(); index < size; ++index)
@@ -315,11 +319,11 @@ setValue(Int64 n, ItemType item)
 
   Int64ArrayView array_int64 = this->m_int64[item];
   for (Integer index = 0, size = array_int64.size(); index < size; ++index)
-    array_int64[index] = n + index;
+    array_int64[index] = n + index + (index % 3) * global_int32_max_as_int64;
 
   Int32ArrayView array_int32 = this->m_int32[item];
   for (Integer index = 0, size = array_int32.size(); index < size; ++index)
-    array_int32[index] = static_cast<Int32>(i + 1 + index);
+    array_int32[index] = static_cast<Int32>(i + 1 + index + (index % 3) * global_int16_max_as_int32);
 
   Int16ArrayView array_int16 = this->m_int16[item];
   for (Integer index = 0, size = array_int16.size(); index < size; ++index)
