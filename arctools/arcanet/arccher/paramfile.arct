@@ -1,0 +1,105 @@
+{
+  "versions": {
+    "_": 0,
+    "arcane": 0,
+    "arccher": 0
+  },
+  // Coucou
+  "general": {
+    "_": {
+      "name": "Common"
+    },
+    "arcane": {
+      "dataset": "./HelloWorld.arc",
+      "options": {
+        "T": 4
+      }
+    },
+    "arccher": {
+      "mpi": 2,
+      "env_var": {
+        "ARCANE_USE_BACKWARDCPP": 1
+      }
+    }
+  },
+  "commons": {
+    "2procs": {
+      "_": {
+        "name": "2 Procs"
+      },
+      "arccher": {
+        "mpi": 2
+      }
+    },
+    "2threads": {
+      "_": {
+        "name": "2 Threads"
+      },
+      "arcane": {
+        "options": {
+          "S": 2
+        }
+      },
+      "arccher": {
+        "thread": 2
+      }
+    },
+    "4mpithreads": {
+      "_": {
+        "name": "4 Hybrid",
+        "depend_a": [
+          "2procs",
+          "2threads"
+        ]
+      }
+    }
+  },
+  "variations": {
+    "nb_iterations": {
+      "10": {
+        "_": {
+          "name": "10 itérations"
+        },
+        "arcane": {
+          "options": {
+            "MaxIteration": 10
+          }
+        }
+      },
+      "20": {
+        "_": {
+          "name": "20 itérations"
+        },
+        "arcane": {
+          "options": {
+            "MaxIteration": 20
+          }
+        }
+      }
+    }
+  },
+  "cases": {
+    // Reserved symbol for names, for a next version : ":"
+    "case1": {
+      "_": {
+        "name": "Cas 1",
+        "depend_a": ["4mpithreads"]
+      },
+      "arcane": {
+        "options": {
+          "S": 2
+        }
+      }
+    },
+    "case2": {
+      "_": {
+        "name": "Cas 2"
+      },
+      "arcane": {
+        "options": {
+          "T": 8
+        }
+      }
+    }
+  }
+}

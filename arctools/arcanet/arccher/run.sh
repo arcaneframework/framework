@@ -1,0 +1,1 @@
+./ArcCher -A,ConfigFile=./config.jsonc -A,ParamFile=./paramfile.jsonc -A,Case=case1
