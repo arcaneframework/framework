@@ -30,8 +30,6 @@
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/internal/ICartesianMeshInternal.h"
 
-#include <set>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -295,23 +293,21 @@ void NodeDirectionMng::
 _filterNodes()
 {
   // Set containing only the nodes of our patch
-  std::set<NodeLocalId> nodes_set;
+  UniqueArray<bool> is_in_patch(allNodes().itemFamily()->maxLocalId(), false);
   ENUMERATE_NODE (inode, allNodes()) {
-    nodes_set.insert(NodeLocalId(inode.itemLocalId()));
+    is_in_patch[inode.itemLocalId()] = true;
   }
 
   for (ItemDirectionInfo& idi : m_infos_view) {
     {
       Int32 next_lid = idi.m_next_lid;
-      if (next_lid != NULL_ITEM_LOCAL_ID)
-        if (nodes_set.find(NodeLocalId(next_lid)) == nodes_set.end())
-          idi.m_next_lid = NodeLocalId{};
+      if (next_lid != NULL_ITEM_LOCAL_ID && !is_in_patch[next_lid])
+        idi.m_next_lid = NodeLocalId{};
     }
     {
       Int32 prev_lid = idi.m_previous_lid;
-      if (prev_lid != NULL_ITEM_LOCAL_ID)
-        if (nodes_set.find(NodeLocalId(prev_lid)) == nodes_set.end())
-          idi.m_previous_lid = NodeLocalId{};
+      if (prev_lid != NULL_ITEM_LOCAL_ID && !is_in_patch[prev_lid])
+        idi.m_previous_lid = NodeLocalId{};
     }
   }
 }
@@ -340,9 +336,9 @@ _computeNodeCellInfos(const CellDirectionMng& cell_dm, const VariableCellReal3& 
 
   // Set containing only the cells of our patch
   // This is used to filter to keep only these cells in the connectivity
-  std::set<CellLocalId> inside_cells;
+  UniqueArray<bool> is_inside_cell(mesh->cellFamily()->maxLocalId(), false);
   ENUMERATE_CELL (icell, cell_dm.allCells()) {
-    inside_cells.insert(CellLocalId(icell.itemLocalId()));
+    is_inside_cell[icell.itemLocalId()] = true;
   }
 
   ENUMERATE_NODE (inode, dm_all_nodes) {
@@ -353,7 +349,7 @@ _computeNodeCellInfos(const CellDirectionMng& cell_dm, const VariableCellReal3& 
     for (Integer i = 0; i < nb_cell; ++i) {
       const IndexType bi = (IndexType)i;
       Cell cell = node.cell(i);
-      if (inside_cells.find(CellLocalId(cell.localId())) == inside_cells.end())
+      if (!is_inside_cell[cell.localId()])
         continue;
 
       Real3 center = cells_center[cell];
