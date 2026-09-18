@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiMessagePassingMng.h                                      (C) 2000-2025 */
+/* MpiMessagePassingMng.h                                      (C) 2000-2026 */
 /*                                                                           */
 /* MPI implementation of the message exchange manager.                       */
 /*---------------------------------------------------------------------------*/
@@ -54,10 +54,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiMessagePassingMng
 
    private:
 
-    Int32 m_comm_rank;
-    Int32 m_comm_size;
-    IDispatchers* m_dispatchers;
-    MPI_Comm m_communicator;
+    Int32 m_comm_rank = -1;
+    Int32 m_comm_size = -1;
+    IDispatchers* m_dispatchers = nullptr;
+    MPI_Comm m_communicator = MPI_COMM_NULL;
   };
 
  public:

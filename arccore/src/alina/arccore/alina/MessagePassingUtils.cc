@@ -28,6 +28,9 @@ AlinaCommunicator::
 AlinaCommunicator(MPI_Comm comm)
 : m_mpi_communicator(comm)
 {
+  if (comm == MPI_COMM_NULL)
+    ARCCORE_FATAL("Invalid MPI Communicator : MPI_COMM_NULL");
+
   MPI_Comm_rank(comm, &rank);
   MPI_Comm_size(comm, &size);
   m_message_passing_mng = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createRef(comm);
@@ -40,11 +43,10 @@ AlinaCommunicator::
 AlinaCommunicator(IMessagePassingMng* mpm_comm)
 {
   MessagePassing::Communicator c = mpm_comm->communicator();
-  if (!c.isValid())
-    ARCCORE_FATAL("Invalid 'IMessagePassingMng' communicator. Only MPI implementation is currently supported");
-  m_mpi_communicator = static_cast<MPI_Comm>(c);
-  MPI_Comm_rank(m_mpi_communicator, &rank);
-  MPI_Comm_size(m_mpi_communicator, &size);
+  if (c.isValid())
+    m_mpi_communicator = static_cast<MPI_Comm>(c);
+  rank = mpm_comm->commRank();
+  size = mpm_comm->commSize();
   m_message_passing_mng = makeRef(mpm_comm);
 };
 
@@ -75,6 +77,17 @@ check(bool cond, const String& message)
   }
   mpBarrier(pm);
   ARCCORE_FATAL("CheckError in MessagePassingUtils: {0}", message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MPI_Comm AlinaCommunicator::
+mpiCommunicator() const
+{
+  if (m_mpi_communicator == MPI_COMM_NULL)
+    ARCCORE_FATAL("Invalid MPI Communicator");
+  return m_mpi_communicator;
 }
 
 /*---------------------------------------------------------------------------*/

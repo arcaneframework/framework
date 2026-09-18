@@ -14,9 +14,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
+#include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
+#include "arccore/message_passing/IMessagePassingMng.h"
 
-#include "arccore/base/RefDeclarations.h"
+#include "arccore/base/Ref.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,10 +30,10 @@ namespace Arcane::MessagePassing::Mpi
 /*!
  * \brief Standalone version of IMessagePassingMng associated to a MPI Communicator
  *
- * Creation is done via the static method createRef() or deprectated
+ * Creation is done via the static method createRef() or deprecated
  * method create().
  *
- * From the returned IMessagePassingMng, it is possible to retreive
+ * From the returned IMessagePassingMng, it is possible to retrieve
  * the associated MPI_Comm using helper functions fillMpiCommunicatorIfValid()
  * or toMpiCommunicator().
  */
@@ -47,7 +48,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng
    * management.
    */
   ARCCORE_DEPRECATED_REASON("Y2026: Use createRef() instead")
-  static MpiMessagePassingMng* create(MPI_Comm comm, bool clean_comm = false);
+  static IMessagePassingMng* create(MPI_Comm comm, bool clean_comm = false);
 
   /*!
    * \brief Creates a manager associated with the communicator \a comm.

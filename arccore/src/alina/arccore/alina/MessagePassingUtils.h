@@ -29,6 +29,7 @@
 #include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/PointToPointMessageInfo.h"
+#include "arccore/message_passing/Communicator.h"
 
 #include "arccore/alina/ValueTypeInterface.h"
 #include "arccore/alina/AlinaUtils.h"
@@ -102,7 +103,7 @@ struct ARCCORE_ALINA_EXPORT AlinaCommunicator
 
   explicit AlinaCommunicator(IMessagePassingMng* mpm_comm);
 
-  MPI_Comm mpiCommunicator() const { return m_mpi_communicator; }
+  MPI_Comm mpiCommunicator() const;
   IMessagePassingMng* messagePassingMng() const { return m_message_passing_mng.get(); }
 
   /// Exclusive sum over mpi communicator

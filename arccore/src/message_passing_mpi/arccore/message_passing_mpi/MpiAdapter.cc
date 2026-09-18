@@ -1001,7 +1001,7 @@ directSendPack(const void* send_buffer, Int64 send_buffer_size,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiMessagePassingMng* MpiAdapter::
+IMessagePassingMng* MpiAdapter::
 commSplit(bool keep)
 {
   MPI_Comm new_comm;
