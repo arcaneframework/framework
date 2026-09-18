@@ -123,7 +123,7 @@ TEST(TestVBlockBuilder, VBlockFillingTest)
 TEST(TestVBlockBuilder, VBlockFillingTestWithGhost)
 {
   using namespace Alien;
-  Alien::ITraceMng* trace_mng = AlienTest::Environment::traceMng();
+  [[maybe_unused]] Alien::ITraceMng* trace_mng = AlienTest::Environment::traceMng();
   auto comm_size = AlienTest::Environment::parallelMng()->commSize();
   auto comm_rank = AlienTest::Environment::parallelMng()->commRank();
 

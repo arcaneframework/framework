@@ -73,7 +73,7 @@ class AlienCoreSolverBaseT
 
  public:
   //! Initialisation
-  void init(int argv, char const** argc)
+  void init([[maybe_unused]] int argv, [[maybe_unused]] char const** argc)
   {
     m_output_level  = m_options->outputLevel();
     m_max_iteration = m_options->maxIter();
@@ -128,7 +128,7 @@ class AlienCoreSolverBaseT
     auto solver_opt   = m_options->solver() ;
     auto precond_opt  = m_options->preconditioner() ;
 
-    auto backend      = m_options->backend() ;
+    [[maybe_unused]] auto backend      = m_options->backend() ;
     auto asynch       = m_options->asynch() ;
     auto dot_prod     = m_options->dotProdOpt() ;
 
@@ -611,7 +611,7 @@ class AlienCoreSolverBaseT
   bool hasParallelSupport() const { return true; }
 
   //! Etat du solveur
-  void setNullSpaceConstantOption(bool flag)
+  void setNullSpaceConstantOption([[maybe_unused]] bool flag)
   {
     alien_warning([&] { cout() << "Null Space Constant Option not yet implemented"; });
   }

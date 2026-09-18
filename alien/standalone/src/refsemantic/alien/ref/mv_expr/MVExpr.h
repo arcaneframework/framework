@@ -81,7 +81,7 @@ namespace MVExpr
   struct distribution_evaluator
   {
     template <class T>
-    VectorDistribution const* operator()(lazy::cst_tag, T c)
+    VectorDistribution const* operator()(lazy::cst_tag, [[maybe_unused]] T c)
     {
       return nullptr;
     }

@@ -377,7 +377,7 @@ PETScInternalLinearSolver::solve(
 
   if(matrix.internal()->m_has_coordinates)
   {
-    auto const& vec_coords = matrix.internal()->m_coordinates ;
+    [[maybe_unused]] auto const& vec_coords = matrix.internal()->m_coordinates ;
     if (m_nearnull_space_opt)
     {
         MatNullSpace matnull;

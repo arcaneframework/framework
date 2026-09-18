@@ -169,9 +169,9 @@ HypreVector::getValues(const int nrow, double* values) const
 /*---------------------------------------------------------------------------*/
 
 bool
-HypreVector::copyValuesToDevice(std::size_t nrows,
-                                IndexType* rows_d,
-                                ValueType* values_d) const
+HypreVector::copyValuesToDevice([[maybe_unused]] std::size_t nrows,
+                                [[maybe_unused]] IndexType* rows_d,
+                                [[maybe_unused]] ValueType* values_d) const
 {
   if (m_internal == nullptr) return false ;
 #ifdef ALIEN_USE_SYCL
@@ -188,9 +188,9 @@ HypreVector::copyValuesToDevice(std::size_t nrows,
 }
 
 bool
-HypreVector::copyValuesToHost(std::size_t nrows,
-                              IndexType* rows_h,
-                              ValueType* values_h) const
+HypreVector::copyValuesToHost([[maybe_unused]] std::size_t nrows,
+                              [[maybe_unused]] IndexType* rows_h,
+                              [[maybe_unused]] ValueType* values_h) const
 {
   if (m_internal == nullptr) return false ;
 #ifdef ALIEN_USE_SYCL

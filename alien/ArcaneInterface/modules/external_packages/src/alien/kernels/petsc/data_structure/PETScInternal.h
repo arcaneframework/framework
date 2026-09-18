@@ -67,7 +67,7 @@ struct MatrixInternal
   }
 
   const MatType mat_type(bool parallel,
-                     BackEnd::Memory::eType memory_type,
+                     [[maybe_unused]] BackEnd::Memory::eType memory_type,
                      BackEnd::Exec::eSpaceType exec_space)
   {
     switch(exec_space)

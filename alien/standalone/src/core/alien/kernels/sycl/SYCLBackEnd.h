@@ -97,13 +97,11 @@ struct AlgebraTraits<BackEnd::tag::sycl>
   typedef SYCLBEllPackTraits<Real>::AlgebraExprType algebra_expr_type;
   // clang-format on
 
-  static algebra_type* algebra_factory(
-  IMessagePassingMng* p_mng ALIEN_UNUSED_PARAM = nullptr)
+  static algebra_type* algebra_factory([[maybe_unused]] IMessagePassingMng* p_mng = nullptr)
   {
     return SYCLInternalLinearAlgebraFactory();
   }
-  static algebra_expr_type* algebra_expr_factory(
-  IMessagePassingMng* p_mng ALIEN_UNUSED_PARAM = nullptr)
+  static algebra_expr_type* algebra_expr_factory([[maybe_unused]] IMessagePassingMng* p_mng = nullptr)
   {
     return SYCLInternalLinearAlgebraExprFactory();
   }

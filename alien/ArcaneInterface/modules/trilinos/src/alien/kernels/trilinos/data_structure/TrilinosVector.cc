@@ -33,7 +33,7 @@ template <typename ValueT, typename TagT> TrilinosVector<ValueT, TagT>::~Trilino
 /*---------------------------------------------------------------------------*/
 template <typename ValueT, typename TagT>
 void
-TrilinosVector<ValueT, TagT>::init(const VectorDistribution& dist, const bool need_allocate)
+TrilinosVector<ValueT, TagT>::init([[maybe_unused]] const VectorDistribution& dist, const bool need_allocate)
 {
   const Block* block = this->block();
   if (this->block())

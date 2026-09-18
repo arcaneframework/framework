@@ -319,10 +319,10 @@ TEST(TestSchur, SchurEngine)
     }
 
     trace_mng->info() << "COMPUTE PRIMARY SYSTEM";
-    auto error = op.computePrimarySystem(pA, pb);
+    [[maybe_unused]] auto error = op.computePrimarySystem(pA, pb);
 
     trace_mng->info() << "COMPUTE SECONDARY SOLUTION FROM PRIMARY";
-    auto error2 = op.computeSolutionFromPrimaryUnknowns(px, x);
+    [[maybe_unused]] auto error2 = op.computeSolutionFromPrimaryUnknowns(px, x);
   }
 
   {
@@ -341,10 +341,10 @@ TEST(TestSchur, SchurEngine)
     }
 
     trace_mng->info() << "COMPUTE PRIMARY SYSTEM";
-    auto error = op.computePrimarySystem(pA, pb);
+    [[maybe_unused]] auto error = op.computePrimarySystem(pA, pb);
 
     trace_mng->info() << "COMPUTE SECONDARY SOLUTION FROM PRIMARY";
-    auto error2 = op.computeSolutionFromPrimaryUnknowns(px, x);
+    [[maybe_unused]] auto error2 = op.computeSolutionFromPrimaryUnknowns(px, x);
   }
 #endif
 }

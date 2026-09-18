@@ -673,7 +673,7 @@ int main(int argc, char** argv)
     }
 
     // clang-format off
-    auto run_sycl = [&](auto& alg)
+    [[maybe_unused]] auto run_sycl = [&](auto& alg)
               {
                 typedef typename std::remove_reference<decltype(alg)>::type AlgebraType ;
                 typedef typename AlgebraType::BackEndType        BackEndType ;

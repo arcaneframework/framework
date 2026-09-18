@@ -62,7 +62,7 @@ void DoKtoSimpleCSRMatrixConverter::_build(const SrcMatrix& src, TgtMatrix& tgt)
 
 void DoKtoSimpleCSRMatrixConverter::_buildProfile(const SrcMatrix& src, TgtMatrix& tgt) const
 {
-  const ISpace& space = src.rowSpace();
+  [[maybe_unused]] const ISpace& space = src.rowSpace();
   const MatrixDistribution& dist = src.distribution();
   IMessagePassingMng* parallel_mng = dist.parallelMng();
 

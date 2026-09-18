@@ -97,9 +97,9 @@ void SimpleCSRMatrixMultT<ValueT>::_synchronize(VectorType& x_impl) const
   Integer alloc_size = m_matrix_impl.m_local_size + m_matrix_impl.m_ghost_size;
   x_impl.resize(alloc_size);
   Real* x_ptr = (Real*)x_impl.getDataPtr();
-  ConstArrayView<Real> matrix = m_matrix_impl.m_matrix.getValues();
-  ConstArrayView<Integer> cols = m_matrix_impl.getDistStructInfo().m_cols;
-  ConstArrayView<Integer> row_offset =
+  [[maybe_unused]] ConstArrayView<Real> matrix = m_matrix_impl.m_matrix.getValues();
+  [[maybe_unused]] ConstArrayView<Integer> cols = m_matrix_impl.getDistStructInfo().m_cols;
+  [[maybe_unused]] ConstArrayView<Integer> row_offset =
   m_matrix_impl.m_matrix.getCSRProfile().getRowOffset();
   SendRecvOp<Real> op(x_ptr, m_matrix_impl.m_matrix_dist_info.m_send_info,
                       m_matrix_impl.m_send_policy, x_ptr, m_matrix_impl.m_matrix_dist_info.m_recv_info,
@@ -285,10 +285,10 @@ void SimpleCSRMatrixMultT<ValueT>::_synchronizeBlock(VectorType& x) const
   Integer alloc_size = m_matrix_impl.m_local_size + m_matrix_impl.m_ghost_size;
   const Integer block_size = m_matrix_impl.block()->size();
   x.resize(alloc_size * block_size);
-  ConstArrayView<Real> x_ptr = x.fullValues();
-  Real const* matrix = m_matrix_impl.m_matrix.getDataPtr();
-  ConstArrayView<Integer> cols = m_matrix_impl.getDistStructInfo().m_cols;
-  ConstArrayView<Integer> row_offset =
+  [[maybe_unused]] ConstArrayView<Real> x_ptr = x.fullValues();
+  [[maybe_unused]] Real const* matrix = m_matrix_impl.m_matrix.getDataPtr();
+  [[maybe_unused]] ConstArrayView<Integer> cols = m_matrix_impl.getDistStructInfo().m_cols;
+  [[maybe_unused]] ConstArrayView<Integer> row_offset =
   m_matrix_impl.m_matrix.getCSRProfile().getRowOffset();
   SimpleCSRInternal::SendRecvOp<Real> op(x.getDataPtr(),
                                          m_matrix_impl.m_matrix_dist_info.m_send_info, m_matrix_impl.m_send_policy,
@@ -442,12 +442,12 @@ void SimpleCSRMatrixMultT<ValueT>::_synchronizeVariableBlock(VectorType& x_impl)
   }
 
   const ValueT* x_ptr = x_impl.getDataPtr();
-  const ValueT* matrix_ptr = m_matrix_impl.m_matrix.getDataPtr();
+  [[maybe_unused]] const ValueT* matrix_ptr = m_matrix_impl.m_matrix.getDataPtr();
 
-  ConstArrayView<Integer> row_offset =
+  [[maybe_unused]] ConstArrayView<Integer> row_offset =
   m_matrix_impl.m_matrix.getCSRProfile().getRowOffset();
-  ConstArrayView<Integer> cols = m_matrix_impl.getDistStructInfo().m_cols;
-  ConstArrayView<Integer> block_cols =
+  [[maybe_unused]] ConstArrayView<Integer> cols = m_matrix_impl.getDistStructInfo().m_cols;
+  [[maybe_unused]] ConstArrayView<Integer> block_cols =
   m_matrix_impl.m_matrix.getCSRProfile().getBlockCols();
 
   SendRecvOp<Real> op(x_ptr, m_matrix_impl.m_matrix_dist_info.m_send_info,
@@ -602,9 +602,9 @@ void SimpleCSRMatrixMultT<ValueT>::multDiag(VectorType& y) const
   CSRConstViewT<MatrixType> view(m_matrix_impl);
   // clang-format off
   auto nrows  = view.nrows() ;
-  auto kcol   = view.kcol() ;
+  [[maybe_unused]] auto kcol   = view.kcol() ;
   auto dcol   = view.dcol() ;
-  auto cols   = view.cols() ;
+  [[maybe_unused]] auto cols   = view.cols() ;
   auto values = view.data() ;
   // clang-format on
   for (Integer irow = 0; irow < nrows; ++irow)
@@ -618,9 +618,9 @@ void SimpleCSRMatrixMultT<ValueT>::multInvDiag(VectorType& y) const
   CSRConstViewT<MatrixType> view(m_matrix_impl);
   // clang-format off
   auto nrows  = view.nrows() ;
-  auto kcol   = view.kcol() ;
+  [[maybe_unused]] auto kcol   = view.kcol() ;
   auto dcol   = view.dcol() ;
-  auto cols   = view.cols() ;
+  [[maybe_unused]] auto cols   = view.cols() ;
   auto values = view.data() ;
   // clang-format on
   for (Integer irow = 0; irow < nrows; ++irow)
@@ -635,9 +635,9 @@ void SimpleCSRMatrixMultT<ValueT>::computeDiag(VectorType& y) const
   CSRConstViewT<MatrixType> view(m_matrix_impl);
   // clang-format off
   auto nrows  = view.nrows() ;
-  auto kcol   = view.kcol() ;
+  [[maybe_unused]] auto kcol   = view.kcol() ;
   auto dcol   = view.dcol() ;
-  auto cols   = view.cols() ;
+  [[maybe_unused]] auto cols   = view.cols() ;
   auto values = view.data() ;
   // clang-format on
   if(m_matrix_impl.blockSize()==1)
@@ -665,9 +665,9 @@ void SimpleCSRMatrixMultT<ValueT>::computeInvDiag(VectorType& y) const
   CSRConstViewT<MatrixType> view(m_matrix_impl);
   // clang-format off
   auto nrows  = view.nrows() ;
-  auto kcol   = view.kcol() ;
+  [[maybe_unused]] auto kcol   = view.kcol() ;
   auto dcol   = view.dcol() ;
-  auto cols   = view.cols() ;
+  [[maybe_unused]] auto cols   = view.cols() ;
   auto values = view.data() ;
   // clang-format on
   if(m_matrix_impl.blockSize()==1)

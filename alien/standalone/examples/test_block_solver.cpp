@@ -279,7 +279,7 @@ int main(int argc, char** argv)
 
   auto allUIndex = index_manager.getIndexes(indexSetU);
 
-  double off_diag = 0.5;
+  [[maybe_unused]] double off_diag = 0.5;
   /*
    *  Assemble matrix.
    */

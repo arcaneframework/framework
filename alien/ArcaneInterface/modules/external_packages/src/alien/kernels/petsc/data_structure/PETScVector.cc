@@ -105,14 +105,14 @@ PETScVector::getDataPtr()
   PetscScalar* petsc_ptr = nullptr;
   if(m_internal->memoryOnHost())
   {
-    int ierr = VecGetArray(m_internal->m_internal, &petsc_ptr);
+    [[maybe_unused]] int ierr = VecGetArray(m_internal->m_internal, &petsc_ptr);
     return petsc_ptr ;
   }
   else
   {
 #if PETSC_VERSION_GE(3, 20, 0)
 #if PETSC_HAVE_CUDA
-    int ierr = VecCUDAGetArrayWrite(m_internal->m_internal, &petsc_ptr);
+    [[maybe_unused]] int ierr = VecCUDAGetArrayWrite(m_internal->m_internal, &petsc_ptr);
 #endif
 #endif
     return petsc_ptr ;

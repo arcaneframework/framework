@@ -106,7 +106,7 @@ struct IndexManager::EntryRecvRequest
 
   ~EntryRecvRequest() = default;
 
-  explicit EntryRecvRequest(const EntrySendRequest& err) {}
+  explicit EntryRecvRequest([[maybe_unused]] const EntrySendRequest& err) {}
 
   Arccore::Ref<Arccore::MessagePassing::ISerializeMessage> comm;
   UniqueArray<Int64> ids;
@@ -593,7 +593,7 @@ void IndexManager::begin_parallel_prepare(EntryIndexMap& entry_index)
 
     { // Préparation des retours
       auto dest = recvRequest.comm->destination(); // Attention à l'ordre bizarre
-      auto orig = recvRequest.comm->source(); //       de SerializeMessage
+      [[maybe_unused]] auto orig = recvRequest.comm->source(); //       de SerializeMessage
       recvRequest.comm.reset();
       recvRequest.comm = parallel->messageList->createAndAddMessage(dest,
                                                                     Arccore::MessagePassing::ePointToPointMessageType::MsgSend);

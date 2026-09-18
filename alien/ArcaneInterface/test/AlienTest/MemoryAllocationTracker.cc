@@ -90,7 +90,7 @@ my_local_restore_hook(void)
 /*---------------------------------------------------------------------------*/
 
 static void*
-my_local_malloc_hook(size_t size, const void* caller)
+my_local_malloc_hook(size_t size, [[maybe_unused]] const void* caller)
 {
   void* result;
 
@@ -123,7 +123,7 @@ my_local_malloc_hook(size_t size, const void* caller)
 /*---------------------------------------------------------------------------*/
 
 static void
-my_local_free_hook(void* ptr, const void* caller)
+my_local_free_hook(void* ptr, [[maybe_unused]] const void* caller)
 {
   /* Replacer la routine originale */
   pushHooks();
@@ -154,7 +154,7 @@ my_local_free_hook(void* ptr, const void* caller)
 /*---------------------------------------------------------------------------*/
 
 void*
-my_local_realloc_hook(void* ptr, size_t size, const void* caller)
+my_local_realloc_hook(void* ptr, size_t size, [[maybe_unused]] const void* caller)
 {
   void* result;
 

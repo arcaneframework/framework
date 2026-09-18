@@ -416,7 +416,7 @@ void SimpleCSRInternalLinearAlgebraExpr::axpy(Real alpha, const CSRVector& vx, C
 
 /*---------------------------------------------------------------------------*/
 
-void SimpleCSRInternalLinearAlgebraExpr::aypx(Real alpha, UniqueArray<Real>& vy, UniqueArray<Real> const& vx) const
+void SimpleCSRInternalLinearAlgebraExpr::aypx([[maybe_unused]] Real alpha, [[maybe_unused]] UniqueArray<Real>& vy, [[maybe_unused]] UniqueArray<Real> const& vx) const
 {
   throw NotImplementedException(
   A_FUNCINFO, "SimpleCSRLinearAlgebra::aypx not implemented");

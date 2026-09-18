@@ -83,12 +83,12 @@ SchurOp::computePrimarySystem(IMatrix& pA, IVector& pB) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 SchurOp::eErrorType
-SchurOp::_apply_schur(Integer block_size,
+SchurOp::_apply_schur([[maybe_unused]] Integer block_size,
                       MatrixImpl& A,
-                      VectorImpl& B,
-                      Integer p_block_size,
+                      [[maybe_unused]] VectorImpl& B,
+                      [[maybe_unused]] Integer p_block_size,
                       MatrixImpl& pA,
-                      VectorImpl& pB) const
+                      [[maybe_unused]] VectorImpl& pB) const
 {
   pA.copyProfile(A);
   pA.allocate();
@@ -98,35 +98,35 @@ SchurOp::_apply_schur(Integer block_size,
   // clang-format off
   CSRConstViewT<MatrixImpl> view(A);
   auto nrows  = view.nrows() ;
-  auto kcol   = view.kcol() ;
+  [[maybe_unused]] auto kcol   = view.kcol() ;
   auto dcol   = view.dcol() ;
-  auto cols   = view.cols() ;
-  auto values = view.data() ;
+  [[maybe_unused]] auto cols   = view.cols() ;
+  [[maybe_unused]] auto values = view.data() ;
 
   CSRModifierViewT<MatrixImpl> modifier(pA);
-  auto p_nrows  = modifier.nrows() ;
-  auto p_kcol   = modifier.kcol() ;
-  auto p_dcol   = modifier.dcol() ;
-  auto p_cols   = modifier.cols() ;
-  auto p_values = modifier.data() ;
+  [[maybe_unused]] auto p_nrows  = modifier.nrows() ;
+  [[maybe_unused]] auto p_kcol   = modifier.kcol() ;
+  [[maybe_unused]] auto p_dcol   = modifier.dcol() ;
+  [[maybe_unused]] auto p_cols   = modifier.cols() ;
+  [[maybe_unused]] auto p_values = modifier.data() ;
   // clang-format on
   if (is_parallel) {
   }
   else {
     for (std::size_t irow = 0; irow < nrows; ++irow) {
-      auto diag_offset = dcol[irow];
+      [[maybe_unused]] auto diag_offset = dcol[irow];
     }
   }
   return NoError;
 }
 
 SchurOp::eErrorType
-SchurOp::_apply_schur(Integer block_size,
-                      MatrixImpl& A,
-                      VectorImpl& B,
-                      VBlock const* p_vblock,
-                      MatrixImpl& pA,
-                      VectorImpl& pB) const
+SchurOp::_apply_schur([[maybe_unused]] Integer block_size,
+                      [[maybe_unused]] MatrixImpl& A,
+                      [[maybe_unused]] VectorImpl& B,
+                      [[maybe_unused]] VBlock const* p_vblock,
+                      [[maybe_unused]] MatrixImpl& pA,
+                      [[maybe_unused]] VectorImpl& pB) const
 {
   return NoError;
 }
@@ -159,13 +159,13 @@ SchurOp::_apply_schur(VBlock const* vblock,
   auto cols   = view.cols() ;
   auto values = view.data() ;
   auto bcols  = A.getProfile().getBlockCols() ;
-  auto brows  = A.getProfile().getBlockRowOffset() ;
+  [[maybe_unused]] auto brows  = A.getProfile().getBlockRowOffset() ;
 
   CSRModifierViewT<MatrixImpl> modifier(pA);
-  auto p_nrows  = modifier.nrows() ;
-  auto p_kcol   = modifier.kcol() ;
-  auto p_dcol   = modifier.dcol() ;
-  auto p_cols   = modifier.cols() ;
+  [[maybe_unused]] auto p_nrows  = modifier.nrows() ;
+  [[maybe_unused]] auto p_kcol   = modifier.kcol() ;
+  [[maybe_unused]] auto p_dcol   = modifier.dcol() ;
+  [[maybe_unused]] auto p_cols   = modifier.cols() ;
   auto p_values = modifier.data() ;
   // clang-format on
 
@@ -371,16 +371,16 @@ SchurOp::_apply_schur(VBlock const* vblock,
   auto cols   = view.cols() ;
   auto values = view.data() ;
   auto bcols  = A.getProfile().getBlockCols() ;
-  auto brows  = A.getProfile().getBlockRowOffset() ;
+  [[maybe_unused]] auto brows  = A.getProfile().getBlockRowOffset() ;
 
   CSRModifierViewT<MatrixImpl> modifier(pA);
-  auto p_nrows  = modifier.nrows() ;
-  auto p_kcol   = modifier.kcol() ;
-  auto p_dcol   = modifier.dcol() ;
-  auto p_cols   = modifier.cols() ;
+  [[maybe_unused]] auto p_nrows  = modifier.nrows() ;
+  [[maybe_unused]] auto p_kcol   = modifier.kcol() ;
+  [[maybe_unused]] auto p_dcol   = modifier.dcol() ;
+  [[maybe_unused]] auto p_cols   = modifier.cols() ;
   auto p_values = modifier.data() ;
   auto p_bcols  = pA.getProfile().getBlockCols() ;
-  auto p_brows  = pA.getProfile().getBlockRowOffset() ;
+  [[maybe_unused]] auto p_brows  = pA.getProfile().getBlockRowOffset() ;
   // clang-format on
 
   for (int irow = 0; (std::size_t) irow < nrows; ++irow) {
@@ -404,9 +404,9 @@ SchurOp::_apply_schur(VBlock const* vblock,
     auto const& block_sizes = dist_struct_info.m_block_sizes;
     auto const& block_offsets = dist_struct_info.m_block_offsets;
 
-    auto& p_dist_struct_info = pA.getDistStructInfo();
+    [[maybe_unused]] auto& p_dist_struct_info = pA.getDistStructInfo();
     auto const& p_block_sizes = dist_struct_info.m_block_sizes;
-    auto const& p_block_offsets = dist_struct_info.m_block_offsets;
+    [[maybe_unused]] auto const& p_block_offsets = dist_struct_info.m_block_offsets;
 
     SimpleCSRInternal::SendRecvOp<Real> op(B.data(),
                                            dist_struct_info.m_send_info,
@@ -632,9 +632,9 @@ SchurOp::_compute_solution(VBlock const* vblock,
   // clang-format off
   CSRConstViewT<MatrixImpl> view(A);
   auto nrows  = view.nrows() ;
-  auto kcol   = view.kcol() ;
+  [[maybe_unused]] auto kcol   = view.kcol() ;
   auto dcol   = view.dcol() ;
-  auto cols   = view.cols() ;
+  [[maybe_unused]] auto cols   = view.cols() ;
   auto values = view.data() ;
   auto bcols  = A.getProfile().getBlockCols() ;
   // clang-format on
@@ -677,9 +677,9 @@ SchurOp::_compute_solution(VBlock const* vblock,
   // clang-format off
   CSRConstViewT<MatrixImpl> view(A);
   auto nrows  = view.nrows() ;
-  auto kcol   = view.kcol() ;
+  [[maybe_unused]] auto kcol   = view.kcol() ;
   auto dcol   = view.dcol() ;
-  auto cols   = view.cols() ;
+  [[maybe_unused]] auto cols   = view.cols() ;
   auto values = view.data() ;
   auto bcols  = A.getProfile().getBlockCols() ;
   // clang-format on

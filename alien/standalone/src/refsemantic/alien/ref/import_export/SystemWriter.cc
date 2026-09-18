@@ -371,7 +371,7 @@ void SystemWriter::dump(BlockMatrix const& A, BlockVector const& rhs)
 }
 
 void SystemWriter::dump(BlockMatrix const& A, BlockVector const& rhs, BlockVector const& sol,
-                        SolutionInfo const& sol_info)
+                        [[maybe_unused]] SolutionInfo const& sol_info)
 {
   const SimpleCSRMatrix<Real>& csr = A.impl()->get<BackEnd::tag::simplecsr>();
   const SimpleCSRMatrix<Real>::ProfileType& profile = csr.getProfile();

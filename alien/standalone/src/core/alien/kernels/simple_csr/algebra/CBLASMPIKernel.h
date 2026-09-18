@@ -49,12 +49,12 @@ class CBLASMPIKernel
   }
 
   template <typename Distribution, typename VectorT>
-  static void axpy(Distribution const& dist,
-                   typename VectorT::ValueType alpha,
-                   const VectorT& x,
-                   Integer stride_x,
-                   VectorT& y,
-                   Integer stride_y)
+  static void axpy([[maybe_unused]] Distribution const& dist,
+                    typename VectorT::ValueType alpha,
+                    const VectorT& x,
+                    Integer stride_x,
+                    VectorT& y,
+                    Integer stride_y)
   {
     cblas::axpy(x.scalarizedLocalSize(), alpha, x.getDataPtr(), stride_x, y.getDataPtr(), stride_y);
   }
@@ -66,7 +66,7 @@ class CBLASMPIKernel
   }
 
   template <typename Distribution, typename VectorT>
-  static void pointwiseMult(Distribution const& dist,
+  static void pointwiseMult([[maybe_unused]] Distribution const& dist,
                             VectorT const& x,
                             VectorT const& y,
                             VectorT& z)
@@ -84,7 +84,7 @@ class CBLASMPIKernel
   }
 
   template <typename Distribution, typename VectorT>
-  static void assign(Distribution const& dist,
+  static void assign([[maybe_unused]] Distribution const& dist,
                      typename VectorT::ValueType alpha,
                      VectorT& y)
   {

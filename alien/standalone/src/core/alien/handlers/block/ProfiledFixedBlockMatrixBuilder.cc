@@ -40,7 +40,7 @@ namespace Common
     m_matrix.impl()->lock();
     m_matrix_impl = &m_matrix.impl()->get<BackEnd::tag::simplecsr>(true);
 
-    const ISpace& space = m_matrix.rowSpace();
+    [[maybe_unused]] const ISpace& space = m_matrix.rowSpace();
     // if (space != m_matrix.colSpace())
     //  throw FatalErrorException(
     //      "profiled matrix builder must be used with square matrix");

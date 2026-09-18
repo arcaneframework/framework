@@ -127,7 +127,7 @@ struct HDF5Base
 
 struct Exporter : public HDF5Base
 {
-  Exporter(std::string const& name, std::string const& out_format, [[maybe_unsed]] int prec,
+  Exporter(std::string const& name, std::string const& out_format, [[maybe_unused]] int prec,
            int smart_size_limit = 4)
   : HDF5Base(name)
   , m_smart_size_limit(smart_size_limit)
@@ -511,7 +511,7 @@ struct Exporter : public HDF5Base
 struct Importer : public HDF5Base
 {
 
-  Importer(std::string const& name, std::string const& in_format, int prec)
+  Importer(std::string const& name, std::string const& in_format, [[maybe_unused]] int prec)
   : HDF5Base(name)
   {
     if (in_format.compare("ascii") == 0) {

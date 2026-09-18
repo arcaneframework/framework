@@ -38,7 +38,7 @@ VectorData redistribute_vector(Redistributor& redis, VectorData&& src)
   return createVectorData(multi);
 }
 
-VectorData redistribute_back_vector(Redistributor& redis, VectorData&& src)
+VectorData redistribute_back_vector([[maybe_unused]] Redistributor& redis, VectorData&& src)
 {
   return std::move(src);
 }

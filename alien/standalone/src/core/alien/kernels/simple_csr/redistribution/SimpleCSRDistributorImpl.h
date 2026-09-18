@@ -292,7 +292,7 @@ void SimpleCSRDistributor::distribute(const SimpleCSRMatrix<NumT>& src, SimpleCS
 }
 
 template <typename NumT>
-void SimpleCSRDistributor::distribute(const SimpleCSRVector<NumT>& src, SimpleCSRVector<NumT>& dst)
+void SimpleCSRDistributor::distribute([[maybe_unused]] const SimpleCSRVector<NumT>& src, [[maybe_unused]] SimpleCSRVector<NumT>& dst)
 {
   throw Arccore::NotImplementedException(A_FUNCINFO);
 }

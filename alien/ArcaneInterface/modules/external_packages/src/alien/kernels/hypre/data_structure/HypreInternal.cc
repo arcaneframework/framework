@@ -133,12 +133,12 @@ MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncol
 }
 
 void
-MatrixInternal::allocateHostPointers(std::size_t nrows,
-                                     std::size_t nnz,
-                                     IndexType** rows,
-                                     IndexType** ncols,
-                                     IndexType** cols,
-                                     ValueType** values)
+MatrixInternal::allocateHostPointers([[maybe_unused]] std::size_t nrows,
+                                     [[maybe_unused]] std::size_t nnz,
+                                     [[maybe_unused]] IndexType** rows,
+                                     [[maybe_unused]] IndexType** ncols,
+                                     [[maybe_unused]] IndexType** cols,
+                                     [[maybe_unused]] ValueType** values)
 {
 #ifdef ALIEN_USE_CUDA
   cudaMallocHost(rows, nrows * sizeof(HYPRE_BigInt));
@@ -156,10 +156,10 @@ MatrixInternal::allocateHostPointers(std::size_t nrows,
 }
 
 void
-MatrixInternal::freeHostPointers(IndexType* rows,
-                                 IndexType* ncols,
-                                 IndexType* cols,
-                                 ValueType* values)
+MatrixInternal::freeHostPointers([[maybe_unused]] IndexType* rows,
+                                 [[maybe_unused]] IndexType* ncols,
+                                 [[maybe_unused]] IndexType* cols,
+                                 [[maybe_unused]] ValueType* values)
 {
 #ifdef ALIEN_USE_CUDA
   cudaFreeHost(rows);
@@ -177,12 +177,12 @@ MatrixInternal::freeHostPointers(IndexType* rows,
 }
 
 void
-MatrixInternal::allocateDevicePointers(std::size_t nrows,
-                                       std::size_t nnz,
-                                       IndexType** rows,
-                                       IndexType** ncols,
-                                       IndexType** cols,
-                                       ValueType** values)
+MatrixInternal::allocateDevicePointers([[maybe_unused]] std::size_t nrows,
+                                       [[maybe_unused]] std::size_t nnz,
+                                       [[maybe_unused]] IndexType** rows,
+                                       [[maybe_unused]] IndexType** ncols,
+                                       [[maybe_unused]] IndexType** cols,
+                                       [[maybe_unused]] ValueType** values)
 {
 #ifdef ALIEN_USE_CUDA
   cudaMalloc(rows, nrows * sizeof(IndexType));
@@ -199,10 +199,10 @@ MatrixInternal::allocateDevicePointers(std::size_t nrows,
 }
 
 void
-MatrixInternal::freeDevicePointers(IndexType* rows,
-                                   IndexType* ncols,
-                                   IndexType* cols,
-                                   ValueType* values)
+MatrixInternal::freeDevicePointers([[maybe_unused]] IndexType* rows,
+                                   [[maybe_unused]] IndexType* ncols,
+                                   [[maybe_unused]] IndexType* cols,
+                                   [[maybe_unused]] ValueType* values)
 {
 #ifdef ALIEN_USE_CUDA
   cudaFree(rows);
@@ -222,16 +222,16 @@ MatrixInternal::freeDevicePointers(IndexType* rows,
 ;
 
  void
- MatrixInternal::copyHostToDevicePointers(std::size_t nrows,
-                                          std::size_t nnz,
-                                          const IndexType* rows_h,
-                                          const IndexType* ncols_h,
-                                          const IndexType* cols_h,
-                                          const ValueType* values_h,
-                                          IndexType* rows_d,
-                                          IndexType* ncols_d,
-                                          IndexType* cols_d,
-                                          ValueType* values_d)
+ MatrixInternal::copyHostToDevicePointers([[maybe_unused]] std::size_t nrows,
+                                           [[maybe_unused]] std::size_t nnz,
+                                           [[maybe_unused]] const IndexType* rows_h,
+                                           [[maybe_unused]] const IndexType* ncols_h,
+                                           [[maybe_unused]] const IndexType* cols_h,
+                                           [[maybe_unused]] const ValueType* values_h,
+                                           [[maybe_unused]] IndexType* rows_d,
+                                           [[maybe_unused]] IndexType* ncols_d,
+                                           [[maybe_unused]] IndexType* cols_d,
+                                           [[maybe_unused]] ValueType* values_d)
 {
 #ifdef ALIEN_USE_CUDA
   // Copier Host -> Device
@@ -251,16 +251,16 @@ MatrixInternal::freeDevicePointers(IndexType* rows,
 }
 
 void
-MatrixInternal::copyDeviceToHostPointers(std::size_t nrows,
-                                         std::size_t nnz,
-                                         const IndexType* rows_d,
-                                         const IndexType* ncols_d,
-                                         const IndexType* cols_d,
-                                         const ValueType* values_d,
-                                         IndexType* rows_h,
-                                         IndexType* ncols_h,
-                                         IndexType* cols_h,
-                                         ValueType* values_h)
+MatrixInternal::copyDeviceToHostPointers([[maybe_unused]] std::size_t nrows,
+                                         [[maybe_unused]] std::size_t nnz,
+                                         [[maybe_unused]] const IndexType* rows_d,
+                                         [[maybe_unused]] const IndexType* ncols_d,
+                                         [[maybe_unused]] const IndexType* cols_d,
+                                         [[maybe_unused]] const ValueType* values_d,
+                                         [[maybe_unused]] IndexType* rows_h,
+                                         [[maybe_unused]] IndexType* ncols_h,
+                                         [[maybe_unused]] IndexType* cols_h,
+                                         [[maybe_unused]] ValueType* values_h)
 {
 #ifdef ALIEN_USE_CUDA
  // Copier Device -> Host
@@ -302,7 +302,7 @@ VectorInternal::~VectorInternal()
   }
 }
 
-void VectorInternal::setRows(std::size_t nrow,IndexType const* h_rows)
+void VectorInternal::setRows([[maybe_unused]] std::size_t nrow, [[maybe_unused]] IndexType const* h_rows)
 {
   if(m_memory_type==BackEnd::Memory::Device)
   {
@@ -382,7 +382,7 @@ VectorInternal::setInitValues(
 }
 
 bool
-VectorInternal::setValuesToZeros(const int nrow,  const int* rows)
+VectorInternal::setValuesToZeros([[maybe_unused]] const int nrow,  [[maybe_unused]] const int* rows)
 {
   HYPRE_ParVector par_vector;
   HYPRE_IJVectorGetObject(m_internal, reinterpret_cast<void **>(&par_vector));
@@ -515,7 +515,7 @@ VectorInternal::getValuesToHost(const int nrow, const int* rows, Arccore::Real* 
 #endif
   }
 }
-void VectorInternal::allocateDevicePointers(std::size_t local_size, ValueType** values)
+void VectorInternal::allocateDevicePointers([[maybe_unused]] std::size_t local_size, [[maybe_unused]] ValueType** values)
 {
 #ifdef ALIEN_USE_CUDA
       cudaMalloc(values, local_size * sizeof(ValueType));
@@ -527,7 +527,7 @@ void VectorInternal::allocateDevicePointers(std::size_t local_size, ValueType** 
 }
 
 
-void VectorInternal::freeDevicePointers(ValueType* values)
+void VectorInternal::freeDevicePointers([[maybe_unused]] ValueType* values)
 {
 #ifdef ALIEN_USE_CUDA
   cudaFree(values);

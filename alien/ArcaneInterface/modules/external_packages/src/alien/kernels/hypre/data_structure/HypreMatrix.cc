@@ -94,7 +94,7 @@ HypreMatrix::setMatrixValues(const int nrow, const int* rows, const int* ncols,
 
 bool
 HypreMatrix::setMatrixValuesFrom(const int nrow,
-                                 const int nnz,
+                                  [[maybe_unused]] const int nnz,
                                  const int* rows,
                                  const int* ncols,
                                  const int* cols,

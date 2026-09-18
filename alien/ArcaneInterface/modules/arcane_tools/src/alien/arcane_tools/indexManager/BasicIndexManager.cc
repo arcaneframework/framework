@@ -833,7 +833,7 @@ namespace ArcaneTools {
 
       { // Préparation des retours
         auto dest = recvRequest.m_comm->destination(); // Attention à l'ordre bizarre
-        auto orig = recvRequest.m_comm->source(); //       de SerializeMessage
+        [[maybe_unused]] auto orig = recvRequest.m_comm->source(); //       de SerializeMessage
         recvRequest.m_comm.reset();
         recvRequest.m_comm = messageList->createAndAddMessage(dest, Arccore::MessagePassing::ePointToPointMessageType::MsgSend);
 
