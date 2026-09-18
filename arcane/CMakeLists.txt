@@ -1074,6 +1074,13 @@ if (NOT ADoc_FOUND)
   set(ADoc_FOUND YES PARENT_SCOPE)
 endif ()
 
+# TODO NE PAS MERGE
+if (NOT ArcCher_FOUND)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../arctools/arccher arccher)
+  set(ArcCher_FOUND YES)
+  set(ArcCher_FOUND YES PARENT_SCOPE)
+endif ()
+
 # ----------------------------------------------------------------------------
 
 message(STATUS "DOXYGEN = ${DOXYGEN}")

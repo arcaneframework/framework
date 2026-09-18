@@ -1,0 +1,61 @@
+{
+  "versions": {
+    "_": 0,
+    "arcane": 0,
+    "arccher": 0
+  },
+
+  // Coucou
+
+  "general": {
+    "_": {
+      "name": "Common"
+    },
+    "arcane": {
+      "dataset": "./HelloWorld.arc",
+      "options": {
+        "T": 4
+      }
+    },
+    "arccher": {
+      "mpi": 2,
+      "env_var": {
+        "ARCANE_USE_BACKWARDCPP": 1
+      }
+    }
+  },
+
+  // Reserved for a next version
+  "commons": {
+  },
+  "variations": {
+  },
+
+  "cases": {
+    // Reserved symbol for names, for a next version : ":"
+    "case1": {
+      "_": {
+        "name": "Cas 1"
+      },
+      "arcane": {
+        "options": {
+          "S": 2
+        }
+      },
+      "arccher": {
+        "mpi": 2
+      }
+    },
+
+    "case2": {
+      "_": {
+        "name": "Cas 2"
+      },
+      "arcane": {
+        "options": {
+          "T": 8
+        }
+      }
+    }
+  }
+}
