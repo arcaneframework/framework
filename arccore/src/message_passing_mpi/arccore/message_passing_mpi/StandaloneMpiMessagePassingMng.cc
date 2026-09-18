@@ -21,6 +21,7 @@
 #include "arccore/base/Float16.h"
 
 #include "arccore/message_passing_mpi/MpiDatatype.h"
+#include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
 #include "arccore/message_passing_mpi/internal/MpiTypeDispatcher.h"
 #include "arccore/message_passing_mpi/internal/MpiControlDispatcher.h"
@@ -227,7 +228,7 @@ createRef(MPI_Comm mpi_comm, bool clean_comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MpiMessagePassingMng* StandaloneMpiMessagePassingMng::
+IMessagePassingMng* StandaloneMpiMessagePassingMng::
 create(MPI_Comm mpi_comm, bool clean_comm)
 {
   return StandaloneMpiMessagePassingMng2::create(mpi_comm, clean_comm);
