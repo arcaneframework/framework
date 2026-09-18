@@ -1,6 +1,0 @@
-{
-  "version": 0,
-  "code_binary": "/build/build_arcane_sandbox/debug/template/HelloWorld",
-  "mpi_binary": "/bin/mpirun",
-  "working_dir": "/build/build_arcane_sandbox/debug"
-}

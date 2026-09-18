@@ -154,7 +154,7 @@ void readJSON(RunParam& runp, CommandLineArguments& cla, ITraceMng* tm)
       }
 
       const JSONValue root = json_doc.root();
-      readArccherPart(runp, root);
+      readArccherPart(runp, root.child("general").child("arccher"));
     }
     else {
       ARCCORE_FATAL("Config file is not found");
