@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,7 +42,7 @@
 #include <alien/core/backend/LinearSolverT.h>
 #include <alien/core/backend/SolverFabricRegisterer.h>
 #include <alien/core/block/ComputeBlockOffsets.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 
 /*---------------------------------------------------------------------------*/
 const std::string TrilinosOptionTypes::solver_type[NumOfSolver] = { "BICGSTAB", "CG",
@@ -135,10 +135,9 @@ TrilinosInternalLinearSolver<TagT>::init()
   }
 #endif
   m_precond_name = TrilinosOptionTypes::precondName(m_options->preconditioner());
-  auto* mpi_mng =
-      dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
-  const MPI_Comm* comm = static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
-  m_trilinos_solver->initPrecondParameters(m_options, comm);
+
+  MPI_Comm comm = toMpiCommunicator(m_parallel_mng);
+  m_trilinos_solver->initPrecondParameters(m_options, &comm);
 
   m_solver_name = TrilinosOptionTypes::solverName(m_options->solver());
   m_trilinos_solver->initSolverParameters(m_options);

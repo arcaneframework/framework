@@ -16,7 +16,6 @@
 #include <alien/data/ISpace.h>
 
 #include <arccore/message_passing/Communicator.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

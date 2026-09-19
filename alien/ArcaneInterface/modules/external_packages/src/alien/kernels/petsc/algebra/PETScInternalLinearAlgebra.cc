@@ -18,7 +18,7 @@
 
 #include <alien/kernels/petsc/linear_solver/PETScInternalLinearSolver.h>
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -38,15 +38,9 @@ PETScInternalLinearAlgebra::PETScInternalLinearAlgebra(
     Arccore::MessagePassing::IMessagePassingMng* pm)
 {
   if(not PETScInternalLinearSolver::m_library_plugin_is_initialized)
-    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSC Library should be initialized first");
+    ARCCORE_FATAL("PETSC Library should be initialized first");
 
-  if (pm != nullptr)
-  {
-    auto mpi_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(pm);
-    if(mpi_mng)
-      PETSC_COMM_WORLD = *static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
-
-  }
+  PETSC_COMM_WORLD = toMpiCommunicator(pm);
 }
 
 /*---------------------------------------------------------------------------*/

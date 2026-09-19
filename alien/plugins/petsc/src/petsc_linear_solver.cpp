@@ -21,14 +21,14 @@
 
 #include <petscksp.h>
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 
-#include <alien/expression/solver/SolverStater.h>
 #include <alien/core/backend/LinearSolverT.h>
+#include <alien/expression/solver/SolverStater.h>
 
 #include <alien/petsc/backend.h>
-#include <alien/petsc/options.h>
 #include <alien/petsc/export.h>
+#include <alien/petsc/options.h>
 
 #include "petsc_instance.h"
 
@@ -89,9 +89,7 @@ class InternalLinearSolver
 };
 
 InternalLinearSolver::InternalLinearSolver()
-: m_status()
-, m_stat()
-, m_options()
+    : m_status(), m_stat(), m_options()
 {
   petsc_init_if_needed();
 }
@@ -122,9 +120,7 @@ bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
 
   // failback if no MPI comm already defined.
   MPI_Comm comm = MPI_COMM_WORLD;
-  auto* mpi_comm_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(A.distribution().parallelMng());
-  if (mpi_comm_mng)
-    comm = *(mpi_comm_mng->getMPIComm());
+  fillMpiCommunicatorIfValid(A.distribution().parallelMng(), &comm);
 
   // solver's choice
   // Liste à compléter (dans options.h), on met lesquels ?

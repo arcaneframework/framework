@@ -21,7 +21,8 @@
 
 #include <alien/hypre/backend.h>
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing/IMessagePassingMng.h>
+#include <arccore/message_passing/Communicator.h>
 
 #include <HYPRE.h>
 // For hypre_*Alloc
@@ -37,12 +38,12 @@ using HypreId = HYPRE_Int;
 
 namespace Alien::Hypre
 {
-Vector::Vector(const MultiVectorImpl* multi_impl)
-: IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::hypre>::name())
+Vector::Vector(const MultiVectorImpl *multi_impl)
+    : IVectorImpl(multi_impl, AlgebraTraits<BackEnd::tag::hypre>::name())
 {
   auto distribution = multi_impl->distribution();
-  auto const* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(distribution.parallelMng());
-  m_comm = pm ? (*pm->getMPIComm()) : MPI_COMM_WORLD;
+  Arcane::MessagePassing::Communicator c = distribution.parallelMng()->communicator();
+  m_comm = c.isValid() ? static_cast<MPI_Comm>(c) : MPI_COMM_WORLD;
 
   hypre_init_if_needed(m_comm);
   auto block_size = 1;
@@ -50,7 +51,7 @@ Vector::Vector(const MultiVectorImpl* multi_impl)
   if (const auto* block = this->block(); block)
     block_size *= block->size();
   else if (this->vblock())
-    throw Arccore::FatalErrorException(A_FUNCINFO, "Not implemented yet");
+    ARCCORE_FATAL("Not implemented yet");
 
   const auto localOffset = distribution.offset();
   const auto localSize = distribution.localSize();

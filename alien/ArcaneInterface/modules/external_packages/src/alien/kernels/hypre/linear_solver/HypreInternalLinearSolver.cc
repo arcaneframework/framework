@@ -36,8 +36,6 @@
 #include <ALIEN/axl/HypreSolver_IOptions.h>
 #include <ALIEN/axl/HypreSolver_StrongOptions.h>
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
