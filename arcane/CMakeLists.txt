@@ -1076,7 +1076,7 @@ endif ()
 
 # TODO NE PAS MERGE
 if (NOT ArcCher_FOUND)
-  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../arctools/arccher arccher)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../arctools/arcanet/arccher arccher)
   set(ArcCher_FOUND YES)
   set(ArcCher_FOUND YES PARENT_SCOPE)
 endif ()
