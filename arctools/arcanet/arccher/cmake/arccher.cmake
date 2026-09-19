@@ -169,6 +169,75 @@ endmacro()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
+macro(arcanet_arccher_define_mpi_path mpi_path)
+  if (NOT DEFINED ARCANET_CREATE_OR_EDIT_TYPE)
+    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' macro.")
+  endif ()
+
+  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} "arccher")
+  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
+    string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} ${ARCANET_CREATE_OR_EDIT_NAME} "arccher" "{}")
+  endif ()
+  unset(ARCANET_GET)
+  unset(ARCANET_ERROR)
+
+  string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} ${ARCANET_CREATE_OR_EDIT_NAME} "arccher" "mpi_binary" "\"${mpi_path}\"")
+endmacro()
+
+# ----------------------------------------------------------------------------
+
+macro(arcanet_arccher_add_envvar envvar_name envvar_value)
+  if (NOT DEFINED ARCANET_CREATE_OR_EDIT_TYPE)
+    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' macro.")
+  endif ()
+
+  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} "arccher")
+  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
+    string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} ${ARCANET_CREATE_OR_EDIT_NAME} "arccher" "{}")
+  endif ()
+  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} "arccher" "env_var")
+  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
+    string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} ${ARCANET_CREATE_OR_EDIT_NAME} "arccher" "env_var" "{}")
+  endif ()
+  unset(ARCANET_GET)
+  unset(ARCANET_ERROR)
+
+  string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} ${ARCANET_CREATE_OR_EDIT_NAME} "arccher" "env_var" "${envvar_name}" "\"${envvar_value}\"")
+endmacro()
+
+# ----------------------------------------------------------------------------
+
+macro(arcanet_arccher_define_mpi_nb_procs nb_mpi)
+  if (NOT DEFINED ARCANET_CREATE_OR_EDIT_TYPE)
+    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' macro.")
+  endif ()
+
+  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} "arccher")
+  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
+    string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} ${ARCANET_CREATE_OR_EDIT_NAME} "arccher" "{}")
+  endif ()
+  unset(ARCANET_GET)
+  unset(ARCANET_ERROR)
+
+  string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} ${ARCANET_CREATE_OR_EDIT_NAME} "arccher" "mpi" "${nb_mpi}")
+endmacro()
+
+# ----------------------------------------------------------------------------
+
+macro(arcanet_arccher_define_executable exe_path)
+  if (NOT DEFINED ARCANET_CREATE_OR_EDIT_TYPE)
+    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' macro.")
+  endif ()
+
+  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} "arccher")
+  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
+    string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} ${ARCANET_CREATE_OR_EDIT_NAME} "arccher" "{}")
+  endif ()
+  unset(ARCANET_GET)
+  unset(ARCANET_ERROR)
+
+  string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_CREATE_OR_EDIT_TYPE} ${ARCANET_CREATE_OR_EDIT_NAME} "arccher" "code_binary" "\"${exe_path}\"")
+endmacro()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -179,14 +248,14 @@ arcanet_begin()
 arcanet_create_or_edit_general()
 arcanet_define_name("General")
 arcanet_arcane_set_dataset("general_dataset.arc")
-# arcanet_arccher_define_mpi_path(mpi_path)
-# arcanet_arccher_add_envvar("ARCANE_USE_BACKWARDCPP" "1")
+arcanet_arccher_define_mpi_path(mpi_path)
+arcanet_arccher_add_envvar("ARCANE_USE_BACKWARDCPP" "1")
 arcanet_create_or_edit_end()
 
 
 arcanet_create_or_edit_common("4procs")
 arcanet_define_name("4 procs")
-# arcanet_arccher_define_mpi_nb_procs(4)
+arcanet_arccher_define_mpi_nb_procs(4)
 arcanet_create_or_edit_end()
 
 arcanet_create_or_edit_case("mon_test_1")
@@ -194,8 +263,8 @@ arcanet_define_name("Mon Test 1")
 arcanet_arcane_set_dataset("truc.arc")
 arcanet_arcane_add_option("MaxIteration" "3")
 arcanet_arcane_add_option("MaxIteration" "4")
-# arcanet_arccher_define_executable(bin_path)
-# arcanet_arccher_add_envvar("VARIABLE" "VALUE")
+arcanet_arccher_define_executable(bin_path)
+arcanet_arccher_add_envvar("VARIABLE" "VALUE")
 arcanet_create_or_edit_end()
 
 arcanet_end()
