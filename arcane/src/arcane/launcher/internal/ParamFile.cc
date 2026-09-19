@@ -21,6 +21,9 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/JSONReader.h"
+#include "arccore/common/List.h"
+
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +35,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*
- * Example of parameter file (WiP) :
+ * Example of ArcaNet file (RC1) :
 {
   "versions": {
     "_": 0,
@@ -58,19 +61,70 @@ namespace Arcane
     }
   },
 
-  // Reserved for a next version
   "commons": {
+    "4procs": {
+      "_": {
+        "name": "4 Procs"
+      },
+      "arccher": {
+        "mpi": 4
+      }
+    },
+    "4threads": {
+      "_": {
+        "name": "4 Threads"
+      },
+      "arcane": {
+        "options": {
+          "S": 4
+        }
+      }
+    },
+    "16mpithreads": {
+      "_": {
+        "name": "16 Hybrid",
+        "depend_a": ["4procs", "4threads"]
+      }
+    }
   },
+
   "variations": {
+    "nb_iterations": {
+      "10": {
+        "_": {
+          "name": "10 itérations"
+        },
+        "arcane": {
+          "options": {
+            "MaxIteration": 10
+          }
+        }
+      },
+      "20": {
+        "_": {
+          "name": "20 itérations"
+        },
+        "arcane": {
+          "options": {
+            "MaxIteration": 20
+          }
+        }
+      }
+    }
   },
 
   "cases": {
-    // Reserved symbol for names, for a next version : ":"
+    // Reserved symbol for cases name : ":", "="
+
+    // How to call "case1" :
+    // - "case1" -> ok
     "case1": {
       "_": {
-        "name": "Cas 1"
+        "name": "Cas 1",
+        "depend_a": ["4procs", "nb_iterations=10"]
       },
 
+      // Reserved symbol for prog name : ":", "=", "~"
       "arcane": {
         "options": {
           "//meshes/mesh/filename": "aaa.msh",
@@ -82,11 +136,17 @@ namespace Arcane
         "mpi": 2
       }
     },
+
+    // How to call "case2" :
+    // - "case2" -> error
+    // - "case2:nb_iterations=10" -> ok
+    // - "case2:nb_iterations=20" -> ok
     "case2": {
       "_": {
-        "name": "Cas 2"
+        "name": "Cas 2",
+        "depend_b": ["16mpithreads"],
+        "depend_a": ["nb_iterations"]
       },
-
       "arcane": {
         "options": {
           "//meshes/mesh/filename": "bbb.msh",
@@ -102,21 +162,184 @@ class ParamFile::Reader
 {
  public:
 
-  void readFilePart(const JSONValue& file_part);
-  static void readArcanePart(CommandLineArguments& cargs, const JSONValue& arcane_part);
+  Reader(CommandLineArguments& cargs, const JSONValue& root);
+
+ public:
+
+  void read(const String& case_to_read);
+  void readDependPart(const JSONValue& depend_part);
+  void readCommonPart(const JSONValue& common_part);
+  void readFileBeforePart(const JSONValue& file_part);
+  void readFileAfterPart(const JSONValue& file_part);
+  void readArcanePart(const JSONValue& arcane_part);
 
  public:
 
   StringBuilder m_name;
   bool m_is_name_empty = true;
+  CommandLineArguments& m_cargs;
+  const JSONValue& m_root;
+  UniqueArray<String> m_explored;
+  UniqueArray<String> m_variations_key_resolved;
+  UniqueArray<String> m_variations_value_resolved;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ParamFile::Reader::
-readFilePart(const JSONValue& file_part)
+ParamFile::Reader::Reader(CommandLineArguments& cargs, const JSONValue& root)
+: m_cargs(cargs)
+, m_root(root)
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParamFile::Reader::
+read(const String& case_to_read)
+{
+  String case_clean;
+  if (!case_to_read.empty()) {
+    UniqueArray<String> split_case;
+    case_to_read.split(split_case, ':');
+
+    for (const String& elem : split_case) {
+      if (elem.contains("=")) {
+        UniqueArray<String> split_elem;
+        elem.split(split_elem, '=');
+        if (split_elem.size() != 2) {
+          ARCANE_FATAL("Bad element in Case option.");
+        }
+        m_variations_key_resolved.add(split_elem[0]);
+        m_variations_value_resolved.add(split_elem[1]);
+        std::cout << "Add key=value : " << split_elem[0] << " = " << split_elem[1] << std::endl;
+      }
+      else {
+        if (!case_clean.empty()) {
+          ARCANE_FATAL("Two case names in Case option : {0} and {1}.", case_clean, elem);
+        }
+        case_clean = elem;
+      }
+    }
+  }
+
+  // "general" part
+  {
+    const JSONValue cases = m_root.child("general");
+    if (!cases.isNull()) {
+      std::cout << "General part" << std::endl;
+
+      readFileBeforePart(cases.child("_"));
+      readArcanePart(cases.child("arcane"));
+      readFileAfterPart(cases.child("_"));
+    }
+  }
+  if (!case_clean.empty()) {
+
+    const JSONValue cases = m_root.child("cases").expectedChild(case_clean);
+    std::cout << "Case part : " << case_clean << std::endl;
+
+    readFileBeforePart(cases.child("_"));
+    readArcanePart(cases.child("arcane"));
+    readFileAfterPart(cases.child("_"));
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParamFile::Reader::
+readDependPart(const JSONValue& depend_part)
+{
+  if (depend_part.null())
+    return;
+
+  const JSONValueList array = depend_part.valueAsArray();
+  for (const JSONValue elem_value : array) {
+    String elem = elem_value.valueAsStringView();
+    if (elem.contains("=")) {
+      UniqueArray<String> split_elem;
+      elem.split(split_elem, '=');
+      if (split_elem.size() != 2) {
+        ARCANE_FATAL("Element '{0}' is invalid.", elem);
+      }
+
+      const JSONValue variation = m_root.child("variations").child(split_elem[0]).child(split_elem[1]);
+      if (variation.null()) {
+        ARCANE_FATAL("Element '//variations/{0}/{1}' not found.", split_elem[0], split_elem[1]);
+      }
+      if (m_explored.contains(elem)) {
+        ARCANE_FATAL("Element '//variations/{0}/{1}' already explored.", split_elem[0], split_elem[1]);
+      }
+      m_explored.add(elem);
+      readCommonPart(variation);
+    }
+    else {
+      const JSONValue common = m_root.child("commons").child(elem);
+      if (!common.null()) {
+        if (m_explored.contains(elem)) {
+          ARCANE_FATAL("Element '//commons/{0}' already explored.", elem);
+        }
+        m_explored.add(elem);
+        readCommonPart(common);
+      }
+      else {
+        auto pos_elem = m_variations_key_resolved.span().findFirst(elem);
+
+        if (!pos_elem.has_value()) {
+          const JSONValue error_ = m_root.child("variations").child(elem);
+          if (error_.null()) {
+            ARCANE_FATAL("Element '//commons/{0}' not found.", elem);
+          }
+          ARCANE_FATAL("Element '{0}' not found in 'Case' option.", elem);
+        }
+
+        String key = m_variations_key_resolved[pos_elem.value()];
+        String value = m_variations_value_resolved[pos_elem.value()];
+        String key_value = key + "=" + value;
+
+        const JSONValue variation = m_root.child("variations").child(key).child(value);
+        if (variation.null()) {
+          ARCANE_FATAL("Element '//variations/{0}/{1}' not found.", key, value);
+        }
+        if (m_explored.contains(key_value)) {
+          ARCANE_FATAL("Element '//variations/{0}/{1}' already explored.", key, value);
+        }
+        m_explored.add(key_value);
+        readCommonPart(variation);
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParamFile::Reader::
+readCommonPart(const JSONValue& common_part)
+{
+  std::cout << "Common part" << std::endl;
+
+  readFileBeforePart(common_part.child("_"));
+  readArcanePart(common_part.child("arcane"));
+  readFileAfterPart(common_part.child("_"));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParamFile::Reader::
+readFileBeforePart(const JSONValue& file_part)
+{
+  if (file_part.null())
+    return;
+
+  {
+    JSONValue depend_before_var = file_part.child("depend_b");
+    readDependPart(depend_before_var);
+  }
+
   JSONValue name_var = file_part.child("name");
   if (!name_var.isNull()) {
     if (m_is_name_empty)
@@ -132,11 +355,26 @@ readFilePart(const JSONValue& file_part)
 /*---------------------------------------------------------------------------*/
 
 void ParamFile::Reader::
-readArcanePart(CommandLineArguments& cargs, const JSONValue& arcane_part)
+readFileAfterPart(const JSONValue& file_part)
+{
+  if (file_part.null())
+    return;
+
+  {
+    JSONValue depend_after_var = file_part.child("depend_a");
+    readDependPart(depend_after_var);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParamFile::Reader::
+readArcanePart(const JSONValue& arcane_part)
 {
   const JSONValue dataset = arcane_part.child("dataset");
   if (!dataset.isNull()) {
-    cargs.addParameterLine(String::format("CaseDatasetFileName={0}", dataset.value()));
+    m_cargs.addParameterLine(String::format("CaseDatasetFileName={0}", dataset.value()));
     //std::cout << "Dataset : " << dataset.value() << std::endl;
   }
 
@@ -146,7 +384,7 @@ readArcanePart(CommandLineArguments& cargs, const JSONValue& arcane_part)
     const JSONKeyValueList params = arcane_params.keyValueChildren();
 
     for (auto elem : params) {
-      cargs.addParameterLine(String::format("{0}={1}", elem.name(), elem.value().valueAsStringView()));
+      m_cargs.addParameterLine(String::format("{0}={1}", elem.name(), elem.value().valueAsStringView()));
 
       // std::cout << "Elem : " << elem.name() << " -- val : " << elem.value().valueAsStringView() << std::endl;
     }
@@ -176,35 +414,18 @@ editParams(const String& param_file_name, const String& variation)
   }
 
   const JSONValue root = json_doc.root();
-  Reader reader;
+  Reader reader(cargs, root);
 
-  // "general" part
-  {
-    const JSONValue cases = root.child("general");
-    if (!cases.isNull()) {
-      // std::cout << "General part" << std::endl;
+  reader.read(variation);
 
-      reader.readFilePart(cases.child("_"));
-      Reader::readArcanePart(cargs, cases.child("arcane"));
-    }
+  std::cout << "Name variation : " << reader.m_name << std::endl;
+
+  StringList names;
+  StringList values;
+  cargs.fillParameters(names, values);
+  for (Integer i = 0, n = names.count(); i < n; ++i) {
+    std::cout << "Final Elem : " << names[i] << " -- val : " << values[i] << std::endl;
   }
-
-  if (!variation.empty()) {
-    const JSONValue cases = root.child("cases").expectedChild(variation);
-    // std::cout << "Variation part : " << variation << std::endl;
-
-    reader.readFilePart(cases.child("_"));
-    Reader::readArcanePart(cargs, cases.child("arcane"));
-  }
-
-  // std::cout << "Name variation : " << reader.m_name << std::endl;
-
-  // StringList names;
-  // StringList values;
-  // cargs.fillParameters(names, values);
-  // for (Integer i = 0, n = names.count(); i < n; ++i) {
-  //   std::cout << "Final Elem : " << names[i] << " -- val : " << values[i] << std::endl;
-  // }
 
   ArcaneLauncher::applicationInfo().setCommandLineArguments(cargs);
 }
