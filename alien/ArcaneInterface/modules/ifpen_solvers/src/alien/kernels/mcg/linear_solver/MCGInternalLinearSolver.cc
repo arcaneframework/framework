@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <regex>
 
-#include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
+#include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 
 #include "alien/data/Space.h"
 #include "alien/expression/solver/ILinearSolver.h"
@@ -195,14 +195,11 @@ MCGInternalLinearSolver::init()
 
   m_use_mpi = m_parallel_mng->commSize() > 1;
 
-  auto mpi_mng =
-      dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
-
   m_machine_info = new MCGSolver::MachineInfo;
   m_machine_info->init(m_parallel_mng->commRank() == 0 && m_output_level > 2);
 
   if (m_use_mpi) {
-    MPI_Comm comm = *static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
+    MPI_Comm comm = toMpiCommunicator(m_parallel_mng);
     m_mpi_info = new mpi::MPIInfo(comm);
   }
   m_use_thread = m_options->useThread();

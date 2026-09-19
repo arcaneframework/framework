@@ -1,8 +1,11 @@
-// -*- C++ -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 #ifndef ALIEN_TRILINOSIMPL_TRILINOSMATRIX_H
 #define ALIEN_TRILINOSIMPL_TRILINOSMATRIX_H
-/* Author :
- */
 
 #include <vector>
 
@@ -43,7 +46,7 @@ template <typename ValueT, typename TagT> class ALIEN_TRILINOS_EXPORT  TrilinosM
   void clear() {}
 
  public:
-  bool initMatrix(Arccore::MessagePassing::IMessagePassingMng const* parallel_mng,
+  bool initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
       int local_offset, int global_size, int nrows, int const* kcol, int const* cols,
       int block_size, ValueT const* values);
 

@@ -16,7 +16,8 @@
 #include <alien/kernels/petsc/data_structure/PETScInternal.h>
 
 #include <arccore/message_passing/Communicator.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
+
 /*---------------------------------------------------------------------------*/
 
 namespace Alien {
@@ -61,13 +62,9 @@ PETScVector::allocate()
   auto exec_space = PETScInternalLinearSolver::m_library_plugin->getExecSpace() ;
 
   const VectorDistribution& dist = this->distribution();
-  Arccore::MessagePassing::Mpi::MpiMessagePassingMng*
-  mpi_pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(dist.parallelMng()) ;
-  MPI_Comm comm ;
-  if(mpi_pm && mpi_pm->getMPIComm())
-    comm = *mpi_pm->getMPIComm() ;
-  else
-    comm = MPI_COMM_NULL ;
+
+  MPI_Comm comm = MPI_COMM_NULL;
+  fillMpiCommunicatorIfValid(dist.parallelMng(), &comm);
 
   auto blk = this->block() ;
   if(blk)

@@ -40,7 +40,7 @@
 #include <alien/core/backend/SolverFabricRegisterer.h>
 #include <alien/core/block/ComputeBlockOffsets.h>
 #include <ALIEN/axl/HTSSolver_IOptions.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -160,9 +160,7 @@ HTSInternalLinearSolver::init()
 
   typedef HartsSolver::MPIInfo MPIEnvType;
   if (m_use_mpi) {
-    auto* mpi_mng =
-        dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
-    MPI_Comm comm = *static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
+    MPI_Comm comm = toMpiCommunicator(m_parallel_mng);
     MPIEnvType* mpi_env = new HartsSolver::MPIInfo();
     mpi_env->init(comm, false); // external MPI management
     context.set<MPIEnvType>(HartsSolver::HTSSolver::Context::MPIEnv, mpi_env);
@@ -285,9 +283,7 @@ HTSInternalLinearSolver::solve(
   if (is_parallel) {
     mpi_env = context.get<MPIEnvType>(HTSSolver::Context::MPIEnv);
     if (mpi_env == nullptr) {
-      auto* mpi_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(
-          m_parallel_mng);
-      MPI_Comm comm = *static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
+      MPI_Comm comm = toMpiCommunicator(m_parallel_mng);
       MPIEnvType* mpi_env = new HartsSolver::MPIInfo();
       mpi_env->init(comm, false); // external MPI management
       context.set<MPIEnvType>(HTSSolver::Context::MPIEnv, mpi_env);

@@ -29,7 +29,7 @@
 
 #include <arccore/base/NotImplementedException.h>
 #include <arccore/collections/Array2.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 #include <arccore/message_passing/Communicator.h>
 #include <arccore/trace/ITraceMng.h>
 
@@ -82,16 +82,9 @@ class AsciiDumper::Internal
   template <typename Dist>
   static void initializeViewer(PetscViewer& viewer, const Dist& dist, const Style style)
   {
-    auto* parallel_mng =
-        dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(
-            dist.parallelMng());
-    const MPI_Comm* arcane_mpi_comm = parallel_mng->getMPIComm();
-    if (arcane_mpi_comm == 0) {
-      PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer);
-    } else {
-      const MPI_Comm* comm = arcane_mpi_comm;
-      PetscViewerASCIIGetStdout(*comm, &viewer);
-    }
+    MPI_Comm comm = PETSC_COMM_SELF;
+    fillMpiCommunicatorIfValid(dist.parallelMng(), &comm);
+    PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer);
     _pushFormat(viewer, style);
   }
 
