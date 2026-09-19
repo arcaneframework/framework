@@ -35,15 +35,15 @@ namespace Arcane
  * Example of parameter file (WiP) :
 {
   "versions": {
-    "file": 0,
+    "_": 0,
     "arcane": 0,
-    "run_opt": 0
+    "arccher": 0
   },
 
   // Coucou
 
   "general": {
-    "file": {
+    "_": {
       "name": "Common"
     },
     "arcane": {
@@ -53,7 +53,7 @@ namespace Arcane
         "T": 4
       }
     },
-    "run_opt": {
+    "arccher": {
       "mpi": 4
     }
   },
@@ -67,7 +67,7 @@ namespace Arcane
   "cases": {
     // Reserved symbol for names, for a next version : ":"
     "case1": {
-      "file": {
+      "_": {
         "name": "Cas 1"
       },
 
@@ -78,12 +78,12 @@ namespace Arcane
         }
       },
 
-      "run_opt": {
+      "arccher": {
         "mpi": 2
       }
     },
     "case2": {
-      "file": {
+      "_": {
         "name": "Cas 2"
       },
 
@@ -184,7 +184,7 @@ editParams(const String& param_file_name, const String& variation)
     if (!cases.isNull()) {
       // std::cout << "General part" << std::endl;
 
-      reader.readFilePart(cases.child("file"));
+      reader.readFilePart(cases.child("_"));
       Reader::readArcanePart(cargs, cases.child("arcane"));
     }
   }
@@ -193,7 +193,7 @@ editParams(const String& param_file_name, const String& variation)
     const JSONValue cases = root.child("cases").expectedChild(variation);
     // std::cout << "Variation part : " << variation << std::endl;
 
-    reader.readFilePart(cases.child("file"));
+    reader.readFilePart(cases.child("_"));
     Reader::readArcanePart(cargs, cases.child("arcane"));
   }
 
