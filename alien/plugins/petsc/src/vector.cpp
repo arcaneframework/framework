@@ -20,8 +20,7 @@
 
 #include <alien/petsc/backend.h>
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
-
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 #include "petsc_instance.h"
 
 #include <petscvec.h>
@@ -60,8 +59,8 @@ void Vector::setProfile(int ilower, int iupper)
   if (m_vec)
     VecDestroy(&m_vec);
 
-  auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(distribution().parallelMng());
-  m_comm = pm ? (*pm->getMPIComm()) : MPI_COMM_WORLD;
+  m_comm = MPI_COMM_WORLD;
+  fillMpiCommunicatorIfValid(distribution().parallelMng(), &m_comm);
 
   // -- B Vector --
   auto ierr = VecCreate(m_comm, &m_vec);

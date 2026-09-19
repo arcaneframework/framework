@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -28,7 +28,8 @@
 #include <alien/expression/solver/SolverStater.h>
 #include <ALIEN/axl/IFPLinearSolver_IOptions.h>
 #include <alien/data/Space.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
+#include <arccore/message_passing/Communicator.h>
 
 #ifndef MPICH_SKIP_MPICXX
 #define MPICH_SKIP_MPICXX 1
@@ -123,14 +124,10 @@ IFPInternalLinearSolver::init()
   Integer fcomm = 0;
 
   {
-    auto mpi_mng =
-        dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
-    const void* ptr = nullptr ;
-    if(mpi_mng)
-       ptr = mpi_mng->getMPIComm();
-    if (ptr) {
-      auto* comm = static_cast<const MPI_Comm*>(ptr);
-      fcomm = MPI_Comm_c2f(*comm);
+    auto pm_comm = m_parallel_mng->communicator();
+    if (pm_comm.isValid()) {
+      MPI_Comm comm = static_cast<MPI_Comm>(pm_comm);
+      fcomm = MPI_Comm_c2f(comm);
       needMpiInit = 1;
     } else {
       fcomm = MPI_Comm_c2f(MPI_COMM_WORLD);

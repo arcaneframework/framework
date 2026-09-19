@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,7 +22,7 @@
 
 #include <alien/core/impl/MultiMatrixImpl.h>
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 /*---------------------------------------------------------------------------*/
 BEGIN_HPDDMINTERNAL_NAMESPACE
 
@@ -532,13 +532,10 @@ MatrixInternal<ValueT>::_compute(HPDDM::MatrixCSR<ValueT>* matrix_dirichlet,
   assert(m_parallel_mng != nullptr);
   int rank = m_parallel_mng->commRank();
   if (m_parallel_mng->commSize() > 1) {
-    auto* pm =
-        dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
-    assert(pm);
-    MPI_Comm const* comm = static_cast<MPI_Comm const*>(pm->getMPIComm());
+    MPI_Comm comm = toMpiCommunicator(m_parallel_mng);
     // m_hpddm_matrix.Subdomain::initialize(&DiriCSR, m_overlap, m_mapping);
     m_matrix.HPDDM::template Subdomain<ValueT>::initialize(
-        matrix_dirichlet, m_overlap, m_mapping, const_cast<MPI_Comm*>(comm));
+        matrix_dirichlet, m_overlap, m_mapping, &comm);
     // m_matrix.Subdomain::initialize(&m_matrix_dirichlet, m_overlap, m_mapping);
     decltype(m_mapping)().swap(m_mapping);
     m_matrix.multiplicityScaling(m_unit_partition.data());
@@ -555,7 +552,7 @@ MatrixInternal<ValueT>::_compute(HPDDM::MatrixCSR<ValueT>* matrix_dirichlet,
         // nu = opt["geneo_nu"];
         // m_hpddm_matrix.super::initialize(nu);
         m_matrix.HPDDMMatrixType::super::initialize(nu);
-        m_matrix.buildTwo(*comm);
+        m_matrix.buildTwo(comm);
       } else
         std::cout << "Warning ! Case nu = 0 not supported. Falling back to 1 level method"
                   << std::endl;

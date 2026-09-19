@@ -8,7 +8,7 @@
 #include <alien/kernels/trilinos/data_structure/TrilinosInternal.h>
 
 #include <alien/core/block/Block.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 #include "TrilinosVector.h"
 
 /*---------------------------------------------------------------------------*/
@@ -55,14 +55,13 @@ TrilinosVector<ValueT, TagT>::allocate()
   m_local_offset = dist.offset() * m_block_size;
   m_global_size  = dist.globalSize() * m_block_size;
   m_local_size   = dist.localSize() * m_block_size;
-  auto* parallel_mng =
-      const_cast<Arccore::MessagePassing::IMessagePassingMng*>(dist.parallelMng());
+  auto* parallel_mng =dist.parallelMng();
 
-  using namespace Arccore::MessagePassing::Mpi;
-  auto* pm = dynamic_cast<MpiMessagePassingMng*>(parallel_mng);
-  if(pm && *static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
-    m_internal.reset(
-        new VectorInternal(dist.offset(), m_global_size, m_local_size, *static_cast<const MPI_Comm*>(pm->getMPIComm())));
+  MPI_Comm pm_comm = MPI_COMM_NULL;
+  fillMpiCommunicatorIfValid(parallel_mng, &pm_comm);
+
+  if (parallel_mng && pm_comm != MPI_COMM_NULL)
+    m_internal.reset(new VectorInternal(dist.offset(), m_global_size, m_local_size, pm_comm));
   else
     m_internal.reset(
         new VectorInternal(m_local_offset, m_global_size, m_local_size, MPI_COMM_WORLD));

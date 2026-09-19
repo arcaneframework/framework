@@ -16,6 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
+
 #include "hypre_linear_solver.h"
 
 #include <HYPRE_parcsr_ls.h>
@@ -64,11 +66,8 @@ bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
   HYPRE_PtrToParSolverFcn precond_setup_function = nullptr;
   int (*precond_destroy_function)(HYPRE_Solver) = nullptr;
 
-  auto comm = MPI_COMM_WORLD;
-  if (const auto* mpi_comm_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(
-      A.distribution().parallelMng())) {
-    comm = *(mpi_comm_mng->getMPIComm());
-  }
+  MPI_Comm comm = MPI_COMM_WORLD;
+  fillMpiCommunicatorIfValid(A.distribution().parallelMng(), &comm);
   std::string precond_name = "undefined";
   switch (m_options.preconditioner()) {
   case OptionTypes::ePreconditioner::NoPC:

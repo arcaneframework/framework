@@ -33,8 +33,6 @@
 #include <alien/core/backend/LinearSolverT.h>
 #include <alien/core/backend/SolverFabricRegisterer.h>
 #include <alien/core/block/ComputeBlockOffsets.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
-
 
 #include <alien/expression/krylov/AlienKrylov.h>
 #include <alien/utils/StdTimer.h>
