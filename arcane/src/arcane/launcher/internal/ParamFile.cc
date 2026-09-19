@@ -58,19 +58,73 @@ namespace Arcane
     }
   },
 
-  // Reserved for a next version
   "commons": {
+    "4procs": {
+      "_": {
+        "name": "4 Procs"
+      },
+      "arccher": {
+        "mpi": 4
+      }
+    },
+    "4threads": {
+      "_": {
+        "name": "4 Threads"
+      },
+      "arcane": {
+        "options": {
+          "S": 4
+        }
+      }
+    },
+    "16mpithreads": {
+      "_": {
+        "name": "16 Hybrid",
+        "depend_a": ["4procs", "4threads"]
+      }
+    }
   },
+
   "variations": {
+    "nb_iterations": {
+      "10": {
+        "_": {
+          "name": "10 itérations"
+        },
+        "arcane": {
+          "options": {
+            "MaxIteration": 10
+          }
+        }
+      },
+      "20": {
+        "_": {
+          "name": "20 itérations"
+        },
+        "arcane": {
+          "options": {
+            "MaxIteration": 20
+          }
+        }
+      }
+    }
   },
 
   "cases": {
-    // Reserved symbol for names, for a next version : ":"
+    // Reserved symbol for cases name : ":", "="
+
+    // How to call "case1" :
+    // - "case1" -> ok
+    // - "case1:4procs" -> ok (syntactic sugar)
+    // - "case1:4procs:nb_iterations=10" -> ok (syntactic sugar, 10 cannot be changed)
+    // - "case1:4procs:nb_iterations" -> error ('nb_iterations' is not a 'commons' part)
     "case1": {
       "_": {
-        "name": "Cas 1"
+        "name": "Cas 1",
+        "depend_a": ["4procs", "nb_iterations=10"]
       },
 
+      // Reserved symbol for prog name : "~"
       "arcane": {
         "options": {
           "//meshes/mesh/filename": "aaa.msh",
@@ -82,11 +136,17 @@ namespace Arcane
         "mpi": 2
       }
     },
+
+    // How to call "case2" :
+    // - "case2" -> error
+    // - "case2:nb_iterations=10" -> ok
+    // - "case2:16mpithreads:nb_iterations=10" -> ok (16mpithreads is syntactic sugar)
+    // - "case2:nb_iterations=10:16mpithreads" -> ok (but the order is same than above and in the file)
     "case2": {
       "_": {
-        "name": "Cas 2"
+        "name": "Cas 2",
+        "depend_a": ["16mpithreads", "nb_iterations"]
       },
-
       "arcane": {
         "options": {
           "//meshes/mesh/filename": "bbb.msh",
