@@ -2328,9 +2328,22 @@ void mesh::PolyhedralMesh::_internalUpdateGhost(bool update_ghost_layer, bool re
 
 /*---------------------------------------------------------------------------*/
 
-void mesh::PolyhedralMesh::_internalEndUpdateInit(bool cond)
+void mesh::PolyhedralMesh::_internalEndUpdateInit(bool update_ghost_layer)
 {
-  ;
+  // From here, all mesh entities are known. It
+  // is therefore possible to compact them if necessary
+  //m_mesh_builder->printStats();
+
+  //info() << "Finalize date=" << platform::getCurrentDateTime();
+  _finalizeMeshChanged();
+
+  // Recalculate the necessary information for the synchronization
+  // of
+  // entities
+  if (update_ghost_layer) {
+    m_trace_mng->info() << "ComputeSyncInfos date=" << platform::getCurrentDateTime();
+    _computeFamilySynchronizeInfos();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2388,6 +2401,18 @@ void mesh::PolyhedralMesh::_removeGhostItems()
   // Readjusts the groups by removing entities that are no longer in the mesh
   // _updateGroupsAfterRemove();
 
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+_finalizeMeshChanged()
+{
+  for (auto& family : m_arcane_families) {
+    m_trace_mng->debug() << "_finalizeMeshChanged on " << family->name() << " Family on Mesh " << name();
+    family->endUpdate();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
