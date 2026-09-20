@@ -359,6 +359,7 @@ class PolyhedralMesh
   PolyhedralFamily* _findItemFamily(eItemKind ik, const String& name, bool create_if_needed = false);
 
   void _internalUpdateGhost(bool update_ghost_layer, bool remove_old_ghost);
+  void _finalizeMeshChanged();
   void _internalEndUpdateInit(bool cond);
   void _synchronizeGroups();
   void _internalEndUpdateResizeVariables();
