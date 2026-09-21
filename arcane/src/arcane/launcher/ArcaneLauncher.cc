@@ -366,8 +366,8 @@ init(const CommandLineArguments& args)
 
     String param_file_name = cargs.getParameter("ParamFile");
     if (!param_file_name.empty()) {
-      String variation_param_file_name = cargs.getParameter("Variation");
-      ParamFile::editParams(param_file_name, variation_param_file_name);
+      String case_param_file_name = cargs.getParameter("Case");
+      ParamFile::editParams(param_file_name, case_param_file_name);
     }
 
 
