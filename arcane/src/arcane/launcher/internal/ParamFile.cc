@@ -35,7 +35,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /*
- * Example of ArcaNet file (RC1) :
+ * Example of ArcaNet file (RC2) :
 {
   "versions": {
     "_": 0,
@@ -114,13 +114,14 @@ namespace Arcane
   },
 
   "cases": {
-    // Reserved symbol for cases name : ":", "="
+    // Reserved symbol for cases name : ":", "=", "~"
 
     // How to call "case1" :
     // - "case1" -> ok
     "case1": {
       "_": {
         "name": "Cas 1",
+        // Reserved symbol for depend_a/depend_b elements : "=", "!"
         "depend_a": ["4procs", "nb_iterations=10"]
       },
 
@@ -140,17 +141,25 @@ namespace Arcane
     // How to call "case2" :
     // - "case2" -> error
     // - "case2:nb_iterations=10" -> ok
-    // - "case2:nb_iterations=20" -> ok
+    // - "case2:nb_iterations=20" -> error
+    // - "case2~init:nb_iterations=10" -> ok
+    // - "case2~init:nb_iterations=20" -> error
     "case2": {
       "_": {
         "name": "Cas 2",
         "depend_b": ["16mpithreads"],
-        "depend_a": ["nb_iterations"]
+        "depend_a": ["nb_iterations!20"]
       },
       "arcane": {
         "options": {
           "//meshes/mesh/filename": "bbb.msh",
           "T": 8
+        }
+      },
+      "arcane~init": {
+        "options": {
+          "//meshes/mesh/filename": "bbb.msh",
+          "T": 16
         }
       }
     }
@@ -169,9 +178,9 @@ class ParamFile::Reader
   void read(const String& case_to_read);
   void readDependPart(const JSONValue& depend_part);
   void readCommonPart(const JSONValue& common_part);
-  void readFileBeforePart(const JSONValue& file_part);
-  void readFileAfterPart(const JSONValue& file_part);
-  void readArcanePart(const JSONValue& arcane_part);
+  void readFileBeforePart(const JSONValue& config_part);
+  void readFileAfterPart(const JSONValue& config_part);
+  void readArcanePart(const JSONValue& config_part);
 
  public:
 
@@ -182,6 +191,7 @@ class ParamFile::Reader
   UniqueArray<String> m_explored;
   UniqueArray<String> m_variations_key_resolved;
   UniqueArray<String> m_variations_value_resolved;
+  String m_arcane_part_name;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -217,9 +227,20 @@ read(const String& case_to_read)
       }
       else {
         if (!case_clean.empty()) {
-          ARCANE_FATAL("Two case names in Case option : {0} and {1}.", case_clean, elem);
+          ARCANE_FATAL("You must choose a variation for '{0}'.", elem);
         }
-        case_clean = elem;
+        if (elem.contains("~")) {
+          UniqueArray<String> split_elem;
+          elem.split(split_elem, '~');
+          if (split_elem.size() != 2) {
+            ARCANE_FATAL("Bad element in Case option.");
+          }
+          case_clean = split_elem[0];
+          m_arcane_part_name = "arcane~" + split_elem[1];
+        }
+        else {
+          case_clean = elem;
+        }
       }
     }
   }
@@ -230,19 +251,23 @@ read(const String& case_to_read)
     if (!cases.isNull()) {
       std::cout << "General part" << std::endl;
 
-      readFileBeforePart(cases.child("_"));
-      readArcanePart(cases.child("arcane"));
-      readFileAfterPart(cases.child("_"));
+      readFileBeforePart(cases);
+      readArcanePart(cases);
+      readFileAfterPart(cases);
     }
   }
   if (!case_clean.empty()) {
 
-    const JSONValue cases = m_root.child("cases").expectedChild(case_clean);
+    const JSONValue cases = m_root.child("cases").child(case_clean);
+    if (cases.null()) {
+      ARCANE_FATAL("Case '{0}' not found.", case_clean);
+    }
+
     std::cout << "Case part : " << case_clean << std::endl;
 
-    readFileBeforePart(cases.child("_"));
-    readArcanePart(cases.child("arcane"));
-    readFileAfterPart(cases.child("_"));
+    readFileBeforePart(cases);
+    readArcanePart(cases);
+    readFileAfterPart(cases);
   }
 }
 
@@ -285,26 +310,41 @@ readDependPart(const JSONValue& depend_part)
         readCommonPart(common);
       }
       else {
-        auto pos_elem = m_variations_key_resolved.span().findFirst(elem);
+        String name_depend;
+        UniqueArray<String> split_depend_name;
+        if (elem.contains("!")) {
+          elem.split(split_depend_name, '!');
+          name_depend = split_depend_name[0];
+        }
+        else {
+          name_depend = elem;
+        }
+        auto pos_elem = m_variations_key_resolved.span().findFirst(name_depend);
 
         if (!pos_elem.has_value()) {
-          const JSONValue error_ = m_root.child("variations").child(elem);
+          const JSONValue error_ = m_root.child("variations").child(name_depend);
           if (error_.null()) {
-            ARCANE_FATAL("Element '//commons/{0}' not found.", elem);
+            ARCANE_FATAL("Element '//commons/{0}' not found.", name_depend);
           }
-          ARCANE_FATAL("Element '{0}' not found in 'Case' option.", elem);
+          ARCANE_FATAL("Element '{0}' not found in 'Case' cmd line option.", name_depend);
         }
 
-        String key = m_variations_key_resolved[pos_elem.value()];
         String value = m_variations_value_resolved[pos_elem.value()];
-        String key_value = key + "=" + value;
+        if (!split_depend_name.empty())
+        {
+          ArrayView excluded_values(split_depend_name.subView(1, split_depend_name.size()-1));
+          if (excluded_values.contains(value)) {
+            ARCANE_FATAL("Element '//variations/{0}/{1}' is excluded.", name_depend, value);
+          }
+        }
+        String key_value = name_depend + "=" + value;
 
-        const JSONValue variation = m_root.child("variations").child(key).child(value);
+        const JSONValue variation = m_root.child("variations").child(name_depend).child(value);
         if (variation.null()) {
-          ARCANE_FATAL("Element '//variations/{0}/{1}' not found.", key, value);
+          ARCANE_FATAL("Element '//variations/{0}/{1}' not found.", name_depend, value);
         }
         if (m_explored.contains(key_value)) {
-          ARCANE_FATAL("Element '//variations/{0}/{1}' already explored.", key, value);
+          ARCANE_FATAL("Element '//variations/{0}/{1}' already explored.", name_depend, value);
         }
         m_explored.add(key_value);
         readCommonPart(variation);
@@ -321,26 +361,27 @@ readCommonPart(const JSONValue& common_part)
 {
   std::cout << "Common part" << std::endl;
 
-  readFileBeforePart(common_part.child("_"));
-  readArcanePart(common_part.child("arcane"));
-  readFileAfterPart(common_part.child("_"));
+  readFileBeforePart(common_part);
+  readArcanePart(common_part);
+  readFileAfterPart(common_part);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ParamFile::Reader::
-readFileBeforePart(const JSONValue& file_part)
+readFileBeforePart(const JSONValue& config_part)
 {
+  const JSONValue file_part = config_part.child("_");
   if (file_part.null())
     return;
 
   {
-    JSONValue depend_before_var = file_part.child("depend_b");
+    const JSONValue depend_before_var = file_part.child("depend_b");
     readDependPart(depend_before_var);
   }
 
-  JSONValue name_var = file_part.child("name");
+  const JSONValue name_var = file_part.child("name");
   if (!name_var.isNull()) {
     if (m_is_name_empty)
       m_is_name_empty = false;
@@ -355,13 +396,14 @@ readFileBeforePart(const JSONValue& file_part)
 /*---------------------------------------------------------------------------*/
 
 void ParamFile::Reader::
-readFileAfterPart(const JSONValue& file_part)
+readFileAfterPart(const JSONValue& config_part)
 {
+  const JSONValue file_part = config_part.child("_");
   if (file_part.null())
     return;
 
   {
-    JSONValue depend_after_var = file_part.child("depend_a");
+    const JSONValue depend_after_var = file_part.child("depend_a");
     readDependPart(depend_after_var);
   }
 }
@@ -370,15 +412,23 @@ readFileAfterPart(const JSONValue& file_part)
 /*---------------------------------------------------------------------------*/
 
 void ParamFile::Reader::
-readArcanePart(const JSONValue& arcane_part)
+readArcanePart(const JSONValue& config_part)
 {
+  JSONValue arcane_part;
+  if (!m_arcane_part_name.empty()) {
+    arcane_part = config_part.child(m_arcane_part_name);
+  }
+  if (arcane_part.null()) {
+    arcane_part = config_part.child("arcane");
+  }
+
   const JSONValue dataset = arcane_part.child("dataset");
   if (!dataset.isNull()) {
     m_cargs.addParameterLine(String::format("CaseDatasetFileName={0}", dataset.value()));
     //std::cout << "Dataset : " << dataset.value() << std::endl;
   }
 
-  JSONValue arcane_params = arcane_part.child("options");
+  const JSONValue arcane_params = arcane_part.child("options");
 
   if (!arcane_params.isNull()) {
     const JSONKeyValueList params = arcane_params.keyValueChildren();
