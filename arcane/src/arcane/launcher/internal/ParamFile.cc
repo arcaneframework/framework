@@ -21,7 +21,6 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/JSONReader.h"
-#include "arccore/common/List.h"
 
 #include <iostream>
 
@@ -175,30 +174,42 @@ class ParamFile::Reader
 
  public:
 
-  void read(const String& case_to_read);
-  void readDependPart(const JSONValue& depend_part);
-  void readCommonPart(const JSONValue& common_part);
-  void readFileBeforePart(const JSONValue& config_part);
-  void readFileAfterPart(const JSONValue& config_part);
-  void readArcanePart(const JSONValue& config_part);
+  void read(const String& case_and_variations_values);
+  bool displayDetails() const { return m_build_path; }
+  String path() const { return m_path; }
+  String configPartName() { return m_arcane_custom_part_name.empty() ? m_arcane_part_name : m_arcane_custom_part_name; }
 
- public:
+ private:
 
-  StringBuilder m_name;
-  bool m_is_name_empty = true;
+  void _readDependPart(const JSONValue& depend_part);
+  void _readConfigPart(const JSONValue& config_part, const String& node_name);
+  void _addElemInPath(const String& elem);
+  void _readFileBeforePart(const JSONValue& config_part);
+  void _readFileAfterPart(const JSONValue& config_part);
+  void _readArcanePart(const JSONValue& config_part);
+
+ private:
+
+  // StringBuilder m_name;
+  // bool m_is_name_empty = true;
+  bool m_build_path = false;
+  StringBuilder m_path;
+  Integer m_level_path = 0;
   CommandLineArguments& m_cargs;
   const JSONValue& m_root;
   UniqueArray<String> m_explored;
   UniqueArray<String> m_variations_key_resolved;
   UniqueArray<String> m_variations_value_resolved;
-  String m_arcane_part_name;
+  const String m_arcane_part_name = "arcane";
+  String m_arcane_custom_part_name;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ParamFile::Reader::Reader(CommandLineArguments& cargs, const JSONValue& root)
-: m_cargs(cargs)
+: m_build_path(!platform::getEnvironmentVariable("ARCANE_ARCANET_PATH").null())
+, m_cargs(cargs)
 , m_root(root)
 {
 }
@@ -207,39 +218,39 @@ ParamFile::Reader::Reader(CommandLineArguments& cargs, const JSONValue& root)
 /*---------------------------------------------------------------------------*/
 
 void ParamFile::Reader::
-read(const String& case_to_read)
+read(const String& case_and_variations_values)
 {
-  String case_clean;
-  if (!case_to_read.empty()) {
+  String case_name;
+  if (!case_and_variations_values.empty()) {
     UniqueArray<String> split_case;
-    case_to_read.split(split_case, ':');
+    case_and_variations_values.split(split_case, ':');
 
     for (const String& elem : split_case) {
       if (elem.contains("=")) {
-        UniqueArray<String> split_elem;
-        elem.split(split_elem, '=');
-        if (split_elem.size() != 2) {
+        UniqueArray<String> split_variation;
+        elem.split(split_variation, '=');
+        if (split_variation.size() != 2) {
           ARCANE_FATAL("Bad element in Case option.");
         }
-        m_variations_key_resolved.add(split_elem[0]);
-        m_variations_value_resolved.add(split_elem[1]);
-        std::cout << "Add key=value : " << split_elem[0] << " = " << split_elem[1] << std::endl;
+        m_variations_key_resolved.add(split_variation[0]);
+        m_variations_value_resolved.add(split_variation[1]);
+        // std::cout << "Add key=value : " << split_elem[0] << " = " << split_elem[1] << std::endl;
       }
       else {
-        if (!case_clean.empty()) {
+        if (!case_name.empty()) {
           ARCANE_FATAL("You must choose a variation for '{0}'.", elem);
         }
         if (elem.contains("~")) {
-          UniqueArray<String> split_elem;
-          elem.split(split_elem, '~');
-          if (split_elem.size() != 2) {
+          UniqueArray<String> split_case_name_with_prog_subname;
+          elem.split(split_case_name_with_prog_subname, '~');
+          if (split_case_name_with_prog_subname.size() != 2) {
             ARCANE_FATAL("Bad element in Case option.");
           }
-          case_clean = split_elem[0];
-          m_arcane_part_name = "arcane~" + split_elem[1];
+          case_name = split_case_name_with_prog_subname[0];
+          m_arcane_custom_part_name = m_arcane_part_name + "~" + split_case_name_with_prog_subname[1];
         }
         else {
-          case_clean = elem;
+          case_name = elem;
         }
       }
     }
@@ -249,25 +260,19 @@ read(const String& case_to_read)
   {
     const JSONValue cases = m_root.child("general");
     if (!cases.isNull()) {
-      std::cout << "General part" << std::endl;
-
-      readFileBeforePart(cases);
-      readArcanePart(cases);
-      readFileAfterPart(cases);
+      // std::cout << "General part" << std::endl;
+      m_explored.add("general");
+      _readConfigPart(cases, "general");
     }
   }
-  if (!case_clean.empty()) {
-
-    const JSONValue cases = m_root.child("cases").child(case_clean);
+  if (!case_name.empty()) {
+    const JSONValue cases = m_root.child("cases").child(case_name);
     if (cases.null()) {
-      ARCANE_FATAL("Case '{0}' not found.", case_clean);
+      ARCANE_FATAL("Case '{0}' not found.", case_name);
     }
-
-    std::cout << "Case part : " << case_clean << std::endl;
-
-    readFileBeforePart(cases);
-    readArcanePart(cases);
-    readFileAfterPart(cases);
+    // std::cout << "Case part : " << case_clean << std::endl;
+    m_explored.add(case_name);
+    _readConfigPart(cases, case_name);
   }
 }
 
@@ -275,81 +280,81 @@ read(const String& case_to_read)
 /*---------------------------------------------------------------------------*/
 
 void ParamFile::Reader::
-readDependPart(const JSONValue& depend_part)
+_readDependPart(const JSONValue& depend_part)
 {
   if (depend_part.null())
     return;
 
   const JSONValueList array = depend_part.valueAsArray();
-  for (const JSONValue elem_value : array) {
-    String elem = elem_value.valueAsStringView();
-    if (elem.contains("=")) {
-      UniqueArray<String> split_elem;
-      elem.split(split_elem, '=');
-      if (split_elem.size() != 2) {
-        ARCANE_FATAL("Element '{0}' is invalid.", elem);
-      }
-
-      const JSONValue variation = m_root.child("variations").child(split_elem[0]).child(split_elem[1]);
-      if (variation.null()) {
-        ARCANE_FATAL("Element '//variations/{0}/{1}' not found.", split_elem[0], split_elem[1]);
-      }
-      if (m_explored.contains(elem)) {
-        ARCANE_FATAL("Element '//variations/{0}/{1}' already explored.", split_elem[0], split_elem[1]);
-      }
-      m_explored.add(elem);
-      readCommonPart(variation);
-    }
-    else {
-      const JSONValue common = m_root.child("commons").child(elem);
-      if (!common.null()) {
-        if (m_explored.contains(elem)) {
-          ARCANE_FATAL("Element '//commons/{0}' already explored.", elem);
+  for (const JSONValue elem : array) {
+    JSONValue dependence_node;
+    String dependence_name = elem.valueAsStringView();
+    {
+      if (dependence_name.contains("=")) {
+        UniqueArray<String> split_variation;
+        dependence_name.split(split_variation, '=');
+        if (split_variation.size() != 2) {
+          ARCANE_FATAL("Element '{0}' is invalid.", dependence_name);
         }
-        m_explored.add(elem);
-        readCommonPart(common);
+
+        const JSONValue variation = m_root.child("variations").child(split_variation[0]).child(split_variation[1]);
+        if (variation.null()) {
+          ARCANE_FATAL("Element '//variations/{0}/{1}' not found.", split_variation[0], split_variation[1]);
+        }
+        if (m_explored.contains(dependence_name)) {
+          ARCANE_FATAL("Element '//variations/{0}/{1}' already explored.", split_variation[0], split_variation[1]);
+        }
+        m_explored.add(dependence_name);
       }
       else {
-        String name_depend;
-        UniqueArray<String> split_depend_name;
-        if (elem.contains("!")) {
-          elem.split(split_depend_name, '!');
-          name_depend = split_depend_name[0];
+        dependence_node = m_root.child("commons").child(dependence_name);
+        if (!dependence_node.null()) {
+          if (m_explored.contains(dependence_name)) {
+            ARCANE_FATAL("Element '//commons/{0}' already explored.", dependence_name);
+          }
+          m_explored.add(dependence_name);
         }
         else {
-          name_depend = elem;
-        }
-        auto pos_elem = m_variations_key_resolved.span().findFirst(name_depend);
-
-        if (!pos_elem.has_value()) {
-          const JSONValue error_ = m_root.child("variations").child(name_depend);
-          if (error_.null()) {
-            ARCANE_FATAL("Element '//commons/{0}' not found.", name_depend);
+          String cleaned_dependence_name;
+          UniqueArray<String> split_dependence_name;
+          if (dependence_name.contains("!")) {
+            dependence_name.split(split_dependence_name, '!');
+            cleaned_dependence_name = split_dependence_name[0];
           }
-          ARCANE_FATAL("Element '{0}' not found in 'Case' cmd line option.", name_depend);
-        }
-
-        String value = m_variations_value_resolved[pos_elem.value()];
-        if (!split_depend_name.empty())
-        {
-          ArrayView excluded_values(split_depend_name.subView(1, split_depend_name.size()-1));
-          if (excluded_values.contains(value)) {
-            ARCANE_FATAL("Element '//variations/{0}/{1}' is excluded.", name_depend, value);
+          else {
+            cleaned_dependence_name = dependence_name;
           }
-        }
-        String key_value = name_depend + "=" + value;
+          auto pos_elem = m_variations_key_resolved.span().findFirst(cleaned_dependence_name);
 
-        const JSONValue variation = m_root.child("variations").child(name_depend).child(value);
-        if (variation.null()) {
-          ARCANE_FATAL("Element '//variations/{0}/{1}' not found.", name_depend, value);
+          if (!pos_elem.has_value()) {
+            const JSONValue error_ = m_root.child("variations").child(cleaned_dependence_name);
+            if (error_.null()) {
+              ARCANE_FATAL("Element '//commons/{0}' not found.", cleaned_dependence_name);
+            }
+            ARCANE_FATAL("Element '{0}' not found in 'Case' cmd line option.", cleaned_dependence_name);
+          }
+
+          String value = m_variations_value_resolved[pos_elem.value()];
+          if (!split_dependence_name.empty()) {
+            ArrayView excluded_values(split_dependence_name.subView(1, split_dependence_name.size() - 1));
+            if (excluded_values.contains(value)) {
+              ARCANE_FATAL("Element '//variations/{0}/{1}' is excluded.", cleaned_dependence_name, value);
+            }
+          }
+          dependence_name = cleaned_dependence_name + "=" + value;
+
+          dependence_node = m_root.child("variations").child(cleaned_dependence_name).child(value);
+          if (dependence_node.null()) {
+            ARCANE_FATAL("Element '//variations/{0}/{1}' not found.", cleaned_dependence_name, value);
+          }
+          if (m_explored.contains(dependence_name)) {
+            ARCANE_FATAL("Element '//variations/{0}/{1}' already explored.", cleaned_dependence_name, value);
+          }
+          m_explored.add(dependence_name);
         }
-        if (m_explored.contains(key_value)) {
-          ARCANE_FATAL("Element '//variations/{0}/{1}' already explored.", name_depend, value);
-        }
-        m_explored.add(key_value);
-        readCommonPart(variation);
       }
     }
+    _readConfigPart(dependence_node, dependence_name);
   }
 }
 
@@ -357,69 +362,94 @@ readDependPart(const JSONValue& depend_part)
 /*---------------------------------------------------------------------------*/
 
 void ParamFile::Reader::
-readCommonPart(const JSONValue& common_part)
+_readConfigPart(const JSONValue& config_part, const String& node_name)
 {
-  std::cout << "Common part" << std::endl;
-
-  readFileBeforePart(common_part);
-  readArcanePart(common_part);
-  readFileAfterPart(common_part);
+  if (m_build_path) {
+    _addElemInPath("{");
+    m_level_path++;
+    _readFileBeforePart(config_part);
+    _addElemInPath(node_name);
+    _readArcanePart(config_part);
+    _readFileAfterPart(config_part);
+    m_level_path--;
+    _addElemInPath("}");
+  }
+  else {
+    _readFileBeforePart(config_part);
+    _readArcanePart(config_part);
+    _readFileAfterPart(config_part);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ParamFile::Reader::
-readFileBeforePart(const JSONValue& config_part)
+_addElemInPath(const String& elem)
 {
-  const JSONValue file_part = config_part.child("_");
-  if (file_part.null())
-    return;
-
-  {
-    const JSONValue depend_before_var = file_part.child("depend_b");
-    readDependPart(depend_before_var);
-  }
-
-  const JSONValue name_var = file_part.child("name");
-  if (!name_var.isNull()) {
-    if (m_is_name_empty)
-      m_is_name_empty = false;
-    else
-      m_name += ".";
-
-    m_name += name_var.valueAsStringView();
-  }
+  m_path += "\n";
+  for (Integer i = 0; i < m_level_path; ++i)
+    m_path += "  ";
+  m_path += elem;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ParamFile::Reader::
-readFileAfterPart(const JSONValue& config_part)
+_readFileBeforePart(const JSONValue& config_part)
 {
-  const JSONValue file_part = config_part.child("_");
-  if (file_part.null())
-    return;
+  const JSONValue depend_before_var = config_part.child("_").child("depend_b");
+  _readDependPart(depend_before_var);
 
-  {
-    const JSONValue depend_after_var = file_part.child("depend_a");
-    readDependPart(depend_after_var);
-  }
+  // const JSONValue name_var = config_part.child("_").child("name");
+  // if (!name_var.isNull()) {
+  //   if (m_is_name_empty)
+  //     m_is_name_empty = false;
+  //   else
+  //     m_name += " -> ";
+  //
+  //   m_name += "\"";
+  //   m_name += name_var.valueAsStringView();
+  //   m_name += "\"";
+  //
+  //   std::cout << "Config part: " << name_var.valueAsStringView() << std::endl;
+  // }
+  // else {
+  //   std::cout << "Config part" << std::endl;
+  // }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ParamFile::Reader::
-readArcanePart(const JSONValue& config_part)
+_readFileAfterPart(const JSONValue& config_part)
+{
+  const JSONValue depend_after_var = config_part.child("_").child("depend_a");
+  _readDependPart(depend_after_var);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParamFile::Reader::
+_readArcanePart(const JSONValue& config_part)
 {
   JSONValue arcane_part;
-  if (!m_arcane_part_name.empty()) {
-    arcane_part = config_part.child(m_arcane_part_name);
+  if (!m_arcane_custom_part_name.empty()) {
+    arcane_part = config_part.child(m_arcane_custom_part_name);
   }
   if (arcane_part.null()) {
-    arcane_part = config_part.child("arcane");
+    arcane_part = config_part.child(m_arcane_part_name);
+  }
+  else if (m_build_path) {
+    m_path += "(";
+    m_path += m_arcane_custom_part_name;
+    m_path += ")";
+    // m_name += "(";
+    // m_name += m_arcane_custom_part_name;
+    // m_name += ")";
   }
 
   const JSONValue dataset = arcane_part.child("dataset");
@@ -468,14 +498,17 @@ editParams(const String& param_file_name, const String& variation)
 
   reader.read(variation);
 
-  std::cout << "Name variation : " << reader.m_name << std::endl;
-
-  StringList names;
-  StringList values;
-  cargs.fillParameters(names, values);
-  for (Integer i = 0, n = names.count(); i < n; ++i) {
-    std::cout << "Final Elem : " << names[i] << " -- val : " << values[i] << std::endl;
+  if (reader.displayDetails()) {
+    std::cout << "ArcaNet path: " << reader.path() << std::endl;
+    std::cout << "ArcaNet config part readed: " << reader.configPartName() << std::endl;
   }
+
+  // StringList names;
+  // StringList values;
+  // cargs.fillParameters(names, values);
+  // for (Integer i = 0, n = names.count(); i < n; ++i) {
+  //   std::cout << "Final Elem : " << names[i] << " -- val : " << values[i] << std::endl;
+  // }
 
   ArcaneLauncher::applicationInfo().setCommandLineArguments(cargs);
 }
