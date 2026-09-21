@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephMatrix.cc                                              (C) 2000-2024 */
+/* AlephMatrix.cc                                              (C) 2000-2026 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -600,7 +600,8 @@ solveNow(AlephVector* x,
     const Integer globalIteration = m_kernel->subDomain()->commonVariables().globalIteration();
     String mtxFilename = String("m_aleph_matrix_A_") + globalIteration;
     String rhsFilename = String("m_aleph_vector_b_") + globalIteration;
-    warning() << "[AlephMatrix::solveNow] mtxFileName rhsFileName write_to_file";
+    info() << "[AlephMatrix::solveNow] dumping matrix in file '" << mtxFilename << "'\n";
+    info() << "[AlephMatrix::solveNow] dumping rhs in file '" << rhsFilename << "'\n";
     writeToFile(mtxFilename.localstr());
     b->writeToFile(rhsFilename.localstr());
   }
