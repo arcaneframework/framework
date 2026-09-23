@@ -48,9 +48,8 @@
 #include <alien/kernels/petsc/linear_solver/PETScOptionTypes.h>
 #include <ALIEN/axl/PETScLinearSolver_IOptions.h>
 
-
 #include <arccore/base/NotSupportedException.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -316,15 +315,10 @@ PETScInternalLinearSolver::init()
 /*---------------------------------------------------------------------------*/
 
 void
-PETScInternalLinearSolver::updateParallelMng(
-    Arccore::MessagePassing::IMessagePassingMng* pm)
+PETScInternalLinearSolver::updateParallelMng(Arcane::MessagePassing::IMessagePassingMng* pm)
 {
   m_parallel_mng = pm;
-  if (m_parallel_mng != nullptr) {
-    auto mpi_mng = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(pm);
-    if (mpi_mng)
-      PETSC_COMM_WORLD = *static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
-  }
+  fillMpiCommunicatorIfValid(m_parallel_mng, &PETSC_COMM_WORLD);
 }
 
 /*---------------------------------------------------------------------------*/

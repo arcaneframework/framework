@@ -9,8 +9,6 @@
 #include "arccore/message_passing/ITypeDispatcher.h"
 #include "arccore/message_passing/Request.h"
 #include "arccore/message_passing/IStat.h"
-#include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
-#include "arccore/message_passing_mpi/MpiDatatype.h"
 
 #include <alien/utils/Precomp.h>
 

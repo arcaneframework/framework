@@ -20,11 +20,11 @@
 #include "hypre_instance.h"
 #include "hypre_vector.h"
 
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
+
 #include <alien/hypre/backend.h>
 #include <alien/core/impl/MultiMatrixImpl.h>
 #include <alien/data/ISpace.h>
-
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
 #include <HYPRE.h>
 // For hypre_*Alloc
@@ -87,14 +87,14 @@ namespace
 Matrix::Matrix(const MultiMatrixImpl* multi_impl)
 : IMatrixImpl(multi_impl, AlgebraTraits<BackEnd::tag::hypre>::name())
 {
-  auto const* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(multi_impl->distribution().parallelMng());
-  m_comm = pm ? (*pm->getMPIComm()) : MPI_COMM_WORLD;
+  m_comm = MPI_COMM_WORLD;
+  fillMpiCommunicatorIfValid(multi_impl->distribution().parallelMng(), &m_comm);
 
   hypre_init_if_needed(m_comm);
   const auto& row_space = multi_impl->rowSpace();
   const auto& col_space = multi_impl->colSpace();
   if (row_space.size() != col_space.size())
-    throw Arccore::FatalErrorException("Hypre matrix must be square");
+    ARCCORE_FATAL("Hypre matrix must be square");
 
   init();
 }

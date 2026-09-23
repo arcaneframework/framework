@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,7 +40,7 @@
 
 #include <dlfcn.h>
 #include <unistd.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 
 #define amgx_libopen(path) dlopen(path, RTLD_LAZY)
 #define amgx_liblink(handle, symbol) dlsym(handle, symbol)
@@ -125,10 +125,8 @@ TrilinosInternal::initialize(Arccore::MessagePassing::IMessagePassingMng* parall
     m_nb_threads = nb_threads;
 
   if (parallel_mng && (parallel_mng->commSize() > 1)) {
-    auto* mpi_mng =
-        dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(parallel_mng);
-    const MPI_Comm* comm = static_cast<const MPI_Comm*>(mpi_mng->getMPIComm());
-    m_trilinos_comm.reset(new Teuchos::MpiComm<int>(*comm));
+    MPI_Comm comm = toMpiCommunicator(parallel_mng);
+    m_trilinos_comm.reset(new Teuchos::MpiComm<int>(comm));
   }
   m_execution_space = getEnv<std::string>("KOKKOS_EXECUTION_SPACE", "Serial");
   if (execution_space.compare("Undefined") != 0)

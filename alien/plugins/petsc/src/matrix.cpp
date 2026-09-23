@@ -16,12 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
+
 #include "matrix.h"
 
 #include <alien/petsc/backend.h>
 #include <alien/core/impl/MultiMatrixImpl.h>
-
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
 #include "petsc_instance.h"
 
@@ -52,8 +52,8 @@ int ilower, int iupper, int jlower, int jupper,
     MatDestroy(&m_mat);
   }
 
-  auto* pm = dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(distribution().parallelMng());
-  m_comm = pm ? (*pm->getMPIComm()) : MPI_COMM_WORLD;
+  m_comm = MPI_COMM_WORLD;
+  fillMpiCommunicatorIfValid(distribution().parallelMng(), &m_comm);
 
   auto ierr = MatCreate(m_comm, &m_mat);
   ierr |= MatSetSizes(m_mat, iupper - ilower + 1, jupper - jlower + 1,
@@ -65,7 +65,7 @@ int ilower, int iupper, int jlower, int jupper,
   ierr |= MatSetUp(m_mat);
 
   if (ierr) {
-    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSc Initialisation failed");
+    ARCCORE_FATAL("PETSc Initialisation failed");
   }
 }
 
@@ -74,7 +74,7 @@ void Matrix::assemble()
   auto ierr = MatAssemblyEnd(m_mat, MAT_FINAL_ASSEMBLY);
 
   if (ierr) {
-    throw Arccore::FatalErrorException(A_FUNCINFO, "PETSc assembling failed");
+    ARCCORE_FATAL("PETSc assembling failed");
   }
 }
 
@@ -83,14 +83,14 @@ void Matrix::setRowValues(int row, Arccore::ConstArrayView<int> cols, Arccore::C
   auto ncols = cols.size();
 
   if (ncols != values.size()) {
-    throw Arccore::FatalErrorException(A_FUNCINFO, "sizes are not equal");
+    ARCCORE_FATAL("sizes are not equal");
   }
 
   auto ierr = MatSetValues(m_mat, 1, &row, ncols, cols.data(), values.data(), INSERT_VALUES);
 
   if (ierr) {
     auto msg = Arccore::String::format("Cannot set PETSc Matrix Values for row {0}", row);
-    throw Arccore::FatalErrorException(A_FUNCINFO, msg);
+    ARCCORE_FATAL(msg);
   }
 }
 

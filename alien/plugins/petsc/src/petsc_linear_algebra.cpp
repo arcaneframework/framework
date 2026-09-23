@@ -19,8 +19,6 @@
 #include "matrix.h"
 #include "vector.h"
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
-
 #include <alien/core/backend/LinearAlgebraT.h>
 
 #include <alien/petsc/backend.h>

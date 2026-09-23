@@ -13,7 +13,6 @@
 #include <alien/kernels/hypre/HypreBackEnd.h>
 #include <alien/kernels/hypre/data_structure/HypreInternal.h>
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 #include <arccore/message_passing/Communicator.h>
 
 /*---------------------------------------------------------------------------*/

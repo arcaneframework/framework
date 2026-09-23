@@ -15,7 +15,6 @@
 #include <alien/core/impl/MultiMatrixImpl.h>
 
 #include <arccore/message_passing/Communicator.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -91,7 +90,6 @@ PETScMatrix::initMatrix(const int local_size,
   if (valid_flag == PETSC_TRUE)
     return (ierr == 0);
 #endif /* PETSC_HAVE_MATVALID */
-
 
   auto pm = m_pm->communicator();
   MPI_Comm mpi_comm = (pm.isValid()) ? static_cast<MPI_Comm>(pm) : (parallel ? PETSC_COMM_WORLD : PETSC_COMM_SELF) ;

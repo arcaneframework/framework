@@ -24,7 +24,6 @@
 // FIXME: use public API for Hypre !
 #include <_hypre_parcsr_mv.h>
 
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
 #include <arccore/base/NotImplementedException.h>
 #include <arccore/base/TraceInfo.h>
 

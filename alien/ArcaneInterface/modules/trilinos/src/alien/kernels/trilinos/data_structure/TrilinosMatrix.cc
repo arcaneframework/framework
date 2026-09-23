@@ -8,7 +8,7 @@
 #include <alien/kernels/trilinos/data_structure/TrilinosInternal.h>
 
 #include <alien/core/impl/MultiMatrixImpl.h>
-#include <arccore/message_passing_mpi/MpiMessagePassingMng.h>
+#include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
 #include "TrilinosMatrix.h"
 #include "TrilinosVector.h"
 
@@ -140,13 +140,10 @@ template <typename ValueT, typename TagT> TrilinosMatrix<ValueT, TagT>::~Trilino
 
 template <typename ValueT, typename TagT>
 bool
-TrilinosMatrix<ValueT, TagT>::initMatrix(IMessagePassingMng const* parallel_mng,
+TrilinosMatrix<ValueT, TagT>::initMatrix(IMessagePassingMng* parallel_mng,
     int local_offset, int global_size, int nrows, int const* kcol, int const* cols,
     int block_size, ValueT const* values)
 {
-  using namespace Arccore::MessagePassing::Mpi;
-  auto* pm = dynamic_cast<MpiMessagePassingMng*>(const_cast<IMessagePassingMng*>(parallel_mng));
-
   int max_row_size = 0 ;
   std::vector<std::size_t> row_size(nrows*block_size) ;
   for (int irow = 0; irow < nrows; ++irow) {
@@ -156,8 +153,10 @@ TrilinosMatrix<ValueT, TagT>::initMatrix(IMessagePassingMng const* parallel_mng,
     max_row_size = std::max(max_row_size,size) ;
   }
 
-  if(pm && *static_cast<const MPI_Comm*>(pm->getMPIComm()) != MPI_COMM_NULL)
-    m_internal.reset(new MatrixInternal(local_offset*block_size, global_size*block_size, nrows*block_size,row_size.data(),*static_cast<const MPI_Comm*>(pm->getMPIComm())));
+  MPI_Comm pm_comm = MPI_COMM_NULL;
+  fillMpiCommunicatorIfValid(parallel_mng, &pm_comm);
+  if(parallel_mng && pm_comm != MPI_COMM_NULL)
+    m_internal.reset(new MatrixInternal(local_offset*block_size, global_size*block_size, nrows*block_size,row_size.data(),pm_comm));
   else
     m_internal.reset(new MatrixInternal(local_offset*block_size, global_size*block_size, nrows*block_size, row_size.data(), MPI_COMM_WORLD));
 
