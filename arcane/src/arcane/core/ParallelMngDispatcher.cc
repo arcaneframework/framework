@@ -51,23 +51,22 @@ using namespace Arccore::MessagePassing;
 /*---------------------------------------------------------------------------*/
 
 ParallelMngDispatcherBuildInfo::
-ParallelMngDispatcherBuildInfo(Ref<MP::Dispatchers> dispatchers,
-                               Ref<MP::MessagePassingMng> mpm_ref)
-: m_comm_rank(mpm_ref->commRank())
-, m_comm_size(mpm_ref->commSize())
-, m_dispatchers_ref(dispatchers)
-, m_message_passing_mng_ref(mpm_ref)
+ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size)
+: m_comm_rank(comm_rank)
+, m_comm_size(comm_size)
 {
   _init();
 }
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ParallelMngDispatcherBuildInfo::
-ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size)
+ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size, MP::Communicator communicator)
 : m_comm_rank(comm_rank)
 , m_comm_size(comm_size)
+, m_communicator(communicator)
 {
   _init();
 }
@@ -78,13 +77,10 @@ ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size)
 void ParallelMngDispatcherBuildInfo::
 _init()
 {
-  if (!m_dispatchers_ref.get()) {
-    m_dispatchers_ref = createRef<MP::Dispatchers>();
-  }
-  if (!m_message_passing_mng_ref.get()) {
-    auto* x = new MP::MessagePassingMng(m_comm_rank, m_comm_size, m_dispatchers_ref.get());
-    m_message_passing_mng_ref = makeRef(x);
-  }
+  m_dispatchers_ref = createRef<MP::Dispatchers>();
+  auto* x = new MP::MessagePassingMng(m_comm_rank, m_comm_size, m_dispatchers_ref.get());
+  m_message_passing_mng_ref = makeRef(x);
+  m_message_passing_mng_ref->setCommunicator(m_communicator);
 }
 
 /*---------------------------------------------------------------------------*/

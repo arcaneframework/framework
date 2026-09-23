@@ -109,11 +109,6 @@ MpiParallelMngBuildInfo(MPI_Comm comm, MPI_Comm machine_comm)
 {
   ::MPI_Comm_rank(comm, &comm_rank);
   ::MPI_Comm_size(comm, &comm_nb_rank);
-
-  m_dispatchers_ref = createRef<MP::Dispatchers>();
-
-  m_message_passing_mng_ref = createRef<MP::MessagePassingMng>(comm_rank, comm_nb_rank, m_dispatchers_ref.get());
-  m_message_passing_mng_ref->setCommunicator(Communicator{ comm });
 }
 
 /*---------------------------------------------------------------------------*/
@@ -453,7 +448,7 @@ class MpiParallelMng::Impl
 
 MpiParallelMng::
 MpiParallelMng(const MpiParallelMngBuildInfo& bi)
-: ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.dispatchersRef(), bi.messagePassingMngRef()))
+: ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.commRank(),bi.commSize(),MP::Communicator(bi.mpiComm())))
 , m_trace(bi.trace_mng)
 , m_thread_mng(bi.thread_mng)
 , m_world_parallel_mng(bi.world_parallel_mng)

@@ -41,9 +41,8 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcherBuildInfo
 {
  public:
 
-  ParallelMngDispatcherBuildInfo(Ref<MP::Dispatchers> dispatchers,
-                                 Ref<MP::MessagePassingMng> mpm);
   ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size);
+  ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size, MP::Communicator communicator);
 
  public:
 
@@ -58,6 +57,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcherBuildInfo
   Int32 m_comm_size = -1;
   Ref<MP::Dispatchers> m_dispatchers_ref;
   Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
+  MP::Communicator m_communicator;
 
  private:
 
