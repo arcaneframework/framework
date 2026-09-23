@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelMng.h                                            (C) 2000-2025 */
+/* MpiParallelMng.h                                            (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of messages using MPI.                                     */
 /*---------------------------------------------------------------------------*/
@@ -61,8 +61,8 @@ struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
 
  private:
 
-  Int32 comm_rank;
-  Int32 comm_nb_rank;
+  Int32 comm_rank = -1;
+  Int32 comm_nb_rank = -1;
 
  public:
 
@@ -74,12 +74,12 @@ struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
 
  private:
 
-  MPI_Comm mpi_comm;
-  MPI_Comm mpi_machine_comm;
+  MPI_Comm mpi_comm = MPI_COMM_NULL;
+  MPI_Comm mpi_machine_comm = MPI_COMM_NULL;
 
  public:
 
-  bool is_mpi_comm_owned;
+  bool is_mpi_comm_owned = false;
   MpiLock* mpi_lock = nullptr;
 
  private:

@@ -103,22 +103,17 @@ MpiParallelMngBuildInfo(MPI_Comm comm, MPI_Comm machine_comm)
 : is_parallel(false)
 , comm_rank(MessagePassing::A_NULL_RANK)
 , comm_nb_rank(0)
-, stat(nullptr)
-, trace_mng(nullptr)
-, timer_mng(nullptr)
-, thread_mng(nullptr)
 , mpi_comm(comm)
 , mpi_machine_comm(machine_comm)
 , is_mpi_comm_owned(true)
-, mpi_lock(nullptr)
 {
   ::MPI_Comm_rank(comm, &comm_rank);
   ::MPI_Comm_size(comm, &comm_nb_rank);
 
   m_dispatchers_ref = createRef<MP::Dispatchers>();
-  MP::Mpi::MpiMessagePassingMng::BuildInfo bi(comm_rank, comm_nb_rank, m_dispatchers_ref.get(), mpi_comm);
 
-  m_message_passing_mng_ref = createRef<MP::Mpi::MpiMessagePassingMng>(bi);
+  m_message_passing_mng_ref = createRef<MP::MessagePassingMng>(comm_rank, comm_nb_rank, m_dispatchers_ref.get());
+  m_message_passing_mng_ref->setCommunicator(Communicator{ comm });
 }
 
 /*---------------------------------------------------------------------------*/
