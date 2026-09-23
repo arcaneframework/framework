@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
+#include "arccore/message_passing_mpi/internal/MpiMessagePassingMng.h"
 #include "arccore/message_passing/Communicator.h"
 
 /*---------------------------------------------------------------------------*/

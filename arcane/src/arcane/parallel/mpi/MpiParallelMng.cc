@@ -45,7 +45,7 @@
 #include "arcane/impl/internal/ParallelMngUtilsFactoryBase.h"
 #include "arcane/impl/internal/VariableSynchronizer.h"
 
-#include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
+#include "arccore/message_passing_mpi/internal/MpiMessagePassingMng.h"
 #include "arccore/message_passing_mpi/internal/MpiSerializeDispatcher.h"
 #include "arccore/message_passing_mpi/internal/MpiRequestList.h"
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"

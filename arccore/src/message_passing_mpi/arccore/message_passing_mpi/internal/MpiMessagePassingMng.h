@@ -9,8 +9,8 @@
 /*                                                                           */
 /* MPI implementation of the message exchange manager.                       */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_MESSAGEPASSINGMPI_MPIMESSAGEPASSINGMNG_H
-#define ARCCORE_MESSAGEPASSINGMPI_MPIMESSAGEPASSINGMNG_H
+#ifndef ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMESSAGEPASSINGMNG_H
+#define ARCCORE_MESSAGEPASSINGMPI_INTERNAL_MPIMESSAGEPASSINGMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

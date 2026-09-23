@@ -14,7 +14,7 @@
 #include "arccore/message_passing_mpi/internal/MpiSerializeDispatcher.h"
 
 #include "arccore/message_passing_mpi/internal/MpiAdapter.h"
-#include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
+//#include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
 #include "arccore/message_passing_mpi/internal/MpiLock.h"
 
 #include "arccore/message_passing/Request.h"

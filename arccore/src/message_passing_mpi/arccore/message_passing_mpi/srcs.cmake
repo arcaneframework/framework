@@ -10,7 +10,6 @@
   MpiSerializeDispatcher.cc
   MpiTypeDispatcher.cc
   MpiMessagePassingMng.cc
-  MpiMessagePassingMng.h
   MpiContigMachineShMemWinBaseInternal.cc
   MpiMachineShMemWinBaseInternalCreator.cc
   MpiMachineShMemWinBaseInternal.cc
@@ -27,6 +26,7 @@
   internal/MpiContigMachineShMemWinBaseInternal.h
   internal/MpiMachineShMemWinBaseInternalCreator.h
   internal/MpiMachineShMemWinBaseInternal.h
+  internal/MpiMessagePassingMng.h
   internal/MpiMultiMachineShMemWinBaseInternal.h
   internal/MpiRequest.h
   internal/MpiRequestList.h
