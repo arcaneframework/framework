@@ -12,7 +12,7 @@ the public Arcane framework API, e.g. mesh variables
 - \arcane{Span} / \arcane{SmallSpan} — `arccore/base/Span.h`
 
 You can also add forward declarations for these classes using the header file
-arccore/base/BaseTypes.h`.
+`arccore/base/BaseTypes.h`.
 
 ---
 
