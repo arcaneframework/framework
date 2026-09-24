@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephHypre.cc                                               (C) 2000-2025 */
+/* AlephHypre.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* Hypre implementation of Aleph.                                            */
 /*---------------------------------------------------------------------------*/
@@ -337,7 +337,8 @@ class AlephMatrixHypre
     HYPRE_Int rtn = 0;
     HYPRE_Int col[1] = { 1 };
     for (int i = 0; i < size; i++) {
-      rtn += HYPRE_IJMatrixSetValues(m_hypre_ijmatrix, 1, col, &rows[i], &cols[i], &values[i]);
+      if (values[i] != 0.0)
+        rtn += HYPRE_IJMatrixSetValues(m_hypre_ijmatrix, 1, col, &rows[i], &cols[i], &values[i]);
     }
     hypreCheck("HYPRE_IJMatrixSetValues", rtn);
     //HYPRE_IJMatrixSetValues(m_hypre_ijmatrix, nrows, ncols, rows, cols, values);
