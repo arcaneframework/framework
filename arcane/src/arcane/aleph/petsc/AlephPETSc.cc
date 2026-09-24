@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephPETSc.cc                                               (C) 2000-2025 */
+/* AlephPETSc.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* PETSc implementation of Aleph.                                            */
 /*---------------------------------------------------------------------------*/
@@ -504,7 +504,8 @@ AlephMatrixFill(int size, AlephInt* rows, AlephInt* cols, double* values)
   debug() << "\t\t[AlephMatrixPETSc::AlephMatrixFill] size=" << size;
   for (int i = 0; i < size; i++) {
     //debug()<<"\t\t[AlephMatrixPETSc::AlephMatrixFill] i="<<i;
-    MatSetValue(m_petsc_matrix, rows[i], cols[i], values[i], INSERT_VALUES);
+    if (values[i] != 0.0)
+      MatSetValue(m_petsc_matrix, rows[i], cols[i], values[i], INSERT_VALUES);
   }
   debug() << "\t\t[AlephMatrixPETSc::AlephMatrixFill] done";
   // PETSc systematically requires assembly
