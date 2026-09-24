@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDispatcher.cc                                    (C) 2000-2025 */
+/* ParallelMngDispatcher.cc                                    (C) 2000-2026 */
 /*                                                                           */
 /* Redirection of message handling based on argument type.                   */
 /*---------------------------------------------------------------------------*/
@@ -51,41 +51,22 @@ using namespace Arccore::MessagePassing;
 /*---------------------------------------------------------------------------*/
 
 ParallelMngDispatcherBuildInfo::
-ParallelMngDispatcherBuildInfo(MP::Dispatchers* dispatchers,
-                               MP::MessagePassingMng* mpm)
-: m_comm_rank(mpm->commRank())
-, m_comm_size(mpm->commSize())
-, m_dispatchers(dispatchers)
-, m_message_passing_mng(mpm)
-{
-  _init();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ParallelMngDispatcherBuildInfo::
-ParallelMngDispatcherBuildInfo(Ref<MP::Dispatchers> dispatchers,
-                               Ref<MP::MessagePassingMng> mpm_ref)
-: m_comm_rank(mpm_ref->commRank())
-, m_comm_size(mpm_ref->commSize())
-, m_dispatchers(dispatchers.get())
-, m_dispatchers_ref(dispatchers)
-, m_message_passing_mng(mpm_ref.get())
-, m_message_passing_mng_ref(mpm_ref)
-{
-  _init();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ParallelMngDispatcherBuildInfo::
 ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size)
 : m_comm_rank(comm_rank)
 , m_comm_size(comm_size)
-, m_dispatchers(nullptr)
-, m_message_passing_mng(nullptr)
+{
+  _init();
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ParallelMngDispatcherBuildInfo::
+ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size, MP::Communicator communicator)
+: m_comm_rank(comm_rank)
+, m_comm_size(comm_size)
+, m_communicator(communicator)
 {
   _init();
 }
@@ -96,17 +77,7 @@ ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size)
 void ParallelMngDispatcherBuildInfo::
 _init()
 {
-  if (!m_dispatchers) {
-    m_dispatchers_ref = createRef<MP::Dispatchers>();
-    m_dispatchers = m_dispatchers_ref.get();
-  }
-  if (!m_message_passing_mng) {
-    auto* x = new MP::MessagePassingMng(m_comm_rank, m_comm_size, m_dispatchers);
-    m_message_passing_mng = x;
-    m_message_passing_mng_ref = makeRef(x);
-  }
-  if (!m_message_passing_mng_ref.get())
-    m_message_passing_mng_ref = makeRef(m_message_passing_mng);
+  m_dispatchers_ref = createRef<MP::Dispatchers>();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -221,7 +192,7 @@ class ParallelMngDispatcher::SerializeDispatcher
 
  private:
 
-  IParallelMng* m_parallel_mng;
+  IParallelMng* m_parallel_mng = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -232,7 +203,10 @@ class ParallelMngDispatcher::SerializeDispatcher
 
 ParallelMngDispatcher::
 ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
-: m_char(nullptr)
+: m_comm_rank(bi.commRank())
+, m_comm_size(bi.commSize())
+, m_communicator(bi.communicator())
+, m_char(nullptr)
 , m_unsigned_char(nullptr)
 , m_signed_char(nullptr)
 , m_short(nullptr)
@@ -254,11 +228,11 @@ ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
 , m_hpreal(nullptr)
 , m_time_stats(nullptr)
 , m_mp_dispatchers_ref(bi.dispatchersRef())
-, m_message_passing_mng_ref(bi.messagePassingMngRef())
 , m_control_dispatcher(new DefaultControlDispatcher(this))
 , m_serialize_dispatcher(new SerializeDispatcher(this))
 , m_parallel_mng_internal(new ParallelMngInternal(this))
 {
+  m_message_passing_mng = this;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -348,7 +322,16 @@ _setArccoreDispatchers()
 IMessagePassingMng* ParallelMngDispatcher::
 messagePassingMng() const
 {
-  return m_message_passing_mng_ref.get();
+  return m_message_passing_mng;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MP::IDispatchers* ParallelMngDispatcher::
+dispatchers()
+{
+  return m_mp_dispatchers_ref.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -373,7 +356,7 @@ setTimeStats(ITimeStats* ts)
   m_time_stats = ts;
   if (ts) {
     ITimeMetricCollector* c = ts->metricCollector();
-    _messagePassingMng()->setTimeMetricCollector(c);
+    m_time_metric_collector = c;
   }
 }
 
