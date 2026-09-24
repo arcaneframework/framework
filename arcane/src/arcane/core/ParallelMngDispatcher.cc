@@ -78,9 +78,6 @@ void ParallelMngDispatcherBuildInfo::
 _init()
 {
   m_dispatchers_ref = createRef<MP::Dispatchers>();
-  auto* x = new MP::MessagePassingMng(m_comm_rank, m_comm_size, m_dispatchers_ref.get());
-  m_message_passing_mng_ref = makeRef(x);
-  m_message_passing_mng_ref->setCommunicator(m_communicator);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -195,7 +192,7 @@ class ParallelMngDispatcher::SerializeDispatcher
 
  private:
 
-  IParallelMng* m_parallel_mng;
+  IParallelMng* m_parallel_mng = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -206,7 +203,10 @@ class ParallelMngDispatcher::SerializeDispatcher
 
 ParallelMngDispatcher::
 ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
-: m_char(nullptr)
+: m_comm_rank(bi.commRank())
+, m_comm_size(bi.commSize())
+, m_communicator(bi.communicator())
+, m_char(nullptr)
 , m_unsigned_char(nullptr)
 , m_signed_char(nullptr)
 , m_short(nullptr)
@@ -228,11 +228,11 @@ ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
 , m_hpreal(nullptr)
 , m_time_stats(nullptr)
 , m_mp_dispatchers_ref(bi.dispatchersRef())
-, m_message_passing_mng_ref(bi.messagePassingMngRef())
 , m_control_dispatcher(new DefaultControlDispatcher(this))
 , m_serialize_dispatcher(new SerializeDispatcher(this))
 , m_parallel_mng_internal(new ParallelMngInternal(this))
 {
+  m_message_passing_mng = this;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -322,7 +322,16 @@ _setArccoreDispatchers()
 IMessagePassingMng* ParallelMngDispatcher::
 messagePassingMng() const
 {
-  return m_message_passing_mng_ref.get();
+  return m_message_passing_mng;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MP::IDispatchers* ParallelMngDispatcher::
+dispatchers()
+{
+  return m_mp_dispatchers_ref.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -347,7 +356,7 @@ setTimeStats(ITimeStats* ts)
   m_time_stats = ts;
   if (ts) {
     ITimeMetricCollector* c = ts->metricCollector();
-    _messagePassingMng()->setTimeMetricCollector(c);
+    m_time_metric_collector = c;
   }
 }
 

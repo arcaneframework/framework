@@ -16,12 +16,16 @@
 
 #include "arcane/core/IParallelMng.h"
 #include "arccore/base/ReferenceCounterImpl.h"
-#include "arccore/message_passing/MessagePassingMng.h"
-
-#include <atomic>
+#include "arccore/message_passing/IMessagePassingMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+class ParallelMngDispatcher;
+}
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ParallelMngDispatcher);
 
 namespace Arcane
 {
@@ -48,16 +52,15 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcherBuildInfo
 
   Int32 commRank() const { return m_comm_rank; }
   Int32 commSize() const { return m_comm_size; }
+  MP::Communicator communicator() const { return m_communicator; }
   Ref<MP::Dispatchers> dispatchersRef() const { return m_dispatchers_ref; }
-  Ref<MP::MessagePassingMng> messagePassingMngRef() const { return m_message_passing_mng_ref; }
 
  private:
 
   Int32 m_comm_rank = -1;
   Int32 m_comm_size = -1;
-  Ref<MP::Dispatchers> m_dispatchers_ref;
-  Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
   MP::Communicator m_communicator;
+  Ref<MP::Dispatchers> m_dispatchers_ref;
 
  private:
 
@@ -73,8 +76,15 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcherBuildInfo
  */
 class ARCANE_CORE_EXPORT ParallelMngDispatcher
 : public ReferenceCounterImpl
+, public IMessagePassingMng
 , public IParallelMng
 {
+  using BaseClass = MP::MessagePassingMng;
+
+ public:
+
+  using ReferenceCounterTagType = ::Arcane::ReferenceCounterTag;
+
  public:
 
   //! Implementation of Arccore::MessagePassing::IControlDispatcher.
@@ -138,6 +148,14 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 
   //! Redefines allGather here to avoid hiding the symbol in derived classes.
   void allGather(ISerializer* send_serializer, ISerializer* recv_serializer) override;
+
+ private:
+
+  Int32 m_comm_rank = A_NULL_RANK;
+  Int32 m_comm_size = A_NULL_RANK;
+  MP::IDispatchers* m_dispatchers = nullptr;
+  ITimeMetricCollector* m_time_metric_collector = nullptr;
+  MP::Communicator m_communicator;
 
  public:
 
@@ -256,9 +274,15 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 
  public:
 
+  // Overrides from IMessagePassingMng
+  Int32 commSize() const override { return m_comm_size; }
+  Int32 commRank() const override { return m_comm_rank; }
+  MP::IDispatchers* dispatchers() override;
+  ITimeMetricCollector* timeMetricCollector() const override;
+  MP::Communicator communicator() const override { return m_communicator; }
+
   ITimeStats* timeStats() const override { return m_time_stats; }
   void setTimeStats(ITimeStats* ts) override;
-  ITimeMetricCollector* timeMetricCollector() const override;
 
   UniqueArray<Integer> waitSomeRequests(ArrayView<Request> requests) override;
   UniqueArray<Integer> testSomeRequests(ArrayView<Request> requests) override;
@@ -275,7 +299,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 
  protected:
 
-  MP::MessagePassingMng* _messagePassingMng() const { return m_message_passing_mng_ref.get(); }
+  MP::IMessagePassingMng* _messagePassingMng() const { return m_message_passing_mng; }
   UniqueArray<Integer> _doWaitRequests(ArrayView<Request> requests, Parallel::eWaitType wait_type);
   virtual ISerializeMessageList* _createSerializeMessageList() = 0;
   virtual IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) = 0;
@@ -287,12 +311,13 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   TimeMetricAction _communicationTimeMetricAction() const;
   void _setControlDispatcher(MP::IControlDispatcher* d);
   void _setSerializeDispatcher(MP::ISerializeDispatcher* d);
+  void _setCommunicator(MP::Communicator c) { m_communicator = c; }
 
  private:
 
   ITimeStats* m_time_stats = nullptr;
   Ref<MP::Dispatchers> m_mp_dispatchers_ref;
-  Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
+  MP::IMessagePassingMng* m_message_passing_mng = nullptr;
   MP::IControlDispatcher* m_control_dispatcher = nullptr;
   MP::ISerializeDispatcher* m_serialize_dispatcher = nullptr;
   IParallelMngInternal* m_parallel_mng_internal = nullptr;
