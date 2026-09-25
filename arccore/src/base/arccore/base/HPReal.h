@@ -166,7 +166,7 @@ class ARCCORE_BASE_EXPORT HPReal
   , m_correction(0.0)
   {}
 
-  //! Default constructor without initialization.
+  //! Constructor **WITHOUT** initialization
   constexpr HPReal(NoInitTag) {}
 
   //! Creates an HP real with the value \a value and the correction \a correction
@@ -302,6 +302,39 @@ class ARCCORE_BASE_EXPORT HPReal
     return HPReal(c, w);
   }
 
+ public:
+
+  friend constexpr bool operator<(const HPReal& a, const HPReal& b)
+  {
+    return a.toReal() < b.toReal();
+  }
+  friend constexpr bool operator>(const HPReal& a, const HPReal& b)
+  {
+    return a.toReal() > b.toReal();
+  }
+  friend constexpr bool operator==(const HPReal& a, const HPReal& b)
+  {
+    return a.value() == b.value() && a.correction() == b.correction();
+  }
+  friend constexpr bool operator!=(const HPReal& a, const HPReal& b)
+  {
+    return !operator==(a, b);
+  }
+  friend constexpr HPReal operator+(const HPReal& a, const HPReal& b)
+  {
+    return HPReal::reduce(a, b);
+  }
+
+  friend std::ostream& operator<<(std::ostream& o, HPReal t)
+  {
+    return t.printPretty(o);
+  }
+
+  friend std::istream& operator>>(std::istream& i, HPReal& t)
+  {
+    return t.assign(i);
+  }
+
  private:
 
   Real m_value;
@@ -348,54 +381,6 @@ class ARCCORE_BASE_EXPORT HPReal
     return HPReal(x, y);
   }
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline bool
-operator<(const HPReal& a, const HPReal& b)
-{
-  return a.toReal() < b.toReal();
-}
-
-inline bool
-operator>(const HPReal& a, const HPReal& b)
-{
-  return a.toReal() > b.toReal();
-}
-
-inline bool
-operator==(const HPReal& a, const HPReal& b)
-{
-  return a.value() == b.value() && a.correction() == b.correction();
-}
-
-inline bool
-operator!=(const HPReal& a, const HPReal& b)
-{
-  return !operator==(a, b);
-}
-
-inline HPReal
-operator+(const HPReal& a, const HPReal& b)
-{
-  return HPReal::reduce(a, b);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline std::ostream&
-operator<<(std::ostream& o, HPReal t)
-{
-  return t.printPretty(o);
-}
-
-inline std::istream&
-operator>>(std::istream& i, HPReal& t)
-{
-  return t.assign(i);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
