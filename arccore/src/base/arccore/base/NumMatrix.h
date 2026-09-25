@@ -53,8 +53,13 @@ class NumMatrix
 
  public:
 
-  //! Constructs the matrix with all coefficients zero.
-  NumMatrix() = default;
+  //! Constructs a matrix with each coefficient initialized with default T constructor
+  constexpr NumMatrix()
+  : m_values({})
+  {}
+
+  //! Constructs the matrix **WITHOUT** initializing its coefficients
+  constexpr NumMatrix(NoInitTag) {}
 
   //! Constructs the matrix with rows (ax, ay)
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax, const VectorType& ay)
