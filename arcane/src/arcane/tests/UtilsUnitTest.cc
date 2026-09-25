@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UtilsUnitTest.cc                                            (C) 2000-2025 */
+/* UtilsUnitTest.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Test of Arcane utility functions.                                         */
 /*---------------------------------------------------------------------------*/
@@ -646,7 +646,12 @@ void UtilsUnitTest::
 _testHPReal()
 {
   info() << "TESTING HPREAL";
-
+  {
+    HPReal x1;
+    HPReal x2(0.0);
+    if (x1 != x2)
+      ARCANE_FATAL("Bad value x1='{0} (expected {1})", x1, x2);
+  }
   {
     HPReal x1(1.0);
     HPReal x2(2.0);

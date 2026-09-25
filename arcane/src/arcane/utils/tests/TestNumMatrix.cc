@@ -23,7 +23,12 @@ TEST(TestNumMatrix, Real2x2)
 {
   auto zero = RealN2::zero();
   {
-    RealN2x2 v1{0.0};
+    RealN2x2 v0;
+    ASSERT_EQ(v0.vx(), zero);
+    ASSERT_EQ(v0.vy(), zero);
+  }
+  {
+    RealN2x2 v1{ 0.0 };
     ASSERT_EQ(v1.vx(), zero);
     ASSERT_EQ(v1.vy(), zero);
   }
@@ -38,8 +43,8 @@ TEST(TestNumMatrix, Real2x2)
     ASSERT_EQ(v2.vy(), v1.vy());
     RealN2 rx(3.5, 1.2);
     RealN2 ry(1.6, 2.1);
-    v2.setRow(0,rx);
-    v2.setRow(1,ry);
+    v2.setRow(0, rx);
+    v2.setRow(1, ry);
     v1 = v2;
     ASSERT_EQ(v2.vx(), rx);
     ASSERT_EQ(v2.vy(), ry);
@@ -462,7 +467,7 @@ TEST(TestNumMatrix, Int32x2)
 {
   using Int32x2 = NumMatrix<Int32, 2, 2>;
 
-  Int32x2 m{{}};
+  Int32x2 m{ {} };
   ASSERT_EQ(m(0, 0), 0);
   ASSERT_EQ(m(1, 1), 0);
 
@@ -485,6 +490,10 @@ TEST(TestNumMatrix, Int32x2)
 
   p *= 2;
   ASSERT_EQ(p(0, 0), 12);
+
+  Int32x2 r;
+  ASSERT_EQ(r(0, 0), 0);
+  ASSERT_EQ(r(1, 1), 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -496,7 +505,7 @@ template class NumMatrix<Real, 2, 2>;
 template class NumMatrix<Real, 3, 3>;
 template class NumMatrix<Real, 1, 1>;
 template class NumMatrix<Real, 2, 5>;
-template class NumMatrix<Real,5, 2>;
+template class NumMatrix<Real, 5, 2>;
 template class NumMatrix<float, 2, 6>;
 template class NumMatrix<Int32, 2, 2>;
 } // namespace Arcane
