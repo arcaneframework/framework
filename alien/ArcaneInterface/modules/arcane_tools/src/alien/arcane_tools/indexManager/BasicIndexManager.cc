@@ -1,17 +1,19 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2025 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicIndexManager                                           (C) 2000-2025 */
+/* BasicIndexManager                                           (C) 2000-2026 */
 /*                                                                           */
 /* Basic indexing between algebra and mesh worlds. Depends on Arcane         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "alien/arcane_tools/indexManager/BasicIndexManager.h"
+
+#include "alien/arcane_tools/IIndexManager.h"
 
 #include <list>
 #include <vector>
@@ -611,7 +613,7 @@ namespace ArcaneTools {
       entry->freeDefinedLids();
     }
 
-    std::sort(entry_index.begin(), entry_index.end(), EntryIndexComparator());
+    std::sort(entry_index.begin(), entry_index.end(), EntryIndexComparator(m_sort_mode));
 
     ALIEN_ASSERT(
         ((Integer)entry_index.size() == m_local_entry_count + m_global_entry_count),
@@ -1214,11 +1216,10 @@ namespace ArcaneTools {
     const MyEntryImpl* bEntry = b.m_entry;
     if (a.m_kind != b.m_kind)
       return a.m_kind < b.m_kind;
-    else if (a.m_uid != b.m_uid)
+    else if (m_sort == IIndexManager::EntrySortMode::KindUidsCreationIndex && a.m_uid != b.m_uid)
       return a.m_uid < b.m_uid;
     else
       return aEntry->getCreationIndex() < bEntry->getCreationIndex();
-    // return a.m_creation_index < b.m_creation_index;
   }
 
   /*---------------------------------------------------------------------------*/
@@ -1279,6 +1280,26 @@ namespace ArcaneTools {
   IIndexManager::VectorIndexSet BasicIndexManager::buildVectorIndexSet(
       const String name, const Arcane::ItemGroup& itemGroup, const Integer n)
   {
+    m_sort_mode = IIndexManager::EntrySortMode::KindUidsCreationIndex;
+    VectorIndexSet ens(n);
+    const ConstArrayView<Integer> localIds = itemGroup.view().localIds();
+    Arcane::IItemFamily* item_family = itemGroup.itemFamily();
+    Integer kind = kindFromItemFamily(item_family);
+    std::shared_ptr<IAbstractFamily>& family = m_abstract_families[kind];
+    if (!family)
+      family.reset(new ItemAbstractFamily(item_family));
+    for (Integer i = 0; i < n; ++i) {
+      ens[i] = buildEntry(
+          String::format("{0}[{1}]", name, i), family.get(), kind);
+      defineIndex(ens[i], localIds);
+    }
+    return ens;
+  }
+
+  IIndexManager::VectorIndexSet BasicIndexManager::buildVectorIndexSet(
+      const String name, const Arcane::ItemGroup& itemGroup, const Integer n, const EntrySortMode sort)
+  {
+    m_sort_mode = sort;
     VectorIndexSet ens(n);
     const ConstArrayView<Integer> localIds = itemGroup.view().localIds();
     Arcane::IItemFamily* item_family = itemGroup.itemFamily();
@@ -1300,6 +1321,21 @@ namespace ArcaneTools {
       const ConstArrayView<Integer> localIds, const IAbstractFamily& family,
       const Integer n)
   {
+    m_sort_mode = IIndexManager::EntrySortMode::KindUidsCreationIndex;
+    VectorIndexSet ens(n);
+    for (Integer i = 0; i < n; ++i) {
+      ens[i] = buildEntry(
+          String::format("{0}[{1}]", name, i), &family, addNewAbstractFamily(&family));
+      defineIndex(ens[i], localIds);
+    }
+    return ens;
+  }
+
+  IIndexManager::VectorIndexSet BasicIndexManager::buildVectorIndexSet(const String name,
+      const ConstArrayView<Integer> localIds, const IAbstractFamily& family,
+      const Integer n, const EntrySortMode sort)
+  {
+    m_sort_mode = sort;
     VectorIndexSet ens(n);
     for (Integer i = 0; i < n; ++i) {
       ens[i] = buildEntry(
@@ -1314,6 +1350,22 @@ namespace ArcaneTools {
   IIndexManager::VectorIndexSet BasicIndexManager::buildVectorIndexSet(
       const String name, const IAbstractFamily& family, const Integer n)
   {
+    m_sort_mode = IIndexManager::EntrySortMode::KindUidsCreationIndex;
+    UniqueArray<Int32> localIds = family.allLocalIds();
+
+    VectorIndexSet ens(n);
+    for (Integer i = 0; i < n; ++i) {
+      ens[i] = buildEntry(
+          String::format("{0}[{1}]", name, i), &family, addNewAbstractFamily(&family));
+      defineIndex(ens[i], localIds.view());
+    }
+    return ens;
+  }
+
+  IIndexManager::VectorIndexSet BasicIndexManager::buildVectorIndexSet(
+      const String name, const IAbstractFamily& family, const Integer n, const EntrySortMode sort)
+  {
+    m_sort_mode = sort;
     UniqueArray<Int32> localIds = family.allLocalIds();
 
     VectorIndexSet ens(n);
