@@ -160,73 +160,77 @@ class ARCCORE_BASE_EXPORT HPReal
 {
  public:
 
-  /*!
-   * \brief Default constructor without initialization.
-   */
-  HPReal() {}
+  //! Default constructor to 0.0
+  constexpr HPReal()
+  : m_value(0.0)
+  , m_correction(0.0)
+  {}
+
+  //! Default constructor without initialization.
+  constexpr HPReal(NoInitTag) {}
 
   //! Creates an HP real with the value \a value and the correction \a correction
-  explicit HPReal(double avalue)
+  explicit constexpr HPReal(double avalue)
   : m_value(avalue)
   , m_correction(0.0)
   {}
 
   //! Creates an HP real with the value \a value and the correction \a correction
-  HPReal(double avalue, double acorrection)
+  constexpr HPReal(double avalue, double acorrection)
   : m_value(avalue)
   , m_correction(acorrection)
   {}
 
   //! Internal value. Generally, you must use toReal()
-  Real value() const { return m_value; }
+  constexpr Real value() const { return m_value; }
 
   //! Internal correction.
-  Real correction() const { return m_correction; }
+  constexpr Real correction() const { return m_correction; }
 
   //! Adds a Real while preserving the error.
-  void operator+=(Real v)
+  constexpr void operator+=(Real v)
   {
     *this = accumulate(v, *this);
   }
 
   //! Adds an HPReal \a v while preserving the error (reduction)
-  inline void operator+=(HPReal v)
+  constexpr void operator+=(HPReal v)
   {
     *this = reduce(*this, v);
   }
 
   //! Converts the instance to a Real.
-  inline Real toReal() const
+  constexpr Real toReal() const
   {
     return value() + correction();
   }
 
   //! Adds an HPReal \a v while preserving the error (reduction)
-  HPReal reduce(HPReal b) const
+  constexpr HPReal reduce(HPReal b) const
   {
     return reduce(*this, b);
   }
 
   //! Multiplies a Real while preserving the error.
-  void operator*=(Real v)
+  constexpr void operator*=(Real v)
   {
     *this = product(v, *this);
   }
 
   //! Multiplies an HPReal \a v while preserving the error (reduction)
-  inline void operator*=(HPReal v)
+  constexpr void operator*=(HPReal v)
   {
     *this = product(*this, v);
   }
 
   //! Multiplies a Real while preserving the error.
-  void operator/=(Real v)
+  constexpr void operator/=(Real v)
   {
     *this = div2(v, *this);
   }
 
   //! Multiplies an HPReal \a v while preserving the error (reduction)
-  inline void operator/=(HPReal v)
+  constexpr void operator/=(HPReal v)
   {
     *this = div2(*this, v);
   }
@@ -244,11 +248,11 @@ class ARCCORE_BASE_EXPORT HPReal
  public:
 
   //! Zero value.
-  static HPReal zero() { return HPReal(0.0); }
+  static constexpr HPReal zero() { return HPReal(0.0); }
 
  public:
 
-  static HPReal accumulate(Real a, HPReal b)
+  static constexpr HPReal accumulate(Real a, HPReal b)
   {
     HPReal x(_doTwoSum(a, b.value()));
     Real c = x.correction() + b.correction();
@@ -256,7 +260,7 @@ class ARCCORE_BASE_EXPORT HPReal
   }
 
   // Mpi passes through
-  static HPReal reduce(HPReal a, HPReal b)
+  static constexpr HPReal reduce(HPReal a, HPReal b)
   {
     HPReal x(_doTwoSum(a.value(), b.value()));
     Real c = x.correction() + a.correction() + b.correction();
@@ -264,14 +268,14 @@ class ARCCORE_BASE_EXPORT HPReal
   }
 
   // algo 11 of AC_TWOPRODUCTS Ref 2
-  static HPReal product(HPReal a, HPReal b)
+  static constexpr HPReal product(HPReal a, HPReal b)
   {
     HPReal x(_doTwoProducts(a.value(), b.value()));
     Real w = x.correction() + (a.value() * b.correction() + b.value() * a.correction());
     return HPReal(x.value(), w);
   }
   // algo 11 of AC_TWOPRODUCTS Ref 2
-  static HPReal product(Real a, HPReal b)
+  static constexpr HPReal product(Real a, HPReal b)
   {
     HPReal x(_doTwoProducts(a, b.value()));
     Real w = x.correction() + (a * b.correction());
@@ -282,7 +286,7 @@ class ARCCORE_BASE_EXPORT HPReal
   // I put parentheses in the evaluation of w to force an order sometimes the compiler options
   // ATTENTION the last 2 lines of the div2 algorithm are not included (we do not renormalize)
   // The "mul2" algorithm also contains them and did not include them for "product" because algorithm 11 of Ref 2 does not have them (in my humble opinion)
-  static HPReal div2(HPReal a, HPReal b)
+  static constexpr HPReal div2(HPReal a, HPReal b)
   {
     Real c = a.value() / b.value();
     HPReal u(_doTwoProducts(c, b.value()));
@@ -290,7 +294,7 @@ class ARCCORE_BASE_EXPORT HPReal
     return HPReal(c, w);
   }
   // algo div2 Ref 6     div2 =  a/b
-  static HPReal div2(Real b, HPReal a)
+  static constexpr HPReal div2(Real b, HPReal a)
   {
     Real c = a.value() / b;
     HPReal u(_doTwoProducts(c, b));
@@ -306,7 +310,7 @@ class ARCCORE_BASE_EXPORT HPReal
  private:
 
   // Correction of ()
-  static HPReal _doTwoSum(Real a, Real b)
+  static constexpr HPReal _doTwoSum(Real a, Real b)
   {
     Real value = a + b;
     Real approx_b = value - a;
@@ -314,7 +318,7 @@ class ARCCORE_BASE_EXPORT HPReal
     return HPReal(value, sum_error);
   }
   // correction tests of the values of a and b and we put absolute values
-  static HPReal _doQuickTwoSum(Real a1, Real b1)
+  static constexpr HPReal _doQuickTwoSum(Real a1, Real b1)
   {
     Real a = a1;
     Real b = b1;
@@ -327,7 +331,7 @@ class ARCCORE_BASE_EXPORT HPReal
     return HPReal(value, error_value);
   }
   // algorithm 4 ref 2 or algorithm 2.4 ref 3 or algorithm 6 p.4
-  static HPReal _doTwoProducts(Real a, Real b)
+  static constexpr HPReal _doTwoProducts(Real a, Real b)
   {
     Real x = a * b;
     HPReal aw = SPLIT(a);
@@ -335,7 +339,7 @@ class ARCCORE_BASE_EXPORT HPReal
     Real y = aw.correction() * bw.correction() - (((x - aw.value() * bw.value()) - aw.correction() * bw.value()) - aw.value() * bw.correction());
     return HPReal(x, y);
   }
-  static HPReal SPLIT(Real a)
+  static constexpr HPReal SPLIT(Real a)
   {
     const Real f = 134217729; // 1+ 2^ceil(52/2);
     Real c = f * a;
