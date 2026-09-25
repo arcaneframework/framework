@@ -47,8 +47,15 @@ class NumVector
 
  public:
 
-  //! Constructs the zero vector.
-  NumVector() = default;
+  //! Constructs a vector with each coefficient initialized with default T constructor
+  constexpr NumVector()
+  {
+    for (int i = 0; i < Size; ++i)
+      m_values[i] = {};
+  }
+
+  //! Constructs the vector **WITHOUT** initializing its coefficients
+  constexpr NumVector(NoInitTag) {}
 
   //! Constructs with the pair (ax,ay)
   constexpr ARCCORE_HOST_DEVICE NumVector(T ax, T ay) requires(Size == 2)

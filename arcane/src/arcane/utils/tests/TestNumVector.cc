@@ -76,6 +76,12 @@ TEST(TestNumVector, RealN2)
 TEST(TestNumVector, Real3)
 {
   {
+    RealN3 v0;
+    ASSERT_EQ(v0.vx(), 0.0);
+    ASSERT_EQ(v0.vy(), 0.0);
+    ASSERT_EQ(v0.vz(), 0.0);
+  }
+  {
     RealN3 v1{0.0};
     ASSERT_EQ(v1.vx(), 0.0);
     ASSERT_EQ(v1.vy(), 0.0);
