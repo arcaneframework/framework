@@ -55,8 +55,10 @@ class NumMatrix
 
   //! Constructs a matrix with each coefficient initialized with default T constructor
   constexpr NumMatrix()
-  : m_values({})
-  {}
+  {
+    for (int i = 0; i < NbElement; ++i)
+      m_values[i] = {};
+  }
 
   //! Constructs the matrix **WITHOUT** initializing its coefficients
   constexpr NumMatrix(NoInitTag) {}

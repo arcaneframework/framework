@@ -49,8 +49,10 @@ class NumVector
 
   //! Constructs a vector with each coefficient initialized with default T constructor
   constexpr NumVector()
-  : m_values({})
-  {}
+  {
+    for (int i = 0; i < Size; ++i)
+      m_values[i] = {};
+  }
 
   //! Constructs the vector **WITHOUT** initializing its coefficients
   constexpr NumVector(NoInitTag) {}

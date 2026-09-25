@@ -16,7 +16,6 @@
 
 #include "arccore/base/ArccoreGlobal.h"
 
-#include <cstdlib>
 #include <iosfwd>
 
 /*---------------------------------------------------------------------------*/
@@ -355,7 +354,9 @@ class ARCCORE_BASE_EXPORT HPReal
   {
     Real a = a1;
     Real b = b1;
-    if (std::abs(b1) > std::abs(a1)) {
+    Real abs_b1 = (b1 > 0.0) ? b1 : -b1;
+    Real abs_a1 = (a1 > 0.0) ? a1 : -a1;
+    if (abs_b1 > abs_a1) {
       a = b1;
       b = a1;
     }
