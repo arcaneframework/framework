@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.h                                             (C) 2000-2025 */
+/* ArccoreGlobal.h                                             (C) 2000-2026 */
 /*                                                                           */
 /* General declarations for Arccore.                                         */
 /*---------------------------------------------------------------------------*/
@@ -832,6 +832,9 @@ class StringBuilder;
 // Not in this component but included here for compatibility with existing
 // code
 class ITraceMng;
+
+//! Tag to notify we do not want to initialize the type
+struct NoInitTag{};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
