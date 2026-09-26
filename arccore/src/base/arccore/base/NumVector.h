@@ -55,7 +55,7 @@ class NumVector
   }
 
   //! Constructs the vector **WITHOUT** initializing its coefficients
-  constexpr NumVector(NoInitTag) {}
+  constexpr explicit NumVector(NoInitTag) {}
 
   //! Constructs with the pair (ax,ay)
   constexpr ARCCORE_HOST_DEVICE NumVector(T ax, T ay) requires(Size == 2)
@@ -107,14 +107,14 @@ class NumVector
 
   //! Constructs the instance with the value \a v for each component
   template <bool = true>
-  explicit constexpr ARCCORE_HOST_DEVICE NumVector(const T (&v)[Size])
+  constexpr ARCCORE_HOST_DEVICE NumVector(const T (&v)[Size])
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] = v[i];
   }
 
   //! Constructs the instance with the value \a v for each component
-  explicit constexpr ARCCORE_HOST_DEVICE NumVector(std::array<T, Size> v)
+  constexpr ARCCORE_HOST_DEVICE NumVector(std::array<T, Size> v)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] = v[i];
@@ -161,6 +161,14 @@ class NumVector
   requires(Size == 3 && isRealType())
   {
     *this = NumVector(v);
+    return (*this);
+  }
+
+  //! Constructs the instance with the value \a v for each component
+  constexpr ARCCORE_HOST_DEVICE NumVector& operator=(std::array<T, Size> v) requires(Size>6)
+  {
+    for (int i = 0; i < Size; ++i)
+      m_values[i] = v[i];
     return (*this);
   }
 

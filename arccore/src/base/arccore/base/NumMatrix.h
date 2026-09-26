@@ -61,7 +61,14 @@ class NumMatrix
   }
 
   //! Constructs the matrix **WITHOUT** initializing its coefficients
-  constexpr NumMatrix(NoInitTag) {}
+  constexpr explicit NumMatrix(NoInitTag) {}
+
+  //! Constructs the matrix with row (ax)
+  constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax)
+  requires(RowSize == 1)
+  {
+    setRow(0, ax);
+  }
 
   //! Constructs the matrix with rows (ax, ay)
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax, const VectorType& ay)
