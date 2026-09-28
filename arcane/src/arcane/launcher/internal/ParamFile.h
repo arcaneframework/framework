@@ -29,7 +29,7 @@ class ARCANE_LAUNCHER_EXPORT ParamFile
 {
  private:
 
-  class Reader;
+  class ArgsFill;
 
  public:
 
