@@ -20,7 +20,7 @@
 
 namespace Arcane::Alina
 {
-Profiler global_alina_profiler;
+thread_local Profiler global_alina_profiler;
 
 Profiler& Profiler::
 globalProfiler()

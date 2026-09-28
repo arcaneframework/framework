@@ -71,7 +71,7 @@ struct ConjugateGradientSolverParams
   , ARCCORE_ALINA_PARAMS_IMPORT_VALUE(p, ns_search)
   , ARCCORE_ALINA_PARAMS_IMPORT_VALUE(p, verbose)
   {
-    p.check_params( { "maxiter", "tol", "abstol", "ns_search", "verbose" });
+    p.check_params({ "maxiter", "tol", "abstol", "ns_search", "verbose" });
   }
 
   void get(PropertyTree& p, const std::string& path) const
@@ -171,7 +171,7 @@ class ConjugateGradientSolver
       rho2 = rho1;
       rho1 = inner_product(*r, *s);
 
-      if (iter!=0)
+      if (iter != 0)
         backend::axpby(one, *s, rho1 / rho2, *p);
       else
         backend::copy(*s, *p);
@@ -184,7 +184,7 @@ class ConjugateGradientSolver
       backend::axpby(-alpha, *q, one, *r);
 
       res_norm = norm(*r);
-      if (prm.verbose && iter % 5 == 0)
+      if (prm.verbose)
         std::cout << iter << "\t" << std::scientific << res_norm / norm_rhs << std::endl;
     }
 
@@ -220,6 +220,11 @@ class ConjugateGradientSolver
     return os << "Type:             CG"
               << "\nUnknowns:         " << s.n
               << "\nMemory footprint: " << human_readable_memory(s.bytes())
+              << "\nparams: maxiter   " << s.prm.maxiter
+              << "\nparams: tol       " << s.prm.tol
+              << "\nparams: abstol    " << s.prm.abstol
+              << "\nparams: ns_search " << s.prm.ns_search
+              << "\nparams: verbose   " << s.prm.verbose
               << std::endl;
   }
 

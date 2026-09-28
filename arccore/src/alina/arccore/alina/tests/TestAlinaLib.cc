@@ -26,9 +26,11 @@
 
 #include <gtest/gtest.h>
 
-TEST(alina_test_alina_lib, basic)
+using namespace Arcane;
+
+using namespace Arcane::AlinaLib;
+void _doTest(eAlinaSolverType solver_type)
 {
-  using namespace Arcane;
   std::cout << "Testing AlinaLib\n";
 
   std::vector<int> ptr;
@@ -40,14 +42,16 @@ TEST(alina_test_alina_lib, basic)
 
   AlinaParameters prm;
 
+  prm.setSolverType(solver_type);
+
   prm.setInt32("precond.coarse_enough", 1000);
   prm.setString("precond.coarsening.type", "smoothed_aggregation");
   prm.setReal("precond.coarsening.aggr.eps_strong", 1e-3f);
   prm.setString("precond.relax.type", "spai0");
 
-  prm.setString("solver.type", "bicgstabl");
-  prm.setInt32("solver.L", 1);
-  prm.setInt32("solver.maxiter", 100);
+  //prm.setString("solver.type", "bicgstabl");
+  //prm.setInt32("solver.L", 1);
+  prm.setSolverMaxIteration(100);
 
   AlinaCSRMatrixView matrix_view(n, ptr.data(), col.data(), val.data());
   SmallSpan<const double> rhs_view(rhs.data(), rhs.size());
@@ -63,4 +67,21 @@ TEST(alina_test_alina_lib, basic)
 
   std::cout << "Iterations: " << cnv.iterations << std::endl
             << "Error:      " << cnv.residual << std::endl;
+
+  ASSERT_NEAR(cnv.residual, 0.0, 1e-7);
+}
+
+TEST(alina_test_alina_lib, basic_cg)
+{
+  _doTest(eAlinaSolverType::ConjugateGradient);
+}
+
+TEST(alina_test_alina_lib, basic_bicgstab)
+{
+  _doTest(eAlinaSolverType::BiCGStab);
+}
+
+TEST(alina_test_alina_lib, basic_gmres)
+{
+  _doTest(eAlinaSolverType::GMRES);
 }

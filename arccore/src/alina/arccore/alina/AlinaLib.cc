@@ -15,6 +15,7 @@
 #include "arccore/alina/CoarseningRuntime.h"
 #include "arccore/alina/SolverRuntime.h"
 #include "arccore/alina/PreconditionedSolver.h"
+#include "arccore/alina/PreconditionerRuntime.h"
 #include "arccore/alina/DistributedSolverRuntime.h"
 #include "arccore/alina/DistributedDirectSolverRuntime.h"
 #include "arccore/alina/DistributedSubDomainDeflation.h"
@@ -23,17 +24,22 @@
 #include "arccore/alina/AlinaLib.h"
 
 #include "arccore/concurrency/Mutex.h"
+#include "arccore/base/NotSupportedException.h"
 
 #include <iostream>
 
-using namespace Arcane;
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::AlinaLib
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //using Backend = Alina::BuiltinBackend<double>;
-using Backend = Alina::BuiltinBackend<double,Int32,Int32>;
-using PreconditionerType = Alina::AMG<Backend, Alina::CoarseningRuntime, Alina::RelaxationRuntime>;
+using Backend = Alina::BuiltinBackend<double, Int32, Int32>;
+using PreconditionerType = Alina::PreconditionerRuntime<Backend>;
 using SequentialSolverType = Alina::PreconditionedSolver<PreconditionerType, Alina::SolverRuntime<Backend>>;
 typedef Alina::PropertyTree Params;
 
@@ -43,20 +49,25 @@ using DistributedSolverType = Alina::DistributedSubDomainDeflation<Preconditione
                                                                    Alina::DistributedSolverRuntime<Backend>,
                                                                    Alina::DistributedDirectSolverRuntime<Backend>>;
 
+typedef double (*AlinaDefVecFunction)(int vec, ptrdiff_t coo, void* data);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace
 {
-AlinaConvergenceInfo
-_toConvInfo(const Alina::SolverResult& r)
-{
-  AlinaConvergenceInfo x;
-  x.iterations = r.nbIteration();
-  x.residual = r.residual();
-  return x;
-}
-}
+  AlinaConvergenceInfo
+  _toConvInfo(const Alina::SolverResult& r)
+  {
+    AlinaConvergenceInfo x;
+    x.iterations = r.nbIteration();
+    x.residual = r.residual();
+    return x;
+  }
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -113,20 +124,85 @@ readFromJSON(const char* fname)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void AlinaParameters::
+setSolverAbsoluteTolerance(Arcane::Real value)
+{
+  m_p->m_properties.put("solver.abstol", value);
+}
+void AlinaParameters::
+setSolverRelativeTolerance(Arcane::Real value)
+{
+  m_p->m_properties.put("solver.tol", value);
+}
+void AlinaParameters::
+setSolverMaxIteration(Arcane::Int32 value)
+{
+  m_p->m_properties.put("solver.maxiter", value);
+}
+void AlinaParameters::
+setSolverVerbosity(Arcane::Int32 value)
+{
+  m_p->m_properties.put("solver.verbose", value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AlinaParameters::
+setSolverPreconditioner(eAlinaPreconditionerType v)
+{
+  auto& x = m_p->m_properties;
+  switch (v) {
+  case eAlinaPreconditionerType::AMG:
+    x.put("precond.class", "amg");
+    break;
+  case eAlinaPreconditionerType::Diagonal:
+    x.put("precond.class", "relaxation");
+    x.put("precond.relax.type", "spai0");
+    break;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AlinaParameters::
+setSolverType(eAlinaSolverType v)
+{
+  const char* name = nullptr;
+  switch (v) {
+  case eAlinaSolverType::ConjugateGradient:
+    name = "cg";
+    break;
+  case eAlinaSolverType::BiCGStab:
+    name = "bicgstab";
+    break;
+  case eAlinaSolverType::GMRES:
+    name = "gmres";
+    break;
+  }
+  if (!name)
+    ARCCORE_THROW(NotSupportedException, "Invalid value '{0}' for solver type", static_cast<int>(v));
+  m_p->m_properties.put("solver.type", name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void AlinaCSRMatrixView::
 checkSizes() const
 {
   Int32 nb_row = nbRow();
   Int32 n1 = m_row_indexes.size();
   if (n1 != (nb_row + 1))
-    ARCCORE_FATAL("Bad size '{0}' for rowIndexes() (expected value = {1})",n1, nb_row+1);
+    ARCCORE_FATAL("Bad size '{0}' for rowIndexes() (expected value = {1})", n1, nb_row + 1);
   Int32 nb_value = m_row_indexes[nb_row];
   Int32 n2 = m_columns.size();
   Int32 n3 = m_values.size();
   if (n2 != nb_value)
-    ARCCORE_FATAL("Bad size '{0}' for columns() (expected value = {1})",n2, nb_value);
+    ARCCORE_FATAL("Bad size '{0}' for columns() (expected value = {1})", n2, nb_value);
   if (n3 != nb_value)
-    ARCCORE_FATAL("Bad size '{0}' for values() (expected value = {1})",n3, nb_value);
+    ARCCORE_FATAL("Bad size '{0}' for values() (expected value = {1})", n3, nb_value);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -225,13 +301,14 @@ AlinaSequentialSolver(const AlinaCSRMatrixView& matrix_view,
   auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
                            matrix_view.columns(), matrix_view.values());
 
-  auto* solver = new SequentialSolverType(A);
+  SequentialSolverType* solver = nullptr;
   if (prm)
     solver = new SequentialSolverType(A, prm->m_p->m_properties);
   else
     solver = new SequentialSolverType(A);
   std::cout << "Printing solver infos\n";
   std::cout << (*solver) << std::endl;
+  std::cout << "PARAMS: " << prm->m_p->m_properties << "\n";
   Alina::PropertyTree ptree;
   solver->prm.get(ptree);
   std::cout << "SOLVER_PARAMS: " << ptree << "\n";
@@ -309,7 +386,6 @@ struct deflation_vectors
   }
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -332,12 +408,12 @@ class AlinaDistributedSolverImpl
 
 namespace
 {
-double constant_deflation(int, ptrdiff_t, void*)
-{
-  return 1;
-}
+  double constant_deflation(int, ptrdiff_t, void*)
+  {
+    return 1;
+  }
 
-}
+} // namespace
 AlinaDistributedSolver::
 AlinaDistributedSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
                        const AlinaCSRMatrixView& matrix_view,
@@ -379,6 +455,11 @@ solve(SmallSpan<const double> rhs, SmallSpan<double> x)
 
   return _toConvInfo(r);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::AlinaLib
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
