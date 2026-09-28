@@ -24,6 +24,7 @@
 #include "arccore/alina/AlinaLib.h"
 
 #include "arccore/concurrency/Mutex.h"
+#include "arccore/base/NotSupportedException.h"
 
 #include <iostream>
 
@@ -47,6 +48,8 @@ typedef Alina::PropertyTree Params;
 using DistributedSolverType = Alina::DistributedSubDomainDeflation<PreconditionerType,
                                                                    Alina::DistributedSolverRuntime<Backend>,
                                                                    Alina::DistributedDirectSolverRuntime<Backend>>;
+
+typedef double (*AlinaDefVecFunction)(int vec, ptrdiff_t coo, void* data);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -140,6 +143,47 @@ void AlinaParameters::
 setSolverVerbosity(Arcane::Int32 value)
 {
   m_p->m_properties.put("solver.verbose", value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AlinaParameters::
+setSolverPreconditioner(eAlinaPreconditionerType v)
+{
+  auto& x = m_p->m_properties;
+  switch (v) {
+  case eAlinaPreconditionerType::AMG:
+    x.put("precond.class", "amg");
+    break;
+  case eAlinaPreconditionerType::Diagonal:
+    x.put("precond.class", "relaxation");
+    x.put("precond.relax.type", "spai0");
+    break;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AlinaParameters::
+setSolverType(eAlinaSolverType v)
+{
+  String name;
+  switch (v) {
+  case eAlinaSolverType::ConjugateGradient:
+    name = "cg";
+    break;
+  case eAlinaSolverType::BiCGStab:
+    name = "bicgstab";
+    break;
+  case eAlinaSolverType::GMRES:
+    name = "gmres";
+    break;
+  }
+  if (name.null())
+    ARCCORE_THROW(NotSupportedException, "Invalid value '{0}' for solver type", static_cast<int>(v));
+  m_p->m_properties.put("solver.type", "cg");
 }
 
 /*---------------------------------------------------------------------------*/

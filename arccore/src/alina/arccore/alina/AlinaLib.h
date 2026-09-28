@@ -46,9 +46,6 @@ struct ARCCORE_ALINA_EXPORT AlinaConvergenceInfo
   double residual = 0.0;
 };
 
-typedef double (*AlinaDefVecFunction)(int vec, ptrdiff_t coo, void* data);
-
-class AlinaLib;
 class AlinaPreconditioner;
 class AlinaParametersImpl;
 class AlinaPreconditionerImpl;
@@ -59,6 +56,24 @@ class AlinaDistributedSolverImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+//! Type of supported solver
+enum class eAlinaSolverType
+{
+  ConjugateGradient,
+  BiCGStab,
+  GMRES
+};
+
+//! Type of supported preconditioner
+enum class eAlinaPreconditionerType
+{
+  AMG,
+  Diagonal
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Handle parameters for Alina.
  *
@@ -66,7 +81,6 @@ class AlinaDistributedSolverImpl;
  */
 class ARCCORE_ALINA_EXPORT AlinaParameters
 {
-  friend AlinaLib;
   friend AlinaPreconditioner;
   friend AlinaSequentialSolver;
   friend AlinaDistributedSolver;
@@ -78,13 +92,13 @@ class ARCCORE_ALINA_EXPORT AlinaParameters
  public:
 
   //! Set Int32 parameter in the parameter list
-  void setInt32(const char* name, Arcane::Int32 value);
+  void setInt32(const char* name, Int32 value);
 
   //! Set Int64 parameter in the parameter list
-  void setInt64(const char* name, Arcane::Int64 value);
+  void setInt64(const char* name, Int64 value);
 
   //! Set floating point parameter in the parameter list
-  void setReal(const char* name, Arcane::Real value);
+  void setReal(const char* name, Real value);
 
   //! Set floating point parameter in the parameter list
   void setString(const char* name, const char* value);
@@ -95,10 +109,13 @@ class ARCCORE_ALINA_EXPORT AlinaParameters
  public:
 
   // Options specific to solvers
-  void setSolverAbsoluteTolerance(Arcane::Real value);
-  void setSolverRelativeTolerance(Arcane::Real value);
-  void setSolverMaxIteration(Arcane::Int32 value);
-  void setSolverVerbosity(Arcane::Int32 value);
+  void setSolverAbsoluteTolerance(Real value);
+  void setSolverRelativeTolerance(Real value);
+  void setSolverMaxIteration(Int32 value);
+  void setSolverVerbosity(Int32 value);
+
+  void setSolverPreconditioner(eAlinaPreconditionerType v);
+  void setSolverType(eAlinaSolverType v);
 
  private:
 
@@ -114,18 +131,14 @@ class ARCCORE_ALINA_EXPORT AlinaCSRMatrixView
 {
  public:
 
-  using Int32 = Arcane::Int32;
-
- public:
-
   AlinaCSRMatrixView(Int32 nb_row, const Int32* row_indexes, const Int32* columns, const double* values)
   : m_nb_row(nb_row)
   , m_row_indexes(row_indexes, nb_row + 1)
   , m_columns(columns, row_indexes[nb_row])
   , m_values(values, row_indexes[nb_row])
   {}
-  AlinaCSRMatrixView(Arcane::SmallSpan<const Int32> row_indexes,
-                     Arcane::SmallSpan<const Int32> columns, Arcane::SmallSpan<const double> values)
+  AlinaCSRMatrixView(SmallSpan<const Int32> row_indexes,
+                     SmallSpan<const Int32> columns, SmallSpan<const double> values)
   : m_nb_row(row_indexes.size() - 1)
   , m_row_indexes(row_indexes)
   , m_columns(columns)
@@ -135,9 +148,9 @@ class ARCCORE_ALINA_EXPORT AlinaCSRMatrixView
  public:
 
   constexpr Int32 nbRow() const { return m_nb_row; }
-  constexpr Arcane::SmallSpan<const Int32> rowIndexes() const { return m_row_indexes; }
-  constexpr Arcane::SmallSpan<const Int32> columns() const { return m_columns; }
-  constexpr Arcane::SmallSpan<const double> values() const { return m_values; }
+  constexpr SmallSpan<const Int32> rowIndexes() const { return m_row_indexes; }
+  constexpr SmallSpan<const Int32> columns() const { return m_columns; }
+  constexpr SmallSpan<const double> values() const { return m_values; }
 
  public:
 
@@ -152,9 +165,9 @@ class ARCCORE_ALINA_EXPORT AlinaCSRMatrixView
  private:
 
   Int32 m_nb_row = 0;
-  Arcane::SmallSpan<const Int32> m_row_indexes;
-  Arcane::SmallSpan<const Int32> m_columns;
-  Arcane::SmallSpan<const double> m_values;
+  SmallSpan<const Int32> m_row_indexes;
+  SmallSpan<const Int32> m_columns;
+  SmallSpan<const double> m_values;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -166,8 +179,6 @@ class ARCCORE_ALINA_EXPORT AlinaCSRMatrixView
  */
 class ARCCORE_ALINA_EXPORT AlinaPreconditioner
 {
-  friend AlinaLib;
-
  public:
 
   AlinaPreconditioner(int n,
@@ -211,13 +222,13 @@ class ARCCORE_ALINA_EXPORT AlinaSequentialSolver
  public:
 
   //! Solve the problem for the given right-hand side.
-  AlinaConvergenceInfo solve(Arcane::SmallSpan<const double> rhs,
-                             Arcane::SmallSpan<double> x);
+  AlinaConvergenceInfo solve(SmallSpan<const double> rhs,
+                             SmallSpan<double> x);
 
   //! Solve the problem for the given matrix and the right-hand side.
   AlinaConvergenceInfo solveMatrix(const AlinaCSRMatrixView& matrix_view,
-                                   Arcane::SmallSpan<const double> rhs,
-                                   Arcane::SmallSpan<double> x);
+                                   SmallSpan<const double> rhs,
+                                   SmallSpan<double> x);
 
   //! Printout solver structure
   void report();
@@ -242,13 +253,13 @@ class ARCCORE_ALINA_EXPORT AlinaDistributedSolver
    * The matrix view \a matrix_view passed as arguments must remain valid
    * for as long as this instance is alive.
    */
-  AlinaDistributedSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
+  AlinaDistributedSolver(MessagePassing::IMessagePassingMng* comm,
                          const AlinaCSRMatrixView& matrix_view,
                          const AlinaParameters& params);
 
   //! Find solution for the given RHS.
-  AlinaConvergenceInfo solve(Arcane::SmallSpan<const double> rhs,
-                             Arcane::SmallSpan<double> x);
+  AlinaConvergenceInfo solve(SmallSpan<const double> rhs,
+                             SmallSpan<double> x);
 
  public:
 
