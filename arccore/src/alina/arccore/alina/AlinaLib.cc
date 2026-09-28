@@ -15,6 +15,7 @@
 #include "arccore/alina/CoarseningRuntime.h"
 #include "arccore/alina/SolverRuntime.h"
 #include "arccore/alina/PreconditionedSolver.h"
+#include "arccore/alina/PreconditionerRuntime.h"
 #include "arccore/alina/DistributedSolverRuntime.h"
 #include "arccore/alina/DistributedDirectSolverRuntime.h"
 #include "arccore/alina/DistributedSubDomainDeflation.h"
@@ -33,7 +34,7 @@ using namespace Arcane;
 
 //using Backend = Alina::BuiltinBackend<double>;
 using Backend = Alina::BuiltinBackend<double,Int32,Int32>;
-using PreconditionerType = Alina::AMG<Backend, Alina::CoarseningRuntime, Alina::RelaxationRuntime>;
+using PreconditionerType = Alina::PreconditionerRuntime<Backend>;
 using SequentialSolverType = Alina::PreconditionedSolver<PreconditionerType, Alina::SolverRuntime<Backend>>;
 typedef Alina::PropertyTree Params;
 
@@ -232,6 +233,7 @@ AlinaSequentialSolver(const AlinaCSRMatrixView& matrix_view,
     solver = new SequentialSolverType(A);
   std::cout << "Printing solver infos\n";
   std::cout << (*solver) << std::endl;
+  std::cout << "PARAMS: " << prm->m_p->m_properties << "\n";
   Alina::PropertyTree ptree;
   solver->prm.get(ptree);
   std::cout << "SOLVER_PARAMS: " << ptree << "\n";
