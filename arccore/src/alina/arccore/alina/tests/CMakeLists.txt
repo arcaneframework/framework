@@ -58,7 +58,6 @@ if (ARCCORE_ENABLE_TBB)
   target_compile_definitions(arccore_alina.tests PRIVATE ARCCORE_HAS_ACCELERATOR_THREAD)
 endif()
 
-
 # NOTE:
 # Some tests use OpenMP
 # We hardcode the number of threads, otherwise we use all
@@ -83,6 +82,10 @@ arccore_add_component_test_executable(alina_mpi
   ${MPI_SOURCE_FILES}
   )
 target_link_libraries(arccore_alina_mpi.tests PRIVATE arccore_alina GTest::GTest)
+if (Parmetis_FOUND)
+  target_link_libraries(arccore_alina_mpi.tests PRIVATE arccon::Parmetis)
+endif()
+
 
 # Since the tests must be run with 'mpiexec', we do not use 'gtest_discover_tests'
 # but we manually add the tests via the 'alina_add_test' macro
