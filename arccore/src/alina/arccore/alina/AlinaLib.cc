@@ -169,7 +169,7 @@ setSolverPreconditioner(eAlinaPreconditionerType v)
 void AlinaParameters::
 setSolverType(eAlinaSolverType v)
 {
-  String name;
+  const char* name = nullptr;
   switch (v) {
   case eAlinaSolverType::ConjugateGradient:
     name = "cg";
@@ -181,9 +181,9 @@ setSolverType(eAlinaSolverType v)
     name = "gmres";
     break;
   }
-  if (name.null())
+  if (!name)
     ARCCORE_THROW(NotSupportedException, "Invalid value '{0}' for solver type", static_cast<int>(v));
-  m_p->m_properties.put("solver.type", "cg");
+  m_p->m_properties.put("solver.type", name);
 }
 
 /*---------------------------------------------------------------------------*/
