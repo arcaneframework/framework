@@ -418,7 +418,6 @@ void writeJsonNode(JSONWriter& w, const PropertyTreeImpl& n)
     w.beginObject();
     for (const auto& c : n.children) {
       String key(c.first);
-      std::cout << "KEY='" << key << "'\n";
       if (c.second.children.empty()) {
         writeKeyValue(w, key, c.second.has_data ? c.second.data : std::string());
       }

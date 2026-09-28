@@ -156,6 +156,9 @@ class BiCGStabSolver
     ScopedStreamModifier ss(std::cout);
 
     scalar_type norm_rhs = norm(rhs);
+    if (prm.verbose)
+      std::cout << "BiCGStab solver rhs_norm=" << std::scientific << norm_rhs << "\n";
+
     if (norm_rhs < Alina::detail::eps<scalar_type>(1)) {
       if (prm.ns_search) {
         norm_rhs = math::identity<scalar_type>();
@@ -177,6 +180,9 @@ class BiCGStabSolver
 
     scalar_type eps = std::max(norm_rhs * prm.tol, prm.abstol);
     scalar_type res = prm.check_after ? 2 * eps : norm(*r);
+
+    if (prm.verbose)
+      std::cout << "BiCGStab eps=" << std::scientific << eps << " res=" << res << "\n";
 
     coef_type rho1 = zero;
     coef_type rho2 = zero;
@@ -231,8 +237,8 @@ class BiCGStabSolver
         res = norm(*r);
       }
 
-      if (prm.verbose && iter % 5 == 0)
-        std::cout << iter << "\t" << std::scientific << res / norm_rhs << std::endl;
+      if (prm.verbose)
+        std::cout << iter << " res/norm_rhs=" << std::scientific << res / norm_rhs << " res=" << res << "\n";
     }
 
     return SolverResult(iter, res / norm_rhs);
