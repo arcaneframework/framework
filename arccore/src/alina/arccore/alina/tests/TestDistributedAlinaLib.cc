@@ -16,7 +16,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/alina/MessagePassingUtils.h"
+//#include "arccore/alina/MessagePassingUtils.h"
+
+#include "arccore/common/Array.h"
+
+#include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
+
 #include "arccore/alina/AlinaLib.h"
 
 #include "./SampleProblemCommon.h"
@@ -24,13 +29,14 @@
 #include <gtest/gtest.h>
 
 using namespace Arcane;
+using namespace Arcane::AlinaLib;
 
 TEST(alina_test_mpi, DistributedAlinaLib)
 {
-  Alina::AlinaCommunicator world(MPI_COMM_WORLD);
+  Ref<IMessagePassingMng> mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createRef(MPI_COMM_WORLD);
 
-  int comm_rank = world.rank;
-  int comm_size = world.size;
+  int comm_rank = mpm->commRank();
+  int comm_size = mpm->commSize();
 
   const Int32 n = 64;
 
@@ -58,7 +64,6 @@ TEST(alina_test_mpi, DistributedAlinaLib)
 
   // Solve
   {
-    Ref<IMessagePassingMng> mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createRef(MPI_COMM_WORLD);
     AlinaCSRMatrixView matrix_view(chunk, ptr.data(), col.data(), val.data());
     AlinaDistributedSolver solver(mpm.get(), matrix_view, prm);
     SmallSpan<const double> rhs_view(rhs.data(), rhs.size());

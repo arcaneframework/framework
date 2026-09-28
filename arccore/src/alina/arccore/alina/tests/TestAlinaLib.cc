@@ -29,6 +29,8 @@
 TEST(alina_test_alina_lib, basic)
 {
   using namespace Arcane;
+  using namespace Arcane::AlinaLib;
+
   std::cout << "Testing AlinaLib\n";
 
   std::vector<int> ptr;
@@ -47,7 +49,7 @@ TEST(alina_test_alina_lib, basic)
 
   prm.setString("solver.type", "bicgstabl");
   prm.setInt32("solver.L", 1);
-  prm.setInt32("solver.maxiter", 100);
+  prm.setSolverMaxIteration(100);
 
   AlinaCSRMatrixView matrix_view(n, ptr.data(), col.data(), val.data());
   SmallSpan<const double> rhs_view(rhs.data(), rhs.size());

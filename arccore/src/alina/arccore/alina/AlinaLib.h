@@ -33,6 +33,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::AlinaLib
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Convergence info
 struct ARCCORE_ALINA_EXPORT AlinaConvergenceInfo
 {
@@ -85,6 +91,14 @@ class ARCCORE_ALINA_EXPORT AlinaParameters
 
   //! Read parameters from a JSON file
   void readFromJSON(const char* fname);
+
+ public:
+
+  // Options specific to solvers
+  void setSolverAbsoluteTolerance(Arcane::Real value);
+  void setSolverRelativeTolerance(Arcane::Real value);
+  void setSolverMaxIteration(Arcane::Int32 value);
+  void setSolverVerbosity(Arcane::Int32 value);
 
  private:
 
@@ -240,6 +254,11 @@ class ARCCORE_ALINA_EXPORT AlinaDistributedSolver
 
   std::shared_ptr<AlinaDistributedSolverImpl> m_p;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::AlinaLib
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
