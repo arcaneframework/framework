@@ -3,8 +3,8 @@
 arccore_add_component_library(alina
   FILES ${SOURCES}
 )
-
 target_link_libraries(arccore_alina PUBLIC arccore_accelerator)
+target_sources(arccore_alina PRIVATE ${SOURCES_INTERNAL})
 
 if (ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED)
   target_compile_options(arccore_alina PUBLIC -Wno-conversion -Wno-float-conversion)

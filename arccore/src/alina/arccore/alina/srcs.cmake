@@ -2,9 +2,13 @@
   AlinaGlobal.h
   AlinaGlobal.cc
   AlinaUtils.cc
-  Adapters.h
   AlinaLib.h
   AlinaLib.cc
+)
+
+# Files not installed with this component
+set(SOURCES_INTERNAL
+  Adapters.h
   AMG.h
   BlockCSRBackend.h
   BuiltinBackend.h
