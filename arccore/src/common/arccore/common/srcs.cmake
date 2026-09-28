@@ -2,6 +2,8 @@
   AbstractArray.h
   AllocatedMemoryInfo.h
   AlignedMemoryAllocator.h
+  ArcaNetReader.h
+  ArcaNetReader.cc
   ArccoreApplicationBuildInfo.h
   ArccoreApplicationBuildInfo.cc
   ArrayDebugInfo.h
