@@ -226,7 +226,7 @@ AlinaSequentialSolver(const AlinaCSRMatrixView& matrix_view,
   auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
                            matrix_view.columns(), matrix_view.values());
 
-  auto* solver = new SequentialSolverType(A);
+  SequentialSolverType* solver = nullptr;
   if (prm)
     solver = new SequentialSolverType(A, prm->m_p->m_properties);
   else
