@@ -38,7 +38,7 @@ find_package(Parmetis)
 if(Parmetis_FOUND)
   message(STATUS "Found Parmetis for Alina")
   target_compile_definitions(arccore_alina PUBLIC ARCCORE_ALINA_HAVE_PARMETIS ARCCORE_ALINA_HAVE_PARMETIS)
-  target_link_libraries(arccore_alina PUBLIC arccon::Parmetis)
+  target_link_libraries(arccore_alina PRIVATE arccon::Parmetis)
 endif()
 
 #----------------------------------------------------------------------------

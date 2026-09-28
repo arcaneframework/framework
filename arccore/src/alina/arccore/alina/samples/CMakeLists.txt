@@ -135,6 +135,9 @@ endif()
 function(add_mpi_example_test target test_name nb_core)
   set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}")
   target_link_libraries(${target} PUBLIC arccore_alina_samples_lib arccore_alina_mpi_example)
+  if (Parmetis_FOUND)
+    target_link_libraries(${target} PUBLIC arccon::Parmetis)
+  endif()
   set(TEST_NAME "alina_sample_mpi${nb_core}_${test_name}")
   add_test(NAME ${TEST_NAME}
     WORKING_DIRECTORY "${ALINA_SAMPLE_BUILD_DIR}"
@@ -151,6 +154,9 @@ endfunction()
 function(add_mpi_example_no_test example sources)
   add_executable(${example} ${sources})
   target_link_libraries(${example} PUBLIC arccore_alina_mpi_example)
+  if (Parmetis_FOUND)
+    target_link_libraries(${example} PUBLIC arccon::Parmetis)
+  endif()
 endfunction()
 
 # We must use only 1 core for some tests
