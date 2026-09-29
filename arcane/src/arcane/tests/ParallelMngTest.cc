@@ -1744,6 +1744,38 @@ _doExecuteSub(IParallelMng* pm)
     if (total != expected_total)
       ARCANE_FATAL("Bad value total={0} expected={1}", total, expected_total);
   }
+
+  // Tests the sub-communicator using mpSplitCommunicator.
+  // Only works when number of ranks is even.
+  if ((nb_rank % 2) == 0) {
+    info() << "Test SubParallelMng with (kept) nb_rank=" << nb_rank;
+    Int32 my_rank = pm->commRank();
+    Int32 expected_total = 0;
+    Int32 nb_kept = 0;
+    // Keep only the ranks which are even
+    for (Int32 i = 0; i < nb_rank; ++i) {
+      bool keep = ((i % 2) == 0);
+      if (keep) {
+        ++nb_kept;
+        expected_total += (i + 1) * 2;
+      }
+    }
+    bool keep = ((my_rank % 2) == 0);
+    Ref<IMessagePassingMng> sub_pm = MessagePassing::mpSplitCommunicator(pm->messagePassingMng(), keep);
+    if (sub_pm.get()) {
+      if (!keep)
+        ARCANE_FATAL("IMessagePassingMng should be null");
+      if (sub_pm->commSize() != nb_kept)
+        ARCANE_FATAL("Bad communicator size");
+      Int32 total = mpAllReduce(sub_pm.get(), eReduceType::ReduceSum, (my_rank + 1) * 2);
+      if (total != expected_total)
+        ARCANE_FATAL("Bad value total={0} expected={1}", total, expected_total);
+    }
+    else {
+      if (keep)
+        ARCANE_FATAL("IMessagePassingMng should not be null");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
