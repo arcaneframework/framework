@@ -174,6 +174,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) override;
   bool _isAcceleratorAware() const override;
   Ref<IParallelMng> _createSubParallelMngRef(Int32 color, Int32 key) override;
+  Ref<IParallelMng> _createSubParallelMngRef(bool is_kept) override;
 
  public:
 

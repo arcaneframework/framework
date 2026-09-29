@@ -15,6 +15,7 @@
 #include "arcane/utils/HPReal.h"
 #include "arcane/utils/NumericTypes.h"
 #include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ValueConvert.h"
@@ -84,7 +85,7 @@ _init()
 /*---------------------------------------------------------------------------*/
 
 ParallelMngDispatcher::DefaultControlDispatcher::
-DefaultControlDispatcher(IParallelMng* pm)
+DefaultControlDispatcher(ParallelMngDispatcher* pm)
 : m_parallel_mng(pm)
 {
 }
@@ -113,14 +114,17 @@ IMessagePassingMng* ParallelMngDispatcher::DefaultControlDispatcher::
 commSplit(bool keep)
 {
   ARCANE_UNUSED(keep);
-  ARCANE_THROW(NotImplementedException, "split from MessagePassing::IControlDispatcher");
+  ARCANE_THROW(NotSupportedException, "Use mpSplitCommunicator() instead");
 }
 
 Ref<IMessagePassingMng> ParallelMngDispatcher::DefaultControlDispatcher::
 splitCommunicator(bool keep)
 {
-  ARCANE_UNUSED(keep);
-  ARCANE_THROW(NotImplementedException, "split from MessagePassing::IControlDispatcher");
+  Ref<IParallelMng> new_pm = m_parallel_mng->_createSubParallelMngRef(keep);
+  // The new IParallelMng may be null if this rank is not in the new communicator
+  if (new_pm)
+    return makeRef<IMessagePassingMng>(new_pm->messagePassingMng());
+  return {};
 }
 
 void ParallelMngDispatcher::DefaultControlDispatcher::
@@ -495,6 +499,27 @@ Ref<IParallelMng> ParallelMngDispatcher::
 _createSubParallelMngRef([[maybe_unused]] Int32 color, [[maybe_unused]] Int32 key)
 {
   ARCANE_THROW(NotImplementedException, "Create sub-parallelmng with split semantic");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IParallelMng> ParallelMngDispatcher::
+_createSubParallelMngRef(bool is_kept)
+{
+  // This method is generic but is re-implemented for MpiParallelMng
+  // to use MPI_Comm_split without the need to do an allGather.
+  Int32 nb_rank = commSize();
+  UniqueArray<Int8> all_kept(nb_rank);
+  Int8 kept = (is_kept) ? 1 : 0;
+  ArrayView<Int8> my_value(1, &kept);
+  this->allGather(my_value, all_kept);
+  UniqueArray<Int32> kept_ranks;
+  kept_ranks.reserve(nb_rank);
+  for (Int32 i = 0; i < nb_rank; ++i)
+    if (all_kept[i] != 0)
+      kept_ranks.add(i);
+  return createSubParallelMngRef(kept_ranks);
 }
 
 /*---------------------------------------------------------------------------*/
