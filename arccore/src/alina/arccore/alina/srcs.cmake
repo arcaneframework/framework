@@ -22,6 +22,7 @@ set(SOURCES_INTERNAL
   CSRMatrixView.h
   Coarsening.h
   CoarseningRuntime.h
+  CLJPCoarsening.h
   DeflatedSolver.h
   DenseMatrixInverseImpl.h
   ExecutionContext.h

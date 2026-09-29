@@ -29,6 +29,7 @@
 #include "arccore/alina/AlinaUtils.h"
 #include "arccore/alina/ValueTypeInterface.h"
 #include "arccore/alina/Coarsening.h"
+#include "arccore/alina/CLJPCoarsening.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,6 +44,8 @@ enum class eCoarserningType
 {
   ruge_stuben, ///< Ruge-Stueben coarsening
   RugeStubenCoarsening = ruge_stuben,
+  cljp, ///< CLJP coarsening (Cleary-Luby-Jones-Plassman)
+  CLJPCoarsening = cljp,
   aggregation, ///< Aggregation
   AggregationCoarsening = aggregation,
   smoothed_aggregation, ///< Smoothed aggregation
@@ -56,6 +59,8 @@ inline std::ostream& operator<<(std::ostream& os, eCoarserningType c)
   switch (c) {
   case eCoarserningType::ruge_stuben:
     return os << "ruge_stuben";
+  case eCoarserningType::cljp:
+    return os << "cljp";
   case eCoarserningType::aggregation:
     return os << "aggregation";
   case eCoarserningType::smoothed_aggregation:
@@ -77,6 +82,8 @@ inline std::istream& operator>>(std::istream& in, eCoarserningType& c)
 
   if (val == "ruge_stuben")
     c = eCoarserningType::ruge_stuben;
+  else if (val == "cljp")
+    c = eCoarserningType::cljp;
   else if (val == "aggregation")
     c = eCoarserningType::aggregation;
   else if (val == "smoothed_aggregation")
@@ -85,7 +92,7 @@ inline std::istream& operator>>(std::istream& in, eCoarserningType& c)
     c = eCoarserningType::smoothed_aggr_emin;
   else
     throw std::invalid_argument("Invalid coarsening value. Valid choices are: "
-                                "ruge_stuben, aggregation, smoothed_aggregation, smoothed_aggr_emin.");
+                                "ruge_stuben, cljp, aggregation, smoothed_aggregation, smoothed_aggr_emin.");
 
   return in;
 }
@@ -112,6 +119,7 @@ struct CoarseningRuntime
 
     as_scalar = (block_value_type &&
                  c != eCoarserningType::ruge_stuben &&
+                 c != eCoarserningType::cljp &&
                  prm.get("nullspace.cols", 0) > 0);
     std::cout << "PreconditionerCoarseningType=" << c << "\n";
     switch (c) {
@@ -127,6 +135,7 @@ struct CoarseningRuntime
     break
 
       ARCCORE_ALINA_RUNTIME_COARSENING(RugeStubenCoarsening);
+      ARCCORE_ALINA_RUNTIME_COARSENING(CLJPCoarsening);
       ARCCORE_ALINA_RUNTIME_COARSENING(AggregationCoarsening);
       ARCCORE_ALINA_RUNTIME_COARSENING(SmoothedAggregationCoarserning);
       ARCCORE_ALINA_RUNTIME_COARSENING(SmoothedAggregationEnergyMinCoarsening);
@@ -153,6 +162,7 @@ struct CoarseningRuntime
     break
 
       ARCCORE_ALINA_RUNTIME_COARSENING(RugeStubenCoarsening);
+      ARCCORE_ALINA_RUNTIME_COARSENING(CLJPCoarsening);
       ARCCORE_ALINA_RUNTIME_COARSENING(AggregationCoarsening);
       ARCCORE_ALINA_RUNTIME_COARSENING(SmoothedAggregationCoarserning);
       ARCCORE_ALINA_RUNTIME_COARSENING(SmoothedAggregationEnergyMinCoarsening);
@@ -175,6 +185,7 @@ struct CoarseningRuntime
     return make_operators<t>(A)
 
       ARCCORE_ALINA_RUNTIME_COARSENING(RugeStubenCoarsening);
+      ARCCORE_ALINA_RUNTIME_COARSENING(CLJPCoarsening);
       ARCCORE_ALINA_RUNTIME_COARSENING(AggregationCoarsening);
       ARCCORE_ALINA_RUNTIME_COARSENING(SmoothedAggregationCoarserning);
       ARCCORE_ALINA_RUNTIME_COARSENING(SmoothedAggregationEnergyMinCoarsening);
@@ -199,6 +210,7 @@ struct CoarseningRuntime
     return make_coarse<t>(A, P, R)
 
       ARCCORE_ALINA_RUNTIME_COARSENING(RugeStubenCoarsening);
+      ARCCORE_ALINA_RUNTIME_COARSENING(CLJPCoarsening);
       ARCCORE_ALINA_RUNTIME_COARSENING(AggregationCoarsening);
       ARCCORE_ALINA_RUNTIME_COARSENING(SmoothedAggregationCoarserning);
       ARCCORE_ALINA_RUNTIME_COARSENING(SmoothedAggregationEnergyMinCoarsening);

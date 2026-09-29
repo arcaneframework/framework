@@ -125,7 +125,8 @@ void test_problem(size_t n,
     Alina::eCoarserningType::aggregation,
     Alina::eCoarserningType::smoothed_aggregation,
     Alina::eCoarserningType::smoothed_aggr_emin,
-    Alina::eCoarserningType::ruge_stuben
+    Alina::eCoarserningType::ruge_stuben,
+    Alina::eCoarserningType::cljp
   };
 
   Alina::eRelaxationType relaxation[] = {

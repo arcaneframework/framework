@@ -899,6 +899,257 @@ int rigid_body_modes(int ndim, const Vector1& coo, Vector2& B, bool transpose = 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace detail
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Strength connection matrix for classical (C/F) coarsenings.
+ *
+ * On return, S holds both the strong connection matrix (in S.val, which
+ * is piggybacking A.ptr and A.col), and its transposition (in S.ptr
+ * and S.col). Variables that have no negative connections are marked
+ * as fine points.
+ *
+ * Extracted from RugeStubenCoarsening to be shared with
+ * CLJPCoarsening.
+ */
+template <typename Val, typename Col, typename Ptr>
+void strong_connections(CSRMatrix<Val, Col, Ptr> const& A, float eps_strong,
+                        CSRMatrix<char, Col, Ptr>& S,
+                        UniqueArray<char>& cf)
+{
+  typedef typename math::scalar_of<Val>::type Scalar;
+
+  const size_t n = backend::nbRow(A);
+  const size_t nnz = backend::nonzeros(A);
+  const Scalar eps = Alina::detail::eps<Scalar>(1);
+
+  S.setNbRow(n);
+  S.ncols = n;
+  S.ptr.resize(n + 1);
+  S.val.resize(nnz);
+  S.ptr[0] = 0;
+
+  arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+
+      S.ptr[i + 1] = 0;
+
+      Val a_min = math::zero<Val>();
+
+      for (auto a = backend::row_begin(A, i); a; ++a)
+        if (a.col() != i)
+          a_min = std::min(a_min, a.value());
+
+      if (math::norm(a_min) < eps) {
+        cf[i] = 'F';
+        continue;
+      }
+
+      a_min *= eps_strong;
+
+      for (Ptr j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
+        S.val[j] = (A.col[j] != i && A.val[j] < a_min);
+    }
+  });
+
+  // Transposition of S:
+  for (size_t i = 0; i < nnz; ++i)
+    if (S.val[i])
+      ++(S.ptr[A.col[i] + 1]);
+
+  S.scan_row_sizes();
+  S.col.resize(S.ptr[n]);
+
+  for (size_t i = 0; i < n; ++i)
+    for (Ptr j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
+      if (S.val[j])
+        S.col[S.ptr[A.col[j]]++] = i;
+
+  std::rotate(S.ptr.data(), S.ptr.data() + n, S.ptr.data() + n + 1);
+  S.ptr[0] = 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Direct interpolation for classical (C/F) coarsenings.
+ *
+ * Interpolates each fine point from its strong coarse neighbours; when
+ * \a do_trunc is set, interpolatory connections smaller than the largest
+ * one by a factor of \a eps_trunc are dropped and the remaining weights
+ * are rescaled.
+ *
+ * Extracted from RugeStubenCoarsening to be shared with
+ * CLJPCoarsening.
+ */
+template <class Matrix>
+std::shared_ptr<Matrix>
+direct_interpolation(const Matrix& A,
+                     const CSRMatrix<char, typename backend::col_type<Matrix>::type,
+                     typename backend::ptr_type<Matrix>::type>& S,
+                     const UniqueArray<char>& cf,
+                     bool do_trunc, float eps_trunc)
+{
+  typedef typename backend::value_type<Matrix>::type Val;
+  typedef typename math::scalar_of<Val>::type Scalar;
+
+  const size_t n = backend::nbRow(A);
+
+  static const Scalar eps = Alina::detail::eps<Scalar>(1);
+
+  static const Val zero = math::zero<Val>();
+
+  ARCCORE_ALINA_TIC("interpolation");
+
+  size_t nc = 0;
+  UniqueArray<ptrdiff_t> cidx(n);
+  for (size_t i = 0; i < n; ++i)
+    if (cf[i] == 'C')
+      cidx[i] = static_cast<ptrdiff_t>(nc++);
+
+  if (!nc)
+    throw error::empty_level();
+
+  auto P = std::make_shared<Matrix>();
+  P->set_size(n, nc, true);
+
+  UniqueArray<Val> Amin, Amax;
+
+  if (do_trunc) {
+    Amin.resize(n);
+    Amax.resize(n);
+  }
+
+  arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+      if (cf[i] == 'C') {
+        ++P->ptr[i + 1];
+        continue;
+      }
+
+      if (do_trunc) {
+        Val amin = zero, amax = zero;
+
+        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
+          if (!S.val[j] || cf[A.col[j]] != 'C')
+            continue;
+
+          amin = std::min(amin, A.val[j]);
+          amax = std::max(amax, A.val[j]);
+        }
+
+        Amin[i] = (amin *= eps_trunc);
+        Amax[i] = (amax *= eps_trunc);
+
+        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
+          if (!S.val[j] || cf[A.col[j]] != 'C')
+            continue;
+
+          if (A.val[j] < amin || amax < A.val[j])
+            ++P->ptr[i + 1];
+        }
+      }
+      else {
+        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
+          if (S.val[j] && cf[A.col[j]] == 'C')
+            ++P->ptr[i + 1];
+      }
+    }
+  });
+
+  P->set_nonzeros(P->scan_row_sizes());
+
+  arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
+    for (ptrdiff_t i = begin; i < (begin + size); ++i) {
+      ptrdiff_t row_head = P->ptr[i];
+
+      if (cf[i] == 'C') {
+        P->col[row_head] = cidx[i];
+        P->val[row_head] = math::identity<Val>();
+        continue;
+      }
+
+      Val dia = zero;
+      Val a_num = zero, a_den = zero;
+      Val b_num = zero, b_den = zero;
+      Val d_neg = zero, d_pos = zero;
+
+      for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
+        ptrdiff_t c = A.col[j];
+        Val v = A.val[j];
+
+        if (c == i) {
+          dia = v;
+          continue;
+        }
+
+        if (v < zero) {
+          a_num += v;
+          if (S.val[j] && cf[c] == 'C') {
+            a_den += v;
+            if (do_trunc && Amin[i] < v)
+              d_neg += v;
+          }
+        }
+        else {
+          b_num += v;
+          if (S.val[j] && cf[c] == 'C') {
+            b_den += v;
+            if (do_trunc && v < Amax[i])
+              d_pos += v;
+          }
+        }
+      }
+
+      Scalar cf_neg = 1;
+      Scalar cf_pos = 1;
+
+      if (do_trunc) {
+        if (math::norm(static_cast<Val>(a_den - d_neg)) > eps)
+          cf_neg = math::norm(a_den) / math::norm(static_cast<Val>(a_den - d_neg));
+
+        if (math::norm(static_cast<Val>(b_den - d_pos)) > eps)
+          cf_pos = math::norm(b_den) / math::norm(static_cast<Val>(b_den - d_pos));
+      }
+
+      if (zero < b_num && math::norm(b_den) < eps)
+        dia += b_num;
+
+      Scalar alpha = math::norm(a_den) > eps ? -cf_neg * math::norm(a_num) / (math::norm(dia) * math::norm(a_den)) : 0;
+      Scalar beta = math::norm(b_den) > eps ? -cf_pos * math::norm(b_num) / (math::norm(dia) * math::norm(b_den)) : 0;
+
+      for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
+        ptrdiff_t c = A.col[j];
+        Val v = A.val[j];
+
+        if (!S.val[j] || cf[c] != 'C')
+          continue;
+        if (do_trunc && Amin[i] <= v && v <= Amax[i])
+          continue;
+
+        P->col[row_head] = cidx[c];
+        P->val[row_head] = (v < zero ? alpha : beta) * v;
+        ++row_head;
+      }
+    }
+  });
+
+  ARCCORE_ALINA_TOC("interpolation");
+
+  return P;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace detail
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Classic Ruge-Stuben coarsening with direct interpolation.
  *
@@ -964,159 +1215,20 @@ struct RugeStubenCoarsening
   std::tuple<std::shared_ptr<Matrix>, std::shared_ptr<Matrix>>
   transfer_operators(const Matrix& A) const
   {
-    typedef typename backend::value_type<Matrix>::type Val;
     typedef typename backend::col_type<Matrix>::type Col;
     typedef typename backend::ptr_type<Matrix>::type Ptr;
-    typedef typename math::scalar_of<Val>::type Scalar;
 
     const size_t n = backend::nbRow(A);
-
-    static const Scalar eps = Alina::detail::eps<Scalar>(1);
-
-    static const Val zero = math::zero<Val>();
 
     UniqueArray<char> cf(n, 'U');
     CSRMatrix<char, Col, Ptr> S;
 
     ARCCORE_ALINA_TIC("C/F split");
-    connect(A, prm.eps_strong, S, cf);
+    detail::strong_connections(A, prm.eps_strong, S, cf);
     cfsplit(A, S, cf);
     ARCCORE_ALINA_TOC("C/F split");
 
-    ARCCORE_ALINA_TIC("interpolation");
-    size_t nc = 0;
-    UniqueArray<ptrdiff_t> cidx(n);
-    for (size_t i = 0; i < n; ++i)
-      if (cf[i] == 'C')
-        cidx[i] = static_cast<ptrdiff_t>(nc++);
-
-    if (!nc)
-      throw error::empty_level();
-
-    auto P = std::make_shared<Matrix>();
-    P->set_size(n, nc, true);
-
-    UniqueArray<Val> Amin, Amax;
-
-    if (prm.do_trunc) {
-      Amin.resize(n);
-      Amax.resize(n);
-    }
-
-    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
-        if (cf[i] == 'C') {
-          ++P->ptr[i + 1];
-          continue;
-        }
-
-        if (prm.do_trunc) {
-          Val amin = zero, amax = zero;
-
-          for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
-            if (!S.val[j] || cf[A.col[j]] != 'C')
-              continue;
-
-            amin = std::min(amin, A.val[j]);
-            amax = std::max(amax, A.val[j]);
-          }
-
-          Amin[i] = (amin *= prm.eps_trunc);
-          Amax[i] = (amax *= prm.eps_trunc);
-
-          for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
-            if (!S.val[j] || cf[A.col[j]] != 'C')
-              continue;
-
-            if (A.val[j] < amin || amax < A.val[j])
-              ++P->ptr[i + 1];
-          }
-        }
-        else {
-          for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
-            if (S.val[j] && cf[A.col[j]] == 'C')
-              ++P->ptr[i + 1];
-        }
-      }
-    });
-
-    P->set_nonzeros(P->scan_row_sizes());
-
-    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
-        ptrdiff_t row_head = P->ptr[i];
-
-        if (cf[i] == 'C') {
-          P->col[row_head] = cidx[i];
-          P->val[row_head] = math::identity<Val>();
-          continue;
-        }
-
-        Val dia = zero;
-        Val a_num = zero, a_den = zero;
-        Val b_num = zero, b_den = zero;
-        Val d_neg = zero, d_pos = zero;
-
-        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
-          ptrdiff_t c = A.col[j];
-          Val v = A.val[j];
-
-          if (c == i) {
-            dia = v;
-            continue;
-          }
-
-          if (v < zero) {
-            a_num += v;
-            if (S.val[j] && cf[c] == 'C') {
-              a_den += v;
-              if (prm.do_trunc && Amin[i] < v)
-                d_neg += v;
-            }
-          }
-          else {
-            b_num += v;
-            if (S.val[j] && cf[c] == 'C') {
-              b_den += v;
-              if (prm.do_trunc && v < Amax[i])
-                d_pos += v;
-            }
-          }
-        }
-
-        Scalar cf_neg = 1;
-        Scalar cf_pos = 1;
-
-        if (prm.do_trunc) {
-          if (math::norm(static_cast<Val>(a_den - d_neg)) > eps)
-            cf_neg = math::norm(a_den) / math::norm(static_cast<Val>(a_den - d_neg));
-
-          if (math::norm(static_cast<Val>(b_den - d_pos)) > eps)
-            cf_pos = math::norm(b_den) / math::norm(static_cast<Val>(b_den - d_pos));
-        }
-
-        if (zero < b_num && math::norm(b_den) < eps)
-          dia += b_num;
-
-        Scalar alpha = math::norm(a_den) > eps ? -cf_neg * math::norm(a_num) / (math::norm(dia) * math::norm(a_den)) : 0;
-        Scalar beta = math::norm(b_den) > eps ? -cf_pos * math::norm(b_num) / (math::norm(dia) * math::norm(b_den)) : 0;
-
-        for (ptrdiff_t j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j) {
-          ptrdiff_t c = A.col[j];
-          Val v = A.val[j];
-
-          if (!S.val[j] || cf[c] != 'C')
-            continue;
-          if (prm.do_trunc && Amin[i] <= v && v <= Amax[i])
-            continue;
-
-          P->col[row_head] = cidx[c];
-          P->val[row_head] = (v < zero ? alpha : beta) * v;
-          ++row_head;
-        }
-      }
-    });
-    ARCCORE_ALINA_TOC("interpolation");
+    auto P = detail::direct_interpolation(A, S, cf, prm.do_trunc, prm.eps_trunc);
 
     return std::make_tuple(P, transpose(*P));
   }
@@ -1129,70 +1241,6 @@ struct RugeStubenCoarsening
   }
 
  private:
-
-  //-------------------------------------------------------------------
-  // On return S will hold both strong connection matrix (in S.val, which
-  // is piggybacking A.ptr and A.col), and its transposition (in S.ptr
-  // and S.val).
-  //
-  // Variables that have no positive connections are marked as F(ine).
-  //-------------------------------------------------------------------
-  template <typename Val, typename Col, typename Ptr>
-  static void connect(CSRMatrix<Val, Col, Ptr> const& A, float eps_strong,
-                      CSRMatrix<char, Col, Ptr>& S,
-                      UniqueArray<char>& cf)
-  {
-    typedef typename math::scalar_of<Val>::type Scalar;
-
-    const size_t n = backend::nbRow(A);
-    const size_t nnz = backend::nonzeros(A);
-    const Scalar eps = Alina::detail::eps<Scalar>(1);
-
-    S.setNbRow(n);
-    S.ncols = n;
-    S.ptr.resize(n + 1);
-    S.val.resize(nnz);
-    S.ptr[0] = 0;
-
-    arccoreParallelFor(0, n, ForLoopRunInfo{}, [&](Int32 begin, Int32 size) {
-      for (ptrdiff_t i = begin; i < (begin + size); ++i) {
-
-        S.ptr[i + 1] = 0;
-
-        Val a_min = math::zero<Val>();
-
-        for (auto a = backend::row_begin(A, i); a; ++a)
-          if (a.col() != i)
-            a_min = std::min(a_min, a.value());
-
-        if (math::norm(a_min) < eps) {
-          cf[i] = 'F';
-          continue;
-        }
-
-        a_min *= eps_strong;
-
-        for (Ptr j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
-          S.val[j] = (A.col[j] != i && A.val[j] < a_min);
-      }
-    });
-
-    // Transposition of S:
-    for (size_t i = 0; i < nnz; ++i)
-      if (S.val[i])
-        ++(S.ptr[A.col[i] + 1]);
-
-    S.scan_row_sizes();
-    S.col.resize(S.ptr[n]);
-
-    for (size_t i = 0; i < n; ++i)
-      for (Ptr j = A.ptr[i], e = A.ptr[i + 1]; j < e; ++j)
-        if (S.val[j])
-          S.col[S.ptr[A.col[j]]++] = i;
-
-    std::rotate(S.ptr.data(), S.ptr.data() + n, S.ptr.data() + n + 1);
-    S.ptr[0] = 0;
-  }
 
   // Split variables into C(oarse) and F(ine) sets.
   template <typename Val, typename Col, typename Ptr>
@@ -1309,15 +1357,15 @@ struct RugeStubenCoarsening
         n2i[i2n[old_pos]] = new_pos;
         n2i[i2n[new_pos]] = old_pos;
 
-        std::swap(i2n[old_pos], i2n[new_pos]);
+         std::swap(i2n[old_pos], i2n[new_pos]);
 
-        --cnt[lam];
-        ++cnt[lam - 1];
-        ++ptr[lam];
-        lambda[c] = lam - 1;
-      }
-    }
-  }
+         --cnt[lam];
+         ++cnt[lam - 1];
+         ++ptr[lam];
+         lambda[c] = lam - 1;
+       }
+     }
+   }
 };
 
 /*---------------------------------------------------------------------------*/
