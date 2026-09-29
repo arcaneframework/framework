@@ -364,7 +364,7 @@ class PolyhedralMesh
   void _synchronizeGroups();
   void _internalEndUpdateResizeVariables();
   void _synchronizeVariables();
-  void _internalEndUpdateFinal(bool cond);
+  void _internalEndUpdateFinal(bool print_stat);
   void _removeGhostItems();
 
   const char* _className() const { return "PolyhedralMesh"; }

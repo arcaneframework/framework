@@ -42,6 +42,7 @@
 #include "arcane/core/internal/IPolyhedralMeshModifier.h"
 #include "arcane/core/internal/IMeshModifierInternal.h"
 #include "arcane/core/Connectivity.h"
+#include "arcane/core/MeshStats.h"
 
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/DynamicMeshKindInfos.h"
@@ -2361,21 +2362,67 @@ void mesh::PolyhedralMesh::_synchronizeGroups()
 
 void mesh::PolyhedralMesh::_internalEndUpdateResizeVariables()
 {
-  ;
+  // Reallocate mesh variables because their group has changed
+  for (auto& family : m_arcane_families)
+    family->_internalApi()->resizeVariables(true);
 }
 
 /*---------------------------------------------------------------------------*/
 
 void mesh::PolyhedralMesh::_synchronizeVariables()
 {
-  ;
+  typedef UniqueArray<IVariableSynchronizer*> OrderedSyncList;
+  typedef std::map<IVariableSynchronizer*, VariableCollection> SyncList;
+  OrderedSyncList ordered_sync_list;
+  SyncList sync_list;
+
+  VariableCollection used_vars(subDomain()->variableMng()->usedVariables());
+  for (VariableCollection::Enumerator i_var(used_vars); ++i_var;) {
+    IVariable* var = *i_var;
+    switch (var->itemKind()) {
+    case IK_Node:
+    case IK_Edge:
+    case IK_Face:
+    case IK_Cell:
+    case IK_DoF: {
+      IVariableSynchronizer* synchronizer = 0;
+      if (var->isPartial())
+        synchronizer = var->itemGroup().synchronizer();
+      else
+        synchronizer = var->itemFamily()->allItemsSynchronizer();
+      IMesh* sync_mesh = synchronizer->itemGroup().mesh();
+      if (sync_mesh != this)
+        continue; // we only synchronize on the current mesh
+      std::pair<SyncList::iterator, bool> inserter = sync_list.insert(std::make_pair(synchronizer, VariableCollection()));
+      if (inserter.second) { // new synchronizer
+        ordered_sync_list.add(synchronizer);
+      }
+      VariableCollection& collection = inserter.first->second;
+      collection.add(var);
+    } break;
+    case IK_Particle:
+    case IK_Unknown:
+      break;
+    }
+  }
+
+  for (Integer i_sync = 0; i_sync < ordered_sync_list.size(); ++i_sync) {
+    IVariableSynchronizer* synchronizer = ordered_sync_list[i_sync];
+    VariableCollection& collection = sync_list[synchronizer];
+    synchronizer->synchronize(collection);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 
-void mesh::PolyhedralMesh::_internalEndUpdateFinal(bool cond)
+void mesh::PolyhedralMesh::_internalEndUpdateFinal(bool print_stat)
 {
-
+  _notifyEndUpdateForFamilies();
+  // Display the statistics of the new mesh
+  if (print_stat) {
+    MeshStats ms(traceMng(), this, m_parallel_mng);
+    ms.dumpStats();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
