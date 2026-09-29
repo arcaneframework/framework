@@ -17,6 +17,7 @@
 
 #include "ItemFamilyNetwork.h"
 #include "ItemFamilyPolicyMng.h"
+#include "ItemGroupsSynchronize.h"
 #include "arcane/mesh/MeshExchangeMng.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/ItemSharedInfo.h"
@@ -41,6 +42,7 @@
 #include "arcane/core/internal/IPolyhedralMeshModifier.h"
 #include "arcane/core/internal/IMeshModifierInternal.h"
 #include "arcane/core/Connectivity.h"
+#include "arcane/core/MeshStats.h"
 
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/mesh/DynamicMeshKindInfos.h"
@@ -69,6 +71,7 @@
 #include "arcane/mesh/ItemConnectivityMng.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/mesh/FaceFamily.h"
+#include "arcane/mesh/GhostLayerBuilder.h"
 
 #endif
 
@@ -1394,6 +1397,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_item_family_network{ std::make_unique<ItemFamilyNetwork>(m_trace_mng) }
 , m_ghost_layer_mng{ std::make_unique<GhostLayerMng>(m_trace_mng) }
 , m_connectivity(VariableBuildInfo{ subdomain, mbi.name() + "MeshConnectivity" })
+, m_ghost_layer_builder(std::make_unique<GhostLayerBuilder>(this))
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -2192,6 +2196,8 @@ exchangeItems()
   m_trace_mng->info() << "PolyhedralMesh::_exchangeItems() do_compact?=" << "false"
                       << " nb_exchange=" << 0 << " version=" << 0;
   _exchangeItems();
+  if (ghostLayerMng()->nbGhostLayer() > 1)
+    updateGhostLayers(true);
   String check_exchange = platform::getEnvironmentVariable("ARCANE_CHECK_EXCHANGE");
   if (!check_exchange.null()) {
     m_mesh_checker.checkGhostCells();
@@ -2278,6 +2284,186 @@ _exchangeItems()
   //   this->endUpdate(true,false);
   // else
   this->endUpdate();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+updateGhostLayers(bool remove_old_ghost)
+{
+  Trace::Setter mci(traceMng(), _className());
+  traceMng()->info() << "PolyhedralMesh::updateGhostLayers() remove_old_ghost=" << remove_old_ghost;
+
+
+  if (!m_is_dynamic)
+    ARCANE_FATAL("property isDynamic() has to be 'true'");
+
+  _internalUpdateGhost(true, remove_old_ghost);
+  _internalEndUpdateInit(true);
+  _synchronizeGroups();
+  _computeGroupSynchronizeInfos();
+  _internalEndUpdateResizeVariables();
+  _synchronizeVariables();
+  _internalEndUpdateFinal(true);
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_internalUpdateGhost(bool update_ghost_layer, bool remove_old_ghost)
+{
+  if (update_ghost_layer) {
+    if (remove_old_ghost) {
+      _removeGhostItems();
+    }
+    // In case of refinement/coarsening, the orientation might be invalid at a point: todo see if applicable (no refinement/coarsening)
+    // m_face_family->setCheckOrientation(false);
+    m_ghost_layer_builder->addGhostLayers(true);
+    // m_face_family->setCheckOrientation(true);
+    // Todo: add ExtraGhostBuilder
+    // _computeExtraGhostCells();
+    // _computeExtraGhostParticles();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_internalEndUpdateInit(bool update_ghost_layer)
+{
+  // From here, all mesh entities are known. It
+  // is therefore possible to compact them if necessary
+  //m_mesh_builder->printStats();
+
+  //info() << "Finalize date=" << platform::getCurrentDateTime();
+  _finalizeMeshChanged();
+
+  // Recalculate the necessary information for the synchronization
+  // of
+  // entities
+  if (update_ghost_layer) {
+    m_trace_mng->info() << "ComputeSyncInfos date=" << platform::getCurrentDateTime();
+    _computeFamilySynchronizeInfos();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_synchronizeGroups()
+{
+  for (auto& family : m_arcane_families) {
+    ItemGroupsSynchronize igs(family.get());
+    igs.synchronize();
+  }
+ }
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_internalEndUpdateResizeVariables()
+{
+  // Reallocate mesh variables because their group has changed
+  for (auto& family : m_arcane_families)
+    family->_internalApi()->resizeVariables(true);
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_synchronizeVariables()
+{
+  typedef UniqueArray<IVariableSynchronizer*> OrderedSyncList;
+  typedef std::map<IVariableSynchronizer*, VariableCollection> SyncList;
+  OrderedSyncList ordered_sync_list;
+  SyncList sync_list;
+
+  VariableCollection used_vars(subDomain()->variableMng()->usedVariables());
+  for (VariableCollection::Enumerator i_var(used_vars); ++i_var;) {
+    IVariable* var = *i_var;
+    switch (var->itemKind()) {
+    case IK_Node:
+    case IK_Edge:
+    case IK_Face:
+    case IK_Cell:
+    case IK_DoF: {
+      IVariableSynchronizer* synchronizer = 0;
+      if (var->isPartial())
+        synchronizer = var->itemGroup().synchronizer();
+      else
+        synchronizer = var->itemFamily()->allItemsSynchronizer();
+      IMesh* sync_mesh = synchronizer->itemGroup().mesh();
+      if (sync_mesh != this)
+        continue; // we only synchronize on the current mesh
+      std::pair<SyncList::iterator, bool> inserter = sync_list.insert(std::make_pair(synchronizer, VariableCollection()));
+      if (inserter.second) { // new synchronizer
+        ordered_sync_list.add(synchronizer);
+      }
+      VariableCollection& collection = inserter.first->second;
+      collection.add(var);
+    } break;
+    case IK_Particle:
+    case IK_Unknown:
+      break;
+    }
+  }
+
+  for (Integer i_sync = 0; i_sync < ordered_sync_list.size(); ++i_sync) {
+    IVariableSynchronizer* synchronizer = ordered_sync_list[i_sync];
+    VariableCollection& collection = sync_list[synchronizer];
+    synchronizer->synchronize(collection);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_internalEndUpdateFinal(bool print_stat)
+{
+  _notifyEndUpdateForFamilies();
+  // Display the statistics of the new mesh
+  if (print_stat) {
+    MeshStats ms(traceMng(), this, m_parallel_mng);
+    ms.dumpStats();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::_removeGhostItems()
+{
+  // do we want to removeGhostItems ?
+  const Int32 sid = m_parallel_mng->commRank();
+
+  // rework the approach for polyhedral, not cell-driven...
+  //
+  // Removal of ghost items
+  for (auto& family : m_arcane_families)
+  {
+    UniqueArray<Int32> items_to_remove;
+    items_to_remove.reserve(1000);
+
+    ItemInternalMap& items_map = family->itemsMap();
+    items_map.eachItem([&](Item item) {
+      if (item.owner() != sid)
+        items_to_remove.add(item.localId());
+    });
+    m_trace_mng->info() << "Number of items " << family->itemKind() << "to remove: " << items_to_remove.size();
+    family->removeItems(items_to_remove);
+  }
+  // needed ?? done in removeItems. DynamicMesh is doing a light remove
+  // Readjusts the groups by removing entities that are no longer in the mesh
+  // _updateGroupsAfterRemove();
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+_finalizeMeshChanged()
+{
+  for (auto& family : m_arcane_families) {
+    m_trace_mng->debug() << "_finalizeMeshChanged on " << family->name() << " Family on Mesh " << name();
+    family->endUpdate();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

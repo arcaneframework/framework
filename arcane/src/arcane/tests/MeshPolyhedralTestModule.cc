@@ -50,6 +50,7 @@ private:
   ItemGroup m_subdomain_boundary_faces;
   void _computeSubdomainBoundaryFaces()
   {
+    if (parallelMng()->commSize() == 1) return;
     m_subdomain_boundary_faces = mesh()->faceFamily()->createGroup("SubdomainBoundaryFaces");
     Int32UniqueArray subdomain_boundary_face_lids;
     // FaceGroup all_boundary_faces = mesh()->allCells().outerFaceGroup(); // todo fix outer face group
@@ -83,25 +84,31 @@ private:
         ++nb_own_cell;
     }
     info() << "Nb own cell " << nb_own_cell << " nb ghost cell " << nb_ghost_cell;
+    if (nb_ghost_cell == 0 && mesh()->ghostLayerMng()->nbGhostLayer() > 0 && mesh()->cellFamily()->nbItem() > 0)
+      fatal() << "No ghost cell but ghost layers are present";
   }
 
   void _testGhostLayers()
   {
+    if (parallelMng()->commSize() == 1) return;
     // check one ghost layer (todo put in its own method)
     auto check_2_ghost_layers = mesh()->ghostLayerMng()->nbGhostLayer() == 2;
+    info() << "Nb ghost layers " << mesh()->ghostLayerMng()->nbGhostLayer();
     ENUMERATE_(Face,iface,m_subdomain_boundary_faces)
     {
       auto cell_face = iface->boundaryCell();
       if (cell_face.isOwn()) fatal() << "Subdomain boundary face " << iface->localId() << " has its boundary cell own";
       auto connected_faces = cell_face.faces();
-      if (check_2_ghost_layers)
-      {
-        for (auto face : connected_faces)
+      if (check_2_ghost_layers) {
+        info() << "do check two ghost layer";
         {
-          for (auto cell : face.cells())
+          for (auto face : connected_faces)
           {
-            if (cell == cell_face) continue;
-            if (cell.isOwn()) fatal() << "Cell connected through boundary cell face cannot be own with 2 ghost layers";
+            for (auto cell : face.cells())
+            {
+              if (cell == cell_face) continue;
+              if (cell.isOwn()) fatal() << "Cell connected through boundary cell face cannot be own with 2 ghost layers";
+            }
           }
         }
       }
