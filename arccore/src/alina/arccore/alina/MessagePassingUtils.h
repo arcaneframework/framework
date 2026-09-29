@@ -115,7 +115,7 @@ struct ARCCORE_ALINA_EXPORT AlinaCommunicator
     v[0] = 0;
     T v0 = n;
     ConstArrayView<T> v0_view(1, &v0);
-    ArrayView<T> out_view(static_cast<Int32>(v.size()), &v[1]);
+    ArrayView<T> out_view(static_cast<Int32>(size), &v[1]);
     mpAllGather(m_message_passing_mng.get(), v0_view, out_view);
     std::partial_sum(v.begin(), v.end(), v.begin());
     return v;
