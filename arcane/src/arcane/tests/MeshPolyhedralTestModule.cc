@@ -50,6 +50,7 @@ private:
   ItemGroup m_subdomain_boundary_faces;
   void _computeSubdomainBoundaryFaces()
   {
+    if (parallelMng()->commSize() == 1) return;
     m_subdomain_boundary_faces = mesh()->faceFamily()->createGroup("SubdomainBoundaryFaces");
     Int32UniqueArray subdomain_boundary_face_lids;
     // FaceGroup all_boundary_faces = mesh()->allCells().outerFaceGroup(); // todo fix outer face group
@@ -89,6 +90,7 @@ private:
 
   void _testGhostLayers()
   {
+    if (parallelMng()->commSize() == 1) return;
     // check one ghost layer (todo put in its own method)
     auto check_2_ghost_layers = mesh()->ghostLayerMng()->nbGhostLayer() == 2;
     info() << "Nb ghost layers " << mesh()->ghostLayerMng()->nbGhostLayer();
