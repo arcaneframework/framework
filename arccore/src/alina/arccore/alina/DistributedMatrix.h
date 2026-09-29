@@ -184,8 +184,9 @@ class CommunicationPattern
                                  recv.nbr[i], tag_exc_cols);
 
     ARCCORE_ALINA_TIC("MPI Wait");
-    comm.waitAll(recv.req);
+    // TODO: in multi-thead, order of wait is important. Use only one list.
     comm.waitAll(send.req);
+    comm.waitAll(recv.req);
     ARCCORE_ALINA_TOC("MPI Wait");
 
     // Shift columns to send to local numbering:
@@ -285,6 +286,7 @@ class CommunicationPattern
   void finish_exchange() const
   {
     ARCCORE_ALINA_TIC("MPI Wait");
+    // TODO: Use only one list to make sure it works in hybrid or shared memory
     comm.waitAll(recv.req);
     comm.waitAll(send.req);
     ARCCORE_ALINA_TOC("MPI Wait");
@@ -305,6 +307,7 @@ class CommunicationPattern
                                  send.nbr[i], tag_exc_vals);
 
     ARCCORE_ALINA_TIC("MPI Wait");
+    // TODO: Use only one list to make sure it works in hybrid or shared memory
     comm.waitAll(recv.req);
     comm.waitAll(send.req);
     ARCCORE_ALINA_TOC("MPI Wait");
