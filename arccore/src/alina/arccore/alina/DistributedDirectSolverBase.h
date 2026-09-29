@@ -79,10 +79,8 @@ class DistributedDirectSolverBase
     group_master = active[group_beg];
 
     // Communicator for masters (used to solve the coarse problem):
-    MPI_Comm_split(comm.mpiCommunicator(),
-                   comm.rank == group_master ? 0 : MPI_UNDEFINED,
-                   comm.rank, &masters_comm);
-
+    bool keep = (comm.rank == group_master);
+    m_masters_comm = mpSplitCommunicator(comm.messagePassingMng(), keep);
     if (!n)
       return; // I am not active
 
@@ -129,12 +127,10 @@ class DistributedDirectSolverBase
 
       for (int j = 0; j < group_size; ++j) {
         int i = slaves[j];
-
         cnt_req[j] = comm.doIReceive(&A.ptr[shift], counts[j], i, cnt_tag);
 
         shift += counts[j];
       }
-
       comm.waitAll(cnt_req);
 
       A.set_nonzeros(A.scan_row_sizes());
@@ -157,7 +153,7 @@ class DistributedDirectSolverBase
       comm.waitAll(col_req);
       comm.waitAll(val_req);
 
-      solver().init(AlinaCommunicator(masters_comm), A);
+      solver().init(AlinaCommunicator(m_masters_comm.get()), A);
     }
     else {
       comm.doSend(widths.data(), n, group_master, cnt_tag);
@@ -203,8 +199,6 @@ class DistributedDirectSolverBase
 
   virtual ~DistributedDirectSolverBase()
   {
-    if (masters_comm != MPI_COMM_NULL)
-      MPI_Comm_free(&masters_comm);
   }
 
   Solver& solver()
@@ -268,7 +262,7 @@ class DistributedDirectSolverBase
   AlinaCommunicator comm;
   int n;
   int group_master;
-  MPI_Comm masters_comm;
+  Ref<MessagePassing::IMessagePassingMng> m_masters_comm;
   std::vector<int> slaves;
   std::vector<int> counts;
   mutable std::vector<rhs_type> cons_f, cons_x, host_v;
