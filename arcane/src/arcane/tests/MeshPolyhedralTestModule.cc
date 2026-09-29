@@ -84,7 +84,7 @@ private:
         ++nb_own_cell;
     }
     info() << "Nb own cell " << nb_own_cell << " nb ghost cell " << nb_ghost_cell;
-    if (nb_ghost_cell == 0 && mesh()->ghostLayerMng()->nbGhostLayer() > 0)
+    if (nb_ghost_cell == 0 && mesh()->ghostLayerMng()->nbGhostLayer() > 0 && mesh()->cellFamily()->nbItem() > 0)
       fatal() << "No ghost cell but ghost layers are present";
   }
 
@@ -99,15 +99,16 @@ private:
       auto cell_face = iface->boundaryCell();
       if (cell_face.isOwn()) fatal() << "Subdomain boundary face " << iface->localId() << " has its boundary cell own";
       auto connected_faces = cell_face.faces();
-      if (check_2_ghost_layers)
-      info() << "do check two ghost layer";
-      {
-        for (auto face : connected_faces)
+      if (check_2_ghost_layers) {
+        info() << "do check two ghost layer";
         {
-          for (auto cell : face.cells())
+          for (auto face : connected_faces)
           {
-            if (cell == cell_face) continue;
-            if (cell.isOwn()) fatal() << "Cell connected through boundary cell face cannot be own with 2 ghost layers";
+            for (auto cell : face.cells())
+            {
+              if (cell == cell_face) continue;
+              if (cell.isOwn()) fatal() << "Cell connected through boundary cell face cannot be own with 2 ghost layers";
+            }
           }
         }
       }
