@@ -537,7 +537,7 @@ namespace
   {
    public:
 
-    ControlDispatcherDecorator(IParallelMng* pm, MpiAdapter* adapter)
+    ControlDispatcherDecorator(ParallelMngDispatcher* pm, MpiAdapter* adapter)
     : ParallelMngDispatcher::DefaultControlDispatcher(pm)
     , m_adapter(adapter)
     {}
@@ -958,6 +958,15 @@ _createSubParallelMngRef(Int32 color, Int32 key)
   MPI_Comm_split(m_communicator, color, key, &sub_communicator);
   IParallelMng* sub_pm = _createSubParallelMng(sub_communicator);
   return makeRef(sub_pm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IParallelMng> MpiParallelMng::
+_createSubParallelMngRef(bool is_kept)
+{
+  return _createSubParallelMngRef((is_kept) ? 1 : -1, commRank());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -93,7 +93,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   {
    public:
 
-    explicit DefaultControlDispatcher(IParallelMng* pm);
+    explicit DefaultControlDispatcher(ParallelMngDispatcher* pm);
 
    public:
 
@@ -112,7 +112,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 
    private:
 
-    IParallelMng* m_parallel_mng = nullptr;
+    ParallelMngDispatcher* m_parallel_mng = nullptr;
   };
 
   //! Implementation of Arccore::MessagePassing::ISerializeDispatcher.
@@ -305,6 +305,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   virtual IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) = 0;
   virtual bool _isAcceleratorAware() const { return false; }
   virtual Ref<IParallelMng> _createSubParallelMngRef(Int32 color, Int32 key);
+  virtual Ref<IParallelMng> _createSubParallelMngRef(bool is_kept);
 
  protected:
 
