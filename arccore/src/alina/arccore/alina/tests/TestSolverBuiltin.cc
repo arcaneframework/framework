@@ -23,28 +23,29 @@
 
 #include "TestSolverCommon.h"
 
+const Arcane::Int32 global_problem_size = 24;
 void _doTestSolverBuiltinDefault(bool use_accelerator, Int32 max_allowed_thread)
 {
   Accelerator::Initializer x(use_accelerator, max_allowed_thread);
-  test_backend< Alina::BuiltinBackend<double> >();
+  test_backend< Alina::BuiltinBackend<double> >(global_problem_size);
 }
 
 void _doTestSolverBuiltinInt32Int64(bool use_accelerator, Int32 max_allowed_thread)
 {
   Accelerator::Initializer x(use_accelerator, max_allowed_thread);
-  test_backend< Alina::BuiltinBackend<double, Int32, Int64> >();
+  test_backend< Alina::BuiltinBackend<double, Int32, Int64> >(global_problem_size);
 }
 
 void _doTestSolverBuiltinInt32Int32(bool use_accelerator, Int32 max_allowed_thread)
 {
   Accelerator::Initializer x(use_accelerator, max_allowed_thread);
-  test_backend< Alina::BuiltinBackend<double, Int32, Int32> >();
+  test_backend< Alina::BuiltinBackend<double, Int32, Int32> >(global_problem_size);
 }
 
 void _doTestSolverBuiltinUInt32SizeT(bool use_accelerator, Int32 max_allowed_thread)
 {
   Accelerator::Initializer x(use_accelerator, max_allowed_thread);
-  test_backend< Alina::BuiltinBackend<double, uint32_t, size_t> >();
+  test_backend< Alina::BuiltinBackend<double, uint32_t, size_t> >(global_problem_size);
 }
 
 ARCCORE_ALINA_TEST_DO_TEST_ACCELERATOR(alina_test_solvers, test_builtin_backend_default, _doTestSolverBuiltinDefault);
