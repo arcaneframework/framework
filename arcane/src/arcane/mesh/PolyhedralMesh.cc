@@ -17,6 +17,7 @@
 
 #include "ItemFamilyNetwork.h"
 #include "ItemFamilyPolicyMng.h"
+#include "ItemGroupsSynchronize.h"
 #include "arcane/mesh/MeshExchangeMng.h"
 #include "arcane/core/ISubDomain.h"
 #include "arcane/core/ItemSharedInfo.h"
@@ -2350,8 +2351,11 @@ void mesh::PolyhedralMesh::_internalEndUpdateInit(bool update_ghost_layer)
 
 void mesh::PolyhedralMesh::_synchronizeGroups()
 {
-  ;
-}
+  for (auto& family : m_arcane_families) {
+    ItemGroupsSynchronize igs(family.get());
+    igs.synchronize();
+  }
+ }
 
 /*---------------------------------------------------------------------------*/
 
