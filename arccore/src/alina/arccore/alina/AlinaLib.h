@@ -53,6 +53,8 @@ class AlinaSequentialSolver;
 class AlinaSequentialSolverImpl;
 class AlinaDistributedSolver;
 class AlinaDistributedSolverImpl;
+class AlinaSequentialSolverImpl;
+class AlinaDistributedSolverImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,6 +86,8 @@ class ARCCORE_ALINA_EXPORT AlinaParameters
   friend AlinaPreconditioner;
   friend AlinaSequentialSolver;
   friend AlinaDistributedSolver;
+  friend AlinaSequentialSolverImpl;
+  friend AlinaDistributedSolverImpl;
 
  public:
 

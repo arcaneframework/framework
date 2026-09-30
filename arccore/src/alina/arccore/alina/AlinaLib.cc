@@ -25,6 +25,7 @@
 
 #include "arccore/concurrency/Mutex.h"
 #include "arccore/base/NotSupportedException.h"
+#include "arccore/base/NotImplementedException.h"
 
 #include <iostream>
 
@@ -208,6 +209,9 @@ checkSizes() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class AlinaPreconditionerImpl
 {
  public:
@@ -275,18 +279,89 @@ report()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-struct AlinaSequentialSolverImpl
+class IAlinaSolverImpl
 {
-  explicit AlinaSequentialSolverImpl(SequentialSolverType* solver)
-  : m_solver(solver)
-  {}
-  ~AlinaSequentialSolverImpl()
+ public:
+
+  virtual ~IAlinaSolverImpl() = default;
+
+ public:
+
+  virtual AlinaConvergenceInfo
+  solve(SmallSpan<const double> rhs, SmallSpan<double> x) = 0;
+
+  virtual AlinaConvergenceInfo
+  solveMatrix(const AlinaCSRMatrixView& matrix_view,
+              SmallSpan<const double> rhs,
+              SmallSpan<double> x) = 0;
+
+  virtual void report(std::ostream& o) =0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implementation for a sequential solver.
+ */
+class AlinaSequentialSolverImpl
+: public IAlinaSolverImpl
+{
+ public:
+
+  explicit AlinaSequentialSolverImpl(const AlinaCSRMatrixView& matrix_view,
+                                     const AlinaParameters* prm)
+  {
+    matrix_view.checkSizes();
+    auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
+                             matrix_view.columns(), matrix_view.values());
+
+    if (prm)
+      m_solver = new SequentialSolverType(A, prm->m_p->m_properties);
+    else
+      m_solver = new SequentialSolverType(A);
+    std::cout << "Printing solver infos\n";
+    std::cout << (*m_solver) << std::endl;
+    std::cout << "PARAMS: " << prm->m_p->m_properties << "\n";
+    Alina::PropertyTree ptree;
+    m_solver->prm.get(ptree);
+    std::cout << "SOLVER_PARAMS: " << ptree << "\n";
+  }
+  ~AlinaSequentialSolverImpl() override
   {
     delete m_solver;
   }
+
+  AlinaConvergenceInfo solve(SmallSpan<const double> rhs, SmallSpan<double> x) override
+  {
+    Alina::SolverResult r = (*m_solver)(rhs, x);
+    return _toConvInfo(r);
+  }
+  AlinaConvergenceInfo solveMatrix(const AlinaCSRMatrixView& matrix_view,
+                                   SmallSpan<const double> rhs,
+                                   SmallSpan<double> x) override
+  {
+    SequentialSolverType* slv = m_solver;
+
+    Int32 n = slv->size();
+    matrix_view.checkSizes();
+
+    if (n != matrix_view.nbRow())
+      ARCCORE_FATAL("Bad number of rows v={0} expected={1}", matrix_view.nbRow(), n);
+
+    auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
+                             matrix_view.columns(), matrix_view.values());
+
+    Alina::SolverResult r = (*slv)(A, rhs, x);
+
+    return _toConvInfo(r);
+  }
+  void report(std::ostream& o) override
+  {
+    o << m_solver->precond() << "\n";
+  }
+
+ public:
+
   SequentialSolverType* m_solver = nullptr;
 };
 
@@ -297,22 +372,7 @@ AlinaSequentialSolver::
 AlinaSequentialSolver(const AlinaCSRMatrixView& matrix_view,
                       const AlinaParameters* prm)
 {
-  matrix_view.checkSizes();
-  auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
-                           matrix_view.columns(), matrix_view.values());
-
-  SequentialSolverType* solver = nullptr;
-  if (prm)
-    solver = new SequentialSolverType(A, prm->m_p->m_properties);
-  else
-    solver = new SequentialSolverType(A);
-  std::cout << "Printing solver infos\n";
-  std::cout << (*solver) << std::endl;
-  std::cout << "PARAMS: " << prm->m_p->m_properties << "\n";
-  Alina::PropertyTree ptree;
-  solver->prm.get(ptree);
-  std::cout << "SOLVER_PARAMS: " << ptree << "\n";
-  m_p = std::make_shared<AlinaSequentialSolverImpl>(solver);
+  m_p = std::make_shared<AlinaSequentialSolverImpl>(matrix_view, prm);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -321,9 +381,7 @@ AlinaSequentialSolver(const AlinaCSRMatrixView& matrix_view,
 void AlinaSequentialSolver::
 report()
 {
-  SequentialSolverType* slv = m_p->m_solver;
-
-  std::cout << slv->precond() << std::endl;
+  m_p->report(std::cout);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -332,11 +390,7 @@ report()
 AlinaConvergenceInfo AlinaSequentialSolver::
 solve(SmallSpan<const double> rhs, SmallSpan<double> x)
 {
-  SequentialSolverType* slv = m_p->m_solver;
-
-  Alina::SolverResult r = (*slv)(rhs, x);
-
-  return _toConvInfo(r);
+  return m_p->solve(rhs, x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -347,20 +401,7 @@ solveMatrix(const AlinaCSRMatrixView& matrix_view,
             SmallSpan<const double> rhs,
             SmallSpan<double> x)
 {
-  SequentialSolverType* slv = m_p->m_solver;
-
-  Int32 n = slv->size();
-  matrix_view.checkSizes();
-
-  if (n != matrix_view.nbRow())
-    ARCCORE_FATAL("Bad number of rows v={0} expected={1}", matrix_view.nbRow(), n);
-
-  auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
-                           matrix_view.columns(), matrix_view.values());
-
-  Alina::SolverResult r = (*slv)(A, rhs, x);
-
-  return _toConvInfo(r);
+  return m_p->solveMatrix(matrix_view, rhs, x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -389,23 +430,6 @@ struct deflation_vectors
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class AlinaDistributedSolverImpl
-{
- public:
-
-  explicit AlinaDistributedSolverImpl(DistributedSolverType* solver)
-  : m_solver(solver)
-  {}
-  ~AlinaDistributedSolverImpl()
-  {
-    delete m_solver;
-  }
-  DistributedSolverType* m_solver = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 namespace
 {
   double constant_deflation(int, ptrdiff_t, void*)
@@ -414,29 +438,80 @@ namespace
   }
 
 } // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implementation for a distributed solver.
+ */
+class AlinaDistributedSolverImpl
+: public IAlinaSolverImpl
+{
+ public:
+
+  explicit AlinaDistributedSolverImpl(Arcane::MessagePassing::IMessagePassingMng* comm,
+                                      const AlinaCSRMatrixView& matrix_view,
+                                      const AlinaParameters& params)
+  {
+    int n_def_vec = 1;
+    AlinaDefVecFunction def_vec_func = constant_deflation;
+    void* def_vec_data = nullptr;
+
+    std::function<double(ptrdiff_t, unsigned)> dv = deflation_vectors(n_def_vec, def_vec_func, def_vec_data);
+
+    Alina::PropertyTree prm = params.m_p->m_properties;
+    prm.put("num_def_vec", n_def_vec);
+    prm.put("def_vec", &dv);
+    matrix_view.checkSizes();
+
+    auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
+                             matrix_view.columns(), matrix_view.values());
+
+    Alina::AlinaCommunicator mpi_comm(comm);
+    m_solver = new DistributedSolverType(mpi_comm, A, prm);
+  }
+  ~AlinaDistributedSolverImpl()
+  {
+    delete m_solver;
+  }
+
+ public:
+
+  AlinaConvergenceInfo solve(SmallSpan<const double> rhs, SmallSpan<double> x) override
+  {
+    size_t n = m_solver->size();
+
+    AlinaConvergenceInfo cnv;
+
+    Alina::SolverResult r = (*m_solver)(rhs, x);
+
+    return _toConvInfo(r);
+  }
+
+  AlinaConvergenceInfo solveMatrix(const AlinaCSRMatrixView& matrix_view,
+                                   SmallSpan<const double> rhs,
+                                   SmallSpan<double> x) override
+  {
+    ARCCORE_THROW(NotImplementedException, "Solve with different matrix");
+  }
+  void report([[maybe_unused]] std::ostream& o) override
+  {
+  }
+
+ public:
+
+  DistributedSolverType* m_solver = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 AlinaDistributedSolver::
 AlinaDistributedSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
                        const AlinaCSRMatrixView& matrix_view,
                        const AlinaParameters& params)
 {
-  int n_def_vec = 1;
-  AlinaDefVecFunction def_vec_func = constant_deflation;
-  void* def_vec_data = nullptr;
-
-  std::function<double(ptrdiff_t, unsigned)> dv = deflation_vectors(n_def_vec, def_vec_func, def_vec_data);
-
-  Alina::PropertyTree prm = params.m_p->m_properties;
-  prm.put("num_def_vec", n_def_vec);
-  prm.put("def_vec", &dv);
-  matrix_view.checkSizes();
-
-  auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
-                           matrix_view.columns(), matrix_view.values());
-
-  Alina::AlinaCommunicator mpi_comm(comm);
-  auto* p = new DistributedSolverType(mpi_comm, A, prm);
-
-  m_p = std::make_shared<AlinaDistributedSolverImpl>(p);
+  m_p = std::make_shared<AlinaDistributedSolverImpl>(comm, matrix_view, params);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -445,15 +520,7 @@ AlinaDistributedSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
 AlinaConvergenceInfo AlinaDistributedSolver::
 solve(SmallSpan<const double> rhs, SmallSpan<double> x)
 {
-  DistributedSolverType* solver = m_p->m_solver;
-
-  size_t n = solver->size();
-
-  AlinaConvergenceInfo cnv;
-
-  Alina::SolverResult r = (*solver)(rhs, x);
-
-  return _toConvInfo(r);
+  return m_p->solve(rhs, x);
 }
 
 /*---------------------------------------------------------------------------*/
