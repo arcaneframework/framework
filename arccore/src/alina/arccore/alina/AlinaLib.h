@@ -46,13 +46,18 @@ struct ARCCORE_ALINA_EXPORT AlinaConvergenceInfo
   double residual = 0.0;
 };
 
+class IAlinaSolverImpl;
 class AlinaPreconditioner;
 class AlinaParametersImpl;
 class AlinaPreconditionerImpl;
-class AlinaSequentialSolver;
 class AlinaSequentialSolverImpl;
-class AlinaDistributedSolver;
 class AlinaDistributedSolverImpl;
+class AlinaSequentialSolverImpl;
+class AlinaDistributedSolverImpl;
+class AlinaSolver;
+// For compatibility
+using AlinaDistributedSolver = AlinaSolver;
+using AlinaSequentialSolver = AlinaSolver;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,6 +89,8 @@ class ARCCORE_ALINA_EXPORT AlinaParameters
   friend AlinaPreconditioner;
   friend AlinaSequentialSolver;
   friend AlinaDistributedSolver;
+  friend AlinaSequentialSolverImpl;
+  friend AlinaDistributedSolverImpl;
 
  public:
 
@@ -203,25 +210,34 @@ class ARCCORE_ALINA_EXPORT AlinaPreconditioner
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Sequential solver.
+ * \brief Linear system solver.
  */
-class ARCCORE_ALINA_EXPORT AlinaSequentialSolver
+class ARCCORE_ALINA_EXPORT AlinaSolver
 {
  public:
 
   /*!
-   * \brief Build a solver for matrix \a matrix.
+   * \brief Build a sequential solver for matrix \a matrix.
    *
    * The matrix view \a matrix_view passed as arguments must remain valid
    * for as long as this instance is alive.
    * \a parameters may be null. In this case we use the default parameters.
    */
-  AlinaSequentialSolver(const AlinaCSRMatrixView& matrix_view,
-                        const AlinaParameters* parameters);
+  AlinaSolver(const AlinaCSRMatrixView& matrix_view,
+              const AlinaParameters* parameters);
+  /*!
+   * \brief Create a distributed solver.
+   *
+   * The matrix view \a matrix_view passed as arguments must remain valid
+   * for as long as this instance is alive.
+   */
+  AlinaSolver(MessagePassing::IMessagePassingMng* comm,
+              const AlinaCSRMatrixView& matrix_view,
+              const AlinaParameters& params);
 
  public:
 
-  //! Solve the problem for the given right-hand side.
+  //! Find solution for the given RHS.
   AlinaConvergenceInfo solve(SmallSpan<const double> rhs,
                              SmallSpan<double> x);
 
@@ -233,37 +249,9 @@ class ARCCORE_ALINA_EXPORT AlinaSequentialSolver
   //! Printout solver structure
   void report();
 
- private:
-
-  std::shared_ptr<AlinaSequentialSolverImpl> m_p;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Distributed solver.
- */
-class ARCCORE_ALINA_EXPORT AlinaDistributedSolver
-{
  public:
 
-  /*!
-   * \brief Create distributed solver.
-   *
-   * The matrix view \a matrix_view passed as arguments must remain valid
-   * for as long as this instance is alive.
-   */
-  AlinaDistributedSolver(MessagePassing::IMessagePassingMng* comm,
-                         const AlinaCSRMatrixView& matrix_view,
-                         const AlinaParameters& params);
-
-  //! Find solution for the given RHS.
-  AlinaConvergenceInfo solve(SmallSpan<const double> rhs,
-                             SmallSpan<double> x);
-
- public:
-
-  std::shared_ptr<AlinaDistributedSolverImpl> m_p;
+  std::shared_ptr<IAlinaSolverImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/
