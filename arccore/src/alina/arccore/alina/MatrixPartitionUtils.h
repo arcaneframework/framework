@@ -250,33 +250,30 @@ mpi_graph_perm_index(AlinaCommunicator comm, int npart, const std::vector<Idx>& 
   ptrdiff_t n = part.size();
   perm.resize(n);
 
-  std::vector<ptrdiff_t> loc_part_cnt(npart, 0);
-  std::vector<ptrdiff_t> loc_part_beg(npart, 0);
-  std::vector<ptrdiff_t> glo_part_cnt(npart);
-  std::vector<ptrdiff_t> glo_part_beg(npart + 1);
+  UniqueArray<ptrdiff_t> loc_part_cnt(npart, 0);
+  UniqueArray<ptrdiff_t> loc_part_beg(npart, 0);
+  UniqueArray<ptrdiff_t> glo_part_cnt(npart);
+  UniqueArray<ptrdiff_t> glo_part_beg(npart + 1);
 
   for (Idx p : part)
     ++loc_part_cnt[p];
-  MPI_Datatype ptr_datatype = MPI_LONG_LONG;
-  MPI_Exscan(loc_part_cnt.data(), loc_part_beg.data(), npart, ptr_datatype, MPI_SUM, comm.mpiCommunicator());
-
-  Span<const ptrdiff_t> loc_part_cnt_view(loc_part_cnt.data(), npart);
-  Span<ptrdiff_t> glo_part_cnt_view(glo_part_cnt.data(), npart);
-  glo_part_cnt_view.copy(loc_part_cnt_view);
-  mpAllReduce(comm.messagePassingMng(), Arcane::MessagePassing::eReduceType::ReduceSum, glo_part_cnt_view);
+  auto reduce_operation = Arcane::MessagePassing::eReduceType::ReduceSum;
+  mpScanExclusive(comm.messagePassingMng(), reduce_operation, loc_part_cnt, loc_part_beg);
+  Span<const ptrdiff_t> loc_part_cnt_view(loc_part_cnt);
+  Span<ptrdiff_t> glo_part_cnt_view(glo_part_cnt);
+  mpAllReduce(comm.messagePassingMng(), reduce_operation, loc_part_cnt_view, glo_part_cnt_view);
   glo_part_beg[0] = 0;
   std::partial_sum(glo_part_cnt.begin(), glo_part_cnt.end(), glo_part_beg.begin() + 1);
 
-  std::vector<ptrdiff_t> cnt(npart, 0);
+  UniqueArray<ptrdiff_t> cnt(npart, 0);
   for (ptrdiff_t i = 0; i < n; ++i) {
     Idx p = part[i];
     perm[i] = glo_part_beg[p] + loc_part_beg[p] + cnt[p]++;
   }
 
   ARCCORE_ALINA_TOC("perm index");
-  return std::make_tuple(
-  glo_part_beg[std::min(npart, comm.rank)],
-  glo_part_beg[std::min(npart, comm.rank + 1)]);
+  return std::make_tuple(glo_part_beg[std::min(npart, comm.rank)],
+                         glo_part_beg[std::min(npart, comm.rank + 1)]);
 }
 
 /*---------------------------------------------------------------------------*/
