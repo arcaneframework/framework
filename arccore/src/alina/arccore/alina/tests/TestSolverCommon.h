@@ -28,6 +28,8 @@
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/Profiler.h"
 
+#include "arccore/base/PlatformUtils.h"
+
 #include "SampleProblemCommon.h"
 
 using namespace Arcane;
@@ -49,7 +51,9 @@ void test_solver(const Matrix& A,
                  typename Backend::params const& bprm,
                  bool test_null_space = false)
 {
-  Alina::PropertyTree prm;
+  using namespace Arcane::Alina;
+
+  PropertyTree prm;
   prm.put("precond.coarse_enough", 500);
   prm.put("precond.coarsening.type", coarsening);
   prm.put("precond.relax.type", relaxation);
@@ -67,18 +71,28 @@ void test_solver(const Matrix& A,
     prm.put("precond.coarsening.nullspace.B", &null[0]);
   }
 
-  Alina::PreconditionedSolver<Alina::AMG<Backend, Alina::CoarseningRuntime, Alina::RelaxationRuntime>,
-                              Alina::SolverRuntime<Backend>>
-  solve(A, prm, bprm);
+  using SolverType = PreconditionedSolver<AMG<Backend, CoarseningRuntime, RelaxationRuntime>,
+                                          SolverRuntime<Backend>>;
+  double t0 = Platform::getRealTime();
+  SolverType solve(A, prm, bprm);
+  double t1 = Platform::getRealTime();
 
   std::cout << solve.precond() << std::endl;
 
   Alina::backend::clear(*x);
 
+  double t2 = Platform::getRealTime();
   Alina::SolverResult r = solve(*f, *x);
+  double t3 = Platform::getRealTime();
 
-  std::cout << "Iterations: " << r.nbIteration() << std::endl
-            << "Error:      " << r.residual() << std::endl
+  std::cout << "SOLVE: "
+            << std::setw(10) << solver
+            << std::setw(15) << relaxation
+            << std::setw(22) << coarsening
+            << " Iterations: " << std::setw(5) << r.nbIteration()
+            << " Error: " << std::setw(15) << r.residual()
+            << " Time0: " << std::setw(12) << (t1-t0)
+            << " Time1: " << std::setw(12) << (t3-t2) << "\n"
             << std::endl;
 
   ASSERT_NEAR(r.residual(), 0.0, 1e-4);
@@ -186,7 +200,7 @@ void test_problem(size_t n,
     }
   }
 
-  // Test coarsening
+  // Test coarsening with several relaxation
   for (Alina::eCoarserningType c : coarsening) {
     std::cout << "Coarsening: " << c << std::endl;
 
@@ -210,13 +224,20 @@ void test_problem(size_t n,
   }
 }
 
+// Return the default size for the problem for function 'test_backend'
+extern "C++"
+Int32 getTestBackendDefaultProblemSize();
+
 template <class Backend>
-void test_backend(typename Backend::params const& bprm = typename Backend::params())
+void test_backend(Int32 problem_size = 0, typename Backend::params const& bprm = typename Backend::params())
 {
   typedef typename Backend::value_type value_type;
   typedef typename Backend::col_type col_type;
   typedef typename Backend::ptr_type ptr_type;
   typedef typename Alina::math::rhs_of<value_type>::type rhs_type;
+
+  if (problem_size <= 0)
+    problem_size = getTestBackendDefaultProblemSize();
 
   // Poisson 3D
   {
@@ -225,7 +246,7 @@ void test_backend(typename Backend::params const& bprm = typename Backend::param
     std::vector<value_type> val;
     std::vector<rhs_type> rhs;
 
-    size_t n = sample_problem(24, val, col, ptr, rhs);
+    size_t n = sample_problem(problem_size, val, col, ptr, rhs);
 
     test_problem<Backend>(n, ptr, col, val, rhs, bprm);
   }

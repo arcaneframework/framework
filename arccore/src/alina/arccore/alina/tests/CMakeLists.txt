@@ -23,6 +23,10 @@ set(SOURCE_FILES
   TestSkylineLU.cc
   TestComplexErf.cc
   TestSolverBuiltin.cc
+  TestSolverBuiltinDefault.cc
+  TestSolverBuiltinInt32Int64.cc
+  TestSolverBuiltinInt32Int32.cc
+  TestSolverBuiltinUInt32SizeT.cc
   TestSolverComplex.cc
   TestSolverBlockCSR.cc
   TestSolverBuiltinNonScalar.cc

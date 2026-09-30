@@ -18,10 +18,15 @@
 
 #include <gtest/gtest.h>
 
-#include "arccore/base/ArccoreGlobal.h"
+#include "arccore/alina/BuiltinBackend.h"
+#include "arccore/accelerator/internal/Initializer.h"
 
-extern "C++"
-Arcane::Int32 getTestBackendDefaultProblemSize()
+#include "TestSolverCommon.h"
+
+void _doTestSolverBuiltinInt32Int64(bool use_accelerator, Int32 max_allowed_thread)
 {
-  return 24;
+  Accelerator::Initializer x(use_accelerator, max_allowed_thread);
+  test_backend< Alina::BuiltinBackend<double, Int32, Int64> >();
 }
+
+ARCCORE_ALINA_TEST_DO_TEST_ACCELERATOR(alina_test_solvers, test_builtin_backend_int32_int64, _doTestSolverBuiltinInt32Int64);
