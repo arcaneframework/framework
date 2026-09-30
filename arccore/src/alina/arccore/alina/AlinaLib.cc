@@ -368,45 +368,6 @@ class AlinaSequentialSolverImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AlinaSequentialSolver::
-AlinaSequentialSolver(const AlinaCSRMatrixView& matrix_view,
-                      const AlinaParameters* prm)
-{
-  m_p = std::make_shared<AlinaSequentialSolverImpl>(matrix_view, prm);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void AlinaSequentialSolver::
-report()
-{
-  m_p->report(std::cout);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AlinaConvergenceInfo AlinaSequentialSolver::
-solve(SmallSpan<const double> rhs, SmallSpan<double> x)
-{
-  return m_p->solve(rhs, x);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-AlinaConvergenceInfo AlinaSequentialSolver::
-solveMatrix(const AlinaCSRMatrixView& matrix_view,
-            SmallSpan<const double> rhs,
-            SmallSpan<double> x)
-{
-  return m_p->solveMatrix(matrix_view, rhs, x);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 struct deflation_vectors
 {
   int n;
@@ -506,21 +467,54 @@ class AlinaDistributedSolverImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AlinaDistributedSolver::
-AlinaDistributedSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
-                       const AlinaCSRMatrixView& matrix_view,
-                       const AlinaParameters& params)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AlinaSolver::
+AlinaSolver(const AlinaCSRMatrixView& matrix_view,
+            const AlinaParameters* prm)
 {
-  m_p = std::make_shared<AlinaDistributedSolverImpl>(comm, matrix_view, params);
+  m_p = std::make_shared<AlinaSequentialSolverImpl>(matrix_view, prm);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-AlinaConvergenceInfo AlinaDistributedSolver::
+void AlinaSolver::
+report()
+{
+  m_p->report(std::cout);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AlinaConvergenceInfo AlinaSolver::
 solve(SmallSpan<const double> rhs, SmallSpan<double> x)
 {
   return m_p->solve(rhs, x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AlinaConvergenceInfo AlinaSolver::
+solveMatrix(const AlinaCSRMatrixView& matrix_view,
+            SmallSpan<const double> rhs,
+            SmallSpan<double> x)
+{
+  return m_p->solveMatrix(matrix_view, rhs, x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AlinaSolver::
+AlinaSolver(Arcane::MessagePassing::IMessagePassingMng* comm,
+            const AlinaCSRMatrixView& matrix_view,
+            const AlinaParameters& params)
+{
+  m_p = std::make_shared<AlinaDistributedSolverImpl>(comm, matrix_view, params);
 }
 
 /*---------------------------------------------------------------------------*/
