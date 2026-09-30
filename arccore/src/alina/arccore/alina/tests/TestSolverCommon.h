@@ -200,7 +200,7 @@ void test_problem(size_t n,
     }
   }
 
-  // Test coarsening
+  // Test coarsening with several relaxation
   for (Alina::eCoarserningType c : coarsening) {
     std::cout << "Coarsening: " << c << std::endl;
 
@@ -224,13 +224,20 @@ void test_problem(size_t n,
   }
 }
 
+// Return the default size for the problem for function 'test_backend'
+extern "C++"
+Int32 getTestBackendDefaultProblemSize();
+
 template <class Backend>
-void test_backend(Int32 problem_size = 24, typename Backend::params const& bprm = typename Backend::params())
+void test_backend(Int32 problem_size = 0, typename Backend::params const& bprm = typename Backend::params())
 {
   typedef typename Backend::value_type value_type;
   typedef typename Backend::col_type col_type;
   typedef typename Backend::ptr_type ptr_type;
   typedef typename Alina::math::rhs_of<value_type>::type rhs_type;
+
+  if (problem_size <= 0)
+    problem_size = getTestBackendDefaultProblemSize();
 
   // Poisson 3D
   {
