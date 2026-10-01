@@ -440,8 +440,6 @@ class AlinaDistributedSolverImpl
 
   AlinaConvergenceInfo solve(SmallSpan<const double> rhs, SmallSpan<double> x) override
   {
-    size_t n = m_solver->size();
-
     AlinaConvergenceInfo cnv;
 
     Alina::SolverResult r = (*m_solver)(rhs, x);
@@ -449,9 +447,9 @@ class AlinaDistributedSolverImpl
     return _toConvInfo(r);
   }
 
-  AlinaConvergenceInfo solveMatrix(const AlinaCSRMatrixView& matrix_view,
-                                   SmallSpan<const double> rhs,
-                                   SmallSpan<double> x) override
+  AlinaConvergenceInfo solveMatrix([[maybe_unused]] const AlinaCSRMatrixView& matrix_view,
+                                   [[maybe_unused]] SmallSpan<const double> rhs,
+                                   [[maybe_unused]] SmallSpan<double> x) override
   {
     ARCCORE_THROW(NotImplementedException, "Solve with different matrix");
   }
