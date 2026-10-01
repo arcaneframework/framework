@@ -18,3 +18,6 @@ target_link_libraries(ArcCher PUBLIC
 )
 
 target_link_libraries(ArcCher PUBLIC reproc++)
+
+# TODO Pour tester, à supprimer
+include(../arct/arct.cmake)
