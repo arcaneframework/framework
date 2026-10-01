@@ -471,7 +471,6 @@ _exchangeCells(HashTableMapT<Int32, SharedArray<Int32>>& cells_to_send, bool wit
     Int32 rank = sm->destination().value();
     ISerializer* s = sm->serializer();
     Int32ConstArrayView items_to_send = cells_to_send[rank];
-    //m_mesh->serializeCells(s,items_to_send,with_flags);
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer(with_flags));
     s->setMode(ISerializer::ModeReserve);
     cell_serializer->serializeItems(s, items_to_send);
@@ -484,7 +483,6 @@ _exchangeCells(HashTableMapT<Int32, SharedArray<Int32>>& cells_to_send, bool wit
   for (Integer i = 0, ns = exchanger->nbReceiver(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* s = sm->serializer();
-    //m_mesh->addCells(s,with_flags);
     s->setMode(ISerializer::ModeGet);
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer(with_flags));
     cell_serializer->deserializeItems(s, nullptr);

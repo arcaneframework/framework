@@ -944,15 +944,18 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
     Int32 rank = sm->destination().value();
     ISerializer* s = sm->serializer();
     Int32ConstArrayView items_to_send = cells_to_send[rank];
-    m_mesh->serializeCells(s, items_to_send);
+    ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer());
+    s->setMode(ISerializer::ModeReserve);
+    cell_serializer->serializeItems(s, items_to_send);
+    s->allocateBuffer();
+    s->setMode(ISerializer::ModePut);
+    cell_serializer->serializeItems(s, items_to_send);
   }
   exchanger->processExchange();
   info(4) << "END EXCHANGE CELLS";
   for (Integer i = 0, ns = exchanger->nbReceiver(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* s = sm->serializer();
-    // Do not use DynamicMesh but use cell serializer as in GhostLayerBuilder v1
-    // m_mesh->addCells(s);
     s->setMode(ISerializer::ModeGet);
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer());
     cell_serializer->deserializeItems(s, nullptr);
