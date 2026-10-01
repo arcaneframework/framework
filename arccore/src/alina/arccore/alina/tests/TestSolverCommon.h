@@ -128,7 +128,8 @@ void test_rap(const Matrix& A,
 }
 
 template <class Backend, class value_type, class col_type, class ptr_type, class rhs_type>
-void test_problem(size_t n,
+void test_problem(bool do_all_relaxation,
+                  size_t n,
                   std::vector<ptr_type> ptr,
                   std::vector<col_type> col,
                   std::vector<value_type> val,
@@ -204,22 +205,28 @@ void test_problem(size_t n,
   for (Alina::eCoarserningType c : coarsening) {
     std::cout << "Coarsening: " << c << std::endl;
 
-    try {
-      test_solver<Backend>(Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
-                           y, x, solver[0], relaxation[0], c, bprm);
-    }
-    catch (const std::logic_error&) {
-    }
+    for (Alina::eRelaxationType r : relaxation) {
+      std::cout << "Relaxation: " << r << std::endl;
+      try {
+        test_solver<Backend>(Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
+                             y, x, solver[0], r, c, bprm);
+      }
+      catch (const std::logic_error&) {
+      }
 
-    switch (c) {
-    case Alina::eCoarserningType::aggregation:
-    case Alina::eCoarserningType::smoothed_aggregation:
-    case Alina::eCoarserningType::smoothed_aggr_emin:
-      test_solver<Backend>(Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
-                           y, x, solver[0], relaxation[0], c, bprm, /*test_null_space*/ true);
-      break;
-    default:
-      break;
+      switch (c) {
+      case Alina::eCoarserningType::aggregation:
+      case Alina::eCoarserningType::smoothed_aggregation:
+      case Alina::eCoarserningType::smoothed_aggr_emin:
+        test_solver<Backend>(Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
+                             y, x, solver[0], r, c, bprm, /*test_null_space*/ true);
+        break;
+      default:
+        break;
+      }
+      // If we do not want all relaxation, break after the first one.
+      if (!do_all_relaxation)
+        break;
     }
   }
 }
@@ -229,7 +236,8 @@ extern "C++"
 Int32 getTestBackendDefaultProblemSize();
 
 template <class Backend>
-void test_backend(Int32 problem_size = 0, typename Backend::params const& bprm = typename Backend::params())
+void test_backend(bool do_all_relaxation = false, Int32 problem_size = 0,
+                  typename Backend::params const& bprm = typename Backend::params())
 {
   typedef typename Backend::value_type value_type;
   typedef typename Backend::col_type col_type;
@@ -248,7 +256,7 @@ void test_backend(Int32 problem_size = 0, typename Backend::params const& bprm =
 
     size_t n = sample_problem(problem_size, val, col, ptr, rhs);
 
-    test_problem<Backend>(n, ptr, col, val, rhs, bprm);
+    test_problem<Backend>(do_all_relaxation, n, ptr, col, val, rhs, bprm);
   }
 
   // Trivial problem
@@ -270,7 +278,7 @@ void test_backend(Int32 problem_size = 0, typename Backend::params const& bprm =
 
     size_t n = rhs.size();
 
-    test_problem<Backend>(n, ptr, col, val, rhs, bprm);
+    test_problem<Backend>(do_all_relaxation, n, ptr, col, val, rhs, bprm);
   }
 }
 
