@@ -117,6 +117,14 @@ template <typename DataType>
 class DataViewGetter;
 template <typename DataType>
 class DataViewGetterSetter;
+template <typename DataType_, int Size>
+class NumVectorDataViewGetter;
+template <typename DataType_, int Size>
+class NumVectorDataViewGetterSetter;
+template <typename DataType_, int Row, int Column>
+class NumMatrixDataViewGetter;
+template <typename DataType_, int Row, int Column>
+class NumMatrixDataViewGetterSetter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -19,6 +19,7 @@
   CommonGlobal.h
   CommonGlobal.cc
   DataView.h
+  DataView.cc
   DefaultMemoryAllocator.h
   Event.h
   Event.cc
@@ -44,6 +45,8 @@
   NumArray.h
   NumArray.cc
   NumArrayContainer.h
+  NumVectorDataView.h
+  NumMatrixDataView.h
   ParameterList.h
   ParameterList.cc
   Process.cc

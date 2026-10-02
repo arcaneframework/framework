@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* DataView.h                                                  (C) 2000-2026 */
 /*                                                                           */
-/* Views of variable data.                                                   */
+/* Management of views for accelerators.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCCORE_COMMON_DATAVIEW_H
 #define ARCCORE_COMMON_DATAVIEW_H
@@ -249,6 +249,8 @@ class DataViewGetterSetter
   // Add friend for specific views which need access to m_ptr.
   template <typename DataType_, int Row, int Column>
   friend class NumMatrixDataViewGetterSetter;
+  template <typename DataType_, int Size>
+  friend class NumVectorDataViewGetterSetter;
 
  public:
 

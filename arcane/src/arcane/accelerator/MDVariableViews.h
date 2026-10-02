@@ -18,6 +18,9 @@
 
 #include "arcane/accelerator/VariableViews.h"
 
+#include "arccore/common/NumMatrixDataView.h"
+#include "arccore/common/NumVectorDataView.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -151,6 +154,151 @@ class MeshMDVariableInOutView
   {
     IVariable* var = var_ref.underlyingVariable().variable();
     VariableViewBase vb(view_bi, var);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Base class for views of multi-dimensional vector variable over a mesh item.
+ *
+ * \a MatrixAccessor_ has to be NumVectorxDataViewGetter or NumVectorDataViewGetterSetter
+ */
+template <typename ItemType_, typename VectorAccessor_, typename Extents>
+class MeshVectorMDVariableViewBase
+{
+  using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
+
+ public:
+
+  using ItemType = ItemType_;
+  using VectorAccessor = VectorAccessor_;
+  using VectorElementAccessor = VectorAccessor_::VectorElemenAccessor;
+  using NumVectorType = VectorAccessor::NumVectorType;
+  using VectorAccessorReturnType = VectorAccessor::AccessorReturnType;
+  using VectorElementAccessorReturnType = VectorElementAccessor::AccessorReturnType;
+  using ItemLocalIdType = ItemType::LocalIdType;
+
+ private:
+
+  using MDSpanType = MDSpan<NumVectorType, AddedFirstExtentsType, RightLayout>;
+
+ public:
+
+  MeshVectorMDVariableViewBase(const MDSpanType& vector_mdspan)
+  : m_vector_mdspan(vector_mdspan)
+  {
+  }
+
+ public:
+
+  //! \name Operations for variable of dimension MDDim0
+  ///@{
+
+  //! Accessor of the vector for item \a id
+  constexpr ARCCORE_HOST_DEVICE VectorAccessorReturnType operator()(ItemLocalIdType id) const
+  requires(Extents::rank() == 0)
+  {
+    return VectorAccessor::build(m_vector_mdspan.ptrAt(id.localId()));
+  }
+
+  //! accessor for the element (i) of the vector for item \a id
+  constexpr ARCCORE_HOST_DEVICE VectorElementAccessorReturnType operator()(ItemLocalIdType id, Int32 i) const
+  requires(Extents::rank() == 0)
+  {
+    return VectorElementAccessor::build(&m_vector_mdspan(id.localId())(i));
+  }
+  ///@}
+
+  //! \name Operations for variable of dimension MDDim1
+  //! Accessor of the vector of index \a index for item \a id
+  constexpr ARCCORE_HOST_DEVICE VectorAccessorReturnType operator()(ItemLocalIdType id, Int32 index) const
+  requires(Extents::rank() == 1)
+  {
+    return VectorAccessor::build(m_vector_mdspan.ptrAt(id.localId(), index));
+  }
+
+  //! Accessor for the element (i) of the vector for item \a id and index \a index
+  constexpr ARCCORE_HOST_DEVICE VectorElementAccessorReturnType operator()(ItemLocalIdType id, Int32 index, Int32 i) const
+  requires(Extents::rank() == 1)
+  {
+    return VectorElementAccessor::build(&m_vector_mdspan(id.localId(), index)(i));
+  }
+  ///@}
+
+ private:
+
+  MDSpanType m_vector_mdspan;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Read-only view of multi-dimensional vector variable over a mesh item.
+ */
+template <typename ItemType_, typename DataType_, int Size_, typename Extents>
+class MeshVectorMDVariableInView
+: public MeshVectorMDVariableViewBase<ItemType_, NumVectorDataViewGetter<DataType_, Size_>, Extents>
+{
+  using BaseClass = MeshVectorMDVariableViewBase<ItemType_, NumVectorDataViewGetter<DataType_, Size_>, Extents>;
+
+ public:
+
+  static const int Size = Size_;
+  using ItemType = ItemType_;
+  using DataType = DataType_;
+  using ItemLocalIdType = ItemType::LocalIdType;
+  using ConstReferenceType = NumVectorDataViewGetter<DataType, Size>;
+  using VariableRefType = MeshVectorMDVariableRefT<ItemType, DataType, Size, Extents>;
+
+ private:
+
+  using MDSpanType = VariableRefType::MDSpanType;
+
+ public:
+
+  MeshVectorMDVariableInView(const ViewBuildInfo& view_bi, const VariableRefType& var_ref)
+  : BaseClass(var_ref.m_vector_mdspan)
+  {
+    IVariable* var = var_ref.underlyingVariable().variable();
+    VariableViewBase vvb(view_bi, var);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Read-write view of multi-dimensional vector variable over a mesh item.
+ */
+template <typename ItemType_, typename DataType_, int Size_, typename Extents>
+class MeshVectorMDVariableInOutView
+: public MeshVectorMDVariableViewBase<ItemType_, NumVectorDataViewGetterSetter<DataType_, Size_>, Extents>
+{
+  using BaseClass = MeshVectorMDVariableViewBase<ItemType_, NumVectorDataViewGetterSetter<DataType_, Size_>, Extents>;
+
+ public:
+
+  static const int Size = Size_;
+  using ItemType = ItemType_;
+  using DataType = DataType_;
+  using ItemLocalIdType = ItemType::LocalIdType;
+  using ConstReferenceType = NumVectorDataViewGetter<DataType, Size>;
+  using VariableRefType = MeshVectorMDVariableRefT<ItemType, DataType, Size, Extents>;
+
+ private:
+
+  using MDSpanType = VariableRefType::MDSpanType;
+
+ public:
+
+  MeshVectorMDVariableInOutView(const ViewBuildInfo& view_bi, const VariableRefType& var_ref)
+  : BaseClass(var_ref.m_vector_mdspan)
+  {
+    IVariable* var = var_ref.underlyingVariable().variable();
+    VariableViewBase vvb(view_bi, var);
   }
 };
 
@@ -300,6 +448,17 @@ class MeshMatrixMDVariableInOutView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Read-only view of vector multi-dimensional mesh variable
+ */
+template <typename ItemType, typename DataType, int Size, typename Extents>
+auto viewIn(const ViewBuildInfo& command, const MeshVectorMDVariableRefT<ItemType, DataType, Size, Extents>& var)
+{
+  return MeshVectorMDVariableInView<ItemType, DataType, Size, Extents>(command, var);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Read-only view of matrix multi-dimensional mesh variable
  */
 template <typename ItemType, typename DataType, int Row, int Column, typename Extents>
@@ -317,6 +476,17 @@ template <typename ItemType, typename DataType, typename Extents>
 auto viewIn(const ViewBuildInfo& command, const MeshMDVariableRefT<ItemType, DataType, Extents>& var)
 {
   return MeshMDVariableInView<ItemType, DataType, Extents>(command, var);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Read-write view of vector multi-dimensional mesh variable
+ */
+template <typename ItemType, typename DataType, int Size, typename Extents>
+auto viewInOut(const ViewBuildInfo& command, const MeshVectorMDVariableRefT<ItemType, DataType, Size, Extents>& var)
+{
+  return MeshVectorMDVariableInOutView<ItemType, DataType, Size, Extents>(command, var);
 }
 
 /*---------------------------------------------------------------------------*/
