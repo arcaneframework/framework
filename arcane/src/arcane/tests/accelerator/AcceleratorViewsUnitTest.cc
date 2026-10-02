@@ -21,6 +21,7 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/ItemPrinter.h"
 #include "arcane/core/MeshMatrixMDVariableRef.h"
+#include "arcane/core/MeshVectorMDVariableRef.h"
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -98,6 +99,7 @@ class AcceleratorViewsUnitTest
   void _executeTestGroupIndexTable();
   void _executeTestMultiArray();
   void _executeTestMDMatrixVariable();
+  void _executeTestMDVectorVariable();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -218,6 +220,7 @@ executeTest()
   _executeTestVariableFill();
   _executeTestMultiArray();
   _executeTestMDMatrixVariable();
+  _executeTestMDVectorVariable();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1068,6 +1071,73 @@ _executeTestMDMatrixVariable()
     Real determinant = cell_matrix_determinant[icell];
     if (!math::isNearlyEqualWithEpsilon(determinant, determinant_ref, 1.0e-10))
       ARCANE_FATAL("Bad determinant cell={0} v={1} ref={2}", ItemPrinter(*icell), determinant, determinant_ref);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AcceleratorViewsUnitTest::
+_executeTestMDVectorVariable()
+{
+  info() << "Test MDVector variable";
+  MeshVectorMDVariableRefT<Cell, Real, 3, MDDim0> cell_vector(VariableBuildInfo(mesh(), "CellVector"));
+  cell_vector.reshape({});
+
+  MeshMDVariableRefT<Cell, Real, MDDim1> cell_vector_as_dim1(VariableBuildInfo(mesh(), "CellVector"));
+
+  VariableCellReal cell_vector_norm_ref(VariableBuildInfo(mesh(), "CellVectorNorm"));
+  VariableCellReal cell_vector_norm(VariableBuildInfo(mesh(), "CellVectorNormRef"));
+
+  auto getVector = [] ARCCORE_HOST_DEVICE(Int32 id) -> NumVector<Real, 3> {
+    Real r0 = static_cast<Real>(id + 1);
+    NumVector<Real, 3> x( r0, r0 + 1.5, r0 - 1.2);
+    return x;
+  };
+
+  // Compute the norm of the vector on host
+  ENUMERATE_ (Cell, icell, allCells()) {
+    NumVector<Real, 3> x = getVector(icell.itemLocalId());
+    cell_vector(icell) = x;
+    Real3 r = x;
+    cell_vector_norm_ref[icell] = 2.0 * math::normL2(r);
+  }
+  {
+    auto command = makeCommand(m_queue);
+    auto inout_cell_vector = viewInOut(command, cell_vector);
+    command << RUNCOMMAND_ENUMERATE (CellLocalId, cell_id, allCells())
+    {
+      inout_cell_vector(cell_id) = getVector(cell_id);
+    };
+  }
+
+  // Compute the norm of the vector on RunQueue device
+  // The norm is computed in two ways
+  // - using direct access to NumVector.
+  // - using each component of the NumVector
+  {
+    auto command = makeCommand(m_queue);
+    auto in_cell_vector = viewIn(command, cell_vector);
+    auto in_cell_vector_as_dim1 = viewIn(command, cell_vector_as_dim1);
+    auto inout_cell_vector_as_dim1 = viewInOut(command, cell_vector_as_dim1);
+    auto out_cell_vector_norm = viewOut(command, cell_vector_norm);
+    command << RUNCOMMAND_ENUMERATE (CellLocalId, cell_id, allCells())
+    {
+      NumVector<Real, 3> x = in_cell_vector(cell_id);
+      Real3 r1 = x;
+      Real v1(in_cell_vector(cell_id, 0));
+      Real v2(inout_cell_vector_as_dim1(cell_id, 1));
+      Real v3(in_cell_vector_as_dim1(cell_id, 2));
+      Real3 r2(v1, v2, v3);
+      out_cell_vector_norm(cell_id) = math::normL2(r1) + math::normL2(r2);
+    };
+  }
+  // Check the result
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Real norm_ref = cell_vector_norm_ref[icell];
+    Real norm = cell_vector_norm[icell];
+    if (!math::isNearlyEqualWithEpsilon(norm, norm_ref, 1.0e-10))
+      ARCANE_FATAL("Bad norm cell={0} v={1} ref={2}", ItemPrinter(*icell), norm, norm_ref);
   }
 }
 
