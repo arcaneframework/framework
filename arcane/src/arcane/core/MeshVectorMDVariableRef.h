@@ -35,12 +35,17 @@ namespace Arcane
  *
  * For more information, see \ref arcanedoc_core_types_axl_md_variable_use.
  */
-template <typename ItemType, typename DataType, int Size, typename Extents>
+template <typename ItemType, typename DataType_, int Size, typename Extents>
 class MeshVectorMDVariableRefT
-: public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstLastExtentsType<DynExtent, Size>>
+: public MeshMDVariableRefBaseT<ItemType, DataType_, typename Extents::template AddedFirstLastExtentsType<DynExtent, Size>>
 {
+  // To access m_matrix_mdspan
+  friend class Arcane::Accelerator::MeshVectorMDVariableInOutView<ItemType, DataType_, Size, Extents>;
+  friend class Arcane::Accelerator::MeshVectorMDVariableInView<ItemType, DataType_, Size, Extents>;
+
  public:
 
+  using DataType = DataType_;
   using NumVectorType = NumVector<DataType, Size>;
 
  private:
