@@ -11,15 +11,21 @@ class ARCANE_GEOMETRY_EXPORT VertexConnectivity
 : public CellConnectivity
 {
  public:
+
   VertexConnectivity()
   : CellConnectivity(1,0,0,GeomType::Vertex)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 1; }
-  Integer nbEdge() const { return 0; }
-  Integer nbFace() const { return 0; }
- public:
+
+  constexpr Int32 nbNode() const { return 1; }
+  constexpr Int32 nbEdge() const { return 0; }
+  constexpr Int32 nbFace() const { return 0; }
+
  private:
+
   void _init();
 };
 /*!
@@ -30,15 +36,21 @@ class ARCANE_GEOMETRY_EXPORT Line2Connectivity
 : public CellConnectivity
 {
  public:
+
   Line2Connectivity()
   : CellConnectivity(2,0,0,GeomType::Line2)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 2; }
-  Integer nbEdge() const { return 0; }
-  Integer nbFace() const { return 0; }
- public:
+
+  constexpr Int32 nbNode() const { return 2; }
+  constexpr Int32 nbEdge() const { return 0; }
+  constexpr Int32 nbFace() const { return 0; }
+
  private:
+
   void _init();
 };
 /*!
@@ -49,15 +61,21 @@ class ARCANE_GEOMETRY_EXPORT Triangle3Connectivity
 : public CellConnectivity
 {
  public:
+
   Triangle3Connectivity()
   : CellConnectivity(3,3,3,GeomType::Triangle3)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 3; }
-  Integer nbEdge() const { return 3; }
-  Integer nbFace() const { return 3; }
- public:
+
+  constexpr Int32 nbNode() const { return 3; }
+  constexpr Int32 nbEdge() const { return 3; }
+  constexpr Int32 nbFace() const { return 3; }
+
  private:
+
   void _init();
 };
 /*!
@@ -68,15 +86,21 @@ class ARCANE_GEOMETRY_EXPORT Quad4Connectivity
 : public CellConnectivity
 {
  public:
+
   Quad4Connectivity()
   : CellConnectivity(4,4,4,GeomType::Quad4)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 4; }
-  Integer nbEdge() const { return 4; }
-  Integer nbFace() const { return 4; }
- public:
+
+  constexpr Int32 nbNode() const { return 4; }
+  constexpr Int32 nbEdge() const { return 4; }
+  constexpr Int32 nbFace() const { return 4; }
+
  private:
+
   void _init();
 };
 /*!
@@ -87,15 +111,21 @@ class ARCANE_GEOMETRY_EXPORT Pentagon5Connectivity
 : public CellConnectivity
 {
  public:
+
   Pentagon5Connectivity()
   : CellConnectivity(5,5,5,GeomType::Pentagon5)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 5; }
-  Integer nbEdge() const { return 5; }
-  Integer nbFace() const { return 5; }
- public:
+
+  constexpr Int32 nbNode() const { return 5; }
+  constexpr Int32 nbEdge() const { return 5; }
+  constexpr Int32 nbFace() const { return 5; }
+
  private:
+
   void _init();
 };
 /*!
@@ -106,15 +136,21 @@ class ARCANE_GEOMETRY_EXPORT Hexagon6Connectivity
 : public CellConnectivity
 {
  public:
+
   Hexagon6Connectivity()
   : CellConnectivity(6,6,6,GeomType::Hexagon6)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 6; }
-  Integer nbEdge() const { return 6; }
-  Integer nbFace() const { return 6; }
- public:
+
+  constexpr Int32 nbNode() const { return 6; }
+  constexpr Int32 nbEdge() const { return 6; }
+  constexpr Int32 nbFace() const { return 6; }
+
  private:
+
   void _init();
 };
 /*!
@@ -125,15 +161,21 @@ class ARCANE_GEOMETRY_EXPORT Tetraedron4Connectivity
 : public CellConnectivity
 {
  public:
+
   Tetraedron4Connectivity()
   : CellConnectivity(4,6,4,GeomType::Tetraedron4)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 4; }
-  Integer nbEdge() const { return 6; }
-  Integer nbFace() const { return 4; }
- public:
+
+  constexpr Int32 nbNode() const { return 4; }
+  constexpr Int32 nbEdge() const { return 6; }
+  constexpr Int32 nbFace() const { return 4; }
+
  private:
+
   void _init();
 };
 /*!
@@ -148,15 +190,21 @@ class ARCANE_GEOMETRY_EXPORT Pyramid5Connectivity
 : public CellConnectivity
 {
  public:
+
   Pyramid5Connectivity()
   : CellConnectivity(5,12,5,GeomType::Pyramid5)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 5; }
-  Integer nbEdge() const { return 12; }
-  Integer nbFace() const { return 5; }
- public:
+
+  constexpr Int32 nbNode() const { return 5; }
+  constexpr Int32 nbEdge() const { return 12; }
+  constexpr Int32 nbFace() const { return 5; }
+
  private:
+
   void _init();
 };
 /*!
@@ -167,15 +215,21 @@ class ARCANE_GEOMETRY_EXPORT Pentaedron6Connectivity
 : public CellConnectivity
 {
  public:
+
   Pentaedron6Connectivity()
   : CellConnectivity(6,9,5,GeomType::Pentaedron6)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 6; }
-  Integer nbEdge() const { return 9; }
-  Integer nbFace() const { return 5; }
- public:
+
+  constexpr Int32 nbNode() const { return 6; }
+  constexpr Int32 nbEdge() const { return 9; }
+  constexpr Int32 nbFace() const { return 5; }
+
  private:
+
   void _init();
 };
 /*!
@@ -186,15 +240,21 @@ class ARCANE_GEOMETRY_EXPORT Hexaedron8Connectivity
 : public CellConnectivity
 {
  public:
+
   Hexaedron8Connectivity()
   : CellConnectivity(8,12,6,GeomType::Hexaedron8)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 8; }
-  Integer nbEdge() const { return 12; }
-  Integer nbFace() const { return 6; }
- public:
+
+  constexpr Int32 nbNode() const { return 8; }
+  constexpr Int32 nbEdge() const { return 12; }
+  constexpr Int32 nbFace() const { return 6; }
+
  private:
+
   void _init();
 };
 /*!
@@ -205,15 +265,21 @@ class ARCANE_GEOMETRY_EXPORT Heptaedron10Connectivity
 : public CellConnectivity
 {
  public:
+
   Heptaedron10Connectivity()
   : CellConnectivity(10,15,6,GeomType::Heptaedron10)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 10; }
-  Integer nbEdge() const { return 15; }
-  Integer nbFace() const { return 6; }
- public:
+
+  constexpr Int32 nbNode() const { return 10; }
+  constexpr Int32 nbEdge() const { return 15; }
+  constexpr Int32 nbFace() const { return 6; }
+
  private:
+
   void _init();
 };
 /*!
@@ -224,14 +290,22 @@ class ARCANE_GEOMETRY_EXPORT Octaedron12Connectivity
 : public CellConnectivity
 {
  public:
+
   Octaedron12Connectivity()
   : CellConnectivity(12,18,8,GeomType::Octaedron12)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return 12; }
-  Integer nbEdge() const { return 18; }
-  Integer nbFace() const { return 8; }
- public:
+
+  constexpr Int32 nbNode() const { return 12; }
+  constexpr Int32 nbEdge() const { return 18; }
+  constexpr Int32 nbFace() const { return 8; }
+
  private:
+
   void _init();
 };
+   
+   

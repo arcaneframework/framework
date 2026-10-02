@@ -27,16 +27,25 @@ class ARCANE_GEOMETRY_EXPORT Triangle3ShapeView
   }
 
   //! Number of nodes of the shape (returns \a 3)
-  static Integer nbNode() { return 3; }
+  static constexpr Integer nbNode() { return 3; }
   //! Type of the shape (returns \a GeomType::Triangle3 )
-  static GeomType geomType() { return GeomType::Triangle3; }
+  static constexpr GeomType geomType() { return GeomType::Triangle3; }
   //! Fills \a svc with the values of the \a i-th control sub-volume.
-  void fillSVC(Quad4ElementView svc, Integer i) { fillSubZoneTriangle(svc,i); }
+  void fillSVC(Quad4ElementView svc, Integer i)
+  {
+    fillSubZoneTriangle(svc,i);
+  }
 
   //! Conversion operator to a constant view of the geometric element
-  operator Triangle3ElementConstView () const { return ElementConstView(_nodeView()); }
+  constexpr operator Triangle3ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
   //! Constant view of the geometric element
-  Triangle3ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  constexpr Triangle3ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 typedef Triangle3ShapeView TriangleShapeView;
 
@@ -65,16 +74,25 @@ class ARCANE_GEOMETRY_EXPORT Quad4ShapeView
   }
 
   //! Number of nodes of the shape (returns \a 4)
-  static Integer nbNode() { return 4; }
+  static constexpr Integer nbNode() { return 4; }
   //! Type of the shape (returns \a GeomType::Quad4 )
-  static GeomType geomType() { return GeomType::Quad4; }
+  static constexpr GeomType geomType() { return GeomType::Quad4; }
   //! Fills \a svc with the values of the \a i-th control sub-volume.
-  void fillSVC(Quad4ElementView svc, Integer i) { fillSubZoneQuad(svc,i); }
+  void fillSVC(Quad4ElementView svc, Integer i)
+  {
+    fillSubZoneQuad(svc,i);
+  }
 
   //! Conversion operator to a constant view of the geometric element
-  operator Quad4ElementConstView () const { return ElementConstView(_nodeView()); }
+  constexpr operator Quad4ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
   //! Constant view of the geometric element
-  Quad4ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  constexpr Quad4ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 typedef Quad4ShapeView QuadShapeView;
 
@@ -103,16 +121,25 @@ class ARCANE_GEOMETRY_EXPORT Pentagon5ShapeView
   }
 
   //! Number of nodes of the shape (returns \a 5)
-  static Integer nbNode() { return 5; }
+  static constexpr Integer nbNode() { return 5; }
   //! Type of the shape (returns \a GeomType::Pentagon5 )
-  static GeomType geomType() { return GeomType::Pentagon5; }
+  static constexpr GeomType geomType() { return GeomType::Pentagon5; }
   //! Fills \a svc with the values of the \a i-th control sub-volume.
-  void fillSVC(Quad4ElementView svc, Integer i) { fillSubZonePentagon(svc,i); }
+  void fillSVC(Quad4ElementView svc, Integer i)
+  {
+    fillSubZonePentagon(svc,i);
+  }
 
   //! Conversion operator to a constant view of the geometric element
-  operator Pentagon5ElementConstView () const { return ElementConstView(_nodeView()); }
+  constexpr operator Pentagon5ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
   //! Constant view of the geometric element
-  Pentagon5ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  constexpr Pentagon5ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 typedef Pentagon5ShapeView PentagonShapeView;
 
@@ -141,16 +168,25 @@ class ARCANE_GEOMETRY_EXPORT Hexagon6ShapeView
   }
 
   //! Number of nodes of the shape (returns \a 6)
-  static Integer nbNode() { return 6; }
+  static constexpr Integer nbNode() { return 6; }
   //! Type of the shape (returns \a GeomType::Hexagon6 )
-  static GeomType geomType() { return GeomType::Hexagon6; }
+  static constexpr GeomType geomType() { return GeomType::Hexagon6; }
   //! Fills \a svc with the values of the \a i-th control sub-volume.
-  void fillSVC(Quad4ElementView svc, Integer i) { fillSubZoneHexagon(svc,i); }
+  void fillSVC(Quad4ElementView svc, Integer i)
+  {
+    fillSubZoneHexagon(svc,i);
+  }
 
   //! Conversion operator to a constant view of the geometric element
-  operator Hexagon6ElementConstView () const { return ElementConstView(_nodeView()); }
+  constexpr operator Hexagon6ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
   //! Constant view of the geometric element
-  Hexagon6ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  constexpr Hexagon6ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 typedef Hexagon6ShapeView HexagonShapeView;
 
@@ -179,16 +215,25 @@ class ARCANE_GEOMETRY_EXPORT Tetraedron4ShapeView
   }
 
   //! Number of nodes of the shape (returns \a 4)
-  static Integer nbNode() { return 4; }
+  static constexpr Integer nbNode() { return 4; }
   //! Type of the shape (returns \a GeomType::Tetraedron4 )
-  static GeomType geomType() { return GeomType::Tetraedron4; }
+  static constexpr GeomType geomType() { return GeomType::Tetraedron4; }
   //! Fills \a svc with the values of the \a i-th control sub-volume.
-  void fillSVC(Hexaedron8ElementView svc, Integer i) { fillSubZoneTetra(svc,i); }
+  void fillSVC(Hexaedron8ElementView svc, Integer i)
+  {
+    fillSubZoneTetra(svc,i);
+  }
 
   //! Conversion operator to a constant view of the geometric element
-  operator Tetraedron4ElementConstView () const { return ElementConstView(_nodeView()); }
+  constexpr operator Tetraedron4ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
   //! Constant view of the geometric element
-  Tetraedron4ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  constexpr Tetraedron4ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 typedef Tetraedron4ShapeView TetraShapeView;
 
@@ -217,16 +262,25 @@ class ARCANE_GEOMETRY_EXPORT Pyramid5ShapeView
   }
 
   //! Number of nodes of the shape (returns \a 5)
-  static Integer nbNode() { return 5; }
+  static constexpr Integer nbNode() { return 5; }
   //! Type of the shape (returns \a GeomType::Pyramid5 )
-  static GeomType geomType() { return GeomType::Pyramid5; }
+  static constexpr GeomType geomType() { return GeomType::Pyramid5; }
   //! Fills \a svc with the values of the \a i-th control sub-volume.
-  void fillSVC(Hexaedron8ElementView svc, Integer i) { fillSubZonePyramid(svc,i); }
+  void fillSVC(Hexaedron8ElementView svc, Integer i)
+  {
+    fillSubZonePyramid(svc,i);
+  }
 
   //! Conversion operator to a constant view of the geometric element
-  operator Pyramid5ElementConstView () const { return ElementConstView(_nodeView()); }
+  constexpr operator Pyramid5ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
   //! Constant view of the geometric element
-  Pyramid5ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  constexpr Pyramid5ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 typedef Pyramid5ShapeView PyramidShapeView;
 
@@ -253,17 +307,27 @@ class ARCANE_GEOMETRY_EXPORT Pentaedron6ShapeView
   {
     ARCANE_GEOMETRIC_CHECKTYPE(rhs.geomType(),GeomType::Pentaedron6);
   }
+
   //! Number of nodes of the shape (returns \a 6)
-  static Integer nbNode() { return 6; }
+  static constexpr Integer nbNode() { return 6; }
   //! Type of the shape (returns \a GeomType::Pentaedron6 )
-  static GeomType geomType() { return GeomType::Pentaedron6; }
+  static constexpr GeomType geomType() { return GeomType::Pentaedron6; }
   //! Fills \a svc with the values of the \a i-th control sub-volume.
-  void fillSVC(Hexaedron8ElementView svc, Integer i) { fillSubZonePenta(svc,i); }
+  void fillSVC(Hexaedron8ElementView svc, Integer i)
+  {
+    fillSubZonePenta(svc,i);
+  }
 
   //! Conversion operator to a constant view of the geometric element
-  operator Pentaedron6ElementConstView () const { return ElementConstView(_nodeView()); }
+  constexpr operator Pentaedron6ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
   //! Constant view of the geometric element
-  Pentaedron6ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  constexpr Pentaedron6ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 typedef Pentaedron6ShapeView PentaShapeView;
 
@@ -292,16 +356,25 @@ class ARCANE_GEOMETRY_EXPORT Hexaedron8ShapeView
   }
 
   //! Number of nodes of the shape (returns \a 8)
-  static Integer nbNode() { return 8; }
+  static constexpr Integer nbNode() { return 8; }
   //! Type of the shape (returns \a GeomType::Hexaedron8 )
-  static GeomType geomType() { return GeomType::Hexaedron8; }
+  static constexpr GeomType geomType() { return GeomType::Hexaedron8; }
   //! Fills \a svc with the values of the \a i-th control sub-volume.
-  void fillSVC(Hexaedron8ElementView svc, Integer i) { fillSubZoneHexa(svc,i); }
+  void fillSVC(Hexaedron8ElementView svc, Integer i)
+  {
+    fillSubZoneHexa(svc,i);
+  }
 
   //! Conversion operator to a constant view of the geometric element
-  operator Hexaedron8ElementConstView () const { return ElementConstView(_nodeView()); }
+  constexpr operator Hexaedron8ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
   //! Constant view of the geometric element
-  Hexaedron8ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  constexpr Hexaedron8ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 typedef Hexaedron8ShapeView HexaShapeView;
 
@@ -330,16 +403,25 @@ class ARCANE_GEOMETRY_EXPORT Heptaedron10ShapeView
   }
 
   //! Number of nodes of the shape (returns \a 10)
-  static Integer nbNode() { return 10; }
+  static constexpr Integer nbNode() { return 10; }
   //! Type of the shape (returns \a GeomType::Heptaedron10 )
-  static GeomType geomType() { return GeomType::Heptaedron10; }
+  static constexpr GeomType geomType() { return GeomType::Heptaedron10; }
   //! Fills \a svc with the values of the \a i-th control sub-volume.
-  void fillSVC(Hexaedron8ElementView svc, Integer i) { fillSubZoneWedge7(svc,i); }
+  void fillSVC(Hexaedron8ElementView svc, Integer i)
+  {
+    fillSubZoneWedge7(svc,i);
+  }
 
   //! Conversion operator to a constant view of the geometric element
-  operator Heptaedron10ElementConstView () const { return ElementConstView(_nodeView()); }
+  constexpr operator Heptaedron10ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
   //! Constant view of the geometric element
-  Heptaedron10ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  constexpr Heptaedron10ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 typedef Heptaedron10ShapeView Wedge7ShapeView;
 
@@ -368,16 +450,25 @@ class ARCANE_GEOMETRY_EXPORT Octaedron12ShapeView
   }
 
   //! Number of nodes of the shape (returns \a 12)
-  static Integer nbNode() { return 12; }
+  static constexpr Integer nbNode() { return 12; }
   //! Type of the shape (returns \a GeomType::Octaedron12 )
-  static GeomType geomType() { return GeomType::Octaedron12; }
+  static constexpr GeomType geomType() { return GeomType::Octaedron12; }
   //! Fills \a svc with the values of the \a i-th control sub-volume.
-  void fillSVC(Hexaedron8ElementView svc, Integer i) { fillSubZoneWedge8(svc,i); }
+  void fillSVC(Hexaedron8ElementView svc, Integer i)
+  {
+    fillSubZoneWedge8(svc,i);
+  }
 
   //! Conversion operator to a constant view of the geometric element
-  operator Octaedron12ElementConstView () const { return ElementConstView(_nodeView()); }
+  constexpr operator Octaedron12ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
   //! Constant view of the geometric element
-  Octaedron12ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  constexpr Octaedron12ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 typedef Octaedron12ShapeView Wedge8ShapeView;
 

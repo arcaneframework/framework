@@ -3,7 +3,6 @@
     <TargetFramework
         Condition="'$(TargetFramework)'=='' and '$(BundledNETCoreAppTargetFrameworkVersion)'!=''"
         >netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>
-    <TargetFramework>net6</TargetFramework>
     <TargetExt>.dll</TargetExt>
     <OutputType>Exe</OutputType>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -31,9 +30,6 @@
     <Compile Include="GeneratedGeomElement.cs">
       <DependentUpon>GeneratedGeomElement.tt</DependentUpon>
     </Compile>
-    <Compile Include="GeneratedGeomShapeViewDefinitions.cs">
-      <DependentUpon>GeneratedGeomShapeViewDefinitions.tt</DependentUpon>
-    </Compile>
     <Compile Include="GeneratedGeomShapeViewDeclarations.cs">
       <DependentUpon>GeneratedGeomShapeViewDeclarations.tt</DependentUpon>
     </Compile>
@@ -59,10 +55,6 @@
     <None Include="GeneratedGeomElement.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>GeneratedGeomElement.cs</LastGenOutput>
-    </None>
-    <None Include="GeneratedGeomShapeViewDefinitions.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>GeneratedGeomShapeViewDefinitions.cs</LastGenOutput>
     </None>
     <None Include="GeneratedGeomShapeViewDeclarations.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>

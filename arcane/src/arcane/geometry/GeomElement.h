@@ -46,32 +46,32 @@ class GeomElementBase
  public:
 
   //! Empty constructor.
-  GeomElementBase() {}
+  GeomElementBase() = default;
   //! Constructor from the coordinates \a coords of the nodes of the entity \a item
   GeomElementBase(const VariableNodeReal3& coords, ItemWithNodes item)
   {
     init(coords, item);
   }
   //! Constructor from the coordinates \a coords.
-  GeomElementBase(Real3ConstArrayView coords)
+  constexpr GeomElementBase(ConstArrayView<Real3> coords)
   {
     for (Integer i = 0; i < NbNode; ++i)
       setItem(i, coords[i]);
   }
 
   //! Retrieves the value of the i-th node
-  inline const Real3 s(Integer i) const { return Real3(m_s[i].x, m_s[i].y, m_s[i].z); }
+  constexpr const Real3 s(Integer i) const { return Real3(m_s[i].x, m_s[i].y, m_s[i].z); }
   //! Retrieves the value of the i-th node
-  inline const Real3 operator[](Integer i) const { return Real3(m_s[i].x, m_s[i].y, m_s[i].z); }
+  constexpr const Real3 operator[](Integer i) const { return Real3(m_s[i].x, m_s[i].y, m_s[i].z); }
   //! Positions the value of the i-th node at \a v
-  inline void setItem(Integer i, const Real3& v) { m_s[i] = v; }
+  constexpr void setItem(Integer i, const Real3& v) { m_s[i] = v; }
   //! Positions the value of the i-th node at Real3(\a x,\a y,\a z)
-  inline void setItem(Integer i, Real x, Real y, Real z) { m_s[i] = Real3(x, y, z); }
+  constexpr void setItem(Integer i, Real x, Real y, Real z) { m_s[i] = Real3(x, y, z); }
 
   /*!
    * \brief Fills the view \a view with the coordinates of the instance.
    */
-  void fillView(Real3ArrayView view) const
+  constexpr void fillView(ArrayView<Real3> view) const
   {
     for (Integer i = 0; i < NbNode; ++i)
       view[i] = s(i);

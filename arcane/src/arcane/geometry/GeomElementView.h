@@ -38,14 +38,14 @@ class GeomElementConstViewBase
 {
  public:
 
-  explicit GeomElementConstViewBase(ARCANE_RESTRICT const Real3POD* ptr)
+  constexpr explicit GeomElementConstViewBase(ARCANE_RESTRICT const Real3POD* ptr)
   : m_s(ptr)
   {}
 
  public:
 
   //! Retrieves the value of the i-th node
-  inline const Real3 operator[](Integer i) const
+  constexpr const Real3 operator[](Integer i) const
   {
     return Real3(m_s[i].x, m_s[i].y, m_s[i].z);
   }
@@ -55,14 +55,14 @@ class GeomElementConstViewBase
    * \deprecated Use operator[] instead.
    */
   //ARCANE_DEPRECATED inline const Real3 s(Integer i) const
-  inline const Real3 s(Integer i) const
+  constexpr const Real3 s(Integer i) const
   {
     return Real3(m_s[i].x, m_s[i].y, m_s[i].z);
   }
 
  protected:
 
-  ARCANE_RESTRICT const Real3POD* m_s;
+  ARCANE_RESTRICT const Real3POD* m_s = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -79,20 +79,20 @@ class GeomElementViewBase
 {
  public:
 
-  explicit GeomElementViewBase(ARCANE_RESTRICT Real3POD* ptr)
+  explicit constexpr GeomElementViewBase(ARCANE_RESTRICT Real3POD* ptr)
   : m_s(ptr)
   {}
 
  public:
 
   //! Retrieves the value of the i-th node
-  const Real3 operator[](Integer i) const
+  constexpr const Real3 operator[](Integer i) const
   {
     return Real3(m_s[i].x, m_s[i].y, m_s[i].z);
   }
 
   //! Sets the value of the i-th node to v.
-  void setValue(Integer i, Real3 v)
+  constexpr void setValue(Integer i, Real3 v)
   {
     m_s[i].x = v.x;
     m_s[i].y = v.y;
@@ -101,7 +101,7 @@ class GeomElementViewBase
 
  protected:
 
-  ARCANE_RESTRICT Real3POD* m_s;
+  ARCANE_RESTRICT Real3POD* m_s = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

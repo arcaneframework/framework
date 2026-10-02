@@ -1,11 +1,11 @@
-﻿<#@ template language="C#v3.5" #>
+﻿<#@ template language="C#" linePragmas="false" #>
 /*
- * Génération des classes des vues spécifiques des GeomShapeView.
+ * Generation of specific view classes for GeomShapeView.
  */
 <# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
 /*!
  * \ingroup ArcaneGeometric
- * \brief Vue spécifique sur les formes géométriques de type GeomType::<#=item.Name#>.
+ * \brief Specific view on geometric shapes of type GeomType::<#=item.Name#>.
  */
 class ARCANE_GEOMETRY_EXPORT <#=item.Name#>ShapeView
 : public GeomShape<#=item.Dimension#>DView
@@ -27,17 +27,26 @@ class ARCANE_GEOMETRY_EXPORT <#=item.Name#>ShapeView
     ARCANE_GEOMETRIC_CHECKTYPE(rhs.geomType(),GeomType::<#=item.Name#>);
   }
 
-  //! Nombre de noeuds de la forme (retourne \a <#=item.NbNode#>)
-  static Integer nbNode() { return <#=item.NbNode#>; }
-  //! Type de la forme (retourne \a GeomType::<#=item.Type#> )
-  static GeomType geomType() { return GeomType::<#=item.Type#>; }
-  //! Remplit \a svc avec les valeurs du \a i-ème sous-volume de controle.
-  void fillSVC(<#=item.SVCBasicName#>ElementView svc, Integer i) { fillSubZone<#=item.BasicName#>(svc,i); }
+  //! Number of nodes of the shape (returns \a <#=item.NbNode#>)
+  static constexpr Integer nbNode() { return <#=item.NbNode#>; }
+  //! Type of the shape (returns \a GeomType::<#=item.Type#> )
+  static constexpr GeomType geomType() { return GeomType::<#=item.Type#>; }
+  //! Fills \a svc with the values of the \a i-th control sub-volume.
+  void fillSVC(<#=item.SVCBasicName#>ElementView svc, Integer i)
+  {
+    fillSubZone<#=item.BasicName#>(svc,i);
+  }
 
-  //! Opérateur de conversion vers une vue constante sur l'élément géométrique
-  operator <#=item.Name#>ElementConstView () const { return ElementConstView(_nodeView()); }
-  //! Vue constante sur l'élément géométrique
-  <#=item.Name#>ElementConstView elemView() const { return ElementConstView(_nodeView()); }
+  //! Conversion operator to a constant view of the geometric element
+  constexpr operator <#=item.Name#>ElementConstView () const
+  {
+    return ElementConstView(_nodeView());
+  }
+  //! Constant view of the geometric element
+  constexpr <#=item.Name#>ElementConstView elemView() const
+  {
+    return ElementConstView(_nodeView());
+  }
 };
 <# // Génère un typedef s'il existe un nom court #>
 <# if (item.BasicName != item.Name ) { #>
@@ -47,10 +56,10 @@ typedef <#=item.Name#>ShapeView <#=item.BasicName#>ShapeView;
 <# } #>
 
 /*!
- * \name Conversion vers une vue sur une forme géométrique spécifique.
+ * \name Conversion to a view on a specific geometric shape.
  *
- * Ces méthodes permettent de convertir l'instance en une vue spécifique à un type donné.
- * Le type géométrique (geomType()) de l'instance doit correspondre.
+ * These methods allow converting the instance into a specific view for a given type.
+ * The geometric type (geomType()) of the instance must match.
  */
 //@{
 <# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
@@ -63,10 +72,10 @@ to<#=item.Name#>Shape() const
 //@}
 
 /*!
- * \name Conversion vers une vue sur un élément géométrique spécifique.
+ * \name Conversion to a view on a specific geometric element.
  *
- * Ces méthodes permettent de convertir l'instance en une vue spécifique à un type donné.
- * Le type géométrique (geomType()) de l'instance doit correspondre.
+ * These methods allow converting the instance into a specific view for a given type.
+ * The geometric type (geomType()) of the instance must match.
  */
 //@{
 <# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
