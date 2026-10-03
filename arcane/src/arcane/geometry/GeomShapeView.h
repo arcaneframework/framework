@@ -74,10 +74,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
  public:
 
   GeomShapeView()
-  : m_node_ptr(0)
-  , m_face_ptr(0)
-  , m_center_ptr(0)
-  , m_cell_connectivity(global_cell_connectivity[IT_NullType])
+  : m_cell_connectivity(global_cell_connectivity[IT_NullType])
   , m_item_internal(ItemInternal::nullItem())
   {
   }
@@ -109,10 +106,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
    */
   //@{
   //! Position of the \a i-th node of the shape
-  const Real3 node(Integer i) const
-  {
-    return m_node_ptr[i];
-  }
+  constexpr const Real3 node(Integer i) const { return m_node_ptr[i]; }
 
   //! Position of the center of the \a i-th face of the shape
   const Real3 face(Integer i) const
@@ -151,9 +145,9 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
 
  private:
 
-  ARCANE_RESTRICT const Real3* m_node_ptr;
-  ARCANE_RESTRICT const Real3* m_face_ptr;
-  ARCANE_RESTRICT const Real3* m_center_ptr;
+  ARCANE_RESTRICT const Real3* m_node_ptr = nullptr;
+  ARCANE_RESTRICT const Real3* m_face_ptr = nullptr;
+  ARCANE_RESTRICT const Real3* m_center_ptr = nullptr;
   //! Connectivity information
   CellConnectivity* m_cell_connectivity;
   //! Information about the original entity (ItemInternal::nullItem() if none)
@@ -162,7 +156,7 @@ class ARCANE_GEOMETRY_EXPORT GeomShapeView
  protected:
 
   //TODO: TO BE REMOVED
-  const Real3POD* _nodeView() const { return (Real3POD*)m_node_ptr; }
+  constexpr const Real3POD* _nodeView() const { return (Real3POD*)(m_node_ptr); }
 
  public:
 

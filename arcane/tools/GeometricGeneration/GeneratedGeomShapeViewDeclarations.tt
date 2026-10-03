@@ -1,19 +1,18 @@
-﻿<#@ template language="C#v3.5" #>
+﻿<#@ template language="C#" linePragmas="false" #>
 /*
- * Génération des déclarations pour GeomShapeView.
- * Ce fichier doit être inclus directement dans la définition de la classe GeomShapeView
+ * Generation of declarations for GeomShapeView.
+ * This file must be included directly in the definition of the GeomShapeView class.
  */
 
-
 /*!
- * \name Remplissage des sous-volumes de contrôle pour un type spécifique.
+ * \name Filling of control sub-volumes for a specific type.
  *
- * Le type géométrique (geomType()) de l'instance doit correspondre au choix de la méthode utilisée.
+ * The geometric type (geomType()) of the instance must match the chosen method.
  */
 //@{
 <# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
 /*!
- * \brief Remplit \a svc avec les informations du \a i-ème sous-volume de contrôle.
+ * \brief Fills \a svc with the information of the \a i-th control sub-volume.
  * \pre type()==GeomType::<#=item.Name#>
  */
 void fillSubZone<#=item.Name#>(<#=item.SVCBasicName#>ElementView svc,Integer i);
@@ -21,28 +20,30 @@ void fillSubZone<#=item.Name#>(<#=item.SVCBasicName#>ElementView svc,Integer i);
 //@}
 
 /*!
- * \name Remplissage des sous-volumes de contrôle (méthodes obsolètes)
+ * \name Filling of control sub-volumes (obsolete methods).
  *
- * Ces méthodes sont obsolètes et doivent être remplacées par la méthode
- * équivalente avec le nom complet de l'élément.
+ * These methods are obsolete and must be replaced by the equivalent method
+ * with the full element name.
  */
 //@{
 <# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
 <# if (item.BasicName != item.Name ) { #>
 /*!
- * \brief Remplit \a svc avec les informations du \a i-ème sous-volume de contrôle.
+ * \brief Fills \a svc with the information of the \a i-th control sub-volume.
  *
- * \deprecated Utiliser fillSubZone<#=item.Name#>() à la place
+ * \deprecated Use fillSubZone<#=item.Name#>() instead.
  */
 void fillSubZone<#=item.BasicName#>(<#=item.SVCBasicName#>ElementView svc,Integer i)
-{ fillSubZone<#=item.Name#>(svc,i); }
+{
+  fillSubZone<#=item.Name#>(svc,i);
+}
 <# } #>
 <# } #>   
 //@}
 
 <# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
 /*!
- * \brief Retourne une vue spécifique vers un élément géométrique de type GeomType::<#=item.Name#>.
+ * \brief Returns a specific view to a geometric element of type GeomType::<#=item.Name#>.
  * \pre type()==GeomType::<#=item.Name#>
  */
 inline <#=item.Name#>ElementConstView to<#=item.Name#>Element() const;
@@ -50,7 +51,7 @@ inline <#=item.Name#>ElementConstView to<#=item.Name#>Element() const;
 
 <# foreach( Item item in Connectivity.Items2DAnd3D ) { #>
 /*!
- * \brief Retourne une vue spécifique pour une forme géométrique de type GeomType::<#=item.Name#>.
+ * \brief Returns a specific view for a geometric shape of type GeomType::<#=item.Name#>.
  * \pre type()==GeomType::<#=item.Name#>
  */
 inline <#=item.Name#>ShapeView to<#=item.Name#>Shape() const;

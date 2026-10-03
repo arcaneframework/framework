@@ -11,14 +11,17 @@ class ARCANE_GEOMETRY_EXPORT Triangle3Element
 : public GeomElementBase< 3 >
 {
  public:
-  typedef Triangle3ElementConstView ConstViewType;
-  typedef Triangle3ElementView ViewType;
- public:
-   using GeomElementBase< 3 >::init;
 
-  Triangle3Element(){}
+  using ConstViewType = Triangle3ElementConstView;
+  using ViewType = Triangle3ElementView;
+
+ public:
+
+  using GeomElementBase< 3 >::init;
+
+  Triangle3Element() = default;
   Triangle3Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
-  Triangle3Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  constexpr Triangle3Element(ConstArrayView<Real3> coords) : GeomElementBase(coords){}
   Triangle3Element(const Real3& a0, const Real3& a1, const Real3& a2)
   {
       m_s[0] = a0;
@@ -27,24 +30,24 @@ class ARCANE_GEOMETRY_EXPORT Triangle3Element
      }
 
   //! Initializes the instance with the coordinates passed as arguments
-  void init(const Real3& a0, const Real3& a1, const Real3& a2)
+  constexpr void init(const Real3& a0, const Real3& a1, const Real3& a2)
   {
       m_s[0] = a0;
       m_s[1] = a1;
       m_s[2] = a2;
      }
   //! Conversion operator to a constant view
-  operator ConstViewType() const { return ConstViewType(m_s); }
+  constexpr operator ConstViewType() const { return ConstViewType(m_s); }
   //! Conversion operator to a mutable view
-  operator ViewType() { return ViewType(m_s); }
+  constexpr operator ViewType() { return ViewType(m_s); }
   //! Constant view of the element
-  ConstViewType constView() const { return ConstViewType(m_s); }
+  constexpr ConstViewType constView() const { return ConstViewType(m_s); }
   //! Mutable view of the element
-  ViewType view() { return ViewType(m_s); }
+  constexpr ViewType view() { return ViewType(m_s); }
 };
 
 //! Geometric element of type GeomType::Triangle3
-typedef Triangle3Element TriangleElement;
+using TriangleElement = Triangle3Element;
 
 
 /*!
@@ -55,14 +58,17 @@ class ARCANE_GEOMETRY_EXPORT Quad4Element
 : public GeomElementBase< 4 >
 {
  public:
-  typedef Quad4ElementConstView ConstViewType;
-  typedef Quad4ElementView ViewType;
- public:
-   using GeomElementBase< 4 >::init;
 
-  Quad4Element(){}
+  using ConstViewType = Quad4ElementConstView;
+  using ViewType = Quad4ElementView;
+
+ public:
+
+  using GeomElementBase< 4 >::init;
+
+  Quad4Element() = default;
   Quad4Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
-  Quad4Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  constexpr Quad4Element(ConstArrayView<Real3> coords) : GeomElementBase(coords){}
   Quad4Element(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3)
   {
       m_s[0] = a0;
@@ -72,7 +78,7 @@ class ARCANE_GEOMETRY_EXPORT Quad4Element
      }
 
   //! Initializes the instance with the coordinates passed as arguments
-  void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3)
+  constexpr void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3)
   {
       m_s[0] = a0;
       m_s[1] = a1;
@@ -80,17 +86,17 @@ class ARCANE_GEOMETRY_EXPORT Quad4Element
       m_s[3] = a3;
      }
   //! Conversion operator to a constant view
-  operator ConstViewType() const { return ConstViewType(m_s); }
+  constexpr operator ConstViewType() const { return ConstViewType(m_s); }
   //! Conversion operator to a mutable view
-  operator ViewType() { return ViewType(m_s); }
+  constexpr operator ViewType() { return ViewType(m_s); }
   //! Constant view of the element
-  ConstViewType constView() const { return ConstViewType(m_s); }
+  constexpr ConstViewType constView() const { return ConstViewType(m_s); }
   //! Mutable view of the element
-  ViewType view() { return ViewType(m_s); }
+  constexpr ViewType view() { return ViewType(m_s); }
 };
 
 //! Geometric element of type GeomType::Quad4
-typedef Quad4Element QuadElement;
+using QuadElement = Quad4Element;
 
 
 /*!
@@ -101,14 +107,17 @@ class ARCANE_GEOMETRY_EXPORT Pentagon5Element
 : public GeomElementBase< 5 >
 {
  public:
-  typedef Pentagon5ElementConstView ConstViewType;
-  typedef Pentagon5ElementView ViewType;
- public:
-   using GeomElementBase< 5 >::init;
 
-  Pentagon5Element(){}
+  using ConstViewType = Pentagon5ElementConstView;
+  using ViewType = Pentagon5ElementView;
+
+ public:
+
+  using GeomElementBase< 5 >::init;
+
+  Pentagon5Element() = default;
   Pentagon5Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
-  Pentagon5Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  constexpr Pentagon5Element(ConstArrayView<Real3> coords) : GeomElementBase(coords){}
   Pentagon5Element(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4)
   {
       m_s[0] = a0;
@@ -119,7 +128,7 @@ class ARCANE_GEOMETRY_EXPORT Pentagon5Element
      }
 
   //! Initializes the instance with the coordinates passed as arguments
-  void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4)
+  constexpr void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4)
   {
       m_s[0] = a0;
       m_s[1] = a1;
@@ -128,17 +137,17 @@ class ARCANE_GEOMETRY_EXPORT Pentagon5Element
       m_s[4] = a4;
      }
   //! Conversion operator to a constant view
-  operator ConstViewType() const { return ConstViewType(m_s); }
+  constexpr operator ConstViewType() const { return ConstViewType(m_s); }
   //! Conversion operator to a mutable view
-  operator ViewType() { return ViewType(m_s); }
+  constexpr operator ViewType() { return ViewType(m_s); }
   //! Constant view of the element
-  ConstViewType constView() const { return ConstViewType(m_s); }
+  constexpr ConstViewType constView() const { return ConstViewType(m_s); }
   //! Mutable view of the element
-  ViewType view() { return ViewType(m_s); }
+  constexpr ViewType view() { return ViewType(m_s); }
 };
 
 //! Geometric element of type GeomType::Pentagon5
-typedef Pentagon5Element PentagonElement;
+using PentagonElement = Pentagon5Element;
 
 
 /*!
@@ -149,14 +158,17 @@ class ARCANE_GEOMETRY_EXPORT Hexagon6Element
 : public GeomElementBase< 6 >
 {
  public:
-  typedef Hexagon6ElementConstView ConstViewType;
-  typedef Hexagon6ElementView ViewType;
- public:
-   using GeomElementBase< 6 >::init;
 
-  Hexagon6Element(){}
+  using ConstViewType = Hexagon6ElementConstView;
+  using ViewType = Hexagon6ElementView;
+
+ public:
+
+  using GeomElementBase< 6 >::init;
+
+  Hexagon6Element() = default;
   Hexagon6Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
-  Hexagon6Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  constexpr Hexagon6Element(ConstArrayView<Real3> coords) : GeomElementBase(coords){}
   Hexagon6Element(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5)
   {
       m_s[0] = a0;
@@ -168,7 +180,7 @@ class ARCANE_GEOMETRY_EXPORT Hexagon6Element
      }
 
   //! Initializes the instance with the coordinates passed as arguments
-  void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5)
+  constexpr void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5)
   {
       m_s[0] = a0;
       m_s[1] = a1;
@@ -178,17 +190,17 @@ class ARCANE_GEOMETRY_EXPORT Hexagon6Element
       m_s[5] = a5;
      }
   //! Conversion operator to a constant view
-  operator ConstViewType() const { return ConstViewType(m_s); }
+  constexpr operator ConstViewType() const { return ConstViewType(m_s); }
   //! Conversion operator to a mutable view
-  operator ViewType() { return ViewType(m_s); }
+  constexpr operator ViewType() { return ViewType(m_s); }
   //! Constant view of the element
-  ConstViewType constView() const { return ConstViewType(m_s); }
+  constexpr ConstViewType constView() const { return ConstViewType(m_s); }
   //! Mutable view of the element
-  ViewType view() { return ViewType(m_s); }
+  constexpr ViewType view() { return ViewType(m_s); }
 };
 
 //! Geometric element of type GeomType::Hexagon6
-typedef Hexagon6Element HexagonElement;
+using HexagonElement = Hexagon6Element;
 
 
 /*!
@@ -199,14 +211,17 @@ class ARCANE_GEOMETRY_EXPORT Tetraedron4Element
 : public GeomElementBase< 4 >
 {
  public:
-  typedef Tetraedron4ElementConstView ConstViewType;
-  typedef Tetraedron4ElementView ViewType;
- public:
-   using GeomElementBase< 4 >::init;
 
-  Tetraedron4Element(){}
+  using ConstViewType = Tetraedron4ElementConstView;
+  using ViewType = Tetraedron4ElementView;
+
+ public:
+
+  using GeomElementBase< 4 >::init;
+
+  Tetraedron4Element() = default;
   Tetraedron4Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
-  Tetraedron4Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  constexpr Tetraedron4Element(ConstArrayView<Real3> coords) : GeomElementBase(coords){}
   Tetraedron4Element(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3)
   {
       m_s[0] = a0;
@@ -216,7 +231,7 @@ class ARCANE_GEOMETRY_EXPORT Tetraedron4Element
      }
 
   //! Initializes the instance with the coordinates passed as arguments
-  void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3)
+  constexpr void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3)
   {
       m_s[0] = a0;
       m_s[1] = a1;
@@ -224,17 +239,17 @@ class ARCANE_GEOMETRY_EXPORT Tetraedron4Element
       m_s[3] = a3;
      }
   //! Conversion operator to a constant view
-  operator ConstViewType() const { return ConstViewType(m_s); }
+  constexpr operator ConstViewType() const { return ConstViewType(m_s); }
   //! Conversion operator to a mutable view
-  operator ViewType() { return ViewType(m_s); }
+  constexpr operator ViewType() { return ViewType(m_s); }
   //! Constant view of the element
-  ConstViewType constView() const { return ConstViewType(m_s); }
+  constexpr ConstViewType constView() const { return ConstViewType(m_s); }
   //! Mutable view of the element
-  ViewType view() { return ViewType(m_s); }
+  constexpr ViewType view() { return ViewType(m_s); }
 };
 
 //! Geometric element of type GeomType::Tetraedron4
-typedef Tetraedron4Element TetraElement;
+using TetraElement = Tetraedron4Element;
 
 
 /*!
@@ -245,14 +260,17 @@ class ARCANE_GEOMETRY_EXPORT Pyramid5Element
 : public GeomElementBase< 5 >
 {
  public:
-  typedef Pyramid5ElementConstView ConstViewType;
-  typedef Pyramid5ElementView ViewType;
- public:
-   using GeomElementBase< 5 >::init;
 
-  Pyramid5Element(){}
+  using ConstViewType = Pyramid5ElementConstView;
+  using ViewType = Pyramid5ElementView;
+
+ public:
+
+  using GeomElementBase< 5 >::init;
+
+  Pyramid5Element() = default;
   Pyramid5Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
-  Pyramid5Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  constexpr Pyramid5Element(ConstArrayView<Real3> coords) : GeomElementBase(coords){}
   Pyramid5Element(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4)
   {
       m_s[0] = a0;
@@ -263,7 +281,7 @@ class ARCANE_GEOMETRY_EXPORT Pyramid5Element
      }
 
   //! Initializes the instance with the coordinates passed as arguments
-  void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4)
+  constexpr void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4)
   {
       m_s[0] = a0;
       m_s[1] = a1;
@@ -272,17 +290,17 @@ class ARCANE_GEOMETRY_EXPORT Pyramid5Element
       m_s[4] = a4;
      }
   //! Conversion operator to a constant view
-  operator ConstViewType() const { return ConstViewType(m_s); }
-  //! Conversion operator to a modifiable view
-  operator ViewType() { return ViewType(m_s); }
+  constexpr operator ConstViewType() const { return ConstViewType(m_s); }
+  //! Conversion operator to a mutable view
+  constexpr operator ViewType() { return ViewType(m_s); }
   //! Constant view of the element
-  ConstViewType constView() const { return ConstViewType(m_s); }
-  //! Modifiable view of the element
-  ViewType view() { return ViewType(m_s); }
+  constexpr ConstViewType constView() const { return ConstViewType(m_s); }
+  //! Mutable view of the element
+  constexpr ViewType view() { return ViewType(m_s); }
 };
 
 //! Geometric element of type GeomType::Pyramid5
-typedef Pyramid5Element PyramidElement;
+using PyramidElement = Pyramid5Element;
 
 
 /*!
@@ -293,14 +311,17 @@ class ARCANE_GEOMETRY_EXPORT Pentaedron6Element
 : public GeomElementBase< 6 >
 {
  public:
-  typedef Pentaedron6ElementConstView ConstViewType;
-  typedef Pentaedron6ElementView ViewType;
- public:
-   using GeomElementBase< 6 >::init;
 
-  Pentaedron6Element(){}
+  using ConstViewType = Pentaedron6ElementConstView;
+  using ViewType = Pentaedron6ElementView;
+
+ public:
+
+  using GeomElementBase< 6 >::init;
+
+  Pentaedron6Element() = default;
   Pentaedron6Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
-  Pentaedron6Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  constexpr Pentaedron6Element(ConstArrayView<Real3> coords) : GeomElementBase(coords){}
   Pentaedron6Element(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5)
   {
       m_s[0] = a0;
@@ -312,7 +333,7 @@ class ARCANE_GEOMETRY_EXPORT Pentaedron6Element
      }
 
   //! Initializes the instance with the coordinates passed as arguments
-  void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5)
+  constexpr void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5)
   {
       m_s[0] = a0;
       m_s[1] = a1;
@@ -322,17 +343,17 @@ class ARCANE_GEOMETRY_EXPORT Pentaedron6Element
       m_s[5] = a5;
      }
   //! Conversion operator to a constant view
-  operator ConstViewType() const { return ConstViewType(m_s); }
-  //! Conversion operator to a modifiable view
-  operator ViewType() { return ViewType(m_s); }
+  constexpr operator ConstViewType() const { return ConstViewType(m_s); }
+  //! Conversion operator to a mutable view
+  constexpr operator ViewType() { return ViewType(m_s); }
   //! Constant view of the element
-  ConstViewType constView() const { return ConstViewType(m_s); }
-  //! Modifiable view of the element
-  ViewType view() { return ViewType(m_s); }
+  constexpr ConstViewType constView() const { return ConstViewType(m_s); }
+  //! Mutable view of the element
+  constexpr ViewType view() { return ViewType(m_s); }
 };
 
 //! Geometric element of type GeomType::Pentaedron6
-typedef Pentaedron6Element PentaElement;
+using PentaElement = Pentaedron6Element;
 
 
 /*!
@@ -343,14 +364,17 @@ class ARCANE_GEOMETRY_EXPORT Hexaedron8Element
 : public GeomElementBase< 8 >
 {
  public:
-  typedef Hexaedron8ElementConstView ConstViewType;
-  typedef Hexaedron8ElementView ViewType;
- public:
-   using GeomElementBase< 8 >::init;
 
-  Hexaedron8Element(){}
+  using ConstViewType = Hexaedron8ElementConstView;
+  using ViewType = Hexaedron8ElementView;
+
+ public:
+
+  using GeomElementBase< 8 >::init;
+
+  Hexaedron8Element() = default;
   Hexaedron8Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
-  Hexaedron8Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  constexpr Hexaedron8Element(ConstArrayView<Real3> coords) : GeomElementBase(coords){}
   Hexaedron8Element(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5, const Real3& a6, const Real3& a7)
   {
       m_s[0] = a0;
@@ -364,7 +388,7 @@ class ARCANE_GEOMETRY_EXPORT Hexaedron8Element
      }
 
   //! Initializes the instance with the coordinates passed as arguments
-  void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5, const Real3& a6, const Real3& a7)
+  constexpr void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5, const Real3& a6, const Real3& a7)
   {
       m_s[0] = a0;
       m_s[1] = a1;
@@ -376,17 +400,17 @@ class ARCANE_GEOMETRY_EXPORT Hexaedron8Element
       m_s[7] = a7;
      }
   //! Conversion operator to a constant view
-  operator ConstViewType() const { return ConstViewType(m_s); }
-  //! Conversion operator to a modifiable view
-  operator ViewType() { return ViewType(m_s); }
+  constexpr operator ConstViewType() const { return ConstViewType(m_s); }
+  //! Conversion operator to a mutable view
+  constexpr operator ViewType() { return ViewType(m_s); }
   //! Constant view of the element
-  ConstViewType constView() const { return ConstViewType(m_s); }
-  //! Modifiable view of the element
-  ViewType view() { return ViewType(m_s); }
+  constexpr ConstViewType constView() const { return ConstViewType(m_s); }
+  //! Mutable view of the element
+  constexpr ViewType view() { return ViewType(m_s); }
 };
 
 //! Geometric element of type GeomType::Hexaedron8
-typedef Hexaedron8Element HexaElement;
+using HexaElement = Hexaedron8Element;
 
 
 /*!
@@ -397,14 +421,17 @@ class ARCANE_GEOMETRY_EXPORT Heptaedron10Element
 : public GeomElementBase< 10 >
 {
  public:
-  typedef Heptaedron10ElementConstView ConstViewType;
-  typedef Heptaedron10ElementView ViewType;
- public:
-   using GeomElementBase< 10 >::init;
 
-  Heptaedron10Element(){}
+  using ConstViewType = Heptaedron10ElementConstView;
+  using ViewType = Heptaedron10ElementView;
+
+ public:
+
+  using GeomElementBase< 10 >::init;
+
+  Heptaedron10Element() = default;
   Heptaedron10Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
-  Heptaedron10Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  constexpr Heptaedron10Element(ConstArrayView<Real3> coords) : GeomElementBase(coords){}
   Heptaedron10Element(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5, const Real3& a6, const Real3& a7, const Real3& a8, const Real3& a9)
   {
       m_s[0] = a0;
@@ -420,7 +447,7 @@ class ARCANE_GEOMETRY_EXPORT Heptaedron10Element
      }
 
   //! Initializes the instance with the coordinates passed as arguments
-  void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5, const Real3& a6, const Real3& a7, const Real3& a8, const Real3& a9)
+  constexpr void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5, const Real3& a6, const Real3& a7, const Real3& a8, const Real3& a9)
   {
       m_s[0] = a0;
       m_s[1] = a1;
@@ -434,17 +461,17 @@ class ARCANE_GEOMETRY_EXPORT Heptaedron10Element
       m_s[9] = a9;
      }
   //! Conversion operator to a constant view
-  operator ConstViewType() const { return ConstViewType(m_s); }
-  //! Conversion operator to a modifiable view
-  operator ViewType() { return ViewType(m_s); }
+  constexpr operator ConstViewType() const { return ConstViewType(m_s); }
+  //! Conversion operator to a mutable view
+  constexpr operator ViewType() { return ViewType(m_s); }
   //! Constant view of the element
-  ConstViewType constView() const { return ConstViewType(m_s); }
-  //! Modifiable view of the element
-  ViewType view() { return ViewType(m_s); }
+  constexpr ConstViewType constView() const { return ConstViewType(m_s); }
+  //! Mutable view of the element
+  constexpr ViewType view() { return ViewType(m_s); }
 };
 
 //! Geometric element of type GeomType::Heptaedron10
-typedef Heptaedron10Element Wedge7Element;
+using Wedge7Element = Heptaedron10Element;
 
 
 /*!
@@ -455,14 +482,17 @@ class ARCANE_GEOMETRY_EXPORT Octaedron12Element
 : public GeomElementBase< 12 >
 {
  public:
-  typedef Octaedron12ElementConstView ConstViewType;
-  typedef Octaedron12ElementView ViewType;
- public:
-   using GeomElementBase< 12 >::init;
 
-  Octaedron12Element(){}
+  using ConstViewType = Octaedron12ElementConstView;
+  using ViewType = Octaedron12ElementView;
+
+ public:
+
+  using GeomElementBase< 12 >::init;
+
+  Octaedron12Element() = default;
   Octaedron12Element(const VariableNodeReal3& coords,ItemWithNodes item) : GeomElementBase(coords,item){}
-  Octaedron12Element(Real3ConstArrayView coords) : GeomElementBase(coords){}
+  constexpr Octaedron12Element(ConstArrayView<Real3> coords) : GeomElementBase(coords){}
   Octaedron12Element(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5, const Real3& a6, const Real3& a7, const Real3& a8, const Real3& a9, const Real3& a10, const Real3& a11)
   {
       m_s[0] = a0;
@@ -480,7 +510,7 @@ class ARCANE_GEOMETRY_EXPORT Octaedron12Element
      }
 
   //! Initializes the instance with the coordinates passed as arguments
-  void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5, const Real3& a6, const Real3& a7, const Real3& a8, const Real3& a9, const Real3& a10, const Real3& a11)
+  constexpr void init(const Real3& a0, const Real3& a1, const Real3& a2, const Real3& a3, const Real3& a4, const Real3& a5, const Real3& a6, const Real3& a7, const Real3& a8, const Real3& a9, const Real3& a10, const Real3& a11)
   {
       m_s[0] = a0;
       m_s[1] = a1;
@@ -496,14 +526,15 @@ class ARCANE_GEOMETRY_EXPORT Octaedron12Element
       m_s[11] = a11;
      }
   //! Conversion operator to a constant view
-  operator ConstViewType() const { return ConstViewType(m_s); }
-  //! Conversion operator to a modifiable view
-  operator ViewType() { return ViewType(m_s); }
+  constexpr operator ConstViewType() const { return ConstViewType(m_s); }
+  //! Conversion operator to a mutable view
+  constexpr operator ViewType() { return ViewType(m_s); }
   //! Constant view of the element
-  ConstViewType constView() const { return ConstViewType(m_s); }
-  //! Modifiable view of the element
-  ViewType view() { return ViewType(m_s); }
+  constexpr ConstViewType constView() const { return ConstViewType(m_s); }
+  //! Mutable view of the element
+  constexpr ViewType view() { return ViewType(m_s); }
 };
 
 //! Geometric element of type GeomType::Octaedron12
-typedef Octaedron12Element Wedge8Element;
+using Wedge8Element = Octaedron12Element;
+

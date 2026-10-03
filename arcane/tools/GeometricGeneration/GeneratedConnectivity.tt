@@ -1,32 +1,38 @@
-﻿<#@ template language="C#v3.5" #>
+﻿<#@ template language="C#" linePragmas="false" #>
 /*
- * Génération des classes permettant de récupérer les informations
- * de connectivité pour chaque type d'élément géométrique.
+ * Generation of classes allowing retrieval of connectivity information
+ * for each type of geometric element.
  */
 <# foreach( Item item in Connectivity.Items ) { #>
 /*!
  * \ingroup ArcaneGeometric
- * \brief Informations de connectivité pour les éléments géométriques de type GeomType::<#=item.Name #>.
+ * \brief Connectivity information for geometric elements of type GeomType::<#=item.Name #>.
 <# if (item.Type==GeomType.Pyramid5) { #>
  *
- * \note la pyramide a 8 arêtes mais on la considère comme un hexaèdre dégénéré
- * en le sommet de la pyramide. Pour prendre en compte cela, on indique
- * qu'elle a 12 arêtes.
+ * \note the pyramid has 8 edges but it is considered a degenerate hexahedron
+ * at the pyramid's apex. To account for this, we indicate
+ * that it has 12 edges.
 <# } #>
  */
 class ARCANE_GEOMETRY_EXPORT <#=item.Name#>Connectivity
 : public CellConnectivity
 {
  public:
+
   <#=item.Name#>Connectivity()
   : CellConnectivity(<#=item.NbNode#>,<#=item.NbEdge#>,<#=item.NbFace#>,GeomType::<#=item.Type#>)
-  { _init(); }
+  {
+    _init();
+  }
+
  public:
-  Integer nbNode() const { return <#=item.NbNode#>; }
-  Integer nbEdge() const { return <#=item.NbEdge#>; }
-  Integer nbFace() const { return <#=item.NbFace#>; }
- public:
+
+  constexpr Int32 nbNode() const { return <#=item.NbNode#>; }
+  constexpr Int32 nbEdge() const { return <#=item.NbEdge#>; }
+  constexpr Int32 nbFace() const { return <#=item.NbFace#>; }
+
  private:
+
   void _init();
 };
 <# } #>   
