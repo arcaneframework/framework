@@ -1,4 +1,4 @@
-set(TEST_DIRS . anyitem dof inout)
+﻿set(TEST_DIRS . anyitem dof inout)
 
 set(TEST_LIBS ${ARCANE_ADDITIONNAL_TEST_LIBRARIES})
 if (TARGET arcane_aleph_tests)
@@ -29,9 +29,7 @@ arcane_find_package(Lima)
 if (Lima_FOUND)
   set(TEST_LIBS ${TEST_LIBS} Lima::Lima)
 endif ()
-
 list(APPEND TEST_LIBS arcane_materials)
-
 
 include(srcs.cmake)
 include(accelerator/srcs.cmake)
@@ -281,6 +279,7 @@ arcane_copy_mesh_direct(onesphere.binary.msh)
 arcane_copy_mesh_direct(mesh_with_loose_items.msh)
 arcane_copy_mesh_direct(order2_misc_types.msh)
 arcane_copy_mesh_direct(triangles10_v41.msh)
+arcane_copy_mesh_direct(cube_polyhedral.med)
 arcane_copy_mesh(tied_interface_1 tied_interface_1 vtk)
 arcane_copy_mesh(tied_interface_2 tied_interface_2 vtk)
 arcane_copy_mesh(tied_interface_2d_1 tied_interface_2d_1 vtk)
@@ -757,6 +756,7 @@ if (MEDFile_FOUND)
   arcane_add_test(mesh2_med_meshservice testMesh-med2-meshservice.arc)
   arcane_add_test(mesh_hexa20_med testMesh-med3.arc)
   arcane_add_test(mesh_polygonal_med testMesh-med-polygonal.arc)
+  arcane_add_test_sequential(mesh_polyhedral_med testMesh-med-polyhedral.arc)
 endif ()
 # Temporarily disables reading quadratic cells with VTK because
 # the mesh is not correct.

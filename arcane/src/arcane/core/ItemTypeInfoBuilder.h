@@ -179,6 +179,9 @@ class ItemTypeInfoBuilder
   //! Adds a generic face to the list of faces
   void addFaceGeneric(Integer face_index, Integer type_id, ConstArrayView<Integer> n);
 
+    //! Adds a generic face to the list of faces
+  void addFaceGeneric(Int32 face_index, ItemTypeId type_id, ConstArrayView<Int16> nodes);
+
   //! Computes the face->edge relations
   void computeFaceEdgeInfos();
 
