@@ -410,6 +410,7 @@ _dumpMesh()
   }
 
   if (mesh_io.get()) {
+    info() << "Writing mesh file to path '" << base_path.path() << "' using service " << write_service_name;
     if (write_service_name == "Lima")
       file_name = file_name + ".unf";
     mesh_io->writeMeshToFile(mesh(), base_path.file(file_name));
