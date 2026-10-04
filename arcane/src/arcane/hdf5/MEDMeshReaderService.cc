@@ -15,6 +15,7 @@
 #include "arcane/utils/SmallArray.h"
 #include "arcane/utils/FixedArray.h"
 #include "arcane/utils/Convert.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/core/IMeshReader.h"
 #include "arcane/core/BasicService.h"
@@ -28,10 +29,13 @@
 #include "arcane/core/NodesOfItemReorderer.h"
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/ItemPrinter.h"
+#include "arcane/core/internal/ItemTypeMngInternal.h"
 
 #include <med.h>
 #define MESGERR 1
 #include <med_utils.h>
+
+#include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -182,8 +186,8 @@ class MEDMeshReader
 
  private:
 
-  Int32 _readItems(med_idt fid, const char* meshnane, const MEDToArcaneItemInfo& iinfo,
-                   Array<Int16>& polygon_nb_nodes, Array<med_int>& connectivity, Array<med_int>& family_values);
+  Int32 _readItems(IPrimaryMesh* mesh, med_idt fid, const char* meshnane, const MEDToArcaneItemInfo& iinfo,
+                   Array<Int16>& poly_nb_nodes, Array<Int16>& poly_types, Array<med_int>& connectivity, Array<med_int>& family_values);
   void _initMEDToArcaneTypes();
   void _addTypeInfo(int dimension, int nb_node, med_int med_type, ItemTypeId arcane_type)
   {
@@ -213,6 +217,10 @@ class MEDMeshReader
     }
   }
   void _broadcastGroups(ConstArrayView<String> names, IItemFamily* family);
+  med_int _readPolyhedrons(IPrimaryMesh* mesh, med_idt fid, const char* meshname,
+                           Array<Int16>& poly_nb_nodes,
+                           Array<Int16>& poly_types_id,
+                           Array<med_int>& connectivity);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -276,7 +284,7 @@ _initMEDToArcaneTypes()
 
   _addTypeInfo(2, 0, MED_POLYGON, ITI_GenericPolygon);
   _addTypeInfo(2, 0, MED_POLYGON2, ITI_NullType);
-  _addTypeInfo(3, 0, MED_POLYHEDRON, ITI_NullType);
+  _addTypeInfo(3, 0, MED_POLYHEDRON, ITI_GenericPolyhedron);
 
   // Cells whose geometry is dynamic (model discovery in the file)
   // TODO: check how to process them
@@ -392,7 +400,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
 
   mesh->setDimension(mesh_dimension);
 
-  // MED meshes can contain polygons.
+  // MED meshes can contain polygons or polyhedrons
   // We therefore build the corresponding types.
   // (NOTE: all subdomains must do this)
   mesh->itemTypeMng()->buildPolygonTypes();
@@ -529,11 +537,13 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
   // cell created.
   Int64 cell_unique_id = 0;
 
-  UniqueArray<Int16> polygon_nb_nodes;
+  // Number of nodes for each polygon or polyhedron
+  UniqueArray<Int16> poly_nb_nodes;
+  // Type of each polygon or polyhedron
+  UniqueArray<Int16> poly_types_id;
   UniqueArray<med_int> med_connectivity;
   UniqueArray<med_int> med_family_values;
 
-  ItemTypeMng* itm = mesh->itemTypeMng();
   // Allocates cells type by type.
   // Iterates through the available types and processes those that match the dimension
   // of the mesh.
@@ -545,7 +555,7 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
     // We only process entities of the mesh dimension.
     if (item_dimension != mesh_dimension)
       continue;
-    Int32 nb_item = _readItems(fid, meshname, iinfo, polygon_nb_nodes, med_connectivity, med_family_values);
+    Int32 nb_item = _readItems(mesh, fid, meshname, iinfo, poly_nb_nodes, poly_types_id, med_connectivity, med_family_values);
     if (nb_item == 0)
       continue;
     Int16 arcane_type = iinfo.arcaneType();
@@ -557,10 +567,10 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
     }
     Int64 cells_infos_index = 0;
     Int64 med_connectivity_index = 0;
-    const bool is_polygon = (iinfo.medType() == MED_POLYGON);
+    const bool is_poly = (iinfo.medType() == MED_POLYGON) || (iinfo.medType() == MED_POLYHEDRON);
 
     UniqueArray<Int64> cells_infos;
-    if (is_polygon)
+    if (is_poly)
       cells_infos.resize(2 * nb_item + med_connectivity.size());
     else
       cells_infos.resize((2 + nb_item_node) * nb_item);
@@ -572,9 +582,9 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
     for (Int32 i = 0; i < nb_item; ++i) {
       Int64 current_cell_unique_id = cell_unique_id;
       ++cell_unique_id;
-      if (is_polygon) {
-        nb_item_node = polygon_nb_nodes[i];
-        arcane_type = itm->getPolygonType(static_cast<Int16>(nb_item_node));
+      if (is_poly) {
+        nb_item_node = poly_nb_nodes[i];
+        arcane_type = poly_types_id[i];
         cells_infos[cells_infos_index] = arcane_type;
         ++cells_infos_index;
         cells_infos[cells_infos_index] = current_cell_unique_id;
@@ -588,7 +598,6 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
       else {
         cells_infos[cells_infos_index] = arcane_type;
         ++cells_infos_index;
-
         cells_infos[cells_infos_index] = current_cell_unique_id;
         ++cells_infos_index;
         Span<Int64> cinfo_span(cells_infos.span().subspan(cells_infos_index, nb_item_node));
@@ -640,7 +649,8 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
   IItemFamily* node_family = mesh->nodeFamily();
   NodeInfoListView mesh_nodes(node_family);
 
-  UniqueArray<Int16> polygon_nb_nodes;
+  UniqueArray<Int16> poly_nb_nodes;
+  UniqueArray<Int16> poly_types_id;
   UniqueArray<med_int> med_connectivity;
   UniqueArray<med_int> med_family_values;
   // Iterates through the available types and processes those that correspond to the dimension
@@ -656,10 +666,14 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
     ItemTypeInfo* iti = itm->typeFromId(iinfo.arcaneType());
     info() << "Reading faces geotype=" << geotype << " arcane_type=" << iinfo.arcaneType()
            << " " << iti->typeName();
-
-    Int32 nb_item = _readItems(fid, meshname, iinfo, polygon_nb_nodes, med_connectivity, med_family_values);
+    // At the moment we can not read faces which are polygons
+    const bool is_polygon = (iinfo.medType() == MED_POLYGON);
+    if (is_polygon)
+      continue;
+    Int32 nb_item = _readItems(mesh, fid, meshname, iinfo, poly_nb_nodes, poly_types_id, med_connectivity, med_family_values);
     if (nb_item == 0)
       continue;
+
     ItemTypeId arcane_type(iinfo.arcaneType());
     Int32 nb_item_node = iinfo.nbNode();
     Int32 nb_family_values = med_family_values.size();
@@ -687,6 +701,7 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
         for (Integer k = 0; k < nb_item_node; ++k)
           cinfo_span[k] = med_cinfo_span[k];
       }
+      info() << "HANDLE_FACE nb_item=" << nb_item_node;
       med_connectivity_index += nb_item_node;
       // Search for the face in the mesh starting from the sorted uniqueIds of its nodes
       nodes_reorderer.reorder(arcane_type, cinfo_span);
@@ -794,12 +809,15 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
  * that \a family_values may be empty if there is no family associated with the
  * entities.
  *
- * If the type is MED_POLYGON, then \a polygon_nb_nodes will contain the number
- * of nodes for each polygon.
+ * If the type is MED_POLYGON or MED_POLYHEDRON, then \a poly_nb_nodes will
+ * contain the number of nodes for each polygon and \a poly_types_id will contain its ItemTypeId.
  */
 Int32 MEDMeshReader::
-_readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
-           Array<Int16>& polygon_nb_nodes, Array<med_int>& connectivity,
+_readItems(IPrimaryMesh* mesh, med_idt fid, const char* meshname,
+           const MEDToArcaneItemInfo& iinfo,
+           Array<Int16>& poly_nb_nodes,
+           Array<Int16>& poly_types_id,
+           Array<med_int>& connectivity,
            Array<med_int>& family_values)
 {
   constexpr bool is_verbose = false;
@@ -807,11 +825,15 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
   connectivity.clear();
   family_values.clear();
 
+  ItemTypeMng* itm = mesh->itemTypeMng();
   int med_item_type = iinfo.medType();
   med_bool coordinatechangement = {};
   med_bool geotransformation = {};
   med_int nb_med_item = 0;
-  if (iinfo.medType() == MED_POLYGON) {
+  if (iinfo.medType() == MED_POLYHEDRON) {
+    nb_med_item = _readPolyhedrons(mesh, fid, meshname, poly_nb_nodes, poly_types_id, connectivity);
+  }
+  else if (iinfo.medType() == MED_POLYGON) {
     // For polygons, a specific call is needed for the number of indices.
     // This number corresponds to the number of entities plus one.
     med_int nb_index = ::MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, med_item_type,
@@ -825,7 +847,8 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
     if (nb_index < 1)
       return 0;
     nb_med_item = nb_index - 1;
-    polygon_nb_nodes.resize(nb_med_item);
+    poly_nb_nodes.resize(nb_med_item);
+    poly_types_id.resize(nb_med_item);
     // how many nodes for the polygon connectivity ?
     med_int nb_connectivity = MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT,
                                              MED_CELL, MED_POLYGON, MED_CONNECTIVITY, MED_NODAL,
@@ -844,8 +867,11 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
     if (r < 0)
       ARCANE_FATAL("Can not read connectivity for MED_POLYGON err={0}", r);
     info() << "INDEXES=" << indexes;
-    for (Int32 i = 0; i < nb_med_item; ++i)
-      polygon_nb_nodes[i] = static_cast<Int16>(indexes[i + 1] - indexes[i]);
+    for (Int32 i = 0; i < nb_med_item; ++i) {
+      Int16 nb_node_for_cell = CheckedConvert::toInt16(indexes[i + 1] - indexes[i]);
+      poly_nb_nodes[i] = nb_node_for_cell;
+      poly_types_id[i] = itm->getPolygonType(static_cast<Int16>(nb_node_for_cell));
+    }
   }
   else {
     nb_med_item = ::MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, med_item_type,
@@ -890,6 +916,128 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
       if (is_verbose)
         info() << "FAM: " << family_values;
     }
+  }
+  return nb_med_item;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+med_int MEDMeshReader::
+_readPolyhedrons(IPrimaryMesh* mesh, med_idt fid, const char* meshname,
+                 Array<Int16>& poly_nb_nodes,
+                 Array<Int16>& poly_types_id,
+                 Array<med_int>& connectivity)
+{
+  const bool is_verbose = false;
+  ItemTypeMngInternal* itmi = mesh->itemTypeMng()->_internalApi();
+  med_bool coordinatechangement = {};
+  med_bool geotransformation = {};
+  const med_int med_item_type = MED_POLYHEDRON;
+  info() << "MED: Reading polyhedron items";
+  // For polyhedrons, a specific call is needed for the number of faces and connectivity of nodes
+  med_int nb_face_index = ::MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, med_item_type,
+                                           MED_INDEX_FACE, MED_NODAL, &coordinatechangement,
+                                           &geotransformation);
+  if (nb_face_index < 0)
+    ARCANE_FATAL("Can not read MED_INDEX_FACE for Polyhedron type error={0}", nb_face_index);
+  info() << "MED: type=" << med_item_type << " nb_face_index=" << nb_face_index;
+  if (nb_face_index < 1)
+    return 0;
+
+  med_int nb_node_index = ::MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, med_item_type,
+                                           MED_INDEX_NODE, MED_NODAL, &coordinatechangement,
+                                           &geotransformation);
+  if (nb_node_index < 0)
+    ARCANE_FATAL("Can not read MED_INDEX_NODE for Polyhedron type error={0}", nb_node_index);
+
+  info() << "MED: type=" << med_item_type << " nb_face_index=" << nb_face_index << " nb_node_index=" << nb_node_index;
+  med_int nb_med_item = nb_face_index - 1;
+  poly_nb_nodes.resize(nb_med_item);
+  poly_types_id.resize(nb_med_item);
+  // how many nodes for the polygon connectivity ?
+  med_int nb_connectivity = MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT,
+                                           MED_CELL, MED_POLYHEDRON, MED_CONNECTIVITY, MED_NODAL,
+                                           &coordinatechangement, &geotransformation);
+  if (nb_connectivity < 0)
+    ARCANE_FATAL("Can not get connectivity size for MED_POLYHEDRON err={0}", nb_connectivity);
+
+  // The table \a face_indexes contains for each cell the index of its first
+  // face in the connectivity. The number of faces of the i-th entity
+  // is therefore equal to (face_indexes[i+1] - face_indexes[i]).
+  UniqueArray<med_int> face_indexes(nb_face_index);
+  UniqueArray<med_int> node_indexes(nb_node_index);
+  connectivity.clear();
+  connectivity.reserve(nb_connectivity);
+  UniqueArray<med_int> med_connectivity(nb_connectivity);
+  info() << "Reading polyhedron nb_connectivity=" << nb_connectivity;
+  int r = MEDmeshPolyhedronRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, MED_NODAL,
+                              face_indexes.data(), node_indexes.data(), med_connectivity.data());
+  if (r < 0)
+    ARCANE_FATAL("Can not read connectivity for MED_POLYGON err={0}", r);
+  if (is_verbose) {
+    info() << "FACE_INDEXES=" << face_indexes;
+    info() << "NODE_INDEXES=" << node_indexes;
+    info() << "CONNECTIVITY=" << med_connectivity;
+  }
+  UniqueArray<Int16> local_nodes_of_cell;
+  UniqueArray<Int32> nodes_of_cell;
+  UniqueArray<Int32> nodes_of_face;
+
+  // Infos for creating the corresponding Arcane type
+  UniqueArray<Int16> arcane_faces_nb_node;
+  UniqueArray<Int16> arcane_faces_nodes;
+  // Local index in the cell of the nodes;
+  std::map<Int32, Int16> connectivity_to_local_index;
+  for (Int32 z = 0; z < nb_med_item; ++z) {
+    Int16 nb_local_node = 0;
+    nodes_of_cell.clear();
+    connectivity_to_local_index.clear();
+    local_nodes_of_cell.clear();
+    arcane_faces_nb_node.clear();
+    arcane_faces_nodes.clear();
+    // Numbering begins at 1 so we need to remove 1 to face_indexes and node_indexes
+    Int32 first_face_index = face_indexes[z] - 1;
+    Int32 next_face_index = face_indexes[z + 1] - 1;
+    Int32 cell_nb_face = next_face_index - first_face_index;
+    Int32 cell_nb_node = node_indexes[next_face_index] - node_indexes[first_face_index];
+    if (is_verbose)
+      info() << "POLYHEDRAL_CELL=" << z << " nb_face=" << cell_nb_face << " nb_node=" << cell_nb_node << " first_face_index=" << first_face_index;
+    for (Int32 k = 0; k < cell_nb_face; ++k) {
+      Int32 first_node_index = node_indexes[first_face_index + k] - 1;
+      Int32 next_node_index = node_indexes[first_face_index + k + 1] - 1;
+      Int16 face_nb_node = CheckedConvert::toInt16(next_node_index - first_node_index);
+      nodes_of_face.resize(face_nb_node);
+      arcane_faces_nb_node.add(face_nb_node);
+      for (Int32 p = 0; p < face_nb_node; ++p) {
+        // TODO: check if (-1) is needed
+        Int32 node_id = med_connectivity[first_node_index + p];
+        auto x = connectivity_to_local_index.find(node_id);
+        Int16 local_node_index = -1;
+        if (x == connectivity_to_local_index.end()) {
+          local_node_index = nb_local_node;
+          connectivity_to_local_index[node_id] = nb_local_node;
+          ++nb_local_node;
+          local_nodes_of_cell.add(local_node_index);
+          nodes_of_cell.add(node_id);
+          connectivity.add(node_id);
+        }
+        else
+          local_node_index = x->second;
+        nodes_of_face[p] = local_node_index;
+        arcane_faces_nodes.add(local_node_index);
+      }
+      if (is_verbose)
+        info() << "  POLYHEDRAL_FACE=" << k << " nb_node=" << face_nb_node << " nodes=" << nodes_of_face.view();
+      //Int32 face_nb_node = face_indexes[z+1] - face_indexes[z];
+    }
+    if (is_verbose) {
+      info() << "POLYHEDRAL_CELL=" << z << " nb_local_node=" << nodes_of_cell.size() << " nodes=" << nodes_of_cell;
+      info() << "POLYHEDRAL_CELL=" << z << " arcane_faces_nb_node=" << arcane_faces_nb_node << " nodes=" << arcane_faces_nodes;
+    }
+    Int16 nb_node_for_cell = CheckedConvert::toInt16(nodes_of_cell.size());
+    poly_types_id[z] = itmi->findOrAddPolyhedron(nb_node_for_cell, arcane_faces_nb_node, arcane_faces_nodes);
+    poly_nb_nodes[z] = nb_node_for_cell;
   }
   return nb_med_item;
 }
