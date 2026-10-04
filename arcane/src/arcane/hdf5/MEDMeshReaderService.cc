@@ -668,8 +668,7 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
            << " " << iti->typeName();
     // At the moment we can not read faces which are polygons
     const bool is_polygon = (iinfo.medType() == MED_POLYGON);
-    if (is_polygon)
-      continue;
+
     Int32 nb_item = _readItems(mesh, fid, meshname, iinfo, poly_nb_nodes, poly_types_id, med_connectivity, med_family_values);
     if (nb_item == 0)
       continue;
@@ -684,13 +683,20 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
 
     SmallArray<Int64> orig_nodes_id(nb_item_node);
     info() << "FACES_INFOS nb_item=" << nb_item << " type=" << arcane_type
-           << " nb_family_values=" << nb_family_values;
+           << " nb_family_values=" << nb_family_values << " connectivity_size=" << med_connectivity.size();
 
     const Int32* indirection = iinfo.indirection();
     Int64 med_connectivity_index = 0;
 
     for (Int32 i = 0; i < nb_item; ++i) {
       ArrayView<Int64> cinfo_span(orig_nodes_id);
+      if (is_polygon) {
+        // Each polygon has its own number of nodes so we need to resize the working array.
+        nb_item_node = poly_nb_nodes[i];
+        orig_nodes_id.resize(nb_item_node);
+        cinfo_span = orig_nodes_id;
+        arcane_type = ItemTypeId(poly_types_id[i]);
+      }
       Span<med_int> med_cinfo_span(med_connectivity.span().subspan(med_connectivity_index, nb_item_node));
       if (indirection) {
         for (Integer k = 0; k < nb_item_node; ++k) {
@@ -929,6 +935,9 @@ _readPolyhedrons(IPrimaryMesh* mesh, med_idt fid, const char* meshname,
                  Array<Int16>& poly_types_id,
                  Array<med_int>& connectivity)
 {
+  if (mesh->parallelMng()->commSize() > 1)
+    ARCANE_FATAL("MED polyhedral mesh in not support in parallel");
+
   const bool is_verbose = false;
   ItemTypeMngInternal* itmi = mesh->itemTypeMng()->_internalApi();
   med_bool coordinatechangement = {};
