@@ -186,6 +186,9 @@ static constexpr ItemTypeId ITI_Cell3D_Triangle10(IT_Cell3D_Triangle10);
 
 //! First value for generic polygon types (EXPERIMENTAL)
 static constexpr ItemTypeId ITI_GenericPolygon(IT_GenericPolygon);
+//! First value for generic polyhedron types (EXPERIMENTAL)
+static constexpr ItemTypeId ITI_GenericPolyhedron(IT_GenericPolyhedron);
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

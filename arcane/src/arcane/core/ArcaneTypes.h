@@ -399,6 +399,9 @@ static const Integer NB_BASIC_ITEM_TYPE = 53;
 //! First value for generic polygon types (EXPERIMENTAL)
 static const Int16 IT_GenericPolygon = 200;
 
+//! First value for generic polyhedron types (EXPERIMENTAL)
+static const Int16 IT_GenericPolyhedron = 300;
+
 extern "C++" ARCANE_CORE_EXPORT eItemKind
 dualItemKind(Integer type);
 
