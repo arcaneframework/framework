@@ -1880,7 +1880,6 @@ writeMeshToFile(IMesh* mesh, const String& file_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Writes the mesh in VTK format.
  *
@@ -1921,29 +1920,64 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
 
   // Save cells or faces
   {
+    // We need to save the total number of values.
+    // If we have polyedron
     Integer nb_node_cell_kind = nb_cell_kind;
-    ENUMERATE_ITEMWITHNODES(iitem, cell_kind_family->allItems())
-    {
-      nb_node_cell_kind += (*iitem).nbNode();
+    ENUMERATE_ (ItemWithNodes, iitem, cell_kind_family->allItems()) {
+      ItemWithNodes item = *iitem;
+      if (item->typeInfo()->isPolyhedron()) {
+        // See below to know how it is computed
+        Cell cell = item.toCell();
+        nb_node_cell_kind += 1 + cell.nbFace();
+        for (Face face : cell.faces()) {
+          nb_node_cell_kind += face.nbNode();
+        }
+      }
+      else {
+        nb_node_cell_kind += item.nbNode();
+      }
     }
     ofile << "CELLS " << nb_cell_kind << ' ' << nb_node_cell_kind << "\n";
-    ENUMERATE_ITEMWITHNODES(iitem, cell_kind_family->allItems())
-    {
+    ENUMERATE_ (ItemWithNodes, iitem, cell_kind_family->allItems()) {
       ItemWithNodes item = *iitem;
       Integer item_nb_node = item.nbNode();
-      ofile << item_nb_node;
-      for (NodeLocalId node_id : item.nodes()) {
-        ofile << ' ' << nodes_local_id_to_current[node_id];
+      if (item->typeInfo()->isPolyhedron()) {
+        // For polyhedron we need to save each of its face
+        Cell cell = item.toCell();
+        // First we have to compute the number of int32 to save for the cell:
+        // - 1 for the number of face.
+        // - 1 for the number of node for each face
+        // - 1 for the list of nodes of each face
+        Int32 total_nb_info = 1; // For the number of face
+        for (Face face : cell.faces()) {
+          total_nb_info += 1; // For the number of node of the face
+          total_nb_info += face.nbNode();
+        }
+        ofile << total_nb_info << ' ' << cell.nbFace() << '\n';
+        for (Face face : cell.faces()) {
+          ofile << face.nbNode();
+          for (NodeLocalId node_id : face.nodeIds())
+            ofile << ' ' << nodes_local_id_to_current[node_id];
+          ofile << '\n';
+        }
       }
-      ofile << '\n';
+      else {
+        ofile << item_nb_node;
+        for (NodeLocalId node_id : item.nodes())
+          ofile << ' ' << nodes_local_id_to_current[node_id];
+        ofile << '\n';
+      }
     }
     // The type must be consistent with vtkCellType.h
     ofile << "CELL_TYPES " << nb_cell_kind << "\n";
     ENUMERATE_ (ItemWithNodes, iitem, cell_kind_family->allItems()) {
       const ItemTypeInfo* iti = iitem->typeInfo();
       // Check if the type is a polygon for VTK (dimension 2 and more than 4 nodes)
+      // or a polyhedron
       int type = VTK_BAD_ARCANE_TYPE;
-      if (iti->isPolygon())
+      if (iti->isPolyhedron())
+        type = VTK_POLYHEDRON;
+      else if (iti->isPolygon())
         type = VTK_POLYGON;
       else
         type = arcaneToVtkCellType(iti);
