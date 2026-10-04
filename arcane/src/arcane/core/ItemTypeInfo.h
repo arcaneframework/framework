@@ -143,7 +143,9 @@ class ItemTypeInfo
    *
    * A polygon is a 2D element of order 1 containing at least 5 nodes.
    */
-  bool isPolygon() const { return m_is_polygon; }
+  bool isPolygon() const { return m_is_poly && m_dimension==2; }
+  //! Indicates if the type is a polyhedron
+  bool isPolyhedron() const { return m_is_poly && m_dimension==3; }
 
  public:
 
@@ -174,8 +176,8 @@ class ItemTypeInfo
   bool m_is_valid_for_cell = true;
   //! Indicates if the type has a center node (for faces or cells)
   bool m_has_center_node = false;
-  //! Indicates if the type is a polygon
-  bool m_is_polygon = false;
+  //! Indicates if the type is a polygon or a polyhedra
+  bool m_is_poly = false;
   Integer m_nb_node = 0;
   Integer m_nb_edge = 0;
   Integer m_nb_face = 0;

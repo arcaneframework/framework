@@ -33,6 +33,7 @@
 
 // AMR
 #include "arcane/ItemRefinementPattern.h"
+#include "internal/ItemTypeMngInternal.h"
 
 #include <map>
 #include <set>
@@ -60,7 +61,9 @@ const Integer ItemTypeMng::m_nb_builtin_item_type = NB_BASIC_ITEM_TYPE;
 
 ItemTypeMng::
 ItemTypeMng()
+: m_polyhedron_type_index(400)
 {
+  m_internal_api = new ItemTypeMngInternal(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -69,6 +72,7 @@ ItemTypeMng()
 ItemTypeMng::
 ~ItemTypeMng()
 {
+  delete m_internal_api;
   delete m_types_buffer;
 }
 
@@ -1204,7 +1208,6 @@ printTypes(std::ostream& ostr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Reading a Voronoi type file.
  *
@@ -1538,6 +1541,42 @@ getPolygonType(Int16 nb_node) const
   else
     ARCANE_THROW(NotSupportedException, "polygon with nb_node={0} (3<=nb_node<=20)", nb_node);
   return polygon_type;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemTypeId ItemTypeMng::
+_findOrAddPolyhedron(Int16 nb_node, ConstArrayView<Int16> faces_nb_nodes, ConstArrayView<Int16> faces_nodes)
+{
+  // At the moment it always add the type
+  Int16 type_index = m_polyhedron_type_index;
+  ++m_polyhedron_type_index;
+  // Resize 'm_types' if needed.
+  Int32 old_size = m_types.size();
+  if (old_size < type_index) {
+    old_size = type_index;
+    Int32 new_size = (old_size * 20) / 15;
+    ItemTypeInfo* null_type = m_types[IT_NullType];
+    m_types.resize(new_size, null_type);
+  }
+  ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
+  m_types[type_index] = type;
+  Int32 nb_face = faces_nb_nodes.size();
+  // TODO: need compute number of edges.
+  type->setInfos(this, type_index, "Polyhedron", ItemTypeInfoBuilder::Dimension::Dim3, nb_node, 0, nb_face);
+  type->setIsValidForCell(true);
+
+  Int32 index_in_face_node = 0;
+  for (Int32 i = 0; i < nb_face; ++i) {
+    Int16 nb_node_in_face = faces_nb_nodes[i];
+    ConstArrayView<Int16> nodes = faces_nodes.subConstView(index_in_face_node, nb_node_in_face);
+    ItemTypeId poly_face_type = getPolygonType(nb_node_in_face);
+    type->addFaceGeneric(i, poly_face_type, nodes);
+    index_in_face_node += nb_node_in_face;
+  }
+  //type->computeFaceEdgeInfos();
+  return ItemTypeId(type_index);
 }
 
 /*---------------------------------------------------------------------------*/

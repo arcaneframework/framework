@@ -25,19 +25,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::mesh
+{
+// TEMPORAIRE: pour que ces classes aient accès au singleton.
+class DynamicMesh;
+class PolyhedralMesh;
+} // namespace Arcane::mesh
+
 namespace Arcane
 {
-namespace mesh
-{
-  // TEMPORAIRE: pour que ces classes aient accès au singleton.
-  class DynamicMesh;
-  class PolyhedralMesh;
-} // namespace mesh
 class ArcaneMain;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+class ItemTypeMngInternal;
 class ItemTypeInfo;
 class ItemTypeInfoBuilder;
 class IParallelSuperMng;
@@ -46,7 +44,6 @@ class MultiBufferT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \ingroup Mesh
  * \brief Mesh entity type manager.
@@ -72,6 +69,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   friend class Item;
   friend ItemTypeInfo;
   friend ItemTypeInfoBuilder;
+  friend ItemTypeMngInternal;
 
  protected:
 
@@ -191,6 +189,8 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   // AMR
   static Int32 nbHChildrenByItemType(Integer type);
 
+  ItemTypeMngInternal* _internalApi() const { return m_internal_api; }
+
  private:
 
   //! Singleton instance
@@ -222,6 +222,11 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Indicates if the types managing polygons have already been built.
   bool m_has_polygon_type = false;
 
+  //! Index of the first type for polyhedron
+  Int16 m_polyhedron_type_index;
+
+  ItemTypeMngInternal* m_internal_api = nullptr;
+
  private:
 
   void _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace);
@@ -229,6 +234,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Reads types from a file named filename
   void _readTypes(IParallelSuperMng* parallel_mng, const String& filename);
   void _addPolygonType(Int16 type_id, Int32 nb_node, const String& type_name);
+  ItemTypeId _findOrAddPolyhedron(Int16 nb_node, ConstArrayView<Int16> faces_nb_nodes, ConstArrayView<Int16> faces_nodes);
 };
 
 /*---------------------------------------------------------------------------*/

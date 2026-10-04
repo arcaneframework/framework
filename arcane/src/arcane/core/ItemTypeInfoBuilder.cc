@@ -436,6 +436,28 @@ addFaceGeneric(Integer face_index, Integer type_id, ConstArrayView<Integer> n)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Adds a generic face to the list of faces
+void ItemTypeInfoBuilder::
+addFaceGeneric(Int32 face_index, ItemTypeId type_id, ConstArrayView<Int16> nodes)
+{
+  // Currently, this method is only called for 2D faces, so
+  // the current element must be of dimension 3.
+  _checkDimension(3);
+  Array<Integer>& buf = m_mng->m_ids_buffer;
+  buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
+  buf.add(type_id);
+  Integer face_nb_node = nodes.size();
+  buf.add(face_nb_node);
+  for (Integer i = 0; i < face_nb_node; ++i)
+    buf.add(nodes[i]);
+  buf.add(face_nb_node); // number of edges; does not handle a special case for n==2
+  for (Integer i = 0; i < face_nb_node; ++i)
+    buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ItemTypeInfoBuilder::
 computeFaceEdgeInfos()
 {
@@ -493,7 +515,11 @@ _setNbEdgeAndFace(Integer nb_edge, Integer nb_face)
 void ItemTypeInfoBuilder::
 _checkSetIsPolygon()
 {
-  m_is_polygon = (m_order == 1 && m_dimension == 2 && m_nb_node > 4);
+  if (m_dimension == 3 && m_type_id >= IT_GenericPolyhedron){
+    m_is_poly = true;
+    return;
+  }
+  m_is_poly = (m_order == 1 && m_dimension == 2 && m_nb_node > 4);
 }
 
 /*---------------------------------------------------------------------------*/
