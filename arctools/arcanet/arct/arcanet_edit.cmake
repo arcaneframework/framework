@@ -6,13 +6,13 @@
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-macro(_arcanet_begin)
+macro(_arct_begin)
   if (NOT ARGS_ARCT_PATH)
     set(ARGS_ARCT_PATH "${CMAKE_BINARY_DIR}/testlist.arct")
   endif ()
 
   if (DEFINED ${ARCANET_BEGIN_ON})
-    message(FATAL_ERROR "'arcanet_begin()' has been already called. Call 'arcanet_end()' function to end it.")
+    message(FATAL_ERROR "'arct_begin()' has been already called. Call 'arct_end()' function to end it.")
   endif ()
 
   if (EXISTS "${ARGS_ARCT_PATH}" AND NOT ARGS_OVERWRITE_ARCT)
@@ -33,21 +33,21 @@ endmacro()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_begin)
+function(arct_begin)
   set(options OVERWRITE_ARCT)
   set(oneValueArgs ARCT_PATH)
   set(multiValueArgs)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  _arcanet_begin()
+  _arct_begin()
 endfunction()
 
 # ----------------------------------------------------------------------------
 
-macro(_arcanet_end)
+macro(_arct_end)
   if (NOT DEFINED ARCANET_BEGIN_ON)
-    message(FATAL_ERROR "'arcanet_end()' cannot be called without a call to a 'arcanet_begin()' function.")
+    message(FATAL_ERROR "'arct_end()' cannot be called without a call to a 'arct_begin()' function.")
   endif ()
 
   file(WRITE "${ARCANET_BEGIN_ON}" ${ARCANET_JSON})
@@ -60,17 +60,17 @@ endmacro()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_end)
+function(arct_end)
   if (DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_X()' has been already called. Call 'arct_config_create_or_edit_end()' function to end it.")
   endif ()
 
-  _arcanet_end()
+  _arct_end()
 endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_create_or_edit_general)
+function(arct_config_create_or_edit_general)
   set(options OVERWRITE_ARCT)
   set(oneValueArgs ARCT_PATH)
   set(multiValueArgs)
@@ -78,11 +78,11 @@ function(arcanet_create_or_edit_general)
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if (DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_X()' has been already called. Call 'arct_config_create_or_edit_end()' function to end it.")
   endif ()
 
   if (NOT DEFINED ARCANET_BEGIN_ON)
-    _arcanet_begin()
+    _arct_begin()
     set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
@@ -111,7 +111,7 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_create_or_edit_common)
+function(arct_config_create_or_edit_common)
   set(options OVERWRITE_ARCT)
   set(oneValueArgs ARCT_PATH NAME_COMMON)
   set(multiValueArgs)
@@ -123,11 +123,11 @@ function(arcanet_create_or_edit_common)
   endif ()
 
   if (DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_X()' has been already called. Call 'arct_config_create_or_edit_end()' function to end it.")
   endif ()
 
   if (NOT DEFINED ARCANET_BEGIN_ON)
-    _arcanet_begin()
+    _arct_begin()
     set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
@@ -164,7 +164,7 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_create_or_edit_case)
+function(arct_config_create_or_edit_case)
   set(options OVERWRITE_ARCT)
   set(oneValueArgs ARCT_PATH NAME_CASE)
   set(multiValueArgs)
@@ -176,11 +176,11 @@ function(arcanet_create_or_edit_case)
   endif ()
 
   if (DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_X()' has been already called. Call 'arct_config_create_or_edit_end()' function to end it.")
   endif ()
 
   if (NOT DEFINED ARCANET_BEGIN_ON)
-    _arcanet_begin()
+    _arct_begin()
     set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
@@ -217,7 +217,7 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_create_or_edit_variation)
+function(arct_config_create_or_edit_variation)
   set(options OVERWRITE_ARCT)
   set(oneValueArgs ARCT_PATH NAME_VARIATION NAME_VARIANT)
   set(multiValueArgs)
@@ -232,11 +232,11 @@ function(arcanet_create_or_edit_variation)
   endif ()
 
   if (DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_X()' has been already called. Call 'arct_config_create_or_edit_end()' function to end it.")
   endif ()
 
   if (NOT DEFINED ARCANET_BEGIN_ON)
-    _arcanet_begin()
+    _arct_begin()
     set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
@@ -281,9 +281,9 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_create_or_edit_end)
+function(arct_config_create_or_edit_end)
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
   list(GET ARCANET_JSON_PART_PATH 0 ARCANET_JSON_PART_PATH_0)
@@ -291,7 +291,7 @@ function(arcanet_create_or_edit_end)
   list(GET ARCANET_JSON_PART_PATH 2 ARCANET_JSON_PART_PATH_2)
 
   # Les autres fonctions ont rempli le bout de json ARCANET_JSON_PART. On doit le copier à l'adresse enregistrée par
-  # les fonctions "arcanet_create_or_edit_X()"
+  # les fonctions "arct_config_create_or_edit_X()"
   string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_JSON_PART_PATH_0} ${ARCANET_JSON_PART_PATH_1} ${ARCANET_JSON_PART_PATH_2} ${ARCANET_JSON_PART})
 
 
@@ -299,7 +299,7 @@ function(arcanet_create_or_edit_end)
   #
 
   if (DEFINED ARCANET_WRITE_AT_END_PART)
-    _arcanet_end()
+    _arct_end()
     unset(ARCANET_WRITE_AT_END_PART PARENT_SCOPE)
   else ()
     set(ARCANET_JSON "${ARCANET_JSON}" PARENT_SCOPE)
@@ -312,9 +312,9 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-function(arcanet_define_name display_name_case)
+function(arct_config_define_name display_name_case)
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "_")
@@ -331,9 +331,9 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_add_dependency_a dependency)
+function(arct_config_add_dependency_a dependency)
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_add_dependency()' cannot be called without a call to a 'arcanet_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arcanet_add_dependency()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "_")
@@ -354,9 +354,9 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_add_dependency_b dependency)
+function(arct_config_add_dependency_b dependency)
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_add_dependency()' cannot be called without a call to a 'arcanet_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arcanet_add_dependency()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "_")
@@ -378,9 +378,9 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-function(arcanet_arcane_set_dataset dataset_path)
+function(arct_arcane_set_dataset dataset_path)
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arcane")
@@ -397,9 +397,9 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_arcane_add_option option_name option_value)
+function(arct_arcane_add_option option_name option_value)
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arcane")
@@ -421,9 +421,9 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-function(arcanet_arccher_define_mpi_path mpi_path)
+function(arct_arccher_define_mpi_path mpi_path)
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
@@ -440,9 +440,9 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_arccher_add_envvar envvar_name envvar_value)
+function(arct_arccher_add_envvar envvar_name envvar_value)
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
@@ -463,9 +463,9 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_arccher_define_mpi_nb_procs nb_mpi)
+function(arct_arccher_define_mpi_nb_procs nb_mpi)
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
@@ -482,9 +482,9 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_arccher_define_executable exe_path)
+function(arct_arccher_define_executable exe_path)
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_end()' cannot be called without a call to a 'arcanet_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
@@ -503,63 +503,63 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-#arcanet_begin(OVERWRITE_ARCT)
+#arct_begin(OVERWRITE_ARCT)
 
-arcanet_create_or_edit_general(OVERWRITE_ARCT)
-arcanet_define_name("General")
-arcanet_arcane_set_dataset("general_dataset.arc")
-arcanet_arccher_define_mpi_path(mpi_path)
-arcanet_arccher_add_envvar("ARCANE_USE_BACKWARDCPP" "1")
-arcanet_create_or_edit_end()
-
-
-arcanet_create_or_edit_common(NAME_COMMON "4procs")
-arcanet_define_name("4 procs")
-arcanet_arccher_define_mpi_nb_procs(4)
-arcanet_create_or_edit_end()
+arct_config_create_or_edit_general(OVERWRITE_ARCT)
+arct_config_define_name("General")
+arct_arcane_set_dataset("general_dataset.arc")
+arct_arccher_define_mpi_path(mpi_path)
+arct_arccher_add_envvar("ARCANE_USE_BACKWARDCPP" "1")
+arct_config_create_or_edit_end()
 
 
-arcanet_create_or_edit_common(NAME_COMMON "4threads")
-arcanet_define_name("4 threads")
-arcanet_arcane_add_option("S" "4")
-arcanet_create_or_edit_end()
+arct_config_create_or_edit_common(NAME_COMMON "4procs")
+arct_config_define_name("4 procs")
+arct_arccher_define_mpi_nb_procs(4)
+arct_config_create_or_edit_end()
 
 
-arcanet_create_or_edit_common(NAME_COMMON "16mpithreads")
-arcanet_add_dependency_b("4procs")
-arcanet_add_dependency_b("4threads")
-arcanet_create_or_edit_end()
+arct_config_create_or_edit_common(NAME_COMMON "4threads")
+arct_config_define_name("4 threads")
+arct_arcane_add_option("S" "4")
+arct_config_create_or_edit_end()
 
-arcanet_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "10")
-arcanet_arcane_add_option("MaxIteration" "10")
-arcanet_create_or_edit_end()
 
-arcanet_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "20")
-arcanet_arcane_add_option("MaxIteration" "20")
-arcanet_create_or_edit_end()
+arct_config_create_or_edit_common(NAME_COMMON "16mpithreads")
+arct_config_add_dependency_b("4procs")
+arct_config_add_dependency_b("4threads")
+arct_config_create_or_edit_end()
 
-arcanet_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "30")
-arcanet_arcane_add_option("MaxIteration" "30")
-arcanet_create_or_edit_end()
+arct_config_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "10")
+arct_arcane_add_option("MaxIteration" "10")
+arct_config_create_or_edit_end()
 
-arcanet_create_or_edit_case(NAME_CASE "mon_test_1")
-arcanet_define_name("Mon Test 1")
-arcanet_add_dependency_b("nb_iterations!10")
-arcanet_add_dependency_a("16mpithreads")
-arcanet_arcane_set_dataset("truc.arc")
-arcanet_arcane_add_option("MaxIteration" "3")
-arcanet_arcane_add_option("MaxIteration" "4")
-arcanet_arccher_define_executable(bin_path)
-arcanet_arccher_add_envvar("VARIABLE" "VALUE")
-arcanet_create_or_edit_end()
+arct_config_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "20")
+arct_arcane_add_option("MaxIteration" "20")
+arct_config_create_or_edit_end()
 
-arcanet_create_or_edit_case(NAME_CASE "mon_test_2")
-arcanet_define_name("Mon Test 2")
-arcanet_arcane_set_dataset("truc.arc")
-arcanet_arcane_add_option("MaxIteration" "3")
-arcanet_arcane_add_option("MaxIteration" "4")
-arcanet_arccher_define_executable(bin_path)
-arcanet_arccher_add_envvar("VARIABLE" "VALUE")
-arcanet_create_or_edit_end()
+arct_config_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "30")
+arct_arcane_add_option("MaxIteration" "30")
+arct_config_create_or_edit_end()
 
-#arcanet_end()
+arct_config_create_or_edit_case(NAME_CASE "mon_test_1")
+arct_config_define_name("Mon Test 1")
+arct_config_add_dependency_b("nb_iterations!10")
+arct_config_add_dependency_a("16mpithreads")
+arct_arcane_set_dataset("truc.arc")
+arct_arcane_add_option("MaxIteration" "3")
+arct_arcane_add_option("MaxIteration" "4")
+arct_arccher_define_executable(bin_path)
+arct_arccher_add_envvar("VARIABLE" "VALUE")
+arct_config_create_or_edit_end()
+
+arct_config_create_or_edit_case(NAME_CASE "mon_test_2")
+arct_config_define_name("Mon Test 2")
+arct_arcane_set_dataset("truc.arc")
+arct_arcane_add_option("MaxIteration" "3")
+arct_arcane_add_option("MaxIteration" "4")
+arct_arccher_define_executable(bin_path)
+arct_arccher_add_envvar("VARIABLE" "VALUE")
+arct_config_create_or_edit_end()
+
+#arct_end()
