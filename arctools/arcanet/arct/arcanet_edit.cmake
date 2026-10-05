@@ -6,13 +6,7 @@
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-function(arcanet_begin)
-  set(options OVERWRITE_ARCT)
-  set(oneValueArgs ARCT_PATH)
-  set(multiValueArgs)
-
-  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
+macro(_arcanet_begin)
   if (NOT ARGS_ARCT_PATH)
     set(ARGS_ARCT_PATH "${CMAKE_BINARY_DIR}/testlist.arct")
   endif ()
@@ -35,16 +29,25 @@ function(arcanet_begin)
 
   set(ARCANET_BEGIN_ON "${ARGS_ARCT_PATH}" PARENT_SCOPE)
   set(ARCANET_JSON "${ARCANET_JSON}" PARENT_SCOPE)
+endmacro()
+
+# ----------------------------------------------------------------------------
+
+function(arcanet_begin)
+  set(options OVERWRITE_ARCT)
+  set(oneValueArgs ARCT_PATH)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  _arcanet_begin()
 endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_end)
+macro(_arcanet_end)
   if (NOT DEFINED ARCANET_BEGIN_ON)
     message(FATAL_ERROR "'arcanet_end()' cannot be called without a call to a 'arcanet_begin()' function.")
-  endif ()
-  if (DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
   endif ()
 
   file(WRITE "${ARCANET_BEGIN_ON}" ${ARCANET_JSON})
@@ -53,14 +56,34 @@ function(arcanet_end)
 
   unset(ARCANET_JSON PARENT_SCOPE)
   unset(ARCANET_BEGIN_ON PARENT_SCOPE)
-  unset(ARCANET_JSON_PART_PATH PARENT_SCOPE)
+endmacro()
+
+# ----------------------------------------------------------------------------
+
+function(arcanet_end)
+  if (DEFINED ARCANET_JSON_PART_PATH)
+    message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
+  endif ()
+
+  _arcanet_end()
 endfunction()
 
 # ----------------------------------------------------------------------------
 
 function(arcanet_create_or_edit_general)
+  set(options OVERWRITE_ARCT)
+  set(oneValueArgs ARCT_PATH)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
   if (DEFINED ARCANET_JSON_PART_PATH)
     message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
+  endif ()
+
+  if (NOT DEFINED ARCANET_BEGIN_ON)
+    _arcanet_begin()
+    set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
   # La partie config general est dans :
@@ -88,20 +111,35 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_create_or_edit_common name_common)
+function(arcanet_create_or_edit_common)
+  set(options OVERWRITE_ARCT)
+  set(oneValueArgs ARCT_PATH NAME_COMMON)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (NOT ARGS_NAME_COMMON)
+    message(FATAL_ERROR "Argument NAME_COMMON not defined")
+  endif ()
+
   if (DEFINED ARCANET_JSON_PART_PATH)
     message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
+  endif ()
+
+  if (NOT DEFINED ARCANET_BEGIN_ON)
+    _arcanet_begin()
+    set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
   # La partie config commons est dans :
   # {
   #   "commons": {
-  #     "${name_common}": {
+  #     "${ARGS_NAME_COMMON}": {
   #       // Config
   #     }
   #   }
   # }
-  set(ARCANET_JSON_PART_PATH "commons" ${name_common} "")
+  set(ARCANET_JSON_PART_PATH "commons" ${ARGS_NAME_COMMON} "")
 
   list(GET ARCANET_JSON_PART_PATH 0 ARCANET_JSON_PART_PATH_0)
   list(GET ARCANET_JSON_PART_PATH 1 ARCANET_JSON_PART_PATH_1)
@@ -126,20 +164,35 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_create_or_edit_case name_case)
+function(arcanet_create_or_edit_case)
+  set(options OVERWRITE_ARCT)
+  set(oneValueArgs ARCT_PATH NAME_CASE)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (NOT ARGS_NAME_CASE)
+    message(FATAL_ERROR "Argument NAME_CASE not defined")
+  endif ()
+
   if (DEFINED ARCANET_JSON_PART_PATH)
     message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
+  endif ()
+
+  if (NOT DEFINED ARCANET_BEGIN_ON)
+    _arcanet_begin()
+    set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
   # La partie config cases est dans :
   # {
   #   "cases": {
-  #     "${name_case}": {
+  #     "${ARGS_NAME_CASE}": {
   #       // Config
   #     }
   #   }
   # }
-  set(ARCANET_JSON_PART_PATH "cases" ${name_case} "")
+  set(ARCANET_JSON_PART_PATH "cases" ${ARGS_NAME_CASE} "")
 
   list(GET ARCANET_JSON_PART_PATH 0 ARCANET_JSON_PART_PATH_0)
   list(GET ARCANET_JSON_PART_PATH 1 ARCANET_JSON_PART_PATH_1)
@@ -164,22 +217,40 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_create_or_edit_variation name_variation name_variant)
+function(arcanet_create_or_edit_variation)
+  set(options OVERWRITE_ARCT)
+  set(oneValueArgs ARCT_PATH NAME_VARIATION NAME_VARIANT)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (NOT ARGS_NAME_VARIATION)
+    message(FATAL_ERROR "Argument NAME_VARIATION not defined")
+  endif ()
+  if (NOT ARGS_NAME_VARIANT)
+    message(FATAL_ERROR "Argument NAME_VARIANT not defined")
+  endif ()
+
   if (DEFINED ARCANET_JSON_PART_PATH)
     message(FATAL_ERROR "'arcanet_create_or_edit_X()' has been already called. Call 'arcanet_create_or_edit_end()' function to end it.")
+  endif ()
+
+  if (NOT DEFINED ARCANET_BEGIN_ON)
+    _arcanet_begin()
+    set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
   # La partie config variations est dans :
   # {
   #   "variations": {
-  #     "${name_variation}": {
-  #       "${name_variant}": {
+  #     "${ARGS_NAME_VARIATION}": {
+  #       "${ARGS_NAME_VARIANT}": {
   #         // Config
   #       }
   #     }
   #   }
   # }
-  set(ARCANET_JSON_PART_PATH "variations" ${name_variation} ${name_variant})
+  set(ARCANET_JSON_PART_PATH "variations" ${ARGS_NAME_VARIATION} ${ARGS_NAME_VARIANT})
 
   list(GET ARCANET_JSON_PART_PATH 0 ARCANET_JSON_PART_PATH_0)
   list(GET ARCANET_JSON_PART_PATH 1 ARCANET_JSON_PART_PATH_1)
@@ -223,9 +294,17 @@ function(arcanet_create_or_edit_end)
   # les fonctions "arcanet_create_or_edit_X()"
   string(JSON ARCANET_JSON SET ${ARCANET_JSON} ${ARCANET_JSON_PART_PATH_0} ${ARCANET_JSON_PART_PATH_1} ${ARCANET_JSON_PART_PATH_2} ${ARCANET_JSON_PART})
 
+
+
   #
 
-  set(ARCANET_JSON "${ARCANET_JSON}" PARENT_SCOPE)
+  if (DEFINED ARCANET_WRITE_AT_END_PART)
+    _arcanet_end()
+    unset(ARCANET_WRITE_AT_END_PART PARENT_SCOPE)
+  else ()
+    set(ARCANET_JSON "${ARCANET_JSON}" PARENT_SCOPE)
+  endif ()
+
   unset(ARCANET_JSON_PART PARENT_SCOPE)
   unset(ARCANET_JSON_PART_PATH PARENT_SCOPE)
 endfunction()
@@ -424,9 +503,9 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-arcanet_begin(OVERWRITE_ARCT)
+#arcanet_begin(OVERWRITE_ARCT)
 
-arcanet_create_or_edit_general()
+arcanet_create_or_edit_general(OVERWRITE_ARCT)
 arcanet_define_name("General")
 arcanet_arcane_set_dataset("general_dataset.arc")
 arcanet_arccher_define_mpi_path(mpi_path)
@@ -434,36 +513,36 @@ arcanet_arccher_add_envvar("ARCANE_USE_BACKWARDCPP" "1")
 arcanet_create_or_edit_end()
 
 
-arcanet_create_or_edit_common("4procs")
+arcanet_create_or_edit_common(NAME_COMMON "4procs")
 arcanet_define_name("4 procs")
 arcanet_arccher_define_mpi_nb_procs(4)
 arcanet_create_or_edit_end()
 
 
-arcanet_create_or_edit_common("4threads")
+arcanet_create_or_edit_common(NAME_COMMON "4threads")
 arcanet_define_name("4 threads")
 arcanet_arcane_add_option("S" "4")
 arcanet_create_or_edit_end()
 
 
-arcanet_create_or_edit_common("16mpithreads")
+arcanet_create_or_edit_common(NAME_COMMON "16mpithreads")
 arcanet_add_dependency_b("4procs")
 arcanet_add_dependency_b("4threads")
 arcanet_create_or_edit_end()
 
-arcanet_create_or_edit_variation("nb_iterations" "10")
+arcanet_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "10")
 arcanet_arcane_add_option("MaxIteration" "10")
 arcanet_create_or_edit_end()
 
-arcanet_create_or_edit_variation("nb_iterations" "20")
+arcanet_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "20")
 arcanet_arcane_add_option("MaxIteration" "20")
 arcanet_create_or_edit_end()
 
-arcanet_create_or_edit_variation("nb_iterations" "30")
+arcanet_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "30")
 arcanet_arcane_add_option("MaxIteration" "30")
 arcanet_create_or_edit_end()
 
-arcanet_create_or_edit_case("mon_test_1")
+arcanet_create_or_edit_case(NAME_CASE "mon_test_1")
 arcanet_define_name("Mon Test 1")
 arcanet_add_dependency_b("nb_iterations!10")
 arcanet_add_dependency_a("16mpithreads")
@@ -474,7 +553,7 @@ arcanet_arccher_define_executable(bin_path)
 arcanet_arccher_add_envvar("VARIABLE" "VALUE")
 arcanet_create_or_edit_end()
 
-arcanet_create_or_edit_case("mon_test_2")
+arcanet_create_or_edit_case(NAME_CASE "mon_test_2")
 arcanet_define_name("Mon Test 2")
 arcanet_arcane_set_dataset("truc.arc")
 arcanet_arcane_add_option("MaxIteration" "3")
@@ -483,4 +562,4 @@ arcanet_arccher_define_executable(bin_path)
 arcanet_arccher_add_envvar("VARIABLE" "VALUE")
 arcanet_create_or_edit_end()
 
-arcanet_end()
+#arcanet_end()
