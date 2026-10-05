@@ -558,6 +558,7 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
     Int32 nb_item = _readItems(mesh, fid, meshname, iinfo, poly_nb_nodes, poly_types_id, med_connectivity, med_family_values);
     if (nb_item == 0)
       continue;
+
     Int16 arcane_type = iinfo.arcaneType();
     Int32 nb_item_node = iinfo.nbNode();
     Int32 nb_family_values = med_family_values.size();
@@ -568,7 +569,9 @@ _readAndCreateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const
     Int64 cells_infos_index = 0;
     Int64 med_connectivity_index = 0;
     const bool is_poly = (iinfo.medType() == MED_POLYGON) || (iinfo.medType() == MED_POLYHEDRON);
-
+    // Set information that the mesh has polygon or polyhedron cells.
+    if (is_poly)
+      mesh->itemTypeMng()->setMeshWithGeneralCells(mesh);
     UniqueArray<Int64> cells_infos;
     if (is_poly)
       cells_infos.resize(2 * nb_item + med_connectivity.size());
