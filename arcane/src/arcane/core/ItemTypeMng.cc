@@ -1554,7 +1554,7 @@ _findOrAddPolyhedron(Int16 nb_node, ConstArrayView<Int16> faces_nb_nodes, ConstA
   ++m_polyhedron_type_index;
   // Resize 'm_types' if needed.
   Int32 old_size = m_types.size();
-  if (old_size < type_index) {
+  if (old_size <= type_index) {
     old_size = type_index;
     Int32 new_size = (old_size * 20) / 15;
     ItemTypeInfo* null_type = m_types[IT_NullType];
