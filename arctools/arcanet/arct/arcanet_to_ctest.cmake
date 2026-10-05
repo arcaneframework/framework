@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-macro(_arcanet_add_test)
+macro(_arct_add_test)
   set(options)
   set(oneValueArgs ARCCHER_PATH ARCT_PATH CASE_NAME)
   set(multiValueArgs)
@@ -18,7 +18,7 @@ endmacro()
 
 # ----------------------------------------------------------------------------
 
-macro(_arcanet_add_dep array_dep)
+macro(_arct_add_dep array_dep)
 
   foreach (VAR_L IN ITEMS ${ARCANET_TESTS_LIST})
     foreach (VAR_M IN ITEMS ${array_dep})
@@ -34,7 +34,7 @@ endmacro()
 
 # ----------------------------------------------------------------------------
 
-macro(_arcanet_add_dep_name array_dep)
+macro(_arct_add_dep_name array_dep)
 
   foreach (VAR_L IN ITEMS ${ARCANET_TESTS_NAME})
     foreach (VAR_M IN ITEMS ${array_dep})
@@ -50,7 +50,7 @@ endmacro()
 
 # ----------------------------------------------------------------------------
 
-function(_arcanet_check_dep)
+function(_arct_check_dep)
   # message(STATUS "ARCANET_DEP=${ARCANET_DEP}")
 
   string(JSON ARCANET_ARRAY_SIZE LENGTH ${ARCANET_DEP})
@@ -70,7 +70,7 @@ function(_arcanet_check_dep)
       # S'il y a un égal, alors c'est une dépendance résolue.
       string(FIND ${ARCANET_ARRAY_PART} "=" ARCANET_EQUAL_POS)
       if (NOT ${ARCANET_EQUAL_POS} EQUAL -1)
-        _arcanet_add_dep_name("${ARCANET_ARRAY_PART}")
+        _arct_add_dep_name("${ARCANET_ARRAY_PART}")
         continue()
       endif ()
       unset(ARCANET_EQUAL_POS)
@@ -79,7 +79,7 @@ function(_arcanet_check_dep)
       # Si la dépendance est dans "commons", alors pas de résolution à faire.
       string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON} "commons" ${ARCANET_ARRAY_PART})
       if (ARCANET_ERROR STREQUAL "NOTFOUND")
-        _arcanet_add_dep_name("${ARCANET_ARRAY_PART}")
+        _arct_add_dep_name("${ARCANET_ARRAY_PART}")
         continue()
       endif ()
       unset(ARCANET_GET)
@@ -118,8 +118,8 @@ function(_arcanet_check_dep)
             list(APPEND ARCANET_VARIANT_LIST "${ARCANET_VARIATION}=${ARCANET_GET_VARIANT_NAME}")
           endif ()
         endforeach ()
-        _arcanet_add_dep("${ARCANET_VARIANT_LIST}")
-        _arcanet_add_dep_name("${ARCANET_VARIANT_LIST}")
+        _arct_add_dep("${ARCANET_VARIANT_LIST}")
+        _arct_add_dep_name("${ARCANET_VARIANT_LIST}")
         unset(ARCANET_VARIANT_LIST)
       endif ()
 
@@ -132,7 +132,7 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arcanet_to_ctest)
+function(arct_to_ctest)
   set(options)
   set(oneValueArgs ARCT_PATH)
   set(multiValueArgs)
@@ -176,7 +176,7 @@ function(arcanet_to_ctest)
       string(JSON ARCANET_JSON_PART ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON} "cases" ${ARCANET_GET_MEMBER} "_")
       if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
         # TODO add_test()
-        _arcanet_add_test(ARCCHER_PATH "${CMAKE_BINARY_DIR}/_common/build_all/arcane/arccher/ArcCher" ARCT_PATH "${ARGS_ARCT_PATH}" CASE_NAME "${ARCANET_GET_MEMBER}")
+        _arct_add_test(ARCCHER_PATH "${CMAKE_BINARY_DIR}/_common/build_all/arcane/arccher/ArcCher" ARCT_PATH "${ARGS_ARCT_PATH}" CASE_NAME "${ARCANET_GET_MEMBER}")
         message(STATUS "add_test(${ARCANET_GET_MEMBER})")
         continue()
       endif ()
@@ -190,17 +190,17 @@ function(arcanet_to_ctest)
 
       string(JSON ARCANET_DEP ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "depend_b")
       if (ARCANET_ERROR STREQUAL "NOTFOUND")
-        _arcanet_check_dep()
+        _arct_check_dep()
       endif ()
 
       string(JSON ARCANET_DEP ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "depend_a")
       if (ARCANET_ERROR STREQUAL "NOTFOUND")
-        _arcanet_check_dep()
+        _arct_check_dep()
       endif ()
 
       foreach (VAR_J IN ITEMS ${ARCANET_TESTS_LIST})
         # TODO add_test()
-        _arcanet_add_test(ARCCHER_PATH "${CMAKE_BINARY_DIR}/_common/build_all/arcane/arccher/ArcCher" ARCT_PATH "${ARGS_ARCT_PATH}" CASE_NAME "${VAR_J}")
+        _arct_add_test(ARCCHER_PATH "${CMAKE_BINARY_DIR}/_common/build_all/arcane/arccher/ArcCher" ARCT_PATH "${ARGS_ARCT_PATH}" CASE_NAME "${VAR_J}")
         message(STATUS "add_test(${VAR_J})")
       endforeach ()
 
@@ -213,4 +213,4 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-arcanet_to_ctest()
+arct_to_ctest()
