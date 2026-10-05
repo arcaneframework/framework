@@ -1412,6 +1412,7 @@ endif ()
 arcane_add_test(simple_heat_3d testSimpleHeat3D.arc)
 if (MEDFile_FOUND)
   arcane_add_test(simple_heat_med_polygon testSimpleHeat-med-polygon.arc)
+  arcane_add_test_sequential(simple_heat_med_polyhedral testSimpleHeat-med-polyhedral.arc)
 endif ()
 
 # ----------------------------------------------------------------------------
