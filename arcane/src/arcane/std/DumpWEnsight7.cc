@@ -324,6 +324,10 @@ class DumpWEnsight7
               (*(m_general_item_types))[item] = IT_Vertex;
             else if (item.nbNode() == 2)
               (*(m_general_item_types))[item] = IT_Line2;
+            else if (item.typeInfo()->isPolyhedron()) { // polyhedron found
+              (*(m_general_item_types))[item] = type_id;
+              m_parts.add(EnsightPart(type_id++, item.nbNode(), "nfaced"));
+            }
             else if (item.nbNode() != item.itemBase().nbEdge()) { // polyhedron found
               (*(m_general_item_types))[item] = type_id;
               m_parts.add(EnsightPart(type_id++, item.nbNode(), "nfaced"));
