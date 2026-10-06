@@ -4,6 +4,8 @@
   BasicSerializer.cc
   SerializeGlobal.h
   SerializeGlobal.cc
+  SerializerExtension.h
+  SerializerExtension.cc
   internal/BasicSerializerInternal.h
 )
 

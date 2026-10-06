@@ -14,6 +14,7 @@
 #include "arccore/base/BasicDataType.h"
 #include "arccore/base/Float128.h"
 #include "arccore/base/Int128.h"
+#include "arccore/serialize/SerializerExtension.h"
 
 using namespace Arccore;
 
@@ -133,34 +134,59 @@ class StringSerializeValue
  public:
 
   explicit StringSerializeValue(const String& v)
-  : m_ref_string(v)
-  {}
+  {
+    m_ref_string.add(v);
+  }
+  explicit StringSerializeValue(Span<String> v)
+  {
+    m_ref_string.addRange(v);
+  }
 
  public:
 
   void serialize(ISerializer* s) override
   {
+    const Arcane::SerializerExtension se(s);
+    Int64 size = m_ref_string.size();
     switch (s->mode()) {
     case ISerializer::ModeReserve:
-      s->reserve(m_ref_string);
+      std::cout << "ReserveArray type=String size=" << m_ref_string.size() << "\n";
+      se.reserveArray(m_ref_string);
+      if (size > 0)
+        s->reserve(m_ref_string[0]);
       break;
     case ISerializer::ModePut:
-      s->put(m_ref_string);
+      std::cout << "PutArray type=String size=" << m_ref_string.size() << "\n";
+      se.putArray(m_ref_string);
+      if (size > 0)
+        s->put(m_ref_string[0]);
       break;
     case ISerializer::ModeGet:
-      s->get(m_result_string);
+      se.getArray(m_result_string);
+      if (size > 0)
+        s->get(m_unique_value);
     }
   }
 
   void checkValid() override
   {
-    ASSERT_EQ(m_ref_string, m_result_string);
+    std::cout << "ref_size=" << m_ref_string.size()
+          << " result_size=" << m_result_string.size() << "\n";
+    for (Integer i = 0; i < m_ref_string.size(); ++i) {
+      // std::cout << m_ref_string[i] << " == " << m_result_string[i] << std::endl;
+      ASSERT_EQ(m_ref_string[i], m_result_string[i]);
+    }
+    if (!m_ref_string.empty()) {
+      // std::cout << m_ref_string[0] << " == " << m_unique_value << std::endl;
+      ASSERT_EQ(m_ref_string[0], m_unique_value);
+    }
   }
 
  public:
 
-  String m_ref_string;
-  String m_result_string;
+  UniqueArray<String> m_ref_string;
+  UniqueArray<String> m_result_string;
+  String m_unique_value;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -197,6 +223,11 @@ class SerializeValueList
     m_values.add(new StringSerializeValue(v));
   }
 
+  void addString(Span<String> v)
+  {
+    m_values.add(new StringSerializeValue(v));
+  }
+
  public:
 
   UniqueArray<ISerializeValue*> m_values;
@@ -224,6 +255,7 @@ void _doMisc()
   values.add<Float128>(19328);
   values.add<Int128>(32422);
   values.addString("Ceci est un test de chaîne de caractères");
+  values.addString(UniqueArray<String>({ "Ceci", "est", "un", "test", "de", "chaîne", "de", "caractères" }));
 
   serializer->setMode(ISerializer::ModeReserve);
   values.doSerialize(serializer);
