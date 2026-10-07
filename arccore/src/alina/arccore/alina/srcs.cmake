@@ -57,6 +57,7 @@ set(SOURCES_INTERNAL
   IDRSSolver.h
   LooseGMRESSolver.h
   SolverUtils.h
+  PoissonProblemGenerator.h
   PreconditionerOnlySolver.h
   RichardsonSolver.h
   SolverBase.h

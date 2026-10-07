@@ -37,7 +37,7 @@ TEST(alina_test_io, io_mm)
   std::vector<double> val, val2;
   std::vector<double> rhs, rhs2;
 
-  size_t n = sample_problem(16, val, col, ptr, rhs);
+  size_t n = Alina::PoissonProblemGenerator::createSequentialMatrix(16, val, col, ptr, rhs);
 
   auto A = std::tie(n, ptr, col, val);
 

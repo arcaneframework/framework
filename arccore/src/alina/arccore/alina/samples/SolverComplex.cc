@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
   }
   else {
     auto t = prof.scoped_tic("assembling");
-    rows = sample_problem(vm["size"].as<int>(), val, col, ptr, rhs);
+    rows = Alina::PoissonProblemGenerator::createSequentialMatrix(vm["size"].as<int>(), val, col, ptr, rhs);
   }
 
   x.resize(rows, vm["initial"].as<double>());

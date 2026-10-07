@@ -43,7 +43,7 @@ TEST(alina_test_solvers, eigen_solver)
   std::vector<double> val;
   std::vector<double> rhs;
 
-  size_t n = sample_problem(16, val, col, ptr, rhs);
+  size_t n = Alina::PoissonProblemGenerator::createSequentialMatrix(16, val, col, ptr, rhs);
   Alina::CSRMatrix<double> A(std::tie(n, ptr, col, val));
 
   using Solver = Alina::EigenSolver<Eigen::SparseLU<Eigen::SparseMatrix<double, Eigen::ColMajor, int>>>;

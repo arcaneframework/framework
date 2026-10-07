@@ -123,7 +123,7 @@ TEST(alina_test_csr_matrix_view, basic)
   std::vector<double> rhs;
 
   Int32 nb_square = 64;
-  size_t n = sample_problem(nb_square, val, col, ptr, rhs);
+  size_t n = Alina::PoissonProblemGenerator::createSequentialMatrix(nb_square, val, col, ptr, rhs);
   std::cout << "TEST_VIEW_BASIC\n";
   auto A = Alina::adapter::zero_copy(n, ptr.data(), col.data(), val.data());
   auto matrix_view = matrixView(*A);

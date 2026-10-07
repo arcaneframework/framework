@@ -179,7 +179,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   std::cout << "ROWS=" << rows << "\n";
   {
     auto t = prof.scoped_tic("assembling");
-    rows = sample_problem(rows, val, col, ptr, rhs, vm["anisotropy"].as<double>());
+    rows = Alina::PoissonProblemGenerator::createSequentialMatrix(rows, val, col, ptr, rhs, vm["anisotropy"].as<double>());
   }
 
   x.resize(rows, 0.0);

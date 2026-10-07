@@ -50,7 +50,7 @@ TEST(alina_test_mpi, DistributedAlinaLib)
   std::vector<double> val;
   std::vector<double> rhs;
 
-  Int32 chunk = sample_problem_distributed(comm_rank, comm_size, n, 1, ptr, col, val, rhs);
+  Int32 chunk = Alina::PoissonProblemGenerator::createDistributedMatrix(comm_rank, comm_size, n, 1, ptr, col, val, rhs);
 
   // Setup
   AlinaParameters prm;

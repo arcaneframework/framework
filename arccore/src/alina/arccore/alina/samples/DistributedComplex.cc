@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
   std::vector<std::complex<double>> rhs;
 
   prof.tic("assemble");
-  n = sample_problem_distributed(comm.rank, comm.size, vm["size"].as<ptrdiff_t>(), 1, ptr, col, val, rhs);
+  n = Alina::PoissonProblemGenerator::createDistributedMatrix(comm.rank, comm.size, vm["size"].as<ptrdiff_t>(), 1, ptr, col, val, rhs);
   prof.toc("assemble");
 
   solve_scalar(comm, n, ptr, col, val, prm, rhs);

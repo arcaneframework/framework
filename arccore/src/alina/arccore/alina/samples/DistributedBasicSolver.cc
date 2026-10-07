@@ -257,7 +257,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   prof.tic("assemble");
   Int64 matrix_size = vm["size"].as<ptrdiff_t>();
   tm->info() << "Matrix size=" << matrix_size;
-  n = sample_problem_distributed(comm.rank, comm.size, matrix_size, 1, ptr, col, val, rhs);
+  n = Alina::PoissonProblemGenerator::createDistributedMatrix(comm.rank, comm.size, matrix_size, 1, ptr, col, val, rhs);
   prof.toc("assemble");
 
   if (vm["test-rebuild"].as<bool>()) {
