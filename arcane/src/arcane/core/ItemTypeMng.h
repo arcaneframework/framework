@@ -117,25 +117,6 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
  public:
 
-  /*!
-   * \brief Singleton instance of the type
-   *
-   * The singleton is created upon the first call to this function.
-   * It remains valid until destroySingleton() has been called
-   */
-  ARCCORE_DEPRECATED_2021("Use IMesh::itemTypeMng() to get an instance of ItemTypeMng")
-  static ItemTypeMng* singleton() { return _singleton(); }
-
-  /*!
-   * \brief Destroys the singleton
-   *
-   * The singleton can then be reconstructed by calling singleton()
-   */
-  ARCCORE_DEPRECATED_2021("Do not use this method")
-  static void destroySingleton() { _destroySingleton(); }
-
- public:
-
   //! List of available types
   ConstArrayView<ItemTypeInfo*> types() const;
 

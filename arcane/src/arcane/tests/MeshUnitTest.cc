@@ -241,7 +241,6 @@ executeTest()
   }
 
   CountOperationByBasicType op(traceMng());
-  info() << "ItemTypeMng::singleton() = " << ItemTypeMng::singleton();
   info() << "Infos sur AllCells:";
   allCells().applyOperation(&op);
   info() << "Infos sur AllFaces:";
