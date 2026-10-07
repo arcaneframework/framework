@@ -48,7 +48,7 @@ TEST(alina_test_complex, complex_matrix_adapter)
   std::vector<complex> val;
   std::vector<complex> rhs;
 
-  size_t n = sample_problem(32, val, col, ptr, rhs);
+  size_t n = Alina::PoissonProblemGenerator::createSequentialMatrix(32, val, col, ptr, rhs);
 
   std::vector<complex> x(n, complex(0.0, 0.0));
 

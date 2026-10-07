@@ -110,7 +110,7 @@ TEST(alina_test_mpi, BasicSolver)
 
   Int64 matrix_size = 32;
   std::cout << "Matrix size=" << matrix_size << "\n";
-  n = sample_problem_distributed(comm.rank, comm.size, matrix_size, 1, ptr, col, val, rhs);
+  n = Alina::PoissonProblemGenerator::createDistributedMatrix(comm.rank, comm.size, matrix_size, 1, ptr, col, val, rhs);
 
   solve_scalar(comm, n, ptr, col, val, prm, rhs);
 }

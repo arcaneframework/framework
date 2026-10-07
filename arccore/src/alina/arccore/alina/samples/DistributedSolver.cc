@@ -520,9 +520,9 @@ int main(int argc, char* argv[])
   }
   else {
     prof.tic("assemble");
-    n = sample_problem_distributed(comm.rank, comm.size,
-                                   vm["size"].as<ptrdiff_t>(),
-                                   block_size * aggr_block, ptr, col, val, rhs);
+    n = Alina::PoissonProblemGenerator::createDistributedMatrix(comm.rank, comm.size,
+                                                                vm["size"].as<ptrdiff_t>(),
+                                                                block_size * aggr_block, ptr, col, val, rhs);
     prof.toc("assemble");
   }
 

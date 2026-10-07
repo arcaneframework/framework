@@ -38,7 +38,7 @@ void _doTest(eAlinaSolverType solver_type)
   std::vector<double> val;
   std::vector<double> rhs;
 
-  int n = sample_problem(12, val, col, ptr, rhs);
+  int n = Alina::PoissonProblemGenerator::createSequentialMatrix(12, val, col, ptr, rhs);
 
   AlinaParameters prm;
 

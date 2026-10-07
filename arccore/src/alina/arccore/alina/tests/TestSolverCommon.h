@@ -254,7 +254,7 @@ void test_backend(bool do_all_relaxation = false, Int32 problem_size = 0,
     std::vector<value_type> val;
     std::vector<rhs_type> rhs;
 
-    size_t n = sample_problem(problem_size, val, col, ptr, rhs);
+    size_t n = Alina::PoissonProblemGenerator::createSequentialMatrix(problem_size, val, col, ptr, rhs);
 
     test_problem<Backend>(do_all_relaxation, n, ptr, col, val, rhs, bprm);
   }

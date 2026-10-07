@@ -55,7 +55,7 @@ int main()
   dBackend::params bprm;
 
   ARCCORE_ALINA_TIC("assemble");
-  int n = sample_problem(128, val, col, ptr, rhs);
+  int n = Alina::PoissonProblemGenerator::createSequentialMatrix(128, val, col, ptr, rhs);
   ARCCORE_ALINA_TOC("assemble");
 
   auto A_d = std::tie(n, ptr, col, val);

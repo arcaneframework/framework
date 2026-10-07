@@ -470,7 +470,7 @@ int main(int argc, char* argv[])
   }
   else {
     auto t = prof.scoped_tic("assembling");
-    rows = sample_problem(vm["size"].as<int>(), val, col, ptr, rhs, vm["anisotropy"].as<double>());
+    rows = Alina::PoissonProblemGenerator::createSequentialMatrix(vm["size"].as<int>(), val, col, ptr, rhs, vm["anisotropy"].as<double>());
   }
 
   if (vm["scale"].as<bool>()) {

@@ -43,6 +43,9 @@ arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
 if (TARGET hiredis::hiredis)
   list(APPEND ARCANE_SOURCES RedisUnitTest.cc)
 endif ()
+if (TARGET Arccore::arccore_alina)
+  list(APPEND ARCANE_SOURCES AlinaPoissonUnitTest.cc)
+endif ()
 
 set(CURRENT_SRC_PATH ${Arcane_SOURCE_DIR}/src)
 
@@ -79,7 +82,9 @@ file(MAKE_DIRECTORY ${ARCANE_TEST_PATH})
 
 target_link_libraries(arcane_tests_exec PRIVATE ${ADD_NO_AS_NEEDED} arcane_tests_lib)
 target_link_libraries(arcane_tests_lib PUBLIC ${ADD_NO_AS_NEEDED} ${TEST_LIBS} arcane_full ${ARCANE_LIBRARIES})
-
+if (TARGET Arccore::arccore_alina)
+  target_link_libraries(arcane_tests_lib PUBLIC Arccore::arccore_alina)
+endif()
 # To put the executable in 'lib'
 arcane_target_set_standard_path(arcane_tests_exec)
 #set_target_properties(arcane_tests_exec PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -1408,6 +1413,9 @@ if (SLOOP_FOUND)
   arcane_add_test_parallel(aleph_kappa_sloop testAlephSloop.arc 2 -arcane_opt nb_sub_domain 1 -arcane_opt idle_service AlephKappa)
   arcane_add_test_parallel(aleph_kappa_sloop testAlephSloop.arc 4 -arcane_opt nb_sub_domain 2 -arcane_opt idle_service AlephKappa)
 endif ()
+if (TARGET Arccore::arccore_alina)
+  arcane_add_test_parallel_all(arcane_alina_poisson testAlina-1.arc 2 3)
+endif()
 
 arcane_add_test(simple_heat_3d testSimpleHeat3D.arc)
 if (MEDFile_FOUND)

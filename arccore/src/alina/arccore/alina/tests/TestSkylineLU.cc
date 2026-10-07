@@ -38,7 +38,7 @@ TEST(alina_test_skyline_lu, skyline_lu)
   std::vector<double> val;
   std::vector<double> rhs;
 
-  size_t n = sample_problem(16, val, col, ptr, rhs);
+  size_t n = Alina::PoissonProblemGenerator::createSequentialMatrix(16, val, col, ptr, rhs);
 
   auto A = Alina::adapter::zero_copy(n, ptr.data(), col.data(), val.data());
 
