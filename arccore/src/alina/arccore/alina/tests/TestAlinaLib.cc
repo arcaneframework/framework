@@ -40,7 +40,7 @@ void _doTest(eAlinaSolverType solver_type)
 
   int n = Alina::PoissonProblemGenerator::createSequentialMatrix(12, val, col, ptr, rhs);
 
-  AlinaParameters prm;
+  AlinaSolverParameters prm;
 
   prm.setSolverType(solver_type);
 
@@ -55,7 +55,7 @@ void _doTest(eAlinaSolverType solver_type)
 
   AlinaCSRMatrixView matrix_view(n, ptr.data(), col.data(), val.data());
   SmallSpan<const double> rhs_view(rhs.data(), rhs.size());
-  AlinaSequentialSolver solver(matrix_view, &prm);
+  AlinaSequentialSolver solver(prm, matrix_view);
 
   UniqueArray<double> x(n);
   x.fill(0.0);

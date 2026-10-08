@@ -113,12 +113,9 @@ executeTest()
   Int32 chunk = PoissonProblemGenerator::createDistributedMatrix(comm_rank, comm_size, n, 1, ptr, col, val, rhs);
 
   // Setup
-  AlinaParameters prm;
-
-  prm.setString("local.coarsening.type", "smoothed_aggregation");
-  prm.setString("local.relax.type", "spai0");
-  prm.setString("isolver.type", "bicgstabl");
-  prm.setString("dsolver.type", "skyline_lu");
+  AlinaSolverParameters prm(mpm, pm->traceMng());
+  prm.setSolverPreconditioner(AlinaLib::eAlinaPreconditionerType::AMG);
+  prm.setSolverType(AlinaLib::eAlinaSolverType::ConjugateGradient);
 
   UniqueArray<double> x(rhs.size(), 0.0);
 
@@ -126,15 +123,15 @@ executeTest()
   Real t0 = platform::getRealTime();
   {
     AlinaCSRMatrixView matrix_view(chunk, ptr.data(), col.data(), val.data());
-    AlinaDistributedSolver solver(mpm, matrix_view, prm);
+    AlinaDistributedSolver solver(prm, matrix_view);
     SmallSpan<const double> rhs_view(rhs.data(), rhs.size());
     AlinaConvergenceInfo cnv = solver.solve(rhs_view, x.smallSpan());
 
-    std::cout << "Iterations: " << cnv.iterations << std::endl
-              << "Error:      " << cnv.residual << std::endl;
+    info() << "Iterations: " << cnv.iterations
+           << " Error:      " << cnv.residual;
   }
   Real t1 = platform::getRealTime();
-  tm->info() << "AlinaTime=" << (t1-t0);
+  tm->info() << "AlinaTime=" << (t1 - t0);
 }
 
 /*---------------------------------------------------------------------------*/

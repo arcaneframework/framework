@@ -49,6 +49,7 @@ struct ARCCORE_ALINA_EXPORT AlinaConvergenceInfo
 class IAlinaSolverImpl;
 class AlinaPreconditioner;
 class AlinaParametersImpl;
+class AlinaSolverParametersImpl;
 class AlinaPreconditionerImpl;
 class AlinaSequentialSolverImpl;
 class AlinaDistributedSolverImpl;
@@ -113,6 +114,55 @@ class ARCCORE_ALINA_EXPORT AlinaParameters
   //! Read parameters from a JSON file
   void readFromJSON(const char* fname);
 
+ private:
+
+  std::shared_ptr<AlinaParametersImpl> m_p;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Handle parameters for solvers.
+ *
+ * This class uses a reference semantic for copy.
+ */
+class ARCCORE_ALINA_EXPORT AlinaSolverParameters
+{
+  friend AlinaSolver;
+  friend AlinaSequentialSolverImpl;
+  friend AlinaDistributedSolverImpl;
+
+ public:
+
+  //! Create a sequential solver
+  AlinaSolverParameters();
+
+  /*!
+   * \brief Create a solver.
+   *
+   * The solver is distributed if \a mpm is not null.
+   * Otherwise the solver is sequential
+   */
+  explicit AlinaSolverParameters(MessagePassing::IMessagePassingMng* mpm, ITraceMng* tm = nullptr);
+  ~AlinaSolverParameters();
+
+ public:
+
+  //! Set Int32 parameter in the parameter list
+  void setInt32(const char* name, Int32 value);
+
+  //! Set Int64 parameter in the parameter list
+  void setInt64(const char* name, Int64 value);
+
+  //! Set floating point parameter in the parameter list
+  void setReal(const char* name, Real value);
+
+  //! Set floating point parameter in the parameter list
+  void setString(const char* name, const char* value);
+
+  //! Read parameters from a JSON file
+  void readFromJSON(const char* fname);
+
  public:
 
   // Options specific to solvers
@@ -124,9 +174,13 @@ class ARCCORE_ALINA_EXPORT AlinaParameters
   void setSolverPreconditioner(eAlinaPreconditionerType v);
   void setSolverType(eAlinaSolverType v);
 
+ public:
+
+  ITraceMng* traceMng() const;
+
  private:
 
-  std::shared_ptr<AlinaParametersImpl> m_p;
+  std::shared_ptr<AlinaSolverParametersImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -221,23 +275,15 @@ class ARCCORE_ALINA_EXPORT AlinaSolver
  public:
 
   /*!
-   * \brief Build a sequential solver for matrix \a matrix.
+   * \brief Create a solver.
    *
    * The matrix view \a matrix_view passed as arguments must remain valid
    * for as long as this instance is alive.
-   * \a parameters may be null. In this case we use the default parameters.
+   * The solver is sequential or distributed depending of the values given
+   * in \a params
    */
-  AlinaSolver(const AlinaCSRMatrixView& matrix_view,
-              const AlinaParameters* parameters);
-  /*!
-   * \brief Create a distributed solver.
-   *
-   * The matrix view \a matrix_view passed as arguments must remain valid
-   * for as long as this instance is alive.
-   */
-  AlinaSolver(MessagePassing::IMessagePassingMng* comm,
-              const AlinaCSRMatrixView& matrix_view,
-              const AlinaParameters& params);
+  AlinaSolver(const AlinaSolverParameters& params,
+              const AlinaCSRMatrixView& matrix_view);
 
  public:
 

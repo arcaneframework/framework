@@ -1414,7 +1414,7 @@ if (SLOOP_FOUND)
   arcane_add_test_parallel(aleph_kappa_sloop testAlephSloop.arc 4 -arcane_opt nb_sub_domain 2 -arcane_opt idle_service AlephKappa)
 endif ()
 if (TARGET Arccore::arccore_alina)
-  arcane_add_test_parallel_all(arcane_alina_poisson testAlina-1.arc 2 3)
+  arcane_add_test(arcane_alina_poisson testAlina-1.arc 2 3)
 endif()
 
 arcane_add_test(simple_heat_3d testSimpleHeat3D.arc)
