@@ -27,60 +27,92 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*!
+ * \brief Class that extends the functionalities of the ISerializer.
+ *
+ * This class allows you to serialize multidimensionnal arrays or String arrays.
+ * It uses methods of the classical ISerializer. You can destroy this class
+ * between steps of serialization, it doesn't store any datas.
+ */
 class ARCCORE_SERIALIZE_EXPORT SerializerExtension
 {
  public:
 
+  /*!
+   * \brief Constructor
+   * \param serializer The classical serializer.
+   */
   SerializerExtension(ISerializer* serializer)
   : m_serializer(serializer)
   {}
 
  public:
 
+  //! Reserve for a view of \a values elements
   template <class Type>
   void reserveSpan(Span2<const Type> values) const;
 
+  //! Reserve for a view of \a values elements
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void reserveSpan(MDSpan<const Type, Extents> values) const;
+  void reserveSpan(MDSpan<const Type, Extents> values) const
+  requires(Extents::rank() <= 4);
 
+  //! Reserve to save the number of elements and the \a values elements
   template <class Type>
   void reserveArray(Span2<const Type> values) const;
 
+  //! Reserve to save the number of elements and the \a values elements
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void reserveArray(MDSpan<const Type, Extents> values) const;
+  void reserveArray(MDSpan<const Type, Extents> values) const
+  requires(Extents::rank() <= 4);
 
+  //! Reserve to save the number of elements and the \a values elements
   void reserveArray(Span<const String> values) const;
 
  public:
 
+  //! Add the array \a values
   template <class Type>
   void putSpan(Span2<const Type> values) const;
 
+  //! Add the array \a values
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void putSpan(MDSpan<const Type, Extents> values) const;
+  void putSpan(MDSpan<const Type, Extents> values) const
+  requires(Extents::rank() <= 4);
 
+  //! Save the number of elements and the \a values elements
   template <class Type>
   void putArray(Span2<const Type> values) const;
 
+  //! Save the number of elements and the \a values elements
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void putArray(MDSpan<const Type, Extents> values) const;
+  void putArray(MDSpan<const Type, Extents> values) const
+  requires(Extents::rank() <= 4);
 
+  //! Save the number of elements and the \a values elements
   void putArray(Span<const String> values) const;
 
  public:
 
+  //! Retrieve the array \a values
   template <class Type>
   void getSpan(Span2<Type> values) const;
 
+  //! Retrieve the array \a values
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void getSpan(MDSpan<Type, Extents> values) const;
+  void getSpan(MDSpan<Type, Extents> values) const
+  requires(Extents::rank() <= 4);
 
+  //! Resize and fill \a values
   template <class Type>
   void getArray(Array2<Type>& values) const;
 
+  //! Resize and fill \a values
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void getArray(NumArray<Type, Extents>& values) const;
+  void getArray(NumArray<Type, Extents>& values) const
+  requires(Extents::rank() <= 4);
 
+  //! Resize and fill \a values
   void getArray(Array<String>& values) const;
 
  private:
@@ -103,8 +135,9 @@ reserveSpan(Span2<const Type> values) const
 /*---------------------------------------------------------------------------*/
 
 template <class Type, class Extents>
-requires(Extents::rank() <= 4) void SerializerExtension::
+void SerializerExtension::
 reserveSpan(MDSpan<const Type, Extents> values) const
+requires(Extents::rank() <= 4)
 {
   m_serializer->reserveSpan(values.to1DSpan());
 }
@@ -124,8 +157,9 @@ reserveArray(Span2<const Type> values) const
 /*---------------------------------------------------------------------------*/
 
 template <class Type, class Extents>
-requires(Extents::rank() <= 4) void SerializerExtension::
+void SerializerExtension::
 reserveArray(MDSpan<const Type, Extents> values) const
+requires(Extents::rank() <= 4)
 {
   constexpr Int32 rank = Extents::rank();
   m_serializer->reserveInt64(rank);
@@ -147,8 +181,9 @@ putSpan(Span2<const Type> values) const
 /*---------------------------------------------------------------------------*/
 
 template <class Type, class Extents>
-requires(Extents::rank() <= 4) void SerializerExtension::
+void SerializerExtension::
 putSpan(MDSpan<const Type, Extents> values) const
+requires(Extents::rank() <= 4)
 {
   m_serializer->putSpan(values.to1DSpan());
 }
@@ -169,10 +204,13 @@ putArray(Span2<const Type> values) const
 /*---------------------------------------------------------------------------*/
 
 template <class Type, class Extents>
-requires(Extents::rank() <= 4) void SerializerExtension::
+void SerializerExtension::
 putArray(MDSpan<const Type, Extents> values) const
+requires(Extents::rank() <= 4)
 {
   constexpr Int32 rank = Extents::rank();
+  // TODO : Add method in ArrayExtents to get an std::array to remove
+  //        all 'requires()' of this class and simplify this method.
   if constexpr (rank >= 1) {
     m_serializer->putInt64(values.extent0());
   }
@@ -203,8 +241,9 @@ getSpan(Span2<Type> values) const
 /*---------------------------------------------------------------------------*/
 
 template <class Type, class Extents>
-requires(Extents::rank() <= 4) void SerializerExtension::
+void SerializerExtension::
 getSpan(MDSpan<Type, Extents> values) const
+requires(Extents::rank() <= 4)
 {
   Span<Type> values_1d = values.to1DSpan();
   m_serializer->getSpan(values_1d);
@@ -228,8 +267,9 @@ getArray(Array2<Type>& values) const
 /*---------------------------------------------------------------------------*/
 
 template <class Type, class Extents>
-requires(Extents::rank() <= 4) void SerializerExtension::
+void SerializerExtension::
 getArray(NumArray<Type, Extents>& values) const
+requires(Extents::rank() <= 4)
 {
   using IndexType = Extents::ExtentIndexType;
 
