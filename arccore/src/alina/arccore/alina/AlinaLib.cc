@@ -11,19 +11,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "AlinaUtils.h"
 #include "arccore/alina/RelaxationRuntime.h"
 #include "arccore/alina/CoarseningRuntime.h"
 #include "arccore/alina/SolverRuntime.h"
 #include "arccore/alina/PreconditionedSolver.h"
 #include "arccore/alina/PreconditionerRuntime.h"
 #include "arccore/alina/DistributedSolverRuntime.h"
-#include "arccore/alina/DistributedDirectSolverRuntime.h"
-#include "arccore/alina/DistributedSubDomainDeflation.h"
-#include "arccore/alina/AMG.h"
+#include "arccore/alina/DistributedPreconditioner.h"
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/AlinaLib.h"
+#include "arccore/alina/DistributedPreconditionedSolver.h"
 
-#include "arccore/concurrency/Mutex.h"
 #include "arccore/base/NotSupportedException.h"
 #include "arccore/base/NotImplementedException.h"
 
@@ -42,13 +41,11 @@ namespace Arcane::AlinaLib
 using Backend = Alina::BuiltinBackend<double, Int32, Int32>;
 using PreconditionerType = Alina::PreconditionerRuntime<Backend>;
 using SequentialSolverType = Alina::PreconditionedSolver<PreconditionerType, Alina::SolverRuntime<Backend>>;
-typedef Alina::PropertyTree Params;
 
 //---------------------------------------------------------------------------
 
-using DistributedSolverType = Alina::DistributedSubDomainDeflation<PreconditionerType,
-                                                                   Alina::DistributedSolverRuntime<Backend>,
-                                                                   Alina::DistributedDirectSolverRuntime<Backend>>;
+using DistributedSolverType = Alina::DistributedPreconditionedSolver<Alina::DistributedPreconditioner<Backend>,
+                                                                     Alina::DistributedSolverRuntime<Backend>>;
 
 typedef double (*AlinaDefVecFunction)(int vec, ptrdiff_t coo, void* data);
 
@@ -73,11 +70,37 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void AlinaCSRMatrixView::
+dump(std::ostream& o) const
+{
+  const AlinaCSRMatrixView& matrix_view = *this;
+  Int32 nb_row = matrix_view.nbRow();
+  const auto default_precision{ o.precision() };
+  constexpr auto max_precision{ std::numeric_limits<long double>::digits10 + 1 };
+  o << std::setprecision(max_precision);
+  o << "MATRIX nb_row=" << nb_row << "\n";
+  auto rows_index = matrix_view.rowIndexes();
+  auto columns = matrix_view.columns();
+  auto values = matrix_view.values();
+  for (Int32 i = 0; i < nb_row; ++i) {
+    Int32 begin = rows_index[i];
+    Int32 end = rows_index[i + 1];
+    o << "ROW I=" << i << " index0=" << begin << " index1=" << end << "\n";
+    for (Int32 z = begin; z < end; ++z) {
+      o << "  C=" << std::setw(8) << columns[z] << "  V=" << values[z] << "\n";
+    }
+  }
+  o << std::setprecision(default_precision);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class AlinaParametersImpl
 {
  public:
 
-  Params m_properties;
+  Alina::PropertyTree m_properties;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -118,7 +141,7 @@ setString(const char* name, const char* value)
 void AlinaParameters::
 readFromJSON(const char* fname)
 {
-  Params& p = m_p->m_properties;
+  Alina::PropertyTree& p = m_p->m_properties;
   p.read_json(fname);
 }
 
@@ -295,7 +318,7 @@ class IAlinaSolverImpl
               SmallSpan<const double> rhs,
               SmallSpan<double> x) = 0;
 
-  virtual void report(std::ostream& o) =0;
+  virtual void report(std::ostream& o) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -312,6 +335,7 @@ class AlinaSequentialSolverImpl
                                      const AlinaParameters* prm)
   {
     matrix_view.checkSizes();
+
     auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
                              matrix_view.columns(), matrix_view.values());
 
@@ -414,15 +438,9 @@ class AlinaDistributedSolverImpl
                                       const AlinaCSRMatrixView& matrix_view,
                                       const AlinaParameters& params)
   {
-    int n_def_vec = 1;
-    AlinaDefVecFunction def_vec_func = constant_deflation;
-    void* def_vec_data = nullptr;
+    matrix_view.checkSizes();
 
-    std::function<double(ptrdiff_t, unsigned)> dv = deflation_vectors(n_def_vec, def_vec_func, def_vec_data);
-
-    Alina::PropertyTree prm = params.m_p->m_properties;
-    prm.put("num_def_vec", n_def_vec);
-    prm.put("def_vec", &dv);
+    Alina::PropertyTree& prm = params.m_p->m_properties;
     matrix_view.checkSizes();
 
     auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),

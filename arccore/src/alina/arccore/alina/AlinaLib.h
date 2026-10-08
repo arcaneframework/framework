@@ -161,6 +161,10 @@ class ARCCORE_ALINA_EXPORT AlinaCSRMatrixView
 
  public:
 
+  void dump(std::ostream& o) const;
+
+ public:
+
   /*!
    * \brief Check that sizes are valid:
    * - rowIndexes().size() = nbRow() + 1;
