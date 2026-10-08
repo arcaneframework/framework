@@ -16,6 +16,8 @@
 
 #include "arccore/serialize/ISerializer.h"
 
+#include <array>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -85,6 +87,164 @@ class ARCCORE_SERIALIZE_EXPORT SerializerExtension
 
   ISerializer* m_serializer;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
+void SerializerExtension::
+reserveSpan(Span2<const Type> values) const
+{
+  Span<const Type> span_1d(values.data(), values.dim1Size() * values.dim2Size());
+  m_serializer->reserveSpan(span_1d);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type, class Extents>
+requires(Extents::rank() <= 4) void SerializerExtension::
+reserveSpan(MDSpan<const Type, Extents> values) const
+{
+  m_serializer->reserveSpan(values.to1DSpan());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
+void SerializerExtension::
+reserveArray(Span2<const Type> values) const
+{
+  m_serializer->reserveInt64(2);
+  this->reserveSpan(values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type, class Extents>
+requires(Extents::rank() <= 4) void SerializerExtension::
+reserveArray(MDSpan<const Type, Extents> values) const
+{
+  constexpr Int32 rank = Extents::rank();
+  m_serializer->reserveInt64(rank);
+  m_serializer->reserveSpan(values.to1DSpan());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
+void SerializerExtension::
+putSpan(Span2<const Type> values) const
+{
+  Span<const Type> span_1d(values.data(), values.dim1Size() * values.dim2Size());
+  m_serializer->putSpan(span_1d);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type, class Extents>
+requires(Extents::rank() <= 4) void SerializerExtension::
+putSpan(MDSpan<const Type, Extents> values) const
+{
+  m_serializer->putSpan(values.to1DSpan());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
+void SerializerExtension::
+putArray(Span2<const Type> values) const
+{
+  m_serializer->putInt64(values.dim1Size());
+  m_serializer->putInt64(values.dim2Size());
+  this->putSpan(values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type, class Extents>
+requires(Extents::rank() <= 4) void SerializerExtension::
+putArray(MDSpan<const Type, Extents> values) const
+{
+  constexpr Int32 rank = Extents::rank();
+  if constexpr (rank >= 1) {
+    m_serializer->putInt64(values.extent0());
+  }
+  if constexpr (rank >= 2) {
+    m_serializer->putInt64(values.extent1());
+  }
+  if constexpr (rank >= 3) {
+    m_serializer->putInt64(values.extent2());
+  }
+  if constexpr (rank >= 4) {
+    m_serializer->putInt64(values.extent3());
+  }
+  m_serializer->putSpan(values.to1DSpan());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
+void SerializerExtension::
+getSpan(Span2<Type> values) const
+{
+  Span<Type> span_1d(values.data(), values.dim1Size() * values.dim2Size());
+  m_serializer->getSpan(span_1d);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type, class Extents>
+requires(Extents::rank() <= 4) void SerializerExtension::
+getSpan(MDSpan<Type, Extents> values) const
+{
+  Span<Type> values_1d = values.to1DSpan();
+  m_serializer->getSpan(values_1d);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type>
+void SerializerExtension::
+getArray(Array2<Type>& values) const
+{
+  Int64 size1 = m_serializer->getInt64();
+  Int64 size2 = m_serializer->getInt64();
+
+  values.resize(size1, size2);
+  m_serializer->getSpan(values.to1DSpan());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Type, class Extents>
+requires(Extents::rank() <= 4) void SerializerExtension::
+getArray(NumArray<Type, Extents>& values) const
+{
+  using IndexType = Extents::ExtentIndexType;
+
+  {
+    constexpr Int32 rank = Extents::rank();
+    std::array<IndexType, rank> size{};
+    for (Int32 i = 0; i < rank; ++i) {
+      size[i] = static_cast<IndexType>(m_serializer->getInt64());
+    }
+    MDIndex<rank, IndexType> mdi(size);
+    values.resizeDestructive(mdi);
+  }
+
+  m_serializer->getSpan(values.to1DSpan());
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
