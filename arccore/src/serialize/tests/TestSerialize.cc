@@ -14,6 +14,8 @@
 #include "arccore/base/BasicDataType.h"
 #include "arccore/base/Float128.h"
 #include "arccore/base/Int128.h"
+#include "arccore/common/NumArray.h"
+#include "arccore/collections/Array2.h"
 #include "arccore/serialize/SerializerExtension.h"
 
 using namespace Arccore;
@@ -171,7 +173,7 @@ class StringSerializeValue
   void checkValid() override
   {
     std::cout << "ref_size=" << m_ref_string.size()
-          << " result_size=" << m_result_string.size() << "\n";
+              << " result_size=" << m_result_string.size() << "\n";
     for (Integer i = 0; i < m_ref_string.size(); ++i) {
       // std::cout << m_ref_string[i] << " == " << m_result_string[i] << std::endl;
       ASSERT_EQ(m_ref_string[i], m_result_string[i]);
@@ -187,6 +189,119 @@ class StringSerializeValue
   UniqueArray<String> m_ref_string;
   UniqueArray<String> m_result_string;
   String m_unique_value;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType>
+class Serialize2DValue
+: public ISerializeValue
+{
+  using ValueTraitsType = ValueTraits<DataType>;
+
+public:
+
+  Serialize2DValue()
+  : m_data_type(ValueTraitsType::dataType())
+  {}
+
+public:
+
+  void serialize(ISerializer* s) override
+  {
+    const Arcane::SerializerExtension se(s);
+    switch (s->mode()) {
+    case ISerializer::ModeReserve:
+      std::cout << "ReserveArray type=" << m_data_type << " size1=" << m_array_values.dim1Size() << " size2=" << m_array_values.dim2Size() << "\n";
+      se.reserveArray(m_array_values.constSpan());
+      break;
+    case ISerializer::ModePut:
+      std::cout << "PutArray type=" << m_data_type << " size1=" << m_array_values.dim1Size() << " size2=" << m_array_values.dim2Size() << "\n";
+      se.putArray(m_array_values.constSpan());
+      break;
+    case ISerializer::ModeGet:
+      se.getArray(m_result_array_values);
+    }
+  }
+
+  void checkValid() override
+  {
+    std::cout << "ref_size1=" << m_array_values.dim1Size()
+              << " ref_size2=" << m_array_values.dim2Size()
+              << " result_size1=" << m_result_array_values.dim1Size()
+              << " result_size2=" << m_result_array_values.dim2Size() << "\n";
+    for (Int32 i = 0; i < m_array_values.dim1Size(); ++i) {
+      ASSERT_EQ(m_array_values[i], m_result_array_values[i]);
+    }
+  }
+
+  void resizeAndFill(Int32 size1, Int32 size2)
+  {
+    m_array_values.resize(size1, size2);
+    ValueFiller::fillRandom(542, m_array_values.to1DSpan());
+  }
+
+public:
+
+  UniqueArray2<DataType> m_array_values;
+  UniqueArray2<DataType> m_result_array_values;
+  eBasicDataType m_data_type = eBasicDataType::Unknown;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType, typename Extents>
+class MDSerializeValue
+: public ISerializeValue
+{
+  using ValueTraitsType = ValueTraits<DataType>;
+
+ public:
+
+  MDSerializeValue()
+  : m_data_type(ValueTraitsType::dataType())
+  {}
+
+ public:
+
+  void serialize(ISerializer* s) override
+  {
+    const Arcane::SerializerExtension se(s);
+    switch (s->mode()) {
+    case ISerializer::ModeReserve:
+      std::cout << "ReserveArray type=" << m_data_type << " dim=" << Extents::rank() << " total_size=" << m_array_values.totalNbElement() << "\n";
+      se.reserveArray(m_array_values.constSpan());
+      break;
+    case ISerializer::ModePut:
+      std::cout << "PutArray type=" << m_data_type << " dim=" << Extents::rank() << " total_size=" << m_array_values.totalNbElement() << "\n";
+      se.putArray(m_array_values.constSpan());
+      break;
+    case ISerializer::ModeGet:
+      se.getArray(m_result_array_values);
+    }
+  }
+
+  void checkValid() override
+  {
+    std::cout << "ref_size=" << m_array_values.totalNbElement()
+          << " result_size=" << m_result_array_values.totalNbElement() << "\n";
+    //TODO : Vérifier les dimensions.
+    ASSERT_EQ(m_array_values.to1DSpan(), m_result_array_values.to1DSpan());
+  }
+
+  void resizeAndFill(Arcane::MDIndex<Extents::rank(), typename Extents::ExtentIndexType> size)
+  {
+    m_array_values.resize(size);
+    ValueFiller::fillRandom(542, m_array_values.to1DSpan());
+  }
+
+ public:
+
+  Arcane::NumArray<DataType, Extents> m_array_values;
+  Arcane::NumArray<DataType, Extents> m_result_array_values;
+  eBasicDataType m_data_type = eBasicDataType::Unknown;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -212,7 +327,8 @@ class SerializeValueList
       v->checkValid();
   }
 
-  template <typename DataType> void add(Int32 size)
+  template <typename DataType>
+  void add(Int32 size)
   {
     auto* sval = new SerializeValue<DataType>();
     sval->resizeAndFill(size);
@@ -226,6 +342,22 @@ class SerializeValueList
   void addString(Span<String> v)
   {
     m_values.add(new StringSerializeValue(v));
+  }
+
+  template <typename DataType>
+  void add(Int32 size1, Int32 size2)
+  {
+    auto* sval = new Serialize2DValue<DataType>();
+    sval->resizeAndFill(size1, size2);
+    m_values.add(sval);
+  }
+
+  template <typename DataType, typename Extents>
+  void add(Arcane::MDIndex<Extents::rank(), typename Extents::ExtentIndexType> size)
+  {
+    auto* sval = new MDSerializeValue<DataType, Extents>();
+    sval->resizeAndFill(size);
+    m_values.add(sval);
   }
 
  public:
@@ -254,8 +386,23 @@ void _doMisc()
   values.add<Int64>(12932);
   values.add<Float128>(19328);
   values.add<Int128>(32422);
+
   values.addString("Ceci est un test de chaîne de caractères");
   values.addString(UniqueArray<String>({ "Ceci", "est", "un", "test", "de", "chaîne", "de", "caractères" }));
+
+  values.add<Real>(29, 123);
+  values.add<Int32>(16, 23);
+
+  values.add<Float16, Arcane::MDDim1>(125);
+  values.add<BFloat16, Arcane::MDDim2>({ 51, 21 });
+  values.add<Int8, Arcane::MDDim3>({ 12, 9, 45 });
+  values.add<Float32, Arcane::MDDim4>({ 14, 45, 1, 4 });
+  values.add<Int16, Arcane::MDDim1>(15);
+  values.add<Real, Arcane::MDDim2>({ 84, 31 });
+  values.add<Int32, Arcane::MDDim3>({ 25, 19, 41 });
+  values.add<Byte, Arcane::MDDim4>({ 12, 17, 26, 4 });
+  values.add<Int64, Arcane::MDDim1>(18);
+  values.add<Float128, Arcane::MDDim2>({ 41, 48 });
 
   serializer->setMode(ISerializer::ModeReserve);
   values.doSerialize(serializer);
