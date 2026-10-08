@@ -53,19 +53,17 @@ TEST(alina_test_mpi, DistributedAlinaLib)
   Int32 chunk = Alina::PoissonProblemGenerator::createDistributedMatrix(comm_rank, comm_size, n, 1, ptr, col, val, rhs);
 
   // Setup
-  AlinaParameters prm;
+  AlinaSolverParameters prm(mpm.get());
 
-  prm.setString("local.coarsening.type", "smoothed_aggregation");
-  prm.setString("local.relax.type", "spai0");
-  prm.setString("isolver.type", "bicgstabl");
-  prm.setString("dsolver.type", "skyline_lu");
+  prm.setString("precond.coarsening.type", "smoothed_aggregation");
+  prm.setString("precond.relax.type", "spai0");
 
   UniqueArray<double> x(rhs.size(), 0.0);
 
   // Solve
   {
     AlinaCSRMatrixView matrix_view(chunk, ptr.data(), col.data(), val.data());
-    AlinaDistributedSolver solver(mpm.get(), matrix_view, prm);
+    AlinaDistributedSolver solver(prm, matrix_view);
     SmallSpan<const double> rhs_view(rhs.data(), rhs.size());
     AlinaConvergenceInfo cnv = solver.solve(rhs_view, x.smallSpan());
 
