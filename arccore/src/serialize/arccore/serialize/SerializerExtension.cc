@@ -16,10 +16,10 @@
 #include "arccore/base/Float128.h"
 #include "arccore/base/Float16.h"
 #include "arccore/base/Int128.h"
-#include "arccore/collections/Array2.h"
 #include "arccore/base/BFloat16.h"
 #include "arccore/base/MDSpan.h"
 #include "arccore/common/NumArray.h"
+#include "arccore/collections/Array2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,9 +32,9 @@ namespace Arcane
 
 template <class Type>
 void SerializerExtension::
-reserveSpan(Span2<const Type> values)
+reserveSpan(Span2<const Type> values) const
 {
-  Span<Type> span_1d(values.data(), values.dim1Size() * values.dim2Size());
+  Span<const Type> span_1d(values.data(), values.dim1Size() * values.dim2Size());
   m_serializer->reserveSpan(span_1d);
 }
 
@@ -43,7 +43,7 @@ reserveSpan(Span2<const Type> values)
 
 template <class Type, class Extents>
 requires(Extents::rank() <= 4) void SerializerExtension::
-reserveSpan(MDSpan<Type, Extents> values)
+reserveSpan(MDSpan<const Type, Extents> values) const
 {
   m_serializer->reserveSpan(values.to1DSpan());
 }
@@ -53,10 +53,10 @@ reserveSpan(MDSpan<Type, Extents> values)
 
 template <class Type>
 void SerializerExtension::
-reserveArray(Array2<const Type> values)
+reserveArray(Span2<const Type> values) const
 {
   m_serializer->reserveInt64(2);
-  m_serializer->reserveSpan(values.to1DSpan());
+  this->reserveSpan(values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -64,7 +64,7 @@ reserveArray(Array2<const Type> values)
 
 template <class Type, class Extents>
 requires(Extents::rank() <= 4) void SerializerExtension::
-reserveArray(NumArray<Type, Extents> values)
+reserveArray(MDSpan<const Type, Extents> values) const
 {
   constexpr Int32 rank = Extents::rank();
   m_serializer->reserveInt64(rank);
@@ -89,9 +89,9 @@ reserveArray(Span<const String> values) const
 
 template <class Type>
 void SerializerExtension::
-putSpan(Span2<const Type> values)
+putSpan(Span2<const Type> values) const
 {
-  Span<Type> span_1d(values.data(), values.dim1Size() * values.dim2Size());
+  Span<const Type> span_1d(values.data(), values.dim1Size() * values.dim2Size());
   m_serializer->putSpan(span_1d);
 }
 
@@ -100,7 +100,7 @@ putSpan(Span2<const Type> values)
 
 template <class Type, class Extents>
 requires(Extents::rank() <= 4) void SerializerExtension::
-putSpan(MDSpan<Type, Extents> values)
+putSpan(MDSpan<const Type, Extents> values) const
 {
   m_serializer->putSpan(values.to1DSpan());
 }
@@ -110,11 +110,11 @@ putSpan(MDSpan<Type, Extents> values)
 
 template <class Type>
 void SerializerExtension::
-putArray(Array2<const Type> values)
+putArray(Span2<const Type> values) const
 {
   m_serializer->putInt64(values.dim1Size());
   m_serializer->putInt64(values.dim2Size());
-  m_serializer->putSpan(values.to1DSpan());
+  this->putSpan(values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -122,7 +122,7 @@ putArray(Array2<const Type> values)
 
 template <class Type, class Extents>
 requires(Extents::rank() <= 4) void SerializerExtension::
-putArray(NumArray<Type, Extents> values)
+putArray(MDSpan<const Type, Extents> values) const
 {
   constexpr Int32 rank = Extents::rank();
   if constexpr (rank >= 1) {
@@ -158,7 +158,7 @@ putArray(Span<const String> values) const
 
 template <class Type>
 void SerializerExtension::
-getSpan(Span2<Type> values)
+getSpan(Span2<Type> values) const
 {
   Span<Type> span_1d(values.data(), values.dim1Size() * values.dim2Size());
   m_serializer->getSpan(span_1d);
@@ -169,7 +169,7 @@ getSpan(Span2<Type> values)
 
 template <class Type, class Extents>
 requires(Extents::rank() <= 4) void SerializerExtension::
-getSpan(MDSpan<Type, Extents> values)
+getSpan(MDSpan<Type, Extents> values) const
 {
   Span<Type> values_1d = values.to1DSpan();
   m_serializer->getSpan(values_1d);
@@ -180,7 +180,7 @@ getSpan(MDSpan<Type, Extents> values)
 
 template <class Type>
 void SerializerExtension::
-getArray(Array2<Type>& values)
+getArray(Array2<Type>& values) const
 {
   Int64 size1 = m_serializer->getInt64();
   Int64 size2 = m_serializer->getInt64();
@@ -194,36 +194,20 @@ getArray(Array2<Type>& values)
 
 template <class Type, class Extents>
 requires(Extents::rank() <= 4) void SerializerExtension::
-getArray(NumArray<Type, Extents>& values)
+getArray(NumArray<Type, Extents>& values) const
 {
   using IndexType = Extents::ExtentIndexType;
-  constexpr Int32 rank = Extents::rank();
-  if constexpr (rank == 1) {
-    IndexType size1 = static_cast<IndexType>(m_serializer->getInt64());
-    MDIndex<1, IndexType> mdi(size1);
+
+  {
+    constexpr Int32 rank = Extents::rank();
+    std::array<IndexType, rank> size{};
+    for (Int32 i = 0; i < rank; ++i) {
+      size[i] = static_cast<IndexType>(m_serializer->getInt64());
+    }
+    MDIndex<rank, IndexType> mdi(size);
     values.resizeDestructive(mdi);
   }
-  if constexpr (rank == 2) {
-    IndexType size1 = static_cast<IndexType>(m_serializer->getInt64());
-    IndexType size2 = static_cast<IndexType>(m_serializer->getInt64());
-    MDIndex<2, IndexType> mdi(size1, size2);
-    values.resizeDestructive(mdi);
-  }
-  if constexpr (rank == 3) {
-    IndexType size1 = static_cast<IndexType>(m_serializer->getInt64());
-    IndexType size2 = static_cast<IndexType>(m_serializer->getInt64());
-    IndexType size3 = static_cast<IndexType>(m_serializer->getInt64());
-    MDIndex<3, IndexType> mdi(size1, size2, size3);
-    values.resizeDestructive(mdi);
-  }
-  if constexpr (rank == 4) {
-    IndexType size1 = static_cast<IndexType>(m_serializer->getInt64());
-    IndexType size2 = static_cast<IndexType>(m_serializer->getInt64());
-    IndexType size3 = static_cast<IndexType>(m_serializer->getInt64());
-    IndexType size4 = static_cast<IndexType>(m_serializer->getInt64());
-    MDIndex<4, IndexType> mdi(size1, size2, size3, size4);
-    values.resizeDestructive(mdi);
-  }
+
   m_serializer->getSpan(values.to1DSpan());
 }
 
@@ -249,51 +233,57 @@ getArray(Array<String>& values) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#define ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER(return_type, class_method_name, is_const, arg_with_template, et) \
-  template return_type class_method_name<is_const Byte>(arg_with_template<is_const Byte> et); \
-  template return_type class_method_name<is_const Real>(arg_with_template<is_const Real> et); \
-  template return_type class_method_name<is_const Int16>(arg_with_template<is_const Int16> et); \
-  template return_type class_method_name<is_const Int32>(arg_with_template<is_const Int32> et); \
-  template return_type class_method_name<is_const Int64>(arg_with_template<is_const Int64> et); \
-  template return_type class_method_name<is_const Float32>(arg_with_template<is_const Float32> et); \
-  template return_type class_method_name<is_const Float16>(arg_with_template<is_const Float16> et); \
-  template return_type class_method_name<is_const BFloat16>(arg_with_template<is_const BFloat16> et); \
-  template return_type class_method_name<is_const Int8>(arg_with_template<is_const Int8> et); \
-  template return_type class_method_name<is_const Float128>(arg_with_template<is_const Float128> et); \
-  template return_type class_method_name<is_const Int128>(arg_with_template<is_const Int128> et)
+#define ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, type, arg_with_template, et) \
+  template return_type class_method_name<type>(arg_with_template<is_const type> et) const
 
-#define ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER2(return_type, class_method_name, is_const, second_template, arg_with_template, et) \
-  template return_type class_method_name<is_const Byte, second_template>(arg_with_template<is_const Byte, second_template> et); \
-  template return_type class_method_name<is_const Real, second_template>(arg_with_template<is_const Real, second_template> et); \
-  template return_type class_method_name<is_const Int16, second_template>(arg_with_template<is_const Int16, second_template> et); \
-  template return_type class_method_name<is_const Int32, second_template>(arg_with_template<is_const Int32, second_template> et); \
-  template return_type class_method_name<is_const Int64, second_template>(arg_with_template<is_const Int64, second_template> et); \
-  template return_type class_method_name<is_const Float32, second_template>(arg_with_template<is_const Float32, second_template> et); \
-  template return_type class_method_name<is_const Float16, second_template>(arg_with_template<is_const Float16, second_template> et); \
-  template return_type class_method_name<is_const BFloat16, second_template>(arg_with_template<is_const BFloat16, second_template> et); \
-  template return_type class_method_name<is_const Int8, second_template>(arg_with_template<is_const Int8, second_template> et); \
-  template return_type class_method_name<is_const Float128, second_template>(arg_with_template<is_const Float128, second_template> et); \
-  template return_type class_method_name<is_const Int128, second_template>(arg_with_template<is_const Int128, second_template> et)
+#define ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_ALL_TYPES(return_type, class_method_name, is_const, arg_with_template, et) \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, Byte, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, Real, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, Int16, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, Int32, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, Int64, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, Float32, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, Float16, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, BFloat16, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, Int8, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, Float128, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_SIMPLE(return_type, class_method_name, is_const, Int128, arg_with_template, et)
 
-#define ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER3(return_type, class_method_name, is_const, arg_with_template, et) \
-  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER2(return_type, class_method_name, is_const, MDDim1, arg_with_template, et); \
-  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER2(return_type, class_method_name, is_const, MDDim2, arg_with_template, et); \
-  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER2(return_type, class_method_name, is_const, MDDim3, arg_with_template, et); \
-  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER2(return_type, class_method_name, is_const, MDDim4, arg_with_template, et)
+#define ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, type, second_template, arg_with_template, et) \
+  template return_type class_method_name<type, second_template>(arg_with_template<is_const type, second_template> et) const
 
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER(void, SerializerExtension::reserveSpan, const, Span2, );
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER(void, SerializerExtension::reserveArray, const, Array2, );
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER(void, SerializerExtension::putSpan, const, Span2, );
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER(void, SerializerExtension::putArray, const, Array2, );
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER(void, SerializerExtension::getSpan, , Span2, );
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER(void, SerializerExtension::getArray, , Array2, &);
+#define ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_TYPES(return_type, class_method_name, is_const, second_template, arg_with_template, et) \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, Byte, second_template, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, Real, second_template, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, Int16, second_template, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, Int32, second_template, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, Int64, second_template, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, Float32, second_template, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, Float16, second_template, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, BFloat16, second_template, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, Int8, second_template, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, Float128, second_template, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_SIMPLE(return_type, class_method_name, is_const, Int128, second_template, arg_with_template, et)
 
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER3(void, SerializerExtension::reserveSpan, const, MDSpan, );
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER3(void, SerializerExtension::reserveArray, , NumArray, );
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER3(void, SerializerExtension::putSpan, const, MDSpan, );
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER3(void, SerializerExtension::putArray, , NumArray, );
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER3(void, SerializerExtension::getSpan, , MDSpan, );
-ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER3(void, SerializerExtension::getArray, , NumArray, &);
+#define ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_DIM(return_type, class_method_name, is_const, arg_with_template, et) \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_TYPES(return_type, class_method_name, is_const, MDDim1, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_TYPES(return_type, class_method_name, is_const, MDDim2, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_TYPES(return_type, class_method_name, is_const, MDDim3, arg_with_template, et); \
+  ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_TYPES(return_type, class_method_name, is_const, MDDim4, arg_with_template, et)
+
+ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_ALL_TYPES(void, SerializerExtension::reserveSpan, const, Span2, );
+ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_ALL_TYPES(void, SerializerExtension::reserveArray, const, Span2, );
+ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_ALL_TYPES(void, SerializerExtension::putSpan, const, Span2, );
+ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_ALL_TYPES(void, SerializerExtension::putArray, const, Span2, );
+ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_ALL_TYPES(void, SerializerExtension::getSpan, , Span2, );
+ARCCORE_INTERNAL_INSTANTIATE_SERIALIZEREXTENSION_2D_ALL_TYPES(void, SerializerExtension::getArray, , Array2, &);
+
+ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_DIM(void, SerializerExtension::reserveSpan, const, MDSpan, );
+ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_DIM(void, SerializerExtension::reserveArray, const, MDSpan, );
+ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_DIM(void, SerializerExtension::putSpan, const, MDSpan, );
+ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_DIM(void, SerializerExtension::putArray, const, MDSpan, );
+ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_DIM(void, SerializerExtension::getSpan, , MDSpan, );
+ARCCORE_INTERNAL_INSTANTIATE_MDSERIALIZER_ALL_DIM(void, SerializerExtension::getArray, , NumArray, &);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

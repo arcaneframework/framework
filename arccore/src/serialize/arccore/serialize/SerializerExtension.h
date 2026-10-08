@@ -36,48 +36,48 @@ class ARCCORE_SERIALIZE_EXPORT SerializerExtension
  public:
 
   template <class Type>
-  void reserveSpan(Span2<const Type> values);
+  void reserveSpan(Span2<const Type> values) const;
 
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void reserveSpan(MDSpan<Type, Extents> values);
+  requires(Extents::rank() <= 4) void reserveSpan(MDSpan<const Type, Extents> values) const;
 
   template <class Type>
-  void reserveArray(Array2<const Type> values);
+  void reserveArray(Span2<const Type> values) const;
 
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void reserveArray(NumArray<Type, Extents> values);
+  requires(Extents::rank() <= 4) void reserveArray(MDSpan<const Type, Extents> values) const;
 
   void reserveArray(Span<const String> values) const;
 
  public:
 
   template <class Type>
-  void putSpan(Span2<const Type> values);
+  void putSpan(Span2<const Type> values) const;
 
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void putSpan(MDSpan<Type, Extents> values);
+  requires(Extents::rank() <= 4) void putSpan(MDSpan<const Type, Extents> values) const;
 
   template <class Type>
-  void putArray(Array2<const Type> values);
+  void putArray(Span2<const Type> values) const;
 
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void putArray(NumArray<Type, Extents> values);
+  requires(Extents::rank() <= 4) void putArray(MDSpan<const Type, Extents> values) const;
 
   void putArray(Span<const String> values) const;
 
  public:
 
   template <class Type>
-  void getSpan(Span2<Type> values);
+  void getSpan(Span2<Type> values) const;
 
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void getSpan(MDSpan<Type, Extents> values);
+  requires(Extents::rank() <= 4) void getSpan(MDSpan<Type, Extents> values) const;
 
   template <class Type>
-  void getArray(Array2<Type>& values);
+  void getArray(Array2<Type>& values) const;
 
   template <class Type, class Extents>
-  requires(Extents::rank() <= 4) void getArray(NumArray<Type, Extents>& values);
+  requires(Extents::rank() <= 4) void getArray(NumArray<Type, Extents>& values) const;
 
   void getArray(Array<String>& values) const;
 
