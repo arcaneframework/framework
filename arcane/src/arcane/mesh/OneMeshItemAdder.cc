@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* OneMeshItemAdder.cc                                         (C) 2000-2025 */
+/* OneMeshItemAdder.cc                                         (C) 2000-2026 */
 /*                                                                           */
 /* Adding entities one by one.                                               */
 /*---------------------------------------------------------------------------*/
@@ -16,11 +16,13 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/FixedArray.h"
+#include "arcane/utils/HashTableMap2.h"
 
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/MeshToMeshTransposer.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ItemPrinter.h"
+#include "arcane/core/internal/ItemTypeMngInternal.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
@@ -41,19 +43,20 @@ class OneMeshItemAdder::CellInfoProxy
 {
  public:
 
-  CellInfoProxy(ItemTypeInfo* type_info,
-                Int64 cell_uid,
-                Int32 sub_domain_id,
-                Int64ConstArrayView info,
+  CellInfoProxy(ItemTypeId type_id, ItemTypeInfo* type_info,
+                Int64 cell_uid, Int32 owner,
+                ConstArrayView<Int64> info,
                 bool allow_build_face = false)
   : m_type_info(type_info)
   , m_cell_uid(cell_uid)
   , m_info(info)
-  , m_owner(sub_domain_id)
+  , m_owner(owner)
+  , m_type_id(type_id)
   , m_allow_build_face(allow_build_face)
   {}
 
   Int64 uniqueId() const { return m_cell_uid; }
+  ItemTypeId itemTypeId() const { return m_type_id; }
   ItemTypeInfo* typeInfo() const { return m_type_info; }
   Int32 owner() const { return m_owner; }
   Integer nbNode() const { return m_info.size(); }
@@ -63,16 +66,18 @@ class OneMeshItemAdder::CellInfoProxy
   Int32 nodeOwner(Integer) const { return m_owner; }
   Int32 faceOwner(Integer) const { return m_owner; }
   Int32 edgeOwner(Integer) const { return m_owner; }
-  ItemTypeInfo::LocalFace localFace(Integer i_face) const { return m_type_info->localFace(i_face); }
   bool allowBuildFace() const { return m_allow_build_face; }
   bool allowBuildEdge() const { return m_allow_build_face; }
+
+  ConstArrayView<Int64> connectivityInfos() const { return m_info; }
 
  private:
 
   ItemTypeInfo* m_type_info = nullptr;
   Int64 m_cell_uid = NULL_ITEM_UNIQUE_ID;
-  Int64ConstArrayView m_info;
+  ConstArrayView<Int64> m_info;
   Int32 m_owner = A_NULL_RANK;
+  ItemTypeId m_type_id;
   bool m_allow_build_face = false;
 };
 
@@ -366,7 +371,6 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Adds a cell.
  *
@@ -377,21 +381,19 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
  * \param cell_uid unique ID of the cell. If a cell with this ID
  * exists already, it means the cell is already present. In this case,
  * this method performs no operation.
- * \param sub_domain_id ID of the sub-domain to which the cell belongs
+ * \param owner ID of the sub-domain to which the cell belongs
  * \param nodes_uid list of unique IDs of the cell. The number
  * of elements in this array must correspond to the cell type.
 
  * \retval true if the cell is actually added
 */
 ItemInternal* OneMeshItemAdder::
-addOneCell(ItemTypeId type_id,
-           Int64 cell_uid,
-           Int32 sub_domain_id,
-           Int64ConstArrayView nodes_uid,
-           bool allow_build_face)
+addOneCell(ItemTypeId type_id, Int64 cell_uid, Int32 owner,
+           ConstArrayView<Int64> nodes_uid, bool allow_build_face)
 {
-  CellInfoProxy cell_info_proxy(m_item_type_mng->typeFromId(type_id), cell_uid, sub_domain_id, nodes_uid, allow_build_face);
-
+  if (type_id == ITI_GenericPolyhedron)
+    return _addOnePolyhedron(cell_uid, nodes_uid, owner, allow_build_face);
+  CellInfoProxy cell_info_proxy(type_id, m_item_type_mng->typeFromId(type_id), cell_uid, owner, nodes_uid, allow_build_face);
   return _addOneCell(cell_info_proxy);
 }
 
@@ -647,7 +649,7 @@ _addOneCell(const CellInfo& cell_info)
   Cell inew_cell;
   {
     bool is_add; // ce flag est toujours correctement positionné via les findOrAllocOne
-    inew_cell = m_cell_family.findOrAllocOne(cell_info.uniqueId(), cell_type_id, is_add);
+    inew_cell = m_cell_family.findOrAllocOne(cell_info.uniqueId(), cell_type_info, is_add);
     if (!is_add) {
       if (is_check) {
         Cell cell2(inew_cell);
@@ -803,6 +805,94 @@ _addOneCell(const CellInfo& cell_info)
 
   _AMR_Patch(inew_cell, cell_info);
   return ItemCompatibility::_itemInternal(inew_cell);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemInternal* OneMeshItemAdder::
+_addOnePolyhedron(Int64 cell_uid, ConstArrayView<Int64> connectivity_infos, Int32 owner, bool allow_build_face)
+{
+  const bool is_verbose = false;
+  if (is_verbose)
+    info() << "AddNewPolyhedronCell nb_connectivity=" << connectivity_infos.size()
+           << " c=" << connectivity_infos;
+
+  // Checks if the cell already exists (in which case nothing is done).
+  // TODO: Search if a cell with same uniqueId() already exists.
+
+  UniqueArray<Int16> local_nodes_of_cell;
+  UniqueArray<Int64> nodes_of_cell;
+  UniqueArray<Int32> nodes_of_face;
+
+  // Infos for creating the corresponding Arcane type
+  UniqueArray<Int16> arcane_faces_nb_node;
+  UniqueArray<Int16> arcane_faces_nodes;
+  // Local index in the cell of the nodes;
+  impl::HashTableMap2<Int64, Int16> connectivity_to_local_index(500);
+
+  Int16 nb_local_node = 0;
+  nodes_of_cell.clear();
+  connectivity_to_local_index.clear();
+  local_nodes_of_cell.clear();
+  arcane_faces_nb_node.clear();
+  arcane_faces_nodes.clear();
+
+  // [0] is the size of array
+  // [1] is the scheme version (at the moment the only value supported is only '1'
+  // [2] is the number of face (for scheme version 1)
+  // the next elements are nodes of face0, then node of face1, ...
+
+  SmallArray<Int64> cell_nodes_uid;
+  Int32 array_size = connectivity_infos[0];
+  if (array_size != connectivity_infos.size())
+    ARCANE_FATAL("Incoherent size array_size={0} connectivity_info={1}", array_size, connectivity_infos.size());
+  Int32 scheme_version = connectivity_infos[1];
+  if (scheme_version != 1)
+    ARCANE_FATAL("Insupported scheme version '{0}'. Only supported value is 1", scheme_version);
+  const Int32 cell_nb_face = static_cast<Int32>(connectivity_infos[2]);
+  if (is_verbose)
+    info() << "NB_FACE=" << cell_nb_face;
+  Int32 index_in_connectivity = 3;
+  for (Int32 z = 0; z < cell_nb_face; ++z) {
+    const Int16 face_nb_node = static_cast<Int16>(connectivity_infos[index_in_connectivity]);
+    ++index_in_connectivity;
+    if (is_verbose)
+      info() << "NB_FACE_NODE=" << face_nb_node;
+    nodes_of_face.resize(face_nb_node);
+    arcane_faces_nb_node.add(face_nb_node);
+    for (Int16 k = 0; k < face_nb_node; ++k) {
+      Int64 node_id = connectivity_infos[index_in_connectivity];
+      ++index_in_connectivity;
+      auto x = connectivity_to_local_index.find(node_id);
+      Int16 local_node_index = -1;
+      // Check if node is already in the list
+      if (x == connectivity_to_local_index.end()) {
+        local_node_index = nb_local_node;
+        connectivity_to_local_index[node_id] = nb_local_node;
+        ++nb_local_node;
+        local_nodes_of_cell.add(local_node_index);
+        nodes_of_cell.add(node_id);
+        cell_nodes_uid.add(node_id);
+      }
+      else
+        local_node_index = x->second;
+      nodes_of_face[k] = local_node_index;
+      arcane_faces_nodes.add(local_node_index);
+      //Int32 face_nb_node = face_indexes[z+1] - face_indexes[z];
+    }
+    if (is_verbose)
+      info() << "  Polyhedral face=" << z << " nb_node=" << face_nb_node
+             << " nodes=" << nodes_of_face.view() << " index=" << index_in_connectivity;
+  }
+
+  if (is_verbose)
+    info() << "EndCreateTypeForPolyhedron nb_node=" << nodes_of_cell.size();
+  ItemTypeMngInternal* api = m_item_type_mng->_internalApi();
+  ItemTypeInfo* cell_type_info = api->findOrAddPolyhedron(nodes_of_cell.size(),
+                                                          arcane_faces_nb_node, arcane_faces_nodes);
+  CellInfoProxy cell_info_proxy(ITI_GenericPolyhedron, cell_type_info, cell_uid, owner, nodes_of_cell, allow_build_face);
+  return _addOneCell(cell_info_proxy);
 }
 
 /*---------------------------------------------------------------------------*/

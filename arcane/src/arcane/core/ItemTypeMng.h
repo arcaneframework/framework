@@ -203,9 +203,6 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Indicates if the types managing polygons have already been built.
   bool m_has_polygon_type = false;
 
-  //! Index of the first type for polyhedron
-  Int16 m_polyhedron_type_index;
-
   ItemTypeMngInternal* m_internal_api = nullptr;
 
  private:
@@ -215,7 +212,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Reads types from a file named filename
   void _readTypes(IParallelSuperMng* parallel_mng, const String& filename);
   void _addPolygonType(Int16 type_id, Int32 nb_node, const String& type_name);
-  ItemTypeId _findOrAddPolyhedron(Int16 nb_node, ConstArrayView<Int16> faces_nb_nodes, ConstArrayView<Int16> faces_nodes);
+  ItemTypeInfo* _findOrAddPolyhedron(Int16 nb_node, ConstArrayView<Int16> faces_nb_nodes, ConstArrayView<Int16> faces_nodes);
 };
 
 /*---------------------------------------------------------------------------*/
