@@ -19,6 +19,7 @@
 #include <arccore/common/CommandLineArguments.h>
 #include <arccore/common/JSONReader.h>
 #include <arccore/common/ArcaNetReader.h>
+#include <arccore/common/ExceptionUtils.h>
 
 #include <arccore/trace/ITraceMng.h>
 
@@ -158,7 +159,7 @@ void readJSON(RunParam& runp, CommandLineArguments& cla, ITraceMng* tm)
       readArccherPart(runp, root.child("general").child("arccher"));
     }
     else {
-      ARCCORE_FATAL("Config file is not found");
+      ARCCORE_FATAL("Config file is not found : {0}", config_file);
     }
   }
 
@@ -230,9 +231,12 @@ void run(RunParam& runp, ITraceMng* tm)
   // options.redirect.err.type = reproc::redirect::pipe;
 
   options.env.behavior = reproc::env::type::extend;
-  options.env.extra = runp.m_env_var;
 
-  options.working_directory = runp.m_working_dir.localstr();
+  if (!runp.m_env_var.empty())
+    options.env.extra = runp.m_env_var;
+
+  if (!runp.m_working_dir.empty())
+    options.working_directory = runp.m_working_dir.localstr();
 
   UniqueArray<std::string> cmd;
   createCmd(tm, runp, cmd);
@@ -263,15 +267,13 @@ void run(RunParam& runp, ITraceMng* tm)
 
 int main(int argc, char* argv[])
 {
-  Ref<ITraceMng> tm(makeRef(arccoreCreateDefaultTraceMng()));
-  CommandLineArguments cla(&argc, &argv);
-
-  RunParam runp;
-
-  readJSON(runp, cla, tm.get());
-  run(runp, tm.get());
-
-  return 0;
+  return ExceptionUtils::callWithTryCatch([&]() {
+    Ref<ITraceMng> tm(makeRef(arccoreCreateDefaultTraceMng()));
+    CommandLineArguments cla(&argc, &argv);
+    RunParam runp;
+    readJSON(runp, cla, tm.get());
+    run(runp, tm.get());
+  });
 }
 
 /*---------------------------------------------------------------------------*/
