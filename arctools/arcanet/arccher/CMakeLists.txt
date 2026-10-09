@@ -24,3 +24,5 @@ include(../arct/arcanet_edit.cmake)
 include(../arct/arcanet_to_ctest.cmake)
 
 #message(FATAL_ERROR "Stop")
+
+include(../arct/test.cmake)
