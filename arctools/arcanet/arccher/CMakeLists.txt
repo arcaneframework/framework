@@ -20,9 +20,9 @@ target_link_libraries(ArcCher PUBLIC
 target_link_libraries(ArcCher PUBLIC reproc++)
 
 # TODO Pour tester, à supprimer
-include(../arct/arcanet_edit.cmake)
-include(../arct/arcanet_to_ctest.cmake)
+include(../arct/cmake/arcanet_edit.cmake)
+include(../arct/cmake/arcanet_to_ctest.cmake)
 
 #message(FATAL_ERROR "Stop")
 
-include(../arct/test.cmake)
+include(../arct/cmake/test.cmake)

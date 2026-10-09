@@ -119,7 +119,7 @@ namespace Arcane
   },
 
   "cases": {
-    // Reserved symbol for cases name : ":", "=", "~"
+    // Reserved symbol for cases name : ":", "=", "~", "!", "+"
 
     // How to call "case1" :
     // - "case1" -> ok
