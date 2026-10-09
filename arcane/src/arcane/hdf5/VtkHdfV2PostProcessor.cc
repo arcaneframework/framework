@@ -217,6 +217,18 @@ class VtkHdfV2DataWriter
     , m_group_info(group_info)
     {
     }
+    DataInfo(HGroup& dataset_group, const String& dataset_name, const DatasetInfo& dataset_info)
+    : dataset(dataset_group, dataset_name)
+    , m_dataset_info(dataset_info)
+    {
+    }
+    DataInfo(HGroup& dataset_group, const String& dataset_name, const DatasetInfo& dataset_info,
+             ItemGroupCollectiveInfo* group_info)
+    : dataset(dataset_group, dataset_name)
+    , m_dataset_info(dataset_info)
+    , m_group_info(group_info)
+    {
+    }
 
    public:
 
@@ -486,7 +498,7 @@ beginWrite(const VariableCollection& vars)
   const Int32 nb_cell = all_cells.size();
   const Int32 nb_node = all_nodes.size();
 
-  Int32 total_nb_connected_node = 0;
+  Int64 total_nb_connected_node = 0;
   ENUMERATE_ (Cell, icell, all_cells) {
     Cell cell = *icell;
     total_nb_connected_node += cell.nodeIds().size();
@@ -541,8 +553,7 @@ beginWrite(const VariableCollection& vars)
         ghost_type = VtkUtils::CellGhostTypes::DUPLICATECELL;
       cells_ghost_type[index] = ghost_type;
 
-      const bool is_polyhedron = cell.typeInfo()->isPolyhedron()
-                                 || (mesh_is_polyhedral && cell.nbFace() > 0);
+      const bool is_polyhedron = cell.typeInfo()->isPolyhedron() || (mesh_is_polyhedral && cell.nbFace() > 0);
       unsigned char vtk_type = VtkUtils::VTK_POLYHEDRON;
       if (!is_polyhedron)
         vtk_type = VtkUtils::arcaneToVtkCellType(cell.type());
@@ -613,62 +624,69 @@ beginWrite(const VariableCollection& vars)
   GatherGroupInfo* ggi = ggi_ref.get();
 
   // TODO: create an offset for this object (or look into how to calculate it automatically
-  _writeDataSet1DCollective<Int64>({ { m_top_group, "Offsets" }, m_offset_for_cell_offset_info }, ggi, cells_offset);
+  _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "Offsets", m_offset_for_cell_offset_info),
+                                   ggi, cells_offset);
 
   if (m_write_polyhedron_datasets) {
     // Saves the offset of the faces of each cell in 'PolyhedronToFaces'.
     // This dataset has the same structure as 'Offsets' ((nb_cell + 1) values
     // per part) and is therefore written with the same gather information.
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "PolyhedronOffsets" }, m_offset_for_polyhedron_offset_info }, ggi, polyhedron_offset);
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "PolyhedronOffsets", m_offset_for_polyhedron_offset_info),
+                                     ggi, polyhedron_offset);
   }
   ggi->setNeedRecompute();
 
-  _writeDataSet1DCollective<Int64>({ { m_top_group, "Connectivity" }, m_connectivity_offset_info }, ggi, cells_connectivity);
+  _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "Connectivity", m_connectivity_offset_info),
+                                   ggi, cells_connectivity);
   ggi->setNeedRecompute();
 
   if (m_write_polyhedron_datasets) {
     // Saves the nodes of the faces of the polyhedron cells.
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "FaceConnectivity" }, m_face_connectivity_offset_info }, ggi, faces_connectivity);
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "FaceConnectivity", m_face_connectivity_offset_info),
+                                     ggi, faces_connectivity);
     ggi->setNeedRecompute();
 
     // Saves the faces of each cell. Cells that are not polyhedron cells
     // have an empty list of faces.
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "PolyhedronToFaces" }, m_polyhedron_to_face_offset_info }, ggi, polyhedron_to_faces);
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "PolyhedronToFaces", m_polyhedron_to_face_offset_info),
+                                     ggi, polyhedron_to_faces);
     ggi->setNeedRecompute();
 
     // Saves the offsets of the faces in 'FaceConnectivity'. The array size
     // is equal to the number of faces plus 1.
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "FaceOffsets" }, m_offset_for_face_offset_info }, ggi, faces_offset);
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "FaceOffsets", m_offset_for_face_offset_info),
+                                     ggi, faces_offset);
     ggi->setNeedRecompute();
   }
 
-  _writeDataSet1DCollective<unsigned char>({ { m_top_group, "Types" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_type);
+  _writeDataSet1DCollective<unsigned char>(DataInfo(m_top_group, "Types", m_cell_offset_info),
+                                           &m_all_cells_gather_group_info, cells_type);
 
   {
     Int64 nb_cell_int64 = nb_cell;
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfCells" }, m_part_offset_info }, ggi,
-                                     asConstSpan(&nb_cell_int64));
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfCells", m_part_offset_info),
+                                     ggi, asConstSpan(&nb_cell_int64));
 
     Int64 nb_node_int64 = nb_node;
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfPoints" }, m_part_offset_info }, ggi,
-                                     asConstSpan(&nb_node_int64));
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfPoints", m_part_offset_info),
+                                     ggi, asConstSpan(&nb_node_int64));
 
     Int64 number_of_connectivity_ids = cells_connectivity.size();
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfConnectivityIds" }, m_part_offset_info }, ggi,
-                                     asConstSpan(&number_of_connectivity_ids));
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfConnectivityIds", m_part_offset_info),
+                                     ggi, asConstSpan(&number_of_connectivity_ids));
 
     if (m_write_polyhedron_datasets) {
       Int64 nb_face_int64 = nb_face;
-      _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfFaces" }, m_part_offset_info }, ggi,
-                                       asConstSpan(&nb_face_int64));
+      _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfFaces", m_part_offset_info),
+                                       ggi, asConstSpan(&nb_face_int64));
 
       Int64 number_of_face_connectivity_ids = faces_connectivity.size();
-      _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfFaceConnectivityIds" }, m_part_offset_info }, ggi,
-                                       asConstSpan(&number_of_face_connectivity_ids));
+      _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfFaceConnectivityIds", m_part_offset_info),
+                                       ggi, asConstSpan(&number_of_face_connectivity_ids));
 
       Int64 number_of_polyhedron_to_face_ids = polyhedron_to_faces.size();
-      _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfPolyhedronToFaceIds" }, m_part_offset_info }, ggi,
-                                       asConstSpan(&number_of_polyhedron_to_face_ids));
+      _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfPolyhedronToFaceIds", m_part_offset_info),
+                                       ggi, asConstSpan(&number_of_polyhedron_to_face_ids));
     }
   }
   ggi->setNeedRecompute();
@@ -699,33 +717,40 @@ beginWrite(const VariableCollection& vars)
     }
 
     // Saves the unique ID of each node in the dataset "GlobalNodeId".
-    _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalIds" }, m_cell_offset_info }, &m_all_nodes_gather_group_info, nodes_uid);
+    _writeDataSet1DCollective<Int64>(DataInfo(DatasetGroupAndName(m_node_data_group, "GlobalIds"), m_cell_offset_info),
+                                     &m_all_nodes_gather_group_info, nodes_uid);
 
     // Saves the information about the node type (real or ghost).
-    _writeDataSet1DCollective<unsigned char>({ { m_node_data_group, "vtkGhostType" }, m_cell_offset_info }, &m_all_nodes_gather_group_info, nodes_ghost_type);
+    _writeDataSet1DCollective<unsigned char>(DataInfo(DatasetGroupAndName(m_node_data_group, "vtkGhostType"), m_cell_offset_info),
+                                             &m_all_nodes_gather_group_info, nodes_ghost_type);
 
     // Saves the coordinates of the nodes.
-    _writeDataSet2DCollective<Real>({ { m_top_group, "Points" }, m_point_offset_info }, ggi, points);
+    _writeDataSet2DCollective<Real>(DataInfo(DatasetGroupAndName(m_top_group, "Points"), m_point_offset_info),
+                                    ggi, points);
     ggi->setNeedRecompute();
   }
 
   // Saves the information about the cell type (real or ghost)
-  _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_ghost_type);
+  _writeDataSet1DCollective<unsigned char>(DataInfo(DatasetGroupAndName(m_cell_data_group, "vtkGhostType"), m_cell_offset_info),
+                                           &m_all_cells_gather_group_info, cells_ghost_type);
 
   // Saves the unique ID of each cell in the dataset "GlobalCellId".
   // Using the dataset "vtkOriginalCellIds" does not work in Paraview.
-  _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalIds" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_uid);
+  _writeDataSet1DCollective<Int64>(DataInfo(DatasetGroupAndName(m_cell_data_group, "GlobalIds"), m_cell_offset_info),
+                                   &m_all_cells_gather_group_info, cells_uid);
 
   if (m_is_writer) {
     // List of times.
     Real current_time = m_times[time_index - 1];
     // TODO: Replace ggi with nullptr in non-collective mode?
-    _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_time_offset_info }, ggi, asConstSpan(&current_time));
+    _writeDataSet1D<Real>(DataInfo(DatasetGroupAndName(m_steps_group, "Values"), m_time_offset_info),
+                          ggi, asConstSpan(&current_time));
 
     // Part offset.
     Int64 comm_size = pm->commSize();
     Int64 part_offset = (time_index - 1) * comm_size;
-    _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_time_offset_info }, ggi, asConstSpan(&part_offset));
+    _writeDataSet1D<Int64>(DataInfo(DatasetGroupAndName(m_steps_group, "PartOffsets"), m_time_offset_info),
+                           ggi, asConstSpan(&part_offset));
 
     if (m_write_polyhedron_datasets) {
       // Offset of the 'FaceOffsets' dataset for the current time step. This
