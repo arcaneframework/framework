@@ -104,6 +104,16 @@ namespace Arcane
             "MaxIteration": 20
           }
         }
+      },
+      "30": {
+        "_": {
+          "name": "30 itérations"
+        },
+        "arcane": {
+          "options": {
+            "MaxIteration": 30
+          }
+        }
       }
     }
   },
@@ -116,7 +126,7 @@ namespace Arcane
     "case1": {
       "_": {
         "name": "Cas 1",
-        // Reserved symbol for depend_a/depend_b elements : "=", "!"
+        // Reserved symbol for depend_a/depend_b elements : "=", "!", "+"
         "depend_a": ["4procs", "nb_iterations=10"]
       },
 
@@ -157,7 +167,29 @@ namespace Arcane
           "T": 16
         }
       }
-    }
+    },
+    // How to call "case3" :
+    // - "case3" -> error
+    // - "case3:nb_iterations=10" -> ok
+    // - "case3:nb_iterations=20" -> ok
+    // - "case3:nb_iterations=30" -> error
+    "case3": {
+      "_": {
+        "name": "Cas 3",
+        "depend_a": ["4procs", "nb_iterations+10+20"]
+      },
+
+      "arcane": {
+        "options": {
+          "//meshes/mesh/filename": "ccc.msh",
+          "T": 4
+        }
+      },
+
+      "arccher": {
+        "mpi": 2
+      }
+    },
   }
 }
  */
