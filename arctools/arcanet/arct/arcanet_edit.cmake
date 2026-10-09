@@ -479,10 +479,7 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arct_arcane_add_option option_name option_value)
-  if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
-  endif ()
+macro(_arct_arcane_add_option option_name option_value)
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arcane")
   if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
@@ -498,6 +495,26 @@ function(arct_arcane_add_option option_name option_value)
   #
 
   set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
+endmacro()
+
+# ----------------------------------------------------------------------------
+
+function(arct_arcane_option)
+  set(options )
+  set(oneValueArgs VALUE NEW)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (NOT DEFINED ARCANET_JSON_PART_PATH)
+    message(FATAL_ERROR "'arct_arcane_option()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
+  endif ()
+
+  if(ARGS_NEW AND ARGS_VALUE)
+    _arct_arcane_add_option("${ARGS_NEW}" "${ARGS_VALUE}")
+  else ()
+    message(FATAL_ERROR "No NEW or VALUE")
+  endif ()
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -522,10 +539,7 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arct_arccher_add_envvar envvar_name envvar_value)
-  if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
-  endif ()
+macro(_arct_arccher_add_envvar envvar_name envvar_value)
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
   if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
@@ -541,6 +555,26 @@ function(arct_arccher_add_envvar envvar_name envvar_value)
   #
 
   set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
+endmacro()
+
+# ----------------------------------------------------------------------------
+
+function(arct_arccher_envvar)
+  set(options )
+  set(oneValueArgs VALUE NEW)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (NOT DEFINED ARCANET_JSON_PART_PATH)
+    message(FATAL_ERROR "'arct_arccher_envvar()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
+  endif ()
+
+  if(ARGS_NEW AND ARGS_VALUE)
+    _arct_arccher_add_envvar("${ARGS_NEW}" "${ARGS_VALUE}")
+  else ()
+    message(FATAL_ERROR "No NEW or VALUE")
+  endif ()
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -602,65 +636,3 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-
-#arct_begin(OVERWRITE_ARCT)
-
-arct_config_create_or_edit_general(OVERWRITE_ARCT)
-arct_config_define_name("General")
-arct_arcane_set_dataset("general_dataset.arc")
-arct_arccher_define_mpi_path(mpi_path)
-arct_arccher_add_envvar("ARCANE_USE_BACKWARDCPP" "1")
-arct_config_create_or_edit_end()
-
-
-arct_config_create_or_edit_common(NAME_COMMON "4procs")
-arct_config_define_name("4 procs")
-arct_arccher_define_mpi_nb_procs(4)
-arct_config_create_or_edit_end()
-
-
-arct_config_create_or_edit_common(NAME_COMMON "4threads")
-arct_config_define_name("4 threads")
-arct_arcane_add_option("S" "4")
-arct_config_create_or_edit_end()
-
-
-arct_config_create_or_edit_common(NAME_COMMON "16mpithreads")
-arct_config_dependency(NEW "4procs")
-arct_config_dependency(NEW "4threads")
-arct_config_create_or_edit_end()
-
-arct_config_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "10")
-arct_arcane_add_option("MaxIteration" "10")
-arct_config_create_or_edit_end()
-
-arct_config_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "20")
-arct_arcane_add_option("MaxIteration" "20")
-arct_config_create_or_edit_end()
-
-arct_config_create_or_edit_variation(NAME_VARIATION "nb_iterations" NAME_VARIANT "30")
-arct_arcane_add_option("MaxIteration" "30")
-arct_config_create_or_edit_end()
-
-arct_config_create_or_edit_case(NAME_CASE "mon_test_1")
-arct_config_define_name("Mon Test 1")
-arct_config_variation(NEW "nb_iterations!10")
-arct_config_dependency(AFTER NEW "16mpithreads")
-arct_arcane_set_dataset("truc.arc")
-arct_arcane_add_option("MaxIteration" "3")
-arct_arcane_add_option("MaxIteration" "4")
-arct_arccher_define_executable(bin_path)
-arct_arccher_add_envvar("VARIABLE" "VALUE")
-arct_config_create_or_edit_end()
-
-arct_config_create_or_edit_case(NAME_CASE "mon_test_2")
-arct_config_define_name("Mon Test 2")
-arct_arcane_set_dataset("truc.arc")
-arct_arcane_add_option("MaxIteration" "3")
-arct_arcane_add_option("MaxIteration" "4")
-arct_arccher_define_executable(bin_path)
-arct_arccher_add_envvar("VARIABLE" "VALUE")
-arct_config_create_or_edit_end()
-
-#arct_end()

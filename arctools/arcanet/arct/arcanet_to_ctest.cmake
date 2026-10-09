@@ -8,15 +8,15 @@
 
 function(_arct_add_test)
   set(options)
-  set(oneValueArgs ARCCHER_PATH ARCT_CONFIG_PATH ARCT_PATH CASE_NAME)
+  set(oneValueArgs ARCCHER_PATH ARCT_CONFIG_PATH ARCT_PATH CASE_NAME CTEST_NAME_PREFIX)
   set(multiValueArgs)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if (NOT ARGS_ARCT_CONFIG_PATH)
-    add_test(NAME "${ARGS_CASE_NAME}" COMMAND "${ARGS_ARCCHER_PATH}" "-A,ParamFile=${ARGS_ARCT_PATH}" "-A,Case=${ARGS_CASE_NAME}")
+    add_test(NAME "${ARGS_CTEST_NAME_PREFIX}${ARGS_CASE_NAME}" COMMAND "${ARGS_ARCCHER_PATH}" "-A,ParamFile=${ARGS_ARCT_PATH}" "-A,Case=${ARGS_CASE_NAME}")
   else ()
-    add_test(NAME "${ARGS_CASE_NAME}" COMMAND "${ARGS_ARCCHER_PATH}" "-A,ConfigFile=${ARGS_ARCT_CONFIG_PATH}" "-A,ParamFile=${ARGS_ARCT_PATH}" "-A,Case=${ARGS_CASE_NAME}" )
+    add_test(NAME "${ARGS_CTEST_NAME_PREFIX}${ARGS_CASE_NAME}" COMMAND "${ARGS_ARCCHER_PATH}" "-A,ConfigFile=${ARGS_ARCT_CONFIG_PATH}" "-A,ParamFile=${ARGS_ARCT_PATH}" "-A,Case=${ARGS_CASE_NAME}" )
   endif ()
 
 endfunction()
@@ -92,21 +92,16 @@ function(_arct_check_dep)
 
       # Sinon, on doit ajouter un test par variation
 
-      set(ARCANET_IS_EXCLUDED_VALUES 1)
-      string(REPLACE "!" ";" ARCANET_VARIATION_EXCL ${ARCANET_ARRAY_PART})
+      set(ARCANET_IS_EXCLUDED_VALUES 0)
+      string(REPLACE "+" ";" ARCANET_VARIATION_EXCL ${ARCANET_ARRAY_PART})
       list(GET ARCANET_VARIATION_EXCL 0 ARCANET_VARIATION)
       list(POP_FRONT ARCANET_VARIATION_EXCL ARCANET_VARIATION_EXCL)
 
       if (NOT ARCANET_VARIATION_EXCL)
-
-        set(ARCANET_IS_EXCLUDED_VALUES 0)
-        string(REPLACE "+" ";" ARCANET_VARIATION_EXCL ${ARCANET_ARRAY_PART})
+        set(ARCANET_IS_EXCLUDED_VALUES 1)
+        string(REPLACE "!" ";" ARCANET_VARIATION_EXCL ${ARCANET_ARRAY_PART})
         list(GET ARCANET_VARIATION_EXCL 0 ARCANET_VARIATION)
         list(POP_FRONT ARCANET_VARIATION_EXCL ARCANET_VARIATION_EXCL)
-
-        if (NOT ARCANET_VARIATION_EXCL)
-          message(FATAL_ERROR "Variation '${ARCANET_ARRAY_PART}' not valid")
-        endif ()
       endif ()
 
       # message(STATUS "ARCANET_VARIATION=${ARCANET_VARIATION}")
@@ -153,7 +148,7 @@ endfunction()
 
 function(arct_to_ctest)
   set(options)
-  set(oneValueArgs ARCT_PATH ARCT_CONFIG_PATH)
+  set(oneValueArgs ARCT_PATH ARCT_CONFIG_PATH CTEST_NAME_PREFIX)
   set(multiValueArgs)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -198,7 +193,13 @@ function(arct_to_ctest)
       # Un test sans "arcane":{} doit-il être exécuté ? Oui pour l'instant
       string(JSON ARCANET_JSON_PART ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON} "cases" ${ARCANET_GET_MEMBER} "_")
       if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-        _arct_add_test(ARCCHER_PATH "${CMAKE_BINARY_DIR}/_common/build_all/arcane/arccher/ArcCher" ARCT_CONFIG_PATH "${ARGS_ARCT_CONFIG_PATH}" ARCT_PATH "${ARGS_ARCT_PATH}" CASE_NAME "${ARCANET_GET_MEMBER}")
+        _arct_add_test(
+          ARCCHER_PATH "${CMAKE_BINARY_DIR}/_common/build_all/arcane/arccher/ArcCher"
+          ARCT_CONFIG_PATH "${ARGS_ARCT_CONFIG_PATH}"
+          ARCT_PATH "${ARGS_ARCT_PATH}"
+          CASE_NAME "${ARCANET_GET_MEMBER}"
+          CTEST_NAME_PREFIX "${ARGS_CTEST_NAME_PREFIX}"
+        )
         message(STATUS "add_test(${ARCANET_GET_MEMBER})")
         continue()
       endif ()
@@ -221,7 +222,13 @@ function(arct_to_ctest)
       endif ()
 
       foreach (VAR_J IN ITEMS ${ARCANET_TESTS_LIST})
-        _arct_add_test(ARCCHER_PATH "${CMAKE_BINARY_DIR}/_common/build_all/arcane/arccher/ArcCher" ARCT_CONFIG_PATH "${ARGS_ARCT_CONFIG_PATH}" ARCT_PATH "${ARGS_ARCT_PATH}" CASE_NAME "${VAR_J}")
+        _arct_add_test(
+          ARCCHER_PATH "${CMAKE_BINARY_DIR}/_common/build_all/arcane/arccher/ArcCher"
+          ARCT_CONFIG_PATH "${ARGS_ARCT_CONFIG_PATH}"
+          ARCT_PATH "${ARGS_ARCT_PATH}"
+          CASE_NAME "${VAR_J}"
+          CTEST_NAME_PREFIX "${ARGS_CTEST_NAME_PREFIX}"
+        )
         message(STATUS "add_test(${VAR_J})")
       endforeach ()
 
@@ -232,6 +239,3 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
-
-arct_to_ctest()
