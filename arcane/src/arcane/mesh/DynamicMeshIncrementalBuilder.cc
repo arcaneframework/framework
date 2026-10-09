@@ -123,7 +123,7 @@ _printCellFaceInfos(ItemInternal* icell, const String& str)
  */
 void DynamicMeshIncrementalBuilder::
 addCells(Integer nb_cell, Int64ConstArrayView cells_infos,
-         Integer sub_domain_id, Int32ArrayView cells,
+         Int32 owner, Int32ArrayView cells,
          bool allow_build_face)
 {
   ItemTypeMng* itm = m_item_type_mng;
@@ -132,18 +132,26 @@ addCells(Integer nb_cell, Int64ConstArrayView cells_infos,
   bool add_to_cells = cells.size() != 0;
   if (add_to_cells && nb_cell != cells.size())
     ARCANE_THROW(ArgumentException, "return array 'cells' has to have same size as number of cells");
+  auto* adder = m_one_mesh_item_adder;
   for (Integer i_cell = 0; i_cell < nb_cell; ++i_cell) {
-    ItemTypeId item_type_id{ (Int16)cells_infos[cells_infos_index] };
+    ItemTypeId item_type_id(CheckedConvert::toInt16(cells_infos[cells_infos_index]));
     ++cells_infos_index;
     Int64 cell_unique_id = cells_infos[cells_infos_index];
     ++cells_infos_index;
 
-    ItemTypeInfo* it = itm->typeFromId(item_type_id);
-    Integer current_cell_nb_node = it->nbLocalNode();
-    Int64ConstArrayView current_cell_nodes_uid(current_cell_nb_node, &cells_infos[cells_infos_index]);
+    Int32 current_cell_nb_node = 0;
+    if (item_type_id == ITI_GenericPolyhedron) {
+      // For poly types, the number of nodes is the first value in the connectivity
+      current_cell_nb_node = static_cast<Int32>(cells_infos[cells_infos_index]);
+    }
+    else {
+      ItemTypeInfo* it = itm->typeFromId(item_type_id);
+      current_cell_nb_node = it->nbLocalNode();
+    }
+    ConstArrayView<Int64> current_cell_nodes_uid(current_cell_nb_node, &cells_infos[cells_infos_index]);
 
-    ItemInternal* cell = m_one_mesh_item_adder->addOneCell(item_type_id, cell_unique_id, sub_domain_id, current_cell_nodes_uid,
-                                                           allow_build_face);
+    ItemInternal* cell = adder->addOneCell(item_type_id, cell_unique_id, owner,
+                                           current_cell_nodes_uid, allow_build_face);
 
     if (add_to_cells)
       cells[i_cell] = cell->localId();

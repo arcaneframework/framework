@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FullItemInfo.h                                              (C) 2000-2022 */
+/* FullItemInfo.h                                              (C) 2000-2026 */
 /*                                                                           */
 /* Serialization information for a cell.                                     */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 
 #include "arcane/core/ItemTypeMng.h"
 #include "arcane/core/ItemTypes.h"
+#include "arcane/core/ItemTypeId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,8 +62,9 @@ class FullCellInfo
 
   ItemTypeInfo* typeInfo() const { return m_type; }
   Integer typeId() const { return CheckedConvert::toInteger(m_infos[0]); }
+  ItemTypeId itemTypeId() const { return ItemTypeId(CheckedConvert::toInt16(m_infos[0])); }
   Int64 uniqueId() const { return m_infos[1]; }
-  Integer owner() const { return CheckedConvert::toInteger(m_infos[2]); }
+  Int32 owner() const { return CheckedConvert::toInt32(m_infos[2]); }
   Integer nbNode() const { return m_nb_node; }
   Integer nbEdge() const { return m_nb_edge; }
   Integer nbFace() const { return m_nb_face; }

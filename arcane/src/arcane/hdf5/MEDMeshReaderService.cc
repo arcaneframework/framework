@@ -710,7 +710,7 @@ _readFaces(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* me
         for (Integer k = 0; k < nb_item_node; ++k)
           cinfo_span[k] = med_cinfo_span[k];
       }
-      info() << "HANDLE_FACE nb_item=" << nb_item_node;
+      //info() << "HANDLE_FACE nb_item=" << nb_item_node;
       med_connectivity_index += nb_item_node;
       // Search for the face in the mesh starting from the sorted uniqueIds of its nodes
       nodes_reorderer.reorder(arcane_type, cinfo_span);
@@ -940,7 +940,6 @@ _readPolyhedrons(IPrimaryMesh* mesh, med_idt fid, const char* meshname,
 {
   if (mesh->parallelMng()->commSize() > 1)
     ARCANE_FATAL("MED polyhedral mesh in not support in parallel");
-
   const bool is_verbose = false;
   ItemTypeMngInternal* itmi = mesh->itemTypeMng()->_internalApi();
   med_bool coordinatechangement = {};
@@ -1008,19 +1007,28 @@ _readPolyhedrons(IPrimaryMesh* mesh, med_idt fid, const char* meshname,
     local_nodes_of_cell.clear();
     arcane_faces_nb_node.clear();
     arcane_faces_nodes.clear();
+    Int32 connectivity_index = connectivity.size();
     // Numbering begins at 1 so we need to remove 1 to face_indexes and node_indexes
     Int32 first_face_index = face_indexes[z] - 1;
     Int32 next_face_index = face_indexes[z + 1] - 1;
     Int32 cell_nb_face = next_face_index - first_face_index;
     Int32 cell_nb_node = node_indexes[next_face_index] - node_indexes[first_face_index];
     if (is_verbose)
-      info() << "POLYHEDRAL_CELL=" << z << " nb_face=" << cell_nb_face << " nb_node=" << cell_nb_node << " first_face_index=" << first_face_index;
+      info() << "POLYHEDRAL_CELL=" << z << " nb_face=" << cell_nb_face
+             << " nb_node=" << cell_nb_node << " first_face_index=" << first_face_index
+             << " nb_info_in_connectivity=" << node_indexes[cell_nb_face];
+    Int16 nb_connectivity_for_cell = 3 + cell_nb_node + cell_nb_face;
+    connectivity.add(nb_connectivity_for_cell);
+    const Int64 scheme_version = 1;
+    connectivity.add(scheme_version);
+    connectivity.add(cell_nb_face);
     for (Int32 k = 0; k < cell_nb_face; ++k) {
       Int32 first_node_index = node_indexes[first_face_index + k] - 1;
       Int32 next_node_index = node_indexes[first_face_index + k + 1] - 1;
       Int16 face_nb_node = CheckedConvert::toInt16(next_node_index - first_node_index);
       nodes_of_face.resize(face_nb_node);
       arcane_faces_nb_node.add(face_nb_node);
+      connectivity.add(face_nb_node);
       for (Int32 p = 0; p < face_nb_node; ++p) {
         // TODO: check if (-1) is needed
         Int32 node_id = med_connectivity[first_node_index + p];
@@ -1032,10 +1040,10 @@ _readPolyhedrons(IPrimaryMesh* mesh, med_idt fid, const char* meshname,
           ++nb_local_node;
           local_nodes_of_cell.add(local_node_index);
           nodes_of_cell.add(node_id);
-          connectivity.add(node_id);
         }
         else
           local_node_index = x->second;
+        connectivity.add(node_id);
         nodes_of_face[p] = local_node_index;
         arcane_faces_nodes.add(local_node_index);
       }
@@ -1044,12 +1052,12 @@ _readPolyhedrons(IPrimaryMesh* mesh, med_idt fid, const char* meshname,
       //Int32 face_nb_node = face_indexes[z+1] - face_indexes[z];
     }
     if (is_verbose) {
-      info() << "POLYHEDRAL_CELL=" << z << " nb_local_node=" << nodes_of_cell.size() << " nodes=" << nodes_of_cell;
+      info() << "POLYHEDRAL_CELL=" << z << " nb_local_node=" << nodes_of_cell.size() << " nodes=" << nodes_of_cell
+             << " nb_connectivity_for_cell=" << nb_connectivity_for_cell;
       info() << "POLYHEDRAL_CELL=" << z << " arcane_faces_nb_node=" << arcane_faces_nb_node << " nodes=" << arcane_faces_nodes;
     }
-    Int16 nb_node_for_cell = CheckedConvert::toInt16(nodes_of_cell.size());
-    poly_types_id[z] = itmi->findOrAddPolyhedron(nb_node_for_cell, arcane_faces_nb_node, arcane_faces_nodes);
-    poly_nb_nodes[z] = nb_node_for_cell;
+    poly_types_id[z] = IT_GenericPolyhedron;
+    poly_nb_nodes[z] = nb_connectivity_for_cell;
   }
   return nb_med_item;
 }

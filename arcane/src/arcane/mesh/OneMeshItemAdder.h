@@ -127,6 +127,9 @@ class OneMeshItemAdder
   template <typename CellInfo>
   ItemInternal* _addOneCell(const CellInfo& cell_info);
 
+  ItemInternal* _addOnePolyhedron(Int64 cell_uid, ConstArrayView<Int64> connectivity_infos,
+                                  Int32 owner, bool allow_build_face);
+
   template <typename CellInfo>
   void _addNodesToCell(Cell cell, const CellInfo& cell_info);
 
