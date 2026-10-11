@@ -735,6 +735,9 @@ readOrReloadMeshes()
     if (v.value() != 0)
       ps = platform::getProfilingService();
 
+  // Stop the profiling if it is already running.
+  if (ps && ps->isRunning())
+    ps->stopProfiling();
   {
     ProfilingSentryWithInitialize ps_sentry(ps);
     ps_sentry.setPrintAtEnd(true);
