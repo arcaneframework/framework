@@ -19,8 +19,6 @@
 #include <iostream>
 #include <vector>
 
-#include <boost/scope_exit.hpp>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/DistributedMatrix.h"
@@ -54,14 +52,9 @@ struct renumbering
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-  MPI_Init(&argc, &argv);
-  BOOST_SCOPE_EXIT(void)
-  {
-    MPI_Finalize();
-  }
-  BOOST_SCOPE_EXIT_END
 
-  Alina::AlinaCommunicator world(MPI_COMM_WORLD);
+  auto mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
+  Alina::AlinaCommunicator world(mpm);
 
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;

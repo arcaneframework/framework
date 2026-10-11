@@ -29,7 +29,6 @@
 #include <cmath>
 
 #include <boost/range/iterator_range.hpp>
-#include <boost/scope_exit.hpp>
 
 #if defined(SOLVER_BACKEND_CUDA)
 #  include "arccore/alina/CudaBackend.h"
@@ -181,15 +180,8 @@ int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
 
-  int provided;
-  MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-  BOOST_SCOPE_EXIT(void)
-  {
-    MPI_Finalize();
-  }
-  BOOST_SCOPE_EXIT_END
-
-  Alina::AlinaCommunicator world(MPI_COMM_WORLD);
+  auto mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
+  Alina::AlinaCommunicator world(mpm);
 
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;

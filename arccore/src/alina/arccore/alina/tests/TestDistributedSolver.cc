@@ -96,7 +96,8 @@ void solve_scalar(Alina::AlinaCommunicator comm,
 
 TEST(alina_test_mpi, BasicSolver)
 {
-  Alina::AlinaCommunicator comm(AlinaTest::global_mpi_comm_world);
+  auto mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createWorldRef();
+  Alina::AlinaCommunicator comm(mpm);
 
   std::cout << "World size: " << comm.size << "\n";
 

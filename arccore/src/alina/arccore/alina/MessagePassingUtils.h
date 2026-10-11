@@ -47,41 +47,6 @@ namespace Arcane::Alina
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/// Convenience wrapper around MPI_Init/MPI_Finalize.
-struct mpi_init
-{
-  mpi_init(int* argc, char*** argv)
-  {
-    MPI_Init(argc, argv);
-  }
-
-  ~mpi_init()
-  {
-    MPI_Finalize();
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/// Convenience wrapper around MPI_Init_threads/MPI_Finalize.
-struct mpi_init_thread
-{
-  mpi_init_thread(int* argc, char*** argv)
-  {
-    int _;
-    MPI_Init_thread(argc, argv, MPI_THREAD_MULTIPLE, &_);
-  }
-
-  ~mpi_init_thread()
-  {
-    MPI_Finalize();
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Convenience wrapper around MPI_Comm.
  */
@@ -99,14 +64,15 @@ struct ARCCORE_ALINA_EXPORT AlinaCommunicator
 
   AlinaCommunicator() = default;
 
-  explicit AlinaCommunicator(MPI_Comm comm);
-
   explicit AlinaCommunicator(IMessagePassingMng* mpm_comm);
+  explicit AlinaCommunicator(const Ref<IMessagePassingMng>& mpm_comm);
 
   MPI_Comm mpiCommunicator() const;
   IMessagePassingMng* messagePassingMng() const { return m_message_passing_mng.get(); }
 
-  /// Exclusive sum over mpi communicator
+  static AlinaCommunicator createFromMPI(MPI_Comm comm);
+
+/// Exclusive sum over mpi communicator
   template <typename T>
   UniqueArray<T> exclusive_sum(T n) const
   {
@@ -212,6 +178,8 @@ struct ARCCORE_ALINA_EXPORT AlinaCommunicator
     mpAllReduce(m_message_passing_mng.get(), MessagePassing::eReduceType::ReduceSum, values.view());
     return std::complex<T>(values[0], values[1]);
   }
+
+  void _init();
 };
 
 /*---------------------------------------------------------------------------*/

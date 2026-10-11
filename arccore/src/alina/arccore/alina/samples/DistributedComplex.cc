@@ -79,8 +79,8 @@ void solve_scalar(Alina::AlinaCommunicator comm,
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-  Alina::mpi_init_thread mpi(&argc, &argv);
-  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
+  Ref<IMessagePassingMng> mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
+  Alina::AlinaCommunicator comm(mpm);
 
   if (comm.rank == 0)
     std::cout << "World size: " << comm.size << std::endl;

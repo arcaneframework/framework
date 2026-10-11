@@ -37,7 +37,6 @@ class rounding_error
 
 #include "MBA.h"
 
-#include <boost/scope_exit.hpp>
 #include <memory>
 
 #include <boost/multi_array.hpp>
@@ -460,7 +459,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
 
-  Alina::AlinaCommunicator world(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator world(ctx.messagePassingMng());
 
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;

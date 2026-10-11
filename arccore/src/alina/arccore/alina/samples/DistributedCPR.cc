@@ -21,7 +21,6 @@
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
 
 #include <boost/range/iterator_range.hpp>
-#include <boost/scope_exit.hpp>
 
 #include "arccore/alina/IO.h"
 #include "arccore/alina/Adapters.h"
@@ -155,15 +154,8 @@ partition(Alina::AlinaCommunicator comm, const Matrix& Astrip,
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-  int provided;
-  MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-  BOOST_SCOPE_EXIT(void)
-  {
-    MPI_Finalize();
-  }
-  BOOST_SCOPE_EXIT_END
-
-  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
+  auto mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
+  Alina::AlinaCommunicator comm(mpm);
 
   if (comm.rank == 0)
     std::cout << "World size: " << comm.size << std::endl;

@@ -184,8 +184,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   ITraceMng* tm = ctx.traceMng();
   auto& prof = Alina::Profiler::globalProfiler();
 
-  //Alina::mpi_init_thread mpi(&argc, &argv);
-  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator comm(ctx.messagePassingMng());
 
   tm->info() << "World size: " << comm.size;
 
