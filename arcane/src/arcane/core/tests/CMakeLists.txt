@@ -2,6 +2,7 @@
   TestDataTypes.cc
   TestHashUniqueId.cc
   TestNodeReorderer.cc
+  TestStandaloneItemTypeMng.cc
 )
 
 arcane_add_component_test_executable(core
