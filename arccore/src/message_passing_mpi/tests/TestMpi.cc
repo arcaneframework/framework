@@ -28,7 +28,7 @@ using namespace Arccore::MessagePassing::Mpi;
 
 TEST(MessagePassingMpi, Simple)
 {
-  Ref<IMessagePassingMng> pm(StandaloneMpiMessagePassingMng::createRef(global_mpi_comm_world));
+  Ref<IMessagePassingMng> pm(global_message_passing_mng);
   std::cout << "Rank=" << pm->commRank() << "\n";
   if (pm->commSize() == 2) {
     UniqueArray<Int32> send_buf = { 1, 7, -4 };
@@ -56,7 +56,7 @@ TEST(MessagePassingMpi, SerializeGather)
 {
   // Tests only the call. Tests with actual values
   // are done in Arcane.
-  Ref<IMessagePassingMng> pm(StandaloneMpiMessagePassingMng::createRef(global_mpi_comm_world));
+  Ref<IMessagePassingMng> pm(global_message_passing_mng);
   ASSERT_EQ(pm->commSize(), 3);
   Int32 my_rank = pm->commRank();
   Ref<ISerializer> send_serializer(createSerializer());
@@ -140,7 +140,7 @@ TEST(MessagePassingMpi, Float16)
 {
   // Tests only the call. Tests with actual values
   // are done in Arcane.
-  Ref<IMessagePassingMng> pm(StandaloneMpiMessagePassingMng::createRef(global_mpi_comm_world));
+  Ref<IMessagePassingMng> pm(global_message_passing_mng);
   _doTestFloat16<Float16>(pm.get());
   _doTestFloat16<BFloat16>(pm.get());
 }

@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
+#include "arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h"
 
 #include <iostream>
 
@@ -15,7 +16,7 @@
 
 namespace Arccore::MessagePassing::Mpi
 {
-MPI_Comm global_mpi_comm_world = MPI_COMM_NULL;
+Ref<Arcane::MessagePassing::IMessagePassingMng> global_message_passing_mng;
 }
 
 using namespace Arccore::MessagePassing::Mpi;
@@ -33,20 +34,11 @@ class MPIEnvironment
   void SetUp() override
   {
     int thread_required = MPI_THREAD_SERIALIZED;
-    int thread_provided = 0;
-    int mpi_error = ::MPI_Init_thread(global_argc, global_argv, thread_required, &thread_provided);
-    ASSERT_EQ(mpi_error, MPI_SUCCESS);
-
-    global_mpi_comm_world = MPI_COMM_WORLD;
-    int comm_rank = 0;
-    ::MPI_Comm_rank(global_mpi_comm_world, &comm_rank);
-    if (comm_rank == 0)
-      std::cout << "SETUP MPI result thread_required=" << thread_required << " provided=" << thread_provided << "\n";
+    global_message_passing_mng = StandaloneMpiMessagePassingMng::createAndInitializeMPI(global_argc,global_argv, thread_required);
   }
   void TearDown() override
   {
-    int mpi_error = MPI_Finalize();
-    ASSERT_EQ(mpi_error, MPI_SUCCESS);
+    global_message_passing_mng.reset();
   }
 };
 

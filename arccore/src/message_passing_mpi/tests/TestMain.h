@@ -18,7 +18,7 @@ namespace Arccore::MessagePassing::Mpi
 {
 
 // Global communicator (initialized in TestMain.cc)
-extern MPI_Comm global_mpi_comm_world;
+extern Ref<Arcane::MessagePassing::IMessagePassingMng> global_message_passing_mng;
 
 } // namespace Arccore::MessagePassing::Mpi
 
