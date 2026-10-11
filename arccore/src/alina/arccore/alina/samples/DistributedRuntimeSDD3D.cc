@@ -37,8 +37,6 @@ class rounding_error
 } // namespace boost::math
 #endif
 
-#include <boost/scope_exit.hpp>
-
 #if defined(SOLVER_BACKEND_CUDA)
 #  include "arccore/alina/CudaBackend.h"
 #  include "arccore/alina/relaxation_cusparse_ilu0.h"
@@ -125,7 +123,7 @@ int main2(const SampleMainContext& ctx, int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
   ITraceMng* tm = ctx.traceMng();
-  AlinaCommunicator world(MPI_COMM_WORLD);
+  AlinaCommunicator world(ctx.messagePassingMng());
 
   tm->info() << "World size: " << world.size;
 

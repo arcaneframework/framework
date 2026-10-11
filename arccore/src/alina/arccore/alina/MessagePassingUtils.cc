@@ -25,30 +25,46 @@ namespace Arcane::Alina
 /*---------------------------------------------------------------------------*/
 
 AlinaCommunicator::
-AlinaCommunicator(MPI_Comm comm)
-: m_mpi_communicator(comm)
+AlinaCommunicator(IMessagePassingMng* mpm_comm)
 {
-  if (comm == MPI_COMM_NULL)
-    ARCCORE_FATAL("Invalid MPI Communicator : MPI_COMM_NULL");
-
-  MPI_Comm_rank(comm, &rank);
-  MPI_Comm_size(comm, &size);
-  m_message_passing_mng = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createRef(comm);
+  m_message_passing_mng = makeRef(mpm_comm);
+  _init();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 AlinaCommunicator::
-AlinaCommunicator(IMessagePassingMng* mpm_comm)
+AlinaCommunicator(const Ref<IMessagePassingMng>& mpm_comm)
 {
+  m_message_passing_mng = mpm_comm;
+  _init();
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AlinaCommunicator::
+_init()
+{
+  IMessagePassingMng* mpm_comm = m_message_passing_mng.get();
+
   MessagePassing::Communicator c = mpm_comm->communicator();
   if (c.isValid())
     m_mpi_communicator = static_cast<MPI_Comm>(c);
   rank = mpm_comm->commRank();
   size = mpm_comm->commSize();
-  m_message_passing_mng = makeRef(mpm_comm);
-};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AlinaCommunicator AlinaCommunicator::
+createFromMPI(MPI_Comm comm)
+{
+  auto mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createRef(comm);
+  return AlinaCommunicator(mpm);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -20,18 +20,6 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-copy"
 #pragma GCC diagnostic ignored "-Wint-in-bool-context"
 
-#include <iostream>
-#include <iterator>
-#include <iomanip>
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <numeric>
-#include <cmath>
-#include <cassert>
-
-#include <boost/scope_exit.hpp>
-
 #include "arccore/alina/AMG.h"
 #include "arccore/alina/CoarseningRuntime.h"
 #include "arccore/alina/RelaxationRuntime.h"
@@ -41,6 +29,16 @@
 #include "arccore/alina/Profiler.h"
 
 #include "arccore/common/internal/ProgramOptions.h"
+
+#include <iostream>
+#include <iterator>
+#include <iomanip>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include <cassert>
 
 using namespace Arcane;
 using namespace Arcane::Alina;
@@ -222,15 +220,8 @@ read_problem(const Alina::AlinaCommunicator& world,
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-  int provided;
-  MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-  BOOST_SCOPE_EXIT(void)
-  {
-    MPI_Finalize();
-  }
-  BOOST_SCOPE_EXIT_END
-
-  Alina::AlinaCommunicator world(MPI_COMM_WORLD);
+  Ref<IMessagePassingMng> mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
+  Alina::AlinaCommunicator world(mpm);
 
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;

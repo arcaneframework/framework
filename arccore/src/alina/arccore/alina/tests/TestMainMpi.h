@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/alina/AlinaGlobal.h"
+#include "arccore/message_passing/MessagePassingGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -18,7 +19,7 @@ namespace AlinaTest
 {
 
 // Global communicator (initialized in TestMain.cc)
-extern MPI_Comm global_mpi_comm_world;
+extern Arcane::Ref<Arcane::MessagePassing::IMessagePassingMng> global_message_passing_mng;
 
 } // namespace AlinaTest
 

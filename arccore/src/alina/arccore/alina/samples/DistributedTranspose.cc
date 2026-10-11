@@ -19,8 +19,6 @@
 #include <iostream>
 #include <vector>
 
-#include <boost/scope_exit.hpp>
-
 #include "arccore/alina/BuiltinBackend.h"
 #include "arccore/alina/Adapters.h"
 #include "arccore/alina/DistributedMatrix.h"
@@ -31,14 +29,8 @@ using namespace Arcane;
 
 int main(int argc, char* argv[])
 {
-  MPI_Init(&argc, &argv);
-  BOOST_SCOPE_EXIT(void)
-  {
-    MPI_Finalize();
-  }
-  BOOST_SCOPE_EXIT_END
-
-  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
+  auto mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
+  Alina::AlinaCommunicator comm(mpm);
 
   int n = 16;
   int chunk_len = (n + comm.size - 1) / comm.size;

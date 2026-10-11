@@ -41,7 +41,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   auto& prof = Alina::Profiler::globalProfiler();
 
-  Alina::AlinaCommunicator comm(MPI_COMM_WORLD);
+  Alina::AlinaCommunicator comm(ctx.messagePassingMng());
 
   tm->info() << "World size: " << comm.size;
 

@@ -194,7 +194,7 @@ struct ParmetisMatrixPartitioner
     MPI_Comm_split(comm.mpiCommunicator(), active ? 0 : MPI_UNDEFINED, comm.rank, &scomm);
 
     if (active) {
-      AlinaCommunicator sc(scomm);
+      AlinaCommunicator sc(AlinaCommunicator::createFromMPI(scomm));
       UniqueArray<idx_t> vtxdist = sc.exclusive_sum(n);
 
       sc.check(
