@@ -103,6 +103,18 @@ build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+std::unique_ptr<ItemTypeMng> ItemTypeMng::
+createStandalone()
+{
+  std::unique_ptr<ItemTypeMng> x(new ItemTypeMng());
+  x->_buildTypes(nullptr, nullptr, nullptr);
+  x->m_initialized = true;
+  return x;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ItemTypeMng::
 _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 {
@@ -127,11 +139,11 @@ _buildSingleton(IParallelSuperMng* parallel_mng, ITraceMng* trace)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Constructs the entity types.
  *
  * \note For the singleton instance, \a mesh is null.
+ * \note For the standalone instance every parameter is null.
  */
 void ItemTypeMng::
 _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
@@ -1110,7 +1122,8 @@ _buildTypes(IMesh* mesh, IParallelSuperMng* parallel_mng, ITraceMng* trace)
     }
   }
 
-  { // Polygon & Polyhedron: generic item types
+  if (parallel_mng) {
+    // Polygon & Polyhedron: generic item types
     String arcane_item_type_file = platform::getEnvironmentVariable("ARCANE_ITEM_TYPE_FILE");
     if (!arcane_item_type_file.null()) {
       // verify the existence of item type file. if doesn't exist return an exception

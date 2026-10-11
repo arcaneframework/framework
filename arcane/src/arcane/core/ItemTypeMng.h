@@ -21,6 +21,7 @@
 
 #include <set>
 #include <atomic>
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,11 +76,14 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
   //! Empty constructor (uninitialized)
   ItemTypeMng();
+
+ public:
+
   ~ItemTypeMng();
 
  public:
 
-  /*!
+ /*!
    * \brief Effective constructor.
    *
    * This method should only be called before initializing
@@ -94,6 +98,14 @@ class ARCANE_CORE_EXPORT ItemTypeMng
    * \brief Constructs the instance associated with the mesh \a mesh.
    */
   void build(IMesh* mesh);
+
+  /*!
+   * \brief Create a standalone instance of ItemTypeMng.
+   *
+   * This instance contains only built-in types and is not associated
+   * to a mesh.
+   */
+  static std::unique_ptr<ItemTypeMng> createStandalone();
 
  private:
 
