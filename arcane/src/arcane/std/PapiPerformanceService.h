@@ -48,6 +48,7 @@ class PapiPerformanceService
   void startProfiling() override;
   void switchEvent() override;
   void stopProfiling() override;
+  bool isRunning() const override { return m_is_running; }
   void printInfos(bool dump_file) override;
   void getInfos(Int64Array&) override;
   void dumpJSON(JSONWriter& writer) override;

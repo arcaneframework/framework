@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IProfilingService.h                                         (C) 2000-2023 */
+/* IProfilingService.h                                         (C) 2000-2026 */
 /*                                                                           */
 /* Interface of a profiling service.                                         */
 /*---------------------------------------------------------------------------*/
@@ -29,7 +29,6 @@ class ITimerMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \internal
  * \brief Interface of a profiling service.
@@ -69,6 +68,14 @@ class ARCANE_UTILS_EXPORT IProfilingService
   virtual void stopProfiling() = 0;
 
   /*!
+   * \brief Indicates if the profiling is running.
+   *
+   * The profiling is running between a call to startProfiling()
+   * and stopProfiling().
+   */
+  virtual bool isRunning() const =0;
+
+  /*!
    * \brief Displays profiling information.
    *
    * Profiling must be stopped.
@@ -95,7 +102,6 @@ class ARCANE_UTILS_EXPORT IProfilingService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Class allowing automatic start and stop of a service.
  */

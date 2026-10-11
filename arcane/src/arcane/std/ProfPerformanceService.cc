@@ -63,6 +63,7 @@ class ProfPerformanceService
   void startProfiling() override;
   void switchEvent() override;
   void stopProfiling() override;
+  bool isRunning() const override;
   void printInfos(bool dump_file) override;
   void getInfos(Int64Array&) override;
   void dumpJSON(JSONWriter& writer) override;
@@ -230,6 +231,8 @@ initialize()
 void ProfPerformanceService::
 startProfiling()
 {
+  if (global_is_active)
+    ARCANE_FATAL("Profiling is already started");
   global_is_active = true;
   global_infos->startProfiling();
 
@@ -258,6 +261,7 @@ stopProfiling()
 {
   if (!global_infos)
     return;
+
   global_is_active = false;
   _setTimer(global_timer_period);
 
@@ -309,6 +313,15 @@ reset()
 {
   if (global_infos)
     global_infos->reset();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ProfPerformanceService::
+isRunning() const
+{
+  return global_is_active;
 }
 
 /*---------------------------------------------------------------------------*/
