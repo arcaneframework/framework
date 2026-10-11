@@ -62,6 +62,19 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng
    * \brief Creates a manager associated with the MPI_WORLD_COMM communicator.
    */
   static Ref<IMessagePassingMng> createWorldRef();
+
+  /*!
+   * \brief Initialize MPI and creates a manager associated with the
+   * MPI_WORLD_COMM communicator.
+   *
+   * The initializing is done calling `MPI_Init_thread()` with the thread
+   * level \a wanted_thread_level (one of value `MPI_THREAD_SINGLE`,
+   * `MPI_THREAD_FUNNELED`, `MPI_THREAD_SERIALIZED`, `MPI_THREAD_MULTIPLE`)
+   * and the arguments \a argc and \a argv.
+   *
+   * MPI_Finalize() will be called when the instance runs out of scope.
+   */
+  static Ref<IMessagePassingMng> createAndInitializeMPI(int* argc, char** argv[], int wanted_thread_level);
 };
 
 /*---------------------------------------------------------------------------*/
