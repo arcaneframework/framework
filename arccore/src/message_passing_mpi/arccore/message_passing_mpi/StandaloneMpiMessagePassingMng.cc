@@ -63,9 +63,15 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT StandaloneMpiMessagePassingMng2
    */
   static Ref<IMessagePassingMng> createRef(MPI_Comm comm, bool clean_comm = false);
 
+  static Ref<IMessagePassingMng> createAndInitializeMPI(int* argc, char** argv[], int wanted_thread_level);
+
  private:
 
-  Impl* m_p;
+  Impl* m_p = nullptr;
+
+ private:
+
+  static MpiMessagePassingMng* _create(Impl* p);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -79,16 +85,25 @@ class StandaloneMpiMessagePassingMng2::Impl
   : m_communicator(mpi_comm)
   , m_clean_comm(clean_comm)
   {
-    m_trace_mng = Arccore::arccoreCreateDefaultTraceMng();
-    ::MPI_Comm_rank(mpi_comm, &m_comm_rank);
-    ::MPI_Comm_size(mpi_comm, &m_comm_size);
+    _init();
+  }
 
-    m_stat = new Stat();
-    MpiLock* mpi_lock = nullptr;
-    m_adapter = new MpiAdapter(m_trace_mng.get(), m_stat, mpi_comm, mpi_lock);
-
-    m_dispatchers = new Dispatchers();
-    m_dispatchers->setDeleteDispatchers(true);
+  explicit Impl(int* argc, char** argv[], int wanted_thread_level)
+  : m_communicator(MPI_COMM_WORLD)
+  {
+    int provided = 0;
+    int r = MPI_Init_thread(argc, argv, wanted_thread_level, &provided);
+    if (r != MPI_SUCCESS)
+      ARCCORE_FATAL("Error when calling MPI_Init_thread err={0}", r);
+    if (provided != wanted_thread_level) {
+      int rank = 0;
+      ::MPI_Comm_rank(m_communicator, &rank);
+      if (rank == 0)
+        std::cerr << "WARNING: MPI_Init_thread provided level (" << provided
+                  << ") is not the wanted level (" << wanted_thread_level << ")\n";
+    }
+    m_do_finalize = true;
+    _init();
   }
 
   ~Impl()
@@ -105,6 +120,22 @@ class StandaloneMpiMessagePassingMng2::Impl
 
     if (m_clean_comm)
       MPI_Comm_free(&m_communicator);
+    if (m_do_finalize)
+      MPI_Finalize();
+  }
+
+  void _init()
+  {
+    m_trace_mng = Arccore::arccoreCreateDefaultTraceMng();
+    MPI_Comm mpi_comm = m_communicator;
+    ::MPI_Comm_rank(mpi_comm, &m_comm_rank);
+    ::MPI_Comm_size(mpi_comm, &m_comm_size);
+    m_stat = new Stat();
+    MpiLock* mpi_lock = nullptr;
+    m_adapter = new MpiAdapter(m_trace_mng.get(), m_stat, mpi_comm, mpi_lock);
+
+    m_dispatchers = new Dispatchers();
+    m_dispatchers->setDeleteDispatchers(true);
   }
 
   MpiMessagePassingMng::BuildInfo
@@ -123,6 +154,7 @@ class StandaloneMpiMessagePassingMng2::Impl
   int m_comm_size = A_NULL_RANK;
   MPI_Comm m_communicator = MPI_COMM_NULL;
   bool m_clean_comm = false;
+  bool m_do_finalize = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -170,9 +202,8 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 MpiMessagePassingMng* StandaloneMpiMessagePassingMng2::
-create(MPI_Comm mpi_comm, bool clean_comm)
+_create(Impl* p)
 {
-  Impl* p = new Impl(mpi_comm, clean_comm);
   auto mpm = new StandaloneMpiMessagePassingMng2(p);
   auto adapter = p->m_adapter;
   auto dsp = p->m_dispatchers;
@@ -218,12 +249,36 @@ create(MPI_Comm mpi_comm, bool clean_comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MpiMessagePassingMng* StandaloneMpiMessagePassingMng2::
+create(MPI_Comm mpi_comm, bool clean_comm)
+{
+  Impl* p = new Impl(mpi_comm, clean_comm);
+  return _create(p);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<IMessagePassingMng> StandaloneMpiMessagePassingMng2::
 createRef(MPI_Comm mpi_comm, bool clean_comm)
 {
   MpiMessagePassingMng* v = create(mpi_comm, clean_comm);
   return makeRef<IMessagePassingMng>(v);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IMessagePassingMng> StandaloneMpiMessagePassingMng2::
+createAndInitializeMPI(int* argc, char** argv[], int wanted_thread_level)
+{
+  Impl* p = new Impl(argc, argv, wanted_thread_level);
+  MpiMessagePassingMng* v = _create(p);
+  return makeRef<IMessagePassingMng>(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -250,6 +305,15 @@ Ref<IMessagePassingMng> StandaloneMpiMessagePassingMng::
 createWorldRef()
 {
   return StandaloneMpiMessagePassingMng2::createRef(MPI_COMM_WORLD);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IMessagePassingMng> StandaloneMpiMessagePassingMng::
+createAndInitializeMPI(int* argc, char** argv[], int wanted_thread_level)
+{
+  return StandaloneMpiMessagePassingMng2::createAndInitializeMPI(argc, argv, wanted_thread_level);
 }
 
 /*---------------------------------------------------------------------------*/
