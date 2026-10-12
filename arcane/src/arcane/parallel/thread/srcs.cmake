@@ -2,9 +2,6 @@
   ArcaneThread.h
   ArcaneThreadMisc.h
 
-  GlibThreadImplementation.cc
-  GlibThreadMng.h
-
   IAsyncQueue.h
   AsyncQueue.cc
 

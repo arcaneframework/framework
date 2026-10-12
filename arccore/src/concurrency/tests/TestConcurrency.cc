@@ -201,27 +201,11 @@ void _doMutexLock()
 }
 } // namespace
 
-TEST(Concurrency, GlibSpinLock)
-{
-  Ref<IThreadImplementation> timpl(Concurrency::createGlibThreadImplementation());
-  Concurrency::setThreadImplementation(timpl.get());
-  _doSpinLock();
-  Concurrency::setThreadImplementation(nullptr);
-}
-
 TEST(Concurrency, StdSpinLock)
 {
   Ref<IThreadImplementation> timpl(Concurrency::createStdThreadImplementation());
   Concurrency::setThreadImplementation(timpl.get());
   _doSpinLock();
-  Concurrency::setThreadImplementation(nullptr);
-}
-
-TEST(Concurrency, GlibMutexLock)
-{
-  Ref<IThreadImplementation> timpl(Concurrency::createGlibThreadImplementation());
-  Concurrency::setThreadImplementation(timpl.get());
-  _doMutexLock();
   Concurrency::setThreadImplementation(nullptr);
 }
 

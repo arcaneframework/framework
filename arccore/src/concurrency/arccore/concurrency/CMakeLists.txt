@@ -1,7 +1,4 @@
-﻿if (ARCCORE_ENABLE_GLIB)
-  find_package(Glib REQUIRED)
-endif ()
-if (ARCCORE_ENABLE_TBB)
+﻿if (ARCCORE_ENABLE_TBB)
   find_package(TBB)
   if (TBB_VERSION)
     # If TBB_VERSION is defined, we are sure that TBB is present.
@@ -31,16 +28,6 @@ endif ()
 
 include(srcs.cmake)
 
-if (ARCCORE_ENABLE_GLIB)
-  list(APPEND SOURCES
-    GlibThreadImplementation.cc
-    GlibThreadImplementation.h
-    GlibAdapter.h
-    GlibAdapter.cc
-    ThreadPrivate.h
-    ThreadPrivate.cc
-  )
-endif ()
 if (ARCCORE_ENABLE_TBB)
   list(APPEND SOURCES
     TBBTaskImplementation.cc
@@ -51,10 +38,6 @@ arccore_add_component_library(concurrency
   FILES ${SOURCES}
 )
 
-if (ARCCORE_ENABLE_GLIB)
-  target_link_libraries(arccore_concurrency PRIVATE arcconpkg_Glib)
-  target_compile_definitions(arccore_concurrency PRIVATE ARCCORE_HAS_GLIB)
-endif ()
 if (ARCCORE_ENABLE_TBB)
   target_link_libraries(arccore_concurrency PRIVATE arccon::TBB)
 endif ()
