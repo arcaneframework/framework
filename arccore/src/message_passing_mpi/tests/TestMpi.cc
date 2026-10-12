@@ -10,7 +10,8 @@
 #include "arccore/base/Ref.h"
 #include "arccore/base/BFloat16.h"
 #include "arccore/base/Float16.h"
-#include "arccore/collections/Array.h"
+#include "arccore/common/Array.h"
+#include "arccore/trace/ITraceMng.h"
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/Communicator.h"
 #include "arccore/serialize/ISerializer.h"
@@ -29,7 +30,8 @@ using namespace Arccore::MessagePassing::Mpi;
 TEST(MessagePassingMpi, Simple)
 {
   Ref<IMessagePassingMng> pm(global_message_passing_mng);
-  std::cout << "Rank=" << pm->commRank() << "\n";
+  ITraceMng* tm = pm->traceMng();
+  tm->info() << "Rank=" << pm->commRank() << "\n";
   if (pm->commSize() == 2) {
     UniqueArray<Int32> send_buf = { 1, 7, -4 };
     if (pm->commRank() == 0)
@@ -96,6 +98,7 @@ namespace
 template <typename DataType>
 void _doTestFloat16(IMessagePassingMng* pm)
 {
+  ITraceMng* tm = pm->traceMng();
   Int32 nb_rank = pm->commSize();
   ASSERT_EQ(pm->commSize(), 2);
   Int32 my_rank = pm->commRank();
@@ -121,15 +124,15 @@ void _doTestFloat16(IMessagePassingMng* pm)
     DataType expected_max = values[nb_rank - 1];
     DataType my_value(values[my_rank]);
     DataType sum_result = mpAllReduce(pm, eReduceType::ReduceSum, my_value);
-    std::cout << "Sum=" << sum_result << "\n";
+    tm->info() << "Sum=" << sum_result;
     ASSERT_EQ(expected_sum, sum_result);
 
     DataType max_result = mpAllReduce(pm, eReduceType::ReduceMax, my_value);
-    std::cout << "Max=" << max_result << "\n";
+    tm->info() << "Max=" << max_result;
     ASSERT_EQ(expected_max, max_result);
 
     DataType min_result = mpAllReduce(pm, eReduceType::ReduceMin, my_value);
-    std::cout << "Min=" << min_result << "\n";
+    tm->info() << "Min=" << min_result;
     ASSERT_EQ(expected_min, min_result);
   }
 }

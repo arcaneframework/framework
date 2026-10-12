@@ -13,6 +13,8 @@
 
 #include "arccore/message_passing/MessagePassingMng.h"
 
+#include "arccore/trace/ITraceMng.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -72,6 +74,12 @@ void MessagePassingMng::
 setTimeMetricCollector(ITimeMetricCollector* c)
 {
   m_time_metric_collector = c;
+}
+
+void MessagePassingMng::
+setTraceMng(ITraceMng* tm)
+{
+  m_trace_mng = makeRef(tm);
 }
 
 /*---------------------------------------------------------------------------*/
