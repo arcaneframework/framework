@@ -70,6 +70,9 @@ class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
   //! Interface for collecting execution times (can be null)
   virtual ITimeMetricCollector* timeMetricCollector() const = 0;
 
+  //! Trace manager associated to this instance.
+  virtual ITraceMng* traceMng() const =0;
+
   /*!
    * \brief MPI communicator associated with this instance.
    *

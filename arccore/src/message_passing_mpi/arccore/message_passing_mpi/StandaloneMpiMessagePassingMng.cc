@@ -165,6 +165,7 @@ StandaloneMpiMessagePassingMng2(Impl* p)
 : MpiMessagePassingMng(p->buildInfo())
 , m_p(p)
 {
+  setTraceMng(p->m_trace_mng.get());
 }
 
 /*---------------------------------------------------------------------------*/

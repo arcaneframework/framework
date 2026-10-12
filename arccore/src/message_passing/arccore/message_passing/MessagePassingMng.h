@@ -15,9 +15,12 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/base/ReferenceCounterImpl.h"
+#include "arccore/base/Ref.h"
 
 #include "arccore/message_passing/IMessagePassingMng.h"
 #include "arccore/message_passing/Communicator.h"
+
+#include "arccore/trace/TraceGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -51,11 +54,13 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
   IDispatchers* dispatchers() override;
   ITimeMetricCollector* timeMetricCollector() const override;
   Communicator communicator() const override;
+  ITraceMng* traceMng() const override { return m_trace_mng.get(); }
 
  public:
 
   void setTimeMetricCollector(ITimeMetricCollector* c);
   void setCommunicator(Communicator c);
+  void setTraceMng(ITraceMng* tm);
 
  private:
 
@@ -64,6 +69,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
   IDispatchers* m_dispatchers = nullptr;
   ITimeMetricCollector* m_time_metric_collector = nullptr;
   Communicator m_communicator;
+  Ref<ITraceMng> m_trace_mng;
 };
 
 /*---------------------------------------------------------------------------*/
