@@ -488,7 +488,6 @@ struct DistributedPMISAggregation
     ptrdiff_t naggr = 0;
 
     UniqueArray<ptrdiff_t> nbr;
-
     while (true) {
       for (size_t i = 0; i < Sp.recv.nbr.size(); ++i)
         send_pts[i].clear();
@@ -597,21 +596,24 @@ struct DistributedPMISAggregation
           }
         }
       }
-
+      SmallArray<MessagePassing::Request> all_send_requests;
+      // Create an array to keep the values of the number of points
+      SmallArray<int> npts_values(Sp.recv.nbr.size());
       for (size_t i = 0; i < Sp.recv.nbr.size(); ++i) {
         int npts = send_pts[i].size();
-        send_cnt_req[i] = comm.doISend(&npts, 1, Sp.recv.nbr[i], tag_exc_cnt);
+        npts_values[i] = npts;
+        all_send_requests.add(comm.doISend(npts_values.data() + i, 1, Sp.recv.nbr[i], tag_exc_cnt));
 
-        if (!npts)
+        if (npts == 0)
           continue;
-        send_pts_req[i] = comm.doISend(&send_pts[i][0], npts, Sp.recv.nbr[i], tag_exc_pts);
+        all_send_requests.add(comm.doISend(&send_pts[i][0], npts, Sp.recv.nbr[i], tag_exc_pts));
       }
 
       for (size_t i = 0; i < Sp.send.nbr.size(); ++i) {
-        int npts;
+        int npts = 0;
         comm.doReceive(&npts, 1, Sp.send.nbr[i], tag_exc_cnt);
 
-        if (!npts)
+        if (npts == 0)
           continue;
         recv_pts.resize(npts);
         comm.doReceive(&recv_pts[0], npts, Sp.send.nbr[i], tag_exc_pts);
@@ -627,14 +629,7 @@ struct DistributedPMISAggregation
           loc_state[c] = id;
         }
       }
-
-      for (size_t i = 0; i < Sp.recv.nbr.size(); ++i) {
-        int npts = send_pts[i].size();
-        comm.wait(send_cnt_req[i]);
-        if (npts == 0)
-          continue;
-        comm.wait(send_pts_req[i]);
-      }
+      comm.waitAll(all_send_requests);
 
       for (ptrdiff_t i = 0, m = Sp.send.count(); i < m; ++i)
         send_state[i] = loc_state[Sp.send.col[i]];
@@ -666,6 +661,7 @@ struct DistributedPMISAggregation
 
     std::partial_sum(new_id.begin(), new_id.end(), new_id.begin());
 
+    SmallArray<MessagePassing::Request> all_send_requests;
     if (comm.reduceSum(naggr - new_id.back()) > 0) {
       naggr = new_id.back();
 
@@ -693,11 +689,11 @@ struct DistributedPMISAggregation
 
       for (size_t i = 0; i < Sp.recv.nbr.size(); ++i) {
         int npts = send_pts[i].size();
-        send_cnt_req[i] = comm.doISend(&npts, 1, Sp.recv.nbr[i], tag_exc_cnt);
+        all_send_requests.add(comm.doISend(&npts, 1, Sp.recv.nbr[i], tag_exc_cnt));
 
         if (!npts)
           continue;
-        send_pts_req[i] = comm.doISend(&send_pts[i][0], npts, Sp.recv.nbr[i], tag_exc_pts);
+        all_send_requests.add(comm.doISend(&send_pts[i][0], npts, Sp.recv.nbr[i], tag_exc_pts));
       }
 
       for (size_t i = 0; i < Sp.send.nbr.size(); ++i) {
@@ -716,6 +712,7 @@ struct DistributedPMISAggregation
           loc_state[c] = id;
         }
       }
+      comm.waitAll(all_send_requests);
 
       for (size_t i = 0; i < Sp.recv.nbr.size(); ++i) {
         int npts = send_pts[i].size();
