@@ -724,7 +724,7 @@ send(Span<const Type> send_buffer, const PointToPointMessageInfo& message2)
   message.setEmiterRank(MessageRank(m_global_rank));
   Request r = m_message_queue->addSend(message, ConstMemoryView(send_buffer));
   if (is_blocking) {
-    m_message_queue->waitAll(ArrayView<MP::Request>(1, &r));
+    m_message_queue->waitAll(m_local_rank, ArrayView<MP::Request>(1, &r));
     return Request();
   }
   return r;
@@ -741,7 +741,7 @@ receive(Span<Type> recv_buffer, const PointToPointMessageInfo& message2)
   bool is_blocking = message.isBlocking();
   Request r = m_message_queue->addReceive(message, ReceiveBufferInfo(MutableMemoryView(recv_buffer)));
   if (is_blocking) {
-    m_message_queue->waitAll(ArrayView<Request>(1, &r));
+    m_message_queue->waitAll(m_local_rank, ArrayView<Request>(1, &r));
     return Request();
   }
   return r;

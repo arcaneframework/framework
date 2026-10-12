@@ -217,7 +217,7 @@ _genericSend(ConstMemoryView send_buffer, const PointToPointMessageInfo& message
   if (message.isRankTag()) {
     Request r = m_message_queue->addSend(message, SendBufferInfo(send_buffer));
     if (is_blocking) {
-      m_message_queue->waitAll(ArrayView<Request>(1, &r));
+      m_message_queue->waitAll(m_rank, ArrayView<Request>(1, &r));
       return Request();
     }
     return r;
@@ -241,7 +241,7 @@ _genericReceive(MutableMemoryView recv_buffer, const PointToPointMessageInfo& me
   ReceiveBufferInfo buf{ recv_buffer };
   Request r = m_message_queue->addReceive(message, buf);
   if (is_blocking) {
-    m_message_queue->waitAll(ArrayView<Request>(1, &r));
+    m_message_queue->waitAll(m_rank, ArrayView<Request>(1, &r));
     return MP::Request();
   }
   return r;

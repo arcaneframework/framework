@@ -192,6 +192,7 @@ class HybridParallelMng
  private:
 
   SerializeBuffer* _castSerializer(ISerializer* serializer);
+  void _waitOne(Request request);
 };
 
 /*---------------------------------------------------------------------------*/

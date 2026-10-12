@@ -53,8 +53,8 @@ class ARCANE_THREAD_EXPORT SendBufferInfo
 
  public:
 
-  ByteConstSpan memoryBuffer() { return m_memory_buffer.bytes(); }
-  const ISerializer* serializer() { return m_serializer; }
+  ByteConstSpan memoryBuffer() const { return m_memory_buffer.bytes(); }
+  const ISerializer* serializer() const { return m_serializer; }
 
  private:
 
@@ -84,8 +84,8 @@ class ARCANE_THREAD_EXPORT ReceiveBufferInfo
 
  public:
 
-  ByteSpan memoryBuffer() { return m_memory_buffer.bytes(); }
-  ISerializer* serializer() { return m_serializer; }
+  ByteSpan memoryBuffer() const { return m_memory_buffer.bytes(); }
+  ISerializer* serializer() const { return m_serializer; }
 
  private:
 
@@ -114,7 +114,7 @@ class ARCANE_THREAD_EXPORT ISharedMemoryMessageQueue
  public:
 
   virtual void init(Integer nb_thread) = 0;
-  virtual void waitAll(ArrayView<Request> requests) = 0;
+  virtual void waitAll(Int32 calling_rank,ArrayView<Request> requests) = 0;
   virtual void waitSome(Int32 rank, ArrayView<Request> requests,
                         ArrayView<bool> requests_done, bool is_non_blocking) = 0;
   virtual void setTraceMng(Int32 rank, ITraceMng* tm) = 0;

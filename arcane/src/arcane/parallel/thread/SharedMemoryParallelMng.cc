@@ -21,6 +21,7 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/SmallArray.h"
 
 #include "arcane/parallel/IStat.h"
 
@@ -44,6 +45,8 @@
 
 #include "arccore/message_passing/RequestListBase.h"
 #include "arccore/message_passing/internal/SerializeMessageList.h"
+
+#include "arcane/parallel/thread/SharedMemoryMessageQueue.h"
 
 #include <map>
 
@@ -84,20 +87,23 @@ class SharedMemoryParallelMng::RequestList
   {
     switch (wait_type) {
     case Parallel::WaitAll:
-      return m_message_queue->waitAll(_requests());
+      m_message_queue->waitAll(m_local_rank, _requests());
+      break;
     case Parallel::WaitSome:
-      return m_message_queue->waitSome(m_local_rank, _requests(), _requestsDone(), false);
+      m_message_queue->waitSome(m_local_rank, _requests(), _requestsDone(), false);
+      break;
     case Parallel::WaitSomeNonBlocking:
-      return m_message_queue->waitSome(m_local_rank, _requests(), _requestsDone(), true);
+      m_message_queue->waitSome(m_local_rank, _requests(), _requestsDone(), true);
+      break;
     }
   }
 
- private:
+   private:
 
-  SharedMemoryParallelMng* m_parallel_mng;
-  ISharedMemoryMessageQueue* m_message_queue;
-  Int32 m_local_rank;
-};
+    SharedMemoryParallelMng* m_parallel_mng;
+    ISharedMemoryMessageQueue* m_message_queue;
+    Int32 m_local_rank;
+  };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -304,7 +310,7 @@ sendSerializer(ISerializer* values, Int32 dest_rank)
 {
   auto p2p_message = buildMessage(dest_rank, Parallel::Blocking);
   Request r = m_message_queue->addSend(p2p_message, SendBufferInfo(values));
-  m_message_queue->waitAll(ArrayView<Request>(1, &r));
+  m_message_queue->waitAll(m_rank, ArrayView<Request>(1, &r));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -341,7 +347,7 @@ broadcastSerializer(ISerializer* values, Int32 rank)
         requests.add(m_message_queue->addSend(buildMessage(i, Parallel::NonBlocking), SendBufferInfo(values)));
       }
     }
-    m_message_queue->waitAll(requests);
+    m_message_queue->waitAll(m_rank, requests);
   }
   else {
     recvSerializer(values, rank);
@@ -356,7 +362,7 @@ recvSerializer(ISerializer* values, Int32 rank)
 {
   auto p2p_message = buildMessage(rank, Parallel::Blocking);
   Request r = m_message_queue->addReceive(p2p_message, ReceiveBufferInfo(values));
-  m_message_queue->waitAll(ArrayView<Request>(1, &r));
+  m_message_queue->waitAll(m_rank, ArrayView<Request>(1, &r));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -404,7 +410,7 @@ void SharedMemoryParallelMng::
 waitAllRequests(ArrayView<Request> requests)
 {
   Real begin_time = platform::getRealTime();
-  m_message_queue->waitAll(requests);
+  m_message_queue->waitAll(m_rank, requests);
   Real end_time = platform::getRealTime();
   m_stat->add("WaitAll", (end_time - begin_time), 0);
 }
@@ -515,8 +521,7 @@ _createSubParallelMng(Int32ConstArrayView kept_ranks)
   ARCANE_UNUSED(kept_ranks);
   // We cannot implement this method because we go through
   // IParallelMngContainer::_createParallelMng() which obligatorily
-  // creates
-  // a 'Ref<IParallelMng>'.
+  // creates a 'Ref<IParallelMng>'.
   ARCANE_THROW(NotSupportedException, "Use createSubParallelMngRef() instead");
 }
 

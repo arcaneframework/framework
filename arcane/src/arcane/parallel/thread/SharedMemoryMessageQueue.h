@@ -41,7 +41,6 @@ using MessageTag = MP::MessageTag;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Message queue between ranks shared by a SharedMemoryParallelMng.
  */
@@ -55,17 +54,16 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageQueue
  public:
 
   SharedMemoryMessageQueue()
-  : m_nb_thread(0)
-  , m_atomic_request_id(0)
+  : m_atomic_request_id(0)
   {}
   ~SharedMemoryMessageQueue() override;
 
  public:
 
   void init(Int32 nb_thread) override;
-  void waitAll(ArrayView<Request> requests) override;
+  void waitAll(Int32 caller_rank, ArrayView<Request> requests) override;
   void waitSome(Int32 rank, ArrayView<Request> requests, ArrayView<bool> requests_done,
-                bool is_non_blockign) override;
+                bool is_non_blocking) override;
   void setTraceMng(Int32 rank, ITraceMng* tm) override;
 
  public:
@@ -183,15 +181,16 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
 
  public:
 
-  MessageRank orig() { return m_orig; }
-  MessageRank dest() { return m_dest; }
-  MessageTag tag() { return m_tag; }
-  bool isRecv() { return m_is_recv; }
-  bool isDone() { return m_is_done; }
+  MessageRank orig() const { return m_orig; }
+  MessageRank dest() const { return m_dest; }
+  MessageTag tag() const { return m_tag; }
+  bool isRecv() const { return m_is_recv; }
+  bool isDone() const { return m_is_done; }
   void setDone(bool v) { m_is_done = v; }
   SendBufferInfo sendBufferInfo() { return m_send_buffer_info; }
   ReceiveBufferInfo receiveBufferInfo() { return m_receive_buffer_info; }
   SharedMemoryMessageQueue::SubQueue* queue() { return m_queue; }
+  const String& queueName() const;
   void copyFromSender(SharedMemoryMessageRequest* sender);
   Int64 id() const { return m_request_id; }
   void destroy();
@@ -206,16 +205,17 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageRequest
   //! Associated request in the case it is a `receive` resulting from a `probe`
   SharedMemoryMessageRequest* matchingSendRequest() { return m_matching_send_request; }
   void setMatchingSendRequest(SharedMemoryMessageRequest* r) { m_matching_send_request = r; }
+  friend std::ostream& operator<<(std::ostream& o, const SharedMemoryMessageRequest& v);
 
  private:
 
-  SubQueue* m_queue;
-  Int64 m_request_id;
-  bool m_is_recv;
+  SubQueue* m_queue = nullptr;
+  Int64 m_request_id = -1;
+  bool m_is_recv = false;
   MessageRank m_orig;
   MessageRank m_dest;
   MessageTag m_tag;
-  bool m_is_done = false;
+  std::atomic<bool> m_is_done = false;
   SharedMemoryMessageRequest* m_matching_send_request = nullptr;
   bool m_is_destroyed = false;
   SendBufferInfo m_send_buffer_info;

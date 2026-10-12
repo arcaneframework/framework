@@ -112,7 +112,7 @@ _buildMPIMessage(const PointToPointMessageInfo& message,
 /*---------------------------------------------------------------------------*/
 
 void HybridMessageQueue::
-waitAll(ArrayView<Request> requests)
+waitAll(Int32 caller_rank, ArrayView<Request> requests)
 {
   // TODO: merge what is possible with waitSome.
   Integer nb_request = requests.size();
@@ -135,7 +135,7 @@ waitAll(ArrayView<Request> requests)
   if (mpi_requests.size() != 0)
     m_mpi_adapter->waitAllRequests(mpi_requests);
   if (thread_requests.size() != 0)
-    m_thread_queue->waitAll(thread_requests);
+    m_thread_queue->waitAll(caller_rank, thread_requests);
 
   // We reset all requests to be able to call the Wait functions!
   for (Request r : requests)
