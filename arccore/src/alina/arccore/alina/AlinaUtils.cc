@@ -444,6 +444,13 @@ namespace Arcane::Alina
 /*---------------------------------------------------------------------------*/
 
 PropertyTree::
+PropertyTree(PropertyTreeImpl* p, bool is_own)
+: m_property_tree(p)
+, m_is_own(is_own)
+{
+}
+
+PropertyTree::
 PropertyTree()
 : m_property_tree(new PropertyTreeImpl())
 , m_is_own(true)
@@ -469,6 +476,22 @@ PropertyTree(const PropertyTree& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+PropertyTree& PropertyTree::
+operator=(const PropertyTree& rhs)
+{
+  // Always take an independent copy. In particular, rhs can be a non-owning
+  // child view into this tree, so copy it before releasing the current tree.
+  auto* new_property_tree = new PropertyTreeImpl(toImpl(rhs));
+  if (m_is_own)
+    delete &toImpl(this);
+  m_property_tree = new_property_tree;
+  m_is_own = true;
+  return *this;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 PropertyTree::
 ~PropertyTree()
 {
@@ -483,9 +506,9 @@ PropertyTree PropertyTree::
 get_child_empty(const std::string& path) const
 {
   const PropertyTreeImpl* child = toImpl(this).findNode(path);
-  PropertyTree p;
-  p.m_property_tree = const_cast<PropertyTreeImpl*>(child ? child : &detail::empty_ptree());
-  p.m_is_own = false;
+  if (!child)
+    child = &detail::empty_ptree();
+  PropertyTree p(const_cast<PropertyTreeImpl*>(child),false);
   return p;
 }
 

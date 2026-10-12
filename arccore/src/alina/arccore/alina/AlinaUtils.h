@@ -44,7 +44,10 @@
 
 namespace Arcane::Alina
 {
-
+namespace detail
+{
+class PropertyTreeImpl;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -104,9 +107,7 @@ namespace detail
 /*!
  * \brief Class to store parameters as a hierarchical key/value tree.
  *
- *
  * It wraps the internal implementation 'detail::PropertyTreeImpl'
- * (\see 'AlinaPropertyTree.h').
  */
 class ARCCORE_ALINA_EXPORT PropertyTree
 {
@@ -115,10 +116,15 @@ class ARCCORE_ALINA_EXPORT PropertyTree
   friend detail::empty_params;
   friend detail::PropertyWrapper;
 
+ protected:
+
+  PropertyTree(detail::PropertyTreeImpl* p,bool is_own);
+
  public:
 
   PropertyTree();
   PropertyTree(const PropertyTree& rhs);
+  PropertyTree& operator=(const PropertyTree& rhs);
   ~PropertyTree();
 
  public:
@@ -193,7 +199,7 @@ class ARCCORE_ALINA_EXPORT PropertyTree
 
  private:
 
-  void* m_property_tree = nullptr;
+  detail::PropertyTreeImpl* m_property_tree = nullptr;
   bool m_is_own = false;
 };
 
