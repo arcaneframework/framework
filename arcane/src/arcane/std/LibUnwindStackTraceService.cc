@@ -83,6 +83,9 @@ class DWHandler
     m_callback.find_debuginfo = &dwfl_standard_find_debuginfo;
     m_callback.section_address = nullptr;
     m_callback.debuginfo_path = nullptr;
+    // Make sure we do not try to connect to internet to search for
+    // debug information. This may cause deadlocks on some environments.
+    setenv("DEBUGINFOD_URLS", "", 1);
   }
 
   ~DWHandler()
@@ -98,8 +101,14 @@ class DWHandler
    */
   DebugSourceInfo getInfo(unw_word_t func_address)
   {
-    std::scoped_lock<std::mutex> lock(m_mutex);
     DebugSourceInfo source_info;
+
+    // This function need a lock but it can be recursively called so this
+    // may produce a deadlock. To prevent that, we try to get the lock
+    // and if does not work we return immediately.
+    ScopedTryLock tried_lock(m_mutex);
+    if (!tried_lock.isLock())
+      return source_info;
 
     _init();
 
@@ -136,6 +145,30 @@ class DWHandler
   std::mutex m_mutex;
 
  private:
+
+  //! ScopedLock which can fail.
+  class ScopedTryLock
+  {
+   public:
+
+    ScopedTryLock(std::mutex& mutex)
+    : m_mutex(mutex)
+    {
+      m_is_lock = m_mutex.try_lock();
+    }
+    ~ScopedTryLock()
+    {
+      if (m_is_lock)
+        m_mutex.unlock();
+    }
+
+    constexpr bool isLock() const { return m_is_lock; }
+
+   private:
+
+    std::mutex& m_mutex;
+    bool m_is_lock = false;
+  };
 
   void _init()
   {
