@@ -471,6 +471,7 @@ class TraceMng
   ReferenceCounter<ITraceStream> m_error_file;
   ReferenceCounter<ITraceStream> m_log_file;
   mutable std::mutex m_trace_mutex;
+  mutable std::mutex m_write_mutex;
   bool m_is_error_disabled = false;
   bool m_is_log_disabled = false;
   bool m_has_color = false;
@@ -688,8 +689,14 @@ _flushStream(ITraceStream* stream)
   if (!stream)
     return;
   auto f = stream->stream();
-  if (f)
-    f->flush();
+  if (f) {
+    if (f==&std::cout || f==&std::cerr){
+      std::scoped_lock sl(m_write_mutex);
+      f->flush();
+    }
+    else
+      f->flush();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -922,8 +929,11 @@ _writeListing(Span<const Byte> input, Int32 level, int color, bool do_flush)
     if (verbosity_level == Trace::UNSPECIFIED_VERBOSITY_LEVEL)
       verbosity_level = (listing_stream) ? m_stdout_verbosity_level : m_verbosity_level;
     bool is_printed = (message_level <= verbosity_level);
-    if (is_printed)
+    if (is_printed){
+      // Because we are using std::cout, we need a lock to prevent data race
+      std::scoped_lock sl(m_write_mutex);
       _writeColor(std::cout, input, color, do_flush);
+    }
   }
 }
 
