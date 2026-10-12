@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryMessageQueue.cc                                 (C) 2000-2025 */
+/* SharedMemoryMessageQueue.cc                                 (C) 2000-2026 */
 /*                                                                           */
 /* Implementation of a shared memory message queue.                          */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/SmallArray.h"
 
 #include "arccore/common/internal/MemoryResourceMng.h"
 
@@ -40,7 +41,6 @@ namespace Arcane::MessagePassing
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Copies the sender message information into the receive message.
  *
@@ -92,9 +92,25 @@ destroy()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+std::ostream&
+operator<<(std::ostream& o, const SharedMemoryMessageRequest& v)
+{
+  o << "(id=" << v.id() << " queue=" << v.queueName()
+    << " orig=" << v.orig() << " dest=" << v.dest()
+    << " tag=" << v.tag() << " is_recv?=" << v.isRecv()
+    << " is_done=?" << v.isDone()
+    << " send_size=" << v.m_send_buffer_info.memoryBuffer().size()
+    << " receive_size=" << v.m_receive_buffer_info.memoryBuffer().size()
+    << ")";
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \a Asynchronous queue.
+ *
+ * This queue is shared between all the threads involved in a communicator.
  */
 class RequestAsyncQueue
 {
@@ -116,16 +132,16 @@ class RequestAsyncQueue
   }
   SharedMemoryMessageRequest* pop()
   {
-    return reinterpret_cast<SharedMemoryMessageRequest*>(m_async_queue->pop());
+    return static_cast<SharedMemoryMessageRequest*>(m_async_queue->pop());
   }
   SharedMemoryMessageRequest* tryPop()
   {
-    return reinterpret_cast<SharedMemoryMessageRequest*>(m_async_queue->tryPop());
+    return static_cast<SharedMemoryMessageRequest*>(m_async_queue->tryPop());
   }
 
  private:
 
-  IAsyncQueue* m_async_queue;
+  IAsyncQueue* m_async_queue = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -133,7 +149,6 @@ class RequestAsyncQueue
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief File for messages from a rank in shared memory.
  *
@@ -156,6 +171,7 @@ class SharedMemoryMessageQueue::SubQueue
 
   MessageRank rank() const { return m_rank; }
   void setTraceMng(ITraceMng* tm) { m_trace_mng = tm; }
+  ITraceMng* traceMng() const { return m_trace_mng; }
   void wait(SharedMemoryMessageRequest* tmr);
   void testRequest(SharedMemoryMessageRequest* tmr);
   void waitRequestAvailable();
@@ -163,6 +179,8 @@ class SharedMemoryMessageQueue::SubQueue
   void waitSome(ArrayView<Request> requests, ArrayView<bool> requests_done, bool is_non_blocking);
   MessageId probe(const PointToPointMessageInfo& message);
   MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message);
+  void setName(const String& name) { m_name = name; }
+  const String& name() const { return m_name; }
 
  public:
 
@@ -182,6 +200,7 @@ class SharedMemoryMessageQueue::SubQueue
   ITraceMng* m_trace_mng = nullptr;
   bool m_is_debug = false;
   bool m_is_allow_null_rank_for_any_source = true;
+  String m_name;
 
  private:
 
@@ -211,6 +230,9 @@ SubQueue(SharedMemoryMessageQueue* master_queue, MessageRank rank)
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCCORE_ALLOW_NULL_RANK_FOR_MPI_ANY_SOURCE", true))
     m_is_allow_null_rank_for_any_source = v.value() != 0;
+  m_name = String::format("queue{0}", rank);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DEBUG_SHAREDMEMORY_MESSAGEPASSING", true))
+    m_is_debug = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -250,8 +272,8 @@ addReceive(Int64 request_id, const PointToPointMessageInfo& message, ReceiveBuff
     MessageTag tag = message.tag();
     MessageRank dest = message.destinationRank();
     tmr = _createReceiveRequest(request_id, dest, tag, buf);
-    TRACE_DEBUG("** ADD RECV queue={0} id={1} ORIG={2} DEST={3} tag={4} tmr={5} size={6} serializer={7}",
-                this, request_id, m_rank, dest, tag, tmr, buf.memoryBuffer().size(), buf.serializer());
+    TRACE_DEBUG("** ADD RECV queue={0} id={1} ORIG={2} DEST={3} tmr={4} size={5} serializer={6}",
+                m_name, request_id, m_rank, dest, tag, *tmr, buf.memoryBuffer().size(), buf.serializer());
   }
   else if (message.isMessageId()) {
     MessageId message_id = message.messageId();
@@ -273,8 +295,8 @@ addReceive(Int64 request_id, const PointToPointMessageInfo& message, ReceiveBuff
       ARCANE_FATAL("Can not find matching send request from MessageId");
 
     tmr = _createReceiveRequest(request_id, dest, tag, buf);
-    TRACE_DEBUG("** ADD RECV FromMessageId queue={0} id={1} ORIG={2} DEST={3} tag={4} tmr={5} size={6} serializer={7}",
-                this, request_id, m_rank, dest, tag, tmr, buf.memoryBuffer().size(), buf.serializer());
+    TRACE_DEBUG("** ADD RECV FromMessageId queue={0} req_id={1} ORIG={2} DEST={3} tmr={4} size={5} serializer={6}",
+                m_name, request_id, m_rank, dest, *tmr, buf.memoryBuffer().size(), buf.serializer());
     tmr->setMatchingSendRequest(send_request);
   }
   else
@@ -297,7 +319,7 @@ addSend(Int64 request_id, const PointToPointMessageInfo& message, SendBufferInfo
   auto* tmr = _createSendRequest(request_id, orig, tag, buf);
   m_async_message_queue.push(tmr);
   TRACE_DEBUG("** ADD SEND queue={0} ORIG={1} DEST={2} tag={3} size={4} tmr={5} serializer={6}",
-              this, orig, m_rank, tag, buf.memoryBuffer().size(), tmr, buf.serializer());
+              m_name, orig, m_rank, tag, buf.memoryBuffer().size(), *tmr, buf.serializer());
   return tmr;
 }
 
@@ -342,15 +364,18 @@ void SharedMemoryMessageQueue::SubQueue::
 _testOrWaitRequestAvailable(bool is_blocking)
 {
   SharedMemoryMessageRequest* sq = nullptr;
-  if (is_blocking)
+  if (is_blocking) {
     sq = m_async_message_queue.pop();
+  }
   else
     sq = m_async_message_queue.tryPop();
   if (sq) {
-    if (sq->orig() == m_rank)
+    if (sq->orig() == m_rank) {
       m_done_requests.add(sq);
-    else
+    }
+    else {
       m_send_requests.add(sq);
+    }
   }
 }
 
@@ -381,10 +406,9 @@ wait(SharedMemoryMessageRequest* tmr)
 {
   if (tmr->queue() != this)
     ARCANE_FATAL("Bad queue");
-  TRACE_DEBUG("**** WAIT MESSAGE tmr={0} rank={1} recv?={2} dest={3}"
-              " nb_send={4} nb_done={5}",
-              tmr, m_rank, tmr->isRecv(),
-              tmr->dest(), m_send_requests.size(), m_done_requests.size());
+  TRACE_DEBUG("**** WAIT FOR_MESSAGE queue={0} tmr={1} nb_send={2} nb_done={3}",
+              m_name, *tmr, m_rank, m_send_requests.size(), m_done_requests.size());
+
   while (!tmr->isDone()) {
     _checkRequestDone(tmr);
 
@@ -416,6 +440,7 @@ testRequest(SharedMemoryMessageRequest* tmr)
 void SharedMemoryMessageQueue::SubQueue::
 _removeRequest(SharedMemoryMessageRequest* tmr, Array<SharedMemoryMessageRequest*>& requests)
 {
+  // TODO traiter les requêtes invalides (tmr==nullptr);
   for (Integer i = 0, n = requests.size(); i < n; ++i) {
     SharedMemoryMessageRequest* tmr2 = requests[i];
     if (tmr == tmr2) {
@@ -443,7 +468,6 @@ _checkSendDone(SharedMemoryMessageRequest* tmr_send)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*
  * \brief Checks if a send message matches the request \a tmr_recv.
  *
@@ -465,14 +489,15 @@ _getMatchingSendRequest(MessageRank recv_dest, MessageRank recv_orig, MessageTag
     ARCANE_FATAL("Can not use probe() with null rank. Use MessageRank::anySourceRank() instead");
   for (Integer j = 0, n = m_send_requests.size(); j < n; ++j) {
     SharedMemoryMessageRequest* tmr_send = m_send_requests[j];
-    TRACE_DEBUG("CHECK RECV DONE id={7} tmr_send={0} recv_dest={1}"
-                " recv_orig={2} send_dest={3} send_orig={4} request={5}/{6}\n",
-                tmr_send, recv_dest, recv_orig,
-                tmr_send->dest(), tmr_send->orig(), j, n, m_rank);
+    TRACE_DEBUG("CHECK RECV DONE queue={0} tmr_send={1} recv_dest={2}"
+                " recv_orig={3} request={4}/{5}",
+                m_name, *tmr_send, recv_dest, recv_orig,
+                j, n);
     if (recv_orig == tmr_send->dest()) {
       bool is_rank_ok = (recv_dest == tmr_send->orig()) || (is_any_dest && m_rank == recv_orig);
       bool is_tag_ok = (is_any_tag || tmr_send->tag() == tag);
       if (is_rank_ok && is_tag_ok) {
+        TRACE_DEBUG("CHECK RECV DONE found: queue={0} tmr_send={1}", m_name, *tmr_send);
         return tmr_send;
       }
     }
@@ -512,7 +537,7 @@ waitSome(ArrayView<Request> requests, ArrayView<bool> requests_done,
   Integer nb_request = requests.size();
   requests_done.fill(false);
   bool one_request_done = false;
-  TRACE_DEBUG("** WAIT SOME REQUEST rank={0} nb_request={1}\n", m_rank, nb_request);
+  TRACE_DEBUG("** WAIT SOME REQUEST queue={0} rank={1} nb_request={2}\n", m_name, m_rank, nb_request);
   while (!one_request_done) {
     if (is_non_blocking)
       checkRequestAvailable();
@@ -582,8 +607,7 @@ probe(const MP::PointToPointMessageInfo& message)
     _testOrWaitRequestAvailable(is_blocking);
     auto* req = _getMatchingSendRequest(rank, m_rank, tag);
     if (req) {
-      // TODO: Verify that the request has a buffer and not an
-      // 'ISerializer'.
+      // TODO: Verify that the request has a buffer and not an 'ISerializer'.
       Int64 send_size = req->sendBufferInfo().memoryBuffer().size();
       MessageId::SourceInfo si(req->orig(), req->tag(), send_size);
       return MessageId(si, (size_t)req->id());
@@ -666,14 +690,14 @@ _getDestinationSubQueue(const MP::PointToPointMessageInfo& message)
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryMessageQueue::
-waitAll(ArrayView<Request> requests)
+waitAll(Int32 calling_rank, ArrayView<Request> requests)
 {
   Integer nb_request = requests.size();
   // To prevent blocking, the requests must be processed
   // in ascending order of queues, and 'receive' FIRST!!
   UniqueArray<SharedMemoryMessageRequest*> sorted_requests(nb_request);
   for (Integer i = 0; i < nb_request; ++i) {
-    sorted_requests[i] = (SharedMemoryMessageRequest*)requests[i].requestAsVoidPtr();
+    sorted_requests[i] = requests[i];
   }
   std::sort(std::begin(sorted_requests), std::end(sorted_requests),
             SharedMemoryMessageRequest::SortFunctor(m_nb_thread));
@@ -684,14 +708,45 @@ waitAll(ArrayView<Request> requests)
     cout << String::format("** WAIT FOR REQUEST tmr={0}\n",tmr);
   }
 #endif
-
-  for (Integer i = 0; i < nb_request; ++i) {
-    SharedMemoryMessageRequest* tmr = sorted_requests[i];
-    if (tmr) {
-      SubQueue* sub_queue = tmr->queue();
-      sub_queue->wait(tmr);
-      tmr->destroy();
+  auto own_queue = _getSubQueue(MessageRank(calling_rank));
+  int method = 0;
+  if (method == 0) {
+    for (Integer i = 0; i < nb_request; ++i) {
+      SharedMemoryMessageRequest* tmr = sorted_requests[i];
+      if (tmr) {
+        SubQueue* sub_queue = tmr->queue();
+        if (own_queue != sub_queue)
+          ARCANE_FATAL("Bad queue onw={0} sub={1}", own_queue->name(), sub_queue->name());
+        sub_queue->wait(tmr);
+        tmr->destroy();
+      }
     }
+  }
+  else if (method == 1) {
+    Int32 nb_done = 0;
+    while (nb_done != nb_request) {
+      for (Integer i = 0; i < nb_request; ++i) {
+        SharedMemoryMessageRequest* tmr = sorted_requests[i];
+        if (!tmr)
+          continue;
+        SubQueue* sub_queue = tmr->queue();
+        if (own_queue != sub_queue)
+          ARCANE_FATAL("Bad queue onw={0} sub={1}", own_queue->name(), sub_queue->name());
+        sub_queue->testRequest(tmr);
+        if (tmr->isDone()) {
+          tmr->destroy();
+          sorted_requests[i] = nullptr;
+          ++nb_done;
+        }
+        if (nb_done == nb_request)
+          break;
+      }
+      if (nb_done != nb_request) {
+        own_queue->waitRequestAvailable();
+      }
+    }
+  }
+  for (Integer i = 0; i < nb_request; ++i) {
     if (requests[i].hasSubRequest())
       ARCANE_THROW(NotImplementedException, "handling of sub requests");
     requests[i].reset();
@@ -766,6 +821,15 @@ auto SharedMemoryMessageQueue::
 _request(SharedMemoryMessageRequest* tmr) -> Request
 {
   return Request(0, this, tmr);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const String& SharedMemoryMessageRequest::
+queueName() const
+{
+  return m_queue->name();
 }
 
 /*---------------------------------------------------------------------------*/

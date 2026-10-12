@@ -213,7 +213,7 @@ class HybridMessageQueue
 
  public:
 
-  void waitAll(ArrayView<Request> requests);
+  void waitAll(Int32 caller_rank, ArrayView<Request> requests);
   void waitSome(Int32 rank, ArrayView<Request> requests,
                 ArrayView<bool> requests_done, bool is_non_blocking);
 

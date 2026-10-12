@@ -126,7 +126,7 @@ class HybridSerializeMessageList
   ITraceMng* m_trace;
   UniqueArray<ISerializeMessage*> m_messages_to_process;
 
-  void _waitAll();
+  //void _waitAll();
   void _wait(Parallel::eWaitType wait_mode);
 };
 
@@ -157,7 +157,7 @@ _wait(Parallel::eWaitType wait_mode)
   }
 
   if (wait_mode == Parallel::WaitAll)
-    message_queue->waitAll(all_requests);
+    message_queue->waitAll(m_parallel_mng->localRank(), all_requests);
 
   for (ISerializeMessage* sm : messages)
     sm->setFinished(true);
@@ -443,7 +443,7 @@ sendSerializer(ISerializer* s, Int32 rank)
 {
   auto p2p_message = buildMessage(rank, Parallel::NonBlocking);
   Request r = m_message_queue->addSend(p2p_message, s);
-  m_message_queue->waitAll(ArrayView<Request>(1, &r));
+  _waitOne(r);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -507,7 +507,7 @@ recvSerializer(ISerializer* s, Int32 rank)
 {
   auto p2p_message = buildMessage(rank, Parallel::NonBlocking);
   Request r = m_message_queue->addReceive(p2p_message, ReceiveBufferInfo(s));
-  m_message_queue->waitAll(ArrayView<Request>(1, &r));
+  _waitOne(r);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -693,7 +693,7 @@ class HybridParallelMng::RequestList
   {
     switch (wait_type) {
     case Parallel::WaitAll:
-      m_parallel_mng->m_message_queue->waitAll(_requests());
+      m_parallel_mng->m_message_queue->waitAll(m_local_rank, _requests());
       break;
     case Parallel::WaitSome:
       m_message_queue->waitSome(m_local_rank, _requests(), _requestsDone(), false);
@@ -726,7 +726,7 @@ createRequestListRef()
 void HybridParallelMng::
 waitAllRequests(ArrayView<Request> requests)
 {
-  m_message_queue->waitAll(requests);
+  m_message_queue->waitAll(m_local_rank, requests);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -961,6 +961,15 @@ bool HybridParallelMng::
 _isAcceleratorAware() const
 {
   return m_mpi_parallel_mng->_internalApi()->isAcceleratorAware();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HybridParallelMng::
+_waitOne(Request request)
+{
+  m_message_queue->waitAll(m_local_rank, ArrayView<Request>(1, &request));
 }
 
 /*---------------------------------------------------------------------------*/
