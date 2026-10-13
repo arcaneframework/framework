@@ -75,7 +75,8 @@ partition(Alina::AlinaCommunicator comm, const Matrix& Astrip,
 }
 
 //---------------------------------------------------------------------------
-void solve_scalar(Alina::AlinaCommunicator comm,
+void solve_scalar(const Alina::AlinaContext& context,
+                  Alina::AlinaCommunicator comm,
                   ptrdiff_t chunk,
                   const std::vector<ptrdiff_t>& ptr,
                   const std::vector<ptrdiff_t>& col,
@@ -138,7 +139,7 @@ void solve_scalar(Alina::AlinaCommunicator comm,
   {
     auto t = prof.scoped_tic("setup");
     A = get_distributed_matrix();
-    solve = std::make_shared<Solver>(comm, A, prm, bprm);
+    solve = std::make_shared<Solver>(context, comm, A, prm, bprm);
     Alina::PropertyTree prm2;
     solve->prm.get(prm2);
     std::cout << "SOLVER parameters=" << prm2 << "\n";
@@ -183,7 +184,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 {
   ITraceMng* tm = ctx.traceMng();
   auto& prof = Alina::Profiler::globalProfiler();
-
+  Alina::AlinaContext context;
   Alina::AlinaCommunicator comm(ctx.messagePassingMng());
 
   tm->info() << "World size: " << comm.size;
@@ -263,7 +264,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
     prm.put("precond.allow_rebuild", true);
   }
 
-  solve_scalar(comm, n, ptr, col, val, prm, rhs, ptype);
+  solve_scalar(context, comm, n, ptr, col, val, prm, rhs, ptype);
   return 0;
 }
 

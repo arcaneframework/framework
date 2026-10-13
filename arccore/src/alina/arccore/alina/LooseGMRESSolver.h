@@ -181,11 +181,12 @@ class LooseGMRESSolver
   using params = LooseGMRESSolverParams;
 
   /// Preallocates necessary data structures for the system of size \p n.
-  LooseGMRESSolver(size_t n,
+  LooseGMRESSolver(const AlinaContext& context, size_t n,
                    const params& prm = params(),
                    const backend_params& bprm = backend_params(),
                    const InnerProduct& inner_product = InnerProduct())
-  : prm(prm)
+  : SolverBase(context)
+  , prm(prm)
   , n(n)
   , M(prm.M + prm.K)
   , H(M + 1, M)

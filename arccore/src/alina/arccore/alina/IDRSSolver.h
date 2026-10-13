@@ -155,11 +155,12 @@ class IDRSSolver
   using params = IDRSSolverParams;
 
   /// Preallocates necessary data structures for the system of size \p n.
-  IDRSSolver(size_t n,
+  IDRSSolver(const AlinaContext& context, size_t n,
              const params& prm = params(),
              const backend_params& bprm = backend_params(),
              const InnerProduct& inner_product = InnerProduct())
-  : prm(prm)
+  : SolverBase(context)
+  , prm(prm)
   , n(n)
   , inner_product(inner_product)
   , M(prm.s, prm.s)

@@ -81,46 +81,51 @@ class DistributedPreconditionedSolver
   } prm;
 
   template <class Matrix>
-  DistributedPreconditionedSolver(AlinaCommunicator comm, const Matrix& A,
+  DistributedPreconditionedSolver(const AlinaContext& context,
+                                  AlinaCommunicator comm, const Matrix& A,
                                   const params& prm = params(),
                                   const backend_params& bprm = backend_params())
   : prm(prm)
   , n(backend::nbRow(A))
-  , P(comm, A, prm.precond, bprm)
-  , S(backend::nbRow(A), prm.solver, bprm, DistributedInnerProduct(comm))
+  , P(context, comm, A, prm.precond, bprm)
+  , S(context, backend::nbRow(A), prm.solver, bprm, DistributedInnerProduct(comm))
   {}
 
-  DistributedPreconditionedSolver(AlinaCommunicator comm,
+  DistributedPreconditionedSolver(const AlinaContext& context,
+                                  AlinaCommunicator comm,
                                   std::shared_ptr<matrix> A,
                                   const params& prm = params(),
                                   const backend_params& bprm = backend_params())
   : prm(prm)
   , n(A->loc_rows())
-  , P(comm, A, prm.precond, bprm)
-  , S(n, prm.solver, bprm, DistributedInnerProduct(comm))
+  , P(context, comm, A, prm.precond, bprm)
+  , S(context, n, prm.solver, bprm, DistributedInnerProduct(comm))
   {
   }
 
   template <class Backend>
-  DistributedPreconditionedSolver(AlinaCommunicator comm,
+  DistributedPreconditionedSolver(const AlinaContext& context,
+                                  AlinaCommunicator comm,
                                   std::shared_ptr<DistributedMatrix<Backend>> A,
                                   const params& prm = params(),
                                   const backend_params& bprm = backend_params())
   : prm(prm)
   , n(A->loc_rows())
-  , P(comm, std::make_shared<matrix>(*A), prm.precond, bprm)
-  , S(n, prm.solver, bprm, DistributedInnerProduct(comm))
+  , P(context, comm, std::make_shared<matrix>(*A), prm.precond, bprm)
+  , S(context, n, prm.solver, bprm, DistributedInnerProduct(comm))
   {
     A->move_to_backend(bprm);
   }
 
-  DistributedPreconditionedSolver(AlinaCommunicator comm, std::shared_ptr<build_matrix> A,
+  DistributedPreconditionedSolver(const AlinaContext& context,
+                                  AlinaCommunicator comm,
+                                  std::shared_ptr<build_matrix> A,
                                   const params& prm = params(),
                                   const backend_params& bprm = backend_params())
   : prm(prm)
   , n(backend::nbRow(*A))
   , P(comm, A, prm.precond, bprm)
-  , S(backend::nbRow(*A), prm.solver, bprm, DistributedInnerProduct(comm))
+  , S(context, backend::nbRow(*A), prm.solver, bprm, DistributedInnerProduct(comm))
   {}
 
   template <class Matrix, class Vec1, class Vec2>

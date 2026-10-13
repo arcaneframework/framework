@@ -406,7 +406,7 @@ namespace detail
       size_t total = phi.num_elements();
       size_t nonzeros = total - std::count(phi.data(), phi.data() + total, 0.0);
 
-      return static_cast<double>(nonzeros) / total;
+      return static_cast<double>(nonzeros) / static_cast<double>(total);
     }
 
    private:

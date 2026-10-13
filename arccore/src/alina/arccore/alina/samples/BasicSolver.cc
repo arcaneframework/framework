@@ -61,7 +61,8 @@ using Backend = Arcane::Alina::BuiltinBackend<double, Arcane::Int32>;
 /*---------------------------------------------------------------------------*/
 
 Alina::SolverResult
-solve(const Alina::PropertyTree& prm,
+solve(const Alina::AlinaContext& context,
+      const Alina::PropertyTree& prm,
       size_t rows,
       std::vector<ptrdiff_t> const& ptr,
       std::vector<ptrdiff_t> const& col,
@@ -87,7 +88,7 @@ solve(const Alina::PropertyTree& prm,
 
   {
     prof.tic("setup");
-    Solver solve(std::tie(rows, ptr, col, val), prm, bprm);
+    Solver solve(context, std::tie(rows, ptr, col, val), prm, bprm);
     prof.toc("setup");
 
     std::cout << "Printing solver infos\n";
@@ -115,8 +116,9 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
 
   auto& prof = Alina::Profiler::globalProfiler();
   namespace po = Arcane::ProgramOptions;
-  namespace io = Alina::IO;
 
+  Alina::AlinaContext context;
+  
   using std::string;
   using std::vector;
 
@@ -196,7 +198,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   }
   else {
 
-    solver_result = solve(prm, rows, ptr, col, val, rhs, x);
+    solver_result = solve(context, prm, rows, ptr, col, val, rhs, x);
 
     if (vm.count("output")) {
       auto t = prof.scoped_tic("write");

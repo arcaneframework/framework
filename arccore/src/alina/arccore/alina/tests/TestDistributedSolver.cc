@@ -23,7 +23,8 @@ using namespace Arcane;
 
 //---------------------------------------------------------------------------
 
-void solve_scalar(Alina::AlinaCommunicator comm,
+void solve_scalar(const Alina::AlinaContext& context,
+                  Alina::AlinaCommunicator comm,
                   ptrdiff_t chunk,
                   const std::vector<ptrdiff_t>& ptr,
                   const std::vector<ptrdiff_t>& col,
@@ -67,7 +68,7 @@ void solve_scalar(Alina::AlinaCommunicator comm,
   {
     auto t = prof.scoped_tic("setup");
     A = std::make_shared<DMatrix>(comm, std::tie(chunk, ptr, col, val));
-    solve = std::make_shared<Solver>(comm, A, prm, bprm);
+    solve = std::make_shared<Solver>(context, comm, A, prm, bprm);
     Alina::PropertyTree prm2;
     solve->prm.get(prm2);
     std::cout << "SOLVER parameters=" << prm2 << "\n";
@@ -102,8 +103,7 @@ TEST(alina_test_mpi, BasicSolver)
   std::cout << "World size: " << comm.size << "\n";
 
   Alina::PropertyTree prm;
-
-  ptrdiff_t n;
+  Alina::AlinaContext context;
   std::vector<ptrdiff_t> ptr;
   std::vector<ptrdiff_t> col;
   std::vector<double> val;
@@ -111,9 +111,9 @@ TEST(alina_test_mpi, BasicSolver)
 
   Int64 matrix_size = 32;
   std::cout << "Matrix size=" << matrix_size << "\n";
-  n = Alina::PoissonProblemGenerator::createDistributedMatrix(comm.rank, comm.size, matrix_size, 1, ptr, col, val, rhs);
+  ptrdiff_t n = Alina::PoissonProblemGenerator::createDistributedMatrix(comm.rank, comm.size, matrix_size, 1, ptr, col, val, rhs);
 
-  solve_scalar(comm, n, ptr, col, val, prm, rhs);
+  solve_scalar(context, comm, n, ptr, col, val, prm, rhs);
 }
 
 /*---------------------------------------------------------------------------*/

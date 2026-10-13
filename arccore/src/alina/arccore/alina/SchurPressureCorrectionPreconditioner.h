@@ -189,7 +189,8 @@ class SchurPressureCorrectionPreconditioner
   };
 
   template <class Matrix>
-  SchurPressureCorrectionPreconditioner(const Matrix& K,
+  SchurPressureCorrectionPreconditioner(const AlinaContext& context,
+                                        const Matrix& K,
                                         const params& prm = params(),
                                         const backend_params& bprm = backend_params())
   : prm(prm)
@@ -197,10 +198,11 @@ class SchurPressureCorrectionPreconditioner
   , np(0)
   , nu(0)
   {
-    init(std::make_shared<build_matrix>(K), bprm);
+    init(context, std::make_shared<build_matrix>(K), bprm);
   }
 
-  SchurPressureCorrectionPreconditioner(std::shared_ptr<build_matrix> K,
+  SchurPressureCorrectionPreconditioner(const AlinaContext& context,
+                                        std::shared_ptr<build_matrix> K,
                                         const params& prm = params(),
                                         const backend_params& bprm = backend_params())
   : prm(prm)
@@ -208,7 +210,7 @@ class SchurPressureCorrectionPreconditioner
   , np(0)
   , nu(0)
   {
-    init(K, bprm);
+    init(context, K, bprm);
   }
 
   template <class Vec1, class Vec2>
@@ -338,7 +340,7 @@ class SchurPressureCorrectionPreconditioner
   std::shared_ptr<USolver> U;
   std::shared_ptr<PSolver> P;
 
-  void init(const std::shared_ptr<build_matrix>& K, const backend_params& bprm)
+  void init(const AlinaContext& context, const std::shared_ptr<build_matrix>& K, const backend_params& bprm)
   {
     this->K = backend_type::copy_matrix(K, bprm);
 
@@ -522,8 +524,8 @@ class SchurPressureCorrectionPreconditioner
       Kpp = sum(math::identity<value_type>(), *Kpp, -math::identity<value_type>(), *product(*Kpu, Kup_hat));
     }
 
-    U = std::make_shared<USolver>(*Kuu, prm.usolver, bprm);
-    P = std::make_shared<PSolver>(*Kpp, prm.psolver, bprm);
+    U = std::make_shared<USolver>(context, *Kuu, prm.usolver, bprm);
+    P = std::make_shared<PSolver>(context, *Kpp, prm.psolver, bprm);
 
     this->Kup = backend_type::copy_matrix(Kup, bprm);
     this->Kpu = backend_type::copy_matrix(Kpu, bprm);

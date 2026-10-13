@@ -119,11 +119,12 @@ class GMRESSolver
   using params = GMRESSolverParams;
 
   /// Preallocates necessary data structures for the system of size \p n.
-  GMRESSolver(size_t n,
+  GMRESSolver(const AlinaContext& context, size_t n,
               const params& prm = params(),
               const backend_params& backend_prm = backend_params(),
               const InnerProduct& inner_product = InnerProduct())
-  : prm(prm)
+  : SolverBase(context)
+  , prm(prm)
   , n(n)
   , H(prm.M + 1, prm.M)
   , s(prm.M + 1)

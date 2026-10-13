@@ -114,11 +114,12 @@ class FlexibleGMRESSolver
   using params = FlexibleGMRESSolverParams;
 
   /// Preallocates necessary data structures for the system of size \p n.
-  FlexibleGMRESSolver(size_t n,
-         const params& prm = params(),
-         const backend_params& bprm = backend_params(),
-         const InnerProduct& inner_product = InnerProduct())
-  : prm(prm)
+  FlexibleGMRESSolver(const AlinaContext& context, size_t n,
+                      const params& prm = params(),
+                      const backend_params& bprm = backend_params(),
+                      const InnerProduct& inner_product = InnerProduct())
+  : SolverBase(context)
+  , prm(prm)
   , n(n)
   , H(prm.M + 1, prm.M)
   , s(prm.M + 1)

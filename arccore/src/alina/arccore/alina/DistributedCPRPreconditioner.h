@@ -90,7 +90,8 @@ class DistributedCPRPreconditioner
   };
 
   template <class Matrix>
-  DistributedCPRPreconditioner(AlinaCommunicator comm,
+  DistributedCPRPreconditioner(const AlinaContext& context,
+                               AlinaCommunicator comm,
                                const Matrix& K,
                                const params& prm = params(),
                                const backend_params& bprm = backend_params())
@@ -98,10 +99,11 @@ class DistributedCPRPreconditioner
   , comm(comm)
   , n(backend::nbRow(K))
   {
-    init(std::make_shared<matrix>(comm, K, backend::nbRow(K)), bprm);
+    init(context, std::make_shared<matrix>(comm, K, backend::nbRow(K)), bprm);
   }
 
-  DistributedCPRPreconditioner(AlinaCommunicator comm,
+  DistributedCPRPreconditioner(const AlinaContext& context,
+                               AlinaCommunicator comm,
                                std::shared_ptr<matrix> K,
                                const params& prm = params(),
                                const backend_params& bprm = backend_params())
@@ -109,7 +111,7 @@ class DistributedCPRPreconditioner
   , comm(comm)
   , n(K->loc_rows())
   {
-    init(K, bprm);
+    init(context, K, bprm);
   }
 
   template <class Vec1, class Vec2>
@@ -152,7 +154,7 @@ class DistributedCPRPreconditioner
   std::shared_ptr<bmatrix> Fpp, Scatter;
   std::shared_ptr<vector> rp, xp, rs;
 
-  void init(std::shared_ptr<matrix> K, const backend_params& bprm)
+  void init(const AlinaContext& context, std::shared_ptr<matrix> K, const backend_params& bprm)
   {
     typedef typename backend::row_iterator<build_matrix>::type row_iterator;
     const int B = prm.block_size;
@@ -428,8 +430,8 @@ class DistributedCPRPreconditioner
 
     auto App = std::make_shared<matrix>(comm, App_loc, App_rem);
 
-    P = std::make_shared<PPrecond>(comm, App, prm.pprecond, bprm);
-    S = std::make_shared<SPrecond>(comm, K, prm.sprecond, bprm);
+    P = std::make_shared<PPrecond>(context, comm, App, prm.pprecond, bprm);
+    S = std::make_shared<SPrecond>(context, comm, K, prm.sprecond, bprm);
 
     Fpp = BackendType::copy_matrix(fpp, bprm);
     Scatter = BackendType::copy_matrix(scatter, bprm);

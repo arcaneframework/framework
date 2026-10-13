@@ -317,6 +317,8 @@ struct harmonic_deflation
   : nv(0)
   , chunk(chunk)
   {
+    Alina::AlinaContext context;
+
     // See which neighbors we have.
     int neib[2][2] = {
       { lo[0] > 0 || lo[1] > 0, hi[0] + 1 < n || lo[1] > 0 },
@@ -408,7 +410,7 @@ struct harmonic_deflation
                                   Alina::GaussSeidelRelaxation>,
                        Alina::GMRESSolver<
                        Alina::BuiltinBackend<double>>>
-    solve(Alina::adapter::zero_copy(chunk, ptr.data(), col.data(), val.data()));
+    solve(context, Alina::adapter::zero_copy(chunk, ptr.data(), col.data(), val.data()));
 
     for (int j = 0; j < 2; ++j) {
       for (int i = 0; i < 2; ++i) {
@@ -460,9 +462,9 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
   auto& prof = Alina::Profiler::globalProfiler();
 
   Alina::AlinaCommunicator world(ctx.messagePassingMng());
-
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;
+  Alina::AlinaContext context;
 
   // Read configuration from command line
   ptrdiff_t n = 1024;
@@ -742,7 +744,7 @@ int main2(const Alina::SampleMainContext& ctx, int argc, char* argv[])
                                                    Alina::DistributedSolverRuntime<Backend>,
                                                    Alina::DistributedDirectSolverRuntime<Backend>>;
 
-  SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
+  SDD solve(context, world, std::tie(chunk, ptr, col, val), prm, bprm);
   prof.toc("setup");
 
   prof.tic("solve");

@@ -45,11 +45,12 @@ class make_block_solver
   typedef typename PreconditionedSolver<Precond, IterativeSolver>::params params;
 
   template <class Matrix>
-  make_block_solver(const Matrix& A,
+  make_block_solver(const AlinaContext& context,
+                    const Matrix& A,
                     const params& prm = params(),
                     const backend_params& bprm = backend_params())
   {
-    S = std::make_shared<Solver>(adapter::block_matrix<value_type>(A), prm, bprm);
+    S = std::make_shared<Solver>(context, adapter::block_matrix<value_type>(A), prm, bprm);
   }
 
   template <class Matrix, class Vec1, class Vec2>

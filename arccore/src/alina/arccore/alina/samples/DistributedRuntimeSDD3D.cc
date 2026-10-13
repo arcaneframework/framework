@@ -124,7 +124,7 @@ int main2(const SampleMainContext& ctx, int argc, char* argv[])
   auto& prof = Alina::Profiler::globalProfiler();
   ITraceMng* tm = ctx.traceMng();
   AlinaCommunicator world(ctx.messagePassingMng());
-
+  Alina::AlinaContext context;
   tm->info() << "World size: " << world.size;
 
   // Read configuration from command line
@@ -333,7 +333,7 @@ int main2(const SampleMainContext& ctx, int argc, char* argv[])
                                               DistributedSolverRuntime<Backend>,
                                               DistributedDirectSolverRuntime<Backend>>;
 
-    SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
+    SDD solve(context, world, std::tie(chunk, ptr, col, val), prm, bprm);
     prof.toc("setup");
 
     prof.tic("solve");
@@ -349,7 +349,7 @@ int main2(const SampleMainContext& ctx, int argc, char* argv[])
                                               DistributedSolverRuntime<Backend>,
                                               DistributedDirectSolverRuntime<Backend>>;
 
-    SDD solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
+    SDD solve(context, world, std::tie(chunk, ptr, col, val), prm, bprm);
     prof.toc("setup");
 
     prof.tic("solve");

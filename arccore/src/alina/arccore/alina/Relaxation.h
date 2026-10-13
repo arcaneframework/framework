@@ -159,7 +159,8 @@ class RelaxationAsPreconditioner
   typedef typename BuiltinBackend<value_type, col_type, ptr_type>::matrix build_matrix;
 
   template <class Matrix>
-  RelaxationAsPreconditioner(const Matrix& M,
+  RelaxationAsPreconditioner([[maybe_unused]] const AlinaContext& context,
+                             const Matrix& M,
                              const params& prm = params(),
                              const backend_params& bprm = backend_params())
   : prm(prm)
@@ -167,7 +168,8 @@ class RelaxationAsPreconditioner
     init(std::make_shared<build_matrix>(M), bprm);
   }
 
-  RelaxationAsPreconditioner(std::shared_ptr<build_matrix> M,
+  RelaxationAsPreconditioner([[maybe_unused]] const AlinaContext& context,
+                             std::shared_ptr<build_matrix> M,
                              const params& prm = params(),
                              const backend_params& bprm = backend_params())
   : prm(prm)

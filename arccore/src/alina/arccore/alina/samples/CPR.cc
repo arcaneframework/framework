@@ -42,7 +42,7 @@ using Alina::precondition;
 
 //---------------------------------------------------------------------------
 template <class Matrix>
-void solve_cpr(const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
+void solve_cpr(const Alina::AlinaContext& context, const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
 {
   auto& prof = Alina::Profiler::globalProfiler();
 
@@ -55,7 +55,7 @@ void solve_cpr(const Matrix& K, const std::vector<double>& rhs, Alina::PropertyT
   prof.tic("setup");
   Alina::PreconditionedSolver<Alina::preconditioner::CPRPreconditioner<PPrecond, SPrecond>,
                               Alina::SolverRuntime<Backend>>
-  solve(K, prm);
+  solve(context, K, prm);
   prof.toc("setup");
 
   std::cout << solve.precond() << std::endl;
@@ -72,7 +72,7 @@ void solve_cpr(const Matrix& K, const std::vector<double>& rhs, Alina::PropertyT
 
 //---------------------------------------------------------------------------
 template <int B, class Matrix>
-void solve_block_cpr(const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
+void solve_block_cpr(const Alina::AlinaContext& context, const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
 {
   auto& prof = Alina::Profiler::globalProfiler();
   auto t1 = prof.scoped_tic("CPR");
@@ -89,7 +89,7 @@ void solve_block_cpr(const Matrix& K, const std::vector<double>& rhs, Alina::Pro
   Alina::PreconditionedSolver<
   Alina::preconditioner::CPRPreconditioner<PPrecond, SPrecond>,
   Alina::SolverRuntime<SBackend>>
-  solve(Alina::adapter::block_matrix<val_type>(K), prm);
+  solve(context, Alina::adapter::block_matrix<val_type>(K), prm);
   prof.toc("setup");
 
   std::cout << solve.precond() << std::endl;
@@ -117,6 +117,8 @@ int main(int argc, char* argv[])
 
   namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
+
+  Alina::AlinaContext context;
 
   po::options_description desc("Options");
 
@@ -215,12 +217,12 @@ int main(int argc, char* argv[])
 
 #define CALL_BLOCK_SOLVER(z, data, B) \
   case B: \
-    solve_block_cpr<B>(std::tie(rows, ptr, col, val), rhs, prm); \
+    solve_block_cpr<B>(context, std::tie(rows, ptr, col, val), rhs, prm); \
     break;
 
   switch (cb) {
   case 1:
-    solve_cpr(std::tie(rows, ptr, col, val), rhs, prm);
+    solve_cpr(context, std::tie(rows, ptr, col, val), rhs, prm);
     break;
 
     BOOST_PP_SEQ_FOR_EACH(CALL_BLOCK_SOLVER, ~, ARCCORE_ALINA_BLOCK_SIZES)

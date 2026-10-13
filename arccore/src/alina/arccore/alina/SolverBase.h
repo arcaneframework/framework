@@ -9,12 +9,12 @@
 /*                                                                           */
 /* Base class for solver classes.                                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCCORE_ALINA_MPI_SOLVERBASE_H
-#define ARCCORE_ALINA_MPI_SOLVERBASE_H
+#ifndef ARCCORE_ALINA_SOLVERBASE_H
+#define ARCCORE_ALINA_SOLVERBASE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/alina/AlinaGlobal.h"
+#include "arccore/alina/AlinaContext.h"
 
 #include <cstddef>
 
@@ -33,12 +33,19 @@ class ARCCORE_ALINA_EXPORT SolverBase
 {
  public:
 
+  SolverBase(const AlinaContext& context)
+  : m_context(context)
+  {}
   virtual ~SolverBase() = default;
 
  public:
 
   //! Memory used in bytes
   virtual size_t bytes() const = 0;
+
+ private:
+
+  AlinaContext m_context;
 };
 
 /*---------------------------------------------------------------------------*/

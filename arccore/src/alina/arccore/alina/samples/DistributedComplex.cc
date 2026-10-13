@@ -40,7 +40,8 @@ using namespace Arcane;
 using namespace Arcane::Alina;
 
 //---------------------------------------------------------------------------
-void solve_scalar(Alina::AlinaCommunicator comm,
+void solve_scalar(const AlinaContext& context,
+                  Alina::AlinaCommunicator comm,
                   ptrdiff_t chunk,
                   const std::vector<ptrdiff_t>& ptr,
                   const std::vector<ptrdiff_t>& col,
@@ -55,7 +56,7 @@ void solve_scalar(Alina::AlinaCommunicator comm,
                                                         Alina::DistributedSolverRuntime<Backend>>;
 
   prof.tic("setup");
-  Solver solve(comm, std::tie(chunk, ptr, col, val), prm);
+  Solver solve(context, comm, std::tie(chunk, ptr, col, val), prm);
   prof.toc("setup");
 
   if (comm.rank == 0) {
@@ -85,6 +86,7 @@ int main(int argc, char* argv[])
   if (comm.rank == 0)
     std::cout << "World size: " << comm.size << std::endl;
 
+  Alina::AlinaContext context;
   // Read configuration from command line
   namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
@@ -132,5 +134,5 @@ int main(int argc, char* argv[])
   n = Alina::PoissonProblemGenerator::createDistributedMatrix(comm.rank, comm.size, vm["size"].as<ptrdiff_t>(), 1, ptr, col, val, rhs);
   prof.toc("assemble");
 
-  solve_scalar(comm, n, ptr, col, val, prm, rhs);
+  solve_scalar(context, comm, n, ptr, col, val, prm, rhs);
 }

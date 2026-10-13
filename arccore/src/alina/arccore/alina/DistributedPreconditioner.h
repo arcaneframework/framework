@@ -103,24 +103,26 @@ class DistributedPreconditioner
                                         MatrixPartitionerRuntime<Backend>>;
 
   template <class Matrix>
-  DistributedPreconditioner(AlinaCommunicator comm,
+  DistributedPreconditioner(const AlinaContext& context,
+                            AlinaCommunicator comm,
                             const Matrix& Astrip,
                             params prm = params(),
                             const backend_params& bprm = backend_params())
   : _class(prm.get("class", eDistributedPreconditionerType::amg))
   , handle(0)
   {
-    init(std::make_shared<matrix>(comm, Astrip, backend::nbRow(Astrip)), prm, bprm);
+    init(context, std::make_shared<matrix>(comm, Astrip, backend::nbRow(Astrip)), prm, bprm);
   }
 
-  DistributedPreconditioner(AlinaCommunicator,
+  DistributedPreconditioner(const AlinaContext& context,
+                            AlinaCommunicator,
                             std::shared_ptr<matrix> A,
                             params prm = params(),
                             const backend_params& bprm = backend_params())
   : _class(prm.get("class", eDistributedPreconditionerType::amg))
   , handle(0)
   {
-    init(A, prm, bprm);
+    init(context, A, prm, bprm);
   }
 
   ~DistributedPreconditioner()
@@ -214,22 +216,22 @@ class DistributedPreconditioner
   eDistributedPreconditionerType _class;
   void* handle;
 
-  void init(std::shared_ptr<matrix> A, params& prm, const backend_params& bprm)
+  void init(const AlinaContext& context, std::shared_ptr<matrix> A, params& prm, const backend_params& bprm)
   {
     if (!prm.erase("class"))
       ARCCORE_ALINA_PARAM_MISSING("class");
 
     switch (_class) {
     case eDistributedPreconditionerType::amg: {
-      handle = static_cast<void*>(new AMGPrecondType(A->comm(), A, prm, bprm));
+      handle = new AMGPrecondType(context, A->comm(), A, prm, bprm);
     } break;
     case eDistributedPreconditionerType::relaxation: {
       typedef AsDistributedPreconditioner<DistributedRelaxationRuntime<Backend>> Precond;
 
-      handle = static_cast<void*>(new Precond(A->comm(), A, prm, bprm));
+      handle = new Precond(context, A->comm(), A, prm, bprm);
     } break;
     default:
-      throw std::invalid_argument("Unsupported preconditioner class");
+      ARCCORE_FATAL("Unsupported preconditioner class '{0}'", _class);
     }
   }
 };
@@ -254,24 +256,26 @@ class DistributedBlockPreconditioner
   typedef DistributedMatrix<backend_type> matrix;
 
   template <class Matrix>
-  DistributedBlockPreconditioner(AlinaCommunicator comm,
+  DistributedBlockPreconditioner(const AlinaContext& context,
+                                 AlinaCommunicator comm,
                                  const Matrix& Astrip,
                                  const params& prm = params(),
                                  const backend_params& bprm = backend_params())
   {
     A = std::make_shared<matrix>(comm, Astrip, backend::nbRow(Astrip));
-    P = std::make_shared<Precond>(A->local(), prm, bprm);
+    P = std::make_shared<Precond>(context, A->local(), prm, bprm);
     A->set_local(P->system_matrix_ptr());
     A->move_to_backend(bprm);
   }
 
-  DistributedBlockPreconditioner(AlinaCommunicator,
+  DistributedBlockPreconditioner(const AlinaContext& context,
+                                 AlinaCommunicator,
                                  std::shared_ptr<matrix> A,
                                  const params& prm = params(),
                                  const backend_params& bprm = backend_params())
   : A(A)
   {
-    P = std::make_shared<Precond>(A->local(), prm, bprm);
+    P = std::make_shared<Precond>(context, A->local(), prm, bprm);
     A->set_local(P->system_matrix_ptr());
     A->move_to_backend(bprm);
   }

@@ -93,13 +93,14 @@ class DeflatedSolver
 
   /** Sets up the preconditioner and creates the iterative solver. */
   template <class Matrix>
-  DeflatedSolver(const Matrix& A,
+  DeflatedSolver(const AlinaContext& context,
+                 const Matrix& A,
                  const params& prm = params(),
                  const backend_params& bprm = backend_params())
   : prm(prm)
   , n(backend::nbRow(A))
-  , P(A, prm.precond, bprm)
-  , S(backend::nbRow(A), prm.solver, bprm)
+  , P(context, A, prm.precond, bprm)
+  , S(context, backend::nbRow(A), prm.solver, bprm)
   , r(backend_type::create_vector(n, bprm))
   , Z(prm.nvec)
   , E(prm.nvec * prm.nvec, 0)
@@ -110,13 +111,14 @@ class DeflatedSolver
 
   // Constructs the preconditioner and creates iterative solver.
   // Takes shared pointer to the matrix in internal format.
-  DeflatedSolver(std::shared_ptr<build_matrix> A,
+  DeflatedSolver(const AlinaContext& context,
+                 std::shared_ptr<build_matrix> A,
                  const params& prm = params(),
                  const backend_params& bprm = backend_params())
   : prm(prm)
   , n(backend::nbRow(*A))
-  , P(A, prm.precond, bprm)
-  , S(backend::nbRow(*A), prm.solver, bprm)
+  , P(context, A, prm.precond, bprm)
+  , S(context, backend::nbRow(*A), prm.solver, bprm)
   , r(backend_type::create_vector(n, bprm))
   , Z(prm.nvec)
   , E(prm.nvec * prm.nvec, 0)

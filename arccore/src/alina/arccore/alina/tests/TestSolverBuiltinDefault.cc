@@ -26,7 +26,8 @@
 void _doTestSolverBuiltinDefault(bool use_accelerator, Int32 max_allowed_thread)
 {
   Accelerator::Initializer x(use_accelerator, max_allowed_thread);
-  test_backend< Alina::BuiltinBackend<double> >();
+  Alina::AlinaContext context;
+  test_backend< Alina::BuiltinBackend<double> >(context);
 }
 
 ARCCORE_ALINA_TEST_DO_TEST_ACCELERATOR(alina_test_solvers, test_builtin_backend_default, _doTestSolverBuiltinDefault);

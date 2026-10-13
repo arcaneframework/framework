@@ -87,24 +87,26 @@ class PreconditionedSolver
    * \brief Sets up the preconditioner and creates the iterative solver.
    */
   template <class Matrix>
-  PreconditionedSolver(const Matrix& A,
+  PreconditionedSolver(const AlinaContext& context,
+                       const Matrix& A,
                        const params& prm = params(),
                        const backend_params& bprm = backend_params())
   : prm(prm)
   , n(backend::nbRow(A))
-  , P(A, prm.precond, bprm)
-  , S(backend::nbRow(A), prm.solver, bprm)
+  , P(context, A, prm.precond, bprm)
+  , S(context, backend::nbRow(A), prm.solver, bprm)
   {}
 
   // Constructs the preconditioner and creates iterative solver.
   // Takes shared pointer to the matrix in internal format.
-  PreconditionedSolver(std::shared_ptr<build_matrix> A,
+  PreconditionedSolver(const AlinaContext& context,
+                       std::shared_ptr<build_matrix> A,
                        const params& prm = params(),
                        const backend_params& bprm = backend_params())
   : prm(prm)
   , n(backend::nbRow(*A))
-  , P(A, prm.precond, bprm)
-  , S(backend::nbRow(*A), prm.solver, bprm)
+  , P(context, A, prm.precond, bprm)
+  , S(context, backend::nbRow(*A), prm.solver, bprm)
   {}
 
   /** Computes the solution for the given system matrix \p A and the

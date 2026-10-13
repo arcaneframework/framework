@@ -72,7 +72,8 @@ struct renumbering
 
 template <template <class> class Precond, class Matrix>
 SolverResult
-solve(const AlinaCommunicator& comm,
+solve(const AlinaContext& context,
+      const AlinaCommunicator& comm,
       const PropertyTree& prm,
       const Matrix& A)
 {
@@ -87,7 +88,7 @@ solve(const AlinaCommunicator& comm,
   std::vector<double> rhs(n, 1), x(n, 0);
 
   prof.tic("setup");
-  Solver solve(comm, A, prm);
+  Solver solve(context, comm, A, prm);
   prof.toc("setup");
 
   {
@@ -106,29 +107,31 @@ int main(int argc, char* argv[])
   using std::string;
   using std::vector;
 
+  Alina::AlinaContext context;
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "Show this help.")("prm-file,P",
-                                                  po::value<string>(),
-                                                  "Parameter file in json format. ")(
-  "prm,p",
-  po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
-  "  -p solver.tol=1e-3\n"
-  "  -p precond.coarse_enough=300")(
-  "size,n",
-  po::value<int>()->default_value(1024),
-  "The size of the Poisson problem to solve. "
-  "Specified as number of grid nodes along each dimension of a unit square. "
-  "The resulting system will have n*n unknowns. ")(
-  "single-level,1",
-  po::bool_switch()->default_value(false),
-  "When specified, the AMG hierarchy is not constructed. "
-  "Instead, the problem is solved using a single-level smoother as preconditioner. ")(
-  "initial,x",
-  po::value<double>()->default_value(0),
-  "Value to use as initial approximation. ");
+  desc.add_options()("help,h", "Show this help.");
+  desc.add_options()("prm-file,P",
+                     po::value<string>(),
+                     "Parameter file in json format. ");
+  desc.add_options()("prm,p",
+                     po::value<vector<string>>()->multitoken(),
+                     "Parameters specified as name=value pairs. "
+                     "May be provided multiple times. Examples:\n"
+                     "  -p solver.tol=1e-3\n"
+                     "  -p precond.coarse_enough=300");
+  desc.add_options()("size,n",
+                     po::value<int>()->default_value(1024),
+                     "The size of the Poisson problem to solve. "
+                     "Specified as number of grid nodes along each dimension of a unit square. "
+                     "The resulting system will have n*n unknowns. ");
+  desc.add_options()("single-level,1",
+                     po::bool_switch()->default_value(false),
+                     "When specified, the AMG hierarchy is not constructed. "
+                     "Instead, the problem is solved using a single-level smoother as preconditioner. ");
+  desc.add_options()("initial,x",
+                     po::value<double>()->default_value(0),
+                     "Value to use as initial approximation. ");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -167,9 +170,9 @@ int main(int argc, char* argv[])
   ptrdiff_t chunk = part.size(world.rank);
 
   std::vector<ptrdiff_t> domain(world.size + 1);
-  ConstArrayView<ptrdiff_t> send_buf(1,&chunk);
+  ConstArrayView<ptrdiff_t> send_buf(1, &chunk);
   ArrayView<ptrdiff_t> receive_buf(world.size, &domain[1]);
-  mpAllGather(world.m_message_passing_mng.get(),send_buf,receive_buf);
+  mpAllGather(world.m_message_passing_mng.get(), send_buf, receive_buf);
   std::partial_sum(domain.begin(), domain.end(), domain.begin());
 
   lo = part.domain(world.rank).min_corner();
@@ -225,7 +228,7 @@ int main(int argc, char* argv[])
   if (single_level)
     prm.put("precond.class", "relaxation");
 
-  Alina::SolverResult r = solve<Alina::PreconditionerRuntime>(world, prm, std::tie(chunk, ptr, col, val));
+  Alina::SolverResult r = solve<Alina::PreconditionerRuntime>(context, world, prm, std::tie(chunk, ptr, col, val));
 
   if (world.rank == 0) {
     std::cout << "Iterations: " << r.nbIteration() << std::endl

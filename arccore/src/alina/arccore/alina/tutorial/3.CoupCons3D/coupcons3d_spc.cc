@@ -58,6 +58,8 @@ int main(int argc, char* argv[])
     return 1;
   }
 
+  Alina::AlinaContext context;
+
   // The profiler:
   auto& prof = Alina::Profiler::globalProfiler();
 
@@ -87,21 +89,17 @@ int main(int argc, char* argv[])
   typedef Alina::BuiltinBackend<float> PBackend; // the PSolver backend
   typedef Alina::BuiltinBackend<Alina::StaticMatrix<float, 4, 4>> UBackend; // the USolver backend
 
-  typedef Alina::PreconditionedSolver<
-  Alina::preconditioner::SchurPressureCorrectionPreconditioner<
-  Alina::make_block_solver<
-  Alina::AMG<
-  UBackend,
-  Alina::AggregationCoarsening,
-  Alina::ILU0Relaxation>,
-  Alina::PreconditionerOnlySolver<UBackend>>,
-  Alina::PreconditionedSolver<
-  Alina::RelaxationAsPreconditioner<
-  PBackend,
-  Alina::SPAI0Relaxation>,
-  Alina::PreconditionerOnlySolver<PBackend>>>,
-  Alina::BiCGStabSolver<SBackend>>
-  Solver;
+  using Solver = Alina::PreconditionedSolver<Alina::preconditioner::SchurPressureCorrectionPreconditioner<
+                                             Alina::make_block_solver<
+                                             Alina::AMG<UBackend,
+                                                        Alina::AggregationCoarsening,
+                                                        Alina::ILU0Relaxation>,
+                                             Alina::PreconditionerOnlySolver<UBackend>>,
+                                             Alina::PreconditionedSolver<
+                                             Alina::RelaxationAsPreconditioner<PBackend,
+                                                                               Alina::SPAI0Relaxation>,
+                                             Alina::PreconditionerOnlySolver<PBackend>>>,
+                                             Alina::BiCGStabSolver<SBackend>>;
 
   // Solver parameters
   Solver::params prm;
@@ -111,7 +109,7 @@ int main(int argc, char* argv[])
 
   // Initialize the solver with the system matrix.
   prof.tic("setup");
-  Solver solve(A, prm);
+  Solver solve(context, A, prm);
   prof.toc("setup");
 
   // Show the mini-report on the constructed solver:

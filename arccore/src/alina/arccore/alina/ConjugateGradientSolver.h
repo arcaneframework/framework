@@ -113,10 +113,13 @@ class ConjugateGradientSolver
   using params = ConjugateGradientSolverParams;
 
   /// Preallocates necessary data structures for the system of size \p n.
-  ConjugateGradientSolver(size_t n, const params& prm = params(),
+  ConjugateGradientSolver(const AlinaContext& context,
+                          size_t n,
+                          const params& prm = params(),
                           const backend_params& backend_prm = backend_params(),
                           const InnerProduct& inner_product = InnerProduct())
-  : prm(prm)
+  : SolverBase(context)
+  , prm(prm)
   , n(n)
   , r(Backend::create_vector(n, backend_prm))
   , s(Backend::create_vector(n, backend_prm))

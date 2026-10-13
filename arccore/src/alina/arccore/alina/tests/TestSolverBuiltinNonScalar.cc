@@ -25,5 +25,6 @@
 
 TEST(alina_test_solvers, test_nonscalar_backend)
 {
-  test_backend< Alina::BuiltinBackend< Alina::StaticMatrix<double, 2, 2> > >();
+  Alina::AlinaContext context;
+  test_backend< Alina::BuiltinBackend< Alina::StaticMatrix<double, 2, 2> > >(context);
 }

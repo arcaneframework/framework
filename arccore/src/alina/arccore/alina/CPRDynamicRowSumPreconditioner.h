@@ -127,23 +127,25 @@ class CPRDynamicRowSumPreconditioner
   };
 
   template <class Matrix>
-  CPRDynamicRowSumPreconditioner(const Matrix& K,
+  CPRDynamicRowSumPreconditioner(const AlinaContext& context,
+                                 const Matrix& K,
                                  const params& prm = params(),
                                  const backend_params& bprm = backend_params())
   : prm(prm)
   , n(backend::nbRow(K))
   {
-    init(std::make_shared<build_matrix>(K), bprm,
+    init(context, std::make_shared<build_matrix>(K), bprm,
          std::integral_constant<bool, math::static_rows<value_type>::value == 1>());
   }
 
-  CPRDynamicRowSumPreconditioner(std::shared_ptr<build_matrix> K,
+  CPRDynamicRowSumPreconditioner(const AlinaContext& context,
+                                 std::shared_ptr<build_matrix> K,
                                  const params& prm = params(),
                                  const backend_params& bprm = backend_params())
   : prm(prm)
   , n(backend::nbRow(*K))
   {
-    init(K, bprm,
+    init(context, K, bprm,
          std::integral_constant<bool, math::static_rows<value_type>::value == 1>());
   }
 
@@ -332,7 +334,7 @@ class CPRDynamicRowSumPreconditioner
     return std::make_tuple(fpp, App);
   }
 
-  void init(std::shared_ptr<build_matrix> K, const backend_params bprm, std::true_type)
+  void init(const AlinaContext& context, std::shared_ptr<build_matrix> K, const backend_params bprm, std::true_type)
   {
     typedef typename backend::row_iterator<build_matrix>::type row_iterator;
     const int B = prm.block_size;
@@ -427,10 +429,10 @@ class CPRDynamicRowSumPreconditioner
       scatter->ptr[i + 1] = scatter->ptr[i];
 
     ARCCORE_ALINA_TIC("pprecond");
-    P = std::make_shared<PPrecond>(App, prm.pprecond, bprm);
+    P = std::make_shared<PPrecond>(context, App, prm.pprecond, bprm);
     ARCCORE_ALINA_TOC("pprecond");
     ARCCORE_ALINA_TIC("sprecond");
-    S = std::make_shared<SPrecond>(K, prm.sprecond, bprm);
+    S = std::make_shared<SPrecond>(context, K, prm.sprecond, bprm);
     ARCCORE_ALINA_TOC("sprecond");
 
     Fpp = backend_type_p::copy_matrix(fpp, bprm);
@@ -447,7 +449,8 @@ class CPRDynamicRowSumPreconditioner
     Fpp = backend_type_p::copy_matrix(fpp, bprm);
   }
 
-  void init(std::shared_ptr<build_matrix> K, const backend_params bprm, std::false_type)
+  void init(const AlinaContext& context, std::shared_ptr<build_matrix> K,
+            const backend_params bprm, std::false_type)
   {
     const int B = math::static_rows<value_type>::value;
     const ptrdiff_t N = (prm.active_rows ? prm.active_rows : n);
@@ -534,10 +537,10 @@ class CPRDynamicRowSumPreconditioner
     });
 
     ARCCORE_ALINA_TIC("pprecond");
-    P = std::make_shared<PPrecond>(App, prm.pprecond, bprm);
+    P = std::make_shared<PPrecond>(context, App, prm.pprecond, bprm);
     ARCCORE_ALINA_TOC("pprecond");
     ARCCORE_ALINA_TIC("sprecond");
-    S = std::make_shared<SPrecond>(K, prm.sprecond, bprm);
+    S = std::make_shared<SPrecond>(context, K, prm.sprecond, bprm);
     ARCCORE_ALINA_TOC("sprecond");
 
     Fpp = backend_type_p::copy_matrix(fpp, bprm);

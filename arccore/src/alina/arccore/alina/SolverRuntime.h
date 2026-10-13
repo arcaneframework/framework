@@ -154,7 +154,8 @@ struct SolverRuntime
   eSolverType m_solver_type;
   SolverBase* m_solver = nullptr;
 
-  explicit SolverRuntime(size_t n, params prm = params(),
+  explicit SolverRuntime(const AlinaContext& context, size_t n, 
+                         params prm = params(),
                          const backend_params& bprm = backend_params(),
                          const InnerProduct& inner_product = InnerProduct())
   : m_solver_type(prm.get("type", eSolverType::bicgstab))
@@ -166,7 +167,7 @@ struct SolverRuntime
 
 #define ARCCORE_ALINA_RUNTIME_SOLVER(type) \
   case eSolverType::type: \
-    m_solver = new type<Backend, InnerProduct>(n, prm, bprm, inner_product); \
+    m_solver = new type<Backend, InnerProduct>(context, n, prm, bprm, inner_product); \
     break
 
       ARCCORE_ALINA_ALL_RUNTIME_SOLVER();

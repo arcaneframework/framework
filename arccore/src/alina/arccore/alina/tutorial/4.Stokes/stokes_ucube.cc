@@ -101,6 +101,8 @@ int main(int argc, char* argv[])
   Alina::ConjugateGradientSolver<SBackend>>
   Solver;
 
+  Alina::AlinaContext context;
+
   // Solver parameters
   Solver::params prm;
   prm.precond.simplec_dia = false;
@@ -110,7 +112,7 @@ int main(int argc, char* argv[])
 
   // Initialize the solver with the system matrix.
   prof.tic("setup");
-  Solver solve(A, prm);
+  Solver solve(context, A, prm);
   prof.toc("setup");
 
   // Show the mini-report on the constructed solver:

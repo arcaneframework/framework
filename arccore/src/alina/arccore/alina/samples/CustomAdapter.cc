@@ -162,6 +162,7 @@ int main()
       A(i, i + 1) = -1.0;
     }
   }
+  Alina::AlinaContext context;
 
   // Create an AMGCL solver for the problem.
   typedef Alina::BuiltinBackend<double> Backend;
@@ -171,7 +172,7 @@ int main()
                               Alina::AggregationCoarsening,
                               Alina::SPAI0Relaxation>,
                               Alina::ConjugateGradientSolver<Backend>>
-  solve(A);
+  solve(context, A);
 
   std::cout << solve.precond() << std::endl;
 

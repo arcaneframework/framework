@@ -179,10 +179,10 @@ read_problem(const Alina::AlinaCommunicator& world,
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
-
-  auto mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
+  using StandaloneMpi = MessagePassing::Mpi::StandaloneMpiMessagePassingMng;
+  auto mpm = StandaloneMpi::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
   Alina::AlinaCommunicator world(mpm);
-
+  Alina::AlinaContext context;
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;
 
@@ -301,7 +301,7 @@ int main(int argc, char* argv[])
     DistributedSolverRuntime<Backend>>
   Solver;
 
-  Solver solve(world, std::tie(chunk, ptr, col, val), prm, bprm);
+  Solver solve(context, world, std::tie(chunk, ptr, col, val), prm, bprm);
   double tm_setup = prof.toc("setup");
 
   prof.tic("solve");

@@ -54,6 +54,8 @@ int main(int argc, char* argv[])
     return 1;
   }
 
+  Alina::AlinaContext context;
+
   // The profiler:
   auto& prof = Alina::Profiler::globalProfiler();
 
@@ -100,7 +102,7 @@ int main(int argc, char* argv[])
 
   // Initialize the solver with the system matrix.
   prof.tic("setup");
-  Solver solve(A, prm);
+  Solver solve(context, A, prm);
   prof.toc("setup");
 
   // Show the mini-report on the constructed solver:
