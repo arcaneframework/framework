@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
     std::cerr << "Usage: " << argv[0] << " <matrix.mtx>" << std::endl;
     return 1;
   }
-
+  Alina::AlinaContext context;
   // The profiler:
   auto& prof = Alina::Profiler::globalProfiler();
 
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
   // the block format on the fly:
   prof.tic("setup");
   auto Ab = Alina::adapter::block_matrix<dmat_type>(A);
-  Solver solve(Ab);
+  Solver solve(context, Ab);
   prof.toc("setup");
 
   // Show the mini-report on the constructed solver:

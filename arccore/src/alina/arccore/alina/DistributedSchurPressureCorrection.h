@@ -159,7 +159,8 @@ class DistributedSchurPressureCorrection
   };
 
   template <class Matrix>
-  DistributedSchurPressureCorrection(AlinaCommunicator comm,
+  DistributedSchurPressureCorrection(const AlinaContext& context,
+                                     AlinaCommunicator comm,
                                      const Matrix& K,
                                      const params& prm = params(),
                                      const backend_params& bprm = backend_params())
@@ -167,10 +168,11 @@ class DistributedSchurPressureCorrection
   , comm(comm)
   {
     this->K = std::make_shared<matrix>(comm, K, backend::nbRow(K));
-    init(bprm);
+    init(context, bprm);
   }
 
-  DistributedSchurPressureCorrection(AlinaCommunicator comm,
+  DistributedSchurPressureCorrection(const AlinaContext& context,
+                                     AlinaCommunicator comm,
                                      std::shared_ptr<matrix> K,
                                      const params& prm = params(),
                                      const backend_params& bprm = backend_params())
@@ -178,10 +180,10 @@ class DistributedSchurPressureCorrection
   , comm(comm)
   , K(K)
   {
-    init(bprm);
+    init(context, bprm);
   }
 
-  void init(const backend_params& bprm)
+  void init(const AlinaContext& context, const backend_params& bprm)
   {
     using std::make_shared;
     using std::make_tuple;
@@ -418,10 +420,10 @@ class DistributedSchurPressureCorrection
     ARCCORE_ALINA_TOC("schur blocks");
 
     ARCCORE_ALINA_TIC("usolver")
-    U = make_shared<USolver>(comm, Kuu, prm.usolver, bprm);
+    U = make_shared<USolver>(context, comm, Kuu, prm.usolver, bprm);
     ARCCORE_ALINA_TOC("usolver")
     ARCCORE_ALINA_TIC("psolver")
-    P = make_shared<PSolver>(comm, Kpp, prm.psolver, bprm);
+    P = make_shared<PSolver>(context, comm, Kpp, prm.psolver, bprm);
     ARCCORE_ALINA_TOC("psolver")
 
     ARCCORE_ALINA_TIC("other");

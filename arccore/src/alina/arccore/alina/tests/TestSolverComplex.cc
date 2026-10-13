@@ -25,5 +25,6 @@
 
 TEST(alina_test_solvers, test_builtin_complex_backend)
 {
-  test_backend< Alina::BuiltinBackend< std::complex<double> > >();
+  Alina::AlinaContext context;
+  test_backend< Alina::BuiltinBackend< std::complex<double> > >(context);
 }

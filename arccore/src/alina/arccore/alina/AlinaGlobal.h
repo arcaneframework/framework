@@ -52,6 +52,7 @@ struct common_scalar_backend;
 
 class ExecutionContext;
 class PropertyTree;
+class AlinaContext;
 using AlinaDefaultColumnType = Int32;
 using AlinaDefaultRowIndexType = Int32;
 template <typename ValueType_ = double,

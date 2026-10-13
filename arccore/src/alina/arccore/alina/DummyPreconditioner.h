@@ -56,14 +56,16 @@ class DummyPreconditioner
   typedef typename Backend::params backend_params;
 
   template <class Matrix>
-  DummyPreconditioner(const Matrix& M,
+  DummyPreconditioner([[maybe_unused]] const AlinaContext& context,
+                      const Matrix& M,
                       const params& = params(),
                       const backend_params& bprm = backend_params())
   : A(Backend::copy_matrix(std::make_shared<build_matrix>(M), bprm))
   {
   }
 
-  DummyPreconditioner(std::shared_ptr<build_matrix> M,
+  DummyPreconditioner([[maybe_unused]] const AlinaContext& context,
+                      std::shared_ptr<build_matrix> M,
                       const params& = params(),
                       const backend_params& bprm = backend_params())
   : A(Backend::copy_matrix(M, bprm))

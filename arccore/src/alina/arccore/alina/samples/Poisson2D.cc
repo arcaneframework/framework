@@ -87,13 +87,14 @@ int main(int argc, char* argv[])
   using Backend = Alina::BuiltinBackend<double>;
   std::vector<double> f(n);
   std::vector<double> x(n);
-
+  Alina::AlinaContext context;
+  
   prof.tic("build");
 
   using Precond = Alina::AMG<Backend, Alina::SmoothedAggregationCoarserning, Alina::SPAI0Relaxation>;
   using Solver = Alina::PreconditionedSolver<Precond, Alina::BiCGStabSolver<Backend>>;
 
-  Solver solve(Alina::adapter::make_matrix(poisson_2d(m)));
+  Solver solve(context, Alina::adapter::make_matrix(poisson_2d(m)));
   prof.toc("build");
 
   //std::cout << solve.amg() << std::endl;

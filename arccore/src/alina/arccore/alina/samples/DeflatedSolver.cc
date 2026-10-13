@@ -47,44 +47,47 @@ int main(int argc, char* argv[])
   using std::string;
   using std::vector;
 
+  Alina::AlinaContext context;
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "Show this help.")("prm-file,P",
-                                                  po::value<string>(),
-                                                  "Parameter file in json format. ")(
-  "prm,p",
-  po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
-  "  -p solver.tol=1e-3\n"
-  "  -p precond.coarse_enough=300")("matrix,A",
-                                    po::value<string>()->required(),
-                                    "System matrix in the MatrixMarket format.")(
-  "rhs,f",
-  po::value<string>(),
-  "The RHS vector in the MatrixMarket format. "
-  "When omitted, a vector of ones is used by default. "
-  "Should only be provided together with a system matrix. ")(
-  "defvec,D",
-  po::value<string>(),
-  "The near null-space vectors in the MatrixMarket format. ")(
-  "coords,C",
-  po::value<string>(),
-  "Coordinate matrix where number of rows corresponds to the number of grid nodes "
-  "and the number of columns corresponds to the problem dimensionality (2 or 3). "
-  "Will be used to construct near null-space vectors as rigid body modes. ")(
-  "binary,B",
-  po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
-  "single-level,1",
-  po::bool_switch()->default_value(false),
-  "When specified, the AMG hierarchy is not constructed. "
-  "Instead, the problem is solved using a single-level smoother as preconditioner. ")(
-  "output,o",
-  po::value<string>(),
-  "Output file. Will be saved in the MatrixMarket format. "
-  "When omitted, the solution is not saved. ");
+  desc.add_options()("help,h", "Show this help.");
+  desc.add_options()("prm-file,P",
+                     po::value<string>(),
+                     "Parameter file in json format. ");
+  desc.add_options()("prm,p",
+                     po::value<vector<string>>()->multitoken(),
+                     "Parameters specified as name=value pairs. "
+                     "May be provided multiple times. Examples:\n"
+                     "  -p solver.tol=1e-3\n"
+                     "  -p precond.coarse_enough=300");
+  desc.add_options()("matrix,A",
+                     po::value<string>()->required(),
+                     "System matrix in the MatrixMarket format.");
+  desc.add_options()("rhs,f",
+                     po::value<string>(),
+                     "The RHS vector in the MatrixMarket format. "
+                     "When omitted, a vector of ones is used by default. "
+                     "Should only be provided together with a system matrix. ");
+  desc.add_options()("defvec,D",
+                     po::value<string>(),
+                     "The near null-space vectors in the MatrixMarket format. ");
+  desc.add_options()("coords,C",
+                     po::value<string>(),
+                     "Coordinate matrix where number of rows corresponds to the number of grid nodes "
+                     "and the number of columns corresponds to the problem dimensionality (2 or 3). "
+                     "Will be used to construct near null-space vectors as rigid body modes. ");
+  desc.add_options()("binary,B",
+                     po::bool_switch()->default_value(false),
+                     "When specified, treat input files as binary instead of as MatrixMarket. "
+                     "It is assumed the files were converted to binary format with mm2bin utility. ");
+  desc.add_options()("single-level,1",
+                     po::bool_switch()->default_value(false),
+                     "When specified, the AMG hierarchy is not constructed. "
+                     "Instead, the problem is solved using a single-level smoother as preconditioner. ");
+  desc.add_options()("output,o",
+                     po::value<string>(),
+                     "Output file. Will be saved in the MatrixMarket format. "
+                     "When omitted, the solution is not saved. ");
 
   po::positional_options_description p;
   p.add("prm", -1);
@@ -213,7 +216,7 @@ int main(int argc, char* argv[])
   auto A = std::tie(rows, ptr, col, val);
 
   prof.tic("setup");
-  Solver solve(A, prm);
+  Solver solve(context, A, prm);
   prof.toc("setup");
 
   prof.tic("solve");

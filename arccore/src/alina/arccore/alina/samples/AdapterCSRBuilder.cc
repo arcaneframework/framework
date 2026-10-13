@@ -94,6 +94,8 @@ double norm(const Vec& v)
 //---------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
+  Alina::AlinaContext context;
+
   auto& prof = Alina::Profiler::globalProfiler();
   int m = argc > 1 ? atoi(argv[1]) : 1024;
   int n = m * m;
@@ -108,7 +110,7 @@ int main(int argc, char* argv[])
                                              Alina::ConjugateGradientSolver<
                                              Alina::BuiltinBackend<double>>>;
 
-  Solver solve(Alina::adapter::make_matrix(poisson_2d(m)));
+  Solver solve(context, Alina::adapter::make_matrix(poisson_2d(m)));
   prof.toc("build");
 
   std::cout << solve.precond() << std::endl;
@@ -134,7 +136,7 @@ int main(int argc, char* argv[])
   //
   // Nesting iterative solvers in this way allows to shave last bits off the
   // error.
-  Alina::ConjugateGradientSolver<Alina::BuiltinBackend<double>> S(n);
+  Alina::ConjugateGradientSolver<Alina::BuiltinBackend<double>> S(context, n);
   std::fill(x.begin(), x.end(), 0);
 
   prof.tic("nested solver");

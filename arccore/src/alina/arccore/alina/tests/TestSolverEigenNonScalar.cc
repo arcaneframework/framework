@@ -29,5 +29,6 @@
 
 TEST(alina_test_solvers, test_nonscalar_backend_eigen)
 {
-  test_backend< Alina::BuiltinBackend< Eigen::Matrix<double, 2, 2> > >();
+  Alina::AlinaContext context;
+  test_backend< Alina::BuiltinBackend< Eigen::Matrix<double, 2, 2> > >(context);
 }

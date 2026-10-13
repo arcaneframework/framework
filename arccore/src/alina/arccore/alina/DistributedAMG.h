@@ -153,7 +153,8 @@ class DistributedAMG
   } prm;
 
   template <class Matrix>
-  DistributedAMG(AlinaCommunicator comm,
+  DistributedAMG([[maybe_unused]] const AlinaContext& context,
+                 AlinaCommunicator comm,
                  const Matrix& A,
                  const params& prm = params(),
                  const backend_params& bprm = backend_params())
@@ -164,7 +165,8 @@ class DistributedAMG
     init(std::make_shared<matrix>(comm, A, backend::nbRow(A)), bprm);
   }
 
-  DistributedAMG(AlinaCommunicator comm,
+  DistributedAMG([[maybe_unused]] const AlinaContext& context,
+                 AlinaCommunicator comm,
                  std::shared_ptr<matrix> A,
                  const params& prm = params(),
                  const backend_params& bprm = backend_params())

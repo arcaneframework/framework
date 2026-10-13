@@ -119,11 +119,13 @@ class BiCGStabSolver
   using params = BiCGStabSolverParams;
 
   /// Preallocates necessary data structures for the system of size \p n.
-  BiCGStabSolver(size_t n,
+  BiCGStabSolver(const AlinaContext& context,
+                 size_t n,
                  const params& prm = params(),
                  const backend_params& backend_prm = backend_params(),
                  const InnerProduct& inner_product = InnerProduct())
-  : prm(prm)
+  : SolverBase(context)
+  , prm(prm)
   , n(n)
   , r(Backend::create_vector(n, backend_prm))
   , p(Backend::create_vector(n, backend_prm))

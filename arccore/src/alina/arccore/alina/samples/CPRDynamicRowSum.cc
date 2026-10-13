@@ -57,7 +57,8 @@ using Alina::precondition;
 
 //---------------------------------------------------------------------------
 template <class Matrix>
-void solve_cpr(const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
+void solve_cpr(const Alina::AlinaContext& context,
+               const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
 {
   auto& prof = Alina::Profiler::globalProfiler();
   Backend::params bprm;
@@ -94,7 +95,7 @@ void solve_cpr(const Matrix& K, const std::vector<double>& rhs, Alina::PropertyT
   Alina::PreconditionedSolver<
     Alina::preconditioner::CPRDynamicRowSumPreconditioner<PPrecond, SPrecond>,
     Alina::SolverRuntime<Backend>>
-  solve(K, prm, bprm);
+  solve(context, K, prm, bprm);
   prof.toc("setup");
 
   std::cout << solve.precond() << std::endl;
@@ -114,7 +115,7 @@ void solve_cpr(const Matrix& K, const std::vector<double>& rhs, Alina::PropertyT
 #if defined(SOLVER_BACKEND_BUILTIN)
 //---------------------------------------------------------------------------
 template <int B, class Matrix>
-void solve_block_cpr(const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
+void solve_block_cpr(const Alina::AlinaContext& context, const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
 {
   auto& prof = Alina::Profiler::globalProfiler();
   auto t1 = prof.scoped_tic("CPR");
@@ -134,7 +135,7 @@ void solve_block_cpr(const Matrix& K, const std::vector<double>& rhs, Alina::Pro
   Alina::PreconditionedSolver<
   Alina::preconditioner::CPRDynamicRowSumPreconditioner<PPrecond, SPrecond>,
   Alina::SolverRuntime<SBackend>>
-  solve(Alina::adapter::block_matrix<val_type>(K), prm, bprm);
+  solve(context, Alina::adapter::block_matrix<val_type>(K), prm, bprm);
   prof.toc("setup");
 
   std::cout << solve.precond() << std::endl;
@@ -164,40 +165,42 @@ int main(int argc, char* argv[])
   using std::string;
   using std::vector;
 
+  Alina::AlinaContext context;
+
   namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "show help")(
-  "binary,B",
-  po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
-  "matrix,A",
-  po::value<string>()->required(),
-  "The system matrix in MatrixMarket format")(
-  "rhs,f",
-  po::value<string>(),
-  "The right-hand side in MatrixMarket format")(
-  "weights,w",
-  po::value<string>(),
-  "Equation weights in MatrixMarket format")(
-  "runtime-block-size,b",
-  po::value<int>(),
-  "The block size of the system matrix set at runtime")(
-  "static-block-size,c",
-  po::value<int>()->default_value(1),
-  "The block size of the system matrix set at compiletime")(
-  "params,P",
-  po::value<string>(),
-  "parameter file in json format")(
-  "prm,p",
-  po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
-  "  -p solver.tol=1e-3\n"
-  "  -p precond.coarse_enough=300");
+  desc.add_options()("help,h", "show help");
+  desc.add_options()("binary,B",
+                     po::bool_switch()->default_value(false),
+                     "When specified, treat input files as binary instead of as MatrixMarket. "
+                     "It is assumed the files were converted to binary format with mm2bin utility. ");
+  desc.add_options()("matrix,A",
+                     po::value<string>()->required(),
+                     "The system matrix in MatrixMarket format");
+  desc.add_options()("rhs,f",
+                     po::value<string>(),
+                     "The right-hand side in MatrixMarket format");
+  desc.add_options()("weights,w",
+                     po::value<string>(),
+                     "Equation weights in MatrixMarket format");
+  desc.add_options()("runtime-block-size,b",
+                     po::value<int>(),
+                     "The block size of the system matrix set at runtime");
+  desc.add_options()("static-block-size,c",
+                     po::value<int>()->default_value(1),
+                     "The block size of the system matrix set at compiletime");
+  desc.add_options()("params,P",
+                     po::value<string>(),
+                     "parameter file in json format");
+  desc.add_options()("prm,p",
+                     po::value<vector<string>>()->multitoken(),
+                     "Parameters specified as name=value pairs. "
+                     "May be provided multiple times. Examples:\n"
+                     "  -p solver.tol=1e-3\n"
+                     "  -p precond.coarse_enough=300");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -283,12 +286,12 @@ int main(int argc, char* argv[])
 
 #define CALL_BLOCK_SOLVER(z, data, B) \
   case B: \
-    solve_block_cpr<B>(std::tie(rows, ptr, col, val), rhs, prm); \
+    solve_block_cpr<B>(context, std::tie(rows, ptr, col, val), rhs, prm); \
     break;
 
   switch (cb) {
   case 1:
-    solve_cpr(std::tie(rows, ptr, col, val), rhs, prm);
+    solve_cpr(context, std::tie(rows, ptr, col, val), rhs, prm);
     break;
 
 #if defined(SOLVER_BACKEND_BUILTIN) || defined(SOLVER_BACKEND_VEXCL)

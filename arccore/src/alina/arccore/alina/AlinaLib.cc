@@ -365,10 +365,11 @@ AlinaPreconditioner(int n,
   auto A = std::make_tuple(n, ptr_range, col_range, val_range);
 
   PreconditionerType* amg = nullptr;
+  Alina::AlinaContext context;
   if (prm)
-    amg = new PreconditionerType(A, prm->m_p->m_properties);
+    amg = new PreconditionerType(context, A, prm->m_p->m_properties);
   else
-    amg = new PreconditionerType(A);
+    amg = new PreconditionerType(context, A);
   m_p = std::make_shared<AlinaPreconditionerImpl>(amg);
 }
 
@@ -437,7 +438,8 @@ class AlinaSequentialSolverImpl
     auto A = std::make_tuple(matrix_view.nbRow(), matrix_view.rowIndexes(),
                              matrix_view.columns(), matrix_view.values());
 
-    m_solver = new SequentialSolverType(A, prm.m_p->m_properties);
+    Alina::AlinaContext context;
+    m_solver = new SequentialSolverType(context, A, prm.m_p->m_properties);
     ITraceMng* tm = prm.traceMng();
     tm->info() << "Printing solver infos\n"
                << (*m_solver) << "\n"
@@ -507,7 +509,8 @@ class AlinaDistributedSolverImpl
                              matrix_view.columns(), matrix_view.values());
 
     Alina::AlinaCommunicator mpi_comm(mpm);
-    m_solver = new DistributedSolverType(mpi_comm, A, prm);
+    Alina::AlinaContext context;
+    m_solver = new DistributedSolverType(context, mpi_comm, A, prm);
 
     ITraceMng* tm = params.traceMng();
     tm->info() << "Printing solver infos\n"

@@ -82,14 +82,15 @@ int main()
   Backend::params bprm;
   bprm.block_size = 4;
 
-  AMG amg(std::tie(n, ptr, col, val), prm, bprm);
+  Alina::AlinaContext context;
+  AMG amg(context, std::tie(n, ptr, col, val), prm, bprm);
   prof.toc("build");
 
   std::cout << amg << std::endl;
 
   std::vector<double> x(n, 0);
 
-  Alina::BiCGStabSolver<AMG::backend_type> solve(n);
+  Alina::BiCGStabSolver<AMG::backend_type> solve(context, n);
 
   prof.tic("solve");
   Alina::SolverResult r = solve(amg, rhs, x);

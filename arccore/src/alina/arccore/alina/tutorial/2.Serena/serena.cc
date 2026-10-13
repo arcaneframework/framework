@@ -47,101 +47,99 @@ THE SOFTWARE.
 
 using namespace Arcane;
 
-int main(int argc, char *argv[]) {
-    // The command line should contain the matrix file name:
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <matrix.mtx>" << std::endl;
-        return 1;
+int main(int argc, char* argv[])
+{
+  // The command line should contain the matrix file name:
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " <matrix.mtx>" << std::endl;
+    return 1;
+  }
+  Alina::AlinaContext context;
+
+  auto& prof = Alina::Profiler::globalProfiler();
+
+  // Read the system matrix:
+  ptrdiff_t rows, cols;
+  std::vector<ptrdiff_t> ptr, col;
+  std::vector<double> val;
+
+  prof.tic("read");
+  std::tie(rows, cols) = Alina::IO::mm_reader(argv[1])(ptr, col, val);
+  std::cout << "Matrix " << argv[1] << ": " << rows << "x" << cols << std::endl;
+  prof.toc("read");
+
+  // The RHS is filled with ones:
+  std::vector<double> f(rows, 1.0);
+
+  // Scale the matrix so that it has the unit diagonal.
+  // First, find the diagonal values:
+  std::vector<double> D(rows, 1.0);
+  for (ptrdiff_t i = 0; i < rows; ++i) {
+    for (ptrdiff_t j = ptr[i], e = ptr[i + 1]; j < e; ++j) {
+      if (col[j] == i) {
+        D[i] = 1 / sqrt(val[j]);
+        break;
+      }
     }
+  }
 
-    auto& prof = Alina::Profiler::globalProfiler();
-
-    // Read the system matrix:
-    ptrdiff_t rows, cols;
-    std::vector<ptrdiff_t> ptr, col;
-    std::vector<double> val;
-
-    prof.tic("read");
-    std::tie(rows, cols) = Alina::IO::mm_reader(argv[1])(ptr, col, val);
-    std::cout << "Matrix " << argv[1] << ": " << rows << "x" << cols << std::endl;
-    prof.toc("read");
-
-    // The RHS is filled with ones:
-    std::vector<double> f(rows, 1.0);
-
-    // Scale the matrix so that it has the unit diagonal.
-    // First, find the diagonal values:
-    std::vector<double> D(rows, 1.0);
-    for(ptrdiff_t i = 0; i < rows; ++i) {
-        for(ptrdiff_t j = ptr[i], e = ptr[i+1]; j < e; ++j) {
-            if (col[j] == i) {
-                D[i] = 1 / sqrt(val[j]);
-                break;
-            }
-        }
+  // Then, apply the scaling in-place:
+  for (ptrdiff_t i = 0; i < rows; ++i) {
+    for (ptrdiff_t j = ptr[i], e = ptr[i + 1]; j < e; ++j) {
+      val[j] *= D[i] * D[col[j]];
     }
+    f[i] *= D[i];
+  }
 
-    // Then, apply the scaling in-place:
-    for(ptrdiff_t i = 0; i < rows; ++i) {
-        for(ptrdiff_t j = ptr[i], e = ptr[i+1]; j < e; ++j) {
-            val[j] *= D[i] * D[col[j]];
-        }
-        f[i] *= D[i];
-    }
+  // We use the tuple of CRS arrays to represent the system matrix.
+  // Note that std::tie creates a tuple of references, so no data is actually
+  // copied here:
+  auto A = std::tie(rows, ptr, col, val);
 
-    // We use the tuple of CRS arrays to represent the system matrix.
-    // Note that std::tie creates a tuple of references, so no data is actually
-    // copied here:
-    auto A = std::tie(rows, ptr, col, val);
+  // Compose the solver type
+  typedef Alina::StaticMatrix<double, 3, 3> dmat_type; // matrix value type in double precision
+  typedef Alina::StaticMatrix<double, 3, 1> dvec_type; // the corresponding vector value type
+  typedef Alina::StaticMatrix<float, 3, 3> smat_type; // matrix value type in single precision
 
-    // Compose the solver type
-    typedef Alina::StaticMatrix<double, 3, 3> dmat_type; // matrix value type in double precision
-    typedef Alina::StaticMatrix<double, 3, 1> dvec_type; // the corresponding vector value type
-    typedef Alina::StaticMatrix<float,  3, 3> smat_type; // matrix value type in single precision
+  typedef Alina::BuiltinBackend<dmat_type> SBackend; // the solver backend
+  typedef Alina::BuiltinBackend<smat_type> PBackend; // the preconditioner backend
 
-    typedef Alina::BuiltinBackend<dmat_type> SBackend; // the solver backend
-    typedef Alina::BuiltinBackend<smat_type> PBackend; // the preconditioner backend
+  using Solver = Alina::PreconditionedSolver<Alina::AMG<PBackend,
+                                                        Alina::SmoothedAggregationCoarserning,
+                                                        Alina::SPAI0Relaxation>,
+                                             Alina::ConjugateGradientSolver<SBackend>>;
 
-    typedef Alina::PreconditionedSolver<
-        Alina::AMG<
-            PBackend,
-            Alina::SmoothedAggregationCoarserning,
-            Alina::SPAI0Relaxation
-            >,
-        Alina::ConjugateGradientSolver<SBackend>
-        > Solver;
+  // Solver parameters
+  Solver::params prm;
+  prm.solver.maxiter = 500;
 
-    // Solver parameters
-    Solver::params prm;
-    prm.solver.maxiter = 500;
+  // Initialize the solver with the system matrix.
+  // Use the block_matrix adapter to convert the matrix into
+  // the block format on the fly:
+  prof.tic("setup");
+  auto Ab = Alina::adapter::block_matrix<dmat_type>(A);
+  Solver solve(context, Ab, prm);
+  prof.toc("setup");
 
-    // Initialize the solver with the system matrix.
-    // Use the block_matrix adapter to convert the matrix into
-    // the block format on the fly:
-    prof.tic("setup");
-    auto Ab = Alina::adapter::block_matrix<dmat_type>(A);
-    Solver solve(Ab, prm);
-    prof.toc("setup");
+  // Show the mini-report on the constructed solver:
+  std::cout << solve << std::endl;
 
-    // Show the mini-report on the constructed solver:
-    std::cout << solve << std::endl;
+  // Solve the system with the zero initial approximation:
+  std::vector<double> x(rows, 0.0);
 
-    // Solve the system with the zero initial approximation:
-    std::vector<double> x(rows, 0.0);
+  // Reinterpret both the RHS and the solution vectors as block-valued:
+  auto f_ptr = reinterpret_cast<dvec_type*>(f.data());
+  auto x_ptr = reinterpret_cast<dvec_type*>(x.data());
+  auto F = SmallSpan<dvec_type>(f_ptr, rows / 3);
+  auto X = SmallSpan<dvec_type>(x_ptr, rows / 3);
 
-    // Reinterpret both the RHS and the solution vectors as block-valued:
-    auto f_ptr = reinterpret_cast<dvec_type*>(f.data());
-    auto x_ptr = reinterpret_cast<dvec_type*>(x.data());
-    auto F = SmallSpan<dvec_type>(f_ptr, rows / 3);
-    auto X = SmallSpan<dvec_type>(x_ptr, rows / 3);
+  prof.tic("solve");
+  Alina::SolverResult r = solve(Ab, F, X);
+  prof.toc("solve");
 
-    prof.tic("solve");
-    Alina::SolverResult r = solve(Ab, F, X);
-    prof.toc("solve");
-
-    // Output the number of iterations, the relative error,
-    // and the profiling data:
-    std::cout << "Iters: " << r.nbIteration() << std::endl
-              << "Error: " << r.residual() << std::endl
-              << prof << std::endl;
+  // Output the number of iterations, the relative error,
+  // and the profiling data:
+  std::cout << "Iters: " << r.nbIteration() << std::endl
+            << "Error: " << r.residual() << std::endl
+            << prof << std::endl;
 }

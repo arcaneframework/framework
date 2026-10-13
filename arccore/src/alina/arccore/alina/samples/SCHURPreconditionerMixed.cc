@@ -68,7 +68,7 @@ using Alina::precondition;
 
 //---------------------------------------------------------------------------
 template <class USolver, class PSolver, class Matrix>
-void solve_schur(const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
+void solve_schur(const Alina::AlinaContext& context, const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
 {
   auto& prof = Alina::Profiler::globalProfiler();
   typedef Backend<double> SBackend;
@@ -79,7 +79,7 @@ void solve_schur(const Matrix& K, const std::vector<double>& rhs, Alina::Propert
   prof.tic("setup");
   Alina::PreconditionedSolver<Alina::preconditioner::SchurPressureCorrectionPreconditioner<USolver, PSolver>,
                               Alina::SolverRuntime<SBackend>>
-  solve(K, prm, bprm);
+  solve(context, K, prm, bprm);
   prof.toc("setup");
 
   std::cout << solve << std::endl;
@@ -97,25 +97,26 @@ void solve_schur(const Matrix& K, const std::vector<double>& rhs, Alina::Propert
             << "Error:      " << r.residual() << std::endl;
 }
 
-#define ARCCORE_ALINA_BLOCK_PSOLVER(z, data, B)                 \
-  case B: {                                             \
+#define ARCCORE_ALINA_BLOCK_PSOLVER(z, data, B) \
+  case B: { \
     typedef Backend<BlockMatrix<float, B, B>> BBackend; \
-    typedef ::Arcane::Alina::make_block_solver<                   \
-        ::Arcane::Alina::PreconditionerRuntime<BBackend>,       \
-        ::Arcane::Alina::SolverRuntime<BBackend> >     \
-        PSolver;                                        \
-    solve_schur<USolver, PSolver>(K, rhs, prm);         \
+    typedef ::Arcane::Alina::make_block_solver< \
+    ::Arcane::Alina::PreconditionerRuntime<BBackend>, \
+    ::Arcane::Alina::SolverRuntime<BBackend>> \
+    PSolver; \
+    solve_schur<USolver, PSolver>(context, K, rhs, prm); \
   } break;
 
 //---------------------------------------------------------------------------
-template <class USolver, class Matrix>
-void solve_schur(int pb, const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
+template <class USolver, class Matrix> void
+solve_schur(const Alina::AlinaContext& context, int pb,
+            const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
 {
   switch (pb) {
   case 1: {
     using PSolver = Alina::PreconditionedSolver<Alina::PreconditionerRuntime<Backend<float>>,
                                                 Alina::SolverRuntime<Backend<float>>>;
-    solve_schur<USolver, PSolver>(K, rhs, prm);
+    solve_schur<USolver, PSolver>(context, K, rhs, prm);
   } break;
 #if defined(SOLVER_BACKEND_BUILTIN)
     BOOST_PP_SEQ_FOR_EACH(ARCCORE_ALINA_BLOCK_PSOLVER, ~, ARCCORE_ALINA_BLOCK_SIZES)
@@ -132,18 +133,21 @@ void solve_schur(int pb, const Matrix& K, const std::vector<double>& rhs, Alina:
     ::Arcane::Alina::PreconditionerRuntime<BBackend>, \
     ::Arcane::Alina::SolverRuntime<BBackend>> \
     USolver; \
-    solve_schur<USolver>(pb, K, rhs, prm); \
+    solve_schur<USolver>(context, pb, K, rhs, prm); \
   } break;
 
 //---------------------------------------------------------------------------
-template <class Matrix>
-void solve_schur(int ub, int pb, const Matrix& K, const std::vector<double>& rhs, Alina::PropertyTree& prm)
+template <class Matrix> void
+solve_schur(const Alina::AlinaContext& context,
+            int ub, int pb, const Matrix& K,
+            const std::vector<double>& rhs,
+            Alina::PropertyTree& prm)
 {
   switch (ub) {
   case 1: {
     using USolver = Alina::PreconditionedSolver<Alina::PreconditionerRuntime<Backend<float>>,
                                                 Alina::SolverRuntime<Backend<float>>>;
-    solve_schur<USolver>(pb, K, rhs, prm);
+    solve_schur<USolver>(context, pb, K, rhs, prm);
   } break;
 #if defined(SOLVER_BACKEND_BUILTIN) || defined(SOLVER_BACKEND_VEXCL)
     BOOST_PP_SEQ_FOR_EACH(ARCCORE_ALINA_BLOCK_USOLVER, ~, ARCCORE_ALINA_BLOCK_SIZES)
@@ -154,50 +158,46 @@ void solve_schur(int ub, int pb, const Matrix& K, const std::vector<double>& rhs
 }
 
 //---------------------------------------------------------------------------
+
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
   using std::string;
   using std::vector;
 
+  Alina::AlinaContext context;
   namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
 
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "show help")(
-  "binary,B",
-  po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
-  "scale,s",
-  po::bool_switch()->default_value(false),
-  "Scale the matrix so that the diagonal is unit. ")(
-  "matrix,A",
-  po::value<string>()->required(),
-  "The system matrix in MatrixMarket format")(
-  "rhs,f",
-  po::value<string>(),
-  "The right-hand side in MatrixMarket format")(
-  "pmask,m",
-  po::value<string>(),
-  "The pressure mask in MatrixMarket format. Or, if the parameter has "
-  "the form '%n:m', then each (n+i*m)-th variable is treated as pressure.")(
-  "ub",
-  po::value<int>()->default_value(1),
-  "Block-size of the 'flow'/'non-pressure' part of the matrix")(
-  "pb",
-  po::value<int>()->default_value(1),
-  "Block-size of the 'pressure' part of the matrix")(
-  "params,P",
-  po::value<string>(),
-  "parameter file in json format")(
-  "prm,p",
-  po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
-  "  -p solver.tol=1e-3\n"
-  "  -p precond.coarse_enough=300");
+  desc.add_options()("help,h", "show help");
+  desc.add_options()("binary,B",
+                     po::bool_switch()->default_value(false),
+                     "When specified, treat input files as binary instead of as MatrixMarket. "
+                     "It is assumed the files were converted to binary format with mm2bin utility. ");
+  desc.add_options()("scale,s", po::bool_switch()->default_value(false),
+                     "Scale the matrix so that the diagonal is unit. ");
+  desc.add_options()("matrix,A", po::value<string>()->required(),
+                     "The system matrix in MatrixMarket format");
+  desc.add_options()("rhs,f", po::value<string>(),
+                     "The right-hand side in MatrixMarket format");
+  desc.add_options()("pmask,m", po::value<string>(),
+                     "The pressure mask in MatrixMarket format. Or, if the parameter has "
+                     "the form '%n:m', then each (n+i*m)-th variable is treated as pressure.");
+  desc.add_options()("ub", po::value<int>()->default_value(1),
+                     "Block-size of the 'flow'/'non-pressure' part of the matrix");
+  desc.add_options()("pb",
+                     po::value<int>()->default_value(1),
+                     "Block-size of the 'pressure' part of the matrix");
+  desc.add_options()("params,P", po::value<string>(),
+                     "parameter file in json format");
+  desc.add_options()("prm,p",
+                     po::value<vector<string>>()->multitoken(),
+                     "Parameters specified as name=value pairs. "
+                     "May be provided multiple times. Examples:\n"
+                     "  -p solver.tol=1e-3\n"
+                     "  -p precond.coarse_enough=300");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -299,7 +299,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  solve_schur(vm["ub"].as<int>(), vm["pb"].as<int>(),
+  solve_schur(context, vm["ub"].as<int>(), vm["pb"].as<int>(),
               std::tie(rows, ptr, col, val), rhs, prm);
 
   std::cout << prof << std::endl;

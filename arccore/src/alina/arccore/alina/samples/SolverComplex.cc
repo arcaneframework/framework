@@ -52,7 +52,8 @@ using Alina::precondition;
 //---------------------------------------------------------------------------
 template <class Precond, class Matrix>
 Alina::SolverResult
-solve(const Matrix& A,
+solve(const AlinaContext& context,
+      const Matrix& A,
       const Alina::PropertyTree& prm,
       std::vector<std::complex<double>> const& f,
       std::vector<std::complex<double>>& x)
@@ -72,7 +73,7 @@ solve(const Matrix& A,
   using Solver = Alina::PreconditionedSolver<Precond, Alina::SolverRuntime<Backend>>;
 
   prof.tic("setup");
-  Solver solve(A, prm);
+  Solver solve(context, A, prm);
   prof.toc("setup");
 
   std::cout << solve << std::endl;
@@ -89,61 +90,63 @@ int main(int argc, char* argv[])
   auto& prof = Alina::Profiler::globalProfiler();
   namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
-
+  Alina::AlinaContext context;
   using std::string;
   using std::vector;
 
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "Show this help.")("prm-file,P",
-                                                  po::value<string>(),
-                                                  "Parameter file in json format. ")(
-  "prm,p",
-  po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
-  "  -p solver.tol=1e-3\n"
-  "  -p precond.coarse_enough=300")("matrix,A",
-                                    po::value<string>(),
-                                    "System matrix in the MatrixMarket format. "
-                                    "When not specified, solves a Poisson problem in 3D unit cube. ")(
-  "rhs,f",
-  po::value<string>(),
-  "The RHS vector in the MatrixMarket format. "
-  "When omitted, a vector of ones is used by default. "
-  "Should only be provided together with a system matrix. ")(
-  "null,N",
-  po::value<string>(),
-  "The near null-space vectors in the MatrixMarket format. "
-  "Should be a dense matrix of size N*M, where N is the number of "
-  "unknowns, and M is the number of null-space vectors. "
-  "Should only be provided together with a system matrix. ")(
-  "binary,B",
-  po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
-  "block-size,b",
-  po::value<int>()->default_value(1),
-  "The block size of the system matrix. "
-  "When specified, the system matrix is assumed to have block-wise structure. "
-  "This usually is the case for problems in elasticity, structural mechanics, "
-  "for coupled systems of PDE (such as Navier-Stokes equations), etc. ")(
-  "size,n",
-  po::value<int>()->default_value(32),
-  "The size of the Poisson problem to solve when no system matrix is given. "
-  "Specified as number of grid nodes along each dimension of a unit cube. "
-  "The resulting system will have n*n*n unknowns. ")(
-  "single-level,1",
-  po::bool_switch()->default_value(false),
-  "When specified, the AMG hierarchy is not constructed. "
-  "Instead, the problem is solved using a single-level smoother as preconditioner. ")(
-  "initial,x",
-  po::value<double>()->default_value(0),
-  "Value to use as initial approximation. ")(
-  "output,o",
-  po::value<string>(),
-  "Output file. Will be saved in the MatrixMarket format. "
-  "When omitted, the solution is not saved. ");
+  desc.add_options()("help,h", "Show this help.");
+  desc.add_options()("prm-file,P",
+                     po::value<string>(),
+                     "Parameter file in json format. ");
+  desc.add_options()("prm,p",
+                     po::value<vector<string>>()->multitoken(),
+                     "Parameters specified as name=value pairs. "
+                     "May be provided multiple times. Examples:\n"
+                     "  -p solver.tol=1e-3\n"
+                     "  -p precond.coarse_enough=300");
+  desc.add_options()("matrix,A",
+                     po::value<string>(),
+                     "System matrix in the MatrixMarket format. "
+                     "When not specified, solves a Poisson problem in 3D unit cube. ");
+  desc.add_options()("rhs,f",
+                     po::value<string>(),
+                     "The RHS vector in the MatrixMarket format. "
+                     "When omitted, a vector of ones is used by default. "
+                     "Should only be provided together with a system matrix. ");
+  desc.add_options()("null,N",
+                     po::value<string>(),
+                     "The near null-space vectors in the MatrixMarket format. "
+                     "Should be a dense matrix of size N*M, where N is the number of "
+                     "unknowns, and M is the number of null-space vectors. "
+                     "Should only be provided together with a system matrix. ");
+  desc.add_options()("binary,B",
+                     po::bool_switch()->default_value(false),
+                     "When specified, treat input files as binary instead of as MatrixMarket. "
+                     "It is assumed the files were converted to binary format with mm2bin utility. ");
+  desc.add_options()("block-size,b",
+                     po::value<int>()->default_value(1),
+                     "The block size of the system matrix. "
+                     "When specified, the system matrix is assumed to have block-wise structure. "
+                     "This usually is the case for problems in elasticity, structural mechanics, "
+                     "for coupled systems of PDE (such as Navier-Stokes equations), etc. ");
+  desc.add_options()("size,n",
+                     po::value<int>()->default_value(32),
+                     "The size of the Poisson problem to solve when no system matrix is given. "
+                     "Specified as number of grid nodes along each dimension of a unit cube. "
+                     "The resulting system will have n*n*n unknowns. ");
+  desc.add_options()("single-level,1",
+                     po::bool_switch()->default_value(false),
+                     "When specified, the AMG hierarchy is not constructed. "
+                     "Instead, the problem is solved using a single-level smoother as preconditioner. ");
+  desc.add_options()("initial,x",
+                     po::value<double>()->default_value(0),
+                     "Value to use as initial approximation. ");
+  desc.add_options()("output,o",
+                     po::value<string>(),
+                     "Output file. Will be saved in the MatrixMarket format. "
+                     "When omitted, the solution is not saved. ");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -236,17 +239,16 @@ int main(int argc, char* argv[])
   case B: { \
     typedef StaticMatrix<std::complex<double>, B, B> value_type; \
     typedef ::Arcane::Alina::BuiltinBackend<value_type> Backend; \
-    r = solve<::Arcane::Alina::PreconditionerRuntime<Backend>>( \
-    ::Arcane::Alina::adapter::block_matrix<value_type>( \
-    std::tie(rows, ptr, col, val)), \
-    prm, rhs, x); \
+    r = solve<::Arcane::Alina::PreconditionerRuntime<Backend>>(context, \
+                                                               ::Arcane::Alina::adapter::block_matrix<value_type>( \
+                                                               std::tie(rows, ptr, col, val)), \
+                                                               prm, rhs, x); \
   } break;
 
   switch (block_size) {
   case 1: {
     typedef Alina::BuiltinBackend<std::complex<double>> Backend;
-    r = solve<PreconditionerRuntime<Backend>>(
-    std::tie(rows, ptr, col, val), prm, rhs, x);
+    r = solve<PreconditionerRuntime<Backend>>(context, std::tie(rows, ptr, col, val), prm, rhs, x);
   } break;
     BOOST_PP_SEQ_FOR_EACH(CALL_BLOCK_SOLVER, ~, ARCCORE_ALINA_BLOCK_SIZES)
   }

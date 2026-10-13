@@ -58,11 +58,13 @@ class PreconditionerOnlySolver
   typedef Alina::detail::empty_params params;
 
   /// Preallocates necessary data structures for the system of size \p n.
-  PreconditionerOnlySolver(size_t n,
+  PreconditionerOnlySolver(const AlinaContext& context,
+                           size_t n,
                            const params& = params(),
                            const backend_params& = backend_params(),
                            const InnerProduct& inner_product = InnerProduct())
-  : n(n)
+  : SolverBase(context)
+  , n(n)
   , inner_product(inner_product)
   {}
 

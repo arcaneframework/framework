@@ -42,7 +42,8 @@ Arcane::Alina::Profiler prof;
 //---------------------------------------------------------------------------
 
 template <class Backend, class Matrix>
-void test_solver(const Matrix& A,
+void test_solver(const Alina::AlinaContext& context,
+                 const Matrix& A,
                  std::shared_ptr<typename Backend::vector> const& f,
                  std::shared_ptr<typename Backend::vector>& x,
                  Alina::eSolverType solver,
@@ -70,11 +71,10 @@ void test_solver(const Matrix& A,
     prm.put("precond.coarsening.nullspace.rows", n);
     prm.put("precond.coarsening.nullspace.B", &null[0]);
   }
-
   using SolverType = PreconditionedSolver<AMG<Backend, CoarseningRuntime, RelaxationRuntime>,
                                           SolverRuntime<Backend>>;
   double t0 = Platform::getRealTime();
-  SolverType solve(A, prm, bprm);
+  SolverType solve(context, A, prm, bprm);
   double t1 = Platform::getRealTime();
 
   std::cout << solve.precond() << std::endl;
@@ -100,7 +100,8 @@ void test_solver(const Matrix& A,
 
 //---------------------------------------------------------------------------
 template <class Backend, class Matrix>
-void test_rap(const Matrix& A,
+void test_rap(const Alina::AlinaContext& context,
+              const Matrix& A,
               std::shared_ptr<typename Backend::vector> const& f,
               std::shared_ptr<typename Backend::vector>& x,
               Alina::eSolverType solver,
@@ -113,7 +114,7 @@ void test_rap(const Matrix& A,
 
   Alina::PreconditionedSolver<Alina::RelaxationAsPreconditioner<Backend, Alina::RelaxationRuntime>,
                               Alina::SolverRuntime<Backend>>
-  solve(A, prm, bprm);
+  solve(context, A, prm, bprm);
 
   std::cout << "Using " << relaxation << " as preconditioner" << std::endl;
 
@@ -128,7 +129,8 @@ void test_rap(const Matrix& A,
 }
 
 template <class Backend, class value_type, class col_type, class ptr_type, class rhs_type>
-void test_problem(bool do_all_relaxation,
+void test_problem(const Alina::AlinaContext& context,
+                  bool do_all_relaxation,
                   size_t n,
                   std::vector<ptr_type> ptr,
                   std::vector<col_type> col,
@@ -174,7 +176,7 @@ void test_problem(bool do_all_relaxation,
   for (Alina::eSolverType s : solver) {
     std::cout << "Solver: " << s << std::endl;
     try {
-      test_solver<Backend>(Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
+      test_solver<Backend>(context, Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
                            y, x, s, relaxation[0], coarsening[0], bprm);
     }
     catch (const std::logic_error&) {
@@ -185,7 +187,7 @@ void test_problem(bool do_all_relaxation,
   for (Alina::eRelaxationType r : relaxation) {
     std::cout << "Relaxation: " << r << std::endl;
     try {
-      test_solver<Backend>(Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
+      test_solver<Backend>(context, Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
                            y, x, solver[0], r, coarsening[0], bprm);
     }
     catch (const std::logic_error&) {
@@ -194,7 +196,7 @@ void test_problem(bool do_all_relaxation,
     try {
       std::cout << "Relaxation as preconditioner: " << r << std::endl;
 
-      test_rap<Backend>(Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
+      test_rap<Backend>(context, Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
                         y, x, solver[0], r, bprm);
     }
     catch (const std::logic_error&) {
@@ -208,7 +210,7 @@ void test_problem(bool do_all_relaxation,
     for (Alina::eRelaxationType r : relaxation) {
       std::cout << "Relaxation: " << r << std::endl;
       try {
-        test_solver<Backend>(Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
+        test_solver<Backend>(context, Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
                              y, x, solver[0], r, c, bprm);
       }
       catch (const std::logic_error&) {
@@ -218,7 +220,7 @@ void test_problem(bool do_all_relaxation,
       case Alina::eCoarserningType::aggregation:
       case Alina::eCoarserningType::smoothed_aggregation:
       case Alina::eCoarserningType::smoothed_aggr_emin:
-        test_solver<Backend>(Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
+        test_solver<Backend>(context, Alina::adapter::zero_copy_direct(n, ptr.data(), col.data(), val.data()),
                              y, x, solver[0], r, c, bprm, /*test_null_space*/ true);
         break;
       default:
@@ -236,7 +238,7 @@ extern "C++"
 Int32 getTestBackendDefaultProblemSize();
 
 template <class Backend>
-void test_backend(bool do_all_relaxation = false, Int32 problem_size = 0,
+void test_backend(const Alina::AlinaContext& context, bool do_all_relaxation = false, Int32 problem_size = 0,
                   typename Backend::params const& bprm = typename Backend::params())
 {
   typedef typename Backend::value_type value_type;
@@ -256,7 +258,7 @@ void test_backend(bool do_all_relaxation = false, Int32 problem_size = 0,
 
     size_t n = Alina::PoissonProblemGenerator::createSequentialMatrix(problem_size, val, col, ptr, rhs);
 
-    test_problem<Backend>(do_all_relaxation, n, ptr, col, val, rhs, bprm);
+    test_problem<Backend>(context, do_all_relaxation, n, ptr, col, val, rhs, bprm);
   }
 
   // Trivial problem
@@ -278,7 +280,7 @@ void test_backend(bool do_all_relaxation = false, Int32 problem_size = 0,
 
     size_t n = rhs.size();
 
-    test_problem<Backend>(do_all_relaxation, n, ptr, col, val, rhs, bprm);
+    test_problem<Backend>(context, do_all_relaxation, n, ptr, col, val, rhs, bprm);
   }
 }
 

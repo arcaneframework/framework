@@ -222,6 +222,7 @@ int main(int argc, char* argv[])
   auto& prof = Alina::Profiler::globalProfiler();
   Ref<IMessagePassingMng> mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
   Alina::AlinaCommunicator world(mpm);
+  Alina::AlinaContext context;
 
   if (world.rank == 0)
     std::cout << "World size: " << world.size << std::endl;
@@ -240,38 +241,34 @@ int main(int argc, char* argv[])
   namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "show help")(
-  "coarsening,c",
-  po::value<Alina::eCoarserningType>(&coarsening)->default_value(coarsening),
-  "ruge_stuben, aggregation, smoothed_aggregation, smoothed_aggr_emin")(
-  "relaxation,r",
-  po::value<Alina::eRelaxationType>(&relaxation)->default_value(relaxation),
-  "gauss_seidel, ilu0, damped_jacobi, spai0, chebyshev")(
-  "iter_solver,i",
-  po::value<Alina::eSolverType>(&iterative_solver)->default_value(iterative_solver),
-  "cg, bicgstab, bicgstabl, gmres")(
-  "dir_solver,d",
-  po::value<Alina::eDistributedDirectSolverType>(&direct_solver)->default_value(direct_solver),
-  "skyline_lu"
-#ifdef ARCCORE_ALINA_HAVE_PASTIX
-  ", pastix"
-#endif
-  )(
-  "params,p",
-  po::value<std::string>(&parameter_file),
-  "parameter file in json format")(
-  "matrix,A",
-  po::value<std::string>(&A_file)->default_value(A_file),
-  "The system matrix in MatrixMarket format")(
-  "rhs,b",
-  po::value<std::string>(&rhs_file)->default_value(rhs_file),
-  "The right-hand side in MatrixMarket format")(
-  "part,s",
-  po::value<std::string>(&part_file)->default_value(part_file),
-  "Partitioning of the problem in MatrixMarket format")(
-  "output,o",
-  po::value<std::string>(&out_file),
-  "The output file (saved in MatrixMarket format)");
+  desc.add_options()("help,h", "show help");
+  desc.add_options()("coarsening,c",
+                     po::value<Alina::eCoarserningType>(&coarsening)->default_value(coarsening),
+                     "ruge_stuben, aggregation, smoothed_aggregation, smoothed_aggr_emin");
+  desc.add_options()("relaxation,r",
+                     po::value<Alina::eRelaxationType>(&relaxation)->default_value(relaxation),
+                     "gauss_seidel, ilu0, damped_jacobi, spai0, chebyshev");
+  desc.add_options()("iter_solver,i",
+                     po::value<Alina::eSolverType>(&iterative_solver)->default_value(iterative_solver),
+                     "cg, bicgstab, bicgstabl, gmres");
+  desc.add_options()("dir_solver,d",
+                     po::value<Alina::eDistributedDirectSolverType>(&direct_solver)->default_value(direct_solver),
+                     "skyline_lu");
+  desc.add_options()("params,p",
+                     po::value<std::string>(&parameter_file),
+                     "parameter file in json format");
+  desc.add_options()("matrix,A",
+                     po::value<std::string>(&A_file)->default_value(A_file),
+                     "The system matrix in MatrixMarket format");
+  desc.add_options()("rhs,b",
+                     po::value<std::string>(&rhs_file)->default_value(rhs_file),
+                     "The right-hand side in MatrixMarket format");
+  desc.add_options()("part,s",
+                     po::value<std::string>(&part_file)->default_value(part_file),
+                     "Partitioning of the problem in MatrixMarket format");
+  desc.add_options()("output,o",
+                     po::value<std::string>(&out_file),
+                     "The output file (saved in MatrixMarket format)");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -319,7 +316,7 @@ int main(int argc, char* argv[])
   prm.put("num_def_vec", block_size);
   prm.put("def_vec", &dv);
 
-  SDD solve(world, std::tie(chunk, ptr, col, val), prm);
+  SDD solve(context, world, std::tie(chunk, ptr, col, val), prm);
   double tm_setup = prof.toc("setup");
 
   std::vector<double> x(chunk, 0);

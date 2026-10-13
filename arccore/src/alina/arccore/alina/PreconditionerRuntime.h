@@ -107,7 +107,8 @@ class PreconditionerRuntime
   typedef Alina::PropertyTree params;
 
   template <class Matrix>
-  PreconditionerRuntime(const Matrix& A,
+  PreconditionerRuntime(const Alina::AlinaContext& context,
+                        const Matrix& A,
                         params prm = params(),
                         const backend_params& bprm = backend_params())
   : _class(prm.get("class", ePreconditionerType::amg))
@@ -119,22 +120,22 @@ class PreconditionerRuntime
     switch (_class) {
     case ePreconditionerType::amg: {
       typedef Alina::AMG<Backend, CoarseningRuntime, RelaxationRuntime> Precond;
-      handle = static_cast<void*>(new Precond(A, prm, bprm));
+      handle = new Precond(context, A, prm, bprm);
     } break;
     case ePreconditionerType::relaxation: {
       typedef Alina::RelaxationAsPreconditioner<Backend, RelaxationRuntime> Precond;
-      handle = static_cast<void*>(new Precond(A, prm, bprm));
+      handle = new Precond(context, A, prm, bprm);
     } break;
     case ePreconditionerType::dummy: {
       typedef Alina::preconditioner::DummyPreconditioner<Backend> Precond;
-      handle = static_cast<void*>(new Precond(A, prm, bprm));
+      handle = new Precond(context, A, prm, bprm);
     } break;
     case ePreconditionerType::nested: {
       typedef PreconditionedSolver<PreconditionerRuntime, SolverRuntime<Backend>> Precond;
-      handle = static_cast<void*>(new Precond(A, prm, bprm));
+      handle = new Precond(context, A, prm, bprm);
     } break;
     default:
-      throw std::invalid_argument("Unsupported preconditioner class");
+      ARCCORE_FATAL("Unsupported preconditioner class '{0}'", _class);
     }
   }
 

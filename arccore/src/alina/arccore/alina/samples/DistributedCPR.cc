@@ -157,6 +157,7 @@ int main(int argc, char* argv[])
   auto mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
   Alina::AlinaCommunicator comm(mpm);
 
+  Alina::AlinaContext context;
   if (comm.rank == 0)
     std::cout << "World size: " << comm.size << std::endl;
 
@@ -164,37 +165,39 @@ int main(int argc, char* argv[])
   namespace po = Arcane::ProgramOptions;
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "show help")("matrix,A",
-                                            po::value<std::string>(),
-                                            "System matrix in the MatrixMarket format. "
-                                            "When not specified, a Poisson problem in 3D unit cube is assembled. ")(
-  "rhs,f",
-  po::value<std::string>()->default_value(""),
-  "The RHS vector in the MatrixMarket format. "
-  "When omitted, a vector of ones is used by default. "
-  "Should only be provided together with a system matrix. ")(
-  "binary,B",
-  po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
-  "block-size,b",
-  po::value<int>()->default_value(1),
-  "The block size of the system matrix. ")(
-  "partitioner,r",
-  po::value<Alina::eMatrixPartitionerType>()->default_value(
+  desc.add_options()("help,h", "show help");
+  desc.add_options()("matrix,A",
+                     po::value<std::string>(),
+                     "System matrix in the MatrixMarket format. "
+                     "When not specified, a Poisson problem in 3D unit cube is assembled. ");
+  desc.add_options()("rhs,f",
+                     po::value<std::string>()->default_value(""),
+                     "The RHS vector in the MatrixMarket format. "
+                     "When omitted, a vector of ones is used by default. "
+                     "Should only be provided together with a system matrix. ");
+  desc.add_options()("binary,B",
+                     po::bool_switch()->default_value(false),
+                     "When specified, treat input files as binary instead of as MatrixMarket. "
+                     "It is assumed the files were converted to binary format with mm2bin utility. ");
+  desc.add_options()("block-size,b",
+                     po::value<int>()->default_value(1),
+                     "The block size of the system matrix. ");
+  desc.add_options()("partitioner,r",
+                     po::value<Alina::eMatrixPartitionerType>()->default_value(
 #if defined(ARCCORE_ALINA_HAVE_PARMETIS)
-  Alina::eMatrixPartitionerType::parmetis
+                     Alina::eMatrixPartitionerType::parmetis
 #endif
-  ),
-  "Repartition the system matrix")("prm-file,P",
-                                   po::value<std::string>(),
-                                   "Parameter file in json format. ")(
-  "prm,p",
-  po::value<std::vector<std::string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
-  "  -p solver.tol=1e-3\n"
-  "  -p precond.coarse_enough=300");
+                     ),
+                     "Repartition the system matrix");
+  desc.add_options()("prm-file,P",
+                     po::value<std::string>(),
+                     "Parameter file in json format. ");
+  desc.add_options()("prm,p",
+                     po::value<std::vector<std::string>>()->multitoken(),
+                     "Parameters specified as name=value pairs. "
+                     "May be provided multiple times. Examples:\n"
+                     "  -p solver.tol=1e-3\n"
+                     "  -p precond.coarse_enough=300");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -257,13 +260,13 @@ int main(int argc, char* argv[])
                              MatrixPartitionerRuntime<Backend>>;
 
   typedef DistributedPreconditionedSolver<
-    DistributedCPRPreconditioner<
-      AMG,
-      AsDistributedPreconditioner<DistributedRelaxationRuntime<Backend>>>,
-    DistributedSolverRuntime<Backend>>
+  DistributedCPRPreconditioner<
+  AMG,
+  AsDistributedPreconditioner<DistributedRelaxationRuntime<Backend>>>,
+  DistributedSolverRuntime<Backend>>
   Solver;
 
-  Solver solve(comm, A, prm);
+  Solver solve(context, comm, A, prm);
   prof.toc("setup");
 
   if (comm.rank == 0)

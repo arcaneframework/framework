@@ -52,15 +52,16 @@ TEST(alina_test_complex, complex_matrix_adapter)
 
   std::vector<complex> x(n, complex(0.0, 0.0));
 
-  typedef Alina::BuiltinBackend<double> Backend;
+  using Backend = Alina::BuiltinBackend<double>;
 
   Alina::PropertyTree prm;
+  Alina::AlinaContext context;
   prm.put("precond.coarsening.aggr.block_size", 2);
 
   using AMGType = Alina::AMG<Backend, Alina::SmoothedAggregationCoarserning, Alina::SPAI0Relaxation>;
   using SolverType = Alina::PreconditionedSolver<AMGType, Alina::BiCGStabSolver<Backend>>;
 
-  SolverType solve(Alina::adapter::complex_matrix(std::tie(n, ptr, col, val)), prm);
+  SolverType solve(context, Alina::adapter::complex_matrix(std::tie(n, ptr, col, val)), prm);
 
   std::cout << solve.precond() << std::endl;
 

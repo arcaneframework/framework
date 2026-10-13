@@ -26,7 +26,8 @@
 void _doTestSolverBuiltinUInt32SizeT(bool use_accelerator, Int32 max_allowed_thread)
 {
   Accelerator::Initializer x(use_accelerator, max_allowed_thread);
-  test_backend< Alina::BuiltinBackend<double, uint32_t, size_t> >();
+  Alina::AlinaContext context;
+  test_backend< Alina::BuiltinBackend<double, uint32_t, size_t> >(context);
 }
 
 ARCCORE_ALINA_TEST_DO_TEST_ACCELERATOR(alina_test_solvers, test_builtin_backend_uint32_sizet, _doTestSolverBuiltinUInt32SizeT);

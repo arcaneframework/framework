@@ -47,40 +47,43 @@ int main(int argc, char* argv[])
   using std::string;
   using std::vector;
 
+  Alina::AlinaContext context;
   po::options_description desc("Options");
 
-  desc.add_options()("help,h", "Show this help.")("prm-file,P",
-                                                  po::value<string>(),
-                                                  "Parameter file in json format. ")(
-  "prm,p",
-  po::value<vector<string>>()->multitoken(),
-  "Parameters specified as name=value pairs. "
-  "May be provided multiple times. Examples:\n"
-  "  -p solver.tol=1e-3\n"
-  "  -p precond.coarse_enough=300")("matrix,A",
-                                    po::value<string>()->required(),
-                                    "System matrix in the MatrixMarket format.")(
-  "rhs,f",
-  po::value<string>(),
-  "The RHS vector in the MatrixMarket format. "
-  "When omitted, a vector of ones is used by default. "
-  "Should only be provided together with a system matrix. ")(
-  "scale,s",
-  po::bool_switch()->default_value(false),
-  "Scale the matrix so that the diagonal is unit. ")(
-  "null,N",
-  po::value<string>(),
-  "Starting null-vectors in the MatrixMarket format. ")(
-  "numvec,n",
-  po::value<int>()->default_value(3),
-  "The number of near nullspace vectors to search for. ")(
-  "binary,B",
-  po::bool_switch()->default_value(false),
-  "When specified, treat input files as binary instead of as MatrixMarket. "
-  "It is assumed the files were converted to binary format with mm2bin utility. ")(
-  "output,o",
-  po::value<string>(),
-  "Output the computed nullspace to the MatrixMarket file.");
+  desc.add_options()("help,h", "Show this help.");
+  desc.add_options()("prm-file,P",
+                     po::value<string>(),
+                     "Parameter file in json format. ");
+  desc.add_options()("prm,p",
+                     po::value<vector<string>>()->multitoken(),
+                     "Parameters specified as name=value pairs. "
+                     "May be provided multiple times. Examples:\n"
+                     "  -p solver.tol=1e-3\n"
+                     "  -p precond.coarse_enough=300");
+  desc.add_options()("matrix,A",
+                     po::value<string>()->required(),
+                     "System matrix in the MatrixMarket format.");
+  desc.add_options()("rhs,f",
+                     po::value<string>(),
+                     "The RHS vector in the MatrixMarket format. "
+                     "When omitted, a vector of ones is used by default. "
+                     "Should only be provided together with a system matrix. ");
+  desc.add_options()("scale,s",
+                     po::bool_switch()->default_value(false),
+                     "Scale the matrix so that the diagonal is unit. ");
+  desc.add_options()("null,N",
+                     po::value<string>(),
+                     "Starting null-vectors in the MatrixMarket format. ");
+  desc.add_options()("numvec,n",
+                     po::value<int>()->default_value(3),
+                     "The number of near nullspace vectors to search for. ");
+  desc.add_options()("binary,B",
+                     po::bool_switch()->default_value(false),
+                     "When specified, treat input files as binary instead of as MatrixMarket. "
+                     "It is assumed the files were converted to binary format with mm2bin utility. ");
+  desc.add_options()("output,o",
+                     po::value<string>(),
+                     "Output the computed nullspace to the MatrixMarket file.");
 
   po::positional_options_description p;
   p.add("prm", -1);
@@ -230,7 +233,7 @@ int main(int argc, char* argv[])
     }
 
     prof.tic("setup");
-    Solver S(A, prm);
+    Solver S(context, A, prm);
     prof.toc("setup");
 
     std::cout << std::endl
@@ -280,7 +283,7 @@ int main(int argc, char* argv[])
     prm.put("precond.coarsening.nullspace.B", N.data());
 
     prof.tic("setup");
-    Solver S(A, prm);
+    Solver S(context, A, prm);
     prof.toc("setup");
 
     std::cout << std::endl

@@ -61,9 +61,9 @@ int main()
   auto A_d = std::tie(n, ptr, col, val);
   std::vector<double>& f = rhs;
   std::vector<double> x(n, 0.0);
-
+  Alina::AlinaContext context;
   ARCCORE_ALINA_TIC("setup");
-  Solver S(std::tie(n, ptr, col, val), Solver::params(), bprm);
+  Solver S(context, std::tie(n, ptr, col, val), Solver::params(), bprm);
   ARCCORE_ALINA_TIC("setup");
 
   std::cout << S << std::endl;

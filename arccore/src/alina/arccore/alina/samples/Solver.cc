@@ -78,7 +78,8 @@ using Alina::precondition;
 
 //---------------------------------------------------------------------------
 template <int B> Alina::SolverResult
-block_solve(const Alina::PropertyTree& prm,
+block_solve(const Alina::AlinaContext& context,
+            const Alina::PropertyTree& prm,
             size_t rows,
             std::vector<ptrdiff_t> const& ptr,
             std::vector<ptrdiff_t> const& col,
@@ -106,7 +107,7 @@ block_solve(const Alina::PropertyTree& prm,
     prof.toc("reorder");
 
     prof.tic("setup");
-    Solver solve(perm(Ab), prm);
+    Solver solve(context, perm(Ab), prm);
     prof.toc("setup");
 
     std::cout << solve << std::endl;
@@ -125,7 +126,7 @@ block_solve(const Alina::PropertyTree& prm,
   }
   else {
     prof.tic("setup");
-    Solver solve(Ab, prm);
+    Solver solve(context, Ab, prm);
     prof.toc("setup");
 
     std::cout << solve << std::endl;
@@ -149,7 +150,8 @@ block_solve(const Alina::PropertyTree& prm,
 
 //---------------------------------------------------------------------------
 Alina::SolverResult
-scalar_solve(const Alina::PropertyTree& prm,
+scalar_solve(const Alina::AlinaContext& context,
+             const Alina::PropertyTree& prm,
              size_t rows,
              std::vector<ptrdiff_t> const& ptr,
              std::vector<ptrdiff_t> const& col,
@@ -189,7 +191,7 @@ scalar_solve(const Alina::PropertyTree& prm,
     prof.toc("reorder");
 
     prof.tic("setup");
-    Solver solve(perm(std::tie(rows, ptr, col, val)), prm, bprm);
+    Solver solve(context, perm(std::tie(rows, ptr, col, val)), prm, bprm);
     prof.toc("setup");
 
     std::cout << solve << std::endl;
@@ -216,7 +218,7 @@ scalar_solve(const Alina::PropertyTree& prm,
   }
   else {
     prof.tic("setup");
-    Solver solve(std::tie(rows, ptr, col, val), prm, bprm);
+    Solver solve(context, std::tie(rows, ptr, col, val), prm, bprm);
     prof.toc("setup");
 
     std::cout << solve << std::endl;
@@ -240,11 +242,12 @@ scalar_solve(const Alina::PropertyTree& prm,
 
 #define ARCCORE_ALINA_CALL_BLOCK_SOLVER(z, data, B)                                    \
   case B:                                                                      \
-    return block_solve<B>(prm, rows, ptr, col, val, rhs, x, reorder);
+    return block_solve<B>(context, prm, rows, ptr, col, val, rhs, x, reorder);
 
 //---------------------------------------------------------------------------
 Alina::SolverResult
-solve(const Alina::PropertyTree& prm,
+solve(const Alina::AlinaContext& context,
+      const Alina::PropertyTree& prm,
       size_t rows,
       std::vector<ptrdiff_t> const& ptr,
       std::vector<ptrdiff_t> const& col,
@@ -256,7 +259,7 @@ solve(const Alina::PropertyTree& prm,
 {
   switch (block_size) {
   case 1:
-    return scalar_solve(prm, rows, ptr, col, val, rhs, x, reorder);
+    return scalar_solve(context, prm, rows, ptr, col, val, rhs, x, reorder);
 #if defined(SOLVER_BACKEND_BUILTIN)
     BOOST_PP_SEQ_FOR_EACH(ARCCORE_ALINA_CALL_BLOCK_SOLVER, ~, ARCCORE_ALINA_BLOCK_SIZES)
 #endif
@@ -267,11 +270,13 @@ solve(const Alina::PropertyTree& prm,
 }
 
 //---------------------------------------------------------------------------
+
 int main(int argc, char* argv[])
 {
   auto& prof = Alina::Profiler::globalProfiler();
   namespace po = Arcane::ProgramOptions;
   namespace io = Alina::IO;
+  Alina::AlinaContext context;
 
   using std::string;
   using std::vector;
@@ -529,7 +534,7 @@ int main(int argc, char* argv[])
 #endif
   }
   else {
-    solver_result = solve(prm, rows, ptr, col, val, rhs, x, block_size, vm["reorder"].as<bool>());
+    solver_result = solve(context, prm, rows, ptr, col, val, rhs, x, block_size, vm["reorder"].as<bool>());
 
     if (vm.count("output")) {
       auto t = prof.scoped_tic("write");

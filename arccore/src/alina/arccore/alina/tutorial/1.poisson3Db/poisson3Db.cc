@@ -69,6 +69,8 @@ int main(int argc, char* argv[])
   std::cout << "RHS " << argv[2] << ": " << rows << "x" << cols << std::endl;
   prof.toc("read");
 
+  Alina::AlinaContext context;
+
   // We use the tuple of CRS arrays to represent the system matrix.
   // Note that std::tie creates a tuple of references, so no data is actually
   // copied here:
@@ -92,7 +94,7 @@ int main(int argc, char* argv[])
 
   // Initialize the solver with the system matrix:
   prof.tic("setup");
-  Solver solve(A);
+  Solver solve(context, A);
   prof.toc("setup");
 
   // Show the mini-report on the constructed solver:

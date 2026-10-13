@@ -181,7 +181,8 @@ class DistributedSubDomainDeflation
   typedef DistributedMatrix<backend_type> matrix;
 
   template <class Matrix>
-  DistributedSubDomainDeflation(AlinaCommunicator comm,
+  DistributedSubDomainDeflation(const AlinaContext& context,
+                                AlinaCommunicator comm,
                                 const Matrix& Astrip,
                                 const params& prm = params(),
                                 const backend_params& bprm = backend_params())
@@ -191,13 +192,14 @@ class DistributedSubDomainDeflation
   , dv_start(comm.size + 1, 0)
   , Z(ndv)
   , q(backend_type::create_vector(nrows, bprm))
-  , S(nrows, prm.isolver, bprm, DistributedInnerProduct(comm))
+  , S(context, nrows, prm.isolver, bprm, DistributedInnerProduct(comm))
   {
     A = std::make_shared<matrix>(comm, Astrip, nrows);
-    init(prm, bprm);
+    init(context, prm, bprm);
   }
 
-  DistributedSubDomainDeflation(AlinaCommunicator comm,
+  DistributedSubDomainDeflation(const AlinaContext& context,
+                                AlinaCommunicator comm,
                                 std::shared_ptr<matrix> A,
                                 const params& prm = params(),
                                 const backend_params& bprm = backend_params())
@@ -208,12 +210,13 @@ class DistributedSubDomainDeflation
   , dv_start(comm.size + 1, 0)
   , Z(ndv)
   , q(backend_type::create_vector(nrows, bprm))
-  , S(nrows, prm.isolver, bprm, DistributedInnerProduct(comm))
+  , S(context, nrows, prm.isolver, bprm, DistributedInnerProduct(comm))
   {
-    init(prm, bprm);
+    init(context, prm, bprm);
   }
 
-  void init(const params& prm = params(),
+  void init(const AlinaContext& context,
+            const params& prm = params(),
             const backend_params& bprm = backend_params())
   {
     ARCCORE_ALINA_TIC("setup deflation");
@@ -300,7 +303,7 @@ class DistributedSubDomainDeflation
 
     // Create local preconditioner.
     ARCCORE_ALINA_TIC("local preconditioner");
-    P = std::make_shared<LocalPrecond>(*a_loc, prm.local, bprm);
+    P = std::make_shared<LocalPrecond>(context, *a_loc, prm.local, bprm);
     ARCCORE_ALINA_TOC("local preconditioner");
 
     A->set_local(P->system_matrix_ptr());

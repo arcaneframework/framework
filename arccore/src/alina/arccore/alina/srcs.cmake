@@ -9,6 +9,7 @@
 # Files not installed with this component
 set(SOURCES_INTERNAL
   Adapters.h
+  AlinaContext.h
   AMG.h
   BlockCSRBackend.h
   BuiltinBackend.h

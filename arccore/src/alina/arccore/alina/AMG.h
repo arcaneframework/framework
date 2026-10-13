@@ -187,7 +187,8 @@ class AMG
    * \param p AMG parameters.
    */
   template <class Matrix>
-  explicit AMG(const Matrix& M, const params& p = params(),
+  explicit AMG([[maybe_unused]] const AlinaContext& context,
+               const Matrix& M, const params& p = params(),
                const backend_params& bprm = backend_params())
   : prm(p)
   {
@@ -209,7 +210,8 @@ class AMG
    * \param A The system matrix.
    * \param p AMG parameters.
    */
-  explicit AMG(std::shared_ptr<build_matrix> A,
+  explicit AMG([[maybe_unused]] const AlinaContext& context,
+               std::shared_ptr<build_matrix> A,
                const params& p = params(),
                const backend_params& bprm = backend_params())
   : prm(p)

@@ -48,13 +48,14 @@ using namespace Arcane;
 
 int main(int argc, char* argv[])
 {
+  using namespace Arcane::Alina;
   // The command line should contain the matrix, the RHS, and the coordinate files:
   if (argc < 4) {
     std::cerr << "Usage: " << argv[0] << " <A.mtx> <b.mtx> <coo.mtx>" << std::endl;
     return 1;
   }
-
-  auto& prof = Alina::Profiler::globalProfiler();
+  AlinaContext context;
+  auto& prof = Profiler::globalProfiler();
 
   // Read the system matrix, the RHS, and the coordinates:
   ptrdiff_t rows, cols, ndim, ncoo;
@@ -75,17 +76,15 @@ int main(int argc, char* argv[])
   std::cout << "Coords " << argv[3] << ": " << ncoo << "x" << ndim << std::endl;
 
   // Declare the solver type
-  typedef Alina::StaticMatrix<double, 3, 3> DBlock;
-  typedef Alina::StaticMatrix<float, 3, 3> FBlock;
-  typedef Alina::BuiltinBackend<DBlock> SBackend; // the solver backend
-  typedef Alina::BuiltinBackend<FBlock> PBackend; // the preconditioner backend
+  typedef StaticMatrix<double, 3, 3> DBlock;
+  typedef StaticMatrix<float, 3, 3> FBlock;
+  typedef BuiltinBackend<DBlock> SBackend; // the solver backend
+  typedef BuiltinBackend<FBlock> PBackend; // the preconditioner backend
 
-  typedef Alina::PreconditionedSolver<
-  Alina::AMG<PBackend,
-             Alina::AsScalarCoarsening<Alina::SmoothedAggregationCoarserning>::type,
-             Alina::ILU0Relaxation>,
-  Alina::ConjugateGradientSolver<SBackend>>
-  Solver;
+  using Solver = PreconditionedSolver<AMG<PBackend,
+                                          AsScalarCoarsening<SmoothedAggregationCoarserning>::type,
+                                          ILU0Relaxation>,
+                                      ConjugateGradientSolver<SBackend>>;
 
   // Solver parameters:
   Solver::params prm;
@@ -104,7 +103,7 @@ int main(int argc, char* argv[])
 
   // Initialize the solver with the system matrix.
   prof.tic("setup");
-  Solver solve(Ab, prm);
+  Solver solve(context, Ab, prm);
   prof.toc("setup");
 
   // Show the mini-report on the constructed solver:

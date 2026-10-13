@@ -171,7 +171,8 @@ partition(Alina::AlinaCommunicator comm, const Matrix& Astrip,
 //---------------------------------------------------------------------------
 #if defined(SOLVER_BACKEND_BUILTIN)
 template <int B>
-void solve_block(Alina::AlinaCommunicator comm,
+void solve_block(const Alina::AlinaContext& context,
+                 Alina::AlinaCommunicator comm,
                  ptrdiff_t chunk,
                  const std::vector<ptrdiff_t>& ptr,
                  const std::vector<ptrdiff_t>& col,
@@ -224,7 +225,7 @@ void solve_block(Alina::AlinaCommunicator comm,
   {
     auto t = prof.scoped_tic("setup");
     A = get_distributed_matrix();
-    solve = std::make_shared<Solver>(comm, A, prm, bprm);
+    solve = std::make_shared<Solver>(context, comm, A, prm, bprm);
   }
 
   if (comm.rank == 0) {
@@ -262,7 +263,8 @@ void solve_block(Alina::AlinaCommunicator comm,
 #endif
 
 //---------------------------------------------------------------------------
-void solve_scalar(Alina::AlinaCommunicator comm,
+void solve_scalar(const Alina::AlinaContext& context,
+                  Alina::AlinaCommunicator comm,
                   ptrdiff_t chunk,
                   const std::vector<ptrdiff_t>& ptr,
                   const std::vector<ptrdiff_t>& col,
@@ -321,7 +323,7 @@ void solve_scalar(Alina::AlinaCommunicator comm,
   {
     auto t = prof.scoped_tic("setup");
     A = get_distributed_matrix();
-    solve = std::make_shared<Solver>(comm, A, prm, bprm);
+    solve = std::make_shared<Solver>(context, comm, A, prm, bprm);
   }
 
   if (comm.rank == 0) {
@@ -369,9 +371,9 @@ int main(int argc, char* argv[])
 
   Ref<IMessagePassingMng> mpm = MessagePassing::Mpi::StandaloneMpiMessagePassingMng::createAndInitializeMPI(&argc, &argv, MPI_THREAD_MULTIPLE);
   Alina::AlinaCommunicator comm(mpm);
-
   if (comm.rank == 0)
     std::cout << "World size: " << comm.size << std::endl;
+  Alina::AlinaContext context;
 
   // Read configuration from command line
   namespace po = Arcane::ProgramOptions;
@@ -535,7 +537,7 @@ int main(int argc, char* argv[])
 #if defined(SOLVER_BACKEND_BUILTIN)
 #define ARCCORE_ALINA_CALL_BLOCK_SOLVER(z, data, B) \
   case B: \
-    solve_block<B>(comm, n, ptr, col, val, prm, rhs, ptype); \
+    solve_block<B>(context, comm, n, ptr, col, val, prm, rhs, ptype);  \
     break;
 
     BOOST_PP_SEQ_FOR_EACH(ARCCORE_ALINA_CALL_BLOCK_SOLVER, ~, ARCCORE_ALINA_BLOCK_SIZES)
@@ -544,7 +546,7 @@ int main(int argc, char* argv[])
 #endif
 
   case 1:
-    solve_scalar(comm, n, ptr, col, val, prm, rhs, ptype);
+    solve_scalar(context, comm, n, ptr, col, val, prm, rhs, ptype);
     break;
   default:
     if (comm.rank == 0)
