@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshHandle.h                                                (C) 2000-2025 */
+/* MeshHandle.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* Handle on a mesh.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/StringView.h"
 #include "arccore/base/String.h"
+#include "arccore/base/AutoRef2.h"
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/core/ArcaneTypes.h"
@@ -31,7 +32,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Handle on a mesh.
  *
@@ -53,55 +53,17 @@ class ARCANE_CORE_EXPORT MeshHandle
 
  private:
 
-  class MeshHandleRef
-  : public Arccore::ReferenceCounterImpl
-  {
-   public:
-
-    MeshHandleRef()
-    : m_is_null(true)
-    {}
-    MeshHandleRef(ISubDomain* sd, const String& name);
-    ~MeshHandleRef();
-
-   public:
-
-    const String& meshName() const { return m_mesh_name; }
-    bool isNull() const { return m_is_null; }
-    IMesh* mesh() const { return m_mesh_ptr; }
-    IMeshBase* meshBase() const { return m_mesh_base_ptr; }
-    ISubDomain* subDomain() const { return m_sub_domain; }
-    IMeshMng* meshMng() const { return m_mesh_mng; }
-    ITraceMng* traceMng() const { return m_trace_mng; }
-    IVariableMng* variableMng() const { return m_variable_mng; }
-    IUserDataList* userDataList() const { return m_user_data_list; }
-    Observable* onDestroyObservable() const { return m_on_destroy_observable; }
-    bool isDoFatalInMeshMethod() const { return m_do_fatal_in_mesh_method; }
-
-   public:
-
-    void _destroyMesh();
-    void _setMesh(IMesh* mesh);
-
-   private:
-
-    String m_mesh_name;
-    IMesh* m_mesh_ptr = nullptr;
-    IMeshBase* m_mesh_base_ptr = nullptr;
-    // For now we need it, but it should be removed
-    ISubDomain* m_sub_domain = nullptr;
-    IUserDataList* m_user_data_list = nullptr;
-    IMeshMng* m_mesh_mng = nullptr;
-    ITraceMng* m_trace_mng = nullptr;
-    IVariableMng* m_variable_mng = nullptr;
-    Observable* m_on_destroy_observable = nullptr;
-    bool m_is_null = true;
-    bool m_do_fatal_in_mesh_method = false;
-  };
+  class MeshHandleRef;
 
  public:
 
   MeshHandle();
+  ~MeshHandle();
+
+  MeshHandle(const MeshHandle&);
+  MeshHandle& operator=(const MeshHandle&);
+  MeshHandle(MeshHandle&&) noexcept;
+  MeshHandle& operator=(MeshHandle&&) noexcept;
 
  private:
 
@@ -138,7 +100,7 @@ class ARCANE_CORE_EXPORT MeshHandle
 
   //! Associated sub-domain. Null if isNull() is true.
   ARCCORE_DEPRECATED_2020("Do not use this method. Try to get ISubDomain from another way")
-  ISubDomain* subDomain() const { return m_ref->subDomain(); }
+  ISubDomain* subDomain() const;
 
  public:
 
@@ -155,12 +117,12 @@ class ARCANE_CORE_EXPORT MeshHandle
   IApplication* application() const;
 
   //! Associated user data
-  IUserDataList* meshUserDataList() const { return m_ref->userDataList(); }
+  IUserDataList* meshUserDataList() const;
 
-  const String& meshName() const { return m_ref->meshName(); }
+  String meshName() const;
 
   //! Indicates if the handle is null (it does not reference any existing mesh or not)
-  bool isNull() const { return m_ref->isNull(); }
+  bool isNull() const;
 
   //! Observable to be notified of destruction
   IObservable* onDestroyObservable() const;
@@ -170,23 +132,24 @@ class ARCANE_CORE_EXPORT MeshHandle
 
  public:
 
-  //! \internal
-  void _setMesh(IMesh* mesh) { m_ref->_setMesh(mesh); }
+  // TODO: Make these privates and add friend on them
 
   //! \internal
-  void _destroyMesh() { m_ref->_destroyMesh(); }
+  void _setMesh(IMesh* mesh);
 
   //! \internal
-  IMesh* _internalMeshOrNull() const { return m_ref->mesh(); }
+  void _destroyMesh();
+
+  //! \internal
+  IMesh* _internalMeshOrNull() const;
 
  private:
 
-  Arccore::ReferenceCounter<MeshHandleRef> m_ref;
+  AutoRef2<MeshHandleRef> m_ref;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Compatibility class to hold a MeshHandle or an IMesh*.
  *
