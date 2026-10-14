@@ -132,9 +132,12 @@ void MeshHandle::MeshHandleRef::
 _setMesh(IMesh* mesh)
 {
   m_mesh_ptr = mesh;
-  // We need to keep a reference for the parallel mng because it may have
-  // been creating during mesh building and no longer have reference after.
-  m_parallel_mng_ref = makeRef(mesh->parallelMng());
+  if (mesh)
+    // We need to keep a reference for the parallel mng because it may have
+    // been creating during mesh building and no longer have reference after.
+    m_parallel_mng_ref = makeRef(mesh->parallelMng());
+  else
+    m_parallel_mng_ref.reset();
 }
 
 /*---------------------------------------------------------------------------*/
