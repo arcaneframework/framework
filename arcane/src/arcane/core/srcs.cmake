@@ -237,6 +237,7 @@ set(ARCANE_ORIGINAL_SOURCES
   ILoadBalanceMng.h
   IMeshArea.h
   IMeshBuilder.h
+  IMeshBuilderCustomiser.h
   IMeshChecker.h
   IMeshCompactMng.h
   IMeshCompacter.h
