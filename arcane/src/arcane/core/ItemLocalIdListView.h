@@ -27,6 +27,7 @@ class MeshUnitTest;
 
 namespace Arcane
 {
+class ItemLocalIdListViewConstIterator;
 namespace mesh
 {
   class IndexedItemConnectivityAccessor;
@@ -34,7 +35,31 @@ namespace mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Sentinel for method ItemLocalIdListView::end().
+ */
+class ItemLocalIdListViewIteratorSentinel
+{
+  friend ItemLocalIdListViewConstIterator;
+  template <typename ItemType> friend class ItemLocalIdListViewT;
 
+ public:
+
+  ItemLocalIdListViewIteratorSentinel() = default;
+
+ protected:
+
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdListViewIteratorSentinel(const Int32* local_id_ptr)
+  : m_local_id_ptr(local_id_ptr)
+  {}
+
+ private:
+
+  const Int32* m_local_id_ptr = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Base class for iterators for ItemLocalIdViewT.
  */
@@ -100,6 +125,21 @@ class ItemLocalIdListViewConstIterator
   constexpr ARCCORE_HOST_DEVICE friend bool operator!=(const ThatClass& lhs, const ThatClass& rhs)
   {
     return !(lhs == rhs);
+  }
+  constexpr ARCCORE_HOST_DEVICE static bool
+  isEnd(const ThatClass& lhs, const ItemLocalIdListViewIteratorSentinel& rhs)
+  {
+    return lhs.m_local_id_ptr == rhs.m_local_id_ptr;
+  }
+  constexpr ARCCORE_HOST_DEVICE friend bool
+  operator==(const ThatClass& lhs, const ItemLocalIdListViewIteratorSentinel& rhs)
+  {
+    return isEnd(lhs, rhs);
+  }
+  constexpr ARCCORE_HOST_DEVICE friend bool
+  operator!=(const ThatClass& lhs, const ItemLocalIdListViewIteratorSentinel& rhs)
+  {
+    return !isEnd(lhs, rhs);
   }
 
  protected:
@@ -183,6 +223,7 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
 
   using ThatClass = ItemLocalIdListView;
   using BaseClass = impl::ItemLocalIdListContainerView;
+  using SentinelType = ItemLocalIdListViewIteratorSentinel;
 
  private:
 
@@ -223,7 +264,6 @@ class ARCANE_CORE_EXPORT ItemLocalIdListView
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Typed view over a list of connectivity entities.
  */
@@ -241,8 +281,7 @@ class ItemLocalIdListViewT
 
   using LocalIdType = typename ItemLocalIdTraitsT<ItemType>::LocalIdType;
   using const_iterator = ItemLocalIdListViewConstIteratorT<ItemType>;
-  // TODO: Create the 'Sentinel' type when we are in C++20
-  using SentinelType = const_iterator;
+  using SentinelType = ItemLocalIdListViewIteratorSentinel;
 
  public:
 
@@ -267,7 +306,7 @@ class ItemLocalIdListViewT
   }
   constexpr ARCCORE_HOST_DEVICE SentinelType end() const
   {
-    return endIterator();
+    return SentinelType(m_local_ids + m_size);
   }
   constexpr ARCCORE_HOST_DEVICE const_iterator endIterator() const
   {
