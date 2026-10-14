@@ -4,6 +4,7 @@
   ArcaneCaseMeshMasterService.cc
   ArcaneCaseMeshService.cc
   ArcaneBasicMeshSubdividerService.cc
+  ArcaneParallelMngSplitterMeshBuilderCustomiser.cc
   ArcaneSimpleExecutor.h
   ArcaneSimpleExecutor.cc
   ArcaneSession.cc
@@ -164,11 +165,9 @@
   internal/LoadBalanceMngInternal.cc
 )
 
-if (ARCANE_HAS_ACCELERATOR_API)
-  list(APPEND ARCANE_SOURCES
-    NumArrayData.cc
-  )
-endif ()
+list(APPEND ARCANE_SOURCES
+  NumArrayData.cc
+)
 
 set(AXL_FILES
   ArcaneCaseMeshMasterService
@@ -176,4 +175,5 @@ set(AXL_FILES
   MeshPartitionerTesterService
   ArcaneGeometricMeshPartitionerService
   ArcaneBasicMeshSubdividerService
+  ArcaneParallelMngSplitterMeshBuilderCustomiser
 )
