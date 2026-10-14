@@ -822,7 +822,7 @@ doInitMeshPartition()
 
   // Display mesh information
   for (IMesh* mesh : m_mesh_mng->meshes()) {
-    ScopedPtrT<IMeshStats> mh(IMeshStats::create(traceMng(), mesh, parallelMng()));
+    Ref<IMeshStats> mh(IMeshStats::create(traceMng(), mesh));
     mh->dumpStats();
   }
 }

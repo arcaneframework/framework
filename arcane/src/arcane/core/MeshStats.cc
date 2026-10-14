@@ -11,6 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "IMeshStats.h"
 #include "arcane/core/ArcaneTypes.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/Collection.h"
@@ -48,6 +49,15 @@ create(ITraceMng* trace, IMesh* mesh, IParallelMng* pm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Ref<IMeshStats> IMeshStats::
+create(ITraceMng* tm, IMesh* mesh)
+{
+  return makeRef<IMeshStats>(new MeshStats(tm,mesh));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MeshStats::
 MeshStats(ITraceMng* trace, IMesh* mesh, IParallelMng* pm)
 : TraceAccessor(trace)
@@ -56,6 +66,16 @@ MeshStats(ITraceMng* trace, IMesh* mesh, IParallelMng* pm)
 {
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MeshStats::
+MeshStats(ITraceMng* tm, IMesh* mesh)
+: TraceAccessor(tm)
+, m_mesh(mesh)
+, m_parallel_mng(mesh->parallelMng())
+{
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

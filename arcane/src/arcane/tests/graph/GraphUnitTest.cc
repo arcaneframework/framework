@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GraphUnitTest.cc                                            (C) 2000-2006 */
+/* GraphUnitTest.cc                                            (C) 2000-2026 */
 /*                                                                           */
 /* Graph unit testing service.                                               */
 /*---------------------------------------------------------------------------*/
@@ -59,7 +59,6 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Graph test module
  */
@@ -183,21 +182,18 @@ class GraphUnitTest
 
  public:
 
-  GraphUnitTest(const ServiceBuildInfo& mb)
+  explicit GraphUnitTest(const ServiceBuildInfo& mb)
   : ArcaneGraphUnitTestObject(mb)
   , m_mesh(mb.mesh())
-  , m_stats(NULL)
   , m_dof_mng(mb.mesh())
   , m_connectivity_mng(m_dof_mng.connectivityMng())
   , m_dualUid_mng(mb.subDomain()->traceMng())
   {}
 
-  ~GraphUnitTest() { delete m_stats; }
-
  public:
 
-  void initializeTest();
-  void executeTest();
+  void initializeTest() override;
+  void executeTest() override;
 
  private:
 
@@ -206,9 +202,9 @@ class GraphUnitTest
 
  private:
 
-  IMesh* m_mesh;
+  IMesh* m_mesh = nullptr;
 
-  IMeshStats* m_stats;
+  Ref<IMeshStats> m_stats;
 
   DoFManager m_dof_mng;
   IItemConnectivityMng* m_connectivity_mng;
@@ -333,7 +329,7 @@ executeTest()
 void GraphUnitTest::
 initializeTest()
 {
-  m_stats = IMeshStats::create(traceMng(), mesh(), subDomain()->parallelMng());
+  m_stats = IMeshStats::create(traceMng(), mesh());
 }
 
 /*---------------------------------------------------------------------------*/
