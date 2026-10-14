@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" ?>
+<?xml version="1.0" ?>
 <service name="ArcaneCaseMeshService" version="1.0" parent-name="Arcane::AbstractService" type="caseoption">
   <userclass>User</userclass>
   <description>
@@ -130,6 +130,20 @@
         This service can be specified if you wish to avoid automatic detection
         of the reader to be used or if you wish to add specific options to a
         given reader.
+      </description>
+    </service-instance>
+
+    <!-- Specific mesh reading service -->
+    <service-instance
+      name="mesh-builder-customiser"
+      type="Arcane::IMeshBuilderCustomiser"
+      optional="true"
+    >
+      <userclass>User</userclass>
+      <description>
+        Specific service to customise the creation of the mesh.
+
+        It may be used for example to set a specific instance of the parallel manager.
       </description>
     </service-instance>
 
