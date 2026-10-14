@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshStats.h                                                 (C) 2000-2024 */
+/* MeshStats.h                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Statistics on the mesh.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -34,14 +34,25 @@ class StringDictionary;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Display informations abour a mesh.
+ *
+ * An instance of this class is created using IMeshStats::create() method.
+ */
 class ARCANE_CORE_EXPORT MeshStats
 : public TraceAccessor
 , public IMeshStats
 {
+  friend IMeshStats;
+
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2026: Use MeshStats(ITraceMng*, IMesh*) instead")
   MeshStats(ITraceMng* msg, IMesh* mesh, IParallelMng* pm);
+
+ private:
+
+  MeshStats(ITraceMng* msg, IMesh* mesh);
 
  public:
 

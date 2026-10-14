@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshStats.h                                                (C) 2000-2025 */
+/* IMeshStats.h                                                (C) 2000-2026 */
 /*                                                                           */
 /* Interface of a class providing mesh information.                          */
 /*---------------------------------------------------------------------------*/
@@ -24,9 +24,7 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \internal
  * \brief Interface of a class providing mesh information.
  */
 class ARCANE_CORE_EXPORT IMeshStats
@@ -38,8 +36,11 @@ class ARCANE_CORE_EXPORT IMeshStats
 
  public:
 
-  //! Creation of a default instance
+  ARCANE_DEPRECATED_REASON("Y2026: Use create(ITraceMng*, IMesh*) instead")
   static IMeshStats* create(ITraceMng* trace, IMesh* mesh, IParallelMng* pm);
+
+  //! Creation of a default instance
+  static Ref<IMeshStats> create(ITraceMng* trace, IMesh* mesh);
 
  public:
 
