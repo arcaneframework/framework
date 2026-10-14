@@ -14,6 +14,7 @@ set(ARCANE_SOURCES
   HydroAdditionalTestModule.cc
   ItemTypesUnitTest.cc
   TestTplParameter.cc
+  MeshBuilderCustomiserUnitTest.cc
   ModuleSimpleHydro.cc
   ModuleSimpleHydroGeneric.cc
   ModuleSimpleHydroSimd.cc

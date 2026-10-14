@@ -1423,6 +1423,11 @@ if (MEDFile_FOUND)
   arcane_add_test_sequential(simple_heat_med_polyhedral testSimpleHeat-med-polyhedral.arc)
 endif ()
 
+arcane_add_test_sequential(mesh-builder-customiser testMeshBuilderCustomiser-1.arc)
+arcane_add_test_parallel(mesh-builder-customiser testMeshBuilderCustomiser-1.arc 8)
+arcane_add_test_parallel_thread(mesh-builder-customiser testMeshBuilderCustomiser-1.arc 8)
+arcane_add_test_parallel_mpithread(mesh-builder-customiser testMeshBuilderCustomiser-1.arc 4 2)
+
 # ----------------------------------------------------------------------------
 
 #####################
