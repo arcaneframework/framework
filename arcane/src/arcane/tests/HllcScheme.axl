@@ -29,6 +29,33 @@
       dim="0"
       dump="true"
       need-sync="true"/>
+    <!-- NEW DENSITY (temporary buffer for the thread-parallel update) -->
+    <variable
+      field-name="new_density"
+      name="NewDensity"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="false"
+      need-sync="false"/>
+    <!-- NEW MOMENTUM (temporary buffer for the thread-parallel update) -->
+    <variable
+      field-name="new_momentum"
+      name="NewMomentum"
+      data-type="real3"
+      item-kind="cell"
+      dim="0"
+      dump="false"
+      need-sync="false"/>
+    <!-- NEW ENERGY (temporary buffer for the thread-parallel update) -->
+    <variable
+      field-name="new_energy"
+      name="NewEnergy"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="false"
+      need-sync="false"/>
     <!-- PRESSURE -->
     <variable
       field-name="pressure"
@@ -65,6 +92,15 @@
       dim="0"
       dump="true"
       need-sync="true"/>
+    <!-- CELL IS SOLID -->
+    <variable
+      field-name="cell_is_solid"
+      name="CellIsSolid"
+      data-type="integer"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="false"/>
     <!-- FACE NORMAL -->
     <variable
       field-name="face_normal"
@@ -220,6 +256,109 @@
       </description>
     </simple>
 
+    <!-- INITIAL CONDITION -->
+    <enumeration
+      name="initial-condition"
+      type="ArcaneTest::HllcScheme::TypesHllcScheme::eInitialCondition"
+      default="Sod">
+      <description>
+        Type of the initial condition.
+      </description>
+      <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::Sod" name="Sod"/>
+      <enumvalue genvalue="ArcaneTest::HllcScheme::TypesHllcScheme::Uniform" name="Uniform"/>
+    </enumeration>
+
+    <!-- UNIFORM DENSITY -->
+    <simple
+      name="uniform-density"
+      type="real"
+      default="1.0">
+      <description>
+        Density of the uniform initial condition.
+      </description>
+    </simple>
+
+    <!-- UNIFORM PRESSURE -->
+    <simple
+      name="uniform-pressure"
+      type="real"
+      default="1.0">
+      <description>
+        Pressure of the uniform initial condition.
+      </description>
+    </simple>
+
+    <!-- UNIFORM VELOCITY X -->
+    <simple
+      name="uniform-velocity-x"
+      type="real"
+      default="0.0">
+      <description>
+        X-component of the velocity of the uniform initial condition.
+      </description>
+    </simple>
+
+    <!-- UNIFORM VELOCITY Y -->
+    <simple
+      name="uniform-velocity-y"
+      type="real"
+      default="0.0">
+      <description>
+        Y-component of the velocity of the uniform initial condition.
+      </description>
+    </simple>
+
+    <!-- UNIFORM VELOCITY Z -->
+    <simple
+      name="uniform-velocity-z"
+      type="real"
+      default="0.0">
+      <description>
+        Z-component of the velocity of the uniform initial condition.
+      </description>
+    </simple>
+
+    <!-- SOLID OBSTACLE RADIUS -->
+    <simple
+      name="obstacle-radius"
+      type="real"
+      default="0.0">
+      <description>
+        Radius of the solid obstacle (circle in 2D, sphere in 3D)
+        immersed in the fluid. No obstacle if the radius is zero or negative.
+      </description>
+    </simple>
+
+    <!-- SOLID OBSTACLE X -->
+    <simple
+      name="obstacle-x"
+      type="real"
+      default="0.5">
+      <description>
+        X position of the center of the solid obstacle.
+      </description>
+    </simple>
+
+    <!-- SOLID OBSTACLE Y -->
+    <simple
+      name="obstacle-y"
+      type="real"
+      default="0.5">
+      <description>
+        Y position of the center of the solid obstacle.
+      </description>
+    </simple>
+
+    <!-- SOLID OBSTACLE Z -->
+    <simple
+      name="obstacle-z"
+      type="real"
+      default="0.5">
+      <description>
+        Z position of the center of the solid obstacle (3D only).
+      </description>
+    </simple>
+
     <!-- BOUNDARY CONDITION -->
     <complex name="boundary-condition" type="BoundaryCondition"
              minOccurs="0" maxOccurs="unbounded">
@@ -246,6 +385,27 @@
       </simple>
       <simple name="pressure" type="real" default="1.0">
         Imposed pressure (inflow only)
+      </simple>
+    </complex>
+
+    <!-- VALIDATION -->
+    <complex name="validation" type="Validation" optional="true">
+      <description>
+        Optional validation of the global sums computed in the exit()
+        entry point. Each expected value is only checked if the
+        corresponding element is present in the case file.
+      </description>
+      <simple name="density-sum" type="real" default="0.0">
+        Expected value of the sum of the densities (all the cells).
+      </simple>
+      <simple name="energy-sum" type="real" default="0.0">
+        Expected value of the sum of the total energies (all the cells).
+      </simple>
+      <simple name="pressure-sum" type="real" default="0.0">
+        Expected value of the sum of the pressures (all the cells).
+      </simple>
+      <simple name="epsilon" type="real" default="1.0e-6">
+        Tolerance for the comparisons.
       </simple>
     </complex>
   </options>

@@ -253,12 +253,22 @@ init()
   }
 
   Real gamma = options()->gamma();
+  TypesHllcScheme::eInitialCondition init_case = options()->initialCondition();
+  Real3 uniform_velocity = Real3(options()->uniformVelocityX(),
+                                 options()->uniformVelocityY(),
+                                 options()->uniformVelocityZ());
 
   ENUMERATE_ (Cell, icell, allCells()) {
     Real3 c = m_cell_center[icell];
 
     Real density_init, pressure_init;
-    if (c.x < center.x) {
+    Real3 velocity_init = Real3::zero();
+    if (init_case == TypesHllcScheme::Uniform) {
+      density_init = options()->uniformDensity();
+      pressure_init = options()->uniformPressure();
+      velocity_init = uniform_velocity;
+    }
+    else if (c.x < center.x) {
       density_init = Real(1.0);
       pressure_init = Real(1.0);
     }
@@ -267,18 +277,54 @@ init()
       pressure_init = Real(0.1);
     }
 
+    Real kinetic_energy = Real(0.5) * density_init * math::dot(velocity_init, velocity_init);
+
     m_density[icell] = density_init;
     m_pressure[icell] = pressure_init;
-    m_momentum[icell] = Real3::zero();
+    m_momentum[icell] = density_init * velocity_init;
     m_cell_mass[icell] = density_init * m_cell_volume[icell];
-    m_energy[icell] = pressure_init / (gamma - Real(1.0));
+    m_energy[icell] = pressure_init / (gamma - Real(1.0)) + kinetic_energy;
     m_sound_speed[icell] = math::sqrt(gamma * pressure_init / density_init);
+    m_cell_is_solid[icell] = 0;
+  }
+
+  // Solid obstacle immersed in the fluid: circle in 2D, sphere in 3D,
+  // centered at a user-specified position.
+  {
+    Real obstacle_radius = options()->obstacleRadius();
+    if (obstacle_radius > Real(0.0)) {
+      Real3 obstacle_center = Real3(options()->obstacleX(),
+                                    options()->obstacleY(),
+                                    options()->obstacleZ());
+      Int64 nb_solid_cells = 0;
+
+      // Mark the solid cells (own and ghost: the ghost flags are read by
+      // the flux kernels of the neighbouring subdomains) but count only
+      // the own cells to avoid counting shared ghosts several times.
+      ENUMERATE_ (Cell, icell, allCells()) {
+        Real3 pos = m_cell_center[icell] - obstacle_center;
+        if (m_dimension == 2)
+          pos.z = Real(0.0);
+        if (pos.normL2() <= obstacle_radius) {
+          m_cell_is_solid[icell] = 1;
+          Cell cell = *icell;
+          if (cell.isOwn())
+            ++nb_solid_cells;
+        }
+      }
+
+      nb_solid_cells = parallelMng()->reduce(Parallel::ReduceSum, nb_solid_cells);
+      info() << "HLLC Scheme: solid obstacle (radius=" << obstacle_radius
+             << ") centered at " << obstacle_center
+             << " with " << nb_solid_cells << " solid cells";
+    }
   }
 
   Real dt_init = options()->deltatInit();
   m_global_deltat = dt_init;
 
   info() << "HLLC Scheme: init complete (dim=" << m_dimension
+         << ", init=" << ((init_case == TypesHllcScheme::Uniform) ? "Uniform" : "Sod")
          << ", gamma=" << gamma
          << ", cfl=" << options()->cfl()
          << ", order=" << options()->spatialOrder()
@@ -425,37 +471,58 @@ _computeGeometry()
 /*!
  * \brief Calculates the CFL time step.
  *
- * Characteristic length:
- *   3D: dx = V^(1/3)
- *   2D: dx = sqrt(A)
+ * The characteristic time of a cell is computed by summing the wave
+ * speeds crossing its faces:
+ *   dt = cfl * V / (Σ_f (|u.n_f| + c) * A_f)
+ * This is valid for anisotropic cells: for a Cartesian cell with a flow
+ * along x, it gives the classic dt = cfl * dx / (|u_x| + c). Using
+ * V^(1/dim) instead would allow time steps several times too large on
+ * stretched cells and make the scheme unstable.
  */
 void HllcSchemeModule::
 _computeDeltat()
 {
   Real gamma = options()->gamma();
   Real cfl = options()->cfl();
-  Real inv_dim = Real(1.0) / Real(m_dimension);
 
   auto command = makeCommand(m_default_queue);
 
-  auto in_density = ax::viewIn(command, m_density);
-  auto in_momentum = ax::viewIn(command, m_momentum);
-  auto in_pressure = ax::viewIn(command, m_pressure);
-  auto in_cell_volume = ax::viewIn(command, m_cell_volume);
+  // Connectivity accelerator
+  auto cfc = m_connectivity_view.cellFace();
+
+  auto in_density = viewIn(command, m_density);
+  auto in_momentum = viewIn(command, m_momentum);
+  auto in_pressure = viewIn(command, m_pressure);
+  auto in_cell_volume = viewIn(command, m_cell_volume);
+  auto in_cell_is_solid = viewIn(command, m_cell_is_solid);
+  auto in_face_normal = viewIn(command, m_face_normal);
+  auto in_face_area = viewIn(command, m_face_area);
 
   ax::ReducerMin2<Real> min_dt_reducer(command);
   min_dt_reducer.setValue(FloatInfo<Real>::maxValue());
 
   command << RUNCOMMAND_ENUMERATE (Cell, cid, ownCells(), min_dt_reducer)
   {
+    // Solid cells do not evolve: they do not constrain the time step.
+    if (in_cell_is_solid[cid] != 0)
+      return;
+
     Real rho = in_density[cid];
     Real3 vel = in_momentum[cid] / rho;
     Real cs = math::sqrt(gamma * in_pressure[cid] / rho);
-    Real speed = vel.normL2() + cs;
 
-    Real dx = math::pow(in_cell_volume[cid], inv_dim);
-    if (dx > FloatInfo<Real>::epsilon())
-      min_dt_reducer.combine(cfl * dx / speed);
+    // Sum over the faces of the cell of (|u.n| + c) * A.
+    // The normal vector has a norm equal to the area of the face,
+    // so |dot(vel, normal)| is |u.n| * A.
+    Real sum_speed_area = Real(0.0);
+    for (FaceLocalId fid : cfc.faces(cid)) {
+      Real3 normal = in_face_normal[fid];
+      Real area = in_face_area[fid];
+      sum_speed_area += math::abs(math::dot(vel, normal)) + cs * area;
+    }
+
+    if (sum_speed_area > Real(0.0))
+      min_dt_reducer.combine(cfl * in_cell_volume[cid] / sum_speed_area);
   };
 
   Real min_dt = min_dt_reducer.reducedValue();
@@ -486,8 +553,19 @@ _computeDeltat()
  * operation). Internal faces are treated twice (once by each adjacent cell),
  * which is correct because the contribution is symmetric in sign.
  *
+ * Because the flux of a cell reads the (old) state of its neighbouring
+ * cells, the new values are first written to temporary buffers
+ * (m_new_density, m_new_momentum, m_new_energy) and then copied back into
+ * the module variables. Writing directly to the module variables would be
+ * a data race when the command is executed on several threads
+ * (eExecutionPolicy::Thread, e.g. with the option '-T,n').
+ *
  * Slippery wall boundary conditions are handled directly in the face loop
- * when nbCell==1.
+ * when nbCell==1. Faces between a fluid cell and a solid cell (immersed
+ * obstacle) are treated as slippery walls: the exact slip-wall flux
+ * F.n = (0, p*n, 0) is applied by the fluid cell, where n points outwards
+ * from the fluid cell. Solid cells are excluded from the update: their
+ * state is frozen at its initial value.
  */
 void HllcSchemeModule::
 _updateConservative()
@@ -504,27 +582,37 @@ _updateConservative()
   auto cfc = m_connectivity_view.cellFace();
 
   // Input views (read-only)
-  auto in_density = ax::viewIn(command, m_density);
-  auto in_momentum = ax::viewIn(command, m_momentum);
-  auto in_energy = ax::viewIn(command, m_energy);
-  auto in_pressure = ax::viewIn(command, m_pressure);
-  auto in_cell_volume = ax::viewIn(command, m_cell_volume);
-  auto in_cell_center = ax::viewIn(command, m_cell_center);
-  auto in_face_normal = ax::viewIn(command, m_face_normal);
-  auto in_face_area = ax::viewIn(command, m_face_area);
-  auto in_face_center = ax::viewIn(command, m_face_center);
-  auto in_face_bc_type = ax::viewIn(command, m_face_bc_type);
-  auto in_face_bc_density = ax::viewIn(command, m_face_bc_density);
-  auto in_face_bc_velocity = ax::viewIn(command, m_face_bc_velocity);
-  auto in_face_bc_pressure = ax::viewIn(command, m_face_bc_pressure);
+  auto in_density = viewIn(command, m_density);
+  auto in_momentum = viewIn(command, m_momentum);
+  auto in_energy = viewIn(command, m_energy);
+  auto in_pressure = viewIn(command, m_pressure);
+  auto in_cell_volume = viewIn(command, m_cell_volume);
+  auto in_cell_center = viewIn(command, m_cell_center);
+  auto in_cell_is_solid = viewIn(command, m_cell_is_solid);
+  auto in_face_normal = viewIn(command, m_face_normal);
+  auto in_face_area = viewIn(command, m_face_area);
+  auto in_face_center = viewIn(command, m_face_center);
+  auto in_face_bc_type = viewIn(command, m_face_bc_type);
+  auto in_face_bc_density = viewIn(command, m_face_bc_density);
+  auto in_face_bc_velocity = viewIn(command, m_face_bc_velocity);
+  auto in_face_bc_pressure = viewIn(command, m_face_bc_pressure);
 
-  // Output views (write)
-  auto out_density = ax::viewOut(command, m_density);
-  auto out_momentum = ax::viewOut(command, m_momentum);
-  auto out_energy = ax::viewOut(command, m_energy);
+  // Output views (write): the new values are written to temporary buffers
+  // to avoid reading a state already modified by another thread.
+  auto out_density = viewOut(command, m_new_density);
+  auto out_momentum = viewOut(command, m_new_momentum);
+  auto out_energy = viewOut(command, m_new_energy);
 
   command << RUNCOMMAND_ENUMERATE (Cell, cid, allCells())
   {
+    // Solid cells (immersed obstacle) do not evolve: their state is frozen.
+    if (in_cell_is_solid[cid] != 0) {
+      out_density[cid] = in_density[cid];
+      out_momentum[cid] = in_momentum[cid];
+      out_energy[cid] = in_energy[cid];
+      return;
+    }
+
     Real flux_rho = Real(0.0);
     Real3 flux_mom = Real3::zero();
     Real flux_e = Real(0.0);
@@ -592,6 +680,20 @@ _updateConservative()
       // -- Internal face: two adjacent cells --
       CellLocalId cl = cells[0];
       CellLocalId cr = cells[1];
+
+      // -- Face between a fluid cell and a solid cell: slippery wall --
+      // The current cell (cid) is fluid since solid cells returned early.
+      // Apply the exact slip-wall flux F.n = (0, p*n, 0) with n pointing
+      // outwards from the fluid cell.
+      if (in_cell_is_solid[cl] != 0 || in_cell_is_solid[cr] != 0) {
+        Real3 wall_normal = unit_normal;
+        Real3 c0 = in_cell_center[cid];
+        if (math::dot(fc - c0, wall_normal) < Real(0.0))
+          wall_normal = -wall_normal;
+
+        flux_mom += in_pressure[cid] * wall_normal * area;
+        continue;
+      }
 
       // Primitive states at cell centers
       PrimitiveState pL, pR;
@@ -691,6 +793,28 @@ _updateConservative()
     out_energy[cid] = new_energy;
   };
 
+  // Copy the new conservative values from the temporary buffers into the
+  // module variables. This is a separate command because the flux kernel
+  // above reads the (old) values of the neighbouring cells.
+  {
+    auto copy_command = makeCommand(m_default_queue);
+
+    auto in_new_density = viewIn(copy_command, m_new_density);
+    auto in_new_momentum = viewIn(copy_command, m_new_momentum);
+    auto in_new_energy = viewIn(copy_command, m_new_energy);
+    auto out_density = viewOut(copy_command, m_density);
+    auto out_momentum = viewOut(copy_command, m_momentum);
+    auto out_energy = viewOut(copy_command, m_energy);
+
+    copy_command << RUNCOMMAND_ENUMERATE (Cell, cid, allCells())
+    {
+      out_density[cid] = in_new_density[cid];
+      out_momentum[cid] = in_new_momentum[cid];
+      out_energy[cid] = in_new_energy[cid];
+    };
+  }
+
+  // Update the ghost cells with the values of the owning subdomains.
   m_density.synchronize();
   m_momentum.synchronize();
   m_energy.synchronize();
@@ -703,6 +827,10 @@ _updateConservative()
  * \brief Calculates the pressure using the ideal gas law (on accelerator).
  *
  *   p = (γ-1) * (ρE - ½|ρu|²/ρ)
+ *
+ * The pressure of the ghost cells is needed by the HLLC fluxes of the
+ * neighbouring subdomains: it is recomputed for all the cells (own and
+ * ghost) and then explicitly synchronized.
  */
 void HllcSchemeModule::
 _computePressure()
@@ -711,11 +839,11 @@ _computePressure()
 
   auto command = makeCommand(m_default_queue);
 
-  auto in_density = ax::viewIn(command, m_density);
-  auto in_momentum = ax::viewIn(command, m_momentum);
-  auto in_energy = ax::viewIn(command, m_energy);
-  auto out_pressure = ax::viewOut(command, m_pressure);
-  auto out_sound_speed = ax::viewOut(command, m_sound_speed);
+  auto in_density = viewIn(command, m_density);
+  auto in_momentum = viewIn(command, m_momentum);
+  auto in_energy = viewIn(command, m_energy);
+  auto out_pressure = viewOut(command, m_pressure);
+  auto out_sound_speed = viewOut(command, m_sound_speed);
 
   command << RUNCOMMAND_ENUMERATE (Cell, cid, allCells())
   {
@@ -732,6 +860,10 @@ _computePressure()
     out_pressure[cid] = pressure;
     out_sound_speed[cid] = math::sqrt(gamma * pressure / rho);
   };
+
+  // Update the ghost cells with the values of the owning subdomains:
+  // the ghost pressures are read by the fluxes of the next iteration.
+  m_pressure.synchronize();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -783,6 +915,36 @@ exit()
   info() << "HLLC sums: density=" << sum_mass
          << " energy=" << sum_energy
          << " pressure=" << sum_pressure;
+
+  // Optional validation of the global sums against the reference values
+  // given in the case file. Each expected value is only checked if the
+  // corresponding element is present.
+  if (options()->validation.isPresent()) {
+    Real epsilon = options()->validation.epsilon();
+
+    if (options()->validation.densitySum.isPresent()) {
+      Real expected = options()->validation.densitySum();
+      if (math::abs(sum_mass - expected) > epsilon)
+        ARCANE_FATAL("Validation failed: sum of densities is {0} instead of {1} (epsilon={2})",
+                     sum_mass, expected, epsilon);
+    }
+
+    if (options()->validation.energySum.isPresent()) {
+      Real expected = options()->validation.energySum();
+      if (math::abs(sum_energy - expected) > epsilon)
+        ARCANE_FATAL("Validation failed: sum of energies is {0} instead of {1} (epsilon={2})",
+                     sum_energy, expected, epsilon);
+    }
+
+    if (options()->validation.pressureSum.isPresent()) {
+      Real expected = options()->validation.pressureSum();
+      if (math::abs(sum_pressure - expected) > epsilon)
+        ARCANE_FATAL("Validation failed: sum of pressures is {0} instead of {1} (epsilon={2})",
+                     sum_pressure, expected, epsilon);
+    }
+
+    info() << "HLLC validation: OK (epsilon=" << epsilon << ")";
+  }
 }
 
 /*---------------------------------------------------------------------------*/
