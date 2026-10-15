@@ -1,20 +1,38 @@
 ﻿<?xml version="1.0" ?>
 <service name="ArcaneCaseMeshMasterService" parent-name="AbstractService" type="caseoption">
   <userclass>User</userclass>
-  <description>
-    Service %Arcane managing the data set meshes.
+  <description><![CDATA[
+    Service %Arcane managing the meshes of the data set.
+
+    This service reads the `<meshes>` element of the data set (a file with
+    extension .arc). This is the recommended way to specify the meshes: the
+    historical method based on the `<mesh>` element (or `<maillage>` in
+    French) is obsolete and should only be used by existing codes. A complete
+    description of the two methods is available in
+    \ref arcanedoc_core_types_casefile_meshes.
 
     This service is special in that its options are read before
     those of other services and modules because it is used to
     create the meshes, which modules and services require.
     Because of this, the options for this service are always
-    in English.
+    in English, even for a French data set (i.e. when `xml:lang="fr"`).
 
     It is possible to specify multiple meshes if the \a mesh
-    element is present multiple times. Generally, the service
+    element is present multiple times. The meshes are named `Mesh0`, `Mesh1`,
+    ... in the order of appearance of the \a mesh elements. The first mesh
+    (`Mesh0`) is the default mesh of the sub-domain and must always be
+    created. When several meshes are defined, a module or a service can be
+    associated with a given mesh using the `mesh-name` attribute of the
+    corresponding element of the data set.
+
+    Generally, the service
     \ref axldoc_service_ArcaneCaseMeshService_arcane_impl will be
-    used
-  </description>
+    used.
+
+    For example:
+
+    \snippet meshes.arc snippet_meshes_multi_mesh
+  ]]></description>
 
   <interface name="Arcane::ICaseMeshMasterService"/>
 
@@ -28,9 +46,14 @@
       default="ArcaneCaseMeshService"
     >
       <userclass>User</userclass>
-      <description>
-        Mesh creation/reading service
-      </description>
+      <description><![CDATA[
+        Mesh creation/reading service.
+
+        Each \a mesh element is an instance of a service implementing the
+        `Arcane::ICaseMeshService` interface. By default, the
+        \ref axldoc_service_ArcaneCaseMeshService_arcane_impl service is
+        used.
+      ]]></description>
     </service-instance>
 
   </options>

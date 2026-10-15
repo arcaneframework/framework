@@ -1,20 +1,37 @@
 <?xml version="1.0" ?>
-<service name="ArcaneCaseMeshService" version="1.0" parent-name="Arcane::AbstractService" type="caseoption">
+<service name="ArcaneCaseMeshService" version="1.0" parent-name="Arcane::AbstractService" type="caseoption" xml:space='preserve'>
   <userclass>User</userclass>
-  <description>
+  <description><![CDATA[
     Service %Arcane allowing the reading or creation of a mesh.
 
-    Only one of the two tags `&lt;filename&gt;` or `&lt;generator&gt;` must be
-    specified. If `&lt;filename&gt;` is specified, the mesh will be read
-    from the specified file. If it is `&lt;generator&gt;`, the mesh will
-    be generated directly online from one of the
-    generators available in %Arcane.
+    An instance of this service is created for each `<mesh>` element of the
+    `<meshes>` element of the data set (see
+    \ref axldoc_service_ArcaneCaseMeshMasterService_arcane_impl). The meshes
+    are named `Mesh0`, `Mesh1`, ... in the order of appearance of the
+    `<mesh>` elements. The first mesh (`Mesh0`) is the default mesh of the
+    sub-domain.
 
-    The tag `&lt;partitioner;&gt;` indicates the partitioner to use for
-    the initial partitioning. The value `External` indicates that the partitioning
-    has already been done. In this case, the mesh files will be in the
-    format 'CPU...%n' where N is the mesh part number.
-  </description>
+    Only one of the two tags `<filename>` or `<generator>` must be specified.
+    If `<filename>` is specified, the mesh will be read from the specified
+    file. If it is `<generator>`, the mesh will be generated directly online
+    from one of the generators available in %Arcane.
+
+    The tag `<partitioner>` indicates the partitioner to use for the initial
+    partitioning. The value `External` indicates that the partitioning has
+    already been done. In this case, the mesh files will be named
+    `CPU%05d.<ext>` where '%05d' is the rank of the process (zero-padded on
+    5 digits).
+
+    The variables of the mesh can be initialized with the
+    `<initialization>` tag.
+
+    A complete description of the mesh specification in the data set is
+    available in \ref arcanedoc_core_types_casefile_meshes.
+
+    For example:
+
+    \snippet meshes.arc snippet_meshes_generator_initialization
+  ]]></description>
 
   <interface name="Arcane::ICaseMeshService"/>
 
@@ -26,11 +43,24 @@
       optional="true"
     >
       <userclass>User</userclass>
-      <description>
-        Mesh creation/reading service
+      <description><![CDATA[
+        Mesh creation service.
 
-        This service must be specified if no mesh file is defined.
-      </description>
+        This service must be specified if no mesh file is defined. The name
+        of the service is given by the \a name attribute. The following
+        generators are available in %Arcane (the list depends on the compile
+        options):
+
+        - \ref axldoc_service_Cartesian2DMeshGenerator_arcane_std "Cartesian2D": 2D Cartesian mesh generator;
+        - \ref axldoc_service_Cartesian3DMeshGenerator_arcane_std "Cartesian3D": 3D Cartesian mesh generator;
+        - \ref axldoc_service_Sod3DMeshGenerator_arcane_std "Sod3D": Sod shock tube mesh generator;
+        - \ref axldoc_service_HoneyComb2DMeshGenerator_arcane_std "HoneyComb2D": 2D hexagonal mesh generator;
+        - \ref axldoc_service_HoneyComb3DMeshGenerator_arcane_std "HoneyComb3D": 3D hexagonal mesh generator.
+
+        For example:
+
+        \snippet meshes.arc snippet_meshes_cartesian2d_generator
+      ]]></description>
     </service-instance>
 
     <simple name="filename"
@@ -38,9 +68,19 @@
             optional="true"
     >
       <userclass>User</userclass>
-      <description>
+      <description><![CDATA[
         Mesh file name. If it is not defined, a mesh generator must be specified.
-      </description>
+
+        The mesh reading service is automatically detected from the extension
+        of the file. The following formats are supported by %Arcane (the list
+        depends on the compile options): `.vtk` (legacy VTK), `.vtu` (XML
+        VTK, with or without support for polyhedral cells), `.msh` (Gmsh),
+        `.med` (MED, requires HDF5 support), and the Lima formats `.unf`,
+        `.mli`, `.mli2`, `.ice`, `.uns` and `.unv` (requires Lima support).
+
+        A specific reader can be specified with the
+        `<specific-reader>` tag.
+      ]]></description>
     </simple>
 
     <simple name="partitioner"
@@ -48,13 +88,16 @@
             default="DefaultPartitioner"
     >
       <userclass>User</userclass>
-      <description>
+      <description><![CDATA[
         Name of the partitioning service to use for the initial decomposition.
 
         If the value is 'External', it is considered that the partitioning
         has already been performed before the code is launched. In this case,
-        already partitioned mesh files must be available.
-      </description>
+        already partitioned mesh files must be available. These files must be
+        named `CPU%05d.<ext>` where '%05d' is the rank of the process
+        (zero-padded on 5 digits) and `<ext>` is the extension of the mesh
+        file.
+      ]]></description>
     </simple>
 
     <simple name="nb-ghost-layer"
@@ -62,59 +105,75 @@
             default="1"
     >
       <userclass>User</userclass>
-      <description>
+      <description><![CDATA[
         Number of ghost cell layers to add to the mesh in case of partitioning.
-      </description>
+      ]]></description>
     </simple>
 
     <simple name="ghost-layer-builder-version"
             type="int32"
             default="3"
     >
-      <description>
+      <description><![CDATA[
         Version of the ghost cell manager to use.
 
-        This option is internal to Arcane.
-      </description>
+        This option is internal to %Arcane.
+      ]]></description>
     </simple>
 
     <simple name="face-numbering-version"
             type="int32"
             optional="true"
     >
-      <description>
+      <description><![CDATA[
         Version of the calculation of unique face identifiers.
 
-        This option is internal to Arcane.
-      </description>
+        This option is internal to %Arcane.
+      ]]></description>
     </simple>
 
     <simple name="edge-numbering-version"
             type="int32"
             optional="true"
     >
-      <description>
+      <description><![CDATA[
         Version of the calculation of unique edge identifiers.
 
         This option is only used for 3D meshes.
 
-        This option is internal to Arcane.
-      </description>
+        This option is internal to %Arcane.
+      ]]></description>
     </simple>
 
     <enumeration name="cell-dimension-kind"
                  type="Arcane::eMeshCellDimensionKind"
                  default="mono-dimension"
     >
-      <description>
+      <description><![CDATA[
         Indicates whether the mesh is 'non-manifold' or multi-dimensional. A mesh
         of this type contains cells of different dimensions.
 
+        The possible values are:
+      ]]><enum-description/><![CDATA[<br>
         WARNING: This mode is experimental. Do not use outside of %Arcane.
-      </description>
-      <enumvalue genvalue="Arcane::eMeshCellDimensionKind::MonoDimension" name="mono-dimension"/>
-      <enumvalue genvalue="Arcane::eMeshCellDimensionKind::MultiDimension" name="multi-dimension"/>
-      <enumvalue genvalue="Arcane::eMeshCellDimensionKind::NonManifold" name="non-manifold"/>
+      ]]></description>
+      <enumvalue genvalue="Arcane::eMeshCellDimensionKind::MonoDimension" name="mono-dimension">
+        <description>
+          All the cells of the mesh have the same dimension (the dimension of
+          the mesh). This is the default value.
+        </description>
+      </enumvalue>
+      <enumvalue genvalue="Arcane::eMeshCellDimensionKind::MultiDimension" name="multi-dimension">
+        <description>
+          The mesh can contain cells of different dimensions (e.g. a mixture
+          of 2D and 3D cells).
+        </description>
+      </enumvalue>
+      <enumvalue genvalue="Arcane::eMeshCellDimensionKind::NonManifold" name="non-manifold">
+        <description>
+          The mesh is non-manifold.
+        </description>
+      </enumvalue>
     </enumeration>
 
     <!-- Specific mesh reading service -->
@@ -124,13 +183,17 @@
       optional="true"
     >
       <userclass>User</userclass>
-      <description>
+      <description><![CDATA[
         Specific mesh reading service.
 
         This service can be specified if you wish to avoid automatic detection
         of the reader to be used or if you wish to add specific options to a
-        given reader.
-      </description>
+        given reader. For example, the `VtkPolyhedralCaseMeshReader` service
+        supports polyhedral cells and has options to print information about
+        the mesh:
+
+        \snippet meshes.arc snippet_meshes_specific_reader
+      ]]></description>
     </service-instance>
 
     <!-- Specific mesh reading service -->
@@ -140,11 +203,13 @@
       optional="true"
     >
       <userclass>User</userclass>
-      <description>
+      <description><![CDATA[
         Specific service to customise the creation of the mesh.
 
         It may be used for example to set a specific instance of the parallel manager.
-      </description>
+        For example, the `ArcaneParallelMngSplitterMeshBuilderCustomiser` service
+        creates the mesh on a subset of the ranks (option `subset-ratio`).
+      ]]></description>
     </service-instance>
 
     <!-- Specific mesh reading service -->
@@ -155,42 +220,49 @@
       optional="true"
     >
       <userclass>User</userclass>
-      <description>
+      <description><![CDATA[
         Service allowing the subdivision of cells.
-      </description>
+
+        The default service (`ArcaneBasicMeshSubdivider`) has one option,
+        `nb-subdivision`, which is the number of subdivisions to apply to
+        each cell.
+      ]]></description>
     </service-instance>
 
     <!-- Options for initializing variables with certain values -->
     <complex type="Init" name="initialization">
       <userclass>User</userclass>
-      <description>
+      <description><![CDATA[
         Initialization information.
 
         These options allow, among other things, initializing variables on groups with predefined values.
-      </description>
+        It contains a list of `<variable>` elements. For example:
+
+        \snippet meshes.arc snippet_meshes_initialization_variables
+      ]]></description>
 
       <complex type="InitVariable" name="variable" minOccurs="0" maxOccurs="unbounded">
         <userclass>User</userclass>
-        <description>
-          List of variables to initialize
-        </description>
+        <description><![CDATA[
+          List of variables to initialize.
+        ]]></description>
         <simple name="name" type="string">
           <userclass>User</userclass>
-          <description>
-            Name of the variable to initialize
-          </description>
+          <description><![CDATA[
+            Name of the variable to initialize.
+          ]]></description>
         </simple>
         <simple name="value" type="string">
           <userclass>User</userclass>
-          <description>
+          <description><![CDATA[
             Value of the variable. The string must be convertible to the variable type.
-          </description>
+          ]]></description>
         </simple>
         <simple name="group" type="string">
           <userclass>User</userclass>
-          <description>
-            Name of the group on which we want to position the values
-          </description>
+          <description><![CDATA[
+            Name of the group on which we want to position the values.
+          ]]></description>
         </simple>
       </complex>
 

@@ -52,6 +52,7 @@ macro(adoc_devdoc_config_doxygen_variables)
 
   set(DOXYGEN_EXAMPLE_PATH ${DOXYGEN_EXAMPLE_PATH}
     "${ARCANESRCROOT}/doc/doc_common/chap_build_install/subchap_prerequisites/snippets"
+    "${ARCANESRCROOT}/doc/doc_user/chap_core_types/snippets"
   )
 
   # ----------------------------------------------------------------------------

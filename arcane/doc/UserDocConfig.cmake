@@ -124,6 +124,7 @@ macro(adoc_userdoc_config_doxygen_variables)
     "${Arcane_SOURCE_DIR}/src/arcane/tests"
     "${ARCANESRCROOT}/samples_build/samples"
     "${ARCANESRCROOT}/doc/doc_common/chap_build_install/subchap_prerequisites/snippets"
+    "${ARCANESRCROOT}/doc/doc_user/chap_core_types/snippets"
     "${CMAKE_BINARY_DIR}/share/axl/dox/snippets"
   )
 
