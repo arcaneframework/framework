@@ -5,13 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCaseMeshService.cc                                    (C) 2000-2025 */
+/* ArcaneCaseMeshService.cc                                    (C) 2000-2026 */
 /*                                                                           */
 /* Arcane Service managing a dataset mesh.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ApplicationInfo.h"
 #include "arcane/utils/CommandLineArguments.h"
 
 #include "arcane/core/ServiceFactory.h"
@@ -19,6 +18,7 @@
 #include "arcane/core/ICaseMeshService.h"
 #include "arcane/core/ICaseMeshReader.h"
 #include "arcane/core/IMeshBuilder.h"
+#include "arcane/core/IMeshBuilderCustomiser.h"
 #include "arcane/core/IPrimaryMesh.h"
 #include "arcane/core/IItemFamily.h"
 #include "arcane/core/IMeshPartitionerBase.h"
@@ -33,7 +33,13 @@
 #include "arcane/core/MeshPartInfo.h"
 #include "arcane/core/IMeshSubdivider.h"
 #include "arcane/core/IMeshUniqueIdMng.h"
+#include "arcane/core/ParallelMngUtils.h"
 #include "arcane/core/internal/StringVariableReplace.h"
+
+namespace Arcane
+{
+
+} // namespace Arcane
 
 #include "arcane/impl/ArcaneCaseMeshService_axl.h"
 
@@ -45,9 +51,8 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Arcane Service for meshing the dataset.
+ * \brief Arcane Service for reading or generating a mesh from the case option file.
  */
 class ArcaneCaseMeshService
 : public ArcaneArcaneCaseMeshServiceObject
@@ -71,6 +76,10 @@ class ArcaneCaseMeshService
   Ref<IMeshBuilder> m_mesh_builder_ref;
   String m_mesh_file_name;
   String m_partitioner_name;
+  String m_mesh_name;
+  //! True if createMesh() has already been called
+  bool m_has_created_mesh_called = false;
+  bool m_is_allow_null_mesh = false;
 
  private:
 
@@ -100,10 +109,13 @@ ArcaneCaseMeshService(const ServiceBuildInfo& sbi)
 void ArcaneCaseMeshService::
 createMesh(const String& default_name)
 {
-  if (m_mesh)
-    ARCANE_FATAL("Mesh is already created");
-
-  info() << "Creating mesh from 'ArcaneCaseMeshService'";
+  if (m_has_created_mesh_called)
+    ARCANE_FATAL("Mesh '{0}' has already been created", default_name);
+  m_has_created_mesh_called = true;
+  m_mesh_name = default_name;
+  info() << "Creating mesh name='" << m_mesh_name << "' from ArcaneCaseMeshService";
+  // The default mesh 'Mesh0' is not allowed to be null
+  m_is_allow_null_mesh = (default_name != "Mesh0");
   MeshBuildInfo build_info(default_name);
   ISubDomain* sd = m_sub_domain;
   String filename = options()->filename();
@@ -159,8 +171,20 @@ createMesh(const String& default_name)
     build_info.addFactoryName("ArcaneDynamicMeshFactory");
   if (build_info.parallelMngRef().isNull())
     build_info.addParallelMng(makeRef(sd->parallelMng()));
-  IPrimaryMesh* pm = sd->meshMng()->meshFactoryMng()->createMesh(build_info);
-  m_mesh = pm;
+
+  // Check if we want to customise the MeshBuilder
+  IMeshBuilderCustomiser* customiser = options()->meshBuilderCustomiser();
+  if (customiser)
+    customiser->applyCustomisation(build_info);
+
+  IParallelMng* mesh_pm = build_info.parallelMngRef().get();
+  if (mesh_pm) {
+    IPrimaryMesh* pmesh = sd->meshMng()->meshFactoryMng()->createMesh(build_info);
+    // NOTE: The mesh may be null if the parallelMng() is not on all ranks
+    m_mesh = pmesh;
+  }
+  else if (!m_is_allow_null_mesh)
+    ARCANE_FATAL("No mesh created for '{0}'", m_mesh_name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -170,6 +194,8 @@ void ArcaneCaseMeshService::
 allocateMeshItems()
 {
   _checkMeshCreationAndAllocation(false);
+  if (!m_mesh)
+    return;
 
   ARCANE_CHECK_POINTER(m_mesh_builder);
 
@@ -187,7 +213,7 @@ partitionMesh()
 {
   _checkMeshCreationAndAllocation(true);
 
-  if (m_mesh->meshPartInfo().nbPart() > 1)
+  if (m_mesh && (m_mesh->meshPartInfo().nbPart() > 1))
     if (!m_partitioner_name.empty())
       _doInitialPartition();
 }
@@ -213,10 +239,11 @@ applyAdditionalOperations()
 void ArcaneCaseMeshService::
 _checkMeshCreationAndAllocation(bool is_check_allocated)
 {
-  if (!m_mesh)
+  if (!m_has_created_mesh_called)
     ARCANE_FATAL("Mesh is not created. You should call createMesh() before");
-  if (is_check_allocated && !m_mesh->isAllocated())
-    ARCANE_FATAL("Mesh is not allocated. You should call initializeMesh() before");
+  if (m_mesh)
+    if (is_check_allocated && !m_mesh->isAllocated())
+      ARCANE_FATAL("Mesh is not allocated. You should call initializeMesh() before");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -301,6 +328,8 @@ _createBuilderFromFile(const CaseMeshReaderReadInfo& read_info)
 void ArcaneCaseMeshService::
 _doInitialPartition()
 {
+  if (!m_mesh)
+    return;
   // No longer uses the test partitioning service to ensure
   // that with ParMetis there are no empty partitions, as this is now
   // normally supported.
@@ -326,6 +355,8 @@ _doInitialPartition()
 void ArcaneCaseMeshService::
 _doInitialPartition2(const String& partitioner_name)
 {
+  if (!m_mesh)
+    return;
   info() << "Doing initial partitioning service=" << partitioner_name;
   // NOTE: This service only uses partitioners that implement
   // IMeshPartitionerBase and not those (historical) that only implement
@@ -346,6 +377,9 @@ _doInitialPartition2(const String& partitioner_name)
 void ArcaneCaseMeshService::
 _initializeVariables()
 {
+  if (!m_mesh)
+    return;
+
   IVariableMng* vm = m_sub_domain->variableMng();
   const auto& vars_opt = options()->initialization().variable;
   UniqueArray<String> errors;

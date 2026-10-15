@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<service name="ArcaneParallelMngSplitterMeshBuilderCustomiser" type="caseoption">
+  <userclass>User</userclass>
+  <description>
+    Service to split a IParallelMng to create the mesh on a subset of the original ranks
+  </description>
+
+  <interface name="Arcane::IMeshBuilderCustomiser" inherited="true" />
+
+  <options>
+
+    <simple name="subset-ratio" type="int32">
+      <userclass>User</userclass>
+      <description>
+        Divider for the number of ranks for to keep for the new mesh
+        A rank will be in the new IParallelMng if the value of `(rank % 'subset-ratio')` is zero
+      </description>
+    </simple>
+
+  </options>
+
+</service>

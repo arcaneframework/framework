@@ -13,6 +13,7 @@
 
 #include "arcane/core/MeshHandle.h"
 
+#include "IParallelMng.h"
 #include "arcane/utils/UserDataList.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Observable.h"
@@ -79,6 +80,7 @@ class MeshHandle::MeshHandleRef
   String m_mesh_name;
   IMesh* m_mesh_ptr = nullptr;
   IMeshBase* m_mesh_base_ptr = nullptr;
+  Ref<IParallelMng> m_parallel_mng_ref;
   // For now we need it, but it should be removed
   ISubDomain* m_sub_domain = nullptr;
   IUserDataList* m_user_data_list = nullptr;
@@ -130,6 +132,12 @@ void MeshHandle::MeshHandleRef::
 _setMesh(IMesh* mesh)
 {
   m_mesh_ptr = mesh;
+  if (mesh)
+    // We need to keep a reference for the parallel mng because it may have
+    // been creating during mesh building and no longer have reference after.
+    m_parallel_mng_ref = makeRef(mesh->parallelMng());
+  else
+    m_parallel_mng_ref.reset();
 }
 
 /*---------------------------------------------------------------------------*/

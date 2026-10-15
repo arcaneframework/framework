@@ -49,6 +49,7 @@
 #include "arcane/core/IApplication.h"
 #include "arcane/core/IMainFactory.h"
 #include "arcane/core/IMeshBuilder.h"
+#include "arcane/core/IMeshBuilderCustomiser.h"
 #include "arcane/core/IMeshCompactMng.h"
 #include "arcane/core/IMeshExchangeMng.h"
 #include "arcane/core/IMeshCompacter.h"
