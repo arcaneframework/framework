@@ -1428,6 +1428,8 @@ arcane_add_test(simple_heat_3d testSimpleHeat3D.arc)
 if (MEDFile_FOUND)
   arcane_add_test(simple_heat_med_polygonal testSimpleHeat-med-polygonal.arc)
   arcane_add_test_sequential(simple_heat_med_polyhedral testSimpleHeat-med-polyhedral.arc)
+  # Need VtkHdf but because MED also depends on HDF5 it is always available
+  arcane_add_test_sequential(simple_heat_med_polyhedral_vtkhdfv2 testSimpleHeat-med-polyhedral-vtkhdfv2.arc)
 endif ()
 
 arcane_add_test_sequential(mesh-builder-customiser testMeshBuilderCustomiser-1.arc)
