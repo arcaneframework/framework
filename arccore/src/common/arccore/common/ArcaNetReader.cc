@@ -184,11 +184,18 @@ _readDependPart(const JSONValue& depend_part)
         // Si la dépendance n'est pas dans "commons", soit c'est une variation
         // non résolue, soit c'est une dépendance inconnue.
         else {
+          bool is_excluded_variants = true;
           String cleaned_dependence_name;
           UniqueArray<String> split_dependence_name;
           // On stocke les variations exclues, s'il y en a.
           if (dependence_name.contains("!")) {
+            is_excluded_variants = true;
             dependence_name.split(split_dependence_name, '!');
+            cleaned_dependence_name = split_dependence_name[0];
+          }
+          else if (dependence_name.contains("+")) {
+            is_excluded_variants = false;
+            dependence_name.split(split_dependence_name, '+');
             cleaned_dependence_name = split_dependence_name[0];
           }
           else {
@@ -206,9 +213,12 @@ _readDependPart(const JSONValue& depend_part)
 
           String value = m_variations_value_resolved[pos_elem.value()];
           if (!split_dependence_name.empty()) {
-            ArrayView excluded_values(split_dependence_name.subView(1, split_dependence_name.size() - 1));
-            if (excluded_values.contains(value)) {
+            ArrayView excluded_or_included_values(split_dependence_name.subView(1, split_dependence_name.size() - 1));
+            if (is_excluded_variants && excluded_or_included_values.contains(value)) {
               ARCCORE_FATAL("Element '//variations/{0}/{1}' is excluded.", cleaned_dependence_name, value);
+            }
+            if (!is_excluded_variants && !excluded_or_included_values.contains(value)) {
+              ARCCORE_FATAL("Element '//variations/{0}/{1}' is not included.", cleaned_dependence_name, value);
             }
           }
 
