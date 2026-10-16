@@ -279,7 +279,7 @@ MatrixInternal::setMatrixValues(const int nrow, const IndexType* rows, const int
 #endif
   
     if constexpr (std::is_same_v<Arccore::Integer, HYPRE_Int>) {
-      HYPRE_Int* hypre_ncols = (HYPRE_Int*) ncols;
+      HYPRE_Inti const* hypre_ncols = reinterpret_cast<HYPRE_Int const*>(ncols);
       const HYPRE_Int ierr = hypreMatrixValues(
          m_internal, nrow, hypre_ncols, rows, cols, values, false);
       return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
