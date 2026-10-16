@@ -19,6 +19,120 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+#include <type_traits>
+#include <vector>
+#include <numeric>
+
+namespace
+{
+template <typename IndexT>
+HYPRE_Int hypreMatrixValues(
+    HYPRE_IJMatrix matrix,
+    HYPRE_Int nrow,
+    const HYPRE_Int* ncols,
+    const IndexT* rows,
+    const IndexT* cols,
+    const HYPRE_Complex* values,
+    bool add)
+{
+  auto call_hypre = [&](HYPRE_Int* counts,
+                        const HYPRE_BigInt* r,
+                        const HYPRE_BigInt* c) -> HYPRE_Int {
+    if (add)
+      return HYPRE_IJMatrixAddToValues(
+          matrix, nrow, counts, r, c, values);
+
+    return HYPRE_IJMatrixSetValues(
+        matrix, nrow, counts, r, c, values);
+  };
+
+  if constexpr (std::is_same_v<IndexT, HYPRE_BigInt>) {
+    // Types identiques : aucun buffer temporaire.
+    return call_hypre(
+        const_cast<HYPRE_Int*>(ncols), rows, cols);
+  }
+  else {
+    // Types différents : conversion des indices.
+    std::vector<HYPRE_BigInt> big_rows(rows, rows + nrow);
+
+    const auto nnz = std::accumulate(
+        ncols, ncols + nrow, std::size_t{0});
+
+    std::vector<HYPRE_BigInt> big_cols;
+    big_cols.reserve(nnz);
+
+    for (std::size_t i = 0; i < nnz; ++i)
+      big_cols.push_back(static_cast<HYPRE_BigInt>(cols[i]));
+
+    return call_hypre(
+        const_cast<HYPRE_Int*>(ncols),
+        big_rows.data(), big_cols.data());
+  }
+}
+
+template <typename IndexT>
+HYPRE_Int hypreVectorValues(
+    HYPRE_IJVector vector,
+    HYPRE_Int nrow,
+    const IndexT* rows,
+    const HYPRE_Complex* values,
+    bool add)
+{
+  if constexpr (std::is_same_v<IndexT, HYPRE_BigInt>)
+  {
+    if (add)
+      return HYPRE_IJVectorAddToValues(
+          vector, nrow, rows, values);
+
+    return HYPRE_IJVectorSetValues(
+        vector, nrow, rows, values);
+  }
+  else
+  {
+    std::vector<HYPRE_BigInt> big_rows;
+    big_rows.reserve(nrow);
+
+    for (int i = 0; i < nrow; ++i)
+      big_rows.push_back(static_cast<HYPRE_BigInt>(rows[i]));
+
+    if (add)
+      return HYPRE_IJVectorAddToValues(
+          vector, nrow, big_rows.data(), values);
+
+    return HYPRE_IJVectorSetValues(
+        vector, nrow, big_rows.data(), values);
+  }
+}
+
+
+template <typename IndexT>
+HYPRE_Int hypreVectorGetValues(
+    HYPRE_IJVector vector,
+    HYPRE_Int nrow,
+    const IndexT* rows,
+    HYPRE_Complex* values)
+{
+  if constexpr (std::is_same_v<IndexT, HYPRE_BigInt>)
+  {
+    return HYPRE_IJVectorGetValues(
+        vector, nrow, rows, values);
+  }
+  else
+  {
+    std::vector<HYPRE_BigInt> big_rows;
+    big_rows.reserve(nrow);
+
+    for (int i = 0; i < nrow; ++i)
+      big_rows.push_back(static_cast<HYPRE_BigInt>(rows[i]));
+
+    return HYPRE_IJVectorGetValues(
+        vector, nrow, big_rows.data(), values);
+  }
+}
+
+} // namespace
+
+/*---------------------------------------------------------------------------*/
 
 namespace Alien::Internal {
 
@@ -62,22 +176,21 @@ VectorInternal::init(const int ilower, const int iupper)
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
 }
 
-/*---------------------------------------------------------------------------*/
-
 bool
-MatrixInternal::addMatrixValues(const int nrow, const int* rows, const int* ncols,
+MatrixInternal::addMatrixValues(const int nrow, const IndexType* rows, const int* ncols,
     const int* cols, const Arccore::Real* values)
 {
-  int ierr = HYPRE_IJMatrixAddToValues(
-      m_internal, nrow, const_cast<int*>(ncols), rows, cols, values);
+  const HYPRE_Int ierr = hypreMatrixValues(
+      m_internal, nrow, ncols, rows, cols, values, true);
+
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool
-MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncols,
-    const int* cols, const Arccore::Real* values)
+MatrixInternal::setMatrixValues(const int nrow, const IndexType* rows, const int* ncols,
+    const IndexType* cols, const Arccore::Real* values)
 {
 #ifdef PRINT_DEBUG_INFO
   alien_info([&] {
@@ -127,10 +240,12 @@ MatrixInternal::setMatrixValues(const int nrow, const int* rows, const int* ncol
     });
   }
 #endif
-  int ierr = HYPRE_IJMatrixSetValues(
-      m_internal, nrow, const_cast<int*>(ncols), rows, cols, values);
+  const HYPRE_Int ierr = hypreMatrixValues(
+      m_internal, nrow, ncols, rows, cols, values, false);
+
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
 }
+
 
 void
 MatrixInternal::allocateHostPointers(std::size_t nrows,
@@ -318,11 +433,15 @@ void VectorInternal::setRows(std::size_t nrow,IndexType const* h_rows)
 }
 
 bool
-VectorInternal::addValues(const int nrow, const int* rows, const Arccore::Real* values)
+VectorInternal::addValues(const int nrow, const IndexType* rows, const Arccore::Real* values)
 {
-  int ierr = HYPRE_IJVectorAddToValues(m_internal,
-      nrow, // nb de valeurs
-      rows, values);
+  int ierr = hypreVectorValues(
+      m_internal,
+      nrow,
+      rows,
+      values,
+      true);
+
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
 }
 
@@ -345,9 +464,13 @@ VectorInternal::setValues(const int nrow, const int* rows, const Arccore::Real* 
          std::cout<<"HYPRE B["<<i<<"]="<<val[i]<<std::endl ;
   }
 #endif
-  int ierr = HYPRE_IJVectorSetValues(m_internal,
-      nrow, // nb de valeurs
-      rows, values);
+ int ierr = hypreVectorValues(
+      m_internal,
+      nrow,
+      rows,
+      values,
+      false);
+
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
 }
 
@@ -363,9 +486,13 @@ VectorInternal::setValuesOnDevice(const int nrow,  const int* rows, const Arccor
     for(int i=0;i<nrow;++i)
       std::cout<<"HYPRE B["<<i<<"]="<<val[i]<<std::endl ;
   }*/
-  int ierr = HYPRE_IJVectorSetValues(m_internal,
-      nrow, // nb de valeurs
-      m_rows, values);
+  int ierr = hypreVectorValues(
+      m_internal,
+      nrow,
+      m_rows,
+      values,
+      false);
+
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
 }
 
@@ -375,9 +502,13 @@ bool
 VectorInternal::setInitValues(
     const int nrow, const int* rows, const Arccore::Real* values)
 {
-  int ierr = HYPRE_IJVectorSetValues(m_internal,
-      nrow, // nb de valeurs
-      rows, values);
+  int ierr = hypreVectorValues(
+      m_internal,
+      nrow,
+      rows,
+      values,
+      false);
+  
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
 }
 
@@ -430,7 +561,11 @@ VectorInternal::assemble()
 bool
 VectorInternal::getValues(const int nrow, const int* rows, Arccore::Real* values)
 {
-  int ierr = HYPRE_IJVectorGetValues(m_internal, nrow, rows, values);
+  int ierr = hypreVectorGetValues(
+      m_internal,
+      nrow,
+      rows,
+      values);
 
 #ifdef PRINT_DEBUG_INFO
   if(m_memory_type==BackEnd::Memory::Host)
@@ -452,7 +587,7 @@ VectorInternal::getValuesToDevice(const int nrow, const int* rows, Arccore::Real
   if(m_memory_type==BackEnd::Memory::Host)
   {
     UniqueArray<Arccore::Real> values(nrow) ;
-    int ierr = HYPRE_IJVectorGetValues(m_internal, nrow, rows, values.data());
+    int ierr = hypreVectorGetValues(m_internal, nrow, rows, values.data());
 #ifdef ALIEN_USE_CUDA
     cudaMemcpy(values_d, values.data(), nrow * sizeof(ValueType), cudaMemcpyDeviceToHost);
 #endif
@@ -463,7 +598,7 @@ VectorInternal::getValuesToDevice(const int nrow, const int* rows, Arccore::Real
   }
   else
   {
-    int ierr = HYPRE_IJVectorGetValues(m_internal, nrow, m_rows, values_d);
+    int ierr = hypreVectorGetValues(m_internal, nrow, m_rows, values_d);
 
 #ifdef PRINT_DEBUG_INFO
     {
@@ -485,7 +620,8 @@ VectorInternal::getValuesToHost(const int nrow, const int* rows, Arccore::Real* 
 
   if(m_memory_type==BackEnd::Memory::Host)
   {
-    int ierr = HYPRE_IJVectorGetValues(m_internal, nrow, rows, values_h);
+    int ierr = hypreVectorGetValues(m_internal, nrow, rows, values_h);
+
     return (ierr == 0);
   }
   else
@@ -495,7 +631,7 @@ VectorInternal::getValuesToHost(const int nrow, const int* rows, Arccore::Real* 
       setRows(nrow,rows) ;
     ValueType* values_d ;
     cudaMalloc(&values_d, nrow * sizeof(ValueType));
-    int ierr = HYPRE_IJVectorGetValues(m_internal, nrow, m_rows, values_d);
+    int ierr = hypreVectorGetValues(m_internal, nrow, m_rows, values_d);
     cudaMemcpy(values_h, values_d, nrow * sizeof(ValueType), cudaMemcpyDeviceToHost);
     cudaFree(values_d);
     return (ierr == 0);
