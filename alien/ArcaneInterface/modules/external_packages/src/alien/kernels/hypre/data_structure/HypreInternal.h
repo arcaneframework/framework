@@ -58,7 +58,7 @@ class MatrixInternal : public ObjectWithTrace
 
   matrix_type const& internal() const { return m_internal; }
 
-  bool init(const int ilower, const int iupper, const int jlower, const int jupper,
+  bool init(const IndexType ilower, const IndexType iupper, const IndexType jlower, const IndexType jupper,
       const Arccore::ConstArrayView<Arccore::Integer>& lineSizes);
 
   bool addMatrixValues(const int nrow, const IndexType* rows, const int* ncols, const int* cols,
@@ -155,7 +155,7 @@ class VectorInternal
 
   vector_type const& internal() const { return m_internal; }
 
-  bool init(const int ilower, const int iupper);
+  bool init(const IndexType ilower, const IndexType iupper);
 
   void setRows(std::size_t nrow, IndexType const* rows) ;
 
