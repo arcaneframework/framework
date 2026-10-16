@@ -47,7 +47,11 @@ class AlephVector;
 class AlephParams;
 
 //! Default type for indexing rows and columns of matrices and vectors
+#ifdef ALEPH_USE_BIGINT
+using AlephInt = long long int;
+#else
 using AlephInt = int;
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

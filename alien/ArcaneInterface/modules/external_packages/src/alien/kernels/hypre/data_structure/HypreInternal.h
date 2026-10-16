@@ -40,6 +40,7 @@ class MatrixInternal : public ObjectWithTrace
  public:
   typedef Arccore::Real ValueType ;
   typedef int           IndexType ;
+  typedef long long int GlobalIndexType ;
   MatrixInternal(const MPI_Comm comm,
                  Alien::BackEnd::Memory::eType memory_type,
                  Alien::BackEnd::Exec::eSpaceType exec_space)
@@ -60,10 +61,10 @@ class MatrixInternal : public ObjectWithTrace
   bool init(const int ilower, const int iupper, const int jlower, const int jupper,
       const Arccore::ConstArrayView<Arccore::Integer>& lineSizes);
 
-  bool addMatrixValues(const int nrow, const int* rows, const int* ncols, const int* cols,
+  bool addMatrixValues(const int nrow, const IndexType* rows, const int* ncols, const int* cols,
       const Arccore::Real* values);
 
-  bool setMatrixValues(const int nrow, const int* rows, const int* ncols, const int* cols,
+  bool setMatrixValues(const int nrow, const IndexType* rows, const int* ncols, const int* cols,
       const Arccore::Real* values);
 
   bool assemble();
@@ -158,9 +159,9 @@ class VectorInternal
 
   void setRows(std::size_t nrow, IndexType const* rows) ;
 
-  bool addValues(const int nrow, const int* rows, const Arccore::Real* values);
+  bool addValues(const int nrow, const IndexType* rows, const Arccore::Real* values);
 
-  bool setValues(const int nrow, const int* rows, const Arccore::Real* values);
+  bool setValues(const int nrow, const IndexType* rows, const Arccore::Real* values);
 
   bool setValuesOnDevice(const int nrow, const int* rows, const Arccore::Real* values);
 
@@ -170,7 +171,7 @@ class VectorInternal
 
   bool assemble();
 
-  bool getValues(const int nrow, const int* rows, Arccore::Real* values);
+  bool getValues(const int nrow, const IndexType* rows, Arccore::Real* values);
   bool getValuesToDevice(const int nrow, const int* rows, Arccore::Real* values);
   bool getValuesToHost(const int nrow, const int* rows, Arccore::Real* values);
 
