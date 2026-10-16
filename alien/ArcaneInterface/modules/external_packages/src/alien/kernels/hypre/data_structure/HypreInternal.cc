@@ -25,6 +25,30 @@
 
 namespace
 {
+template <typename IntegerType>
+void setHypreRowSizes(
+    HYPRE_IJMatrix matrix,
+    Arccore::ConstArrayView<IntegerType> line_sizes,
+    int& ierr)
+{
+  if constexpr (std::is_same_v<IntegerType, HYPRE_Int>) {
+    // Pas de conversion nÃ©cessaire.
+    auto* hypre_line_sizes =
+        const_cast<HYPRE_Int*>(line_sizes.unguardedBasePointer());
+
+    ierr |= HYPRE_IJMatrixSetRowSizes(matrix, hypre_line_sizes);
+  }
+  else {
+    std::vector<HYPRE_Int> hypre_line_sizes(line_sizes.size());
+
+    for (std::size_t i = 0; i < line_sizes.size(); ++i) {
+      hypre_line_sizes[i] = static_cast<HYPRE_Int>(line_sizes[i]);
+    }
+
+    ierr |= HYPRE_IJMatrixSetRowSizes(matrix, hypre_line_sizes.data());
+  }
+}
+
 template <typename IndexT>
 HYPRE_Int hypreMatrixValues(
     HYPRE_IJMatrix matrix,
@@ -160,17 +184,7 @@ MatrixInternal::init(const IndexType ilower, const IndexType iupper, const Index
   ierr |= HYPRE_IJMatrixSetObjectType(m_internal, HYPRE_PARCSR);
   if(lineSizes.size()>0)
   {
-    if constexpr (std::is_same_v<Arccore::Integer, HYPRE_Int>) {
-      HYPRE_Int* hypre_line_sizes = (HYPRE_Int*) lineSizes.unguardedBasePointer();
-      ierr |= HYPRE_IJMatrixSetRowSizes(m_internal, hypre_line_sizes);
-    }
-    else {
-      std::vector<HYPRE_Int> big_line_sizes(lineSizes.size());
-      for (std::size_t i = 0; i < lineSizes.size(); ++i)
-        big_line_sizes[i] = static_cast<HYPRE_Int>(lineSizes[i]);
-
-      ierr |= HYPRE_IJMatrixSetRowSizes(m_internal, big_line_sizes.data());
-    }
+     setHypreRowSizes( m_internal, lineSizes, ierr);
   }
   ierr |= HYPRE_IJMatrixInitialize(m_internal);
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
@@ -188,13 +202,13 @@ VectorInternal::init(const IndexType ilower, const IndexType iupper)
 }
 
 bool
-MatrixInternal::addMatrixValues(const int nrow, const IndexType* rows, const int* ncols,
+MatrixInternal::addMatrixValues(const int nrow, const IndexType* rows, const Arccore::Integer* ncols,
     const IndexType* cols, const Arccore::Real* values)
 {
     if constexpr (std::is_same_v<Arccore::Integer, HYPRE_Int>) {
-      HYPRE_Int* hypre_ncols = (HYPRE_Int*) ncols;
+     HYPRE_Int const* hypre_ncols = reinterpret_cast<HYPRE_Int const*> (ncols) ;
       const HYPRE_Int ierr = hypreMatrixValues(
-          m_internal, nrow, hypre_ncols, rows, cols, values, true);
+          m_internal, static_cast<HYPRE_Int>(nrow), hypre_ncols, rows, cols, values, true);
 
       return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
     }
