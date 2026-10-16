@@ -43,6 +43,14 @@ class TypesHllcScheme
     Unknown //!< Unknown type
   };
 
+  //! Initial condition type
+  enum eInitialCondition
+  {
+    Sod, //!< Sod shock tube (split by the middle plane of the mesh)
+    Uniform, //!< Uniform flow (given density, pressure and velocity)
+    UnknownInitialCondition //!< Unknown type
+  };
+
   //! Limiter type for MUSCL reconstruction
   enum eLimiter
   {
