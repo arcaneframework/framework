@@ -176,6 +176,9 @@ addSources(alien_hypre_sycl.exe
            hypre_sycl.cpp
           )
 
+
+
+
 if(ALIEN_USE_SYCL)
     target_compile_definitions(alien_hypre_sycl.exe PUBLIC USE_SYCL2020)
     IF(ALIEN_USE_HIPSYCL)
@@ -248,6 +251,28 @@ install(
         TARGETS alien_hypre_sycl.exe
         RUNTIME DESTINATION bin
 )
+
+createExecutable(test_hypre_fsai.exe)
+
+addSources(test_hypre_fsai.exe
+           test_hypre_fsai.cpp
+          )
+
+linkLibraries(test_hypre_fsai.exe hypre mpi)
+
+commit(test_hypre_fsai.exe)
+
+
+createExecutable(test_hypre_iluk.exe)
+
+addSources(test_hypre_iluk.exe
+           test_hypre_iluk.cpp
+          )
+
+linkLibraries(test_hypre_iluk.exe hypre mpi)
+
+commit(test_hypre_iluk.exe)
+
 endif ()
 endif ()
 endif ()
