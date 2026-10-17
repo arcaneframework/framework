@@ -331,19 +331,19 @@ struct HypreInternalLinearSolver::Impl
   // acces aux fonctions du preconditionneur
   HYPRE_PtrToParSolverFcn precond_solve_function = nullptr;
   HYPRE_PtrToParSolverFcn precond_setup_function = nullptr;
-  int (*precond_destroy_function)(HYPRE_Solver) = nullptr;
+  HYPRE_Int (*precond_destroy_function)(HYPRE_Solver) = nullptr;
 
-  int (*solver_set_print_level_function)(HYPRE_Solver, int) = nullptr;
-  int (*solver_set_tol_function)(HYPRE_Solver, double) = nullptr;
-  int (*solver_set_precond_function)(HYPRE_Solver, HYPRE_PtrToParSolverFcn,
+  HYPRE_Int (*solver_set_print_level_function)(HYPRE_Solver, HYPRE_Int) = nullptr;
+  HYPRE_Int (*solver_set_tol_function)(HYPRE_Solver, double) = nullptr;
+  HYPRE_Int (*solver_set_precond_function)(HYPRE_Solver, HYPRE_PtrToParSolverFcn,
       HYPRE_PtrToParSolverFcn, HYPRE_Solver) = nullptr;
-  int (*solver_setup_function)(
+  HYPRE_Int (*solver_setup_function)(
       HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = nullptr;
-  int (*solver_solve_function)(
+  HYPRE_Int (*solver_solve_function)(
       HYPRE_Solver, HYPRE_ParCSRMatrix, HYPRE_ParVector, HYPRE_ParVector) = nullptr;
-  int (*solver_get_num_iterations_function)(HYPRE_Solver, int*) = nullptr;
-  int (*solver_get_final_relative_residual_function)(HYPRE_Solver, double*) = nullptr;
-  int (*solver_destroy_function)(HYPRE_Solver) = nullptr;
+  HYPRE_Int (*solver_get_num_iterations_function)(HYPRE_Solver, HYPRE_Int*) = nullptr;
+  HYPRE_Int (*solver_get_final_relative_residual_function)(HYPRE_Solver, double*) = nullptr;
+  HYPRE_Int (*solver_destroy_function)(HYPRE_Solver) = nullptr;
 
 
   HYPRE_ParCSRMatrix par_a;
@@ -1206,8 +1206,10 @@ HypreInternalLinearSolver::Impl::solve()
 
 void HypreInternalLinearSolver::Impl::getStatus(Status& status)
 {
+  HYPRE_Int count = 0;
    checkError("Hypre " + solver_name + " solver GetNumIterations",
-      (*solver_get_num_iterations_function)(solver, &status.iteration_count));
+      (*solver_get_num_iterations_function)(solver, &count));
+  status.iteration_count = count ;
   checkError("Hypre " + solver_name + " solver GetFinalResidual",
       (*solver_get_final_relative_residual_function)(solver, &status.residual));
 }

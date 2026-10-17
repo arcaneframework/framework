@@ -25,6 +25,30 @@
 
 namespace
 {
+template <typename IntegerType>
+void setHypreRowSizes(
+    HYPRE_IJMatrix matrix,
+    Arccore::ConstArrayView<IntegerType> line_sizes,
+    int& ierr)
+{
+  if constexpr (std::is_same_v<IntegerType, HYPRE_Int>) {
+    // Pas de conversion nÃ©cessaire.
+    auto* hypre_line_sizes =
+        const_cast<HYPRE_Int*>(line_sizes.unguardedBasePointer());
+
+    ierr |= HYPRE_IJMatrixSetRowSizes(matrix, hypre_line_sizes);
+  }
+  else {
+    std::vector<HYPRE_Int> hypre_line_sizes(line_sizes.size());
+
+    for (std::size_t i = 0; i < line_sizes.size(); ++i) {
+      hypre_line_sizes[i] = static_cast<HYPRE_Int>(line_sizes[i]);
+    }
+
+    ierr |= HYPRE_IJMatrixSetRowSizes(matrix, hypre_line_sizes.data());
+  }
+}
+
 template <typename IndexT>
 HYPRE_Int hypreMatrixValues(
     HYPRE_IJMatrix matrix,
@@ -149,24 +173,25 @@ MatrixInternal::~MatrixInternal()
 /*---------------------------------------------------------------------------*/
 
 bool
-MatrixInternal::init(const HYPRE_Int ilower, const HYPRE_Int iupper, const HYPRE_Int jlower,
-    const int jupper, const Arccore::ConstArrayView<Arccore::Integer>& lineSizes)
+MatrixInternal::init(const IndexType ilower, const IndexType iupper, const IndexType jlower,
+    const IndexType jupper, const Arccore::ConstArrayView<Arccore::Integer>& lineSizes)
 {
   HYPRE_ClearAllErrors() ;
 
   int ierr = 0; // code d'erreur de retour
-
   // -- Matrix --
   ierr = HYPRE_IJMatrixCreate(m_comm, ilower, iupper, jlower, jupper, &m_internal);
   ierr |= HYPRE_IJMatrixSetObjectType(m_internal, HYPRE_PARCSR);
   if(lineSizes.size()>0)
-     ierr |= HYPRE_IJMatrixSetRowSizes(m_internal, lineSizes.unguardedBasePointer());
+  {
+     setHypreRowSizes( m_internal, lineSizes, ierr);
+  }
   ierr |= HYPRE_IJMatrixInitialize(m_internal);
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
 }
 
 bool
-VectorInternal::init(const int ilower, const int iupper)
+VectorInternal::init(const IndexType ilower, const IndexType iupper)
 {
   // -- B Vector --
   int ierr = HYPRE_IJVectorCreate(m_comm, ilower, iupper, &m_internal);
@@ -177,13 +202,25 @@ VectorInternal::init(const int ilower, const int iupper)
 }
 
 bool
-MatrixInternal::addMatrixValues(const int nrow, const IndexType* rows, const int* ncols,
-    const int* cols, const Arccore::Real* values)
+MatrixInternal::addMatrixValues(const int nrow, const IndexType* rows, const Arccore::Integer* ncols,
+    const IndexType* cols, const Arccore::Real* values)
 {
-  const HYPRE_Int ierr = hypreMatrixValues(
-      m_internal, nrow, ncols, rows, cols, values, true);
+    if constexpr (std::is_same_v<Arccore::Integer, HYPRE_Int>) {
+     HYPRE_Int const* hypre_ncols = reinterpret_cast<HYPRE_Int const*> (ncols) ;
+      const HYPRE_Int ierr = hypreMatrixValues(
+          m_internal, static_cast<HYPRE_Int>(nrow), hypre_ncols, rows, cols, values, true);
 
-  return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
+      return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
+    }
+    else {
+      std::vector<HYPRE_Int> hypre_ncols(ncols, ncols + nrow);
+
+
+      const HYPRE_Int ierr = hypreMatrixValues(
+          m_internal, nrow, hypre_ncols.data(), rows, cols, values, true);
+
+      return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
+    } 
 }
 
 /*---------------------------------------------------------------------------*/
@@ -240,10 +277,18 @@ MatrixInternal::setMatrixValues(const int nrow, const IndexType* rows, const int
     });
   }
 #endif
-  const HYPRE_Int ierr = hypreMatrixValues(
-      m_internal, nrow, ncols, rows, cols, values, false);
-
-  return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
+  
+    if constexpr (std::is_same_v<Arccore::Integer, HYPRE_Int>) {
+      HYPRE_Int const* hypre_ncols = reinterpret_cast<HYPRE_Int const*>(ncols);
+      const HYPRE_Int ierr = hypreMatrixValues(
+         m_internal, nrow, hypre_ncols, rows, cols, values, false);
+      return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
+      } else {
+      std::vector<HYPRE_Int> hypre_ncols(ncols, ncols + nrow);
+      const HYPRE_Int ierr = hypreMatrixValues(
+         m_internal, nrow, hypre_ncols.data(), rows, cols, values, false);
+      return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
+    } 
 }
 
 
