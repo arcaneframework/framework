@@ -755,7 +755,9 @@ if (${VTK_PACKAGE_PREFIX}IOXML_FOUND)
     arcane_add_test_parallel(polyhedral_light_test2_vtk testMeshPolyhedral-light-2.arc 3)
     if (HDF5_FOUND)
       arcane_add_test(polyhedral_light_test1_vtkhdfv2 testMeshPolyhedral-light-1-vtkhdfv2.arc)
-      arcane_add_test_parallel(polyhedral_light_test1_vtkhdfv2 testMeshPolyhedral-light-1-vtkhdfv2.arc 3)
+      # GG: 10/2026. Disable this check because it does not seems to work in the CI with some versions
+      # of OpenMpi (errors are MPI_ERR_TRUNCATE) but I was not able to reproduce the problem.
+      # arcane_add_test_parallel(polyhedral_light_test1_vtkhdfv2 testMeshPolyhedral-light-1-vtkhdfv2.arc 3)
     endif ()
   endif ()
 endif ()
