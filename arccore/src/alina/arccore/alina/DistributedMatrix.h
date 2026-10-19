@@ -28,14 +28,14 @@
 
 #include "arccore/accelerator/Atomic.h"
 
+#include "arccore/common/SmallArray.h"
+
 #include <vector>
 #include <algorithm>
 
 #include <memory>
 #include <unordered_map>
 #include <random>
-
-#include <mpi.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -184,9 +184,10 @@ class CommunicationPattern
                                  recv.nbr[i], tag_exc_cols);
 
     ARCCORE_ALINA_TIC("MPI Wait");
-    // TODO: in multi-thead, order of wait is important. Use only one list.
-    comm.waitAll(send.req);
-    comm.waitAll(recv.req);
+    SmallArray<MessagePassing::Request> all_requests;
+    all_requests.addRange(recv.req);
+    all_requests.addRange(send.req);
+    comm.waitAll(all_requests);
     ARCCORE_ALINA_TOC("MPI Wait");
 
     // Shift columns to send to local numbering:
@@ -286,9 +287,10 @@ class CommunicationPattern
   void finish_exchange() const
   {
     ARCCORE_ALINA_TIC("MPI Wait");
-    // TODO: Use only one list to make sure it works in hybrid or shared memory
-    comm.waitAll(recv.req);
-    comm.waitAll(send.req);
+    SmallArray<MessagePassing::Request> all_requests;
+    all_requests.addRange(recv.req);
+    all_requests.addRange(send.req);
+    comm.waitAll(all_requests);
     ARCCORE_ALINA_TOC("MPI Wait");
 
     if (!recv.val.empty())
@@ -307,9 +309,10 @@ class CommunicationPattern
                                  send.nbr[i], tag_exc_vals);
 
     ARCCORE_ALINA_TIC("MPI Wait");
-    // TODO: Use only one list to make sure it works in hybrid or shared memory
-    comm.waitAll(recv.req);
-    comm.waitAll(send.req);
+    SmallArray<MessagePassing::Request> all_requests;
+    all_requests.addRange(recv.req);
+    all_requests.addRange(send.req);
+    comm.waitAll(all_requests);
     ARCCORE_ALINA_TOC("MPI Wait");
   }
 
@@ -698,7 +701,10 @@ transpose(const DistributedMatrix<Backend>& A)
   }
 
   ARCCORE_ALINA_TIC("MPI Wait");
-  comm.waitAll(recv_cnt_req);
+  SmallArray<MessagePassing::Request> all_requests;
+  all_requests.addRange(send_cnt_req);
+  all_requests.addRange(recv_cnt_req);
+  comm.waitAll(all_requests);
   ARCCORE_ALINA_TOC("MPI Wait");
   std::partial_sum(rem_ptr.begin(), rem_ptr.end(), rem_ptr.begin());
 
@@ -743,8 +749,12 @@ transpose(const DistributedMatrix<Backend>& A)
   // 4. Finish rem_col and rem_val exchange, and
   //    finish contruction of our remote part.
   ARCCORE_ALINA_TIC("MPI Wait");
-  comm.waitAll(recv_col_req);
-  comm.waitAll(recv_val_req);
+  all_requests.clear();
+  all_requests.addRange(recv_col_req);
+  all_requests.addRange(recv_val_req);
+  all_requests.addRange(send_col_req);
+  all_requests.addRange(send_val_req);
+  comm.waitAll(all_requests);
   ARCCORE_ALINA_TOC("MPI Wait");
 
   for (size_t i = 0; i < C.send.count(); ++i) {
@@ -761,12 +771,6 @@ transpose(const DistributedMatrix<Backend>& A)
 
   std::rotate(T_rem.ptr.data(), T_rem.ptr.data() + nrows, T_rem.ptr.data() + nrows + 1);
   T_rem.ptr[0] = 0;
-
-  ARCCORE_ALINA_TIC("MPI Wait");
-  comm.waitAll(send_cnt_req);
-  comm.waitAll(send_col_req);
-  comm.waitAll(send_val_req);
-  ARCCORE_ALINA_TOC("MPI Wait");
 
   ARCCORE_ALINA_TOC("MPI Transpose");
 
@@ -800,9 +804,9 @@ remote_rows(const CommunicationPattern<Backend>& C,
 
   // Create blocked matrix to send to each domain
   // that needs data from us:
-  UniqueArray<MessagePassing::Request> send_ptr_req(nsend);
-  UniqueArray<MessagePassing::Request> send_col_req(nsend);
-  UniqueArray<MessagePassing::Request> send_val_req(nsend);
+  SmallArray<MessagePassing::Request> send_ptr_req(nsend);
+  SmallArray<MessagePassing::Request> send_col_req(nsend);
+  SmallArray<MessagePassing::Request> send_val_req(nsend);
 
   std::vector<build_matrix> send_rows(nsend);
 
@@ -892,15 +896,16 @@ remote_rows(const CommunicationPattern<Backend>& C,
       recv_val_req[k] = comm.doIReceive(&B_nbr->val[cbeg], cend - cbeg, C.recv.nbr[k], tag_val);
   }
 
-  ARCCORE_ALINA_TIC("MPI Wait");
-  comm.waitAll(send_ptr_req);
-  comm.waitAll(send_col_req);
-  comm.waitAll(recv_col_req);
-
+  SmallArray<MessagePassing::Request> all_requests;
   if (need_values) {
-    comm.waitAll(send_val_req);
-    comm.waitAll(recv_val_req);
+    all_requests.addRange(send_val_req);
+    all_requests.addRange(recv_val_req);
   }
+  all_requests.addRange(send_col_req);
+  all_requests.addRange(send_ptr_req);
+  all_requests.addRange(recv_col_req);
+  ARCCORE_ALINA_TIC("MPI Wait");
+  comm.waitAll(all_requests);
   ARCCORE_ALINA_TOC("MPI Wait");
 
   ARCCORE_ALINA_TOC("remote_rows");
