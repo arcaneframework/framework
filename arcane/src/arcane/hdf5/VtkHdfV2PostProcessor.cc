@@ -25,6 +25,7 @@
 #include "arcane/core/IDataWriter.h"
 #include "arcane/core/IData.h"
 #include "arcane/core/IItemFamily.h"
+#include "arcane/core/MeshKind.h"
 #include "arcane/core/VariableCollection.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/IMesh.h"
@@ -216,6 +217,18 @@ class VtkHdfV2DataWriter
     , m_group_info(group_info)
     {
     }
+    DataInfo(HGroup& dataset_group, const String& dataset_name, const DatasetInfo& dataset_info)
+    : dataset(dataset_group, dataset_name)
+    , m_dataset_info(dataset_info)
+    {
+    }
+    DataInfo(HGroup& dataset_group, const String& dataset_name, const DatasetInfo& dataset_info,
+             ItemGroupCollectiveInfo* group_info)
+    : dataset(dataset_group, dataset_name)
+    , m_dataset_info(dataset_info)
+    , m_group_info(group_info)
+    {
+    }
 
    public:
 
@@ -281,12 +294,28 @@ class VtkHdfV2DataWriter
   bool m_is_collective_io = false;
   bool m_is_first_call = false;
   bool m_is_writer = false;
+
+  /*!
+   * \brief True if the datasets related to the polyhedron cells
+   * must be written for the current time step.
+   *
+   * This is true either when the mesh contains at least one polyhedron
+   * cell or when these datasets have already been created for a previous
+   * time step.
+   */
+  bool m_write_polyhedron_datasets = false;
+
   Int32 m_writer = 0;
 
   DatasetInfo m_cell_offset_info;
   DatasetInfo m_point_offset_info;
   DatasetInfo m_connectivity_offset_info;
+  DatasetInfo m_face_connectivity_offset_info;
+  DatasetInfo m_polyhedron_to_face_offset_info;
+  DatasetInfo m_face_offsets_offset_info;
   DatasetInfo m_offset_for_cell_offset_info;
+  DatasetInfo m_offset_for_face_offset_info;
+  DatasetInfo m_offset_for_polyhedron_offset_info;
   DatasetInfo m_part_offset_info;
   DatasetInfo m_time_offset_info;
   std::map<DatasetInfo, Int64> m_offset_info_list;
@@ -453,7 +482,7 @@ beginWrite(const VariableCollection& vars)
     _openOrCreateGroups();
 
     if (is_first_call) {
-      std::array<Int64, 2> version = { 2, 0 };
+      std::array<Int64, 2> version = { 2, 5 };
       _addInt64ArrayAttribute(m_top_group, "Version", version);
       _addStringAttribute(m_top_group, "Type", "UnstructuredGrid");
     }
@@ -469,7 +498,7 @@ beginWrite(const VariableCollection& vars)
   const Int32 nb_cell = all_cells.size();
   const Int32 nb_node = all_nodes.size();
 
-  Int32 total_nb_connected_node = 0;
+  Int64 total_nb_connected_node = 0;
   ENUMERATE_ (Cell, icell, all_cells) {
     Cell cell = *icell;
     total_nb_connected_node += cell.nodeIds().size();
@@ -482,6 +511,33 @@ beginWrite(const VariableCollection& vars)
   UniqueArray<unsigned char> cells_ghost_type(nb_cell);
   UniqueArray<unsigned char> cells_type(nb_cell);
   UniqueArray<Int64> cells_uid(nb_cell);
+
+  // Arrays for the polyhedron cells.
+  //
+  // The 'faces_connectivity' array contains the list of nodes of each face
+  // of each polyhedron cell and 'faces_offset' contains the offset of each
+  // face in 'faces_connectivity' (its size is equal to the number of faces
+  // plus 1). Each polyhedron cell has its own list of faces (a face shared
+  // by two cells is saved twice because VTK requires that the nodes of a
+  // face are ordered so that the face normal points outwards from the cell).
+  //
+  // The 'polyhedron_to_faces' array contains for each cell the list of its
+  // faces (this list is empty for cells that are not polyhedron cells) and
+  // 'polyhedron_offset' contains the offset of each cell in
+  // 'polyhedron_to_faces' (its size is equal to the number of cells plus 1).
+  UniqueArray<Int64> faces_connectivity;
+  UniqueArray<Int64> faces_offset;
+  UniqueArray<Int64> polyhedron_to_faces;
+  UniqueArray<Int64> polyhedron_offset(nb_cell + 1);
+  faces_offset.add(0);
+  polyhedron_offset[0] = 0;
+  Int64 nb_face = 0;
+
+  // In a polyhedral mesh, all the cells with at least one face are
+  // considered as polyhedron cells. For the other meshes, only the cells
+  // with a polyhedron type are considered as polyhedron cells.
+  const bool mesh_is_polyhedral = (m_mesh->meshKind().meshStructure() == eMeshStructure::Polyhedral);
+
   cells_offset[0] = 0;
   {
     Int32 connected_node_index = 0;
@@ -497,14 +553,68 @@ beginWrite(const VariableCollection& vars)
         ghost_type = VtkUtils::CellGhostTypes::DUPLICATECELL;
       cells_ghost_type[index] = ghost_type;
 
-      unsigned char vtk_type = VtkUtils::arcaneToVtkCellType(cell.type());
+      const bool is_polyhedron = cell.typeInfo()->isPolyhedron() || (mesh_is_polyhedral && cell.nbFace() > 0);
+      unsigned char vtk_type = VtkUtils::VTK_POLYHEDRON;
+      if (!is_polyhedron)
+        vtk_type = VtkUtils::arcaneToVtkCellType(cell.type());
       cells_type[index] = vtk_type;
       for (NodeLocalId node : cell.nodeIds()) {
         cells_connectivity[connected_node_index] = node;
         ++connected_node_index;
       }
       cells_offset[index + 1] = connected_node_index;
+
+      if (is_polyhedron) {
+        for (Face face : cell.faces()) {
+          // VTK requires that the nodes of a polyhedron face are ordered so
+          // that the normal to that face points outwards from the cell. In
+          // Arcane, the stored orientation of a face is outwards for its
+          // back cell. For the front cell, the order of the nodes must
+          // therefore be reversed.
+          Int32 face_nb_node = face.nbNode();
+          bool is_back_cell = (face.backCellId().localId() == cell.localId());
+          if (is_back_cell) {
+            for (NodeLocalId node : face.nodeIds())
+              faces_connectivity.add(node);
+          }
+          else {
+            NodeLocalIdView node_ids = face.nodeIds();
+            for (Int32 i = face_nb_node - 1; i >= 0; --i)
+              faces_connectivity.add(node_ids[i]);
+          }
+          faces_offset.add(faces_connectivity.size());
+          polyhedron_to_faces.add(nb_face);
+          ++nb_face;
+        }
+      }
+      polyhedron_offset[index + 1] = polyhedron_to_faces.size();
     }
+  }
+
+  // Determines whether the datasets related to the polyhedron cells need to
+  // be written. This is the case either when the mesh contains at least one
+  // polyhedron cell or when these datasets have already been created for a
+  // previous time step (their content must then be updated at each time step
+  // to keep the temporal offsets of the file consistent).
+  {
+    Int32 local_has_polyhedron = (nb_face > 0) ? 1 : 0;
+    Int32 global_has_polyhedron = pm->reduce(MessagePassing::ReduceMax, local_has_polyhedron);
+    Int32 global_has_polyhedron_datasets = 0;
+    if (!m_is_first_call) {
+      Int32 local_has_polyhedron_datasets = 0;
+      if (m_is_writer) {
+        HDataset polyhedron_dataset;
+        polyhedron_dataset.openIfExists(m_top_group, "FaceConnectivity");
+        local_has_polyhedron_datasets = (polyhedron_dataset.id() > 0) ? 1 : 0;
+      }
+      global_has_polyhedron_datasets = pm->reduce(MessagePassing::ReduceMax, local_has_polyhedron_datasets);
+    }
+    if (global_has_polyhedron != 0 && global_has_polyhedron_datasets == 0 && !m_is_first_call)
+      ARCANE_FATAL("The mesh contains polyhedron cells but the associated datasets "
+                   "do not exist in the file '{0}'. Polyhedron cells must be present "
+                   "from the first output",
+                   m_full_filename);
+    m_write_polyhedron_datasets = (global_has_polyhedron != 0) || (global_has_polyhedron_datasets != 0);
   }
 
   _initializeOffsets();
@@ -514,26 +624,70 @@ beginWrite(const VariableCollection& vars)
   GatherGroupInfo* ggi = ggi_ref.get();
 
   // TODO: create an offset for this object (or look into how to calculate it automatically
-  _writeDataSet1DCollective<Int64>({ { m_top_group, "Offsets" }, m_offset_for_cell_offset_info }, ggi, cells_offset);
+  _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "Offsets", m_offset_for_cell_offset_info),
+                                   ggi, cells_offset);
+
+  if (m_write_polyhedron_datasets) {
+    // Saves the offset of the faces of each cell in 'PolyhedronToFaces'.
+    // This dataset has the same structure as 'Offsets' ((nb_cell + 1) values
+    // per part) and is therefore written with the same gather information.
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "PolyhedronOffsets", m_offset_for_polyhedron_offset_info),
+                                     ggi, polyhedron_offset);
+  }
   ggi->setNeedRecompute();
 
-  _writeDataSet1DCollective<Int64>({ { m_top_group, "Connectivity" }, m_connectivity_offset_info }, ggi, cells_connectivity);
+  _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "Connectivity", m_connectivity_offset_info),
+                                   ggi, cells_connectivity);
   ggi->setNeedRecompute();
 
-  _writeDataSet1DCollective<unsigned char>({ { m_top_group, "Types" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_type);
+  if (m_write_polyhedron_datasets) {
+    // Saves the nodes of the faces of the polyhedron cells.
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "FaceConnectivity", m_face_connectivity_offset_info),
+                                     ggi, faces_connectivity);
+    ggi->setNeedRecompute();
+
+    // Saves the faces of each cell. Cells that are not polyhedron cells
+    // have an empty list of faces.
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "PolyhedronToFaces", m_polyhedron_to_face_offset_info),
+                                     ggi, polyhedron_to_faces);
+    ggi->setNeedRecompute();
+
+    // Saves the offsets of the faces in 'FaceConnectivity'. The array size
+    // is equal to the number of faces plus 1.
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "FaceOffsets", m_offset_for_face_offset_info),
+                                     ggi, faces_offset);
+    ggi->setNeedRecompute();
+  }
+
+  _writeDataSet1DCollective<unsigned char>(DataInfo(m_top_group, "Types", m_cell_offset_info),
+                                           &m_all_cells_gather_group_info, cells_type);
 
   {
     Int64 nb_cell_int64 = nb_cell;
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfCells" }, m_part_offset_info }, ggi,
-                                     asConstSpan(&nb_cell_int64));
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfCells", m_part_offset_info),
+                                     ggi, asConstSpan(&nb_cell_int64));
 
     Int64 nb_node_int64 = nb_node;
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfPoints" }, m_part_offset_info }, ggi,
-                                     asConstSpan(&nb_node_int64));
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfPoints", m_part_offset_info),
+                                     ggi, asConstSpan(&nb_node_int64));
 
     Int64 number_of_connectivity_ids = cells_connectivity.size();
-    _writeDataSet1DCollective<Int64>({ { m_top_group, "NumberOfConnectivityIds" }, m_part_offset_info }, ggi,
-                                     asConstSpan(&number_of_connectivity_ids));
+    _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfConnectivityIds", m_part_offset_info),
+                                     ggi, asConstSpan(&number_of_connectivity_ids));
+
+    if (m_write_polyhedron_datasets) {
+      Int64 nb_face_int64 = nb_face;
+      _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfFaces", m_part_offset_info),
+                                       ggi, asConstSpan(&nb_face_int64));
+
+      Int64 number_of_face_connectivity_ids = faces_connectivity.size();
+      _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfFaceConnectivityIds", m_part_offset_info),
+                                       ggi, asConstSpan(&number_of_face_connectivity_ids));
+
+      Int64 number_of_polyhedron_to_face_ids = polyhedron_to_faces.size();
+      _writeDataSet1DCollective<Int64>(DataInfo(m_top_group, "NumberOfPolyhedronToFaceIds", m_part_offset_info),
+                                       ggi, asConstSpan(&number_of_polyhedron_to_face_ids));
+    }
   }
   ggi->setNeedRecompute();
 
@@ -563,33 +717,55 @@ beginWrite(const VariableCollection& vars)
     }
 
     // Saves the unique ID of each node in the dataset "GlobalNodeId".
-    _writeDataSet1DCollective<Int64>({ { m_node_data_group, "GlobalIds" }, m_cell_offset_info }, &m_all_nodes_gather_group_info, nodes_uid);
+    _writeDataSet1DCollective<Int64>(DataInfo(DatasetGroupAndName(m_node_data_group, "GlobalIds"), m_cell_offset_info),
+                                     &m_all_nodes_gather_group_info, nodes_uid);
 
     // Saves the information about the node type (real or ghost).
-    _writeDataSet1DCollective<unsigned char>({ { m_node_data_group, "vtkGhostType" }, m_cell_offset_info }, &m_all_nodes_gather_group_info, nodes_ghost_type);
+    _writeDataSet1DCollective<unsigned char>(DataInfo(DatasetGroupAndName(m_node_data_group, "vtkGhostType"), m_cell_offset_info),
+                                             &m_all_nodes_gather_group_info, nodes_ghost_type);
 
     // Saves the coordinates of the nodes.
-    _writeDataSet2DCollective<Real>({ { m_top_group, "Points" }, m_point_offset_info }, ggi, points);
+    _writeDataSet2DCollective<Real>(DataInfo(DatasetGroupAndName(m_top_group, "Points"), m_point_offset_info),
+                                    ggi, points);
     ggi->setNeedRecompute();
   }
 
   // Saves the information about the cell type (real or ghost)
-  _writeDataSet1DCollective<unsigned char>({ { m_cell_data_group, "vtkGhostType" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_ghost_type);
+  _writeDataSet1DCollective<unsigned char>(DataInfo(DatasetGroupAndName(m_cell_data_group, "vtkGhostType"), m_cell_offset_info),
+                                           &m_all_cells_gather_group_info, cells_ghost_type);
 
   // Saves the unique ID of each cell in the dataset "GlobalCellId".
   // Using the dataset "vtkOriginalCellIds" does not work in Paraview.
-  _writeDataSet1DCollective<Int64>({ { m_cell_data_group, "GlobalIds" }, m_cell_offset_info }, &m_all_cells_gather_group_info, cells_uid);
+  _writeDataSet1DCollective<Int64>(DataInfo(DatasetGroupAndName(m_cell_data_group, "GlobalIds"), m_cell_offset_info),
+                                   &m_all_cells_gather_group_info, cells_uid);
 
   if (m_is_writer) {
     // List of times.
     Real current_time = m_times[time_index - 1];
     // TODO: Replace ggi with nullptr in non-collective mode?
-    _writeDataSet1D<Real>({ { m_steps_group, "Values" }, m_time_offset_info }, ggi, asConstSpan(&current_time));
+    _writeDataSet1D<Real>(DataInfo(DatasetGroupAndName(m_steps_group, "Values"), m_time_offset_info),
+                          ggi, asConstSpan(&current_time));
 
     // Part offset.
     Int64 comm_size = pm->commSize();
     Int64 part_offset = (time_index - 1) * comm_size;
-    _writeDataSet1D<Int64>({ { m_steps_group, "PartOffsets" }, m_time_offset_info }, ggi, asConstSpan(&part_offset));
+    _writeDataSet1D<Int64>(DataInfo(DatasetGroupAndName(m_steps_group, "PartOffsets"), m_time_offset_info),
+                           ggi, asConstSpan(&part_offset));
+
+    if (m_write_polyhedron_datasets) {
+      // Offset of the 'FaceOffsets' dataset for the current time step. This
+      // value is the number of faces saved before the current time step. It
+      // is deduced from the write offset of the 'FaceOffsets' dataset (which
+      // also contains one offset value per part and per time step) by
+      // removing the number of these offset values.
+      auto face_offsets_write_offset = m_offset_info_list.find(m_offset_for_face_offset_info);
+      if (face_offsets_write_offset == m_offset_info_list.end())
+        ARCANE_FATAL("The dataset 'FaceOffsets' has not been written");
+      Int64 nb_offset_value = (time_index - 1) * comm_size;
+      Int64 face_offsets_offset = face_offsets_write_offset->second - nb_offset_value;
+      _writeDataSet1D<Int64>({ { m_steps_group, "FaceOffsetsOffsets" }, m_time_offset_info }, ggi,
+                             asConstSpan(&face_offsets_offset));
+    }
 
     // Number of times
     _addInt64Attribute(m_steps_group, "NSteps", time_index);
@@ -1284,12 +1460,30 @@ _initializeOffsets()
   //   "Connectivity" of the cell node connectivity. This offset is not saved,
   //   but since this field has a number of values equal to the number of cells plus one it is possible
   //   to deduce it from "CellOffsets" (it equals "CellOffsets" plus the current time index).
+  //
+  // When the mesh contains polyhedron cells, 4 additional offset values are used:
+  //
+  // - offset for the "FaceConnectivity" field, which is called "FaceConnectivityOffsets".
+  //   It is equivalent to "ConnectivityIdOffsets" but for the faces of the polyhedron cells.
+  // - offset for the "PolyhedronToFaces" field, which is called "PolyhedronToFaceIdOffsets".
+  //   It is equivalent to "ConnectivityIdOffsets" but for the list of faces of each cell.
+  // - offset for the "FaceOffsets" field, which is called "FaceOffsetsOffsets". It contains
+  //   the number of faces saved before the current time step. As for "Offsets", the write
+  //   offset of the "FaceOffsets" dataset can be deduced from it (it equals "FaceOffsetsOffsets"
+  //   plus the number of parts saved before the current time step).
+  // - offset for the "PolyhedronOffsets" field. This offset is not saved but, as this field
+  //   has the same structure as "Offsets", its write offset is equal to the one of "Offsets".
 
   m_cell_offset_info = DatasetInfo(m_steps_group, "CellOffsets");
   m_point_offset_info = DatasetInfo(m_steps_group, "PointOffsets");
   m_connectivity_offset_info = DatasetInfo(m_steps_group, "ConnectivityIdOffsets");
-  // These three offsets are not saved in the VTK format
+  m_face_connectivity_offset_info = DatasetInfo(m_steps_group, "FaceConnectivityOffsets");
+  m_polyhedron_to_face_offset_info = DatasetInfo(m_steps_group, "PolyhedronToFaceIdOffsets");
+  m_face_offsets_offset_info = DatasetInfo(m_steps_group, "FaceOffsetsOffsets");
+  // These five offsets are not saved in the VTK format
   m_offset_for_cell_offset_info = DatasetInfo("_OffsetForCellOffsetInfo");
+  m_offset_for_face_offset_info = DatasetInfo("_OffsetForFaceOffsetInfo");
+  m_offset_for_polyhedron_offset_info = DatasetInfo("_OffsetForPolyhedronOffsetInfo");
   m_part_offset_info = DatasetInfo("_PartOffsetInfo");
   m_time_offset_info = DatasetInfo("_TimeOffsetInfo");
 
@@ -1318,6 +1512,17 @@ _initializeOffsets()
       _readAndSetOffset(m_cell_offset_info, wanted_step);
       _readAndSetOffset(m_point_offset_info, wanted_step);
       _readAndSetOffset(m_connectivity_offset_info, wanted_step);
+      if (m_write_polyhedron_datasets) {
+        _readAndSetOffset(m_face_connectivity_offset_info, wanted_step);
+        _readAndSetOffset(m_polyhedron_to_face_offset_info, wanted_step);
+        _readAndSetOffset(m_face_offsets_offset_info, wanted_step);
+        // The 'FaceOffsets' dataset contains (nb_face + 1) values per part:
+        // its write offset is deduced from 'FaceOffsetsOffsets'.
+        m_offset_for_face_offset_info.setOffset(m_face_offsets_offset_info.offset() + wanted_step * nb_rank);
+        // The 'PolyhedronOffsets' dataset has the same structure as 'Offsets':
+        // its write offset is therefore the same.
+        m_offset_for_polyhedron_offset_info.setOffset(m_offset_for_cell_offset_info.offset());
+      }
       m_part_offset_info.setOffset(wanted_step * nb_rank);
       m_time_offset_info.setOffset(wanted_step);
       m_offset_for_cell_offset_info.setOffset(m_cell_offset_info.offset() + wanted_step * nb_rank);

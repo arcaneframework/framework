@@ -753,6 +753,12 @@ if (${VTK_PACKAGE_PREFIX}IOXML_FOUND)
     arcane_add_test_parallel(polyhedral_exchange_item2 testExchangeItem-polyhedral-2.arc 3)
     arcane_add_test_parallel(polyhedral_light_test1_vtk testMeshPolyhedral-light-1.arc 3)
     arcane_add_test_parallel(polyhedral_light_test2_vtk testMeshPolyhedral-light-2.arc 3)
+    if (HDF5_FOUND)
+      arcane_add_test_sequential(polyhedral_light_test1_vtkhdfv2 testMeshPolyhedral-light-1-vtkhdfv2.arc)
+      # GG: 10/2026. Disable this check because it does not seems to work in the CI with some versions
+      # of OpenMpi (errors are MPI_ERR_TRUNCATE) but I was not able to reproduce the problem.
+      # arcane_add_test_parallel(polyhedral_light_test1_vtkhdfv2 testMeshPolyhedral-light-1-vtkhdfv2.arc 3)
+    endif ()
   endif ()
 endif ()
 if (MEDFile_FOUND)
@@ -1424,6 +1430,8 @@ arcane_add_test(simple_heat_3d testSimpleHeat3D.arc)
 if (MEDFile_FOUND)
   arcane_add_test(simple_heat_med_polygonal testSimpleHeat-med-polygonal.arc)
   arcane_add_test_sequential(simple_heat_med_polyhedral testSimpleHeat-med-polyhedral.arc)
+  # Need VtkHdf but because MED also depends on HDF5 it is always available
+  arcane_add_test_sequential(simple_heat_med_polyhedral_vtkhdfv2 testSimpleHeat-med-polyhedral-vtkhdfv2.arc)
 endif ()
 
 arcane_add_test_sequential(mesh-builder-customiser testMeshBuilderCustomiser-1.arc)
