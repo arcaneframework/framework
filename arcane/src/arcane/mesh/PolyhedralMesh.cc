@@ -179,6 +179,7 @@ class PolyhedralFamilySerializer : public IItemFamilySerializer
   UniqueArray<Int32Array*> m_deserialized_lids_array;
   UniqueArray<std::shared_ptr<PolyhedralTools::ItemLocalIds>> m_future_item_lids_array;
   ItemAllocationInfo::FamilyInfo m_family_info;
+  bool m_is_empty = true;
 
  public:
 
@@ -195,6 +196,8 @@ class PolyhedralFamilySerializer : public IItemFamilySerializer
 
  public:
 
+  bool isEmpty() const {return m_is_empty;}
+
   void serializeItems(ISerializer* buf, Int32ConstArrayView items_local_ids) override;
   void deserializeItems(ISerializer* buf, Int32Array* items_local_ids) override;
 
@@ -204,10 +207,12 @@ class PolyhedralFamilySerializer : public IItemFamilySerializer
     m_deserialized_lids_array.clear();
     m_future_item_lids_array.clear();
     m_family_info.clear();
+    m_is_empty = true;
   }
 
   void fillDeserializedLocalIds()
   {
+    if (isEmpty()) return;
     auto index = 0;
     for (auto item_lids_array : m_deserialized_lids_array) {
       auto& future_item_lids = m_future_item_lids_array[index];
@@ -295,6 +300,8 @@ finalizeItemAllocation()
 {
   UniqueArray<std::shared_ptr<PolyhedralTools::ItemLocalIds>> future_item_lids;
   for (auto family_serializer : m_serializers) {
+    if (family_serializer->isEmpty())
+      continue;
     for (auto& item_lids : family_serializer->itemLidsArray()) {
       future_item_lids.push_back(item_lids);
     }
@@ -992,6 +999,8 @@ namespace mesh
   {
     ARCANE_CHECK_POINTER(m_family);
     ARCANE_CHECK_POINTER(m_mng);
+
+    m_is_empty = false;
 
     switch (buf->mode()) {
     case ISerializer::ModeReserve: {
