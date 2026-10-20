@@ -37,6 +37,8 @@
 #include <algorithm>
 #include <set>
 
+#include "arcane/core/internal/IItemFamilySerializerMngInternal.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -960,6 +962,9 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer());
     cell_serializer->deserializeItems(s, nullptr);
   }
+  auto* serializer_mng = m_mesh_internal->familySerializerMng();
+  if (serializer_mng)
+    serializer_mng->finalizeItemAllocation();
   m_mesh_internal->printStats(TraceMessage::DEFAULT_LEVEL);
 }
 
