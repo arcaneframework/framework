@@ -57,6 +57,7 @@
 #include "arcane/mesh/ItemConnectivitySelector.h"
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
 #include "arcane/mesh/DynamicMeshKindInfos.h"
+#include "arcane/mesh/internal/UniqueIdKeySortFunction.h"
 
 #include "arcane/core/parallel/GhostItemsVariableParallelOperation.h"
 #include "arcane/core/parallel/IStat.h"
@@ -2467,7 +2468,11 @@ class CompareUniqueIdWithSuppression
 IItemInternalSortFunction* ItemFamily::
 _defaultItemSortFunction()
 {
-  return new ItemInternalSortFunction<CompareUniqueIdWithSuppression>("ArcaneUniqueId");
+  auto comparison_sort = std::make_unique<ItemInternalSortFunction<CompareUniqueIdWithSuppression>>("ArcaneUniqueId");
+  auto use_legacy = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LEGACY_ITEM_SORT", true);
+  if (use_legacy && use_legacy.value() != 0)
+    return comparison_sort.release();
+  return std::make_unique<UniqueIdKeySortFunction>("ArcaneUniqueId", std::move(comparison_sort)).release();
 }
 
 /*---------------------------------------------------------------------------*/
