@@ -9,6 +9,132 @@ are listed here: \ref arcanedoc_news_changelog20
 
 ___
 
+## Arcane Versions 4.2.3+ (October 2026)
+
+### New Features/Improvements
+
+- Adds support for providing the case file content directly to a standalone
+  launcher (\pr{2688}).
+- Adds a mesh builder customization service and improves mesh-handle safety
+  (\pr{2825}).
+- Adds views for multi-dimensional mesh variables and makes \arcane{NumVector}
+  and \arcane{NumMatrix} available in the public API (\pr{2684}, \pr{2685}).
+- Moves numeric types and utilities, including \arcane{Real2}, \arcane{Real3},
+  \arcane{Real2x2}, \arcane{Real3x3}, \arcane{NumVector},
+  \arcane{NumMatrix} and \arcane{HPReal}, from %Arcane to %Arccore
+  (\pr{2689}, \pr{2690}, \pr{2691}, \pr{2692}, \pr{2699}).
+- Improves \arcane{MDSpan} usage and numerical type support in arrays, including
+  `isNearlyEqual()` declarations and POD support (\pr{2683}, \pr{2693},
+  \pr{2694}, \pr{2700}, \pr{2701}).
+- Renames the materials implementation namespace and performs additional
+  Arccore cleanup (\pr{2682}, \pr{2687}).
+- Improves material constituent item vectors for GPU and multithreaded use
+  (\pr{2713}).
+- Adds mesh cutting and section services (\pr{2711}).
+- Adds a sample demonstrating degrees of freedom on cells (\pr{2714},
+  \pr{2715}).
+- Adds standalone accelerator manager support for multithreaded use (\pr{2732}).
+- Refactors and documents the Alina public API, adds a distributed solver API
+  sample/test, and improves its test coverage (\pr{2730}, \pr{2735},
+  \pr{2736}, \pr{2737}).
+- Adds message-passing operations for exclusive scan, reductions with separate
+  send and receive buffers, and communicator splitting (\pr{2764},
+  \pr{2765}, \pr{2766}, \pr{2790}).
+- Adds support for cloning variables in mesh section and cut services
+  and improves their tests and validation (\pr{2756}, \pr{2757}, \pr{2759}).
+- Supports polygonal and polyhedral meshes in additional mesh and output paths,
+  including ghost layers, MED input and Ensight output (\pr{2731},
+  \pr{2754}, \pr{2755}, \pr{2788}, \pr{2794}, \pr{2797},
+  \pr{2800}, \pr{2802}, \pr{2808}, \pr{2809}).
+- Improves the Alina solver API and builtin backend tests, and removes remaining
+  direct MPI dependencies from Alina (\pr{2702}, \pr{2703}, \pr{2704},
+  \pr{2705}, \pr{2708}, \pr{2726}, \pr{2729}, \pr{2739},
+  \pr{2740}, \pr{2741}, \pr{2742}, \pr{2750}, \pr{2763},
+  \pr{2786}, \pr{2787}, \pr{2791}, \pr{2792}, \pr{2795},
+  \pr{2796}, \pr{2805}, \pr{2807}, \pr{2813}, \pr{2821}).
+- Improves array and multidimensional array APIs, including \arcane{SmallSpan}
+  and \arcane{MDSpan} interoperability (\pr{2721}, \pr{2743}, \pr{2748}).
+- Adds ArcaNet parameter-file support and updates its format and reader
+  (\pr{2747}, \pr{2752}, \pr{2778}, \pr{2785}).
+- Improves task APIs and replaces an initialization-time `std::set` use
+  (\pr{2734}, \pr{2774}).
+- Adds views for \arcane{NumVector} mesh variables and `constexpr` geometric
+  generation methods (\pr{2798}, \pr{2799}).
+- Adds conversion support for \arcane{NumVector} and \arcane{NumMatrix},
+  changes default initialization of numerical types, and avoids inserting zero
+  values in Aleph matrices (\pr{2782}, \pr{2783}, \pr{2784}).
+- Updates standalone MPI manager initialization and adds a running-state query
+  for profiling services (\pr{2810}, \pr{2811}).
+- Adds a mutex for selected writes to `std::cout` and `std::cerr` (\pr{2817}).
+- Optimizes container initialization and radix-based compaction
+  (\pr{2833}, \pr{2834}).
+- Adds support for polyhedrons in VTKHDF output (\pr{2830}).
+- Enables HYPRE with mixed and big integer configurations in Alien
+  (\pr{2829}, \pr{2831}).
+
+### Changes
+
+- Removes the \arcane{ItemTypeMng} singleton and adds standalone item type
+  managers (\pr{2804}, \pr{2812}).
+- Removes direct MPI message-passing manager usage from Arcane and moves the
+  MPI implementation behind internal interfaces (\pr{2775}, \pr{2776},
+  \pr{2780}, \pr{2781}, \pr{2793}).
+- Replaces Boost implementations in Alina with internal alternatives and
+  reduces its dependency on Arcane (\pr{2724}, \pr{2725}, \pr{2729}).
+- Uses \arcane{UniqueArray} in additional Alina code and improves its build
+  configuration (\pr{2726}, \pr{2750}).
+- Moves `Directory` from Arcane to Arccore (\pr{2770}).
+- Removes the Glib thread implementation (\pr{2820}).
+
+### Corrections
+
+- Fixes parallel HLLC tests, ghost-layer handling, and polyhedral ghost removal
+  (\pr{2695}, \pr{2696}, \pr{2797}, \pr{2809}).
+- Fixes compilation with GCC 12, CUDA 12.4 and SWIG 4.5, Fortran builds, and
+  Windows DLL copying (\pr{2712}, \pr{2716}, \pr{2720}, \pr{2749},
+  \pr{2760}).
+- Fixes long-long HDF5 types, stack-trace initialization, race conditions in
+  TBB, and solver reductions and sends (\pr{2738}, \pr{2762}, \pr{2772},
+  \pr{2789}, \pr{2815}).
+- Fixes potential deadlocks and memory leaks in stack tracing and property-tree
+  handling (\pr{2818}, \pr{2819}).
+
+### Internal
+
+- Adds support for message-passing tracing and local-rank information in shared
+  memory communication (\pr{2767}, \pr{2814}, \pr{2816}).
+- Improves cell serialization and polyhedral cell creation (\pr{2806},
+  \pr{2808}).
+- Adds a context object for Alina solvers and preconditioners (\pr{2821}).
+- Hides \arcane{MeshHandleRef} implementation and uses a sentinel for the end
+  iterator of \arcane{ItemLocalIdListView} (\pr{2822}, \pr{2823}).
+- Improves mesh statistics construction and adds a service to customize mesh
+  building (\pr{2824}, \pr{2825}).
+- Adds a HLLC test with an obstacle (\pr{2828}).
+
+### Compilation and Continuous Integration (CI)
+
+- Updates FlexLM discovery and Coverity workflow configuration (\pr{2681},
+  \pr{2706}).
+- Removes obsolete IFPEN workflows and adds a required memory allocator header
+  (\pr{2697}, \pr{2707}).
+- Updates Fortran, vcpkg, Windows, and app build-system workflows and support
+  (\pr{2709}, \pr{2745}, \pr{2746}, \pr{2753}, \pr{2761},
+  \pr{2773}).
+- Adds contributor guidance and updates documentation generation for newer
+  Doxygen versions (\pr{2758}, \pr{2769}, \pr{2779}).
+- Adds documentation for array views and spans, and removes an obsolete Aleph
+  matrix warning (\pr{2722}, \pr{2777}).
+- Updates parameter-file and mesh element documentation, and adds a glossary
+  (\pr{2733}, \pr{2779}, \pr{2785}, \pr{2826}).
+- Updates parameter-file documentation and corrects variable existence checks
+  in the documentation generator (\pr{2751}).
+- Adds a missing header for accelerator kernel launching (\pr{2771}).
+- Replaces TextTransform with Scriban for generating geometry classes
+  (\pr{2836}).
+
+___
+
 ## Arcane Version 4.1.16.0 (July 8, 2026) {#arcanedoc_version410}
 
 ### New Features/Improvements
@@ -229,6 +355,7 @@ ___
   thread-safe (\pr{2511}).
 - Puts `ARCCORE_CXX_COMPILER_IS_GNU_OR_CLANG_BASED` in the CMake cache to
   simplify configuration (\pr{2568}).
+
 ### Alien
 
 - Updates default values with GMRES for PETSc (\pr{2251})
