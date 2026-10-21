@@ -153,9 +153,18 @@ class ARCANE_MESH_EXPORT ItemInternalMap
     return (m_new_impl.find(key) != m_new_impl.end());
   }
 
-  //! Resizes the hash table
-  void resize([[maybe_unused]] Int32 new_size, [[maybe_unused]] bool use_prime = false)
+  /*!
+   * \brief Makes room for \a new_size entries.
+   *
+   * Called before a batch of insertions by a family that knows how many items it
+   * is about to add, so that the table is sized once instead of growing by
+   * doubling and rehashing at each step. \a use_prime belonged to the previous
+   * implementation and is ignored.
+   */
+  void resize(Int32 new_size, [[maybe_unused]] bool use_prime = false)
   {
+    if (new_size > 0)
+      m_new_impl.reserve(static_cast<uint64_t>(new_size), false);
   }
 
   /*!
