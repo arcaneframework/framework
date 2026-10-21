@@ -743,8 +743,84 @@ Certaines règles ont été établies pour les dépendances :
   lecteur de fichier ARCT et déclencher une erreur.
 - Un bloc de configurations ne peut être lu qu'une seule fois par cas d'utilisation (sinon, le lecteur de fichier ARCT
   émet une erreur).
+- Une variation non résolue ne peut être demandée qu'une seule fois par chemin de lancement (sinon, le lecteur de
+  fichier ARCT émet une erreur).
 - Toutes les dépendances inscrites dans les propriétés `depend_b` et `depend_a` doivent exister.
 - Les blocs de configurations `cases` ne peuvent pas être des dépendances, tout comme le bloc `general`.
+
+### Dépendances partagées (diamants)
+
+(Sous-partie rédigée par IA)
+
+Les dépendances d'un chemin de lancement forment un arbre : un même bloc de configurations ne peut pas être demandé
+par deux blocs d'un même chemin. C'est une conséquence directe de la règle "un bloc ne peut être lu qu'une seule
+fois".
+
+Si le partage était autorisé, le lecteur devrait décider à quelle position insérer la dépendance commune dans la
+liste de blocs de configurations : avant le premier demandeur, après le dernier, entre les deux demandeurs... Aucune
+de ces positions n'est plus naturelle qu'une autre, et chaque programme demandeur devrait de plus décider comment
+traiter les deux lectures du même bloc. Cette complexité justifie l'interdiction.
+
+Le contournement est de porter la dépendance partagée par l'ancêtre commun des blocs qui la demandent.
+
+Exemple de fichier invalide (`socle` serait lu deux fois) :
+
+```jsonc
+// file.arct
+{
+  "cases": {
+    "cas_1": {
+      "_": {
+        "depend_a": ["fonctionnalite_1", "fonctionnalite_2"]
+      }
+    }
+  },
+  "commons": {
+    "socle": {
+    },
+    "fonctionnalite_1": {
+      "_": {
+        "depend_b": ["socle"]
+      }
+    },
+    "fonctionnalite_2": {
+      "_": {
+        "depend_b": ["socle"]
+      }
+    }
+  }
+}
+```
+
+Fichier équivalent valide :
+
+```jsonc
+// file.arct
+{
+  "cases": {
+    "cas_1": {
+      "_": {
+        "depend_b": ["socle"],
+        "depend_a": ["fonctionnalite_1", "fonctionnalite_2"]
+      }
+    }
+  },
+  "commons": {
+    "fonctionnalite_1": {
+    },
+    "fonctionnalite_2": {
+    }
+  }
+}
+```
+
+À noter : deux variants frères d'une même variation peuvent dépendre du même bloc : un seul variant étant lu par cas
+d'utilisation, il n'y a jamais de lecture multiple.
+
+La même règle s'applique aux variations non résolues : une variation demandée par deux blocs d'un même chemin (par
+exemple par le cas de base et par un bloc commun qui en dépend) déclenche une erreur. Sinon, le lecteur devrait
+décider quelle demande (et donc quel filtre) l'emporte, puis à quelle position insérer le bloc du variant choisi dans
+la liste de blocs de configurations. La dépendance doit, là aussi, être portée par l'ancêtre commun des demandeurs.
 
 ## Variations
 
@@ -925,6 +1001,12 @@ Nous pouvons obtenir ce résultat simplement avec des `=` ou des `+`:
 Remarque : une variation est résolue si et seulement si un variant unique est désigné par `=`. `!` et `+` ne font que
 filtrer l'ensemble des variants candidats : même réduite à un seul, la variation reste non résolue et le nom reste
 incomplet ; pour un programme mono-cas, l'utilisateur doit alors la résoudre par `=` dans le nom de cas.
+
+| Symbole | Rôle       | Sémantique                                                                    | La variation est résolue ? | Exemple (variants : 10, 20, 30) | Noms de cas obtenus                            |
+|---------|------------|-------------------------------------------------------------------------------|----------------------------|---------------------------------|------------------------------------------------|
+| =       | Résolution | Désigne exactement un variant ; la variation devient une dépendance classique | Oui                        | nb_iterations=10                | cas_1:nb_iterations=10 (un seul cas)           |
+| !       | Exclusion  | Retire des variants de l'ensemble des candidats                               | Non                        | nb_iterations!10                | cas_1:nb_iterations=20, cas_1:nb_iterations=30 |
+| +       | Inclusion  | Sélectionne des variants parmi les disponibles                                | Non                        | nb_iterations+20+30             | cas_1:nb_iterations=20, cas_1:nb_iterations=30 |
 
 ## Schéma d'un nom de cas d'utilisation
 
