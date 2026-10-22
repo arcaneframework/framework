@@ -240,7 +240,7 @@ computeExchangeInfos()
     // of ghost items, this list has already been determined during the call to
     // mesh_exchange.computeInfos().
     IParticleFamily* particle_family = family->toParticleFamily();
-    if (particle_family && particle_family->getEnableGhostItems() == false)
+    if (particle_family && !particle_family->getEnableGhostItems())
       exchanger->computeExchangeItems();
     else
       exchanger->setExchangeItems(mesh_exchange.getItemsToSend(family));

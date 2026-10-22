@@ -609,7 +609,10 @@ _computeItemsToSend(bool send_dof)
       if (particle_family && particle_family->getEnableGhostItems() == true) {
         ArrayView<std::set<Int32>> to_send = _getItemsToSend(family);
         ENUMERATE_PARTICLE (iparticle, particle_family->allItems().own()) {
-          _addItemToSend(to_send, iparticle->localId(), iparticle->cell().localId(), use_itemfamily_network);
+          Cell cell = iparticle->cell();
+          // Do not send the particle if it has no cell.
+          if (!cell.null())
+            _addItemToSend(to_send, iparticle->localId(), cell.localId(), use_itemfamily_network);
         }
       }
       if (send_dof && family->itemKind() == IK_DoF) {
@@ -1416,13 +1419,16 @@ _markRemovableParticles()
 {
   for (IItemFamily* family : m_mesh->itemFamilies()) {
     IParticleFamily* particle_family = family->toParticleFamily();
-    if (particle_family && particle_family->getEnableGhostItems() == true) {
+    if (particle_family && particle_family->getEnableGhostItems()) {
       mesh::NewItemOwnerBuilder owner_builder;
 
       ENUMERATE_PARTICLE (iparticle, particle_family->allItems()) {
         Particle particle = *iparticle;
         Cell cell = owner_builder.connectedCellOfItem(particle);
-        particle.mutableItemBase().setFlags(cell.itemBase().flags());
+        // NOTE GG: 10/2026. This code is very strange
+        // I think we should only modify some flags (II_NeedRemove?)
+        if (!cell.null())
+          particle.mutableItemBase().setFlags(cell.itemBase().flags());
       }
     }
   }
