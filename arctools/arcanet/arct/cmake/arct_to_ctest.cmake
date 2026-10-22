@@ -629,10 +629,14 @@ endfunction()
 # Arguments:
 #   ARCT_PATH         : ARCT file path (default: 'ARCT_GLOBAL_ARCT_PATH'
 #                       variable or '<binary dir>/testlist.arct'),
-#   ARCT_CONFIG_PATH  : optional ArcCher configuration file,
+#   ARCT_CONFIG_PATH  : optional ArcCher configuration file (default:
+#                       'ARCT_GLOBAL_CONFIG_PATH' variable if set),
 #   CTEST_NAME_PREFIX : prefix added to the test names,
-#   ARCCHER_PATH      : ArcCher executable path (default:
-#                       '<binary dir>/_common/build_all/arcane/arccher/ArcCher').
+#   ARCCHER_PATH      : ArcCher executable: path, CMake target name or
+#                       generator expression, as understood by
+#                       'add_test(COMMAND ...)' (default:
+#                       'ARCT_GLOBAL_ARCCHER_PATH' variable if set, else
+#                       '<binary dir>/bin/ArcCher').
 function(arct_to_ctest)
   set(options)
   set(oneValueArgs ARCT_PATH ARCT_CONFIG_PATH CTEST_NAME_PREFIX ARCCHER_PATH)
@@ -642,8 +646,14 @@ function(arct_to_ctest)
 
   set(ARCT_TO_CTEST_TESTS "")
 
+  # The ArcCher executable can be given as a path, a CMake target name or a
+  # generator expression: the value is passed as is to 'add_test()'.
   if (NOT ARGS_ARCCHER_PATH)
-    set(ARGS_ARCCHER_PATH "${CMAKE_BINARY_DIR}/_common/build_all/arcane/arccher/ArcCher")
+    if (DEFINED ARCT_GLOBAL_ARCCHER_PATH)
+      set(ARGS_ARCCHER_PATH "${ARCT_GLOBAL_ARCCHER_PATH}")
+    else ()
+      set(ARGS_ARCCHER_PATH "${CMAKE_BINARY_DIR}/bin/ArcCher")
+    endif ()
   endif ()
 
   if (DEFINED ARCANET_BEGIN_ON)
@@ -656,6 +666,10 @@ function(arct_to_ctest)
     else ()
       set(ARGS_ARCT_PATH "${CMAKE_BINARY_DIR}/testlist.arct")
     endif ()
+  endif ()
+
+  if (NOT ARGS_ARCT_CONFIG_PATH AND DEFINED ARCT_GLOBAL_CONFIG_PATH)
+    set(ARGS_ARCT_CONFIG_PATH "${ARCT_GLOBAL_CONFIG_PATH}")
   endif ()
 
   if (NOT EXISTS "${ARGS_ARCT_PATH}")
@@ -707,7 +721,7 @@ function(arct_to_ctest)
           CASE_NAME "${_full_name}"
           CTEST_NAME_PREFIX "${ARGS_CTEST_NAME_PREFIX}"
         )
-        message(STATUS "add_test(${_full_name})")
+        #message(STATUS "add_test(${_full_name})")
       endforeach ()
 
       # Cleanup of the case context before the next one.

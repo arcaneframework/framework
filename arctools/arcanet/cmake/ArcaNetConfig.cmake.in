@@ -6,7 +6,6 @@
 #   - la cible importée 'ArcaNet::arccher' (si le lanceur a été construit),
 #   - les fonctions CMake des fichiers .arct ('arct_to_ctest.cmake' et
 #     'arct_edit.cmake'),
-#   - 'ARCANET_CMAKE_DIR'  : répertoire des fichiers .cmake ArcaNet,
 #   - 'ARCANET_SPEC_DIR'   : répertoire de 'specifications.md',
 #   - 'ARCT_GLOBAL_ARCCHER_PATH' : chemin de l'exécutable ArcCher, utilisé
 #     par défaut par 'arct_to_ctest()'.
@@ -18,11 +17,10 @@ if (EXISTS "${PACKAGE_PREFIX_DIR}/@ARCANET_CONFIG_INSTALL_DIR@/ArcaNetTargets.cm
   endif ()
 endif ()
 
-set_and_check(ARCANET_CMAKE_DIR "${PACKAGE_PREFIX_DIR}/@ARCANET_CMAKE_INSTALL_DIR@")
 set_and_check(ARCANET_SPEC_DIR "${PACKAGE_PREFIX_DIR}/@ARCANET_SPEC_INSTALL_DIR@")
 
-include("${ARCANET_CMAKE_DIR}/arct_to_ctest.cmake")
-include("${ARCANET_CMAKE_DIR}/arct_edit.cmake")
+include("${PACKAGE_PREFIX_DIR}/@ARCANET_CMAKE_INSTALL_DIR@/ArcCher/arct_to_ctest.cmake")
+include("${PACKAGE_PREFIX_DIR}/@ARCANET_CMAKE_INSTALL_DIR@/ArcCher/arct_edit.cmake")
 
 check_required_components(ArcaNet)
 

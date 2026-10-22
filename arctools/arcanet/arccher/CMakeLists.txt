@@ -8,13 +8,35 @@ endif ()
 set(REPROC++ ON)
 add_subdirectory(src/reproc)
 
-add_executable(ArcCher src/launcher/main.cc)
-target_include_directories(ArcCher PUBLIC . ${CMAKE_CURRENT_BINARY_DIR} src/reproc/reproc++/include)
+add_executable(arccher src/launcher/main.cc)
 
-target_link_libraries(ArcCher PUBLIC
+set_target_properties(arccher PROPERTIES
+  OUTPUT_NAME ArcCher
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+  INSTALL_RPATH "$ORIGIN/../lib"
+)
+
+target_include_directories(arccher PRIVATE
+  .
+  ${CMAKE_CURRENT_BINARY_DIR}
+  src/reproc/reproc++/include
+)
+
+target_link_libraries(arccher PRIVATE
   Arccore::arccore_trace
   Arccore::arccore_common
   Arccore::arccore_base
+  reproc++
 )
 
-target_link_libraries(ArcCher PUBLIC reproc++)
+
+# ----------------------------------------------------------------------------
+# Installation
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+install(TARGETS arccher
+  EXPORT ArcaNetTargets
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
