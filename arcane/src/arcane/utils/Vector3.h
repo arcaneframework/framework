@@ -50,7 +50,6 @@ class Vector3
  public:
 
   //! Constructs the zero vector.
-  constexpr ARCCORE_HOST_DEVICE
   Vector3() = default;
 
   //! Constructs the triplet (ax,ay,az)

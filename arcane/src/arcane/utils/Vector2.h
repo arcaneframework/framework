@@ -49,7 +49,6 @@ class Vector2
  public:
 
   //! Constructs the zero vector.
-  constexpr ARCCORE_HOST_DEVICE
   Vector2() = default;
 
   //! Constructs the triplet (ax,ay,az)
