@@ -169,7 +169,12 @@ changeOwnersFromCells()
     VariableItemInt32& particles_owner(family->itemsNewOwner());
     ENUMERATE_PARTICLE (i_particle, family->allItems()) {
       Particle particle = *i_particle;
-      particles_owner[particle] = cells_owner[particle.cell()];
+      Cell pcell = particle.cell();
+      if (!pcell.null())
+        particles_owner[particle] = cells_owner[pcell];
+      else
+        // If the particle has no cell, its new owner is the current owner.
+        particles_owner[particle] = particle.owner();
     }
   }
 
