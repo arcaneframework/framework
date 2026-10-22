@@ -174,8 +174,8 @@ class ParticleFamilyTester
     Integer particle_per_cell = 12;
     info() << " BuildParticleFamily increment=" << particle_per_cell
            << " nb_particle=" << m_family->nbItem();
-    Int64UniqueArray uids;
-    Int32UniqueArray cells_lid;
+    UniqueArray<Int64> uids;
+    UniqueArray<Int32> cells_lid;
     IParallelMng* pm = m_family->parallelMng();
     CellGroup own_cells = m_family->mesh()->ownCells();
     Integer nb_own_cell = own_cells.size();
@@ -191,7 +191,14 @@ class ParticleFamilyTester
         ++first_uid;
       }
     }
-
+    // To check load-balance with particles with no cells, make sure some
+    // particles have no cells.
+    {
+      Int32 nb_particle_to_add = uids.size();
+      for (Int32 i = 0; i < nb_particle_to_add; ++i)
+        if ((i % 10) == 0)
+          cells_lid[i] = ItemLocalId{};
+    }
     m_first_uid = m_first_uid + uid_increment * comm_size;
 
     info() << "Create " << uids.size() << " particles";
@@ -202,7 +209,7 @@ class ParticleFamilyTester
     m_family->partialEndUpdateVariable(m_values1.variable());
     ENUMERATE_PARTICLE (ipart, particles) {
       Particle particle = *ipart;
-      m_values1[ipart] = (Real)(particle.uniqueId().asInt64());
+      m_values1[ipart] = static_cast<Real>(particle.uniqueId().asInt64());
     }
     m_family->endUpdate();
   }
