@@ -3,9 +3,6 @@
 
 set(subdivider_write_output_file true)
 
-
-
-
 set(output_file_arg "-A,//mesh-subdivider-tester/test/output-file=")
 
 # ArcaneBasicMeshSubdivider
@@ -45,14 +42,14 @@ foreach (nb_element IN ITEMS "one" "two" )
       set(with_different_pattern "-A,//meshes/mesh/subdivider/different-element-type-output=1")
       # src -> src
       arcane_add_test_sequential(basicmeshsubdividerservice_${nb_element}_${src}_to_${src}_subdiv${nbsub}
-              testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1
+              testArcaneBasicMeshSubdividerService.arc -m 1
               ${mesh_arg}
               ${nb_subdivision_arg}
               ${with_same_pattern}
               "-A,//unit-test-module/test/output-file=output_${nb_element}_${src}_to_${src}_subdiv${nbsub}")
       # src -> dst
       arcane_add_test_sequential(basicmeshsubdividerservice_${nb_element}_${src}_to_${dst}_subdiv${nbsub}
-              testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1
+              testArcaneBasicMeshSubdividerService.arc -m 1
               ${mesh_arg}
               ${nb_subdivision_arg}
               ${with_different_pattern}
@@ -89,13 +86,13 @@ foreach ( mesh IN LISTS BIG_TET_MESH_FILES )
   get_filename_component(mesh_name "${mesh}" NAME_WE)
   set(mesh_arg "-A,//meshes/mesh/filename=${mesh}")
   arcane_add_test_sequential(basicmeshsubdividerservice_tet_bigger_subdiv${nbsub}_${mesh_name}_to_tet
-          testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1
+          testArcaneBasicMeshSubdividerService.arc -m 1
           "${mesh_arg}"
           "-A,//meshes/mesh/subdivider/nb-subdivision=${nbsub}"
           "-A,//unit-test-module/test/output-file=output_${nb_element}_${src}_to_${src}_subdiv${nbsub}_to_tet")
 
   arcane_add_test_sequential(basicmeshsubdividerservice_tet_bigger_subdiv${nbsub}_${mesh_name}_to_hex
-          testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1
+          testArcaneBasicMeshSubdividerService.arc -m 1
           "${mesh_arg}"
           "-A,//meshes/mesh/subdivider/nb-subdivision=${nbsub}"
           "-A,//meshes/mesh/subdivider/different-element-type-output=1"
@@ -115,13 +112,13 @@ foreach ( mesh IN LISTS BIG_HEX_MESH_FILES )
   set(nb_subdivide "-A,//meshes/mesh/subdivider/nb-subdivision=1")
   set(different_element_type_output "-A,//meshes/mesh/subdivider/different-element-type-output=0")
   arcane_add_test_sequential(basicmeshsubdividerservice_hex_bigger_subdiv${nbsub}_${mesh_name}_to_hex
-          testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1
+          testArcaneBasicMeshSubdividerService.arc -m 1
           "${mesh_file}"
           "-A,//meshes/mesh/subdivider/nb-subdivision=${nbsub}"
           "-A,//unit-test-module/test/output-file=output_${nb_element}_${mesh_name}_subdiv${nbsub}_to_hex")
 
   arcane_add_test_sequential(basicmeshsubdividerservice_hex_bigger_subdiv${nbsub}_${mesh_name}_to_tet
-          testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1
+          testArcaneBasicMeshSubdividerService.arc -m 1
           "${mesh_file}"
           "-A,//meshes/mesh/subdivider/nb-subdivision=${nbsub}"
           "-A,//meshes/mesh/subdivider/different-element-type-output=1"
@@ -131,7 +128,7 @@ foreach ( mesh IN LISTS BIG_HEX_MESH_FILES )
 #    arcane_add_test_parallel_thread(basicmeshsubdividerservice_bigger_hex_bigger_subdiv${nbsub}_${mesh_name}_to_hex_thread testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 2)
 #    arcane_add_test_parallel(basicmeshsubdividerservice_bigger_hex_to_hex_bigger_subdiv_mpi testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc ${nb_proc} ${mesh_file} ${nb_subdivide} )
 
-    arcane_add_test_parallel(basicmeshsubdividerservice_bigger_hex_to_tet_subdiv_mpi testArcaneBasicMeshSubdividerServiceTriangle.arc ${nb_proc} "-A,//meshes/mesh/filename=${ARCANE_TEST_PATH}/mesh_subdivider/NumpexSamples/tet/tet_sphere_test.msh" ${nb_subdivide} ${different_element_type_output} -m 1 )
+    arcane_add_test_parallel(basicmeshsubdividerservice_bigger_hex_to_tet_subdiv_mpi testArcaneBasicMeshSubdividerService.arc ${nb_proc} "-A,//meshes/mesh/filename=${ARCANE_TEST_PATH}/mesh_subdivider/NumpexSamples/tet/tet_sphere_test.msh" ${nb_subdivide} ${different_element_type_output} -m 1 )
     #arcane_add_test_parallel(${test_name} ${ARGS_CASE_FILE} ${ARGS_NB_MPI} ${ARGS_ARGS})
   endif ()
 endforeach ()
@@ -166,7 +163,7 @@ if (Parmetis_FOUND)
           message("Variation nb_process_variation",${nb_process})
           get_filename_component(mesh_name "${mesh_file_arg}" NAME_WE)
           message("Variation mesh_name",${mesh_name})
-          arcane_add_test_parallel(basicmeshsubdividerservice_bigger_${mesh_name}_nb_subdivision_${nb_sub}_different_element_type_output_${deov} testArcaneBasicMeshSubdividerServiceTriangle.arc ${nb_process} ${mesh_file_arg} ${nb_subdivision_arg} ${different_element_output_arg} -m 1 )
+          arcane_add_test_parallel(basicmeshsubdividerservice_bigger_${mesh_name}_nb_subdivision_${nb_sub}_different_element_type_output_${deov} testArcaneBasicMeshSubdividerService.arc ${nb_process} ${mesh_file_arg} ${nb_subdivision_arg} ${different_element_output_arg} -m 1 )
           # For threads:
           #arcane_add_test_parallel_thread(basicmeshsubdividerservice_bigger_${mesh_name}_nb_subdivision_${nb_sub}_different_element_type_output_${deov} testArcaneBasicMeshSubdividerServiceTriangle.arc ${nb_process} ${mesh_file_arg} ${nb_subdivision_arg} ${different_element_output_arg} -m 1 )
         endforeach ()
@@ -174,32 +171,6 @@ if (Parmetis_FOUND)
     endforeach ()
   endforeach ()
 endif ()
-#
-#if (Parmetis_FOUND)
-#  arcane_add_test_parallel(basicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 2)
-#
-#if (Parmetis_FOUND)
-#  arcane_add_test_parallel_thread(basicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 2)
-#endif ()
-
-# TODO
-# Essayer de mettre en echec le renumbering
-# Refactor tests
-# Ajouter une option pour enlever le renumbering
-# Ajouter une info sur le nombre total de cellules, faces, noeuds initiales et après subdiviseur (comms) peut être une option récap <with-recap></with-recap> (ajoute une comm)
-# Test sur inti BIG BIG sample
-# Revoir comment sont calculés les uids
-# Unicité de uid via synchro ou global renumbering (comme pour arcproj)
-
-
-# Pattern tet->hex tet->tet
-
-# Pattern hex->tet hex->hex
-
-#copier framework/src/arcane/tests/ArcaneBasicMeshSubdividerTestData
-# small medium huge
-# - Huge2D Seq
-# - Huge3D Seq
 
 # ArcaneBasicMeshSubdivider
 
