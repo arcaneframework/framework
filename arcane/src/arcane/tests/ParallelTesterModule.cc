@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelTesterModule.cc                                     (C) 2000-2024 */
+/* ParallelTesterModule.cc                                     (C) 2000-2026 */
 /*                                                                           */
 /* Parallelism test module.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -193,7 +193,9 @@ class ParticleFamilyTester
     }
     // To check load-balance with particles with no cells, make sure some
     // particles have no cells.
-    {
+    // NOTE: Having particles without cells is not supported when using
+    // graph network.
+    if (!m_family->mesh()->itemFamilyNetwork()) {
       Int32 nb_particle_to_add = uids.size();
       for (Int32 i = 0; i < nb_particle_to_add; ++i)
         if ((i % 10) == 0)
