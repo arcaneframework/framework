@@ -37,6 +37,7 @@
 #include "arcane/core/BasicService.h"
 #include "arcane/core/IPrimaryMesh.h"
 #include "arcane/core/Item.h"
+#include "arcane/core/MathUtils.h"
 // Post processor
 #include "arcane/core/PostProcessorWriterBase.h"
 // Add variables
@@ -690,15 +691,22 @@ tettohex()
         {6,12,14,13,2,5,11,8},
         {13,14,10,7,8,11,9,3},
         {14,12,4,10,11,5,1,9},*/
-    { 7, 10, 14, 13, 0, 4, 12, 6 },
-    { 8, 11, 5, 2, 13, 14, 12, 6 },
-    { 3, 9, 11, 8, 7, 10, 14, 13 },
-    { 9, 1, 5, 11, 10, 4, 12, 14 }
+    //{ 7, 10, 14, 13, 0, 4, 12, 6 },
+    //{ 8, 11, 5, 2, 13, 14, 12, 6 },
+    //{ 3, 9, 11, 8, 7, 10, 14, 13 },
+    //{ 9, 1, 5, 11, 10, 4, 12, 14 }
+    //StorageRefine cells = {
+      { 0, 4, 12, 6, 7, 10, 14, 13 },
+      { 2, 6, 12, 5, 8, 13, 14, 11 },
+      { 3, 9, 10, 7, 8, 11, 14, 13 },
+      { 1, 4, 10, 9, 5, 12, 14, 11 }
+    //};
   };
   return { IT_Tetraedron4, IT_Quad4, IT_Hexaedron8, nodes, faces, cells, child_faces };
 }
 
 /*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 
 MeshSubdivider::Pattern PatternBuilder::
@@ -777,37 +785,37 @@ hextotet24()
   { 6, 7, 13 }, // 59
   });
   StorageRefine cells({
-  { 0, 3, 8, 14 },
-  { 3, 2, 8, 14 },
-  { 2, 1, 8, 14 },
-  { 1, 0, 8, 14 },
-
-  { 0, 4, 9, 14 },
-  { 4, 7, 9, 14 },
-  { 7, 3, 9, 14 },
-  { 3, 0, 9, 14 },
-
-  { 4, 0, 10, 14 },
-  { 0, 1, 10, 14 },
-  { 1, 5, 10, 14 },
-  { 5, 4, 10, 14 },
-
-  { 7, 4, 11, 14 },
-  { 4, 5, 11, 14 },
-  { 5, 6, 11, 14 },
-  { 6, 7, 11, 14 },
-
-  { 5, 1, 12, 14 },
-  { 1, 2, 12, 14 },
-  { 2, 6, 12, 14 },
-  { 6, 5, 12, 14 },
-
-  { 6, 2, 13, 14 },
-  { 2, 3, 13, 14 },
-  { 3, 7, 13, 14 },
-  { 7, 6, 13, 14 },
+    // Face 8 (base 0-1-2-3) : cycle interieur (0,1,2,3)
+  { 0, 1, 8, 14 },
+  { 1, 2, 8, 14 },
+  { 2, 3, 8, 14 },
+  { 3, 0, 8, 14 },
+  // Face 9 (gauche 0-3-7-4) : cycle interieur (0,3,7,4)
+  { 0, 3, 9, 14 },
+  { 3, 7, 9, 14 },
+  { 7, 4, 9, 14 },
+  { 4, 0, 9, 14 },
+  // Face 10 (avant 0-1-5-4) : cycle interieur (0,4,5,1)
+  { 0, 4, 10, 14 },
+  { 4, 5, 10, 14 },
+  { 5, 1, 10, 14 },
+  { 1, 0, 10, 14 },
+  // Face 11 (dessus 4-5-6-7) : cycle interieur (4,7,6,5)
+  { 4, 7, 11, 14 },
+  { 7, 6, 11, 14 },
+  { 6, 5, 11, 14 },
+  { 5, 4, 11, 14 },
+  // Face 12 (droite 1-2-6-5) : cycle interieur (1,5,6,2)
+  { 1, 5, 12, 14 },
+  { 5, 6, 12, 14 },
+  { 6, 2, 12, 14 },
+  { 2, 1, 12, 14 },
+  // Face 13 (arriere 2-3-7-6) : cycle interieur (2,6,7,3)
+  { 2, 6, 13, 14 },
+  { 6, 7, 13, 14 },
+  { 7, 3, 13, 14 },
+  { 3, 2, 13, 14 },
   });
-
   StorageRefine child_faces({
   // need to redo the old numbering
   { 0, 4, 7, 10 },
@@ -843,16 +851,33 @@ class ArcaneBasicMeshSubdividerService
 
   void _init();
   //! Calculates the unique ID based on node_uid
+  void _loadPattern(Int32 different_element_type_output ,std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern> & pattern_manager);
   static UniqueArray<Int64> _computeNodeUid(UniqueArray<Int64> nodes_uid, const StorageRefine& node_pattern);
+ 
   /*
   void _computeNodeCoord();
   void _computeNodeUid();
   void _computeFaceUid();
   void _computeCellUid();
-  void _processOwner();
-  void _setOwner();
-  void _processOwnerCell();
-  void _processOwnerFace();
+  void _processOwner();void ArcaneBasicMeshSubdividerService::_loadPattern(Int64 different_element_type_output ,std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern> & pattern_manager)
+{
+
+  pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
+  pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
+  pattern_manager[IT_Hexaedron8] = PatternBuilder::hextohex();
+  pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
+  if(different_element_type_output == 1) {
+    pattern_manager[IT_Quad4] = PatternBuilder::quadtotri();
+    pattern_manager[IT_Triangle3] = PatternBuilder::tritoquad();
+    pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet24();
+    pattern_manager[IT_Tetraedron4] = PatternBuilder::tettohex();
+    info() << "Subdivider: The refinement patterns have changed for meshes of the following types: Quad4, Triangle3, Hexaedron8, Tetraedron4.";
+    info() << "Subdivider: The output element types will be:\nQuad4->Triangle3\nTriangle3->Quad4\nHexaedron8->Tetraedron4\nTetraedron4->Hexaedron8";
+  }else {
+    info() << "Subdivider: default patterns selected" ;
+  }
+}
+
   void _processOwnerNode();
   void _getRefinePattern(Int16 type);
   void _execute();
@@ -888,6 +913,8 @@ class ArcaneBasicMeshSubdividerService
   * These faces must provide the local indices of the nodes of the initial cell.
   * For this, we build a map from global to my_local_index. <Int64,Int64>
   */
+
+
   void _refineWithArcaneFaces(IPrimaryMesh* mesh, MeshSubdivider::Pattern p);
   //! Generates a triangle
   void _generateOneTri(IPrimaryMesh* mesh);
@@ -914,6 +941,8 @@ class ArcaneBasicMeshSubdividerService
   void _renumberNodesFaces(IPrimaryMesh* mesh);
   //! Renumbers the family TODO share with AMR
   void _applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid);
+
+  void _loadPattern(Int64 different_elment_type_output, std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern> pattern_manager);
   //! Calculates the hash of N F C
   void _checkHashNodesFacesCells(IPrimaryMesh* mesh);
 };
@@ -2335,76 +2364,81 @@ _checkHashNodesFacesCells(IPrimaryMesh* mesh)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ArcaneBasicMeshSubdividerService::
-subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
+void ArcaneBasicMeshSubdividerService::_loadPattern(Int32 different_elment_type_output, std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern> & pattern_manager)
 {
-  Arcane::Timer total_time(mesh->subDomain(), "TimerSubdividerTotal", Timer::eTimerType::TimerReal);
-  total_time.start();
-  //exit(0);
-  //_generateOneTetra(mesh);
-  std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern> pattern_manager;
-  // Default pattern manager
   pattern_manager[IT_Quad4] = PatternBuilder::quadtoquad();
   pattern_manager[IT_Triangle3] = PatternBuilder::tritotri();
   pattern_manager[IT_Hexaedron8] = PatternBuilder::hextohex();
   pattern_manager[IT_Tetraedron4] = PatternBuilder::tettotet();
 
-  if (options()->differentElementTypeOutput()) {
+  if(different_elment_type_output) {
     pattern_manager[IT_Quad4] = PatternBuilder::quadtotri();
     pattern_manager[IT_Triangle3] = PatternBuilder::tritoquad();
     pattern_manager[IT_Hexaedron8] = PatternBuilder::hextotet24();
     pattern_manager[IT_Tetraedron4] = PatternBuilder::tettohex();
-    info() << "The refinement patterns have changed for meshes of the following types: Quad4, Triangle3, Hexaedron8, Tetraedron4.";
-    info() << "The output element types will be:\nQuad4->Triangle3\nTriangle3->Quad4\nHexaedron8->Tetraedron4\nTetraedron4->Hexaedron8";
   }
+}
 
+void ArcaneBasicMeshSubdividerService::
+subdivideMesh([[maybe_unused]] IPrimaryMesh* mesh)
+{
+
+  if (options()->nbSubdivision <= 0 )
+    return;
+
+  // Get general information about the mesh
+  Int64 nb_cell_before = mesh->parallelMng()->reduce(MessagePassing::ReduceSum,mesh->nbCell());
+  Int64 nb_face_before = mesh->parallelMng()->reduce(MessagePassing::ReduceSum,mesh->nbFace());
+  Int64 nb_node_before = mesh->parallelMng()->reduce(MessagePassing::ReduceSum,mesh->nbNode());
+
+  Arcane::Timer total_time(mesh->subDomain(), "TimerSubdividerTotal", Timer::eTimerType::TimerReal);
   Arcane::Timer timer_subdivide_step(mesh->subDomain(), "TimerSubdivider", Timer::eTimerType::TimerReal);
   Arcane::Timer timer_renumbering_step(mesh->subDomain(), "TimerRenumbering", Timer::eTimerType::TimerReal);
   Arcane::Timer timer_renumbering_apply_step(mesh->subDomain(), "TimerRenumberingApply", Timer::eTimerType::TimerReal);
+  total_time.start();
 
-  timer_subdivide_step.start();
+  std::unordered_map<Arccore::Int16, MeshSubdivider::Pattern> pattern_manager;
 
-  for (Integer i = 0; i < options()->nbSubdivision; i++) {
-    _refineOnce(mesh, pattern_manager);
-    debug() << i << "refine done";
+  if (options()->nbSubdivision == 1) {
+    _loadPattern(options()->differentElementTypeOutput, pattern_manager);
+
+    timer_subdivide_step.start();
+    _refineOnce(mesh,pattern_manager);
+    timer_subdivide_step.stop();
+  }else {
+    _loadPattern(0, pattern_manager);
+    for(Int64 i = 0 ; i < options()->nbSubdivision-1 ; i++){
+      _refineOnce(mesh,pattern_manager);
+    }
+    _loadPattern(options()->differentElementTypeOutput, pattern_manager);
+    _refineOnce(mesh,pattern_manager);
   }
-
-  timer_subdivide_step.stop();
-
   timer_renumbering_step.start();
-
-  // Renumbering Node, Faces, using Cells uids
   _renumberNodesFaces(mesh);
-  // * Transform in option <without-renumber-compact>
-
   timer_renumbering_step.stop();
 
   timer_renumbering_apply_step.start();
-
   mesh->properties()->setBool("compact", true);
   mesh->properties()->setBool("sort", true);
   mesh->modifier()->endUpdate();
-
   timer_renumbering_apply_step.stop();
 
   total_time.stop();
+
+  Int64 nb_cell_after = mesh->parallelMng()->reduce(MessagePassing::ReduceSum,mesh->nbCell());
+  Int64 nb_face_after = mesh->parallelMng()->reduce(MessagePassing::ReduceSum,mesh->nbFace());
+  Int64 nb_node_after = mesh->parallelMng()->reduce(MessagePassing::ReduceSum,mesh->nbNode());
+
+  if( mesh->parallelMng()->commRank() == 0 ){
+    info() << "Subdivider added cells\t" <<  nb_cell_after - nb_cell_before ;
+    info() << "Subdivider added faces\t" <<  nb_face_after - nb_face_before ;
+    info() << "Subdivider added nodes\t" <<  nb_node_after - nb_node_before ;
+  }
 
   traceMng()->info() << "Timers " << timer_subdivide_step.name() << " " << timer_subdivide_step.totalTime();
   traceMng()->info() << "Timers " << timer_renumbering_step.name() << " " << timer_renumbering_step.totalTime();
   traceMng()->info() << "Timers " << timer_renumbering_apply_step.name() << " " << timer_renumbering_apply_step.totalTime();
   traceMng()->info() << "Timers " << total_time.name() << " " << total_time.totalTime();
-
-  // VariableList vl;
-  //_writeEnsight(mesh,"SubdividerRenumberTests",vl);
-  // Debug After
-  // mesh->utilities()->writeToFile("subdivider_output_"+std::to_string(mesh->parallelMng()->commRank())+".vtk", "VtkLegacyMeshWriter");
-  //mesh->utilities()->writeToFile("subdivider_after_" + std::to_string(options()->nbSubdivision) + "refine.vtk", "VtkLegacyMeshWriter");
-  //debug() << "write file with name:" << "subdivider_after_";
-  /*
-  mesh->utilities()->writeToFile("subdivider_output.vtk", "VtkLegacyMeshWriter");
-  */
-  //_checkMeshUid(mesh);
-  //MeshUtils::writeMeshInfosSorted(mesh,"vp_meshinfo"+std::to_string(mesh->parallelMng()->commRank()));
   info() << "subdivider done";
 }
 

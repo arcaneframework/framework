@@ -4,6 +4,10 @@
     <title>Test subdivision d'un maillage 3D hexahédrique</title>
     <description>Subdivision d'un maillage 3D uniquement hexahédrique avec le partitionneur Metis</description>
     <timeloop>UnitTest</timeloop>
+    <modules>
+      <module name="ArcanePostProcessing" need="required" />
+      <module name="ArcanePostProcessing" active="true" />
+    </modules>
   </arcane>
 
   <meshes>

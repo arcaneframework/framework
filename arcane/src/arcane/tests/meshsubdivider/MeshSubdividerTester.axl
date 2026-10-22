@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" ?>
+<module name="MeshSubdividerTester" version="1.0" namespace-name="ArcaneTest">
+  <description>
+    Test module
+  </description>
+
+  <variables>
+
+    <variable
+            field-name="arcane_cell_rank"
+            name="arcane_cell_rank"
+            data-type="int32"
+            item-kind="cell"
+            dim="0"
+            dump="true"
+            need-sync="true"
+    />
+    <variable
+            field-name="arcane_cell_uniqueid"
+            name="arcane_cell_uniqueid"
+            data-type="int64"
+            item-kind="cell"
+            dim="0"
+            dump="true"
+            need-sync="true"
+    />
+  </variables>
+
+  <entry-points>
+    <entry-point method-name="build" name="build" where="build" property="none"/>
+    <entry-point method-name="init" name="init" where="init" property="none"/>
+    <entry-point method-name="compute" name="compute" where="compute-loop" property="none"/>
+    <entry-point method-name="exit" name="exit" where="exit" property="none"/>
+  </entry-points>
+
+  <options>
+    <service-instance
+      name="test"
+      type="Arcane::IUnitTest"
+      minOccurs="0"
+      maxOccurs="unbounded"
+    >
+      <name lang='fr'>test</name>
+      <userclass>User</userclass>
+      <description>Test service</description>
+    </service-instance>
+  </options>
+</module>

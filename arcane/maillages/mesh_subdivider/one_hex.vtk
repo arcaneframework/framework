@@ -1,0 +1,17 @@
+# vtk DataFile Version 3.0
+Hexa unit test
+ASCII
+DATASET UNSTRUCTURED_GRID
+POINTS 8 double
+0 0 0
+1 0 0
+1 1 0
+0 1 0
+0 0 1
+1 0 1
+1 1 1
+0 1 1
+CELLS 1 9
+8 0 1 2 3 4 5 6 7
+CELL_TYPES 1
+12

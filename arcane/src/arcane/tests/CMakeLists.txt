@@ -36,6 +36,7 @@ include(accelerator/srcs.cmake)
 include(cartesianmesh/srcs.cmake)
 include(geometry/srcs.cmake)
 include(material/srcs.cmake)
+include(meshsubdivider/srcs.cmake)
 
 list(APPEND ARCANE_SOURCES ${ARCANE_ACCELERATOR_SOURCES})
 arcane_accelerator_add_source_files(${ARCANE_ACCELERATOR_SOURCES})
@@ -294,6 +295,8 @@ arcane_copy_mesh(sphere_tied_2 sphere_tied_2 vtk)
 arcane_copy_mesh(tied_interface_2d_1_v4.2 tied_interface_2d_1_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2 sphere_v4.2 vtk)
 arcane_copy_mesh(sphere_v4.2_binary sphere_v4.2_binary vtk)
+
+file(COPY ${ARCANESRCROOT}/maillages/mesh_subdivider DESTINATION ${ARCANE_TEST_PATH} USE_SOURCE_PERMISSIONS)
 if (Lima_FOUND)
   arcane_copy_additional_mesh_direct(tube2x2x4.unf)
   arcane_copy_additional_mesh_direct(tube3x3x10.unf)
@@ -900,20 +903,6 @@ arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian
 #arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
 arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 50")
 
-arcane_add_test(meshservice-subdivide1-hydro testHydro-3-meshservice-subdivide1.arc)
-arcane_add_test(basicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc -m 1)
-arcane_add_test_parallel_thread(basicmeshsubdividerservice1-subdivide1 testArcaneBasicMeshSubdividerService1-subdivide1.arc 4 -m 1)
-
-arcane_add_test_sequential(basicmeshsubdividerservidetriangle-subdivide-1 testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1 "-A,//meshes/mesh/subdivider/different-element-type-output=1")
-
-arcane_add_test(basicmeshsubdividerservidetriangle-subdivide testArcaneBasicMeshSubdividerServiceTriangle.arc -m 1)
-arcane_add_test(basicmeshsubdividerservidequadrilateral-subdivide testArcaneBasicMeshSubdividerServiceQuadrilateral.arc -m 1)
-
-
-if (Parmetis_FOUND)
-  arcane_add_test_parallel_thread(basicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 1)
-endif ()
-
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
 arcane_add_test(hydro5 testHydro-5.arc -m 50 -We,ARCANE_MASTER_HAS_OUTPUT_FILE,1)
 arcane_add_test_parallel_all(hydro5_thread_itemgroup testHydro-5.arc 3 4 -m 50 -We,ARCANE_USE_LOCK_FOR_ITEMGROUP_UPDATE,1)
@@ -1460,7 +1449,7 @@ include(accelerator/tests.cmake)
 include(cartesianmesh/tests.cmake)
 include(geometry/tests.cmake)
 include(material/tests.cmake)
-
+include(meshsubdivider/tests.cmake)
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2
