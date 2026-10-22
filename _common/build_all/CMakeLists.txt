@@ -87,6 +87,15 @@ endif()
 
 # ----------------------------------------------------------------------------
 
+if (ArcaNet IN_LIST ARCANEFRAMEWORK_BUILD_COMPONENTS)
+  set(ARCT_GLOBAL_ARCCHER_PATH "$<TARGET_FILE:arccher>")
+
+  add_subdirectory(${ARCFRAMEWORK_ROOT}/arctools/arcanet arcanet)
+  set(ArcaNet_FOUND YES)
+endif()
+
+# ----------------------------------------------------------------------------
+
 if (Arcane IN_LIST ARCANEFRAMEWORK_BUILD_COMPONENTS)
   message(STATUS "Configuring Arcane")
   configure_file(nuget.config.in ${CMAKE_BINARY_DIR}/nuget.config @ONLY)
