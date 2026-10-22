@@ -16,25 +16,14 @@ message(STATUS "ArcaNetVersion = ${ArcaNet_VERSION}")
 project(ArcaNet VERSION ${ArcaNet_VERSION} LANGUAGES NONE)
 
 # ----------------------------------------------------------------------------
-# ArcCher ne dépend que de Arccore. Si Arccore est construit en même temps
-# (les cibles 'Arccore::*' existent déjà), on les utilise. Sinon, on cherche
-# une version installée et le lanceur n'est construit que si Arccore est
-# disponible.
-
-if (NOT Arccore_FOUND)
-  if (TARGET Arccore::arccore_common)
-    set(Arccore_FOUND TRUE)
-  else ()
-    find_package(Arccore QUIET)
-  endif ()
-endif ()
 
 option(ARCANET_BUILD_ARCCHER "Build the ArcCher launcher" ON)
-if (ARCANET_BUILD_ARCCHER AND Arccore_FOUND)
+if (ARCANET_BUILD_ARCCHER)
   add_subdirectory(arccher)
-else ()
-  message(STATUS "ArcaNet: Arccore is not available, the ArcCher launcher will not be built")
 endif ()
+
+add_subdirectory(arct)
+
 
 # ----------------------------------------------------------------------------
 # Installation
@@ -45,17 +34,6 @@ include(CMakePackageConfigHelpers)
 set(ARCANET_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/ArcaNet)
 set(ARCANET_CMAKE_INSTALL_DIR ${ARCANET_CONFIG_INSTALL_DIR})
 set(ARCANET_SPEC_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/arcanet)
-
-if (ARCANET_BUILD_ARCCHER AND Arccore_FOUND)
-  install(TARGETS arccher
-    EXPORT ArcaNetTargets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-endif ()
-
-install(FILES arct/cmake/arct_to_ctest.cmake arct/cmake/arct_edit.cmake
-  DESTINATION ${ARCANET_CMAKE_INSTALL_DIR})
-install(FILES arct/specifications.md
-  DESTINATION ${ARCANET_SPEC_INSTALL_DIR})
 
 # Répertoire d'installation du fichier de configuration. Utilisé par Arcane
 # pour positionner les hints de 'find_package(ArcaNet)'.
@@ -79,12 +57,6 @@ if (ARCANET_BUILD_ARCCHER AND Arccore_FOUND)
     NAMESPACE ArcaNet::
     DESTINATION ${ARCANET_CONFIG_INSTALL_DIR})
 endif ()
-
-# ----------------------------------------------------------------------------
-# Indique que ArcaNet est disponible pour les autres composants du mono-dépôt
-# (Arcane, Alien, ...).
-
-set(ArcaNet_FOUND TRUE PARENT_SCOPE)
 
 # ----------------------------------------------------------------------------
 # Local Variables:
