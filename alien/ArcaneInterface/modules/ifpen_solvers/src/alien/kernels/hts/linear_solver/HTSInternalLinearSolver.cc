@@ -703,7 +703,7 @@ HTSInternalLinearSolver::setDiagScaling(CSRVectorType const& diag)
   auto local_size = diag.scalarizedLocalSize()/block_size ;
   if (m_output_level > 0)
     alien_info([&] { cout() << "HTSLinearSolver::setDigaScaling : block-size="<<block_size<<" NROWS="<<local_size; });
-#ifdef HTS_HAS_DIAG_SCAL
+#ifdef HTS_HAS_VECT_DIAG_SCAL
   //if constexpr (requires{m_impl->m_hts_solver->setDiagScal(matrix.data(),dcol,local_size,block_size) ;}) {
     m_impl->m_hts_solver->setDiagScal(diag.data(),local_size,block_size) ;
     m_diag_scaling_is_set = true ;
