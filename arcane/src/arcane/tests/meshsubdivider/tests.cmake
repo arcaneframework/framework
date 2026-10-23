@@ -82,7 +82,7 @@ set(NB_SUBDIVISION 0 1 2 3 4 5 6)
 
 
 foreach ( mesh IN LISTS BIG_TET_MESH_FILES )
-  message("#debug",${mesh})
+  #message("#debug" ${mesh})
   get_filename_component(mesh_name "${mesh}" NAME_WE)
   set(mesh_arg "-A,//meshes/mesh/filename=${mesh}")
   arcane_add_test_sequential(basicmeshsubdividerservice_tet_bigger_subdiv${nbsub}_${mesh_name}_to_tet
@@ -106,7 +106,7 @@ set(nb_proc 16)
 
 
 foreach ( mesh IN LISTS BIG_HEX_MESH_FILES )
-  message("#debug",${mesh})
+  #message("#debug" ${mesh})
   get_filename_component(mesh_name "${mesh}" NAME_WE)
   set(mesh_file "-A,//meshes/mesh/filename=${mesh}")
   set(nb_subdivide "-A,//meshes/mesh/subdivider/nb-subdivision=1")
@@ -157,12 +157,12 @@ if (Parmetis_FOUND)
           set(nb_subdivision_arg ${nb_subdivision}=${nb_sub})
           set(different_element_output_arg ${different_element_output}=${deov})
           set(mesh_file_arg ${mesh_file_opt}=${mesh_file})
-          message("Variation different_element_output_arg",${different_element_output_arg})
-          message("Variation nb_subdivision_arg",${nb_subdivision_arg})
-          message("Variation mesh_file_variation",${mesh_file_arg})
-          message("Variation nb_process_variation",${nb_process})
+          #message("Variation different_element_output_arg" ${different_element_output_arg})
+          #message("Variation nb_subdivision_arg" ${nb_subdivision_arg})
+          #message("Variation mesh_file_variation" ${mesh_file_arg})
+          #message("Variation nb_process_variation" ${nb_process})
           get_filename_component(mesh_name "${mesh_file_arg}" NAME_WE)
-          message("Variation mesh_name",${mesh_name})
+          #message("Variation mesh_name" ${mesh_name})
           arcane_add_test_parallel(basicmeshsubdividerservice_bigger_${mesh_name}_nb_subdivision_${nb_sub}_different_element_type_output_${deov} testArcaneBasicMeshSubdividerService.arc ${nb_process} ${mesh_file_arg} ${nb_subdivision_arg} ${different_element_output_arg} -m 1 )
           # For threads:
           #arcane_add_test_parallel_thread(basicmeshsubdividerservice_bigger_${mesh_name}_nb_subdivision_${nb_sub}_different_element_type_output_${deov} testArcaneBasicMeshSubdividerServiceTriangle.arc ${nb_process} ${mesh_file_arg} ${nb_subdivision_arg} ${different_element_output_arg} -m 1 )
@@ -171,6 +171,5 @@ if (Parmetis_FOUND)
     endforeach ()
   endforeach ()
 endif ()
-
 # ArcaneBasicMeshSubdivider
 

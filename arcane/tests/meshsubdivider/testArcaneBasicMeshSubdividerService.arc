@@ -19,12 +19,12 @@
   </meshes>
 
   <mesh-subdivider-tester>
-<!--      <test name="MeshUnitTest">-->
-<!--        <test-adjency>1</test-adjency>-->
-<!--        <write-mesh>false</write-mesh>-->
-<!--        <write-mesh-service-name>VtkLegacyMeshWriter</write-mesh-service-name>-->
-<!--        <output-file>base_name</output-file>-->
-<!--      </test>-->
+      <test name="MeshUnitTest">-->
+        <test-adjency>1</test-adjency>-->
+        <write-mesh>false</write-mesh>-->
+        <write-mesh-service-name>VtkLegacyMeshWriter</write-mesh-service-name>-->
+        <output-file>base_name</output-file>-->
+      </test>-->
       <!-- Volume -->
       <!-- UniqueID -->
   </mesh-subdivider-tester>
