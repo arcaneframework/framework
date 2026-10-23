@@ -114,6 +114,21 @@ AlienCoreSYCLLinearSolver::setDiagScaling(MatrixType const& matrix)
   BaseType::setDiagScaling(matrix) ;
 }
 
+void
+AlienCoreSYCLLinearSolver::setDiagScaling(IVector const& vector)
+{
+  MatrixType const& diagA = vector.impl()->get<BackEnd::tag::sycl>();
+  BaseType::setDiagScaling(diagA) ;
+}
+
+void
+AlienCoreSYCLLinearSolver::setDiagScaling(VectorType const& vector)
+{
+  using namespace Alien;
+  SolverStatSentry<AlienCoreSYCLLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
+  BaseType::setDiagScaling(vector) ;
+}
+
 bool
 AlienCoreSYCLLinearSolver::solve(MatrixType const& matrixA,
                                  VectorType const& vectorB,
@@ -155,7 +170,7 @@ AlienCoreSYCLLinearSolver::algebra() const
 }
 
 ILinearSolver*
-AlienCoreSYCLLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng, 
+AlienCoreSYCLLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng,
                                  Arcane::Accelerator::Runner* runner,
                                  IOptionsAlienCoreSolver* options)
 {

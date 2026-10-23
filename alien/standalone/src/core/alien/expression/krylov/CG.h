@@ -91,7 +91,7 @@ class CG
     m_algebra.copy(z, p);
     m_algebra.mult(A, p, q);
     alpha = m_algebra.dot(p, q);
-    if (m_output_level > 1)
+    if (m_output_level > 2)
       _print(0, "Seq 1", "rho", rho1, "alpha", alpha);
     if (alpha == 0) {
       if (iter.stop(r)) {

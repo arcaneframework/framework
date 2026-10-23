@@ -152,7 +152,7 @@ class BiCGStab
     m_algebra.copy(r, r0);
     m_algebra.copy(r, p);
     rho1 = m_algebra.dot(r, r0);
-    if (m_output_level > 1)
+    if (m_output_level > 2)
       _print(0, "Seq 0", "rho1", rho1);
 
     /*
@@ -171,7 +171,7 @@ class BiCGStab
     alpha = rho1 / alpha;
     m_algebra.copy(r, s);
     m_algebra.axpy(-alpha, v, s);
-    if (m_output_level > 1)
+    if (m_output_level > 2)
       _print(0, "Seq 1", "alpha", alpha);
 
     if (iter.stop(s)) {
@@ -198,7 +198,7 @@ class BiCGStab
         throw typename AlgebraType::NullValueException("beta");
     }
     omega = omega / beta;
-    if (m_output_level > 1)
+    if (m_output_level > 2)
       _print(iter(), "Seq 2", "beta", beta, "alpha", alpha, "rho1", rho1);
 
     // SEQ 3
@@ -209,7 +209,7 @@ class BiCGStab
 
     rho = rho1;
     ++iter;
-    if (m_output_level > 1)
+    if (m_output_level > 2)
       _print(iter(), "Seq 3", "beta", beta, "alpha", alpha, "rho1", rho1);
 
     while (!iter.stop(r)) {
@@ -219,7 +219,7 @@ class BiCGStab
       m_algebra.axpy(-omega, v, p);
       m_algebra.scal(beta, p);
       m_algebra.axpy(1., r, p);
-      if (m_output_level > 1)
+      if (m_output_level > 2)
         _print(iter(), "Seq 4", "beta", beta, "alpha", alpha, "rho1", rho1);
 
       if (rho == 0)
@@ -237,7 +237,7 @@ class BiCGStab
       m_algebra.copy(r, s);
       m_algebra.axpy(-alpha, v, s);
 
-      if (m_output_level > 1)
+      if (m_output_level > 2)
         _print(iter(), "Seq 1", "alpha", alpha);
       if (iter.stop(s)) {
         m_algebra.axpy(alpha, phat, x);
@@ -251,7 +251,7 @@ class BiCGStab
       omega = m_algebra.dot(t, s);
       beta = m_algebra.dot(t, t);
 
-      if (m_output_level > 1)
+      if (m_output_level > 2)
         _print(iter(), "Seq 2", "beta", beta, "alpha", alpha, "rho1", rho1, "omega", omega);
       if (beta == 0) {
         if (iter.stop(s)) {
@@ -273,7 +273,7 @@ class BiCGStab
       rho = rho1;
 
       ++iter;
-      if (m_output_level > 1)
+      if (m_output_level > 2)
         _print(iter(), "end loop", "beta", beta, "alpha", alpha, "rho", rho);
     }
 
@@ -306,7 +306,7 @@ class BiCGStab
     m_algebra.copy(r, r0);
     m_algebra.copy(r, p);
     m_algebra.dot(r, r0, frho1);
-    if (m_output_level > 1)
+    if (m_output_level > 2)
       _print(0, "Seq 0", "rho1", frho1.get());
 
     /*
@@ -326,7 +326,7 @@ class BiCGStab
 
     m_algebra.copy(r, s);
     m_algebra.axpy(-alpha, v, s);
-    if (m_output_level > 1)
+    if (m_output_level > 2)
       _print(0, "Seq 1", "alpha", alpha);
 
     if (iter.stop(s)) {
@@ -352,7 +352,7 @@ class BiCGStab
         throw typename AlgebraType::NullValueException("beta");
     }
     omega = fomega.get() / beta;
-    if (m_output_level > 1)
+    if (m_output_level > 2)
       _print(iter(), "Seq 2", "beta", beta, "alpha", alpha, "rho1", rho1);
 
     // SEQ 3
@@ -363,7 +363,7 @@ class BiCGStab
 
     rho = rho1;
     ++iter;
-    if (m_output_level > 1)
+    if (m_output_level > 2)
       _print(iter(), "Seq 3", "beta", beta, "alpha", alpha, "rho1", rho1);
 
     while (!iter.stop(r)) {
@@ -377,7 +377,7 @@ class BiCGStab
       m_algebra.axpy(-omega, v, p);
       m_algebra.scal(beta, p);
       m_algebra.axpy(1., r, p);
-      if (m_output_level > 1)
+      if (m_output_level > 2)
         _print(iter(), "Seq 4", "beta", beta, "alpha", alpha, "rho1", rho1);
 
       if (rho == 0)
@@ -394,7 +394,7 @@ class BiCGStab
 
       m_algebra.copy(r, s);
       m_algebra.axpy(-alpha, v, s);
-      if (m_output_level > 1)
+      if (m_output_level > 2)
         _print(iter(), "Seq 1", "alpha", alpha);
 
       if (iter.stop(s)) {
@@ -408,7 +408,7 @@ class BiCGStab
       m_algebra.mult(A, shat, t);
       m_algebra.dot(t, s, fomega);
       m_algebra.dot(t, t, fbeta);
-      if (m_output_level > 1)
+      if (m_output_level > 2)
         _print(iter(), "Seq 2", "beta", beta, "alpha", alpha, "rho1", rho1, "omega", omega);
       if (fbeta.get() == 0) {
         if (iter.stop(s)) {
@@ -430,7 +430,7 @@ class BiCGStab
       rho = rho1;
 
       ++iter;
-      if (m_output_level > 1)
+      if (m_output_level > 2)
         _print(iter(), "end loop", "beta", beta, "alpha", alpha, "rho", rho);
     }
 

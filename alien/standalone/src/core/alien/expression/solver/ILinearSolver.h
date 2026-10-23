@@ -169,6 +169,8 @@ class ILinearSolverWithDiagScaling
 
   virtual void setDiagScaling(const IMatrix& matrix) = 0 ;
 
+  virtual void setDiagScaling(const IVector& diag) = 0 ;
+
 } ;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
