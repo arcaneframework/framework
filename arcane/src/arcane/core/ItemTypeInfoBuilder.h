@@ -94,12 +94,13 @@ class ItemTypeInfoBuilder
                 Int32 nb_node, Int32 nb_edge, Int32 nb_face);
 
   /*!
-   * \brief Positions the order of the type.
+   * \brief Set the order of the type.
    *
    * If not called, the type is considered to be for order 1 entities.
    * The first argument is the entity order and the second is the corresponding order 1 element.
+   * You have to call setInfos() before calling this method.
    */
-  void setOrder(Int16 order, ItemTypeId linear_type);
+  void setOrder(Int16 order, ItemTypeInfo* linear_type);
 
   /*!
    * \brief Adds an edge to the list of edges

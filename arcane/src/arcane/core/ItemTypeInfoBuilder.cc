@@ -90,19 +90,13 @@ setInfos(ItemTypeMng* mng, Int16 type_id, String type_name, Dimension dimension,
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-setOrder(Int16 order, ItemTypeId linear_type_id)
+setOrder(Int16 order, ItemTypeInfo* linear_type)
 {
+  if (!linear_type)
+    ARCANE_FATAL("Null linear type for type '{0}'", m_type_name);
   m_order = order;
-  m_linear_type_id = linear_type_id;
-  // We can not use m_mng->typeFromId() here because 'm_mng' is not yet initialized
-  if (!m_mng)
-    ARCANE_FATAL("You have to call setInfos() before calling setOrder()");
-  m_linear_type = m_mng->m_types[linear_type_id];
-  // Make sure the linear type is already created and coherent
-  if (!m_linear_type)
-    ARCANE_FATAL("Null linear type for type_id '{0} - {1}' linear_type_id={2}", m_type_id, m_type_name, linear_type_id);
-  if (m_linear_type->itemTypeId() != linear_type_id)
-    ARCANE_FATAL("Incoherent type '{0}' and type_id '{1}'", m_linear_type->itemTypeId(), linear_type_id);
+  m_linear_type = linear_type;
+  m_linear_type_id = linear_type->itemTypeId();
   _checkSetIsPolygon();
 }
 
