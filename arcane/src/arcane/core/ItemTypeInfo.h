@@ -15,15 +15,18 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
+#include "arcane/utils/Array.h"
 
-#include "arcane/core/ItemTypeMng.h"
 #include "arcane/core/ItemTypeId.h"
+// No longer used but keep for compatibility
+#include "arcane/core/ItemTypeMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+class ItemTypeMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +47,7 @@ namespace Arcane
  */
 class ItemTypeInfo
 {
-  friend ItemTypeInfoBuilder;
+  friend class ItemTypeInfoBuilder;
 
  public:
 
@@ -137,7 +140,7 @@ class ItemTypeInfo
   //! Type of the corresponding linear element
   ItemTypeId linearItemTypeId() const { return m_linear_type_id; }
   //! Type of the corresponding linear element
-  const ItemTypeInfo* linearTypeInfo() const { return m_mng->typeFromId(m_linear_type_id); }
+  const ItemTypeInfo* linearTypeInfo() const { return m_linear_type; }
   //! Indicates if the type has a center node
   bool hasCenterNode() const { return m_has_center_node; }
   /*!
@@ -145,9 +148,9 @@ class ItemTypeInfo
    *
    * A polygon is a 2D element of order 1 containing at least 5 nodes.
    */
-  bool isPolygon() const { return m_is_poly && m_dimension==2; }
+  bool isPolygon() const { return m_is_poly && m_dimension == 2; }
   //! Indicates if the type is a polyhedron
-  bool isPolyhedron() const { return m_is_poly && m_dimension==3; }
+  bool isPolyhedron() const { return m_is_poly && m_dimension == 3; }
 
  public:
 
@@ -186,6 +189,7 @@ class ItemTypeInfo
   //! Index of this type in the list of indices of \a m_mng.
   Integer m_first_item_index = 0;
   String m_type_name;
+  const ItemTypeInfo* m_linear_type = this;
   ItemTypeMng* m_mng = nullptr;
   Array<Int32>* m_ids_buffer = nullptr;
 };
