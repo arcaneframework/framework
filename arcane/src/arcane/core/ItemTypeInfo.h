@@ -44,6 +44,8 @@ namespace Arcane
  */
 class ItemTypeInfo
 {
+  friend ItemTypeInfoBuilder;
+
  public:
 
   /*!
@@ -165,7 +167,7 @@ class ItemTypeInfo
     return LocalFace(&buf[fi]);
   }
 
- protected:
+ private:
 
   ItemTypeId m_type_id{ IT_NullType };
   ItemTypeId m_linear_type_id{ IT_NullType };
