@@ -818,6 +818,9 @@ _addOnePolyhedron(Int64 cell_uid, ConstArrayView<Int64> connectivity_infos, Int3
     info() << "AddNewPolyhedronCell nb_connectivity=" << connectivity_infos.size()
            << " c=" << connectivity_infos;
 
+  // TODO: Use a class to handle the creation of the type and store all the working
+  // buffer instead of re-allocating them for each polyhedron.
+
   // Checks if the cell already exists (in which case nothing is done).
   // TODO: Search if a cell with same uniqueId() already exists.
 
@@ -889,8 +892,9 @@ _addOnePolyhedron(Int64 cell_uid, ConstArrayView<Int64> connectivity_infos, Int3
   if (is_verbose)
     info() << "EndCreateTypeForPolyhedron nb_node=" << nodes_of_cell.size();
   ItemTypeMngInternal* api = m_item_type_mng->_internalApi();
-  ItemTypeInfo* cell_type_info = api->findOrAddPolyhedron(nodes_of_cell.size(),
-                                                          arcane_faces_nb_node, arcane_faces_nodes);
+  SmallArray<Int32> type_ids_buffer;
+  ItemTypeInfo* cell_type_info = api->getTemporaryPolyhedron(&type_ids_buffer,nodes_of_cell.size(),
+                                                             arcane_faces_nb_node, arcane_faces_nodes);
   CellInfoProxy cell_info_proxy(ITI_GenericPolyhedron, cell_type_info, cell_uid, owner, nodes_of_cell, allow_build_face);
   return _addOneCell(cell_info_proxy);
 }

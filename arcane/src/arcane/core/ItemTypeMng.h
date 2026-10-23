@@ -83,7 +83,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
  public:
 
- /*!
+  /*!
    * \brief Effective constructor.
    *
    * This method should only be called before initializing
@@ -224,7 +224,9 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Reads types from a file named filename
   void _readTypes(IParallelSuperMng* parallel_mng, const String& filename);
   void _addPolygonType(Int16 type_id, Int32 nb_node, const String& type_name);
-  ItemTypeInfo* _findOrAddPolyhedron(Int16 nb_node, ConstArrayView<Int16> faces_nb_nodes, ConstArrayView<Int16> faces_nodes);
+  ItemTypeInfo* _getTemporaryPolyhedron(Array<Int32>* ids_buffer, Int16 nb_node,
+                                        ConstArrayView<Int16> faces_nb_nodes,
+                                        ConstArrayView<Int16> faces_nodes);
 };
 
 /*---------------------------------------------------------------------------*/

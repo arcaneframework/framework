@@ -47,6 +47,8 @@ namespace Arcane
 class ItemTypeInfoBuilder
 : public ItemTypeInfo
 {
+  friend class ItemTypeMng;
+
  public:
 
   //! Dimension of the type
@@ -196,6 +198,15 @@ class ItemTypeInfoBuilder
   {
     m_has_center_node = has_center_node;
   }
+
+ private:
+
+  // Only for ItemTypeMng
+  /*!
+   * \brief Positions the information for a type.
+   */
+  void _setInfos(Array<Int32>* ids_buffer, ItemTypeId type_id, String type_name, Dimension dimension,
+                 Int32 nb_node, Int32 nb_edge, Int32 nb_face);
 
  private:
 

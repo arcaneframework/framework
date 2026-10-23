@@ -42,18 +42,28 @@ _checkDimension(Int16 dim)
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name,
-         Dimension dimension, Int32 nb_node, Int32 nb_edge, Int32 nb_face)
+_setInfos(Array<Int32>* ids_buffer, ItemTypeId type_id, String type_name, Dimension dimension,
+          Int32 nb_node, Int32 nb_edge, Int32 nb_face)
 {
-  m_mng = mng;
-  m_ids_buffer = &mng->m_ids_buffer;
+  m_ids_buffer = ids_buffer;
   m_type_id = type_id;
   m_linear_type_id = type_id;
+  m_linear_type = this;
   m_dimension = static_cast<Int16>(dimension);
   m_nb_node = nb_node;
   m_type_name = type_name;
   _setNbEdgeAndFace(nb_edge, nb_face);
   _checkSetIsPolygon();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
+setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name,
+         Dimension dimension, Int32 nb_node, Int32 nb_edge, Int32 nb_face)
+{
+  _setInfos(&mng->m_ids_buffer, type_id, type_name, dimension, nb_node, nb_edge, nb_face);
 }
 
 /*---------------------------------------------------------------------------*/
