@@ -152,7 +152,7 @@ class ItemTypeInfo
   //! Local connectivity of the i-th edge of the cell
   LocalEdge localEdge(Integer id) const
   {
-    Array<Integer>& buf = m_mng->m_ids_buffer;
+    Array<Integer>& buf = *m_ids_buffer;
     Integer fi = buf[m_first_item_index + id];
     return LocalEdge(&buf[fi]);
   }
@@ -160,14 +160,13 @@ class ItemTypeInfo
   //! Local connectivity of the i-th face of the cell
   LocalFace localFace(Integer id) const
   {
-    Array<Integer>& buf = m_mng->m_ids_buffer;
+    Array<Integer>& buf = *m_ids_buffer;
     Integer fi = buf[m_first_item_index + m_nb_edge + id];
     return LocalFace(&buf[fi]);
   }
 
  protected:
 
-  ItemTypeMng* m_mng = nullptr;
   ItemTypeId m_type_id{ IT_NullType };
   ItemTypeId m_linear_type_id{ IT_NullType };
   //! Dimension (-1) if not initialized.
@@ -185,6 +184,8 @@ class ItemTypeInfo
   //! Index of this type in the list of indices of \a m_mng.
   Integer m_first_item_index = 0;
   String m_type_name;
+  ItemTypeMng* m_mng = nullptr;
+  Array<Int32>* m_ids_buffer = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
