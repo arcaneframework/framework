@@ -30,6 +30,7 @@
 #include "arcane/core/ItemGroup.h"
 #include "arcane/core/VariableTypes.h"
 #include "arcane/core/IParallelMng.h"
+#include "arcane/core/Timer.h"
 #include "arcane/core/MeshUtils.h"
 #include "arcane/core/IMeshModifier.h"
 #include "arcane/core/MeshKind.h"
@@ -512,6 +513,11 @@ _goToNextLine()
 void MshParallelMeshReader::
 _computeNodesPartition()
 {
+  // nodes partition: provisional distribution of the nodes between ranks
+  Timer timer(m_mesh->subDomain(), "MshTimer", Timer::TimerReal);
+  Timer::Action action(m_mesh->subDomain(), "MshNodesPartition", true);
+  Timer::Sentry sentry(&timer);
+
   // Determines the cell bounding box
   Real max_value = FloatInfo<Real>::maxValue();
   Real min_value = -max_value;
@@ -615,10 +621,16 @@ _readNodesFromFile()
   UniqueArray<MshNodeBlock>& node_blocks = m_mesh_allocate_info.node_blocks;
   node_blocks.resize(nb_node_block);
 
+  // read: master rank reads the node blocks and sends a part to each rank
+  {
+  Timer timer(m_mesh->subDomain(), "MshTimer", Timer::TimerReal);
+  Timer::Action action(m_mesh->subDomain(), "MshRead", true);
+  Timer::Sentry sentry(&timer);
   for (Int32 i = 0; i < nb_node_block; ++i) {
     MshNodeBlock& node_block = node_blocks[i];
     node_block.index = i;
     _readNodesOneEntity(node_block);
+  }
   }
 
   _computeNodesPartition();
@@ -899,6 +911,11 @@ _readElementsFromFile()
     }
   }
 
+  // read: master rank reads the element blocks and sends a part to each rank
+  {
+  Timer timer(m_mesh->subDomain(), "MshTimer", Timer::TimerReal);
+  Timer::Action action(m_mesh->subDomain(), "MshRead", true);
+  Timer::Sentry sentry(&timer);
   for (MshElementBlock& block : blocks) {
 
     FixedArray<Int32, 3> block_info;
@@ -947,6 +964,7 @@ _readElementsFromFile()
     }
     if (!m_is_binary)
       _goToNextLine();
+  }
   }
 
   if (m_is_binary)
@@ -1076,6 +1094,11 @@ namespace
 void MshParallelMeshReader::
 _computeOwnItems(MshElementBlock& block, MshItemKindInfo& item_kind_info, bool is_generate_uid)
 {
+  // convert: keep the cells owned by this rank, fill cells_infos
+  Timer timer(m_mesh->subDomain(), "MshTimer", Timer::TimerReal);
+  Timer::Action action(m_mesh->subDomain(), "MshConvert", true);
+  Timer::Sentry sentry(&timer);
+
   // We only keep entities whose first node belongs to our rank.
 
   IParallelMng* pm = m_parallel_mng;
@@ -1866,8 +1889,14 @@ _readMeshFromFile()
     }
   }
 
+  // build: Arcane mesh and node coordinates
+  {
+  Timer timer(mesh->subDomain(), "MshTimer", Timer::TimerReal);
+  Timer::Action action(mesh->subDomain(), "MshBuild", true);
+  Timer::Sentry sentry(&timer);
   _allocateCells();
   _setNodesCoordinates();
+  }
   _allocateGroups();
 }
 
