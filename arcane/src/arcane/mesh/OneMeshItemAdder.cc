@@ -22,6 +22,7 @@
 #include "arcane/core/MeshToMeshTransposer.h"
 #include "arcane/core/IParallelMng.h"
 #include "arcane/core/ItemPrinter.h"
+#include "arcane/core/ItemTypeInfoBuilder.h"
 #include "arcane/core/internal/ItemTypeMngInternal.h"
 
 #include "arcane/mesh/DynamicMesh.h"
@@ -847,10 +848,10 @@ _addOnePolyhedron(Int64 cell_uid, ConstArrayView<Int64> connectivity_infos, Int3
   // the next elements are nodes of face0, then node of face1, ...
 
   SmallArray<Int64> cell_nodes_uid;
-  Int32 array_size = connectivity_infos[0];
+  Int32 array_size = static_cast<Int32>(connectivity_infos[0]);
   if (array_size != connectivity_infos.size())
     ARCANE_FATAL("Incoherent size array_size={0} connectivity_info={1}", array_size, connectivity_infos.size());
-  Int32 scheme_version = connectivity_infos[1];
+  Int32 scheme_version = static_cast<Int32>(connectivity_infos[1]);
   if (scheme_version != 1)
     ARCANE_FATAL("Insupported scheme version '{0}'. Only supported value is 1", scheme_version);
   const Int32 cell_nb_face = static_cast<Int32>(connectivity_infos[2]);
@@ -893,9 +894,10 @@ _addOnePolyhedron(Int64 cell_uid, ConstArrayView<Int64> connectivity_infos, Int3
     info() << "EndCreateTypeForPolyhedron nb_node=" << nodes_of_cell.size();
   ItemTypeMngInternal* api = m_item_type_mng->_internalApi();
   SmallArray<Int32> type_ids_buffer;
-  ItemTypeInfo* cell_type_info = api->getTemporaryPolyhedron(&type_ids_buffer,nodes_of_cell.size(),
-                                                             arcane_faces_nb_node, arcane_faces_nodes);
-  CellInfoProxy cell_info_proxy(ITI_GenericPolyhedron, cell_type_info, cell_uid, owner, nodes_of_cell, allow_build_face);
+  ItemTypeInfoBuilder cell_type_info;
+  api->fillTemporaryTypeForPolyhedron(&cell_type_info, &type_ids_buffer, nodes_of_cell.size(),
+                                      arcane_faces_nb_node, arcane_faces_nodes);
+  CellInfoProxy cell_info_proxy(ITI_GenericPolyhedron, &cell_type_info, cell_uid, owner, nodes_of_cell, allow_build_face);
   return _addOneCell(cell_info_proxy);
 }
 

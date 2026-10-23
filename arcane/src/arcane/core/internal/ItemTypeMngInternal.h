@@ -38,24 +38,11 @@ class ARCANE_CORE_EXPORT ItemTypeMngInternal
 
  public:
 
-  /*!
-   * \brief Create a temporary type for generic Polyhedron.
-   *
-   * \a ids_buffer will be used to store connectivities informations.
-   * It must remain valid until the type is no longer used.
-   *
-   * \param nb_node number of nodes of the polyhedron.
-   * \pram faces_nb_node number of nodes of each face.
-   * \param faces_nodes list of nodes of the faces. The elements
-   * from `0` to `faces_nb_node[0]-1` are the node index of the first face,
-   * the elements from `faces_nb_nodes[0]` to `face_nb_nodes[0]+faces_nb_node[1]-1`
-   * are the nodes index of the second face and so on.
-   */
-  ItemTypeInfo* getTemporaryPolyhedron(Array<Int32>* ids_buffer, Int16 nb_node,
-                                       ConstArrayView<Int16> faces_nb_node,
-                                       ConstArrayView<Int16> faces_nodes)
+  void fillTemporaryTypeForPolyhedron(ItemTypeInfoBuilder* type, Array<Int32>* ids_buffer, Int16 nb_node,
+                                      ConstArrayView<Int16> faces_nb_node,
+                                      ConstArrayView<Int16> faces_nodes)
   {
-    return m_item_type_mng->_getTemporaryPolyhedron(ids_buffer, nb_node, faces_nb_node, faces_nodes);
+    m_item_type_mng->_fillTemporaryTypeForPolyhedron(type, ids_buffer, nb_node, faces_nb_node, faces_nodes);
   }
 
  private:

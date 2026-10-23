@@ -1566,8 +1566,9 @@ getPolygonType(Int16 nb_node) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Create a custom temporary type for generic Polyhedron.
+ * \brief Fill a type to create a custom temporary type for generic Polyhedron.
  *
+ * Fill \a type with information for a polyhedron.
  * \a ids_buffer will be used to store connectivities informations.
  * It must remain valid until the type is no longer used.
  *
@@ -1578,11 +1579,11 @@ getPolygonType(Int16 nb_node) const
  * the elements from `faces_nb_nodes[0]` to `face_nb_nodes[0]+faces_nb_node[1]-1`
  * are the nodes index of the second face and so on.
  */
-ItemTypeInfo* ItemTypeMng::
-_getTemporaryPolyhedron(Array<Int32>* ids_buffer, Int16 nb_node, ConstArrayView<Int16> faces_nb_nodes, ConstArrayView<Int16> faces_nodes)
+void ItemTypeMng::
+_fillTemporaryTypeForPolyhedron(ItemTypeInfoBuilder* type, Array<Int32>* ids_buffer, Int16 nb_node,
+                                ConstArrayView<Int16> faces_nb_nodes,
+                                ConstArrayView<Int16> faces_nodes)
 {
-  // TODO: Remove the memory leak when adding information to this type.
-  ItemTypeInfoBuilder* type = m_types_buffer->allocOne();
   Int32 nb_face = faces_nb_nodes.size();
   // TODO: need compute number of edges.
   type->_setInfos(ids_buffer, ITI_GenericPolyhedron, "Polyhedron", ItemTypeInfoBuilder::Dimension::Dim3, nb_node, 0, nb_face);
@@ -1596,7 +1597,6 @@ _getTemporaryPolyhedron(Array<Int32>* ids_buffer, Int16 nb_node, ConstArrayView<
     index_in_face_node += nb_node_in_face;
   }
   //type->computeFaceEdgeInfos();
-  return type;
 }
 
 /*---------------------------------------------------------------------------*/
