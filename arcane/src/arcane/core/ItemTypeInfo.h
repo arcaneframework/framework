@@ -18,7 +18,8 @@
 #include "arcane/utils/Array.h"
 
 #include "arcane/core/ItemTypeId.h"
-// No longer used but keep for compatibility
+// No longer used but keep for compatibility (October 2026)
+// Remove this in future versions of Arcane
 #include "arcane/core/ItemTypeMng.h"
 
 /*---------------------------------------------------------------------------*/
@@ -30,7 +31,6 @@ class ItemTypeMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \ingroup Mesh
  * \brief Info on a mesh entity type.
@@ -39,11 +39,6 @@ class ItemTypeMng;
  * a hexahedral cell, a quadrilateral cell.
  *
  * \sa ItemTypeMng
- *
- * There should only be one instance per entity type. Creation of a
- * type is done by the derived class ItemTypeInfoBuilder. Types must
- * be created before any mesh creation (i.e. during
- * the initialization of the architecture).
  */
 class ItemTypeInfo
 {
@@ -190,7 +185,6 @@ class ItemTypeInfo
   Integer m_first_item_index = 0;
   String m_type_name;
   const ItemTypeInfo* m_linear_type = this;
-  ItemTypeMng* m_mng = nullptr;
   Array<Int32>* m_ids_buffer = nullptr;
 };
 

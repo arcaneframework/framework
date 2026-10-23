@@ -38,12 +38,11 @@ class ARCANE_CORE_EXPORT ItemTypeMngInternal
 
  public:
 
-  /*!
-  * \brief Find or add a type for a generic Polyhedron.
-  */
-  ItemTypeInfo* findOrAddPolyhedron(Int16 nb_node, ConstArrayView<Int16> faces_nb_nodes, ConstArrayView<Int16> faces_nodes)
+  void fillTemporaryTypeForPolyhedron(ItemTypeInfoBuilder* type, Array<Int32>* ids_buffer, Int16 nb_node,
+                                      ConstArrayView<Int16> faces_nb_node,
+                                      ConstArrayView<Int16> faces_nodes)
   {
-    return m_item_type_mng->_findOrAddPolyhedron(nb_node, faces_nb_nodes, faces_nodes);
+    m_item_type_mng->_fillTemporaryTypeForPolyhedron(type, ids_buffer, nb_node, faces_nb_node, faces_nodes);
   }
 
  private:
