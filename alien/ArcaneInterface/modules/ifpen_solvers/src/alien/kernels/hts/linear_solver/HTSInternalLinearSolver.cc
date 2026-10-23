@@ -399,6 +399,7 @@ HTSInternalLinearSolver::solve(
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
           reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
+#ifdef HTS_SUPPORT_BLOCK_SIZE_5
   case 5: {
     typedef HartsSolver::CSRMatrix<Real, 5> MCMatrixType;
     typedef MCMatrixType::MatrixDataType MatrixDataType;
@@ -416,6 +417,8 @@ HTSInternalLinearSolver::solve(
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
           reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_6
   case 6: {
     typedef HartsSolver::CSRMatrix<Real, 6> MCMatrixType;
     typedef MCMatrixType::MatrixDataType MatrixDataType;
@@ -433,6 +436,8 @@ HTSInternalLinearSolver::solve(
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
           reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_7
   case 7: {
     typedef HartsSolver::CSRMatrix<Real, 7> MCMatrixType;
     typedef MCMatrixType::MatrixDataType MatrixDataType;
@@ -450,6 +455,8 @@ HTSInternalLinearSolver::solve(
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
           reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_8
   case 8: {
     typedef HartsSolver::CSRMatrix<Real, 8> MCMatrixType;
     typedef MCMatrixType::MatrixDataType MatrixDataType;
@@ -467,6 +474,8 @@ HTSInternalLinearSolver::solve(
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
           reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_9
   case 9: {
     typedef HartsSolver::CSRMatrix<Real, 9> MCMatrixType;
     typedef MCMatrixType::MatrixDataType MatrixDataType;
@@ -484,6 +493,8 @@ HTSInternalLinearSolver::solve(
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
           reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_10
   case 10: {
     typedef HartsSolver::CSRMatrix<Real, 10> MCMatrixType;
     typedef MCMatrixType::MatrixDataType MatrixDataType;
@@ -501,6 +512,8 @@ HTSInternalLinearSolver::solve(
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
           reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_11
   case 11: {
     typedef HartsSolver::CSRMatrix<Real, 11> MCMatrixType;
     typedef MCMatrixType::MatrixDataType MatrixDataType;
@@ -518,6 +531,8 @@ HTSInternalLinearSolver::solve(
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
           reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_12
   case 12: {
     typedef HartsSolver::CSRMatrix<Real, 12> MCMatrixType;
     typedef MCMatrixType::MatrixDataType MatrixDataType;
@@ -535,6 +550,7 @@ HTSInternalLinearSolver::solve(
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
           reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
+#endif
   default:
     alien_fatal([&] { cout() << "HTSLinearSolver::solve not supported fixed block size "<<block_size; });
     break;
