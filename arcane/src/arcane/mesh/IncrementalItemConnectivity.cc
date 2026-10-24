@@ -16,6 +16,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/core/IMesh.h"
 #include "arcane/core/IItemFamily.h"
@@ -29,6 +30,7 @@
 #include "arcane/core/internal/IIncrementalItemConnectivityInternal.h"
 
 #include "arcane/mesh/IndexedItemConnectivityAccessor.h"
+#include "arcane/mesh/internal/LazyMemoryPool.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -180,7 +182,41 @@ class IncrementalItemConnectivityContainer
   }
 
  public:
+
+  /*!
+   * \brief Lazy state: this connectivity has never had a connected item.
+   *
+   * A mesh registers every connectivity its families could have, whether or not
+   * the mesh can use them: on a mesh with no edge, no AMR and no tied interface,
+   * the six HParent/HChild ones, FaceFace and the three Edge ones hold nothing
+   * for the whole run, and every item created still resizes their two arrays.
+   *
+   * While lazy, the two per-source variables stay empty, so isAllocated() is
+   * false and the compaction skips them, and both published views are served
+   * from the zero buffers of m_lazy_pool, which are never written. The first
+   * addConnectedItem() materialises the real arrays. No connectivity is named
+   * anywhere: which ones stay empty is discovered at run time.
+   *
+   * The flag itself is IncrementalItemConnectivityBase::m_is_lazy, one
+   * indirection closer to the caller.
+   */
+  //! Number of source items the lazy views must cover
+  Int32 m_lazy_nb_source = 0;
+  //! Buffer of m_lazy_pool the lazy views point into
+  LazyMemoryPool::Buffer* m_lazy_buffer = nullptr;
+  /*!
+   * \brief Zero buffers read by the lazy views.
+   *
+   * A connectivity republishes from its own notify path, when its own localIds
+   * outgrow the view it published, so its view always covers its own items
+   * without depending on what another thread did.
+   */
+  static LazyMemoryPool m_lazy_pool;
+
+ public:
 };
+
+LazyMemoryPool IncrementalItemConnectivityContainer::m_lazy_pool;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -201,6 +237,7 @@ class IncrementalItemConnectivityBase::InternalApi
   {
     m_internal_api->_addMemoryInfos(mem_info);
   }
+  void notifyEndUpdateFromMesh() override { m_internal_api->_trimLazyViews(); }
 
  private:
 
@@ -235,6 +272,14 @@ IncrementalItemConnectivityBase(IItemFamily* source_family, IItemFamily* target_
   m_p->m_observers.addObserver(this, &ThatClass::_notifyConnectivityListChanged,
                                m_p->m_connectivity_list_variable.variable()->readObservable());
 
+  // A protection must hold the per-source arrays themselves, so that a run
+  // without the lazy state can read it back: leave that state just before
+  // either variable is written.
+  m_p->m_observers.addObserver(this, &ThatClass::_checkMaterialize,
+                               m_p->m_connectivity_nb_item_variable.variable()->writeObservable());
+  m_p->m_observers.addObserver(this, &ThatClass::_checkMaterialize,
+                               m_p->m_connectivity_index_variable.variable()->writeObservable());
+
   // Update the views from the associated arrays.
   // This must be done whenever the size of an array changes because then
   // the array might be reallocated and thus the associated view might become invalid.
@@ -261,7 +306,8 @@ reserveMemoryForNbSourceItems(Int32 n, bool pre_alloc_connectivity)
   if (n <= 0)
     return;
 
-  m_p->reserveForItems(n);
+  if (!m_is_lazy)
+    m_p->reserveForItems(n);
   _notifyConnectivityIndexChanged();
   _notifyConnectivityNbItemChanged();
 
@@ -289,8 +335,103 @@ _notifyConnectivityListChanged()
 /*---------------------------------------------------------------------------*/
 
 void IncrementalItemConnectivityBase::
+_lazyNotifySourceItemAdded(Int32 lid)
+{
+  Int32 n = lid + 1;
+  if (n > m_p->m_lazy_nb_source)
+    m_p->m_lazy_nb_source = n;
+  if (n <= m_connectivity_nb_item.size())
+    return; // the published views still cover this localId
+  _publishLazyViews(n);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Points both per-source views at the shared zero buffer, so a reader
+ * of nbConnectedItem() gets 0 for every item.
+ */
+void IncrementalItemConnectivityBase::
+_publishLazyViews(Int32 nb_source)
+{
+  // The views span the whole buffer rather than the source items seen so far, so
+  // they are republished only when one is outgrown. Announcing more than the item
+  // count is safe here: every reader indexes the view by a local id below that
+  // count, and a bounds check that passes on a longer view would have passed on
+  // the exact one.
+  ConstArrayView<Int32> zeros = IncrementalItemConnectivityContainer::m_lazy_pool.grow(m_p->m_lazy_buffer, nb_source);
+  _setLazyViews(zeros);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivityBase::
+_setLazyViews(ConstArrayView<Int32> zeros)
+{
+  Int32* data = const_cast<Int32*>(zeros.data());
+  m_connectivity_index = Int32ArrayView(zeros.size(), data);
+  m_connectivity_nb_item = Int32ArrayView(zeros.size(), data);
+  if (m_item_connectivity_list) {
+    m_item_connectivity_list->_setConnectivityIndex(m_item_connectivity_index, m_connectivity_index);
+    m_item_connectivity_list->_setConnectivityNbItem(m_item_connectivity_index, m_connectivity_nb_item);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Moves the lazy views to one zero buffer of the size of the mesh.
+ *
+ * Called once the whole mesh is updated: the views no longer need room to grow,
+ * and every lazy connectivity of the mesh, whatever its source family, can read
+ * the same buffer, sized for the largest family.
+ */
+void IncrementalItemConnectivityBase::
+_trimLazyViews()
+{
+  if (!m_is_lazy)
+    return;
+  Int32 nb_zero = m_p->m_lazy_nb_source;
+  for (IItemFamily* family : _sourceFamily()->mesh()->itemFamilies())
+    nb_zero = math::max(nb_zero, family->maxLocalId());
+  _setLazyViews(IncrementalItemConnectivityContainer::m_lazy_pool.trim(m_p->m_lazy_buffer, nb_zero));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Leaves the lazy state: allocates the two per-source arrays for real.
+ *
+ * Called by every method that writes a connectivity. From here on the
+ * connectivity behaves exactly as it always did.
+ */
+void IncrementalItemConnectivityBase::
+_materialize()
+{
+  Int32 n = m_p->m_lazy_nb_source;
+  m_is_lazy = false;
+  IncrementalItemConnectivityContainer::m_lazy_pool.release(m_p->m_lazy_buffer);
+  m_p->m_connectivity_nb_item_array.resize(n);
+  m_p->m_connectivity_index_array.resize(n);
+  m_p->m_connectivity_nb_item_array.fill(0);
+  m_p->m_connectivity_index_array.fill(0);
+  _notifyConnectivityIndexChanged();
+  _notifyConnectivityNbItemChanged();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivityBase::
 _notifyConnectivityIndexChanged()
 {
+  // While lazy the real array is empty on purpose: publish the zero views
+  // instead, so every caller of this method keeps working unchanged.
+  if (m_is_lazy) {
+    _publishLazyViews(m_p->m_lazy_nb_source);
+    return;
+  }
   m_connectivity_index = m_p->m_connectivity_index_array.view();
   if (m_item_connectivity_list)
     m_item_connectivity_list->_setConnectivityIndex(m_item_connectivity_index, m_connectivity_index);
@@ -302,6 +443,10 @@ _notifyConnectivityIndexChanged()
 void IncrementalItemConnectivityBase::
 _notifyConnectivityNbItemChanged()
 {
+  if (m_is_lazy) {
+    _publishLazyViews(m_p->m_lazy_nb_source);
+    return;
+  }
   m_connectivity_nb_item = m_p->m_connectivity_nb_item_array.view();
   if (m_item_connectivity_list)
     m_item_connectivity_list->_setConnectivityNbItem(m_item_connectivity_index, m_connectivity_nb_item);
@@ -326,6 +471,14 @@ _setMaxNbConnectedItemsInConnectivityList()
 void IncrementalItemConnectivityBase::
 _notifyConnectivityNbItemChangedFromObservable()
 {
+  // The variable was filled from outside (a restore): the connectivity is no
+  // longer empty, whatever it held before.
+  if (m_is_lazy && m_p->m_connectivity_nb_item_array.size() > 0) {
+    m_is_lazy = false;
+    IncrementalItemConnectivityContainer::m_lazy_pool.release(m_p->m_lazy_buffer);
+    m_p->m_lazy_nb_source = m_p->m_connectivity_nb_item_array.size();
+    _notifyConnectivityIndexChanged();
+  }
   _notifyConnectivityNbItemChanged();
   _computeMaxNbConnectedItem();
 }
@@ -393,6 +546,11 @@ setItemConnectivityList(ItemInternalConnectivityList* ilist, Int32 index)
 void IncrementalItemConnectivityBase::
 notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
 {
+  if (m_is_lazy) {
+    // Same size as the compaction of the variables would have left.
+    m_p->m_lazy_nb_source = new_to_old_ids.size();
+    return;
+  }
   if (m_p->isAllocated()) {
     m_p->m_connectivity_nb_item_variable.variable()->compact(new_to_old_ids);
     m_p->m_connectivity_index_variable.variable()->compact(new_to_old_ids);
@@ -488,6 +646,11 @@ IncrementalItemConnectivity(IItemFamily* source_family, IItemFamily* target_fami
   m_pre_allocated_size = _sourceFamily()->properties()->getIntegerWithDefault(name() + "PreallocSize", 0);
   info(4) << "PreallocSize1 var=" << m_p->m_var_name << " v=" << m_pre_allocated_size;
 
+  // ARCANE_LAZY_CONNECTIVITY=1 leaves the connectivity unallocated until it
+  // gets its first connected item.
+  auto is_lazy = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_LAZY_CONNECTIVITY", true);
+  m_is_lazy = is_lazy && is_lazy.value() != 0;
+
   // Checks if the null entity needs to be added at the beginning of the list.
   _checkAddNullItem();
 }
@@ -498,6 +661,8 @@ IncrementalItemConnectivity(IItemFamily* source_family, IItemFamily* target_fami
 IncrementalItemConnectivity::
 ~IncrementalItemConnectivity()
 {
+  if (m_is_lazy)
+    IncrementalItemConnectivityContainer::m_lazy_pool.release(m_p->m_lazy_buffer);
   info(4) << " connectivity name=" << name()
           << " prealloc_size=" << m_pre_allocated_size
           << " nb_add=" << m_nb_add
@@ -565,6 +730,7 @@ _increaseIndexList(Int32 lid, Integer size, Int32 target_lid)
 void IncrementalItemConnectivity::
 addConnectedItem(ItemLocalId source_item, ItemLocalId target_item)
 {
+  _checkMaterialize();
   ++m_nb_add;
   const Int32 lid = source_item.localId();
   const Int32 target_lid = target_item.localId();
@@ -633,6 +799,7 @@ _computeAllocSize(Integer nb_item)
 void IncrementalItemConnectivity::
 addConnectedItems(ItemLocalId source_item, Integer nb_item)
 {
+  _checkMaterialize();
   const Int32 lid = source_item.localId();
   Integer size = m_connectivity_nb_item[lid];
   if (size != 0)
@@ -650,6 +817,7 @@ addConnectedItems(ItemLocalId source_item, Integer nb_item)
 void IncrementalItemConnectivity::
 setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
 {
+  _checkMaterialize();
   removeConnectedItems(source_item);
   addConnectedItems(source_item, target_local_ids.size());
   replaceConnectedItems(source_item, target_local_ids);
@@ -661,6 +829,7 @@ setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
 void IncrementalItemConnectivity::
 removeConnectedItems(ItemLocalId source_item)
 {
+  _checkMaterialize();
   Int32 lid = source_item.localId();
   m_connectivity_nb_item[lid] = 0;
 }
@@ -671,6 +840,7 @@ removeConnectedItems(ItemLocalId source_item)
 void IncrementalItemConnectivity::
 removeConnectedItem(ItemLocalId source_item, ItemLocalId target_item)
 {
+  _checkMaterialize();
   ++m_nb_remove;
   Int32 lid = source_item.localId();
   Int32 target_lid = target_item.localId();
@@ -686,6 +856,7 @@ removeConnectedItem(ItemLocalId source_item, ItemLocalId target_item)
 void IncrementalItemConnectivity::
 replaceConnectedItem(ItemLocalId source_item, Integer index, ItemLocalId target_item)
 {
+  _checkMaterialize();
   Int32 lid = source_item.localId();
   Int32 target_lid = target_item.localId();
   ARCANE_CHECK_AT(index, m_connectivity_nb_item[lid]);
@@ -698,6 +869,7 @@ replaceConnectedItem(ItemLocalId source_item, Integer index, ItemLocalId target_
 void IncrementalItemConnectivity::
 replaceConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
 {
+  _checkMaterialize();
   Int32 lid = source_item.localId();
   Int32 n = target_local_ids.size();
   if (n > 0) {
@@ -728,6 +900,10 @@ void IncrementalItemConnectivity::
 notifySourceItemAdded(ItemLocalId item)
 {
   Int32 lid = item.localId();
+  if (m_is_lazy) {
+    _lazyNotifySourceItemAdded(lid);
+    return;
+  }
   m_p->_checkResize(lid);
   _notifyConnectivityIndexChanged();
   _notifyConnectivityNbItemChanged();
@@ -750,6 +926,11 @@ _internalNotifySourceItemsAdded(ConstArrayView<Int32> local_ids)
   for (Int32 lid : local_ids)
     max_lid = math::max(max_lid, lid);
 
+  if (m_is_lazy) {
+    // Nothing to write: the zero views already read 0 for every source item.
+    _lazyNotifySourceItemAdded(max_lid);
+    return;
+  }
   m_p->_checkResize(max_lid);
   _notifyConnectivityIndexChanged();
   _notifyConnectivityNbItemChanged();
@@ -766,6 +947,14 @@ _internalNotifySourceItemsAdded(ConstArrayView<Int32> local_ids)
 void IncrementalItemConnectivity::
 notifyReadFromDump()
 {
+  if (m_is_lazy) {
+    // Saved empty, and the restore re-allocates the items without notifying
+    // the connectivities one by one: cover every local id now, or the first
+    // nbConnectedItem() reads past the end of a zero buffer of length 0.
+    Int32 max_local_id = _sourceFamily()->maxLocalId();
+    if (max_local_id > 0)
+      _lazyNotifySourceItemAdded(max_local_id - 1);
+  }
   m_pre_allocated_size = _sourceFamily()->properties()->getIntegerWithDefault(name() + "PreallocSize", 0);
   info(4) << "PreallocSize2 var=" << m_p->m_var_name << " v=" << m_pre_allocated_size;
 
@@ -778,6 +967,8 @@ notifyReadFromDump()
 void IncrementalItemConnectivity::
 setPreAllocatedSize(Integer prealloc_size)
 {
+  // No need to leave the lazy state: this writes m_pre_allocated_size and the
+  // connectivity LIST, never a per-source array.
   if (m_pre_allocated_size < 0)
     throw ArgumentException(A_FUNCINFO,
                             String::format("Invalid prealloc_size v={0}",
@@ -788,7 +979,8 @@ setPreAllocatedSize(Integer prealloc_size)
   // NOTE: we could allow it, but that would require rebuilding
   // the connectivity indices. A call to compactConnectivityList()
   // would suffice.
-  if (m_connectivity_nb_item.size() != 0)
+  Integer nb_source = m_is_lazy ? m_p->m_lazy_nb_source : m_connectivity_nb_item.size();
+  if (nb_source != 0)
     return;
 
   m_pre_allocated_size = prealloc_size;
@@ -892,6 +1084,8 @@ _checkAddNullItem()
 void IncrementalItemConnectivity::
 compactConnectivityList()
 {
+  if (m_is_lazy)
+    return; // every nb_item is 0, the index is 0 everywhere, the list is the null item
   info(4) << "Begin Compacting IncrementalItemConnectivity name=" << name()
           << " new_size=" << m_connectivity_list.size()
           << " prealloc_size=" << m_pre_allocated_size;
@@ -1095,6 +1289,11 @@ notifySourceItemAdded(ItemLocalId item)
 void OneItemIncrementalItemConnectivity::
 notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
 {
+  if (m_is_lazy) {
+    // Same size as the compaction of the variables would have left.
+    m_p->m_lazy_nb_source = new_to_old_ids.size();
+    return;
+  }
   // For this implementation, the indices should not be updated
   // because otherwise we won't have m_connectivity_index[lid] = lid.
   // TODO: since m_connectivity_nb_item is originally 1 everywhere, it's

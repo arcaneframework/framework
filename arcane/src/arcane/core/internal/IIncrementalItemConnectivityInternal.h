@@ -60,6 +60,9 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivityInternal
 
   //! Adds the instance's memory information to mem_info.
   virtual void addMemoryInfos(ItemConnectivityMemoryInfo& mem_info) = 0;
+
+  //! Notifies that the mesh has just been updated
+  virtual void notifyEndUpdateFromMesh() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

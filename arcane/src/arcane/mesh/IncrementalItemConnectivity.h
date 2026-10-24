@@ -177,6 +177,16 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
  protected:
 
   bool m_is_empty = true;
+  /*!
+   * \brief True while this connectivity has never had a connected item.
+   *
+   * Only IncrementalItemConnectivity enters this state, and only when
+   * ARCANE_LAZY_CONNECTIVITY=1. See IncrementalItemConnectivityContainer for
+   * what the state avoids. The flag is here rather than in the container
+   * because it is tested once per item created, and the container is one
+   * indirection further away.
+   */
+  bool m_is_lazy = false;
   Int32ArrayView m_connectivity_nb_item;
   Int32ArrayView m_connectivity_index;
   Int32ArrayView m_connectivity_list;
@@ -187,6 +197,17 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
 
  protected:
 
+  void _lazyNotifySourceItemAdded(Int32 lid);
+  void _publishLazyViews(Int32 nb_source);
+  void _setLazyViews(ConstArrayView<Int32> zeros);
+  void _trimLazyViews();
+  void _materialize();
+  //! Leaves the lazy state if this connectivity is still in it
+  void _checkMaterialize()
+  {
+    if (m_is_lazy)
+      _materialize();
+  }
   void _notifyConnectivityListChanged();
   void _notifyConnectivityIndexChanged();
   void _notifyConnectivityNbItemChanged();
