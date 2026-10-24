@@ -59,6 +59,8 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
 
   void setDiagScaling(IMatrix const& A) ;
   void setDiagScaling(CSRMatrixType const& A) ;
+  void setDiagScaling(IVector const& diag) ;
+  void setDiagScaling(CSRVectorType const& diag) ;
 
   bool solve(IMatrix const& A, IVector const& b, IVector& x);
   bool solve(const CSRMatrixType& A, const CSRVectorType& b, CSRVectorType& x);

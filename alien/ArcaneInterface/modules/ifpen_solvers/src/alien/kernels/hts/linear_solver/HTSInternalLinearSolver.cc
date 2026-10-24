@@ -399,7 +399,160 @@ HTSInternalLinearSolver::solve(
           reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
           reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
   } break;
+#ifdef HTS_SUPPORT_BLOCK_SIZE_5
+  case 5: {
+    typedef HartsSolver::CSRMatrix<Real, 5> MCMatrixType;
+    typedef MCMatrixType::MatrixDataType MatrixDataType;
+    typedef MCMatrixType::VectorDataType VectorDataType;
+    MCMatrixType matrix(profile);
+    matrix.setValues(
+        (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
+    // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
+    if (is_parallel)
+      error = m_impl->m_hts_solver->solveN<5, true>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+    else
+      error = m_impl->m_hts_solver->solveN<5, false>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+  } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_6
+  case 6: {
+    typedef HartsSolver::CSRMatrix<Real, 6> MCMatrixType;
+    typedef MCMatrixType::MatrixDataType MatrixDataType;
+    typedef MCMatrixType::VectorDataType VectorDataType;
+    MCMatrixType matrix(profile);
+    matrix.setValues(
+        (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
+    // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
+    if (is_parallel)
+      error = m_impl->m_hts_solver->solveN<6, true>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+    else
+      error = m_impl->m_hts_solver->solveN<6, false>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+  } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_7
+  case 7: {
+    typedef HartsSolver::CSRMatrix<Real, 7> MCMatrixType;
+    typedef MCMatrixType::MatrixDataType MatrixDataType;
+    typedef MCMatrixType::VectorDataType VectorDataType;
+    MCMatrixType matrix(profile);
+    matrix.setValues(
+        (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
+    // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
+    if (is_parallel)
+      error = m_impl->m_hts_solver->solveN<7, true>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+    else
+      error = m_impl->m_hts_solver->solveN<7, false>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+  } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_8
+  case 8: {
+    typedef HartsSolver::CSRMatrix<Real, 8> MCMatrixType;
+    typedef MCMatrixType::MatrixDataType MatrixDataType;
+    typedef MCMatrixType::VectorDataType VectorDataType;
+    MCMatrixType matrix(profile);
+    matrix.setValues(
+        (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
+    // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
+    if (is_parallel)
+      error = m_impl->m_hts_solver->solveN<8, true>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+    else
+      error = m_impl->m_hts_solver->solveN<8, false>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+  } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_9
+  case 9: {
+    typedef HartsSolver::CSRMatrix<Real, 9> MCMatrixType;
+    typedef MCMatrixType::MatrixDataType MatrixDataType;
+    typedef MCMatrixType::VectorDataType VectorDataType;
+    MCMatrixType matrix(profile);
+    matrix.setValues(
+        (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
+    // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
+    if (is_parallel)
+      error = m_impl->m_hts_solver->solveN<9, true>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+    else
+      error = m_impl->m_hts_solver->solveN<9, false>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+  } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_10
+  case 10: {
+    typedef HartsSolver::CSRMatrix<Real, 10> MCMatrixType;
+    typedef MCMatrixType::MatrixDataType MatrixDataType;
+    typedef MCMatrixType::VectorDataType VectorDataType;
+    MCMatrixType matrix(profile);
+    matrix.setValues(
+        (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
+    // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
+    if (is_parallel)
+      error = m_impl->m_hts_solver->solveN<10, true>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+    else
+      error = m_impl->m_hts_solver->solveN<10, false>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+  } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_11
+  case 11: {
+    typedef HartsSolver::CSRMatrix<Real, 11> MCMatrixType;
+    typedef MCMatrixType::MatrixDataType MatrixDataType;
+    typedef MCMatrixType::VectorDataType VectorDataType;
+    MCMatrixType matrix(profile);
+    matrix.setValues(
+        (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
+    // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
+    if (is_parallel)
+      error = m_impl->m_hts_solver->solveN<11, true>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+    else
+      error = m_impl->m_hts_solver->solveN<11, false>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+  } break;
+#endif
+#ifdef HTS_SUPPORT_BLOCK_SIZE_12
+  case 12: {
+    typedef HartsSolver::CSRMatrix<Real, 12> MCMatrixType;
+    typedef MCMatrixType::MatrixDataType MatrixDataType;
+    typedef MCMatrixType::VectorDataType VectorDataType;
+    MCMatrixType matrix(profile);
+    matrix.setValues(
+        (MatrixDataType const*)(A.internal()->getDataPtr()), profile_permutation);
+    // matrix.updateValues(nrows,kcol,block_size,A.internal()->getDataPtr()) ;
+    if (is_parallel)
+      error = m_impl->m_hts_solver->solveN<12, true>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+    else
+      error = m_impl->m_hts_solver->solveN<12, false>(matrix,
+          reinterpret_cast<VectorDataType const*>(b.getDataPtr()),
+          reinterpret_cast<VectorDataType*>(x.getDataPtr()), m_impl->m_hts_status, context);
+  } break;
+#endif
   default:
+    alien_fatal([&] { cout() << "HTSLinearSolver::solve not supported fixed block size "<<block_size; });
     break;
   }
 
@@ -548,6 +701,32 @@ HTSInternalLinearSolver::setDiagScaling(CSRMatrixType const& matrix)
 }
 
 
+void
+HTSInternalLinearSolver::setDiagScaling(IVector const& vector)
+{
+  using namespace Alien;
+
+  SolverStatSentry<HTSInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
+  CSRVectorType const& diag = vector.impl()->get<BackEnd::tag::simplecsr>();
+  setDiagScaling(diag) ;
+}
+
+void
+HTSInternalLinearSolver::setDiagScaling(CSRVectorType const& diag)
+{
+#ifdef ALIEN_USE_HTSSOLVER
+  auto block_size = diag.blockSize() ;
+  auto local_size = diag.scalarizedLocalSize()/block_size ;
+  if (m_output_level > 0)
+    alien_info([&] { cout() << "HTSLinearSolver::setDigaScaling : block-size="<<block_size<<" NROWS="<<local_size; });
+#ifdef HTS_HAS_VECT_DIAG_SCAL
+  //if constexpr (requires{m_impl->m_hts_solver->setDiagScal(matrix.data(),dcol,local_size,block_size) ;}) {
+    m_impl->m_hts_solver->setDiagScal(diag.data(),local_size,block_size) ;
+    m_diag_scaling_is_set = true ;
+  //}
+#endif
+#endif
+}
 
 std::shared_ptr<ILinearAlgebra>
 HTSInternalLinearSolver::algebra() const

@@ -65,6 +65,9 @@ class ALIEN_CORE_SYCL_SOLVERS_EXPORT AlienCoreSYCLLinearSolver
   void setDiagScaling(IMatrix const& A) ;
   void setDiagScaling(MatrixType const& A) ;
 
+  void setDiagScaling(IVector const& A) ;
+  void setDiagScaling(VectorType const& A) ;
+
   bool solve(IMatrix const& A, IVector const& b, IVector& x);
   bool solve(const MatrixType& A, const VectorType& b, VectorType& x);
 

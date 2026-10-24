@@ -119,6 +119,16 @@ class AlienCoreSolverBaseT
     m_use_diag_scaling = true ;
   }
 
+  void setDiagScaling(const VectorType& diag)
+  {
+    AlgebraType algebra;
+    auto const& dist = diag.distribution() ;
+    auto block_size = diag.blockSize() ;
+    m_diag_scaling.init(dist,1,true) ;
+    algebra.copy(diag,block_size,m_diag_scaling,1);
+    m_use_diag_scaling = true ;
+  }
+
 
   bool solve(const MatrixType& matrixA, const VectorType& vectorB, VectorType& vectorX)
   {
@@ -136,7 +146,7 @@ class AlienCoreSolverBaseT
     AlgebraType alg;
     if constexpr (requires{alg.setDotAlgo(dot_prod);})
         alg.setDotAlgo(dot_prod);
-    StopCriteriaType stop_criteria{alg,vectorB,m_precision,m_max_iteration,m_output_level>0?this->traceMng():nullptr} ;
+    StopCriteriaType stop_criteria{alg,vectorB,m_precision,m_max_iteration,m_output_level>1?this->traceMng():nullptr} ;
 
     switch(solver_opt)
     {
