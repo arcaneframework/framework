@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemCompatibility.h                                         (C) 2000-2023 */
+/* ItemCompatibility.h                                         (C) 2000-2026 */
 /*                                                                           */
 /* Methods ensuring compatibility between Item versions.                     */
 /*---------------------------------------------------------------------------*/
@@ -22,6 +22,7 @@
 
 namespace Arcane
 {
+  class CellMerger;
 
 namespace Materials
 {
@@ -33,7 +34,7 @@ namespace geometric
 }
 namespace mesh
 {
-  class CellMerger;
+  using ::Arcane::CellMerger;
   class ItemFamily;
   class ItemTools;
   class FaceFamily;

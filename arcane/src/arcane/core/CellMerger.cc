@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellMerger.cc                                               (C) 2000-2025 */
+/* CellMerger.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* Merges two cells.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@
 #include "arcane/core/IMesh.h"
 #include "arcane/core/internal/IItemFamilyInternal.h"
 
-#include "arcane/mesh/FaceReorienter.h"
+#include "arcane/core/FaceReorienter.h"
 
 #include <map>
 #include <set>
@@ -34,7 +34,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::mesh
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
@@ -1088,6 +1088,15 @@ m_hexa_node_neighbors[8][3] = { { 1, 3, 4 }, { 0, 2, 5 }, { 1, 3, 6 }, { 0, 2, 7
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+CellMerger::
+CellMerger(IMesh* mesh)
+: m_mesh(mesh)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 String CellMerger::
 _typeName(const CellMerger::_Type& t) const
 {
@@ -1166,7 +1175,8 @@ merge(Cell i_cell_1, Cell i_cell_2)
   _Type cell_1_type = _getCellType(i_cell_1.type());
   IMesh* mesh = i_cell_1.itemFamily()->mesh();
   ItemSwapperUtils swap_utils(mesh);
-
+  if (mesh != m_mesh)
+    ARCANE_FATAL("Incoherent mesh between CellMerger and cell to merge");
   switch (cell_1_type) {
   case Hexahedron:
   case Pyramid:

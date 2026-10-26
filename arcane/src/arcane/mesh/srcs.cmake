@@ -94,7 +94,6 @@
   ParticleFamilySerializer.h
   ItemFamilyVariableSerializer.cc
   ItemFamilyVariableSerializer.h
-  CellMerger.cc
   CellMerger.h
   GhostLayerMng.cc
   GhostLayerMng.h

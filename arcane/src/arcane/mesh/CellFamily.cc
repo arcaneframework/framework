@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellFamily.cc                                               (C) 2000-2025 */
+/* CellFamily.cc                                               (C) 2000-2026 */
 /*                                                                           */
 /* Cell Family.                                                              */
 /*---------------------------------------------------------------------------*/
@@ -23,9 +23,7 @@
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
 #include "arcane/mesh/FaceFamily.h"
-#include "arcane/mesh/CellMerger.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
-#include "arcane/mesh/CompactIncrementalItemConnectivity.h"
 #include "arcane/mesh/ItemConnectivitySelector.h"
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
 #include "arcane/mesh/NewWithLegacyConnectivity.h"

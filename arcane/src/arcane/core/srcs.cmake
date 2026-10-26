@@ -480,6 +480,8 @@ set(ARCANE_ORIGINAL_SOURCES
   CaseOptionsMulti.h
   CaseTable.cc
   CaseTable.h
+  CellMerger.h
+  CellMerger.cc
   CaseTableParams.cc
   CaseTableParams.h
   CheckpointInfo.cc
