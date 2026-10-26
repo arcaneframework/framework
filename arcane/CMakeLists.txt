@@ -371,6 +371,18 @@ endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
+# Ajoute 'ArcaNet' (fichiers .arct + lanceur ArcCher).
+if (NOT ArcaNet_FOUND)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../arctools/arcanet arcanet)
+  set(ArcaNet_FOUND YES)
+  set(ArcaNet_FOUND YES PARENT_SCOPE)
+endif ()
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/../arctools/arcanet/arct/cmake/arct_to_ctest.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/../arctools/arcanet/arct/cmake/arct_edit.cmake")
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 
 message(STATUS "[arcane] Is Check mode enabled ? ${ARCANE_WANT_CHECK} (from arccore: ${ARCCORE_CHECK})")
 message(STATUS "[arcane] Is Debug mode enabled ? ${ARCANE_WANT_DEBUG} (from arccore: ${ARCCORE_DEBUG})")

@@ -60,4 +60,4 @@ arct_config_create_or_edit_end()
 
 #arct_end()
 
-arct_to_ctest()
+arct_to_ctest(ARCCHER_PATH "${CMAKE_BINARY_DIR}/_common/build_all/arcane/arccher/ArcCher")

@@ -80,6 +80,13 @@ find_package(ADoc REQUIRED
 )
 
 # ----------------------------------------------------------------------------
+# Récupère le chemin de 'arcanet' (fichiers .arct + lanceur ArcCher)
+find_package(ArcaNet REQUIRED
+  HINTS "${ARCANE_ARCANET_HINT_PATH}"
+  "${ARCANE_PREFIX_DIR}/${ARCANE_ARCANET_CONFIG_INSTALL_DIR}"
+)
+
+# ----------------------------------------------------------------------------
 # Support pour '.Net'.
 set(ARCANE_CORECLR_VERSION "@ARCANE_CORECLR_VERSION@" CACHE STRING ".Net coreclr version" FORCE)
 
