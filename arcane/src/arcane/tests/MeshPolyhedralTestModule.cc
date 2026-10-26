@@ -79,9 +79,17 @@ private:
       {
         ++nb_ghost_cell;
         info() << "Cell " << icell->localId() << " is not owned by this subdomain but by " << icell->owner();
+        for(Face face : icell->faces())
+        {
+          info() << "Ghost cell " << icell->uniqueId().asInt64() << "  faces uid " << face.uniqueId().asInt64() << ", lid " << face.localId();
+        }
       }
       else
+      {
+        info() << "Cell " << icell->localId() << " is owned by this subdomain. icell->owner = " << icell->owner();
         ++nb_own_cell;
+        auto cell = icell->itemBase();
+      }
     }
     info() << "Nb own cell " << nb_own_cell << " nb ghost cell " << nb_ghost_cell;
     if (nb_ghost_cell == 0 && mesh()->ghostLayerMng()->nbGhostLayer() > 0 && mesh()->cellFamily()->nbItem() > 0)
