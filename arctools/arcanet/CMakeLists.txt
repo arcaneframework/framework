@@ -6,7 +6,6 @@ cmake_minimum_required(VERSION 3.21)
 # Ce projet ne dépend pas d'Arcane. Il peut être:
 #   - construit en même temps que le framework Arcane (voir
 #     '_common/build_all/CMakeLists.txt'),
-#   - copié dans un autre projet (seul le répertoire 'arct' est alors utile),
 #   - installé puis utilisé via 'find_package(ArcaNet)'.
 
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/version" ARCANET_VERSION_STR_FULL)
@@ -17,7 +16,7 @@ project(ArcaNet VERSION ${ArcaNet_VERSION} LANGUAGES NONE)
 
 # ----------------------------------------------------------------------------
 
-option(ARCANET_BUILD_ARCCHER "Build the ArcCher launcher" ON)
+option(ARCANET_BUILD_ARCCHER "Build the ArcCher launcher" OFF)
 if (ARCANET_BUILD_ARCCHER)
   add_subdirectory(arccher)
 endif ()
@@ -41,16 +40,22 @@ set(ArcaNet_config_install_dir "${ARCANET_CONFIG_INSTALL_DIR}"
   CACHE STRING "ArcaNet config install dir" FORCE)
 
 set(_arcanet_generated_dir "${CMAKE_CURRENT_BINARY_DIR}/arcanet-generated")
+
 configure_package_config_file(cmake/ArcaNetConfig.cmake.in
   "${_arcanet_generated_dir}/ArcaNetConfig.cmake"
   INSTALL_DESTINATION "${ARCANET_CONFIG_INSTALL_DIR}"
-  PATH_VARS ARCANET_CMAKE_INSTALL_DIR ARCANET_SPEC_INSTALL_DIR)
+  PATH_VARS ARCANET_CMAKE_INSTALL_DIR ARCANET_SPEC_INSTALL_DIR
+)
+
 write_basic_package_version_file("${_arcanet_generated_dir}/ArcaNetConfigVersion.cmake"
   VERSION ${ArcaNet_VERSION}
-  COMPATIBILITY AnyNewerVersion)
+  COMPATIBILITY AnyNewerVersion
+)
+
 install(FILES "${_arcanet_generated_dir}/ArcaNetConfig.cmake"
-                "${_arcanet_generated_dir}/ArcaNetConfigVersion.cmake"
-  DESTINATION ${ARCANET_CONFIG_INSTALL_DIR})
+  "${_arcanet_generated_dir}/ArcaNetConfigVersion.cmake"
+  DESTINATION ${ARCANET_CONFIG_INSTALL_DIR}
+)
 
 if (ARCANET_BUILD_ARCCHER AND Arccore_FOUND)
   install(EXPORT ArcaNetTargets
