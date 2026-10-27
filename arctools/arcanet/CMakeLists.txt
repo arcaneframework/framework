@@ -23,6 +23,39 @@ endif ()
 
 add_subdirectory(arct)
 
+# ----------------------------------------------------------------------------
+
+if (NOT ADoc_FOUND)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../adoc adoc)
+  set(ADoc_FOUND YES)
+  set(ADoc_FOUND YES PARENT_SCOPE)
+endif ()
+
+find_package(Doxygen)
+
+# Si le package Doxygen est introuvable, inutile de continuer.
+if (Doxygen_FOUND)
+  block()
+    include(${ARCANEBUILDROOT}/share/adoc/cmake/ADocConfig.cmake)
+
+    # Emplacement du dossier "doc" copié précédemment. TODO À personnaliser.
+    # Variable utile pour les fichiers du sample `CommonDocConfig.cmake`,
+    # `UserDocConfig.cmake` et `DevDocConfig.cmake`.
+    set(DOC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/doc")
+
+    # Emplacement des fichiers de configuration.
+    set(ADOC_DOC_CONFIG_DIR "${DOC_DIR}")
+
+    function(doc_generation doc_type)
+      set(ADOC_DOC_TYPE "${doc_type}")
+      set(ADOC_DOC_TARGET "arcanet_userdoc")
+      adoc_generate_doc()
+    endfunction()
+
+    # On demande la génération des deux cibles documentations (`userdoc` et `devdoc`).
+    doc_generation("user")
+  endblock()
+endif ()
 
 # ----------------------------------------------------------------------------
 # Installation
