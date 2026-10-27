@@ -117,7 +117,7 @@ AlienCoreSYCLLinearSolver::setDiagScaling(MatrixType const& matrix)
 void
 AlienCoreSYCLLinearSolver::setDiagScaling(IVector const& vector)
 {
-  MatrixType const& diagA = vector.impl()->get<BackEnd::tag::sycl>();
+  VectorType const& diagA = vector.impl()->get<BackEnd::tag::sycl>();
   BaseType::setDiagScaling(diagA) ;
 }
 

@@ -64,12 +64,13 @@ namespace SYCLInternal
       m_max_num_threads = m_max_num_groups * m_max_work_group_size;
 
       std::cout << "========== SYCL QUEUE INFO ===============" << std::endl;
-      std::cout<< " DEVICE NAME         = " << m_queue.get_device().get_info<sycl::info::device::name>() << std::endl;
-      std::cout << "MAX NB GROUPS       = " << m_max_num_groups << std::endl;
-      std::cout << "MAX WORK GROUP SIZE = " << m_max_work_group_size << std::endl;
-      std::cout << "SUB GROUP SIZE      = " << m_subgroup_size << std::endl ;
+      std::cout<< " DEVICE NAME                = " << m_queue.get_device().get_info<sycl::info::device::name>() << std::endl;
+      std::cout<< " DEVICE ID                  = " << m_device_id << std::endl;
+      std::cout << "MAX NB GROUPS              = " << m_max_num_groups << std::endl;
+      std::cout << "MAX WORK GROUP SIZE        = " << m_max_work_group_size << std::endl;
+      std::cout << "SUB GROUP SIZE             = " << m_subgroup_size << std::endl ;
       std::cout << "MAX NB SUBGROUPs PER GROUP = " << m_max_num_subgroups_per_group << std::endl;
-      std::cout << "MAX NB THREADS      = " << m_max_num_threads << std::endl;
+      std::cout << "MAX NB THREADS             = " << m_max_num_threads << std::endl;
     }
 
 

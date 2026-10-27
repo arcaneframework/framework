@@ -553,6 +553,15 @@ class LUFactorisationAlgo
           }
           op.sendUpperNeighbLUData(values);
         }
+
+        if(m_use_inv_diag)
+        {
+          m_inv_diag_matrix.reserve(nrows);
+          for (std::size_t irow = 0; irow < nrows; ++irow)
+          {
+            m_inv_diag_matrix.emplace_back(Block2DView(values+dcol[irow]*N2,N,N)) ;
+          }
+        }
       }
       else {
         for (std::size_t irow = 1; irow < nrows; ++irow) // i=1->nrow
@@ -597,6 +606,15 @@ class LUFactorisationAlgo
             }
             for (int l = kcol[krow]; l < kcol[krow + 1]; ++l)
               m_work[cols[l]] = -1;
+          }
+        }
+
+        if(m_use_inv_diag)
+        {
+          m_inv_diag_matrix.reserve(nrows);
+          for (std::size_t irow = 0; irow < nrows; ++irow)
+          {
+            m_inv_diag_matrix.emplace_back(Block2DView(values+dcol[irow]*N2,N,N)) ;
           }
         }
       }
@@ -801,7 +819,10 @@ class LUFactorisationAlgo
             val -= Block2DView(const_cast<ValueType*>(values+k*N2),N,N) * Block1DView(x+cols[k]*N,N) ;
           }
           //x[irow] = val / values[dk];
-          Block1DView(x+irow*N,N) = inv(Block2DView(const_cast<ValueType*>(values+dk*N2),N,N)) * val;
+          if(m_use_inv_diag)
+            Block1DView(x+irow*N,N) = m_inv_diag_matrix[irow].solve(val);
+          else
+            Block1DView(x+irow*N,N) = inv(Block2DView(const_cast<ValueType*>(values+dk*N2),N,N)) * val;
         }
       }
       else {
@@ -814,7 +835,10 @@ class LUFactorisationAlgo
             val -= Block2DView(const_cast<ValueType*>(values+k*N2),N,N) * Block1DView(x+cols[k]*N,N) ;
           }
           //x[irow] = val / values[dk];
-          Block1DView(x+irow*N,N) = inv(Block2DView(const_cast<ValueType*>(values+dk*N2),N,N)) * val;
+          if(m_use_inv_diag)
+            Block1DView(x+irow*N,N) = m_inv_diag_matrix[irow].solve(val);
+          else
+            Block1DView(x+irow*N,N) = inv(Block2DView(const_cast<ValueType*>(values+dk*N2),N,N)) * val;
         }
       }
 #endif
@@ -875,6 +899,12 @@ class LUFactorisationAlgo
 
   std::vector<int>                    m_send_lu_ibuffer ;
   std::vector<std::vector<ValueType>> m_send_lu_buffer ;
+
+  bool                          m_use_inv_diag                = false ;
+#if defined (ALIEN_USE_EIGEN3)  && !defined(EIGEN3_DISABLED)
+  using EigenMatrix = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> ;
+  std::vector<Eigen::PartialPivLU<EigenMatrix>> m_inv_diag_matrix;
+#endif
   // clang-format on
 };
 
