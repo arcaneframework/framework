@@ -628,6 +628,9 @@ _notifyEndUpdateFromMesh()
   _computeConnectivityInfo(m_local_connectivity_info);
   _computeConnectivityInfo(m_global_connectivity_info);
   m_global_connectivity_info->reduce(parallelMng());
+
+  for (ItemConnectivitySelector* cs : m_connectivity_selector_list)
+    cs->customConnectivity()->_internalApi()->notifyEndUpdateFromMesh();
 }
 
 /*---------------------------------------------------------------------------*/

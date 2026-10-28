@@ -160,6 +160,7 @@
   IndexedItemConnectivityAccessor.h
   IncrementalItemConnectivity.cc
   IncrementalItemConnectivity.h
+  LazyMemoryPool.cc
   ItemConnectivity.cc
   ItemConnectivity.h
   ItemConnectivityMng.cc
@@ -250,6 +251,7 @@
 
   internal/DynamicMeshInternal.h
   internal/UniqueIdKeySortFunction.h
+  internal/LazyMemoryPool.h
 )
 
 set(AXL_FILES 
