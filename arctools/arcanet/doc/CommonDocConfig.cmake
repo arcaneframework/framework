@@ -6,6 +6,10 @@ macro(adoc_commondoc_config_adoc_variables)
   set(ADOC_LANGUAGE
     "French"
   )
+
+  set(ADOC_PROJECT_REPO_LINK
+    "https://github.com/arcaneframework/framework"
+  )
 endmacro()
 
 # ----------------------------------------------------------------------------

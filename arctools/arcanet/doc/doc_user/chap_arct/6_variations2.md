@@ -2,21 +2,21 @@
 
 [TOC]
 
-
 Fichier `example.arct` :
+
 ```json
 {
   "versions": {
     "_": 1,
     "arcane": 1
   },
-  
+
   "general": {
     "arcane": {
       "dataset": "config_2D_diagonal_circle.arc"
     }
   },
-  
+
   "cases": {
     "algo1": {
       "_": {
@@ -41,7 +41,7 @@ Fichier `example.arct` :
       }
     }
   },
-  
+
   "commons": {
     "enable_post_processing": {
       "_": {
@@ -55,7 +55,7 @@ Fichier `example.arct` :
       }
     }
   },
-  
+
   "variations": {
     "nb_thread": {
       "1": {
@@ -90,7 +90,8 @@ Fichier `example.arct` :
 
 Cet exemple permet de montrer tout l'intérêt des variations.
 
-La seule modification réalisée ici par rapport à l'exemple précedent est la suppression du `=4` au `depend_b` de l'algo 1 :
+La seule modification réalisée ici par rapport à l'exemple précedent est la suppression du `=4` au `depend_b` de l'algo
+1 :
 `"depend_b": ["nb_thread"]`.
 
 Nous avons donc une variation non résolue : on ne sait pas quel variant choisir en lisant uniquement le fichier ARCT.
@@ -106,7 +107,8 @@ Si l'on prend un programme supportant les multi-cas, on aurait trois listes de b
 { [general] } -> { nb_thread=4 -> [algo1] }
 ```
 
-Pour les programmes ne supportant que le mode mono-cas (comme Arcane et ArcCher), il est nécessaire de résoudre les variations non résolues avec le nom du cas d'utilisation.
+Pour les programmes ne supportant que le mode mono-cas (comme Arcane et ArcCher), il est nécessaire de résoudre les
+variations non résolues avec le nom du cas d'utilisation.
 
 Si l'on souhaite exécuter l'algo 1 avec 4 threads, on ajoute `nb_thread=4` au nom du cas :
 

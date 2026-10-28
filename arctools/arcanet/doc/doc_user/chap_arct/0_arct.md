@@ -28,6 +28,15 @@ Sommaire de ce chapitre :
 
 7. \subpage arcanetdoc_arct_variations3 <br>
    Exemple 6.
+
+8. \subpage arcanetdoc_arct_variations4 <br>
+   Exemple 7.
+
+Un sous-chapitre est disponible pour expliquer comment utiliser les fonctions CMake fournies :
+
+- \subpage arcanetdoc_arct_cmake <br>
+  Fonctions CMake disponibles.
+
 ____
 
 <div class="section_buttons">

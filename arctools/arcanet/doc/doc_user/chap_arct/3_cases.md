@@ -2,21 +2,21 @@
 
 [TOC]
 
-
 Fichier `example.arct` :
+
 ```json
 {
   "versions": {
     "_": 1,
     "arcane": 1
   },
-  
+
   "general": {
     "arcane": {
       "dataset": "config_2D_diagonal_circle.arc"
     }
   },
-  
+
   "cases": {
     "algo1": {
       "_": {
@@ -44,9 +44,11 @@ Fichier `example.arct` :
 
 On reste sur un exemple simple, mais en ajoutant deux cas de base : `algo1` et `algo2`.
 
-On laisse le `dataset` dans `general` : on est sur un ARCT dédié à `config_2D_diagonal_circle`. On pourra simplement choisir deux algorithmes différents.
+On laisse le `dataset` dans `general` : on est sur un ARCT dédié à `config_2D_diagonal_circle`. On pourra simplement
+choisir deux algorithmes différents.
 
-On pourrait très bien répéter `dataset` dans les deux blocs `cases`, ça revient au même ici. Tous les blocs de configurations peuvent contenir les mêmes éléments.
+On pourrait très bien répéter `dataset` dans les deux blocs `cases`, ça revient au même ici. Tous les blocs de
+configurations peuvent contenir les mêmes éléments.
 
 Pour lancer l'algo 1, on peut faire ainsi :
 
@@ -69,13 +71,13 @@ Voici les blocs reçus par Arcane :
 ```
 
 donne :
+
 ```txt
 // Bloc 1
 "arcane": {
   "dataset": "config_2D_diagonal_circle.arc"
 }
 ```
-
 
 ----
 
@@ -87,6 +89,7 @@ donne :
 ```
 
 donne :
+
 ```txt
 // Bloc 1
   "arcane": {
@@ -115,7 +118,9 @@ donne :
 ```txt
 { [general] } -> { [algo2] }
 ```
+
 donne :
+
 ```txt
 // Bloc 1
   "arcane": {
@@ -133,6 +138,7 @@ donne :
     }
   }
 ```
+
 ____
 
 <div class="section_buttons">

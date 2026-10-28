@@ -2,21 +2,21 @@
 
 [TOC]
 
-
 Fichier `example.arct` :
+
 ```json
 {
   "versions": {
     "_": 1,
     "arcane": 1
   },
-  
+
   "general": {
     "arcane": {
       "dataset": "config_2D_diagonal_circle.arc"
     }
   },
-  
+
   "cases": {
     "algo1": {
       "_": {
@@ -41,7 +41,7 @@ Fichier `example.arct` :
       }
     }
   },
-  
+
   "commons": {
     "enable_post_processing": {
       "_": {
@@ -55,7 +55,7 @@ Fichier `example.arct` :
       }
     }
   },
-  
+
   "variations": {
     "nb_thread": {
       "1": {
@@ -97,8 +97,8 @@ Trois variants sont disponibles : `1`, `2` et `4`. On dira plutôt : `nb_thread=
 Le variant `nb_thread=1` ne fait rien. Les deux autres modifient le paramètre `-A,S` d'Arcane.
 
 Dans les `cases`, on peut voir des **variations résolues** : `nb_thread=4` pour `algo1` et `nb_thread=1` pour `algo2`.
-Une variation résolue peut être vu simplement comme un `commons` : rien qu'en lisant le fichier ARCT, on sait quel bloc choisir.
-Donc le lancement est aussi simple qu'avant :
+Une variation résolue peut être vu simplement comme un `commons` : rien qu'en lisant le fichier ARCT, on sait quel bloc
+choisir. Donc le lancement est aussi simple qu'avant :
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo2
@@ -106,7 +106,6 @@ Donc le lancement est aussi simple qu'avant :
 ```txt
 { [general] } -> { enable_post_processing -> nb_thread=1 -> [algo2] }
 ```
-
 
 ____
 

@@ -2,21 +2,21 @@
 
 [TOC]
 
-
 Fichier `example.arct` :
+
 ```json
 {
   "versions": {
     "_": 1,
     "arcane": 1
   },
-  
+
   "general": {
     "arcane": {
       "dataset": "config_2D_diagonal_circle.arc"
     }
   },
-  
+
   "cases": {
     "algo1": {
       "_": {
@@ -40,7 +40,7 @@ Fichier `example.arct` :
       }
     }
   },
-  
+
   "commons": {
     "enable_post_processing": {
       "_": {
@@ -59,10 +59,12 @@ Fichier `example.arct` :
 
 On ajoute ici un bloc `commons`. Ce bloc permet d'activer les sorties sur notre programme.
 
-On a deux types de dépendances : `depend_b` (**before**) et `depend_a` (**after**). L'unique différence est que les blocs des dépendances **before** sont mis
-avant notre bloc, alors que les blocs des dépendances **after** sont mis après.
+On a deux types de dépendances : `depend_b` (**before**) et `depend_a` (**after**). L'unique différence est que les
+blocs des dépendances **before** sont mis avant notre bloc, alors que les blocs des dépendances **after** sont mis
+après.
 
-\note Les blocs de dépendances sont ajoutés dans le même ordre que présenté dans les tableaux `depend_b`/`depend_a` du fichier ARCT.
+\note Les blocs de dépendances sont ajoutés dans le même ordre que présenté dans les tableaux `depend_b`/`depend_a` du
+fichier ARCT.
 <br>
 Si :
 ```jsonc
