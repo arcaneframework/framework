@@ -57,11 +57,11 @@ Fichier `example.arct` :
 }
 ```
 
-On ajoute ici un bloc `commons`. Ce bloc permet d'activer les sorties sur notre programme.
+On ajoute ici un bloc `commons`. Ce bloc, dans cet exemple, permet d'activer les sorties sur notre programme.
 
 On a deux types de dépendances : `depend_b` (**before**) et `depend_a` (**after**). L'unique différence est que les
-blocs des dépendances **before** sont mis avant notre bloc, alors que les blocs des dépendances **after** sont mis
-après.
+blocs des dépendances **before** sont ajoutés avant notre bloc, alors que les blocs des dépendances **after** sont
+ajoutés après.
 
 \note Les blocs de dépendances sont ajoutés dans le même ordre que présenté dans les tableaux `depend_b`/`depend_a` du
 fichier ARCT.
@@ -84,8 +84,8 @@ Si l'on exécute `algo1`, le résultat sera le même que sur l'exemple préceden
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo2
-```
-```txt
+
+
 { [general] } -> { enable_post_processing -> [algo2] }
 ```
 

@@ -88,7 +88,7 @@ Fichier `example.arct` :
 }
 ```
 
-Il est possible qu'un des variants d'une variation ne soit pas compatible avec un bloc.
+Il est possible qu'un ou plusieurs des variants d'une variation ne soit pas compatible avec un bloc.
 
 On peut alors limiter les variants disponibles.
 
@@ -99,8 +99,8 @@ choisir le variant `nb_thread=1` dans le nom du cas.
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo1:nb_thread=1
-```
-```txt
+
+
 Erreur
 ```
 
@@ -108,8 +108,8 @@ Pour un programme multi-cas, il obtiendrait deux listes de blocs :
 
 ```shell
 ./PasArcane --arct=example.arct --case=algo1
-```
-```txt
+
+
 { [general] } -> { nb_thread=2 -> [algo1] }
 { [general] } -> { nb_thread=4 -> [algo1] }
 ```
@@ -132,7 +132,7 @@ résoudre la variation de trois manières :
 
 Le *3.* est moins facilement lisible que le *1.*. Le `+` du *2.* est censé être utilisé avec plusieurs inclusions.
 
-\note `nb_thread=1` et `nb_thread+1` sont, sur le papier, identique. Mais la philosophie derrière est différente.
+\note `nb_thread=1` et `nb_thread+1` sont, sur le papier, identiques. Mais la philosophie derrière est différente.
 `nb_thread=1` ne donne pas le choix à l'utilisateur, c'est considéré conne une dépendance  `commons` classique.
 `nb_thread+1` doit donner le choix à l'utilisateur (même si c'est un seul choix).
 
@@ -143,8 +143,8 @@ Un programme mono-cas nécessite que toutes les variations soit résolues. Alors
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo1:nb_thread+2
-```
-```txt
+
+
 Erreur
 ```
 
@@ -152,8 +152,8 @@ Pour l'algo 2, même si l'on a `nb_thread+1`, il est nécessaire de résoudre la
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo2:nb_thread=1
-```
-```txt
+
+
 { [general] } -> { enable_post_processing -> nb_thread=1 -> [algo2] }
 ```
 
@@ -161,8 +161,8 @@ Sinon :
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo2
-```
-```txt
+
+
 Erreur
 ```
 

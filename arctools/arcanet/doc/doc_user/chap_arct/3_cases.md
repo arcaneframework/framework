@@ -54,8 +54,8 @@ Pour lancer l'algo 1, on peut faire ainsi :
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo1
-```
-```txt
+
+
 { [general] } -> { [algo1] }
 ```
 
@@ -65,8 +65,8 @@ Voici les blocs reçus par Arcane :
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct
-```
-```txt
+
+
 { [general] }
 ```
 
@@ -83,8 +83,8 @@ donne :
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo1
-```
-```txt
+
+
 { [general] } -> { [algo1] }
 ```
 
@@ -114,8 +114,8 @@ donne :
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo2
-```
-```txt
+
+
 { [general] } -> { [algo2] }
 ```
 

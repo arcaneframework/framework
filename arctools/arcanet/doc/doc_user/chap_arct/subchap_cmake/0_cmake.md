@@ -15,6 +15,9 @@ Sommaire de ce sous-chapitre :
 
 1. \subpage arcanetdoc_arct_cmake_arct_writer <br>
    Écrivain de fichier ARCT en CMake.
+
+2. \subpage arcanetdoc_arct_cmake_arct_to_ctest <br>
+   Convertisseur fichier ARCT vers CTest.
 ____
 
 <div class="section_buttons">

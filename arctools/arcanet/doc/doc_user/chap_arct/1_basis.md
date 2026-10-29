@@ -3,7 +3,8 @@
 [TOC]
 
 \note Le fichier de spécification est disponible dans le dépôt framework/arctools/arcanet/arct. Cette page résume ces
-spécifications.
+spécifications. Il est aussi possible de demander à une IA de lire le fichier de spécification et de demander des infos
+à propos du format.
 
 Un fichier ARCT décrit un ou plusieurs cas d'utilisation, pour un projet donné.
 
@@ -187,11 +188,13 @@ On peut voir que l'on a deux blocs principaux : `[general]` et `[nom_du_cas_1]` 
   - une dépendance "before" : `[nom_config_2]` qui a une dépendance "after" :
     - `nom_config_4`
 
-La liste d'objet JSON est simplement :
+La liste d'objet JSON, à lire de gauche à droite dans l'ordre, est simplement celle-ci :
 
 ```txt
 array = [nom_config_1, general, nom_config_2, nom_config_4, nom_du_cas_1, nom_config_3];
 ```
+
+\note On remplace juste les `->` par des `,` et on retire les `[]` et les `{}`...
 
 Si l'on met de côté les dépendances, l'ordre de lecture est systématiquement celui-ci :
 

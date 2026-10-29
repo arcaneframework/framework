@@ -100,8 +100,8 @@ Si l'on prend un programme supportant les multi-cas, on aurait trois listes de b
 
 ```shell
 ./PasArcane --arct=example.arct --case=algo1
-```
-```txt
+
+
 { [general] } -> { nb_thread=1 -> [algo1] }
 { [general] } -> { nb_thread=2 -> [algo1] }
 { [general] } -> { nb_thread=4 -> [algo1] }
@@ -114,8 +114,8 @@ Si l'on souhaite exécuter l'algo 1 avec 4 threads, on ajoute `nb_thread=4` au n
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo1:nb_thread=4
-```
-```txt
+
+
 { [general] } -> { nb_thread=4 -> [algo1] }
 ```
 

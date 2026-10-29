@@ -166,9 +166,9 @@ D'abord, voyons les listes de blocs pour l'algo 1 :
 
 ```shell
 ./PasArcane --arct=example.arct --case=algo1
-```
 
-```txt
+
+
 { enable_post_processing -> [general] } -> { test=sequential -> [algo1] }
 
 { enable_post_processing -> [general] } -> { { nb_proc=2 -> [test=mpi] } -> [algo1] }

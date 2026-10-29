@@ -32,8 +32,8 @@ Arcane supportant ce type de fichier, il suffit de le mettre en argument pour qu
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct
-```
-```txt
+
+
 { [general] }
 ```
 
