@@ -15,7 +15,8 @@ ajouter des variations, &c. Avec ArcCher, il est aussi possible de lancer les te
 calculateur plus tard).
 
 Une fois le fichier ARCT construit, il est aujourd'hui possible de le convertir automatiquement en CTest via une autre
-fonction CMake. Plus tard, il sera possible d'utiliser ce fichier dans un autre lanceur de cas test : Schedane.
+fonction CMake. Plus tard, il sera possible d'utiliser ce fichier dans un autre lanceur de cas test : Schedane ou
+peut-être avec PCVS.
 
 ## Initialisation du fichier ARCT
 
@@ -337,7 +338,7 @@ Un argument `oneValueArgs` est disponible :
 ### arct_config_variation
 
 ```cmake
-arct_config_variation([BEFORE|AFTER] [ADD <name_variation>|APPEND <name_variation>] [EQUAL <name_variant>|INCLUDE <name_variant>...|EXCLUDE <name_variant>...])
+arct_config_variation([BEFORE|AFTER] ADD <name_variation> [EQUAL <name_variant>|INCLUDE <name_variant>...|EXCLUDE <name_variant>...])
 ```
 
 Cette fonction permet d'ajouter ou de modifier une dépendance de type variation.
@@ -368,9 +369,9 @@ Si l'option `AFTER` est sélectionnée :
 }
 ```
 
-L'argument `ADD` permet d'ajouter une variation dans la liste des dépendances. L'argument `APPEND` permet d'ajouter un
-limiteur de variant à une dépendance déjà ajoutée (si la liste contient `nb_proc!1`, `APPEND nb_proc EXCLUDE 4`
-donnerait `nb_proc!1!4`).
+L'argument `ADD` permet d'ajouter une variation dans la liste des dépendances. Si la variation est déjà présente dans la
+liste, la fonction ajoutera un limiteur de variant à cette dépendance (si la liste contient `nb_proc!1`,
+`ADD nb_proc EXCLUDE 4` donnerait `nb_proc!1!4`).
 
 Deux options sont disponibles :
 
@@ -379,19 +380,17 @@ Deux options sont disponibles :
 
 Trois arguments `oneValueArgs` sont disponibles :
 
-- `ADD <name_variation>` (**obligatoire ou APPEND**) : permet d'ajouter une variation à la fin du tableau des
-  dépendances.
-- `APPEND <name_variation>` (**obligatoire ou ADD**) : permet d'ajouter une ou plusieurs inclusions/exclusions de
-  variants dans une variation déjà présente dans le tableau des dépendances.
-- `EQUAL <name_variant>` (facultatif) : permet de résoudre la variation passée avec l'argument `ADD` ou `APPEND`
-  (symbole `=`).
+- `ADD <name_variation>` (**obligatoire**) : permet d'ajouter une variation à la fin du tableau des
+  dépendances ou permet d'ajouter une ou plusieurs inclusions/exclusions de variants dans une variation déjà présente
+  dans le tableau des dépendances.
+- `EQUAL <name_variant>` (facultatif) : permet de résoudre la variation passée avec l'argument `ADD` (symbole `=`).
 
 Deux arguments `multiValueArgs` sont disponibles :
 
 - `INCLUDE <name_variant>...` (facultatif) : permet de résoudre partiellement la variation passée avec l'argument `ADD`
-  ou `APPEND` (symbole `+`).
+  (symbole `+`).
 - `EXCLUDE <name_variant>...` (facultatif) : permet de résoudre partiellement la variation passée avec l'argument `ADD`
-  ou `APPEND` (symbole `!`).
+  (symbole `!`).
 
 ## Modification des propriétés du bloc réservé Arcane
 
@@ -489,7 +488,7 @@ Plusieurs fonctions sont disponibles pour modifier les propriétés du bloc rés
 ### arct_arccher_mpi
 
 ```cmake
-arct_arccher_mpi(PATH <path_mpirun> NB_RANK <nb_rank_mpi>)
+arct_arccher_mpi(PATH <path_mpirun> NB_PROC <nb_proc_mpi>)
 ```
 
 Cette fonction permet de définir les options MPI :
@@ -499,7 +498,7 @@ Cette fonction permet de définir les options MPI :
   "XXX": {
     "arccher": {
       "mpi_binary": "<path_mpirun>",
-      "mpi": "<nb_rank_mpi>"
+      "mpi": "<nb_proc_mpi>"
     }
   }
 }
@@ -508,20 +507,20 @@ Cette fonction permet de définir les options MPI :
 Deux actions peuvent être faites, soit en un seul appel, soit en deux :
 
 ```cmake
-arct_arccher_mpi(PATH /usr/bin/mpirun NB_RANK 4)
+arct_arccher_mpi(PATH /usr/bin/mpirun NB_PROC 4)
 ```
 
 est équivalent à :
 
 ```cmake
 arct_arccher_mpi(PATH /usr/bin/mpirun)
-arct_arccher_mpi(NB_RANK 4)
+arct_arccher_mpi(NB_PROC 4)
 ```
 
 Deux arguments `oneValueArgs` sont disponibles :
 
 - `PATH <path_mpirun>` (facultatif) : permet de donner un chemin pour le binaire `mpirun/mpiexec`.
-- `NB_RANK <nb_rank_mpi>` (facultatif) : permet de donner un nombre de processus à utiliser.
+- `NB_PROC <nb_proc_mpi>` (facultatif) : permet de donner un nombre de processus à utiliser.
 
 --------------------------
 

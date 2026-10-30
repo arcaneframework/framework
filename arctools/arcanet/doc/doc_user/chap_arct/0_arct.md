@@ -4,12 +4,15 @@ Le format de fichier ARCT est un schéma de fichier pour le format JSON.
 
 Il permet de fournir des arguments de lancement à différents programmes.
 
+\note Le fichier de spécification est disponible ici : \subpage arct_specs. Il est aussi possible de
+demander à une IA de lire le fichier de spécification et de demander des infos à propos du format.
+
 <br>
 
 Sommaire de ce chapitre :
 
 1. \subpage arcanetdoc_arct_basis <br>
-  Principes du format ARCT.
+  Principes du format ARCT (résumé des spécifications).
 
 2. \subpage arcanetdoc_arct_general <br>
    Exemple 1.

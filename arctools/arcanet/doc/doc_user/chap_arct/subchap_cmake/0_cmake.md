@@ -18,6 +18,30 @@ Sommaire de ce sous-chapitre :
 
 2. \subpage arcanetdoc_arct_cmake_arct_to_ctest <br>
    Convertisseur fichier ARCT vers CTest.
+
+Quelques exemples pour utiliser l'écrivain CMake :
+
+1. \subpage arcanetdoc_arct_cmake_example1 <br>
+   Exemple 1.
+
+2. \subpage arcanetdoc_arct_cmake_example2 <br>
+   Exemple 2.
+
+3. \subpage arcanetdoc_arct_cmake_example3 <br>
+   Exemple 3.
+
+4. \subpage arcanetdoc_arct_cmake_example4 <br>
+   Exemple 4.
+
+5. \subpage arcanetdoc_arct_cmake_example5 <br>
+   Exemple 5.
+
+6. \subpage arcanetdoc_arct_cmake_example6 <br>
+   Exemple 6.
+
+7. \subpage arcanetdoc_arct_cmake_example7 <br>
+   Exemple 7.
+
 ____
 
 <div class="section_buttons">

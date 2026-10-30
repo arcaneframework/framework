@@ -345,15 +345,15 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-macro(_arct_config_append_var type variation elem_to_add)
+macro(_arct_config_append_var type variation symbol elem_to_add)
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "_")
   if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    message(FATAL_ERROR "Variation '${variation}' not found.")
+    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" "{}")
   endif ()
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "_" ${type})
   if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    message(FATAL_ERROR "Variation '${variation}' not found.")
+    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" ${type} "[]")
   endif ()
 
   string(JSON ARCANET_ARRAY_LENGTH ERROR_VARIABLE ARCANET_ERROR LENGTH ${ARCANET_GET})
@@ -374,16 +374,50 @@ macro(_arct_config_append_var type variation elem_to_add)
       string(FIND ${ARCANET_GET_VARIANT_NAME} ${variation} ARCANET_POS_ELEM)
 
       if(NOT ARCANET_POS_ELEM EQUAL -1)
+
+        block()
+          string(FIND ${ARCANET_GET_VARIANT_NAME} "=" ARCANET_POS_SYMBOL)
+          if(NOT ARCANET_POS_SYMBOL EQUAL -1)
+            message(FATAL_ERROR "Completed variation")
+          endif ()
+        endblock()
+
+        block()
+          string(FIND ${ARCANET_GET_VARIANT_NAME} "+" ARCANET_POS_SYMBOL)
+          if(NOT ARCANET_POS_SYMBOL EQUAL -1)
+            if(NOT ${symbol} STREQUAL "+")
+              message(FATAL_ERROR "Mixed symbol")
+            endif ()
+          endif ()
+        endblock()
+
+        block()
+          string(FIND ${ARCANET_GET_VARIANT_NAME} "!" ARCANET_POS_SYMBOL)
+          if(NOT ARCANET_POS_SYMBOL EQUAL -1)
+            if(NOT ${symbol} STREQUAL "!")
+              message(FATAL_ERROR "Mixed symbol")
+            endif ()
+          endif ()
+        endblock()
+
+
         string(APPEND ARCANET_GET_VARIANT_NAME ${elem_to_add})
         string(JSON ARCANET_GET SET ${ARCANET_GET} ${VAR_I} "\"${ARCANET_GET_VARIANT_NAME}\"")
 
         string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" ${type} ${ARCANET_GET})
 
+        set(ARCANET_FOUND 1)
         break()
       endif ()
-
     endforeach ()
+
+    if(NOT DEFINED ARCANET_FOUND)
+      string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" ${type} 999 "\"${variation}${elem_to_add}\"" )
+    endif ()
+  else()
+    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" ${type} 999 "\"${variation}${elem_to_add}\"" )
   endif ()
+
 
   #
 
@@ -413,7 +447,7 @@ endmacro()
 
 function(arct_config_variation)
   set(options BEFORE AFTER)
-  set(oneValueArgs ADD APPEND EQUAL)
+  set(oneValueArgs ADD EQUAL)
   set(multiValueArgs INCLUDE EXCLUDE)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -426,16 +460,8 @@ function(arct_config_variation)
     message(FATAL_ERROR "Invalid call : AFTER and BEFORE options are found.")
   endif ()
 
-  if (DEFINED ARGS_ADD AND DEFINED ARGS_APPEND)
-    message(FATAL_ERROR "Invalid call : ADD and APPEND args are found.")
-  endif ()
-
   if ((DEFINED ARGS_EQUAL AND DEFINED ARGS_INCLUDE) OR (DEFINED ARGS_EQUAL AND DEFINED ARGS_EXCLUDE) OR (DEFINED ARGS_INCLUDE AND DEFINED ARGS_EXCLUDE))
     message(FATAL_ERROR "Invalid call : EQUAL and/or EXCLUDE and/or INCLUDE args are found.")
-  endif ()
-
-  if (DEFINED ARGS_APPEND AND DEFINED ARGS_EQUAL)
-    message(FATAL_ERROR "Invalid call : You cannot append an EQUAL.")
   endif ()
 
   if (ARGS_AFTER)
@@ -446,25 +472,26 @@ function(arct_config_variation)
 
   if (DEFINED ARGS_EQUAL)
     set(ARCT_VALUE "=${ARGS_EQUAL}")
+    set(ARCT_SYMBOL "=")
 
   elseif (DEFINED ARGS_INCLUDE)
     foreach (elem IN ITEMS ${ARGS_INCLUDE})
       set(ARCT_VALUE "${ARCT_VALUE}+${elem}")
     endforeach ()
+    set(ARCT_SYMBOL "+")
 
   elseif (DEFINED ARGS_EXCLUDE)
     foreach (elem IN ITEMS ${ARGS_EXCLUDE})
       set(ARCT_VALUE "${ARCT_VALUE}!${elem}")
     endforeach ()
+    set(ARCT_SYMBOL "!")
   endif ()
 
   if (DEFINED ARGS_ADD)
-    _arct_config_add_dep("${ARCANET_BEFORE_AFTER}" "${ARGS_ADD}${ARCT_VALUE}")
-  elseif (DEFINED ARGS_APPEND)
     if (NOT DEFINED ARCT_VALUE)
-      message(FATAL_ERROR "No VALUE")
+      _arct_config_add_dep("${ARCANET_BEFORE_AFTER}" "${ARGS_ADD}")
     endif ()
-    _arct_config_append_var("${ARCANET_BEFORE_AFTER}" "${ARGS_APPEND}" "${ARCT_VALUE}")
+    _arct_config_append_var("${ARCANET_BEFORE_AFTER}" "${ARGS_ADD}" "${ARCT_SYMBOL}" "${ARCT_VALUE}")
   else ()
     message(FATAL_ERROR "No ADD APPEND")
   endif ()
@@ -607,7 +634,7 @@ endmacro()
 
 function(arct_arccher_mpi)
   set(options)
-  set(oneValueArgs PATH NB_RANK)
+  set(oneValueArgs PATH NB_PROC)
   set(multiValueArgs)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -620,8 +647,8 @@ function(arct_arccher_mpi)
     _arct_arccher_define_mpi_path("${ARGS_PATH}")
   endif ()
 
-  if (DEFINED ARGS_NB_RANK)
-    _arct_arccher_define_mpi_nb_procs("${ARGS_NB_RANK}")
+  if (DEFINED ARGS_NB_PROC)
+    _arct_arccher_define_mpi_nb_procs("${ARGS_NB_PROC}")
   endif ()
 endfunction()
 

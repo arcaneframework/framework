@@ -2,10 +2,6 @@
 
 [TOC]
 
-\note Le fichier de spécification est disponible dans le dépôt framework/arctools/arcanet/arct. Cette page résume ces
-spécifications. Il est aussi possible de demander à une IA de lire le fichier de spécification et de demander des infos
-à propos du format.
-
 Un fichier ARCT décrit un ou plusieurs cas d'utilisation, pour un projet donné.
 
 Pour obtenir le résultat souhaité, il est possible que plusieurs programmes doivent être lancés à la chaine. Ce fichier

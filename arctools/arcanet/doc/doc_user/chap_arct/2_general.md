@@ -50,6 +50,8 @@ Il n'y a pas de cas de base dans le fichier, donc pas besoin d'en spécifier.
 }
 ```
 
+\note Le bloc `versions` est ajouté automatiquement.
+
 ____
 
 <div class="section_buttons">

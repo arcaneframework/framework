@@ -14,6 +14,7 @@ macro(adoc_userdoc_config_adoc_variables)
     "${DOC_DIR}/doc_user/chap_arct"
     "${DOC_DIR}/doc_user/chap_arct/subchap_cmake"
     "${DOC_DIR}/doc_user/chap_arccher"
+    "${DOC_DIR}/../arct/specifications.md"
   )
 
 endmacro()
