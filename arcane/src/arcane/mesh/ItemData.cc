@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemData.cc                                                 (C) 2000-2025 */
+/* ItemData.cc                                                 (C) 2000-2026 */
 /*                                                                           */
 /* Class gathering item data: IDs and connectivities                         */
 /*---------------------------------------------------------------------------*/
@@ -31,6 +31,8 @@ namespace Arcane::mesh
 void ItemData::
 serialize(ISerializer* buffer)
 {
+  ARCANE_CHECK_POINTER(buffer);
+  ARCANE_CHECK_POINTER(m_item_family);
   switch (buffer->mode()) {
   case ISerializer::ModeReserve: {
     buffer->reserve(m_item_family->name());
