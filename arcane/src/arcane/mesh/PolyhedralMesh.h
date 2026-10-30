@@ -67,7 +67,7 @@ namespace Arcane::mesh
 class PolyhedralMeshImpl;
 class PolyhedralFamily;
 class PolyhedralFamilySerializer;
-class PolyhedralFamilySerializerMng;
+class PolyhedralFamilySerializersMng;
 namespace PolyhedralTools
 {
   class ItemLocalIds;
@@ -99,7 +99,7 @@ class PolyhedralMesh
   ItemTypeMng* m_item_type_mng = nullptr;
   MeshKind m_mesh_kind;
   MeshEventsImpl m_mesh_events;
-  std::unique_ptr<PolyhedralFamilySerializerMng> m_polyhedral_family_serializer_mng;
+  std::unique_ptr<PolyhedralFamilySerializersMng> m_polyhedral_family_serializer_mng;
   VariableScalarInteger m_connectivity; // todo use MeshVariables (when adding dump handling)
   std::unique_ptr<GhostLayerBuilder> m_ghost_layer_builder = nullptr;
 
@@ -112,7 +112,7 @@ class PolyhedralMesh
   void scheduleAllocateItems(const Arcane::ItemAllocationInfo::FamilyInfo& family_info, PolyhedralTools::ItemLocalIds& future_item_local_ids);
   void applyScheduledAllocateItems(UniqueArray<std::shared_ptr<PolyhedralTools::ItemLocalIds>> item_lids);
   void removeNeedRemoveMarkedItems();
-  PolyhedralFamilySerializerMng* polyhedralFamilySerializerMng();
+  PolyhedralFamilySerializersMng* polyhedralFamilySerializersMng();
 
  public:
 
