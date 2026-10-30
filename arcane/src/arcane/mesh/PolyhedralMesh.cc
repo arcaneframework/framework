@@ -142,7 +142,7 @@ namespace PolyhedralTools
 /*---------------------------------------------------------------------------*/
 
 class PolyhedralFamilySerializer;
-class PolyhedralFamilySerializerMng : public IItemFamilySerializerMngInternal
+class PolyhedralFamilySerializersMng : public IItemFamilySerializerMngInternal
 {
   PolyhedralMesh* m_mesh = nullptr;
   Integer m_nb_serializers = 0;
@@ -174,7 +174,7 @@ class PolyhedralFamilySerializer : public IItemFamilySerializer
 
   PolyhedralMesh* m_mesh = nullptr;
   IItemFamily* m_family = nullptr;
-  PolyhedralFamilySerializerMng* m_mng = nullptr;
+  PolyhedralFamilySerializersMng* m_mng = nullptr;
   ItemData m_item_data;
   UniqueArray<Int32Array*> m_deserialized_lids_array;
   UniqueArray<std::shared_ptr<PolyhedralTools::ItemLocalIds>> m_future_item_lids_array;
@@ -301,8 +301,8 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void PolyhedralFamilySerializerMng::
-finalizeItemAllocation()
+void PolyhedralFamilySerializersMng::
+finalizeSerialization()
 {
   UniqueArray<std::shared_ptr<PolyhedralTools::ItemLocalIds>> future_item_lids;
   for (auto family_serializer : m_serializers) {
@@ -1238,7 +1238,7 @@ class mesh::PolyhedralMesh::InternalApi
 
   IItemFamilySerializerMngInternal* familySerializerMng() const noexcept override
   {
-    return m_mesh->polyhedralFamilySerializerMng();
+    return m_mesh->polyhedralFamilySerializersMng();
   }
 
   ItemInternalMap& nodesMap() override
@@ -1432,7 +1432,7 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 , m_mesh_part_info{ makeMeshPartInfoFromParallelMng(m_parallel_mng) }
 , m_item_type_mng(ItemTypeMng::_singleton())
 , m_mesh_kind(mbi.meshKind())
-, m_polyhedral_family_serializer_mng{ std::make_unique<PolyhedralFamilySerializerMng>(this) }
+, m_polyhedral_family_serializer_mng{ std::make_unique<PolyhedralFamilySerializersMng>(this) }
 , m_initial_allocator(*this)
 , m_variable_mng{ subdomain->variableMng() }
 , m_mesh_checker{ this }
@@ -1657,8 +1657,8 @@ void mesh::PolyhedralMesh::removeNeedRemoveMarkedItems()
 
 /*---------------------------------------------------------------------------*/
 
-Arcane::mesh::PolyhedralFamilySerializerMng* mesh::PolyhedralMesh::
-polyhedralFamilySerializerMng()
+Arcane::mesh::PolyhedralFamilySerializersMng* mesh::PolyhedralMesh::
+polyhedralFamilySerializersMng()
 {
   return m_polyhedral_family_serializer_mng.get();
 }
