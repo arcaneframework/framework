@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder2.cc                                       (C) 2000-2025 */
+/* GhostLayerBuilder2.cc                                       (C) 2000-2026 */
 /*                                                                           */
 /* Construction of ghost layers.                                             */
 /*---------------------------------------------------------------------------*/
@@ -941,6 +941,9 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
     exchanger->addSender(sd);
   }
   exchanger->initializeCommunicationsMessages();
+  auto* serializer_mng = m_mesh_internal->familySerializerMng();
+  if (serializer_mng)
+    serializer_mng->beginSerialization(mesh::PolyhedralTools::SerializationPolicy::SerializeFamilyAndConnectedFamilies);
   for (Integer i = 0, ns = exchanger->nbSender(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToSend(i);
     Int32 rank = sm->destination().value();
@@ -962,9 +965,8 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer());
     cell_serializer->deserializeItems(s, nullptr);
   }
-  auto* serializer_mng = m_mesh_internal->familySerializerMng();
   if (serializer_mng)
-    serializer_mng->finalizeItemAllocation();
+    serializer_mng->finalizeSerialization();
   m_mesh_internal->printStats(TraceMessage::DEFAULT_LEVEL);
 }
 

@@ -147,13 +147,19 @@ class PolyhedralFamilySerializersMng : public IItemFamilySerializerMngInternal
   PolyhedralMesh* m_mesh = nullptr;
   Integer m_nb_serializers = 0;
   UniqueArray<PolyhedralFamilySerializer*> m_serializers;
+  PolyhedralTools::SerializationPolicy m_serialization_policy = PolyhedralTools::SerializationPolicy::None;
 
  public:
 
-  explicit PolyhedralFamilySerializerMng(PolyhedralMesh* mesh)
+  explicit PolyhedralFamilySerializersMng(PolyhedralMesh* mesh)
   : m_mesh(mesh)
   {
     ARCANE_CHECK_POINTER2(mesh, "Must give a non null PolyhedralMesh pointer.");
+  }
+
+  PolyhedralTools::SerializationPolicy serializationPolicy() const
+  {
+    return m_serialization_policy;
   }
 
   void addSerializer(PolyhedralFamilySerializer* serializer)
@@ -162,7 +168,11 @@ class PolyhedralFamilySerializersMng : public IItemFamilySerializerMngInternal
     ++m_nb_serializers;
   }
 
-  void finalizeItemAllocation() override;
+  void beginSerialization(PolyhedralTools::SerializationPolicy policy) override
+  {
+    m_serialization_policy = policy;
+  }
+  void finalizeSerialization() override;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -180,18 +190,20 @@ class PolyhedralFamilySerializer : public IItemFamilySerializer
   UniqueArray<std::shared_ptr<PolyhedralTools::ItemLocalIds>> m_future_item_lids_array;
   ItemAllocationInfo::FamilyInfo m_family_info;
   bool m_is_empty = true;
-  bool m_is_recursive = true;
+  bool m_is_recursive = false;
   UniqueArray<Ref<PolyhedralFamilySerializer>> m_recursive_synchronizer;
 
 public:
 
-  explicit PolyhedralFamilySerializer(PolyhedralMesh* mesh, IItemFamily* family, PolyhedralFamilySerializerMng* mng,
-    bool is_recursive = true)
+  explicit PolyhedralFamilySerializer(PolyhedralMesh* mesh, IItemFamily* family, PolyhedralFamilySerializersMng* mng,
+                                      PolyhedralTools::SerializationPolicy serialization_policy)
   : m_mesh(mesh)
   , m_family(family)
   , m_mng(mng)
-  , m_is_recursive(is_recursive)
-  {}
+  , m_is_recursive(serialization_policy == PolyhedralTools::SerializationPolicy::SerializeFamilyAndConnectedFamilies)
+  {
+    ARCANE_ASSERT((serialization_policy != PolyhedralTools::SerializationPolicy::None),("Cannot serialize a family without a serialization policy"));
+  }
 
   PolyhedralFamilySerializer(const PolyhedralFamilySerializer&) = delete;
   PolyhedralFamilySerializer& operator=(const PolyhedralFamilySerializer&) = delete;
@@ -337,7 +349,8 @@ class PolyhedralFamilyPolicyMng
 
   IItemFamilySerializer* createSerializer(bool) override
   {
-    return new PolyhedralFamilySerializer(m_mesh, m_family, m_mesh->polyhedralFamilySerializerMng());
+    auto serialization_policy = m_mesh->polyhedralFamilySerializersMng()->serializationPolicy();
+    return new PolyhedralFamilySerializer(m_mesh, m_family, m_mesh->polyhedralFamilySerializersMng(),serialization_policy);
   }
 
  private:
@@ -1065,12 +1078,12 @@ namespace mesh
 
     if (items_local_ids) {
       m_deserialized_lids_array.push_back(items_local_ids);
-      // and that's all, they will be filled in finalizeItemAllocation
+      // and that's all, they will be filled in finalizeSerialization
     }
     m_future_item_lids_array.push_back(std::make_shared<PolyhedralTools::ItemLocalIds>());
     m_mesh->scheduleAllocateItems(m_family_info, *m_future_item_lids_array.back().get());
 
-    // Add serializer in mng. Update is triggered when finalizeItemAllocation is called
+    // Add serializer in mng. Update is triggered when finalizeSerialization is called
     m_mng->addSerializer(this);
     _deserializeConnectedItems(buf);
   }
@@ -1120,17 +1133,23 @@ namespace mesh
   {
     if (! m_is_recursive) return;
     ARCANE_CHECK_POINTER(buf);
+    ARCANE_CHECK_POINTER(m_mesh);
+    ARCANE_CHECK_POINTER(m_mng);
     for (auto const& connectivity : m_mesh->_impl()->connectivities(m_family)){
       UniqueArray<Int32> connected_items_lids;
+      connected_items_lids.reserve(8*item_lids.size());
       for (auto item_lid : item_lids) {
         // todo another access ?
         connected_items_lids.addRange(Int32ConstArrayView{connectivity[item_lid].size(),connectivity[item_lid].m_ptr});
       }
       // Create a serializer for target family
       auto target_family_kind = m_mesh->_impl()->itemKindNeoToArcane(connectivity.target_family.itemKind());
-      auto target_family_name = connectivity.target_family.name();
+      String target_family_name = connectivity.target_family.name();
+      m_mesh->traceMng()->info() << "Serialize connected items for family " << target_family_name << " with kind " << target_family_kind;
       auto target_family = m_mesh->findItemFamily(target_family_kind,target_family_name,false,false);
-      auto target_family_serializer = makeRef(new PolyhedralFamilySerializer{m_mesh,target_family,m_mng,false});
+      ARCANE_ASSERT(target_family,(String::format("Cannot find target family {0}",target_family_name).localstr()));
+      auto target_family_serializer =
+        makeRef(new PolyhedralFamilySerializer{m_mesh,target_family,m_mng,PolyhedralTools::SerializationPolicy::SerializationFamilyOnly});
       target_family_serializer->serializeItems(buf,connected_items_lids);
       m_recursive_synchronizer.add(target_family_serializer);
     }
