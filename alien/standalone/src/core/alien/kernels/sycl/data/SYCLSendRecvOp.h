@@ -48,7 +48,8 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
                  IndexBufferType& recv_ids,
                  Alien::SimpleCSRInternal::CommProperty::ePolicyType recv_policy,
                  IMessagePassingMng* mng,
-                 Arccore::ITraceMng* trace_mng)
+                 Arccore::ITraceMng* trace_mng,
+                 int block_size = 1)
   : m_send_buffer(send_buffer)
   , m_send_info(send_info)
   , m_send_ids(send_ids)
@@ -59,6 +60,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
   , m_recv_policy(recv_policy)
   , m_parallel_mng(mng)
   , m_trace(trace_mng)
+  , m_block_size(block_size)
   {}
 
   virtual ~SYCLSendRecvOp()
@@ -72,7 +74,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
 
   void start([[maybe_unused]] bool insitu = false)
   {
-    //alien_debug([&] {cout() << "SYCLSendRecvOP START "<<m_send_policy;});
+    //alien_debug([&] {cout() << "SYCLSendRecvOP START "<<m_send_policy<<" insitu="<<insitu<<" "<<m_block_size;});
     //Universe().traceMng()->flush() ;
 
     // clang-format off
@@ -84,23 +86,23 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
       m_recv_request.resize(m_recv_info.m_num_neighbours);
       Integer total_nb_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
 #ifdef USE_SYCL_USM
-      m_rbuffer = sycl::malloc_shared<ValueT>(total_nb_recv_ids, queue);
+      m_rbuffer = sycl::malloc_shared<ValueT>(total_nb_recv_ids * m_block_size, queue);
 #else
-      m_rbuffer.resize(total_nb_recv_ids);
+      m_rbuffer.resize(total_nb_recv_ids * m_block_size);
 #endif
       for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
         Integer off = m_recv_info.m_ids_offset[i] - m_recv_info.m_ids_offset[0];
-        Integer size = m_recv_info.m_ids_offset[i + 1] - off;
+        Integer size = (m_recv_info.m_ids_offset[i + 1] - off) ;
 #ifdef USE_SYCL_USM
-        ValueT* ptr = m_rbuffer + off;
+        ValueT* ptr = m_rbuffer + off*m_block_size;
 #else
-        ValueT* ptr = m_rbuffer.data() + off;
+        ValueT* ptr = m_rbuffer.data() + off * m_block_size;
 #endif
         Integer rank = m_recv_info.m_ranks[i];
 
         m_recv_request[i] =
         Arccore::MessagePassing::mpReceive(m_parallel_mng,
-                                           ArrayView<ValueT>(size, ptr),
+                                           ArrayView<ValueT>(size*m_block_size, ptr),
                                            rank,
                                            false);
       }
@@ -108,63 +110,92 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
     if (m_send_policy == Alien::SimpleCSRInternal::CommProperty::ASynch)
       m_send_request.resize(m_send_info.m_num_neighbours);
     if (m_send_info.m_ids.size()) {
-      std::size_t total_nb_send_ids = m_send_info.m_ids_offset[m_send_info.m_num_neighbours] - m_send_info.m_ids_offset[0];
+      std::size_t total_nb_send_ids = (m_send_info.m_ids_offset[m_send_info.m_num_neighbours] - m_send_info.m_ids_offset[0]);
 #ifdef USE_SYCL_USM
-      m_sbuffer = sycl::malloc_shared<ValueT>(total_nb_send_ids, queue);
+      m_sbuffer = sycl::malloc_shared<ValueT>(total_nb_send_ids * m_block_size, queue);
 #else
-      m_sbuffer.resize(total_nb_send_ids);
+      m_sbuffer.resize(total_nb_send_ids * m_block_size);
 #endif
       {
 #ifdef USE_SYCL_USM
-        sycl::buffer<ValueType> sbuffer{ { sycl::buffer_allocation::empty_view(m_sbuffer, queue.get_device()) }, total_nb_send_ids };
+        sycl::buffer<ValueType> sbuffer{ { sycl::buffer_allocation::empty_view(m_sbuffer, queue.get_device()) }, total_nb_send_ids * m_block_size };
 #else
-        sycl::buffer<ValueType> sbuffer(m_sbuffer.data(), total_nb_send_ids);
+        sycl::buffer<ValueType> sbuffer(m_sbuffer.data(), total_nb_send_ids * m_block_size);
 #endif
+        const int block_size = m_block_size;
         // clang-format off
-        queue.submit([&](sycl::handler& cgh)
-                     {
-                       auto access_send_buffer = m_send_buffer.template get_access<sycl::access::mode::read>(cgh);
-                       auto access_ids         = m_send_ids.template get_access<sycl::access::mode::read>(cgh);
-                       auto access_sbuffer = sycl::accessor(sbuffer, cgh, sycl::write_only, sycl::property::no_init{});
+        if (block_size == 1)
+        {
+          queue.submit(
+              [&](
+                  sycl::handler &cgh)
+                  {
+                    auto access_send_buffer = m_send_buffer.template get_access<sycl::access::mode::read>(cgh);
+                    auto access_ids = m_send_ids.template get_access<sycl::access::mode::read>(cgh);
+                    auto access_sbuffer = sycl::accessor(sbuffer, cgh, sycl::write_only, sycl::property::no_init
+                        {});
 
-                       cgh.parallel_for<class vector_mult_send>(sycl::range<1>{total_threads},
-                                                                [=] (sycl::item<1> itemId)
-                                                                {
-                                                                   auto id = itemId.get_id(0);
-                                                                   for( auto i=id; i<total_nb_send_ids; i+=total_threads)
-                                                                     access_sbuffer[i] = access_send_buffer[access_ids[i]];
-                                                                });
-                     });
+                    cgh.parallel_for<class vector_send>(sycl::range<1>
+                        { total_threads},
+                        [=] (sycl::item<1> itemId)
+                        {
+                          auto id = itemId.get_id(0);
+                          for( auto i=id; i<total_nb_send_ids; i+=total_threads)
+                          access_sbuffer[i] = access_send_buffer[access_ids[i]];
+                        });
+                  });
+        }
+        else
+        {
+          queue.submit(
+                        [&](
+                            sycl::handler &cgh)
+                            {
+                              auto access_send_buffer = m_send_buffer.template get_access<sycl::access::mode::read>(cgh);
+                              auto access_ids = m_send_ids.template get_access<sycl::access::mode::read>(cgh);
+                              auto access_sbuffer = sycl::accessor(sbuffer, cgh, sycl::write_only, sycl::property::no_init
+                                  {});
+
+                              cgh.parallel_for<class vectorN_send>(sycl::range<1>
+                                  { total_threads},
+                                  [=] (sycl::item<1> itemId)
+                                  {
+                                    auto id = itemId.get_id(0);
+                                    for( auto i=id; i<total_nb_send_ids; i+=total_threads)
+                                      #pragma unroll
+                                      for( auto j=0; j<block_size; ++j)
+                                        access_sbuffer[i*block_size+j] = access_send_buffer[access_ids[i]*block_size+j];
+                                  });
+                            });
+        }
         // clang-format on
       }
-      //for (Integer i = 0; i < total_nb_send_ids; ++i) {
-      //  alien_debug([&] {cout() << "MPI SEND["<<i<<"]="<<m_sbuffer[i];}) ;;
-      //}
+
     }
     for (Integer i = 0; i < m_send_info.m_num_neighbours; ++i) {
       Integer off = m_send_info.m_ids_offset[i];
       Integer nb_send_ids = m_send_info.m_ids_offset[i + 1] - off;
 #ifdef USE_SYCL_USM
-      ValueT const* ptr = m_sbuffer + off;
+      ValueT const* ptr = m_sbuffer + off * m_block_size;
 #else
-      ValueT const* ptr = m_sbuffer.data() + off;
+      ValueT const* ptr = m_sbuffer.data() + off * m_block_size;
 #endif
       Integer rank = m_send_info.m_ranks[i];
       if (m_send_policy == Alien::SimpleCSRInternal::CommProperty::ASynch)
         m_send_request[i] = Arccore::MessagePassing::mpSend(m_parallel_mng,
-                                                            ConstArrayView<ValueT>(nb_send_ids, ptr), rank, false);
+                                                            ConstArrayView<ValueT>(nb_send_ids*m_block_size, ptr), rank, false);
       else
         Arccore::MessagePassing::mpSend(m_parallel_mng,
-                                        ConstArrayView<ValueT>(nb_send_ids, ptr), rank);
+                                        ConstArrayView<ValueT>(nb_send_ids*m_block_size, ptr), rank);
     }
 
-    //alien_debug([&] {cout()<<"END SYCLSendRecvOP START" ; });
+    //alien_debug([&] {cout()<<"END SYCLSendRecvOP START"<<m_block_size ; });
     //Universe().traceMng()->flush() ;
   }
 
   void end([[maybe_unused]] bool insitu = false)
   {
-    //alien_debug([&] {cout() << "SYCLSendRecvOP END : "<<m_recv_policy;});
+    //alien_debug([&] {cout() << "SYCLSendRecvOP END : "<<m_recv_policy<<" BS="<<m_block_size<<" insitu="<<insitu;});
     //Universe().traceMng()->flush() ;
 
     // clang-format off
@@ -184,21 +215,21 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
       if (m_recv_info.m_ids.size()) {
         Arccore::Integer total_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
 #ifdef USE_SYCL_USM
-        m_rbuffer = sycl::malloc_shared<ValueT>(total_recv_ids, queue);
+        m_rbuffer = sycl::malloc_shared<ValueT>(total_recv_ids*m_block_size, queue);
 #else
-        m_rbuffer.resize(total_recv_ids);
+        m_rbuffer.resize(total_recv_ids*m_block_size);
 #endif
       }
       for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
         Integer off = m_recv_info.m_ids_offset[i];
         Integer size = m_recv_info.m_ids_offset[i + 1] - off;
 #ifdef USE_SYCL_USM
-        ValueT* ptr = m_rbuffer + off;
+        ValueT* ptr = m_rbuffer + off*m_block_size;
 #else
-        ValueT* ptr = m_rbuffer.data() + off;
+        ValueT* ptr = m_rbuffer.data() + off*m_block_size;
 #endif
         Integer rank = m_recv_info.m_ranks[i];
-        Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueT>(size, ptr), rank);
+        Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueT>(size*m_block_size, ptr), rank);
       }
     }
     if (m_recv_info.m_ids.size()) {
@@ -206,36 +237,70 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
 
       {
 #ifdef USE_SYCL_USM
-        sycl::buffer<ValueType> rbuffer{ { sycl::buffer_allocation::view(m_rbuffer, queue.get_device()) }, total_nb_recv_ids };
+        sycl::buffer<ValueType> rbuffer{ { sycl::buffer_allocation::view(m_rbuffer, queue.get_device()) }, total_nb_recv_ids*m_block_size };
 #else
-        sycl::buffer<ValueType> rbuffer(m_rbuffer.data(), total_nb_recv_ids);
+        sycl::buffer<ValueType> rbuffer(m_rbuffer.data(), total_nb_recv_ids*m_block_size);
 #endif
+        const int block_size = m_block_size;   // copie locale : évite la capture de this
         // clang-format off
-        queue.submit([&](sycl::handler& cgh)
-                     {
-                       //auto access_recv_buffer = m_recv_buffer.template get_access<sycl::access::mode::read_write>(cgh);
-                       //auto access_ids         = m_recv_ids.template get_access<sycl::access::mode::read>(cgh);
-#ifdef USE_HIPSYCL
-                       sycl::accessor<ValueType> access_recv_buffer{m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{}};
-#endif
-#ifdef USE_ONEAPI
-                       auto access_recv_buffer = sycl::accessor(m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{});
-#endif
-#ifdef USE_ACPPSYCL
-                       auto access_recv_buffer = sycl::accessor(m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{});
-#endif
+        if(block_size==1)
+        {
+          queue.submit([&](sycl::handler& cgh)
+                       {
+                         //auto access_recv_buffer = m_recv_buffer.template get_access<sycl::access::mode::read_write>(cgh);
+                         //auto access_ids         = m_recv_ids.template get_access<sycl::access::mode::read>(cgh);
+  #ifdef USE_HIPSYCL
+                         sycl::accessor<ValueType> access_recv_buffer{m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{}};
+  #endif
+  #ifdef USE_ONEAPI
+                         auto access_recv_buffer = sycl::accessor(m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{});
+  #endif
+  #ifdef USE_ACPPSYCL
+                         auto access_recv_buffer = sycl::accessor(m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{});
+  #endif
 
 
-                       sycl::accessor<ValueType> access_rbuffer{rbuffer, cgh};
+                         sycl::accessor<ValueType> access_rbuffer{rbuffer, cgh};
 
-                       cgh.parallel_for<class vector_mult_recv>(sycl::range<1>{total_threads},
-                                                                [=] (sycl::item<1> itemId)
-                                                                {
-                                                                 auto id = itemId.get_id(0);
-                                                                 for(auto i=id;i<total_nb_recv_ids;i += total_threads)
-                                                                   access_recv_buffer[i] = access_rbuffer[i];
-                                                                });
-                     });
+                         cgh.parallel_for<class vector_mult_recv>(sycl::range<1>{total_threads},
+                                                                  [=] (sycl::item<1> itemId)
+                                                                  {
+                                                                   auto id = itemId.get_id(0);
+                                                                   for(auto i=id;i<total_nb_recv_ids;i += total_threads)
+                                                                     access_recv_buffer[i] = access_rbuffer[i];
+                                                                  });
+                       });
+        }
+        else
+        {
+          queue.submit([&](sycl::handler& cgh)
+                       {
+                         //auto access_recv_buffer = m_recv_buffer.template get_access<sycl::access::mode::read_write>(cgh);
+                         //auto access_ids         = m_recv_ids.template get_access<sycl::access::mode::read>(cgh);
+  #ifdef USE_HIPSYCL
+                         sycl::accessor<ValueType> access_recv_buffer{m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{}};
+  #endif
+  #ifdef USE_ONEAPI
+                         auto access_recv_buffer = sycl::accessor(m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{});
+  #endif
+  #ifdef USE_ACPPSYCL
+                         auto access_recv_buffer = sycl::accessor(m_recv_buffer, cgh, sycl::write_only, sycl::property::no_init{});
+  #endif
+
+                         sycl::accessor<ValueType> access_rbuffer{rbuffer, cgh};
+
+                         cgh.parallel_for<class vectorN_mult_recv>(sycl::range<1>{total_threads},
+                                                                  [=] (sycl::item<1> itemId)
+                                                                  {
+                                                                   auto id = itemId.get_id(0);
+                                                                   for(auto i=id;i<total_nb_recv_ids;i += total_threads)
+                                                                     #pragma unroll
+                                                                     for(auto j=0;j<block_size;++j)
+                                                                       access_recv_buffer[i*block_size+j] = access_rbuffer[i*block_size+j];
+                                                                  });
+                       });
+
+        }
         // clang-format on
       }
     }
@@ -250,18 +315,18 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
   void upperRecv([[maybe_unused]] bool insitu = true)
   {
   }
-  
-  void upperSend() 
+
+  void upperSend()
   {
   }
-  
+
   void lowerRecv([[maybe_unused]] bool insitu = true)
   {
   }
-  
+
   void lowerSend()
   {
-  
+
   }
  private:
   // clang-format off
@@ -281,7 +346,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
   std::vector<ValueT>                                    m_rbuffer ;
   std::vector<ValueT>                                    m_sbuffer ;
 #endif
-  Arccore::Integer                                       m_unknowns_num = 0;
+  Arccore::Integer                                       m_block_size   = 0;
   Arccore::MessagePassing::IMessagePassingMng*           m_parallel_mng = nullptr;
   Arccore::ITraceMng*                                    m_trace        = nullptr;
   Arccore::UniqueArray<Arccore::MessagePassing::Request> m_recv_request;

@@ -55,17 +55,17 @@ class ALIEN_EXPORT SYCLDistStructInfo
     m_upper_diag_offset.resize(nrows);
     for (std::size_t irow = 0; irow < nrows; ++irow)
     {
-      int begin = kcol[irow] ;
-      int end   = kcol[irow] + lrow_size[irow] ;
-      int index = begin;
-      for (int k = begin; k < end; ++k)
+      std::size_t begin = kcol[irow] ;
+      std::size_t end   = kcol[irow] + lrow_size[irow] ;
+      std::size_t index = begin;
+      for (std::size_t k = begin; k < end; ++k)
       {
-        if (m_cols[k] < irow)
+        if (std::size_t(m_cols[k]) < irow)
           ++index;
         else
           break;
       }
-      m_upper_diag_offset[irow] = index;
+      m_upper_diag_offset[irow] = int(index);
     }
   }
 

@@ -34,7 +34,7 @@ template <int EllPackSize, typename IndexT>
 struct ALIEN_EXPORT StructInfoInternal
 {
   // clang-format off
-  static const int ellpack_size = EllPackSize ;
+  static constexpr int ellpack_size = EllPackSize ;
   using index_type              = IndexT;
   using IndexType               = IndexT;
   using index_buffer_type       = sycl::buffer<index_type, 1>;
@@ -101,6 +101,25 @@ struct ALIEN_EXPORT StructInfoInternal
 };
 
 /*---------------------------------------------------------------------------*/
+template <int N> class MultNKernel;
+template <int N> class AddUMultNKernel;
+template <int N> class AddLMultNKernel;
+
+template <int Nmin, typename F, int... Is>
+bool dispatchN(int n, F&& f, std::integer_sequence<int, Is...>)
+{
+    return ((n == Nmin + Is
+                 ? (f(std::integral_constant<int, Nmin + Is>{}), true)
+                 : false) || ...);
+}
+
+template <int Nmin, int Nmax, typename F>
+bool dispatchN(int n, F&& f)
+{
+    static_assert(Nmax >= Nmin, "plage invalide");
+    return dispatchN<Nmin>(n, std::forward<F>(f),
+                           std::make_integer_sequence<int, Nmax - Nmin + 1>{});
+}
 
 template <typename ValueT, int EllPackSize>
 class MatrixInternal
@@ -109,7 +128,7 @@ class MatrixInternal
   // clang-format off
   using ThisType = MatrixInternal<ValueT,EllPackSize>;
 
-  static const int ellpack_size = EllPackSize ;
+  static constexpr int ellpack_size = EllPackSize ;
 
   using ValueType           = ValueT;
   using value_type          = ValueT;
@@ -125,7 +144,7 @@ class MatrixInternal
   using ValueBufferPtrType  = std::unique_ptr<ValueBufferType>;
 
   using QueueType           = sycl::queue;
-  // clang-format on
+  // clang-format onMultNKernel
 
   template<int N>
   struct TileT
@@ -220,10 +239,10 @@ class MatrixInternal
            typename LUAccT>
   struct LU
   {
-    static const int    ellpack_size = EllPackSize ;
-    int                 m_N          = 0 ;
-    int                 m_NxN        = 0 ;
-    MatrixAccT          m_matrix;
+    static constexpr int ellpack_size = EllPackSize ;
+    int                  m_N          = 0 ;
+    int                  m_NxN        = 0 ;
+    MatrixAccT           m_matrix;
 
     LU(int N, MatrixAccT& matrix)
     : m_N(N)
@@ -241,7 +260,7 @@ class MatrixInternal
        return local_id*m_NxN+ i*m_N + j;
      }
 
-     void factorize(std::size_t global_id,
+     void factorize([[maybe_unused]] std::size_t global_id,
                     std::size_t local_id,
                     std::size_t block_id,
                     std::size_t kcol,
@@ -368,43 +387,51 @@ class MatrixInternal
 
           auto tile = TileT<N>() ;
 
-          sycl::local_accessor<ValueType, 1> lds_x{pack_size*N, cgh};
+          //sycl::local_accessor<ValueType, 1> lds_x{pack_size*N, cgh};
           sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
-          cgh.parallel_for<class compute_mult>(r,
+          cgh.parallel_for<MultNKernel<N>>(r,
               [=](sycl::nd_item<1> item_id)
               {
-                 auto local_id  = item_id.get_local_id(0);
-                 auto global_id = item_id.get_global_id(0);
+                 const std::size_t local_id  = item_id.get_local_id(0);
+                 const std::size_t global_id = item_id.get_global_id(0);
+                 const std::size_t stride     = item_id.get_global_range(0);
 
-                 for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
+                 for (auto i = global_id; i < nrows; i += stride)
                  {
-                    auto block_id = i/pack_size ;
+                    auto block_id       = i / pack_size ;
 
                     int begin           = access_block_row_offset[block_id] ;
                     int end             = access_block_row_offset[block_id+1] ;
 
+                    ValueType value[N];
                     #pragma unroll
-                    for(int ieq=0;ieq<N;++ieq)
+                    for (int ieq = 0; ieq < N; ++ieq)
+                      value[ieq] = 0;
+
+                    for (int k = begin; k < end; ++k)
                     {
-                      ValueType value     = 0. ;
-                      for(int k=begin;k<end;++k)
+                      const int col = access_cols[k * pack_size + local_id];
+                      if (col >= 0)
                       {
-                        //auto k = block_row_offset+j*ellpack_size+local_id ;
-                        const int col = access_cols[k * pack_size + local_id];
-                        if(col>=0)
-                          for(int ju=0;ju<N;++ju)
-                            lds_x[N*local_id+ju] = access_x[col*N+ju];
-                        item_id.barrier(sycl::access::fence_space::local_space);
-                        if(col>=0)
+                        ValueType xl[N];
+                        #pragma unroll
+                        for (int ju = 0; ju < N; ++ju)
+                          xl[ju] = access_x[col * N + ju];
+
+                        #pragma unroll
+                        for (int ieq = 0; ieq < N; ++ieq)
                         {
                           #pragma unroll
-                          for(int ju=0;ju<N;++ju)
-                            value += access_values[tile.ijk(k,ieq,ju) + local_id] * lds_x[local_id*N+ju] ;
+                          for (int ju = 0; ju < N; ++ju)
+                            value[ieq] += access_values[tile.ijk(k, ieq, ju) + local_id] * xl[ju];
                         }
-                        item_id.barrier(sycl::access::fence_space::local_space);
                       }
-                      access_y[i*N+ieq] = value ;
                     }
+
+                    #pragma unroll
+                    for (int ieq = 0; ieq < N; ++ieq)
+                      access_y[i * N + ieq] = value[ieq];
+
                  }
                });
         });
@@ -454,21 +481,53 @@ class MatrixInternal
          auto total_threads = blocks_target * ellpack_size;
 
          auto tile = TileT<N>() ;
-         sycl::local_accessor<ValueType, 1> lds_x{pack_size*N, cgh};
+         //sycl::local_accessor<ValueType, 1> lds_x{pack_size*N, cgh};
          sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
-         cgh.parallel_for<class compute_lmultn>(r,
+         cgh.parallel_for<AddLMultNKernel<N>>(r,
              [=](sycl::nd_item<1> item_id)
              {
-                  auto local_id  = item_id.get_local_id(0);
-                  auto global_id = item_id.get_global_id(0);
+                  const std::size_t local_id  = item_id.get_local_id(0);
+                  const std::size_t global_id = item_id.get_global_id(0);
+                  const std::size_t stride   = item_id.get_global_range(0);
 
-                  //for (auto i = id; i < nrows; i += item_id.get_range()[0])
-                  for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
+                  for (auto i = global_id; i < nrows; i += stride)
                   {
-                     auto block_id = i/pack_size ;
+                     auto block_id       = i / pack_size ;
 
                      int begin           = access_block_row_offset[block_id] ;
                      int end             = access_block_row_offset[block_id+1] ;
+
+                     ValueType value[N];
+                     #pragma unroll
+                     for (int ieq = 0; ieq < N; ++ieq)
+                       value[ieq] = 0;
+
+                     for (int k = begin; k < end; ++k)
+                     {
+                       const int col = access_cols[k * pack_size + local_id];
+                       if (col >= 0 && access_mask[k * pack_size + local_id])
+                       {
+                         ValueType xl[N];
+                         #pragma unroll
+                         for (int ju = 0; ju < N; ++ju)
+                           xl[ju] = access_x[col * N + ju];
+
+                         #pragma unroll
+                         for (int ieq = 0; ieq < N; ++ieq)
+                         {
+                           #pragma unroll
+                           for (int ju = 0; ju < N; ++ju)
+                             value[ieq] += access_values[tile.ijk(k, ieq, ju) + local_id] * xl[ju];
+                         }
+                       }
+                     }
+
+                     #pragma unroll
+                     for (int ieq = 0; ieq < N; ++ieq)
+                       access_y[i * N + ieq] += alpha * value[ieq];
+
+
+                     /* OLD
                      #pragma unroll
                      for(int ieq=0;ieq<N;++ieq)
                      {
@@ -490,6 +549,7 @@ class MatrixInternal
                        }
                        access_y[i*N+ieq] += alpha*value ;
                      }
+                     */
                   }
               });
        });
@@ -534,41 +594,77 @@ class MatrixInternal
          auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
 
          auto tile = TileT<N>() ;
-         sycl::local_accessor<ValueType, 1> lds_x{pack_size*N, cgh};
+         //sycl::local_accessor<ValueType, 1> lds_x{pack_size*N, cgh};
          sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
-         cgh.parallel_for<class compute_umultn>(r,
-            [=](sycl::nd_item<1> item_id)
-            {
-              auto local_id  = item_id.get_local_id(0);
-              auto global_id = item_id.get_global_id(0);
-              for (auto i = global_id; i < nrows; i += item_id.get_global_range()[0])
-              {
-                 auto block_id = i/pack_size ;
+         cgh.parallel_for<AddUMultNKernel<N>>(
+             r,
+             [=](sycl::nd_item<1> item_id)
+             {
 
-                 auto begin = access_block_row_offset[block_id] ;
-                 auto end   = access_block_row_offset[block_id+1] ;
-                 #pragma unroll
-                 for(int ieq=0;ieq<N;++ieq)
-                 {
-                   ValueType value = 0. ;
-                   for(int k=begin;k<end;++k)
+                const std::size_t local_id  = item_id.get_local_id(0);
+                const std::size_t global_id = item_id.get_global_id(0);
+                const std::size_t stride   = item_id.get_global_range(0);
+
+                for (auto i = global_id; i < nrows; i += stride)
+                {
+                   auto block_id = i / pack_size ;
+
+                   auto begin    = access_block_row_offset[block_id] ;
+                   auto end      = access_block_row_offset[block_id+1] ;
+
+                   ValueType value[N];
+                   #pragma unroll
+                   for (int ieq = 0; ieq < N; ++ieq)
+                     value[ieq] = 0;
+
+                   for (int k = begin; k < end; ++k)
                    {
                      const int col = access_cols[k * pack_size + local_id];
-                     if(col>=0)
+                     if (col >= 0 && access_mask[k * pack_size + local_id])
+                     {
+                       ValueType xl[N];
                        #pragma unroll
-                       for(int ju=0;ju<N;++ju)
-                         lds_x[local_id*N+ju] = access_x[col*N+ju];
-                     item_id.barrier(sycl::access::fence_space::local_space);
-                     if(access_mask[k * pack_size + local_id])
+                       for (int ju = 0; ju < N; ++ju)
+                         xl[ju] = access_x[col * N + ju];
+
                        #pragma unroll
-                       for(int ju=0;ju<N;++ju)
-                         value += access_values[tile.ijk(k,ieq,ju) + local_id] * lds_x[local_id*N+ju] ;
-                     item_id.barrier(sycl::access::fence_space::local_space);
+                       for (int ieq = 0; ieq < N; ++ieq)
+                       {
+                         #pragma unroll
+                         for (int ju = 0; ju < N; ++ju)
+                           value[ieq] += access_values[tile.ijk(k, ieq, ju) + local_id] * xl[ju];
+                       }
+                     }
                    }
-                   access_y[i*N+ieq] += alpha*value ;
-                 }
-              }
-          });
+
+                   #pragma unroll
+                   for (int ieq = 0; ieq < N; ++ieq)
+                     access_y[i * N + ieq] += alpha * value[ieq];
+
+
+                   /*
+                   #pragma unroll
+                   for(int ieq=0;ieq<N;++ieq)
+                   {
+                     ValueType value = 0. ;
+                     for(int k=begin;k<end;++k)
+                     {
+                       const int col = access_cols[k * pack_size + local_id];
+                       if(col>=0)
+                         #pragma unroll
+                         for(int ju=0;ju<N;++ju)
+                           lds_x[local_id*N+ju] = access_x[col*N+ju];
+                       item_id.barrier(sycl::access::fence_space::local_space);
+                       if(access_mask[k * pack_size + local_id])
+                         #pragma unroll
+                         for(int ju=0;ju<N;++ju)
+                           value += access_values[tile.ijk(k,ieq,ju) + local_id] * lds_x[local_id*N+ju] ;
+                       item_id.barrier(sycl::access::fence_space::local_space);
+                     }
+                     access_y[i*N+ieq] += alpha*value ;
+                   }*/
+                }
+             });
        });
   }
 

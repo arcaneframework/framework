@@ -67,7 +67,7 @@ namespace Alien
     public:
       COOProfile(std::size_t nrows,
                  std::size_t nnz,
-                 std::size_t nghost,
+                 [[maybe_unused]]std::size_t nghost,
                  IndexType* rows,
                  IndexType* ncols,
                  IndexType* ghost_uids)
