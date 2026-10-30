@@ -55,7 +55,7 @@ IFPInternalLinearSolver::IFPInternalLinearSolver(
 
 IFPInternalLinearSolver::~IFPInternalLinearSolver()
 {
-  ;
+  m_stat.finalPrint( Universe().traceMng(),"IFPSolver");
 }
 
 /*---------------------------------------------------------------------------*/
