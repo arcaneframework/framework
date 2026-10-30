@@ -71,16 +71,19 @@ const VectorType& x_impl, VectorType& y_impl) const
 {
   //Alien::alien_debug([&] {Alien::cout() << "SYCL PARALLEL MULT : "<<m_matrix_impl.getGhostSize();});
   //Universe().traceMng()->flush() ;
+  int block_size = m_matrix_impl.blockSize() ;
+
   SYCLSendRecvOp<ValueT> op(x_impl.internal()->values(),
                             m_matrix_impl.m_matrix_dist_info.m_send_info,
                             m_matrix_impl.internal()->getSendIds(),
                             m_matrix_impl.m_send_policy,
-                            x_impl.internal()->ghostValues(m_matrix_impl.getGhostSize()),
+                            x_impl.internal()->ghostValues(m_matrix_impl.getGhostSize()*block_size),
                             m_matrix_impl.m_matrix_dist_info.m_recv_info,
                             m_matrix_impl.internal()->getRecvIds(),
                             m_matrix_impl.m_recv_policy,
                             m_matrix_impl.m_parallel_mng,
-                            m_matrix_impl.m_trace);
+                            m_matrix_impl.m_trace,
+                            block_size);
 
   op.start();
 
