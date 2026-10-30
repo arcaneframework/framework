@@ -337,6 +337,9 @@ allocateReceivedItems()
 {
   _checkPhase(ePhase::AllocateItems);
   {
+    auto* family_serializers_mng = m_mesh->_internalApi()->familySerializerMng();
+    if (family_serializers_mng)
+      family_serializers_mng->beginSerialization(mesh::PolyhedralTools::SerializationPolicy::SerializationFamilyOnly);
     info() << "AllocItems date=" << platform::getCurrentDateTime();
     Timer::Action ts_action1(m_time_stats, "ReadAndAllocItems", true);
     // We must first perform the cell exchange
@@ -346,9 +349,8 @@ allocateReceivedItems()
       e->readAndAllocItems(); // Caution, no longer proceeds on different sub-meshes
     }
     // If needed, finalize item allocations (for polyhedral meshes)
-    auto* family_serializer_mng = m_mesh->_internalApi()->familySerializerMng();
-    if (family_serializer_mng)
-      family_serializer_mng->finalizeItemAllocation();
+    if (family_serializers_mng)
+      family_serializers_mng->finalizeSerialization();
 
     // Build item relations (only dependencies are built in readAndAllocItems)
     // only for families registered in the graph
