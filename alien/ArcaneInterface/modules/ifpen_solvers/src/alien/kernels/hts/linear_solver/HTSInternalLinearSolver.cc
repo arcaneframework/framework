@@ -252,6 +252,7 @@ HTSInternalLinearSolver::updateParallelMng(
 void
 HTSInternalLinearSolver::end()
 {
+  m_stat.finalPrint( Universe().traceMng(),"HTSSolver");
 }
 
 #ifdef ALIEN_USE_HTSSOLVER
@@ -607,35 +608,15 @@ HTSInternalLinearSolver::_endPerfCount()
 const Alien::SolverStatus&
 HTSInternalLinearSolver::getStatus() const
 {
-  if (m_output_level > 0) {
-    printInfo();
-  }
   return m_status;
-}
-
-void
-HTSInternalLinearSolver::printInfo()
-{
-  alien_info([&] {
-    cout();
-    cout() << "|--------------------------------------------|";
-    cout() << "| Linear Solver        : HTSSolver           |";
-    cout() << "|--------------------------------------------|";
-    cout() << "| total solver time    : " << m_total_solve_time;
-    cout() << "| total system time    : " << m_total_system_time;
-    cout() << "| total num of iter    : " << m_total_iter_num;
-    cout() << "| solve num            : " << m_solve_num;
-    cout() << "| internal setup time  : " << m_int_total_setup_time;
-    cout() << "| internal solve time  : " << m_int_total_solve_time;
-    cout() << "| internal finish time : " << m_int_total_finish_time;
-    cout() << "|---------------------------------------------|";
-    cout();
-  });
 }
 
 void
 HTSInternalLinearSolver::printInfo() const
 {
+#if 1
+   m_stat.print(Universe().traceMng(), m_status, "HTSSolver");
+#else
   alien_info([&] {
     cout();
     cout() << "|--------------------------------------------|";
@@ -651,22 +632,30 @@ HTSInternalLinearSolver::printInfo() const
     cout() << "|---------------------------------------------|";
     cout();
   });
+#endif
 }
 
 bool
 HTSInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
 {
   using namespace Alien;
+  bool solve_res = false;
 
 #ifdef ALIEN_USE_HTSSOLVER
-  SolverStatSentry<HTSInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
-  CSRMatrixType const& matrix = A.impl()->get<BackEnd::tag::simplecsr>();
-  CSRVectorType const& rhs = b.impl()->get<BackEnd::tag::simplecsr>();
-  CSRVectorType& sol = x.impl()->get<BackEnd::tag::simplecsr>(true);
-  sentry.release();
+  {
+    SolverStatSentry<HTSInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
+    CSRMatrixType const& matrix = A.impl()->get<BackEnd::tag::simplecsr>();
+    CSRVectorType const& rhs = b.impl()->get<BackEnd::tag::simplecsr>();
+    CSRVectorType& sol = x.impl()->get<BackEnd::tag::simplecsr>(true);
+    sentry.release();
 
-  SolverStatSentry<HTSInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
-  return solve(matrix, rhs, sol);
+    SolverStatSentry<HTSInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
+    solve_res =  solve(matrix, rhs, sol);
+  }
+
+  printInfo();
+
+  return solve_res;
 #endif
 }
 
