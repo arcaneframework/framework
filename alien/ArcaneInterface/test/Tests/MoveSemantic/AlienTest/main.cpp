@@ -210,7 +210,10 @@ main(int argc, char** argv)
           }
           assert(err < 1.e-10);
         }
-      } else {
+
+        solver->end();
+      }
+      else {
         if (comm_rank == 0) {
           std::cout << "Solver failed      " << status.succeeded << std::endl;
           std::cout << "             error      " << status.error << std::endl;
