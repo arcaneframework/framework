@@ -10,11 +10,17 @@ set(ARCANET_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/ArcaNet)
 set(ARCANET_CMAKE_INSTALL_DIR ${ARCANET_CONFIG_INSTALL_DIR}/ArcCher)
 set(ARCANET_SPEC_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/arcanet)
 
-install(FILES cmake/arct_to_ctest.cmake cmake/arct_edit.cmake
+install(FILES
+  cmake/arct_edit.cmake
+  cmake/arct_functions.cmake
+  cmake/arct_to_ctest.cmake
   DESTINATION ${ARCANET_CMAKE_INSTALL_DIR})
+install(FILES
+  cmake/internal/internal_arct_edit.cmake
+  cmake/internal/internal_arct_to_ctest.cmake
+  DESTINATION ${ARCANET_CMAKE_INSTALL_DIR}/internal)
 install(FILES specifications.md
   DESTINATION ${ARCANET_SPEC_INSTALL_DIR})
-
 
 # ----------------------------------------------------------------------------
 # Local Variables:

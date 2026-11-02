@@ -378,8 +378,7 @@ if (NOT ArcaNet_FOUND)
   set(ArcaNet_FOUND YES PARENT_SCOPE)
 endif ()
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/../arctools/arcanet/arct/cmake/arct_to_ctest.cmake")
-include("${CMAKE_CURRENT_SOURCE_DIR}/../arctools/arcanet/arct/cmake/arct_edit.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/../arctools/arcanet/arct/cmake/arct_functions.cmake")
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

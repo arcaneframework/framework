@@ -4,8 +4,7 @@
 # ArcaNet: environnement de tests (fichiers .arct + lanceur ArcCher).
 # Ce fichier fournit:
 #   - la cible importée 'ArcaNet::arccher' (si le lanceur a été construit),
-#   - les fonctions CMake des fichiers .arct ('arct_to_ctest.cmake' et
-#     'arct_edit.cmake'),
+#   - les fonctions CMake des fichiers .arct ('arct_functions.cmake'),
 #   - 'ARCANET_SPEC_DIR'   : répertoire de 'specifications.md',
 #   - 'ARCT_GLOBAL_ARCCHER_PATH' : chemin de l'exécutable ArcCher, utilisé
 #     par défaut par 'arct_to_ctest()'.
@@ -19,8 +18,7 @@ endif ()
 
 set_and_check(ARCANET_SPEC_DIR "${PACKAGE_PREFIX_DIR}/@ARCANET_SPEC_INSTALL_DIR@")
 
-include("${PACKAGE_PREFIX_DIR}/@ARCANET_CMAKE_INSTALL_DIR@/ArcCher/arct_to_ctest.cmake")
-include("${PACKAGE_PREFIX_DIR}/@ARCANET_CMAKE_INSTALL_DIR@/ArcCher/arct_edit.cmake")
+include("${PACKAGE_PREFIX_DIR}/@ARCANET_CMAKE_INSTALL_DIR@/ArcCher/arct_functions.cmake")
 
 check_required_components(ArcaNet)
 
