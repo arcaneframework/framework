@@ -622,7 +622,7 @@ PETScInternalLinearSolver::internalPrintInfo() const
 {
   if (traceMng())
     m_stat.print(const_cast<Arccore::ITraceMng*>(traceMng()), m_status,
-        "Linear Solver : PETScLinearSolver");
+        "PETScLinearSolver");
 }
 
 /*---------------------------------------------------------------------------*/
