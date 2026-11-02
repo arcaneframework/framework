@@ -74,7 +74,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver
   // A. Anciaux
   bool _solveRs(bool m_resizeable);
 
-  void internalPrintInfo() const;
+  void printInfo() const;
 
   void updateParameters();
 

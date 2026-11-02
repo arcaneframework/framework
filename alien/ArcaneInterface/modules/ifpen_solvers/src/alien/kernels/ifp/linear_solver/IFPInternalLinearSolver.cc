@@ -55,7 +55,6 @@ IFPInternalLinearSolver::IFPInternalLinearSolver(
 
 IFPInternalLinearSolver::~IFPInternalLinearSolver()
 {
-  m_stat.finalPrint( Universe().traceMng(),"IFPSolver");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -163,7 +162,8 @@ IFPInternalLinearSolver::end()
   {
     F2C(ifpsolverfreedata)();
   }
-  internalPrintInfo();
+
+  m_stat.finalPrint( Universe().traceMng(),"IFPSolver");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -189,66 +189,60 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
 
   bool isSolverOk = false;
 
-  SolverStatSentry<IFPInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
+  {
+    SolverStatSentry<IFPInternalLinearSolver> sentry(m_stater, BaseSolverStater::ePrepare);
 
-  using namespace Alien;
-  // C'est a ce moment la, que la IFP matrice est construite.
-  // Avant d'arriver la, la matrice est stockee dans la SimpleCSRMatrix
-  // la conversion de representation se fait a ce niveau là
-  const IFPMatrix& matrix = A.impl()->get<BackEnd::tag::ifpsolver>();
-  if (m_keep_rhs)
-    Alien::IFPSolverInternal::VectorInternal::initRHS(true);
-  const IFPVector& rhs = b.impl()->get<BackEnd::tag::ifpsolver>();
-  if (m_keep_rhs) {
-    Alien::IFPSolverInternal::VectorInternal::initRHS(false);
-    x.impl()->get<BackEnd::tag::ifpsolver>();
-  } else
-    b.impl()->get<BackEnd::tag::ifpsolver>();
+    using namespace Alien;
+    // C'est a ce moment la, que la IFP matrice est construite.
+    // Avant d'arriver la, la matrice est stockee dans la SimpleCSRMatrix
+    // la conversion de representation se fait a ce niveau là
+    const IFPMatrix& matrix = A.impl()->get<BackEnd::tag::ifpsolver>();
+    if (m_keep_rhs)
+      Alien::IFPSolverInternal::VectorInternal::initRHS(true);
+    const IFPVector& rhs = b.impl()->get<BackEnd::tag::ifpsolver>();
+    if (m_keep_rhs) {
+      Alien::IFPSolverInternal::VectorInternal::initRHS(false);
+      x.impl()->get<BackEnd::tag::ifpsolver>();
+    } else
+      b.impl()->get<BackEnd::tag::ifpsolver>();
 
-  alien_fatal((not(matrix.internal()->m_filled and rhs.internal()->m_filled)), [&] {
-    cout() << "IFPSolver initialization error "
-           << " A: " << matrix.internal()->m_filled
-           << " rhs: " << rhs.internal()->m_filled;
-  });
+    alien_fatal((not(matrix.internal()->m_filled and rhs.internal()->m_filled)), [&] {
+      cout() << "IFPSolver initialization error "
+             << " A: " << matrix.internal()->m_filled
+             << " rhs: " << rhs.internal()->m_filled;
+    });
 
-  alien_info((m_print_info and matrix.internal()->m_elliptic_split_tag),
-      [&] { cout() << "Elliptic split tag enabled"; });
+    alien_info((m_print_info and matrix.internal()->m_elliptic_split_tag),
+        [&] { cout() << "Elliptic split tag enabled"; });
 
-  if (!matrix.getSymmetricProfile() && m_options->ilu0Algo() == IFPSolverProperty::Normal)
-    m_ilu0_algo = 3;
-  if (!matrix.getSymmetricProfile()
-      && m_options->ilu0Algo() == IFPSolverProperty::Optimized)
-    m_ilu0_algo = 4;
+    if (!matrix.getSymmetricProfile() && m_options->ilu0Algo() == IFPSolverProperty::Normal)
+      m_ilu0_algo = 3;
+    if (!matrix.getSymmetricProfile()
+        && m_options->ilu0Algo() == IFPSolverProperty::Optimized)
+      m_ilu0_algo = 4;
 
-  sentry.release();
+    sentry.release();
 
 
-  SolverStatSentry<IFPInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
+    SolverStatSentry<IFPInternalLinearSolver> sentry2(m_stater, BaseSolverStater::eSolve);
 
-  if (matrix.internal()->m_system_is_resizeable == true)
-    isSolverOk = _solveRs(matrix.internal()->m_system_is_resizeable);
-  else
-    isSolverOk = _solve();
+    if (matrix.internal()->m_system_is_resizeable == true)
+      isSolverOk = _solveRs(matrix.internal()->m_system_is_resizeable);
+    else
+      isSolverOk = _solve();
 
-  if (isSolverOk) {
-    Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(true);
-    IFPVector& sol = x.impl()->get<BackEnd::tag::ifpsolver>(true);
-    sol.setResizable(rhs.isResizable());
-    Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(false);
-    sol.internal()->m_filled = true;
-  } else {
-    // La valeur de b en cas d'échec n'est actuellement pas bien définie : à tester.
+    if (isSolverOk) {
+      Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(true);
+      IFPVector& sol = x.impl()->get<BackEnd::tag::ifpsolver>(true);
+      sol.setResizable(rhs.isResizable());
+      Alien::IFPSolverInternal::VectorInternal::setRepresentationSwitch(false);
+      sol.internal()->m_filled = true;
+    } else {
+      // La valeur de b en cas d'échec n'est actuellement pas bien définie : à tester.
+    }
   }
 
-  sentry2.release();
-
-  if(m_print_info)
-    internalPrintInfo();
-
-  alien_info(m_print_info, [&] {
-    cout() << "| End Linear Solver";
-    cout() << "|--------------------------------------------------------|";
-  });
+  printInfo();
 
   return isSolverOk;
 }
@@ -287,10 +281,11 @@ IFPInternalLinearSolver::_solveRs(bool resizeable)
 /*---------------------------------------------------------------------------*/
 
 void
-IFPInternalLinearSolver::internalPrintInfo() const
+IFPInternalLinearSolver::printInfo() const
 {
   m_stat.print(
-      Universe().traceMng(), m_status, String("Linear Solver : IFPLinearSolver"));
+      Universe().traceMng(), m_status, "IFPLinearSolver");
+
   Real init_solver_count = 0;
   Real init_precond_count = 0;
   Real normalize_count = 0;
