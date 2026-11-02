@@ -43,6 +43,9 @@ class SYCLBEllPackMatrixMultT
   void addLMult(Real alpha, const VectorType& x, VectorType& y) const;
   void addUMult(Real alpha, const VectorType& x, VectorType& y) const;
 
+  void lowerUpperSynchronize(const VectorType& x, VectorType& y) const;
+  void upperLowerSynchronize(const VectorType& x, VectorType& y) const;
+
   void multDiag(VectorType const& y,VectorType& z) const;
 
   void computeDiag(VectorType& y) const;

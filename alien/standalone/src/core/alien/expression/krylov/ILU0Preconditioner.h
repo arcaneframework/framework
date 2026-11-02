@@ -900,7 +900,7 @@ class LUFactorisationAlgo
   std::vector<int>                    m_send_lu_ibuffer ;
   std::vector<std::vector<ValueType>> m_send_lu_buffer ;
 
-  bool                          m_use_inv_diag                = false ;
+  bool                          m_use_inv_diag                = true ;
 #if defined (ALIEN_USE_EIGEN3)  && !defined(EIGEN3_DISABLED)
   using EigenMatrix = Eigen::Matrix<ValueType,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> ;
   std::vector<Eigen::PartialPivLU<EigenMatrix>> m_inv_diag_matrix;

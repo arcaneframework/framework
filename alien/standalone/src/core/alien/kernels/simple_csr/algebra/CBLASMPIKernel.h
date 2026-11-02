@@ -103,8 +103,8 @@ class CBLASMPIKernel
     ValueType value = cblas::dot(x.scalarizedLocalSize(), (ValueType*)x.getDataPtr(), 1,
                                  (ValueType*)y.getDataPtr(), 1);
     if (dist.isParallel()) {
-      return Arccore::MessagePassing::mpAllReduce(
-      dist.parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+      value = Arccore::MessagePassing::mpAllReduce(dist.parallelMng(), 
+                                                   Arccore::MessagePassing::ReduceSum, value);
     }
     return value;
   }

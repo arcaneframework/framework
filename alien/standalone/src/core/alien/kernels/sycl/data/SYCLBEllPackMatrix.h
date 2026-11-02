@@ -181,7 +181,10 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   void endDistMult(SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
 
   void addLMult(ValueType alpha, SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
+  void endDistLMult(ValueType alpha, SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
+
   void addUMult(ValueType alpha, SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
+  void endDistUMult(ValueType alpha, SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
 
   void multDiag(SYCLVector<ValueType> const& x, SYCLVector<ValueType>& y) const;
 
