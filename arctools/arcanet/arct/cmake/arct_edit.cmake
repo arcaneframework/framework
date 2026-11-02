@@ -1,40 +1,10 @@
 
 # ----------------------------------------------------------------------------
-
-
-# ----------------------------------------------------------------------------
-# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-macro(_arct_begin)
-  if (NOT ARGS_ARCT_PATH)
-    if(DEFINED ARCT_GLOBAL_ARCT_PATH)
-      set(ARGS_ARCT_PATH "${ARCT_GLOBAL_ARCT_PATH}")
-    else ()
-      set(ARGS_ARCT_PATH "${CMAKE_BINARY_DIR}/testlist.arct")
-    endif ()
-  endif ()
+include(${CMAKE_CURRENT_LIST_DIR}/internal/internal_arct_edit.cmake)
 
-  if (DEFINED ARCANET_BEGIN_ON)
-    message(FATAL_ERROR "'arct_begin()' has been already called. Call 'arct_end()' function to end it.")
-  endif ()
-
-  if (EXISTS "${ARGS_ARCT_PATH}" AND NOT ARGS_OVERWRITE_ARCT)
-    file(READ "${ARGS_ARCT_PATH}" ARCANET_JSON)
-  else ()
-    set(ARCANET_JSON "{}")
-    string(JSON ARCANET_JSON SET ${ARCANET_JSON} "versions" "{}")
-    string(JSON ARCANET_JSON SET ${ARCANET_JSON} "versions" "_" "1")
-    string(JSON ARCANET_JSON SET ${ARCANET_JSON} "versions" "arcane" "0")
-    string(JSON ARCANET_JSON SET ${ARCANET_JSON} "versions" "arccher" "0")
-  endif ()
-
-  #
-
-  set(ARCANET_BEGIN_ON "${ARGS_ARCT_PATH}" PARENT_SCOPE)
-  set(ARCANET_JSON "${ARCANET_JSON}" PARENT_SCOPE)
-endmacro()
-
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 function(arct_begin)
@@ -44,23 +14,8 @@ function(arct_begin)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  _arct_begin()
+  _arct_internal_begin()
 endfunction()
-
-# ----------------------------------------------------------------------------
-
-macro(_arct_end)
-  if (NOT DEFINED ARCANET_BEGIN_ON)
-    message(FATAL_ERROR "'arct_end()' cannot be called without a call to a 'arct_begin()' function.")
-  endif ()
-
-  file(WRITE "${ARCANET_BEGIN_ON}" ${ARCANET_JSON})
-
-  #
-
-  unset(ARCANET_JSON PARENT_SCOPE)
-  unset(ARCANET_BEGIN_ON PARENT_SCOPE)
-endmacro()
 
 # ----------------------------------------------------------------------------
 
@@ -69,9 +24,10 @@ function(arct_end)
     message(FATAL_ERROR "'arct_config_create_or_edit_X()' has been already called. Call 'arct_config_create_or_edit_end()' function to end it.")
   endif ()
 
-  _arct_end()
+  _arct_internal_end()
 endfunction()
 
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 function(arct_config_create_or_edit_general)
@@ -86,7 +42,7 @@ function(arct_config_create_or_edit_general)
   endif ()
 
   if (NOT DEFINED ARCANET_BEGIN_ON)
-    _arct_begin()
+    _arct_internal_begin()
     set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
@@ -131,7 +87,7 @@ function(arct_config_create_or_edit_common)
   endif ()
 
   if (NOT DEFINED ARCANET_BEGIN_ON)
-    _arct_begin()
+    _arct_internal_begin()
     set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
@@ -184,7 +140,7 @@ function(arct_config_create_or_edit_case)
   endif ()
 
   if (NOT DEFINED ARCANET_BEGIN_ON)
-    _arct_begin()
+    _arct_internal_begin()
     set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
@@ -240,7 +196,7 @@ function(arct_config_create_or_edit_variation)
   endif ()
 
   if (NOT DEFINED ARCANET_BEGIN_ON)
-    _arct_begin()
+    _arct_internal_begin()
     set(ARCANET_WRITE_AT_END_PART "ON" PARENT_SCOPE)
   endif ()
 
@@ -303,7 +259,7 @@ function(arct_config_create_or_edit_end)
   #
 
   if (DEFINED ARCANET_WRITE_AT_END_PART)
-    _arct_end()
+    _arct_internal_end()
     unset(ARCANET_WRITE_AT_END_PART PARENT_SCOPE)
   else ()
     set(ARCANET_JSON "${ARCANET_JSON}" PARENT_SCOPE)
@@ -316,9 +272,19 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-function(arct_config_define_name display_name_case)
+function(arct_config_define_name)
+  set(options)
+  set(oneValueArgs NAME)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
     message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
+  endif ()
+
+  if (NOT DEFINED ARGS_NAME)
+    message(FATAL_ERROR "No ARGS_NAME")
   endif ()
 
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "_")
@@ -326,7 +292,7 @@ function(arct_config_define_name display_name_case)
     string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" "{}")
   endif ()
 
-  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" "name" "\"${display_name_case}\"")
+  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" "name" "\"${ARGS_NAME}\"")
 
   #
 
@@ -335,81 +301,23 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 
-macro(_arct_config_append_var type variation elem_to_add)
-
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "_")
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    message(FATAL_ERROR "Variation '${variation}' not found.")
-  endif ()
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "_" ${type})
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    message(FATAL_ERROR "Variation '${variation}' not found.")
-  endif ()
-
-  string(JSON ARCANET_ARRAY_LENGTH ERROR_VARIABLE ARCANET_ERROR LENGTH ${ARCANET_GET})
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    set(ARCANET_ARRAY_LENGTH 0)
-  endif ()
-
-  if (${ARCANET_ARRAY_LENGTH} GREATER 0)
-    math(EXPR ARCANET_ARRAY_LENGTH "${ARCANET_ARRAY_LENGTH} - 1")
-
-    foreach (VAR_I RANGE ${ARCANET_ARRAY_LENGTH})
-
-      string(JSON ARCANET_GET_VARIANT_NAME ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_GET} ${VAR_I})
-      if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-        message(FATAL_ERROR "Internal error")
-      endif ()
-
-      string(FIND ${ARCANET_GET_VARIANT_NAME} ${variation} ARCANET_POS_ELEM)
-
-      if(NOT ARCANET_POS_ELEM EQUAL -1)
-        string(APPEND ARCANET_GET_VARIANT_NAME ${elem_to_add})
-        string(JSON ARCANET_GET SET ${ARCANET_GET} ${VAR_I} "\"${ARCANET_GET_VARIANT_NAME}\"")
-
-        string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" ${type} ${ARCANET_GET})
-
-        break()
-      endif ()
-
-    endforeach ()
-  endif ()
-
-  #
-
-  set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
-endmacro()
-
-# ----------------------------------------------------------------------------
-
-macro(_arct_config_add_dep type dependency)
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "_")
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" "{}")
-  endif ()
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "_" ${type})
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" ${type} "[]")
-  endif ()
-
-  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "_" ${type} 999 "\"${dependency}\"" )
-
-  #
-
-  set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
-endmacro()
-
-# ----------------------------------------------------------------------------
-
 function(arct_config_variation)
   set(options BEFORE AFTER)
-  set(oneValueArgs VALUE NEW APPEND)
-  set(multiValueArgs)
+  set(oneValueArgs ADD EQUAL)
+  set(multiValueArgs INCLUDE EXCLUDE)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
     message(FATAL_ERROR "'arct_config_variation()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
+  endif ()
+
+  if (ARGS_AFTER AND ARGS_BEFORE)
+    message(FATAL_ERROR "Invalid call : AFTER and BEFORE options are found.")
+  endif ()
+
+  if ((DEFINED ARGS_EQUAL AND DEFINED ARGS_INCLUDE) OR (DEFINED ARGS_EQUAL AND DEFINED ARGS_EXCLUDE) OR (DEFINED ARGS_INCLUDE AND DEFINED ARGS_EXCLUDE))
+    message(FATAL_ERROR "Invalid call : EQUAL and/or EXCLUDE and/or INCLUDE args are found.")
   endif ()
 
   if (ARGS_AFTER)
@@ -418,15 +326,30 @@ function(arct_config_variation)
     set(ARCANET_BEFORE_AFTER "depend_b")
   endif ()
 
-  if(DEFINED ARGS_NEW)
-    _arct_config_add_dep("${ARCANET_BEFORE_AFTER}" "${ARGS_NEW}${ARGS_VALUE}")
-  elseif (DEFINED ARGS_APPEND)
-    if(NOT DEFINED ARGS_VALUE)
-      message(FATAL_ERROR "No VALUE")
+  if (DEFINED ARGS_EQUAL)
+    set(ARCT_VALUE "=${ARGS_EQUAL}")
+    set(ARCT_SYMBOL "=")
+
+  elseif (DEFINED ARGS_INCLUDE)
+    foreach (elem IN ITEMS ${ARGS_INCLUDE})
+      set(ARCT_VALUE "${ARCT_VALUE}+${elem}")
+    endforeach ()
+    set(ARCT_SYMBOL "+")
+
+  elseif (DEFINED ARGS_EXCLUDE)
+    foreach (elem IN ITEMS ${ARGS_EXCLUDE})
+      set(ARCT_VALUE "${ARCT_VALUE}!${elem}")
+    endforeach ()
+    set(ARCT_SYMBOL "!")
+  endif ()
+
+  if (DEFINED ARGS_ADD)
+    if (NOT DEFINED ARCT_VALUE)
+      _arct_internal_config_add_dep("${ARCANET_BEFORE_AFTER}" "${ARGS_ADD}")
     endif ()
-    _arct_config_append_var("${ARCANET_BEFORE_AFTER}" "${ARGS_APPEND}" "${ARGS_VALUE}")
+    _arct_internal_config_append_var("${ARCANET_BEFORE_AFTER}" "${ARGS_ADD}" "${ARCT_SYMBOL}" "${ARCT_VALUE}")
   else ()
-    message(FATAL_ERROR "No NEW APPEND")
+    message(FATAL_ERROR "No ADD APPEND")
   endif ()
 
 endfunction()
@@ -435,7 +358,7 @@ endfunction()
 
 function(arct_config_dependency)
   set(options BEFORE AFTER)
-  set(oneValueArgs NEW)
+  set(oneValueArgs ADD)
   set(multiValueArgs)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -444,64 +367,58 @@ function(arct_config_dependency)
     message(FATAL_ERROR "'arct_config_variation()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
+  if (ARGS_AFTER AND ARGS_BEFORE)
+    message(FATAL_ERROR "Invalid call : AFTER and BEFORE options are found.")
+  endif ()
+
   if (ARGS_AFTER)
     set(ARCANET_BEFORE_AFTER "depend_a")
   else ()
     set(ARCANET_BEFORE_AFTER "depend_b")
   endif ()
 
-  if(DEFINED ARGS_NEW)
-    _arct_config_add_dep("${ARCANET_BEFORE_AFTER}" "${ARGS_NEW}")
+  if (DEFINED ARGS_ADD)
+    _arct_internal_config_add_dep("${ARCANET_BEFORE_AFTER}" "${ARGS_ADD}")
   else ()
-    message(FATAL_ERROR "No NEW")
+    message(FATAL_ERROR "No ADD")
   endif ()
 endfunction()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-function(arct_arcane_set_dataset dataset_path)
+function(arct_arcane_dataset)
+  set(options)
+  set(oneValueArgs PATH)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
     message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
+  if (NOT DEFINED ARGS_PATH)
+    message(FATAL_ERROR "Argument PATH not found.")
+  endif ()
+
   string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arcane")
   if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
     string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arcane" "{}")
   endif ()
 
-  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arcane" "dataset" "\"${dataset_path}\"")
+  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arcane" "dataset" "\"${ARGS_PATH}\"")
 
   #
 
   set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
 endfunction()
-
-# ----------------------------------------------------------------------------
-
-macro(_arct_arcane_add_option option_name option_value)
-
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arcane")
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arcane" "{}")
-  endif ()
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arcane" "options")
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arcane" "options" "{}")
-  endif ()
-
-  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arcane" "options" "${option_name}" "\"${option_value}\"")
-
-  #
-
-  set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
-endmacro()
 
 # ----------------------------------------------------------------------------
 
 function(arct_arcane_option)
   set(options )
-  set(oneValueArgs VALUE NEW)
+  set(oneValueArgs VALUE ADD)
   set(multiValueArgs)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -510,58 +427,41 @@ function(arct_arcane_option)
     message(FATAL_ERROR "'arct_arcane_option()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
-  if(DEFINED ARGS_NEW AND DEFINED ARGS_VALUE)
-    _arct_arcane_add_option("${ARGS_NEW}" "${ARGS_VALUE}")
+  if (DEFINED ARGS_ADD AND DEFINED ARGS_VALUE)
+    _arct_internal_arcane_add_option("${ARGS_ADD}" "${ARGS_VALUE}")
   else ()
-    message(FATAL_ERROR "No NEW or VALUE")
+    message(FATAL_ERROR "No ADD or VALUE")
   endif ()
 endfunction()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-function(arct_arccher_define_mpi_path mpi_path)
+function(arct_arccher_mpi)
+  set(options)
+  set(oneValueArgs PATH NB_PROC)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_arccher_mpi()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "{}")
+  if (DEFINED ARGS_PATH)
+    _arct_internal_arccher_define_mpi_path("${ARGS_PATH}")
   endif ()
 
-  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "mpi_binary" "\"${mpi_path}\"")
-
-  #
-
-  set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
+  if (DEFINED ARGS_NB_PROC)
+    _arct_internal_arccher_define_mpi_nb_procs("${ARGS_NB_PROC}")
+  endif ()
 endfunction()
-
-# ----------------------------------------------------------------------------
-
-macro(_arct_arccher_add_envvar envvar_name envvar_value)
-
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "{}")
-  endif ()
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher" "env_var")
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "env_var" "{}")
-  endif ()
-
-  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "env_var" "${envvar_name}" "\"${envvar_value}\"")
-
-  #
-
-  set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
-endmacro()
 
 # ----------------------------------------------------------------------------
 
 function(arct_arccher_envvar)
   set(options )
-  set(oneValueArgs VALUE NEW)
+  set(oneValueArgs VALUE ADD)
   set(multiValueArgs)
 
   cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -570,68 +470,47 @@ function(arct_arccher_envvar)
     message(FATAL_ERROR "'arct_arccher_envvar()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
-  if(DEFINED ARGS_NEW AND DEFINED ARGS_VALUE)
-    _arct_arccher_add_envvar("${ARGS_NEW}" "${ARGS_VALUE}")
+  if (DEFINED ARGS_ADD AND DEFINED ARGS_VALUE)
+    _arct_internal_arccher_add_envvar("${ARGS_ADD}" "${ARGS_VALUE}")
   else ()
-    message(FATAL_ERROR "No NEW or VALUE")
+    message(FATAL_ERROR "No ADD or VALUE")
   endif ()
 endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arct_arccher_define_mpi_nb_procs nb_mpi)
+function(arct_arccher_executable)
+  set(options)
+  set(oneValueArgs PATH)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_arccher_executable()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "{}")
+  if (DEFINED ARGS_PATH)
+    _arct_internal_arccher_define_executable("${ARGS_PATH}")
   endif ()
-
-  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "mpi" "${nb_mpi}")
-
-  #
-
-  set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
 endfunction()
 
 # ----------------------------------------------------------------------------
 
-function(arct_arccher_define_executable exe_path)
+function(arct_arccher_working_dir)
+  set(options)
+  set(oneValueArgs PATH)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
   if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
+    message(FATAL_ERROR "'arct_arccher_working_dir()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
   endif ()
 
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "{}")
+  if (DEFINED ARGS_PATH)
+    _arct_internal_arccher_define_working_dir("${ARGS_PATH}")
   endif ()
-
-  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "code_binary" "\"${exe_path}\"")
-
-  #
-
-  set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
-endfunction()
-
-# ----------------------------------------------------------------------------
-
-function(arct_arccher_define_working_dir working_dir)
-  if (NOT DEFINED ARCANET_JSON_PART_PATH)
-    message(FATAL_ERROR "'arct_config_create_or_edit_end()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
-  endif ()
-
-  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
-  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
-    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "{}")
-  endif ()
-
-  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "working_dir" "\"${working_dir}\"")
-
-  #
-
-  set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
 endfunction()
 
 # ----------------------------------------------------------------------------
