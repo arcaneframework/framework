@@ -35,7 +35,8 @@ find_package(Doxygen)
 
 # Si le package Doxygen est introuvable, inutile de continuer.
 if (Doxygen_FOUND)
-  block()
+  function(internal_block)
+#  block()
     include(${ARCANEBUILDROOT}/share/adoc/cmake/ADocConfig.cmake)
 
     # Emplacement du dossier "doc" copié précédemment. TODO À personnaliser.
@@ -54,7 +55,9 @@ if (Doxygen_FOUND)
 
     # On demande la génération des deux cibles documentations (`userdoc` et `devdoc`).
     doc_generation("user")
-  endblock()
+#  endblock()
+  endfunction()
+  internal_block()
 endif ()
 
 # ----------------------------------------------------------------------------
