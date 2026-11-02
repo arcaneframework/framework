@@ -2,95 +2,95 @@
 
 ArcaNet File. Version 1.
 
-## Extension de nom de fichier
+## File name extension
 
-Les fichiers ArcaNet utilisent l'extension `.arct`.
+ArcaNet files use the `.arct` extension.
 
-## Objectifs
+## Goals
 
-Ce fichier a pour objectif de décrire comment lancer un ou plusieurs cas d'utilisation pour un projet donné.
+This file aims at describing how to launch one or more use cases for a given project.
 
-Tous les programmes de la chaine de calcul de ce projet peuvent prendre ce fichier en paramètre, ainsi que le nom du cas
-à exécuter et charge aux programmes de se configurer selon les paramètres donnés.
+All the programs of the computing chain of this project can take this file as a parameter, as well as the name of
+the case to execute, and it is up to the programs to configure themselves according to the given parameters.
 
-La construction du nom de cas sera aussi spécifiée dans ce fichier.
+The construction of the case name will also be specified in this file.
 
-Ce fichier ne décrit pas l'ordre de lancement des programmes, uniquement les paramètres de lancement/de configuration.
+This file does not describe the launch order of the programs, only the launch/configuration parameters.
 
-Dans ce fichier, chaque programme peut avoir un ou plusieurs objets JSON qui lui sont totalement réservés, à sa charge
-(à lui de les mettre à jour, par exemple).
+In this file, each program can have one or more JSON objects totally reserved for it, at its own charge (up to it
+to update them, for example).
 
-En pratique, tous les programmes de la chaine de calcul ne supporteront pas ce type de fichier. Un lanceur de programme,
-supportant ce type de fichier, pourra prendre à sa charge la configuration de ces programmes, afin de rendre cette
-incompatibilité invisible pour l'utilisateur final. Ce lanceur de programme ne sera pas spécifié ici.
+In practice, not all the programs of the computing chain will support this type of file. A program launcher,
+supporting this type of file, can take care of the configuration of these programs, in order to make this
+incompatibility invisible for the end user. This program launcher will not be specified here.
 
-## Fonctionnement général
+## General operation
 
-Un bloc de base de ce schéma de fichier est un objet JSON appelé **config_block** ("bloc de configurations") contenant
-des objets JSON destinés aux programmes demandeurs appelés **reserved_block** ("bloc réservé (pour un programme
-demandeur)").
+A base block of this file schema is a JSON object called **config_block** ("configuration block") containing JSON
+objects intended for the requesting programs, called **reserved_block** ("reserved block (for a requesting
+program)").
 
-Le principe de base de ce fichier est de construire une ou plusieurs listes de **config_block**, listes qui dépendront
-du nom de cas donné par l'utilisateur.
+The basic principle of this file is to build one or more lists of **config_block**, lists which will depend on the
+case name given by the user.
 
-Un programme demandeur peut supporter ou non le lancement de plusieurs cas d'utilisation en une fois. Si le programme
-ne peut lancer qu'un seul cas à la fois, alors il n'obtiendra qu'une seule liste de **config_block**, et l'utilisateur
-devra s'assurer que son fichier ARCT et son nom de cas, une fois traités, ne désignera qu'un seul cas d'utilisation (une
-erreur devra être affichée si une incompatibilité est détectée).
+A requesting program may or may not support the launch of several use cases at once. If the program can only
+launch a single case at a time, then it will only get a single list of **config_block**, and the user will have to
+make sure that their ARCT file and case name, once processed, designate only a single use case (an error must be
+displayed if an incompatibility is detected).
 
-L'ordre des blocs de ces listes dépend des différentes dépendances entre les blocs de configurations.
+The order of the blocks of these lists depends on the different dependencies between the configuration blocks.
 
-Le programme demandeur, via un lecteur de fichier ARCT, obtiendra ces listes et devra les traiter, bloc par bloc. Ce
-traitement est dépendant du programme demandeur (exemple : si un tableau est présent dans deux de ces blocs, il pourra
-les fusionner ou les écraser ou...).
+The requesting program, via an ARCT file reader, will get these lists and will have to process them, block by
+block. This processing is dependent on the requesting program (example: if an array is present in two of these
+blocks, it can merge them or overwrite them or...).
 
-Le programme demandeur aura des listes de blocs de configurations, avec les blocs réservés de tous les programmes. Il
-peut lire les blocs réservés d'autres programmes, même les mettre à jour s'il le souhaite, mais il devra tenir compte
-des spécifications imposées par le programme propriétaire du bloc.
+The requesting program will have lists of configuration blocks, with the reserved blocks of all the programs. It
+can read the reserved blocks of other programs, even update them if it wishes, but it will have to take into
+account the specifications imposed by the program owning the block.
 
-Le lecteur de fichier ARCT devra supporter toutes les fonctionnalités et les contraintes exposées ici pour afficher le
-support de ce schéma de fichier, dans la version affichée en première ligne de ce fichier.
+The ARCT file reader must support all the features and the constraints exposed here to display the support of
+this file schema, in the version shown on the first line of this file.
 
-## Spécifications
+## Specifications
 
-- ARCT est un schéma de fichier JSON standard,
-- Son encodage doit être en UTF-8 (avec ou sans BOM),
-- Les noms des propriétés suivront la convention `snake_case`.
+- ARCT is a standard JSON file schema,
+- Its encoding must be UTF-8 (with or without BOM),
+- The property names will follow the `snake_case` convention.
 
-### Commentaires JSON (JSONC)
+### JSON comments (JSONC)
 
-Les commentaires en JSON (`//` et `/* */`) sont une extension non-officielle du format JSON. Ainsi, tous les
-lecteurs/écrivains JSON ne les supportent pas forcément.
+Comments in JSON (`//` and `/* */`) are an unofficial extension of the JSON format. Thus, not all JSON
+readers/writers necessarily support them.
 
-Ce schéma n'impose pas le support des commentaires pour les lecteurs JSON.
+This schema does not require comment support for JSON readers.
 
-Pour les écrivains non plus. Ainsi, une mise à jour de fichier ARCT peut provoquer une perte de commentaires.
+Nor for writers. Thus, an update of an ARCT file can cause a loss of comments.
 
-Pour ces raisons, l'utilisation du JSONC et des commentaires est déconseillé (les exemples de ce document utilisent des
-commentaires par convention documentaire).
+For these reasons, the use of JSONC and comments is discouraged (the examples of this document use comments as a
+documentation convention).
 
-Pour contourner ça, il est possible de commenter un fichier ARCT/JSON classique avec les noms de propriétés `"//X"`, `X`
-désignant un nombre quelconque ou autres (les propriétés commençant par `//` ne seront pas utilisées).
+To work around this, it is possible to comment a classic ARCT/JSON file with the property names `"//X"`, `X`
+designating any number or other (the properties starting with `//` will not be used).
 
-Exemple :
+Example:
 
 ```json
 {
-  "//1": "Commentaire quelconque."
+  "//1": "Any comment."
 }
 ```
 
-## Schéma général
+## General schema
 
-Le schéma ARCT est composé de cinq objets JSON à la racine :
+The ARCT schema is made up of five JSON objects at the root:
 
-- `general` : configuration générale,
-- `cases` : configurations des cas d'utilisation,
-- `commons` : configurations communes,
-- `variations` : variations de configurations avec plusieurs variants,
-- `versions` : versions des **reserved_block**.
+- `general`: general configuration,
+- `cases`: configurations of the use cases,
+- `commons`: common configurations,
+- `variations`: configuration variations with several variants,
+- `versions`: versions of the **reserved_block**.
 
-Le fichier ARCT minimal nécessite uniquement l'objet `versions` rempli ainsi :
+The minimal ARCT file only requires the `versions` object filled as follows:
 
 ```jsonc
 {
@@ -102,7 +102,7 @@ Le fichier ARCT minimal nécessite uniquement l'objet `versions` rempli ainsi :
 
 ### General
 
-Cet objet contient uniquement un bloc de configurations :
+This object only contains a configuration block:
 
 ```jsonc
 {
@@ -112,41 +112,41 @@ Cet objet contient uniquement un bloc de configurations :
 }
 ```
 
-Cet objet est facultatif.
+This object is optional.
 
 ### Cases
 
-Cet objet doit contenir tous les cas d'utilisation pour le projet.
+This object must contain all the use cases for the project.
 
-Exemple de cet objet :
+Example of this object:
 
 ```jsonc
 {
   "cases": {
-    "nom_du_cas_1": {
+    "case_1": {
       // <config_block>
     },
-    "nom_du_cas_2": {
+    "case_2": {
       // <config_block>
     }
   }
 }
 ```
 
-Cet objet est facultatif.
+This object is optional.
 
-Le format du nom des cas de base est libre (sauf certains caractères qui sont réservés par le schéma). D'usage, on
-utilise soit le `camelCase`, soit le `snake_case`, sans espaces.
+The format of the base case names is free (except some characters which are reserved by the schema). By usage, we
+use either `camelCase` or `snake_case`, without spaces.
 
-Il ne peut pas y avoir deux cas avec le même nom.
+There cannot be two cases with the same name.
 
-Aussi, le nom des cas de base doit être différent du nom des configurations communes et du nom des variations de
-configurations. Si ce n'est pas le cas, et comme le format JSON ne l'interdit pas, une erreur doit être émise par le
-lecteur de fichier ARCT.
+Also, the name of the base cases must be different from the name of the common configurations and from the name of
+the configuration variations. If this is not the case, and as the JSON format does not forbid it, an error must be
+emitted by the ARCT file reader.
 
-#### Caractères réservés
+#### Reserved characters
 
-Les caractères suivants ne peuvent pas être utilisés dans le nom des cas de base :
+The following characters cannot be used in the name of the base cases:
 
 - `:`,
 - `=`,
@@ -156,38 +156,38 @@ Les caractères suivants ne peuvent pas être utilisés dans le nom des cas de b
 
 ### Commons
 
-Cet objet doit contenir toutes les configurations communes (configurations qui peuvent être demandées par d'autres
+This object must contain all the common configurations (configurations which can be requested by other
 configurations).
 
-Exemple de cet objet :
+Example of this object:
 
 ```jsonc
 {
   "commons": {
-    "nom_de_la_config_1": {
+    "common_config_1": {
       // <config_block>
     },
-    "nom_de_la_config_2": {
+    "common_config_2": {
       // <config_block>
     }
   }
 }
 ```
 
-Cet objet est facultatif.
+This object is optional.
 
-Le format du nom des configurations est libre (sauf certains caractères qui sont réservés par le schéma). D'usage, on
-utilise soit le `camelCase`, soit le `snake_case`, sans espaces.
+The format of the name of the configurations is free (except some characters which are reserved by the schema).
+By usage, we use either `camelCase` or `snake_case`, without spaces.
 
-Il ne peut pas y avoir deux configurations avec le même nom.
+There cannot be two configurations with the same name.
 
-Le nom des configurations doit être différent du nom des cas d'utilisation et du nom des variations de configurations.
-Si ce n'est pas le cas, et comme le format JSON ne l'interdit pas, une erreur doit être émise par le lecteur de fichier
-ARCT.
+The name of the configurations must be different from the name of the use cases and from the name of the
+configuration variations. If this is not the case, and as the JSON format does not forbid it, an error must be
+emitted by the ARCT file reader.
 
-#### Caractères réservés
+#### Reserved characters
 
-Les caractères suivants ne peuvent pas être utilisés dans le nom de la configuration :
+The following characters cannot be used in the name of the configuration:
 
 - `:`,
 - `=`,
@@ -197,27 +197,27 @@ Les caractères suivants ne peuvent pas être utilisés dans le nom de la config
 
 ### Variations/Variants
 
-Cet objet doit contenir toutes les variations de configurations, contenant elles-mêmes toutes les variantes de la
+This object must contain all the configuration variations, themselves containing all the variants of the
 configuration.
 
-Exemple de cet objet :
+Example of this object:
 
 ```jsonc
 {
   "variations": {
-    "nom_de_la_variation_1": {
-      "nom_du_variant_1_de_la_variation_1": {
+    "variation_1": {
+      "variant_1_of_variation_1": {
         // <config_block>
       },
-      "nom_du_variant_2": {
+      "variant_2": {
         // <config_block>
       }
     },
-    "nom_de_la_variation_2": {
-      "nom_du_variant_1_de_la_variation_2": {
+    "variation_2": {
+      "variant_1_of_variation_2": {
         // <config_block>
       },
-      "nom_du_variant_2": {
+      "variant_2": {
         // <config_block>
       }
     }
@@ -225,22 +225,22 @@ Exemple de cet objet :
 }
 ```
 
-Cet objet est facultatif.
+This object is optional.
 
-Le format du nom des variations et des variants est libre (sauf certains caractères qui sont réservés par le schéma).
-D'usage, on utilise soit le `camelCase`, soit le `snake_case`, sans espaces.
+The format of the name of the variations and variants is free (except some characters which are reserved by the
+schema). By usage, we use either `camelCase` or `snake_case`, without spaces.
 
-Il ne peut pas y avoir deux variations avec le même nom. Au sein d'une variation, il ne peut pas y avoir deux variants
-avec le même nom. En revanche, deux variants de deux variations distinctes peuvent avoir le même nom.
+There cannot be two variations with the same name. Within a variation, there cannot be two variants with the same
+name. However, two variants of two distinct variations can have the same name.
 
-Le nom des variations doit être différent du nom des cas d'utilisation et du nom des configurations communes. Si ce
-n'est pas le cas, et comme le format JSON ne l'interdit pas, une erreur doit être émise par le lecteur de fichier ARCT.
-Le nom des variants peut être identique aux noms des variations, aux noms des cas d'utilisation et aux noms des
-configurations communes.
+The name of the variations must be different from the name of the use cases and from the name of the common
+configurations. If this is not the case, and as the JSON format does not forbid it, an error must be emitted by
+the ARCT file reader. The name of the variants can be identical to the names of the variations, to the names of
+the use cases and to the names of the common configurations.
 
-#### Caractères réservés
+#### Reserved characters
 
-Les caractères suivants ne peuvent pas être utilisés dans le nom des variations/variants :
+The following characters cannot be used in the name of the variations/variants:
 
 - `:`,
 - `=`,
@@ -250,209 +250,214 @@ Les caractères suivants ne peuvent pas être utilisés dans le nom des variatio
 
 ### Versions
 
-Cet objet doit contenir la version de chaque **reserved_block**.
+This object must contain the version of each **reserved_block**.
 
-Exemple de cet objet :
+Example of this object:
 
 ```jsonc
 {
   "versions": {
     "_": 1,
-    "programme_1": 1,
-    "programme_2": [1, 0]
+    "program_1": 1,
+    "program_2": [1, 0]
   }
 }
 ```
 
-La clef `"_"` est réservée au numéro de version du schéma du fichier lui-même, décrit dans ce fichier, ainsi qu'à la
-version du bloc réservé ARCT.
+The `"_"` key is reserved for the version number of the file schema itself, described in this file, as well as
+for the version of the ARCT reserved block.
 
-Le seul élément qui ne pourra pas évoluer dans le schéma de fichier ARCT est la position de ce numéro de version. Ainsi,
-tous les lecteurs de fichier ARCT passés et futurs pourront déterminer leurs capacités à lire le fichier uniquement à
-l'aide de ce numéro.
+The only element which will not be able to evolve in the ARCT file schema is the position of this version number.
+Thus, all the past and future ARCT file readers will be able to determine their ability to read the file only
+with this number.
 
-Le format de la valeur de version est imposé. Ce doit être soit un entier positif, soit un tableau d'entiers positifs.
+The format of the version value is imposed. It must be either a positive integer, or an array of positive
+integers.
 
-Si un programme demandeur possède un bloc réservé classique et/ou un bloc réservé alternatif dans un bloc de
-configurations, il doit le versionner, donc mettre le numéro de version dans l'objet `versions`. Les blocs réservés
-classiques et alternatifs partagent le même numéro de version. Le nom de l'alternative ne doit donc pas apparaitre dans
-l'objet `versions`.
+If a requesting program owns a classic reserved block and/or an alternative reserved block in a configuration
+block, it must version it, so put the version number in the `versions` object. The classic and alternative
+reserved blocks share the same version number. The name of the alternative must therefore not appear in the
+`versions` object.
 
-Le programme demandeur doit définir une spécification pour chaque version, qu'il peut rendre public s'il souhaite que
-d'autres programmes puissent lire correctement son bloc réservé. La sémantique du numéro de version doit aussi être
-spécifiée (pour pouvoir lire et pouvoir comparer les numéros de version correctement).
+The requesting program must define a specification for each version, which it can make public if it wishes other
+programs to be able to read its reserved block correctly. The semantics of the version number must also be
+specified (to be able to read and to be able to compare the version numbers correctly).
 
-Ce programme ne peut pas mélanger plusieurs versions de ces blocs.
+This program cannot mix several versions of these blocks.
 
-## Schéma du bloc de configurations
+## Schema of the configuration block
 
-### Schéma général
+### General schema
 
-Le bloc de configurations est un objet JSON contenant des blocs réservés (eux-mêmes des objets JSON).
+The configuration block is a JSON object containing reserved blocks (themselves JSON objects).
 
-Un bloc de configurations peut être un objet vide.
+A configuration block can be an empty object.
 
-Exemple de cet objet :
+Example of this object:
 
 ```jsonc
 {
   "_": {
     // <reserved_block>
   },
-  "programme_1": {
+  "program_1": {
     // <reserved_block>
   },
-  "programme_2": {
+  "program_2": {
     // <reserved_block>
   }
 }
 ```
 
-Chaque objet du bloc de configurations doit être facultatif.
+Each object of the configuration block must be optional.
 
-Si un objet est présent, même vide, un numéro de version doit être présent dans la partie prévue à cet effet.
+If an object is present, even empty, a version number must be present in the part provided for this purpose.
 
-Le format du nom des programmes est libre (sauf certains caractères qui sont réservés par le schéma). Le seul nom
-réservé est `"_"`.
+The format of the program names is free (except some characters which are reserved by the schema). The only
+reserved name is `"_"`.
 
-#### Caractères réservés
+#### Reserved characters
 
-Les caractères suivants ne peuvent pas être utilisés dans le nom des blocs réservés :
+The following characters cannot be used in the name of the reserved blocks:
 
 - `:`,
 - `=`,
-- `~` (sauf pour définir un bloc réservé alternatif),
+- `~` (except to define an alternative reserved block),
 - `!`,
 - `+`.
 
-### Blocs réservés alternatifs
+### Alternative reserved blocks
 
-Le format de fichier JSON impose que les noms soient uniques. Néanmoins, il peut être nécessaire de faire apparaitre
-plusieurs blocs réservés pour un même programme, suivant le mode de lancement par exemple. Ce sont les blocs réservés
-alternatifs (en opposition aux blocs réservés classiques).
+The JSON file format imposes that the names be unique. Nevertheless, it can be necessary to have several reserved
+blocks appear for the same program, depending on the launch mode for example. These are the alternative reserved
+blocks (in opposition to the classic reserved blocks).
 
-Un des caractères réservés est justement prévu pour ce cas de figure : `~`.
+One of the reserved characters is precisely provided for this case: `~`.
 
-Exemple :
+Example:
 
 ```jsonc
-"nom_du_cas_1": {
+"case_1": {
   "_": {
     // <reserved_block>
   },
-  "programme_1~init": {
+  "program_1~init": {
     // <reserved_block>
   },
-  "programme_1": {
+  "program_1": {
     // <reserved_block>
   }
 }
 ```
 
-Pour demander le lancement de ce chemin alternatif, il faut le spécifier dans le nom de cas lors du lancement du
-programme.
+To request the launch of this alternative path, it must be specified in the case name when launching the
+program.
 
-Un lancement classique se ferait avec le nom de cas `nom_du_cas_1`. Pour lancer un chemin alternatif, il faut ajouter le
-nom de l'alternative au nom de cas en les séparant du symbole `~` : `nom_du_cas_1~init`.
+A classic launch would be done with the case name `case_1`. To launch an alternative path, the name of the
+alternative must be added to the case name, separated by the `~` symbol: `case_1~init`.
 
-On sait que le programme demandeur recevra une liste de blocs de configurations. Donc, en théorie, ce serait à lui de
-s'occuper de récupérer le bon bloc selon l'alternative choisie. Pour faciliter cette récupération, le lecteur de fichier
-ARCT devra proposer une méthode prenant en argument un bloc de configuration et retournant le bloc réservé adéquat.
+We know that the requesting program will receive a list of configuration blocks. So, in theory, it would be up to
+it to take care of retrieving the right block according to the chosen alternative. To facilitate this retrieval,
+the ARCT file reader must provide a method taking a configuration block as an argument and returning the adequate
+reserved block.
 
-Pour un bloc de configuration donné et pour une alternative demandée :
+For a given configuration block and for a requested alternative:
 
-- si le bloc réservé alternatif avec le bon nom existe, il est utilisé,
-- si le bloc réservé alternatif avec le bon nom n'existe pas, le bloc réservé classique est utilisé,
-- si le bloc réservé classique n'existe pas, un bloc vide est retourné (pas d'erreur, les blocs réservés étant
-  facultatifs).
+- if the alternative reserved block with the right name exists, it is used,
+- if the alternative reserved block with the right name does not exist, the classic reserved block is used,
+- if the classic reserved block does not exist, an empty block is returned (no error, the reserved blocks being
+  optional).
 
-Il est important de noter que le nom du cas de base est facultatif (il peut être inutile si l'on souhaite lancer
-uniquement le bloc `general`). Un nom de cas peut donc commencer par `~`. Par contre, `~` seul n'est pas autorisé.
+It is important to note that the name of the base case is optional (it can be useless if we want to launch only
+the `general` block). A case name can therefore start with `~`. However, `~` alone is not allowed.
 
-### Bloc ARCT réservé
+### ARCT reserved block
 
-Ce bloc réservé est décrit par ce fichier de spécification et peut être utilisé par les programmes demandeurs (à eux de
-faire attention au numéro de version du fichier).
+This reserved block is described by this specification file and can be used by the requesting programs (it is up
+to them to pay attention to the version number of the file).
 
-Ce bloc a plusieurs raisons d'être :
+This block has several reasons to exist:
 
-- apporter des précisions sur l'utilité de ce bloc de configurations (avec un nom plus précis, par exemple),
-- apporter des paramètres communs pour tous les programmes demandeurs,
-- étendre facilement le schéma de fichier sans trop de difficultés,
-- décrire les dépendances entre les blocs de configurations.
+- to bring details on the use of this configuration block (with a more precise name, for example),
+- to bring common parameters for all the requesting programs,
+- to easily extend the file schema without too many difficulties,
+- to describe the dependencies between the configuration blocks.
 
-Voici un exemple exhaustif de ce bloc :
+Here is an exhaustive example of this block:
 
 ```jsonc
 {
-  "name": "Exemple de cas n°1",
-  "depend_b": ["nom_bloc_common_1"],
-  "depend_a": ["nom_variation_1"]
+  "name": "Example of case No. 1",
+  "depend_b": ["common_block_1"],
+  "depend_a": ["variation_1"]
 }
 ```
 
-Le nom peut donner plus de précisions sur la fonction de ce bloc.
+The name can give more details on the function of this block.
 
-La propriété `depend_b` décrit les dépendances du bloc à lire avant ce bloc ("b" signifie "before").
+The `depend_b` property describes the dependencies of the block to read before this block ("b" stands for
+"before").
 
-La propriété `depend_a` décrit les dépendances du bloc à lire après ce bloc ("a" signifie "after").
+The `depend_a` property describes the dependencies of the block to read after this block ("a" stands for
+"after").
 
-Le programme demandeur peut lire ces propriétés s'il le souhaite. La résolution des dépendances est une tâche réservée
-au lecteur de fichier ARCT. Le programme demandeur obtient une liste de blocs de configurations dans le bon ordre.
+The requesting program can read these properties if it wishes. The resolution of the dependencies is a task
+reserved for the ARCT file reader. The requesting program gets a list of configuration blocks in the right
+order.
 
-## Ordre de lecture des blocs de configurations et dépendances
+## Reading order of the configuration blocks and dependencies
 
-### Syntaxe d'une liste de blocs de configurations
+### Syntax of a list of configuration blocks
 
-Dans un lecteur de fichier ARCT, une liste de blocs de configurations est simplement une liste d'objets JSON triée selon
-l'ordre de lecture qu'il est nécessaire de suivre.
+In an ARCT file reader, a list of configuration blocks is simply a list of JSON objects sorted according to the
+reading order which is necessary to follow.
 
-Pour écrire ces listes de manière humainement lisible, cette syntaxe a été définie :
+To write these lists in a humanly readable way, this syntax has been defined:
 
-- `{}` désigne un bloc ainsi que ses dépendances,
-- `[]` désigne le bloc parent ; ainsi, tous les blocs avant sont des dépendances "before" et les blocs après sont des
-  dépendances "after",
-- `->` est simplement un séparateur de bloc qui montre l'ordre de lecture.
+- `{}` designates a block as well as its dependencies,
+- `[]` designates the parent block; thus, all the blocks before are "before" dependencies and the blocks after
+  are "after" dependencies,
+- `->` is simply a block separator which shows the reading order.
 
-Exemple :
-
-```txt
-{ nom_config_1 -> [general] } -> { { [nom_config_2] -> nom_config_4 } -> [nom_du_cas_1] -> nom_config_3 }
-```
-
-On peut voir que l'on a deux blocs principaux : `[general]` et `[nom_du_cas_1]` :
-
-- `[general]` a une dépendance "before" qui est `nom_config_1`.
-- `[nom_du_cas_1]` a deux dépendances :
-  - une dépendance "after" : `nom_config_3`
-  - une dépendance "before" : `[nom_config_2]` qui a une dépendance "after" :
-    - `nom_config_4`
-
-La liste d'objet JSON est simplement :
+Example:
 
 ```txt
-array = [nom_config_1, general, nom_config_2, nom_config_4, nom_du_cas_1, nom_config_3];
+{ config_1 -> [general] } -> { { [config_2] -> config_4 } -> [case_1] -> config_3 }
 ```
 
-### Cas général (sans dépendances)
+We can see that we have two main blocks: `[general]` and `[case_1]`:
 
-Prenons cet exemple simple :
+- `[general]` has a "before" dependency which is `config_1`.
+- `[case_1]` has two dependencies:
+  - an "after" dependency: `config_3`
+  - a "before" dependency: `[config_2]` which has an "after" dependency:
+    - `config_4`
+
+The list of JSON objects is simply:
+
+```txt
+array = [config_1, general, config_2, config_4, case_1, config_3];
+```
+
+### General case (without dependencies)
+
+Let's take this simple example:
 
 ```jsonc
 // file.arct
 {
   "versions": {
     "_": 1,
-    "programme_1": 1
+    "program_1": 1
   },
   "general": {
-    "programme_1": {
+    "program_1": {
       // <reserved_block>
     }
   },
   "cases": {
-    "nom_du_cas_1": {
-      "programme_1": {
+    "case_1": {
+      "program_1": {
         // <reserved_block>
       }
     }
@@ -460,74 +465,75 @@ Prenons cet exemple simple :
 }
 ```
 
-Et supposons que `programme_1` prenne en argument le fichier ARCT via l'option `-j` et le nom du cas via l'option `-c`.
+And let's suppose that `program_1` takes the ARCT file as an argument via the `-j` option and the case name via
+the `-c` option.
 
-#### Cas 1
+#### Case 1
 
-Si nous spécifions uniquement le chemin du fichier ARCT, sans nom de cas, seul le bloc de configurations `general` sera
-lu :
+If we specify only the path of the ARCT file, without case name, only the `general` configuration block will be
+read:
 
-`./programme_1 -j file.arct`
+`./program_1 -j file.arct`
 
 ```txt
 { [general] }
 ```
 
-Si le bloc `general` n'est pas présent, alors aucun bloc ne sera présenté au programme demandeur. Au programme demandeur
-de décider s'il doit émettre une erreur ou non. Le fichier sera, lui, conforme.
+If the `general` block is not present, then no block will be presented to the requesting program. It is up to the
+requesting program to decide whether it must emit an error or not. The file itself will be valid.
 
-#### Cas 2
+#### Case 2
 
-Ajoutons maintenant le nom du cas `nom_du_cas_1` :
+Let's now add the case name `case_1`:
 
-`./programme_1 -j file.arct -c nom_du_cas_1`
+`./program_1 -j file.arct -c case_1`
 
 ```txt
-{ [general] } -> { [nom_du_cas_1] }
+{ [general] } -> { [case_1] }
 ```
 
-Sans dépendances, le bloc `general` est toujours lu en premier et le bloc `case` en second.
+Without dependencies, the `general` block is always read first and the `case` block second.
 
-Mais attention : tous les blocs de configurations sont facultatifs. Si le bloc `general` n'existe pas, il ne sera,
-évidemment, pas lu. Seul le bloc `case` le sera (en premier, donc).
+But be careful: all the configuration blocks are optional. If the `general` block does not exist, it will,
+obviously, not be read. Only the `case` block will be (first, then).
 
-En revanche, si le cas `nom_du_cas_1` n'est pas présent dans le fichier ARCT alors qu'il est demandé par le programme
-demandeur, alors le lecteur doit émettre une erreur.
+However, if the case `case_1` is not present in the ARCT file while it is requested by the requesting program,
+then the reader must emit an error.
 
-Rappel : c'est au programme demandeur de traiter la liste de blocs qui lui est présentée (à lui de déterminer comment
-traiter les propriétés en double, par exemple).
+Reminder: it is up to the requesting program to process the list of blocks which is presented to it (up to it to
+determine how to process the duplicate properties, for example).
 
-### Cas avec dépendances
+### Case with dependencies
 
-#### Cas 1
+#### Case 1
 
-Ajoutons des blocs `commons` et une dépendance dans l'exemple :
+Let's add `commons` blocks and a dependency in the example:
 
 ```jsonc
 // file.arct
 {
   "versions": {
     "_": 1,
-    "programme_1": 1
+    "program_1": 1
   },
   "general": {
-    "programme_1": {
+    "program_1": {
       // <reserved_block>
     }
   },
   "cases": {
-    "nom_du_cas_1": {
+    "case_1": {
       "_":{
-        "depend_a": ["nom_config_1"]
+        "depend_a": ["config_1"]
       },
-      "programme_1": {
+      "program_1": {
         // <reserved_block>
       }
     }
   },
   "commons": {
-    "nom_config_1": {
-      "programme_1": {
+    "config_1": {
+      "program_1": {
         // <reserved_block>
       }
     }
@@ -535,53 +541,53 @@ Ajoutons des blocs `commons` et une dépendance dans l'exemple :
 }
 ```
 
-Le nombre de blocs lu va changer si nous demandons le cas `nom_du_cas_1`. En effet, dans ce bloc, nous retrouvons la
-propriété `depend_a` qui permet de demander la lecture de blocs après `nom_du_cas_1` :
+The number of blocks read will change if we request the case `case_1`. Indeed, in this block, we find the
+`depend_a` property which makes it possible to request the reading of blocks after `case_1`:
 
-`./programme_1 -j file.arct -c nom_du_cas_1`
-
-```txt
-{ [general] } -> { [nom_du_cas_1] -> nom_config_1 }
-```
-
-Si l'on remplace la propriété `depend_a` par `depend_b`, on va retrouver une liste comme celle-ci :
+`./program_1 -j file.arct -c case_1`
 
 ```txt
-{ [general] } -> { nom_config_1 -> [nom_du_cas_1] }
+{ [general] } -> { [case_1] -> config_1 }
 ```
 
-#### Cas 2
+If we replace the `depend_a` property by `depend_b`, we will get a list like this one:
 
-Compliquons un peu l'exemple :
+```txt
+{ [general] } -> { config_1 -> [case_1] }
+```
+
+#### Case 2
+
+Let's complicate the example a bit:
 
 ```jsonc
 // file.arct
 {
-  // Blocs "versions" et "general" omis.
+  // "versions" and "general" blocks omitted.
   "cases": {
-    "nom_du_cas_1": {
+    "case_1": {
       "_":{
-        "depend_b": ["nom_config_1"],
-        "depend_a": ["nom_config_2", "nom_config_3"]
+        "depend_b": ["config_1"],
+        "depend_a": ["config_2", "config_3"]
       },
-      "programme_1": {
+      "program_1": {
         // <reserved_block>
       }
     }
   },
   "commons": {
-    "nom_config_1": {
-      "programme_1": {
+    "config_1": {
+      "program_1": {
         // <reserved_block>
       }
     },
-    "nom_config_2": {
-      "programme_1": {
+    "config_2": {
+      "program_1": {
         // <reserved_block>
       }
     },
-    "nom_config_3": {
-      "programme_1": {
+    "config_3": {
+      "program_1": {
         // <reserved_block>
       }
     }
@@ -589,107 +595,108 @@ Compliquons un peu l'exemple :
 }
 ```
 
-On mélange `depend_b` et `depend_a` :
+We mix `depend_b` and `depend_a`:
 
-`./programme_1 -j file.arct -c nom_du_cas_1`
+`./program_1 -j file.arct -c case_1`
 
 ```txt
-{ [general] } -> { nom_config_1 -> [nom_du_cas_1] -> nom_config_2 -> nom_config_3 }
+{ [general] } -> { config_1 -> [case_1] -> config_2 -> config_3 }
 ```
 
-#### Cas 3
+#### Case 3
 
-Dernier exemple de ce type :
+Last example of this type:
 
 ```jsonc
 // file.arct
 {
-  // Bloc "versions" omis.
-  "general": {
-    "_":{
-      "depend_b": ["nom_config_1"]
-    },
-    "programme_1": {
-      // <reserved_block>
-    }
-  },
-  "cases": {
-    "nom_du_cas_1": {
-      "_":{
-        "depend_b": ["nom_config_2"],
-        "depend_a": ["nom_config_3"]
-      },
-      "programme_1": {
-        // <reserved_block>
-      }
-    }
-  },
-  "commons": {
-    "nom_config_1": {
-      "programme_1": {
-        // <reserved_block>
-      }
-    },
-    "nom_config_2": {
-      "_":{
-        "depend_a": ["nom_config_4"]
-      },
-      "programme_1": {
-        // <reserved_block>
-      }
-    },
-    "nom_config_3": {
-      "programme_1": {
-        // <reserved_block>
-      }
-    },
-    "nom_config_4": {
-      "programme_1": {
-        // <reserved_block>
-      }
-    }
-  }
-}
-```
-
-Tous les blocs de configurations peuvent avoir des dépendances :
-
-`./programme_1 -j file.arct -c nom_du_cas_1`
-
-```txt
-{ nom_config_1 -> [general] } -> { { [nom_config_2] -> nom_config_4 } -> [nom_du_cas_1] -> nom_config_3 }
-```
-
-#### Cas avec variations
-
-L'ordre des blocs dans la liste avec des variations ne change pas par rapport à l'ordre avec des blocs `commons` :
-
-```jsonc
-// file.arct
-{
-  // Bloc "versions" omis.
+  // "versions" block omitted.
   "general": {
     "_":{
-      "depend_b": ["nom_config_1"]
+      "depend_b": ["config_1"]
     },
-    "programme_1": {
+    "program_1": {
       // <reserved_block>
     }
   },
   "cases": {
-    "nom_du_cas_1": {
+    "case_1": {
+      "_":{
+        "depend_b": ["config_2"],
+        "depend_a": ["config_3"]
+      },
+      "program_1": {
+        // <reserved_block>
+      }
+    }
+  },
+  "commons": {
+    "config_1": {
+      "program_1": {
+        // <reserved_block>
+      }
+    },
+    "config_2": {
+      "_":{
+        "depend_a": ["config_4"]
+      },
+      "program_1": {
+        // <reserved_block>
+      }
+    },
+    "config_3": {
+      "program_1": {
+        // <reserved_block>
+      }
+    },
+    "config_4": {
+      "program_1": {
+        // <reserved_block>
+      }
+    }
+  }
+}
+```
+
+All the configuration blocks can have dependencies:
+
+`./program_1 -j file.arct -c case_1`
+
+```txt
+{ config_1 -> [general] } -> { { [config_2] -> config_4 } -> [case_1] -> config_3 }
+```
+
+#### Case with variations
+
+The order of the blocks in the list with variations does not change compared to the order with `commons`
+blocks:
+
+```jsonc
+// file.arct
+{
+  // "versions" block omitted.
+  "general": {
+    "_":{
+      "depend_b": ["config_1"]
+    },
+    "program_1": {
+      // <reserved_block>
+    }
+  },
+  "cases": {
+    "case_1": {
       "_":{
         "depend_b": ["variation_1"],
         "depend_a": ["variation_2=variant_1"]
       },
-      "programme_1": {
+      "program_1": {
         // <reserved_block>
       }
     }
   },
   "commons": {
-    "nom_config_1": {
-      "programme_1": {
+    "config_1": {
+      "program_1": {
         // <reserved_block>
       }
     }
@@ -697,24 +704,24 @@ L'ordre des blocs dans la liste avec des variations ne change pas par rapport à
   "variations": {
     "variation_1": {
       "variant_1": {
-        "programme_1": {
+        "program_1": {
           // <reserved_block>
         }
       },
       "variant_2": {
-        "programme_1": {
+        "program_1": {
           // <reserved_block>
         }
       }
     },
     "variation_2": {
       "variant_1": {
-        "programme_1": {
+        "program_1": {
           // <reserved_block>
         }
       },
       "variant_2": {
-        "programme_1": {
+        "program_1": {
           // <reserved_block>
         }
       }
@@ -723,125 +730,124 @@ L'ordre des blocs dans la liste avec des variations ne change pas par rapport à
 }
 ```
 
-La syntaxe pour résoudre des variations est expliquée dans la prochaine partie. Pour faire simple, si on lance ce cas
-avec la même ligne de commande que précédemment, on obtient plusieurs cas à lire :
+The syntax to resolve variations is explained in the next part. To make it simple, if we launch this case with
+the same command line as before, we get several cases to read:
 
-`./programme_1 -j file.arct -c nom_du_cas_1`
+`./program_1 -j file.arct -c case_1`
 
 ```txt
-{ nom_config_1 -> [general] } -> { variation_1=variant_1 -> [nom_du_cas_1] -> variation_2=variant_1 }
-{ nom_config_1 -> [general] } -> { variation_1=variant_2 -> [nom_du_cas_1] -> variation_2=variant_1 }
+{ config_1 -> [general] } -> { variation_1=variant_1 -> [case_1] -> variation_2=variant_1 }
+{ config_1 -> [general] } -> { variation_1=variant_2 -> [case_1] -> variation_2=variant_1 }
 ```
 
-L'ordre de lecture reste cependant le même qu'avec des dépendances classiques.
+The reading order however remains the same as with classic dependencies.
 
-### Limitations des dépendances
+### Dependency limitations
 
-Certaines règles ont été établies pour les dépendances :
+Some rules have been established for the dependencies:
 
-- Pas de cycles (`{ nom_config_1 -> nom_config_2 -> nom_config_1 -> ... }`) : les cycles doivent être détectés par le
-  lecteur de fichier ARCT et déclencher une erreur.
-- Un bloc de configurations ne peut être lu qu'une seule fois par cas d'utilisation (sinon, le lecteur de fichier ARCT
-  émet une erreur).
-- Une variation non résolue ne peut être demandée qu'une seule fois par chemin de lancement (sinon, le lecteur de
-  fichier ARCT émet une erreur).
-- Toutes les dépendances inscrites dans les propriétés `depend_b` et `depend_a` doivent exister.
-- Les blocs de configurations `cases` ne peuvent pas être des dépendances, tout comme le bloc `general`.
+- No cycles (`{ config_1 -> config_2 -> config_1 -> ... }`): the cycles must be detected by the ARCT file reader
+  and trigger an error.
+- A configuration block can only be read once per use case (otherwise, the ARCT file reader emits an error).
+- An unresolved variation can only be requested once per launch path (otherwise, the ARCT file reader emits an
+  error).
+- All the dependencies written in the `depend_b` and `depend_a` properties must exist.
+- The `cases` configuration blocks cannot be dependencies, just like the `general` block.
 
-### Dépendances partagées (diamants)
+### Shared dependencies (diamonds)
 
-(Sous-partie rédigée par IA)
+(Sub-section written by AI)
 
-Les dépendances d'un chemin de lancement forment un arbre : un même bloc de configurations ne peut pas être demandé
-par deux blocs d'un même chemin. C'est une conséquence directe de la règle "un bloc ne peut être lu qu'une seule
-fois".
+The dependencies of a launch path form a tree: the same configuration block cannot be requested by two blocks of
+the same path. This is a direct consequence of the rule "a block can only be read once".
 
-Si le partage était autorisé, le lecteur devrait décider à quelle position insérer la dépendance commune dans la
-liste de blocs de configurations : avant le premier demandeur, après le dernier, entre les deux demandeurs... Aucune
-de ces positions n'est plus naturelle qu'une autre, et chaque programme demandeur devrait de plus décider comment
-traiter les deux lectures du même bloc. Cette complexité justifie l'interdiction.
+If sharing was allowed, the reader would have to decide at which position to insert the common dependency in the
+list of configuration blocks: before the first requester, after the last one, between the two requesters... None
+of these positions is more natural than another, and each requesting program would moreover have to decide how
+to process the two readings of the same block. This complexity justifies the prohibition.
 
-Le contournement est de porter la dépendance partagée par l'ancêtre commun des blocs qui la demandent.
+The workaround is to carry the shared dependency by the common ancestor of the blocks which request it.
 
-Exemple de fichier invalide (`socle` serait lu deux fois) :
+Example of an invalid file (`foundation` would be read twice):
 
 ```jsonc
 // file.arct
 {
   "cases": {
-    "cas_1": {
+    "case_1": {
       "_": {
-        "depend_a": ["fonctionnalite_1", "fonctionnalite_2"]
+        "depend_a": ["feature_1", "feature_2"]
       }
     }
   },
   "commons": {
-    "socle": {
+    "foundation": {
     },
-    "fonctionnalite_1": {
+    "feature_1": {
       "_": {
-        "depend_b": ["socle"]
+        "depend_b": ["foundation"]
       }
     },
-    "fonctionnalite_2": {
+    "feature_2": {
       "_": {
-        "depend_b": ["socle"]
+        "depend_b": ["foundation"]
       }
     }
   }
 }
 ```
 
-Fichier équivalent valide :
+Equivalent valid file:
 
 ```jsonc
 // file.arct
 {
   "cases": {
-    "cas_1": {
+    "case_1": {
       "_": {
-        "depend_b": ["socle"],
-        "depend_a": ["fonctionnalite_1", "fonctionnalite_2"]
+        "depend_b": ["foundation"],
+        "depend_a": ["feature_1", "feature_2"]
       }
     }
   },
   "commons": {
-    "fonctionnalite_1": {
+    "feature_1": {
     },
-    "fonctionnalite_2": {
+    "feature_2": {
     }
   }
 }
 ```
 
-À noter : deux variants frères d'une même variation peuvent dépendre du même bloc : un seul variant étant lu par cas
-d'utilisation, il n'y a jamais de lecture multiple.
+Note: two sibling variants of the same variation can depend on the same block: since only one variant is read per
+use case, there is never a multiple reading.
 
-La même règle s'applique aux variations non résolues : une variation demandée par deux blocs d'un même chemin (par
-exemple par le cas de base et par un bloc commun qui en dépend) déclenche une erreur. Sinon, le lecteur devrait
-décider quelle demande (et donc quel filtre) l'emporte, puis à quelle position insérer le bloc du variant choisi dans
-la liste de blocs de configurations. La dépendance doit, là aussi, être portée par l'ancêtre commun des demandeurs.
+The same rule applies to unresolved variations: a variation requested by two blocks of the same path (for
+example by the base case and by a common block which depends on it) triggers an error. Otherwise, the reader
+would have to decide which request (and therefore which filter) prevails, then at which position to insert the
+block of the chosen variant in the list of configuration blocks. The dependency must, here too, be carried by the
+common ancestor of the requesters.
 
 ## Variations
 
-Prenons cet exemple pour illustrer :
+Let's take this example to illustrate:
 
 ```jsonc
 // file.arct
 {
   "versions": {
     "_": 1,
-    "programme_1": 1
+    "program_1": 1
   },
   "general": {
-    "programme_1": {
+    "program_1": {
       // <reserved_block>
     }
   },
-  // Voir après pour le bloc `cases`.
+  // See below for the `cases` block.
   "commons": {
     "config_1": {
-      "programme_1": {
+      "program_1": {
         // <reserved_block>
       }
     }
@@ -849,29 +855,29 @@ Prenons cet exemple pour illustrer :
   "variations": {
     "variation_1": {
       "variant_1": {
-        "programme_1": {
+        "program_1": {
           // <reserved_block>
         }
       },
       "variant_2": {
-        "programme_1": {
+        "program_1": {
           // <reserved_block>
         }
       },
       "variant_3": {
-        "programme_1": {
+        "program_1": {
           // <reserved_block>
         }
       }
     },
     "variation_2": {
       "variant_1": {
-        "programme_1": {
+        "program_1": {
           // <reserved_block>
         }
       },
       "variant_2": {
-        "programme_1": {
+        "program_1": {
           // <reserved_block>
         }
       }
@@ -880,115 +886,117 @@ Prenons cet exemple pour illustrer :
 }
 ```
 
-### Variations résolues
+### Resolved variations
 
-Une variation résolue est une variation dont on connait le variant qu'il est nécessaire de mettre dans la liste des
-blocs de configurations.
+A resolved variation is a variation for which we know the variant which is necessary to put in the list of
+configuration blocks.
 
-Prenons le bloc `cases` suivant :
+Let's take the following `cases` block:
 
 ```jsonc
 "cases": {
-  "cas_1": {
+  "case_1": {
     "_":{
       "depend_a": ["variation_1=variant_1"]
     },
-    "programme_1": {
+    "program_1": {
       // <reserved_block>
     }
   }
 }
 ```
 
-Si l'on met une variation résolue dans la propriété `depend_a` (ou `depend_b`, peu importe ici), celle-ci se comporte
-comme une dépendance de base `commons` :
+If we put a resolved variation in the `depend_a` property (or `depend_b`, it does not matter here), it behaves
+like a base `commons` dependency:
 
-`./programme_1 -j file.arct -c cas_1`
+`./program_1 -j file.arct -c case_1`
 
 ```txt
-{ [general] } -> { [cas_1] -> variation_1=variant_1 }
+{ [general] } -> { [case_1] -> variation_1=variant_1 }
 ```
 
-### Variations non résolues
+### Unresolved variations
 
-Une variation non résolue est une variation dont on ne connait pas le variant à choisir à partir des informations du
-fichier ARCT.
+An unresolved variation is a variation for which we do not know which variant to choose from the information of
+the ARCT file.
 
-Prenons un bloc `cases` un peu différent :
+Let's take a slightly different `cases` block:
+
 ```jsonc
 "cases": {
-  "cas_1": {
+  "case_1": {
     "_":{
       "depend_a": ["variation_1", "variation_2"]
     },
-    "programme_1": {
+    "program_1": {
       // <reserved_block>
     }
   }
 }
 ```
 
-Le but d'une variation non résolue est de définir facilement plusieurs combinaisons de cas pour, par exemple, tester un
-programme.
+The purpose of an unresolved variation is to easily define several case combinations to, for example, test a
+program.
 
-Cet exemple définit en réalité six cas :
+This example actually defines six cases:
 
-- `cas_1:variation_1=variant_1:variation_2=variant_1`,
-- `cas_1:variation_1=variant_2:variation_2=variant_1`,
-- `cas_1:variation_1=variant_3:variation_2=variant_1`,
-- `cas_1:variation_1=variant_1:variation_2=variant_2`,
-- `cas_1:variation_1=variant_2:variation_2=variant_2`,
-- `cas_1:variation_1=variant_3:variation_2=variant_2`.
+- `case_1:variation_1=variant_1:variation_2=variant_1`,
+- `case_1:variation_1=variant_2:variation_2=variant_1`,
+- `case_1:variation_1=variant_3:variation_2=variant_1`,
+- `case_1:variation_1=variant_1:variation_2=variant_2`,
+- `case_1:variation_1=variant_2:variation_2=variant_2`,
+- `case_1:variation_1=variant_3:variation_2=variant_2`.
 
-L'ordre de la liste des listes de blocs de configurations issue de variations non résolues n'est pas défini dans ce
-schéma étant donné que tous les cas d'utilisation doivent être indépendants les uns des autres. Au lecteur de choisir
-(l'ordre doit néanmoins rester le même entre deux lancements, pour un même fichier).
+The order of the list of lists of configuration blocks resulting from unresolved variations is not defined in
+this schema since all the use cases must be independent from each other. It is up to the reader to choose (the
+order must however remain the same between two launches, for the same file).
 
-Note : les exemples présentent toujours des variations non résolues dans les cas `cases`. Nous pouvons mettre des
-variations non résolues dans n'importe quel bloc de configurations. Même dans des variations non résolues.
+Note: the examples always present unresolved variations in the `cases` blocks. We can put unresolved variations
+in any configuration block. Even in unresolved variations.
 
-### Définition des variations
+### Definition of variations
 
-Plusieurs symboles sont réservés afin d'affiner la sélection des variations dans un bloc de configurations. Nous avons
-déjà vu le symbole `=` qui permet de résoudre d'office une variation.
+Several symbols are reserved in order to refine the selection of the variations in a configuration block. We
+have already seen the `=` symbol which makes it possible to resolve a variation straight away.
 
-Deux autres symboles sont disponibles pour restreindre le nombre de variations : `!` et `+`.
+Two other symbols are available to restrict the number of variations: `!` and `+`.
 
-Ces trois symboles ne peuvent pas être mélangés pour une même variation.
+These three symbols cannot be mixed for the same variation.
 
-Le symbole `!` permet d'exclure des variants de l'ensemble des variants disponibles à lancer.
+The `!` symbol excludes variants from the set of variants available to run.
 
-Le symbole `+` permet d'inclure des variants à lancer, parmi tous les variants disponibles.
+The `+` symbol includes variants to run, among all the available variants.
 
-Si, pour une variation, tous ses variants sont exclus, une erreur doit être émise par le lecteur de fichier ARCT.
+If, for a variation, all its variants are excluded, an error must be emitted by the ARCT file reader.
 
-#### Exemple
+#### Example
 
-Dans l'exemple précédent, nous avions six cas.
+In the previous example, we had six cases.
 
-Admettons que nous souhaitons exclure `variation_2=variant_2`. La propriété `depend_a` (ou `depend_b`) devra contenir :
+Let's suppose that we want to exclude `variation_2=variant_2`. The `depend_a` property (or `depend_b`) must
+contain:
 
 ```jsonc
 "depend_a": ["variation_1", "variation_2!variant_2"]
 ```
 
-Dans ce cas, nous n'obtenons plus que trois cas :
+In this case, we are left with only three cases:
 
-- `cas_1:variation_1=variant_1:variation_2=variant_1`,
-- `cas_1:variation_1=variant_2:variation_2=variant_1`,
-- `cas_1:variation_1=variant_3:variation_2=variant_1`.
+- `case_1:variation_1=variant_1:variation_2=variant_1`,
+- `case_1:variation_1=variant_2:variation_2=variant_1`,
+- `case_1:variation_1=variant_3:variation_2=variant_1`.
 
-On peut aussi vouloir exclure `variation_1=variant_1` et `variation_1=variant_2` :
+We can also want to exclude `variation_1=variant_1` and `variation_1=variant_2`:
 
 ```jsonc
 "depend_a": ["variation_1!variant_1!variant_2", "variation_2!variant_2"]
 ```
 
-Dans ce cas, il ne nous reste qu'un seul cas :
+In this case, we are left with a single case:
 
-- `cas_1:variation_1=variant_3:variation_2=variant_1`.
+- `case_1:variation_1=variant_3:variation_2=variant_1`.
 
-Nous pouvons obtenir ce résultat simplement avec des `=` ou des `+`:
+We can get this result simply with `=` or `+`:
 
 ```jsonc
 "depend_a": ["variation_1=variant_1", "variation_2=variant_1"]
@@ -998,103 +1006,101 @@ Nous pouvons obtenir ce résultat simplement avec des `=` ou des `+`:
 "depend_a": ["variation_1+variant_1", "variation_2+variant_1"]
 ```
 
-Remarque : une variation est résolue si et seulement si un variant unique est désigné par `=`. `!` et `+` ne font que
-filtrer l'ensemble des variants candidats : même réduite à un seul, la variation reste non résolue et le nom reste
-incomplet ; pour un programme mono-cas, l'utilisateur doit alors la résoudre par `=` dans le nom de cas.
+Remark: a variation is resolved if and only if a single variant is designated by `=`. `!` and `+` only filter
+the set of candidate variants: even reduced to a single one, the variation remains unresolved and the name
+remains incomplete; for a single-case program, the user must then resolve it with `=` in the case name.
 
-| Symbole | Rôle       | Sémantique                                                                    | La variation est résolue ? | Exemple (variants : 10, 20, 30) | Noms de cas obtenus                            |
-|---------|------------|-------------------------------------------------------------------------------|----------------------------|---------------------------------|------------------------------------------------|
-| =       | Résolution | Désigne exactement un variant ; la variation devient une dépendance classique | Oui                        | nb_iterations=10                | cas_1:nb_iterations=10 (un seul cas)           |
-| !       | Exclusion  | Retire des variants de l'ensemble des candidats                               | Non                        | nb_iterations!10                | cas_1:nb_iterations=20, cas_1:nb_iterations=30 |
-| +       | Inclusion  | Sélectionne des variants parmi les disponibles                                | Non                        | nb_iterations+20+30             | cas_1:nb_iterations=20, cas_1:nb_iterations=30 |
+| Symbol | Role       | Semantics                                                                      | Is the variation resolved? | Example (variants: 10, 20, 30) | Obtained case names                               |
+|--------|------------|--------------------------------------------------------------------------------|----------------------------|--------------------------------|---------------------------------------------------|
+| =      | Resolution | Designates exactly one variant; the variation becomes a classic dependency     | Yes                        | nb_iterations=10               | case_1:nb_iterations=10 (a single case)           |
+| !      | Exclusion  | Removes variants from the set of candidates                                    | No                         | nb_iterations!10               | case_1:nb_iterations=20, case_1:nb_iterations=30  |
+| +      | Inclusion  | Selects variants among the available ones                                      | No                         | nb_iterations+20+30            | case_1:nb_iterations=20, case_1:nb_iterations=30  |
 
-## Schéma d'un nom de cas d'utilisation
+## Schema of a use case name
 
-Le nom d'un cas d'utilisation peut être complet ou incomplet.
+The name of a use case can be complete or incomplete.
 
-Un nom complet permet de désigner une seule et unique liste de blocs de configurations. C'est nécessaire pour les
-programmes demandeurs qui ne peuvent lancer qu'un seul cas d'utilisation en une fois. Un nom complet implique que toutes
-les variations du chemin de lancement sont résolues totalement (donc un seul cas d'utilisation), que ce soit via le nom
-du cas et/ou via le fichier ARCT directement.
+A complete name makes it possible to designate one and only one list of configuration blocks. This is necessary
+for the requesting programs which can only launch a single use case at a time. A complete name implies that all
+the variations of the launch path are totally resolved (so a single use case), whether via the case name and/or
+directly via the ARCT file.
 
-Un nom incomplet permet de désigner plusieurs listes de blocs de configurations. C'est utile pour les programmes
-demandeurs qui peuvent traiter plusieurs cas d'utilisation en une fois. Un nom incomplet implique qu'il y a au moins une
-variation du chemin de lancement qui n'est pas résolue totalement, qui implique donc plusieurs cas d'utilisation
-(un par variant).
+An incomplete name makes it possible to designate several lists of configuration blocks. This is useful for the
+requesting programs which can process several use cases at once. An incomplete name implies that there is at
+least one variation of the launch path which is not totally resolved, which therefore implies several use cases
+(one per variant).
 
-Pour construire ces noms, nous utilisons les mêmes symboles que dans le fichier ARCT : `:`, `~`, `=`, `!` et `+`.
+To build these names, we use the same symbols as in the ARCT file: `:`, `~`, `=`, `!` and `+`.
 
-Le symbole `:` permet de séparer les différents éléments du nom de cas. Il doit être utilisé uniquement pour séparer les
-différents éléments constituant le nom de cas. Il ne doit pas être mis au début ou à la fin du nom de cas (s'il n'y a
-pas de cas de base à exécuter, seulement des variations à résoudre, pas de `:` au début).
+The `:` symbol separates the different elements of the case name. It must be used only to separate the different
+elements making up the case name. It must not be put at the beginning or at the end of the case name (if there
+is no base case to run, only variations to resolve, no `:` at the beginning).
 
-Le symbole `=` permet de résoudre une variation.
+The `=` symbol makes it possible to resolve a variation.
 
-Les symboles `!` et `+` permettent de restreindre le nom de variants à traiter. Avec ces symboles, il est impossible de
-résoudre totalement une variation. Ces symboles peuvent donc être utilisés uniquement dans le cas de noms incomplets.
+The `!` and `+` symbols restrict the names of variants to process. With these symbols, it is impossible to
+totally resolve a variation. These symbols can therefore be used only in the case of incomplete names.
 
-Les variations résolues dans le fichier ARCT sont considérées comme des dépendances classiques. Donc, si une variation
-résolue réapparait dans le nom de cas d'utilisation, une erreur sera émise par le lecteur de fichier ARCT.
+The variations resolved in the ARCT file are considered as classic dependencies. So, if a resolved variation
+reappears in the use case name, an error will be emitted by the ARCT file reader.
 
-Si une variation est résolue, totalement ou partiellement, dans le nom du cas d'utilisation alors que cette variation
-n'apparait pas dans la liste de bloc finale, une erreur sera émise par le lecteur de fichier ARCT.
+If a variation is resolved, totally or partially, in the use case name while this variation does not appear in
+the final block list, an error will be emitted by the ARCT file reader.
 
-Il ne peut pas y avoir deux résolutions (partielles ou totales) pour une même variation dans un nom de cas.
+There cannot be two resolutions (partial or total) for the same variation in a case name.
 
-### Ordre des éléments dans le nom
+### Order of the elements in the name
 
-Un nom de cas doit toujours commencer par le nom du cas de base (du bloc de configurations `cases`) sauf s'il n'y a pas
-de cas de base à exécuter (le bloc `general` peut avoir des dépendances variations).
+A case name must always start with the name of the base case (of the `cases` configuration block) unless there
+is no base case to run (the `general` block can have variation dependencies).
 
-Ensuite, il peut y avoir des résolutions de variations (complètes ou partielles). L'ordre de ces résolutions n'est pas
-défini.
+Then, there can be variation resolutions (complete or partial). The order of these resolutions is not defined.
 
-Une résolution doit avoir la forme : `<variation><symbole><variant>[<symbole><variant>...]`.
+A resolution must have the form: `<variation><symbol><variant>[<symbol><variant>...]`.
 
-Un nom de cas doit ressembler à ça :
-`[[<cas_de_base>][~<nom_alternative>][:<variation><symbole><variant>[<symbole><variant> ...]][: ...]]`.
+A case name should look like this:
+`[[<base_case>][~<alternative_name>][:<variation><symbol><variant>[<symbol><variant> ...]][: ...]]`.
 
-Exemples de nom valides :
+Examples of valid names:
 
-- `cas_1:variation_1=variant_1`.
-- `cas_1:variation_1=variant_1:variation_2+variant_2+variant_3`.
-- `cas_1~init:variation_1=variant_1:variation_2+variant_2+variant_3`.
+- `case_1:variation_1=variant_1`.
+- `case_1:variation_1=variant_1:variation_2+variant_2+variant_3`.
+- `case_1~init:variation_1=variant_1:variation_2+variant_2+variant_3`.
 - `~init:variation_1=variant_1:variation_2+variant_2+variant_3`.
 - `~init`.
 - `variation_1=variant_1`.
 
-Exemples de nom invalides :
+Examples of invalid names:
 
-- `cas_1:variation_1=variant_1:`.
-- `:cas_1:variation_1=variant_1:`.
-- `variation_1=variant_1:cas_1`.
-- `variation_1=variant_1:cas_1~init`.
+- `case_1:variation_1=variant_1:`.
+- `:case_1:variation_1=variant_1:`.
+- `variation_1=variant_1:case_1`.
+- `variation_1=variant_1:case_1~init`.
 - `variation_1=variant_1:~init`.
 
-Note : les espaces dans le nom ne sont pas supportés.
+Note: spaces in the name are not supported.
 
-### Exemple
+### Example
 
-Pour les programmes demandeurs nécessitant un nom complet, il est possible de spécifier dans la ligne de commande le nom
-du ou des cas résolus avec le symbole `=` (les autres symboles n'étant pas supportés ici) :
+For the requesting programs requiring a complete name, it is possible to specify in the command line the name of
+the resolved case(s) with the `=` symbol (the other symbols not being supported here):
 
-`./programme_1 -j file.arct -c cas_1:variation_1=variant_1:variation_2=variant_2`
-
-```txt
-{ [general] } -> { [cas_1] -> variation_1=variant_1 -> variation_2=variant_2 }
-```
-
-Pour les programmes demandeurs pouvant supporter un nom incomplet, il est possible d'utiliser les autres symboles dans
-la ligne de commande :
-
-`./programme_1 -j file.arct -c cas_1:variation_2!variant_2`
+`./program_1 -j file.arct -c case_1:variation_1=variant_1:variation_2=variant_2`
 
 ```txt
-{ [general] } -> { [cas_1] -> variation_1=variant_1 -> variation_2=variant_1 }
-{ [general] } -> { [cas_1] -> variation_1=variant_2 -> variation_2=variant_1 }
-{ [general] } -> { [cas_1] -> variation_1=variant_3 -> variation_2=variant_1 }
+{ [general] } -> { [case_1] -> variation_1=variant_1 -> variation_2=variant_2 }
 ```
 
-Note : c'est au programme demandeur de dire au lecteur de fichier ARCT s'il supporte les noms incomplets ou non. Le
-lecteur analysera le fichier et le nom du cas et renverra une erreur s'il y a une incompatibilité.
+For the requesting programs able to support an incomplete name, it is possible to use the other symbols in the
+command line:
 
+`./program_1 -j file.arct -c case_1:variation_2!variant_2`
+
+```txt
+{ [general] } -> { [case_1] -> variation_1=variant_1 -> variation_2=variant_1 }
+{ [general] } -> { [case_1] -> variation_1=variant_2 -> variation_2=variant_1 }
+{ [general] } -> { [case_1] -> variation_1=variant_3 -> variation_2=variant_1 }
+```
+
+Note: it is up to the requesting program to tell the ARCT file reader whether it supports incomplete names or
+not. The reader will analyze the file and the case name and will return an error if there is an incompatibility.

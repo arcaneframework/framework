@@ -1,8 +1,8 @@
-# Exemple : variations non résolues (2) {#arcanetdoc_arct_variations2}
+# Example: unresolved variations (2) {#arcanetdoc_arct_variations2}
 
 [TOC]
 
-Fichier `example.arct` :
+File `example.arct`:
 
 ```json
 {
@@ -20,7 +20,7 @@ Fichier `example.arct` :
   "cases": {
     "algo1": {
       "_": {
-        "name": "Algorithme inter-boundingbox",
+        "name": "Inter-boundingbox algorithm",
         "depend_b": ["nb_thread"]
       },
       "arcane": {
@@ -31,7 +31,7 @@ Fichier `example.arct` :
     },
     "algo2": {
       "_": {
-        "name": "Algorithme intra-boundingbox",
+        "name": "Intra-boundingbox algorithm",
         "depend_b": ["enable_post_processing", "nb_thread=1"]
       },
       "arcane": {
@@ -45,7 +45,7 @@ Fichier `example.arct` :
   "commons": {
     "enable_post_processing": {
       "_": {
-        "name": "Activation de la sortie VtkHdf"
+        "name": "Enabling the VtkHdf output"
       },
       "arcane": {
         "options": {
@@ -88,14 +88,15 @@ Fichier `example.arct` :
 }
 ```
 
-Cet exemple permet de montrer tout l'intérêt des variations.
+This example shows the whole point of variations.
 
-La seule modification réalisée ici par rapport à l'exemple précédent est la suppression du `=4` dans le `depend_b` de
-l'algo 1 : `"depend_b": ["nb_thread"]`.
+The only change made here compared to the previous example is the removal of the `=4` in the `depend_b` of
+algo 1: `"depend_b": ["nb_thread"]`.
 
-Nous avons donc une variation non résolue : on ne sait pas quel variant choisir en lisant uniquement le fichier ARCT.
+We thus have an unresolved variation: we do not know which variant to choose by reading only the ARCT
+file.
 
-Si l'on prend un programme supportant le multi-cas, on aura trois listes de blocs pour l'algo 1 :
+If we take a program supporting multi-case, we will have three lists of blocks for algo 1:
 
 ```shell
 ./PasArcane --arct=example.arct --case=algo1
@@ -106,10 +107,10 @@ Si l'on prend un programme supportant le multi-cas, on aura trois listes de bloc
 { [general] } -> { nb_thread=4 -> [algo1] }
 ```
 
-Pour les programmes ne supportant que le mode mono-cas (comme Arcane et ArcCher), il est nécessaire de résoudre les
-variations non résolues avec le nom du cas d'utilisation.
+For programs supporting only the single-case mode (like Arcane and ArcCher), it is necessary to resolve
+the unresolved variations with the use case name.
 
-Si l'on souhaite exécuter l'algo 1 avec 4 threads, on ajoute `nb_thread=4` au nom du cas :
+If we want to run algo 1 with 4 threads, we add `nb_thread=4` to the case name:
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo1:nb_thread=4
@@ -118,7 +119,7 @@ Si l'on souhaite exécuter l'algo 1 avec 4 threads, on ajoute `nb_thread=4` au n
 { [general] } -> { nb_thread=4 -> [algo1] }
 ```
 
-Le symbole `=` est le seul permettant de résoudre une variation.
+The `=` symbol is the only one making it possible to resolve a variation.
 
 ____
 

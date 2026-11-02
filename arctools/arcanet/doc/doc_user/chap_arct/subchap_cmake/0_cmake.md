@@ -1,46 +1,46 @@
-# Fonctions CMake {#arcanetdoc_arct_cmake}
+# CMake functions {#arcanetdoc_arct_cmake}
 
-Afin de générer des fichiers ARCT et de convertir des fichiers ARCT en tests CTest, nous avons écrit des fonctions CMake
-à utiliser dans des projets utilisant CMake.
+In order to generate ARCT files and convert ARCT files into CTest tests, we have written CMake functions
+to be used in projects using CMake.
 
-Il est conseillé d'avoir lu le chapitre sur le format ARCT avant.
+It is recommended to have read the chapter on the ARCT format before.
 
-D'abord, des fonctions CMake sont proposées pour construire partie par partie le fichier ARCT.
+First, CMake functions are provided to build the ARCT file piece by piece.
 
-Ensuite, une fonction CMake permet de convertir un fichier ARCT en tests CTest.
+Then, a CMake function makes it possible to convert an ARCT file into CTest tests.
 
 <br>
 
-Sommaire de ce sous-chapitre :
+Contents of this subchapter:
 
 1. \subpage arcanetdoc_arct_cmake_arct_writer <br>
-   Écrivain de fichier ARCT en CMake.
+   ARCT file writer in CMake.
 
 2. \subpage arcanetdoc_arct_cmake_arct_to_ctest <br>
-   Convertisseur de fichier ARCT vers CTest.
+   ARCT file to CTest converter.
 
-Quelques exemples pour utiliser l'écrivain CMake :
+Some examples to use the CMake writer:
 
 1. \subpage arcanetdoc_arct_cmake_example1 <br>
-   Exemple 1.
+   A minimal file: only a `general` block.
 
 2. \subpage arcanetdoc_arct_cmake_example2 <br>
-   Exemple 2.
+   Base cases.
 
 3. \subpage arcanetdoc_arct_cmake_example3 <br>
-   Exemple 3.
+   Common configurations and dependencies.
 
 4. \subpage arcanetdoc_arct_cmake_example4 <br>
-   Exemple 4.
+   Resolved variations.
 
 5. \subpage arcanetdoc_arct_cmake_example5 <br>
-   Exemple 5.
+   Unresolved variations.
 
 6. \subpage arcanetdoc_arct_cmake_example6 <br>
-   Exemple 6.
+   Variant limiters (`!` and `+`).
 
 7. \subpage arcanetdoc_arct_cmake_example7 <br>
-   Exemple 7.
+   Variations of variations.
 
 ____
 

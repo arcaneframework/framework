@@ -1,8 +1,8 @@
-# Exemple : blocs commons {#arcanetdoc_arct_commons}
+# Example: commons blocks {#arcanetdoc_arct_commons}
 
 [TOC]
 
-Fichier `example.arct` :
+File `example.arct`:
 
 ```json
 {
@@ -20,7 +20,7 @@ Fichier `example.arct` :
   "cases": {
     "algo1": {
       "_": {
-        "name": "Algorithme inter-boundingbox"
+        "name": "Inter-boundingbox algorithm"
       },
       "arcane": {
         "options": {
@@ -30,7 +30,7 @@ Fichier `example.arct` :
     },
     "algo2": {
       "_": {
-        "name": "Algorithme intra-boundingbox",
+        "name": "Intra-boundingbox algorithm",
         "depend_b": ["enable_post_processing"]
       },
       "arcane": {
@@ -44,7 +44,7 @@ Fichier `example.arct` :
   "commons": {
     "enable_post_processing": {
       "_": {
-        "name": "Activation de la sortie VtkHdf"
+        "name": "Enabling the VtkHdf output"
       },
       "arcane": {
         "options": {
@@ -57,16 +57,17 @@ Fichier `example.arct` :
 }
 ```
 
-On ajoute ici un bloc `commons`. Ce bloc, dans cet exemple, permet d'activer les sorties de notre programme.
+Here we add a `commons` block. This block, in this example, makes it possible to enable the outputs of our
+program.
 
-On a deux types de dépendances : `depend_b` (**before**) et `depend_a` (**after**). L'unique différence est que les
-blocs des dépendances **before** sont ajoutés avant notre bloc, alors que les blocs des dépendances **after** sont
-ajoutés après.
+We have two types of dependencies: `depend_b` (**before**) and `depend_a` (**after**). The only difference
+is that the blocks of the **before** dependencies are added before our block, while the blocks of the
+**after** dependencies are added after.
 
-\note Les blocs de dépendances sont ajoutés dans le même ordre que celui présenté dans les tableaux
-`depend_b`/`depend_a` du fichier ARCT.
+\note The dependency blocks are added in the same order as the one given in the `depend_b`/`depend_a`
+arrays of the ARCT file.
 <br>
-Si :
+If:
 ```jsonc
 ...
 "algo2": {
@@ -75,12 +76,12 @@ Si :
 "depend_a": ["ccc", "ddd"],
 ...
 ```
-alors on aura :
+then we will have:
 ```txt
 ... -> { aaa -> bbb -> [algo2] -> ccc -> ddd }
 ```
 
-Si l'on exécute `algo1`, le résultat sera le même que sur l'exemple précédent. Par contre, pour l'algo 2 :
+If we run `algo1`, the result will be the same as in the previous example. However, for algo 2:
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo2
@@ -89,7 +90,7 @@ Si l'on exécute `algo1`, le résultat sera le même que sur l'exemple précéde
 { [general] } -> { enable_post_processing -> [algo2] }
 ```
 
-On a un `depend_b` dans `algo2` donc le bloc `enable_post_processing` sera lu avant `algo2`.
+There is a `depend_b` in `algo2` so the `enable_post_processing` block will be read before `algo2`.
 
 ____
 

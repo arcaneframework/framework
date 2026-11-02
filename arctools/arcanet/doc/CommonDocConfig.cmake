@@ -4,7 +4,7 @@
 
 macro(adoc_commondoc_config_adoc_variables)
   set(ADOC_LANGUAGE
-    "French"
+    "English"
   )
 
   set(ADOC_PROJECT_REPO_LINK
@@ -17,14 +17,14 @@ endmacro()
 
 macro(adoc_commondoc_config_doxygen_variables)
 
-  # Il est possible de remplacer le lien.
+  # It is possible to replace the link.
   set(DOXYGEN_ALIASES ${DOXYGEN_ALIASES}
     "pr{1}=[PR #\\1](https://github.com/arcaneframework/framework/pull/\\1)"
   )
 
   # ----------------------------------------------------------------------------
 
-  ## Pour mettre un autre logo (taille : 200x100).
+  ## To use another logo (size: 200x100).
   #set(DOXYGEN_PROJECT_LOGO
   #  "${DOC_DIR}/theme/img/arcane_framework_small.webp"
   #)

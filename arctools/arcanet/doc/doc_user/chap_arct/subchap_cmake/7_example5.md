@@ -1,8 +1,8 @@
-# Exemple : variations non résolues (2) {#arcanetdoc_arct_cmake_example5}
+# Example: unresolved variations (2) {#arcanetdoc_arct_cmake_example5}
 
 [TOC]
 
-Fichier `testlist.arct` :
+File `testlist.arct`:
 
 ```json
 {
@@ -21,7 +21,7 @@ Fichier `testlist.arct` :
   "cases": {
     "algo1": {
       "_": {
-        "name": "Algorithme inter-boundingbox",
+        "name": "Inter-boundingbox algorithm",
         "depend_b": ["nb_thread"]
       },
       "arcane": {
@@ -32,7 +32,7 @@ Fichier `testlist.arct` :
     },
     "algo2": {
       "_": {
-        "name": "Algorithme intra-boundingbox",
+        "name": "Intra-boundingbox algorithm",
         "depend_b": ["enable_post_processing", "nb_thread=1"]
       },
       "arcane": {
@@ -46,7 +46,7 @@ Fichier `testlist.arct` :
   "commons": {
     "enable_post_processing": {
       "_": {
-        "name": "Activation de la sortie VtkHdf"
+        "name": "Enabling the VtkHdf output"
       },
       "arcane": {
         "options": {
@@ -89,7 +89,7 @@ Fichier `testlist.arct` :
 }
 ```
 
-Fichier `tests.cmake` :
+File `tests.cmake`:
 
 ```cmake
 arct_config_create_or_edit_general(OVERWRITE_ARCT)
@@ -97,20 +97,20 @@ arct_arcane_dataset(PATH "config_2D_diagonal_circle.arc")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_case(NAME_CASE "algo1")
-arct_config_define_name(NAME "Algorithme inter-boundingbox")
+arct_config_define_name(NAME "Inter-boundingbox algorithm")
 arct_arcane_option(ADD "//nonreg/contact-pairs[]/use-contact-intra" VALUE "false")
 arct_config_variation(ADD "nb_thread")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_case(NAME_CASE "algo2")
-arct_config_define_name(NAME "Algorithme intra-boundingbox")
+arct_config_define_name(NAME "Intra-boundingbox algorithm")
 arct_arcane_option(ADD "//nonreg/contact-pairs[]/use-contact-intra" VALUE "true")
 arct_config_dependency(ADD "enable_post_processing")
 arct_config_variation(ADD "nb_thread" EQUAL "1")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_common(NAME_COMMON "enable_post_processing")
-arct_config_define_name(NAME "Activation de la sortie VtkHdf")
+arct_config_define_name(NAME "Enabling the VtkHdf output")
 arct_arcane_option(ADD "//nonreg/post-processor-write" VALUE "true")
 arct_arcane_option(ADD "//nonreg/mesh-contact-param[]/div-nb-cell" VALUE "1")
 arct_config_create_or_edit_end()
@@ -132,7 +132,7 @@ arct_config_create_or_edit_end()
 arct_to_ctest()
 ```
 
-Tests générés :
+Generated tests:
 
 ```shell
 ctest -N
@@ -143,9 +143,10 @@ algo1:nb_thread=4
 algo2
 ```
 
-Reprenons l'exemple ARCT \ref arcanetdoc_arct_variations2.
+Let's revisit the ARCT example \ref arcanetdoc_arct_variations2.
 
-La variation `nb_thread` de `algo1` n'est pas résolue. Il n'y a pas de limiteur, donc on a un test par variant.
+The `nb_thread` variation of `algo1` is not resolved. There is no limiter, so we have one test per
+variant.
 
 ____
 

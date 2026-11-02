@@ -1,8 +1,8 @@
-# Exemple : variations simples (1) {#arcanetdoc_arct_variations1}
+# Example: simple variations (1) {#arcanetdoc_arct_variations1}
 
 [TOC]
 
-Fichier `example.arct` :
+File `example.arct`:
 
 ```json
 {
@@ -20,7 +20,7 @@ Fichier `example.arct` :
   "cases": {
     "algo1": {
       "_": {
-        "name": "Algorithme inter-boundingbox",
+        "name": "Inter-boundingbox algorithm",
         "depend_b": ["nb_thread=4"]
       },
       "arcane": {
@@ -31,7 +31,7 @@ Fichier `example.arct` :
     },
     "algo2": {
       "_": {
-        "name": "Algorithme intra-boundingbox",
+        "name": "Intra-boundingbox algorithm",
         "depend_b": ["enable_post_processing", "nb_thread=1"]
       },
       "arcane": {
@@ -45,7 +45,7 @@ Fichier `example.arct` :
   "commons": {
     "enable_post_processing": {
       "_": {
-        "name": "Activation de la sortie VtkHdf"
+        "name": "Enabling the VtkHdf output"
       },
       "arcane": {
         "options": {
@@ -88,18 +88,19 @@ Fichier `example.arct` :
 }
 ```
 
-Pour introduire les variations, on va commencer par une variation simple à appliquer à Arcane.
+To introduce variations, we will start with a simple variation to apply to Arcane.
 
-On a une variation s'appelant `nb_thread` qui permet de changer le nombre de threads (sous-domaines en mémoire
-partagée).
+We have a variation named `nb_thread` which makes it possible to change the number of threads
+(shared-memory subdomains).
 
-Trois variants sont disponibles : `1`, `2` et `4`. On dira plutôt : `nb_thread=1`, `nb_thread=2` et `nb_thread=4`.
+Three variants are available: `1`, `2` and `4`. We rather say: `nb_thread=1`, `nb_thread=2` and
+`nb_thread=4`.
 
-Le variant `nb_thread=1` ne fait rien. Les deux autres modifient le paramètre `-A,S` d'Arcane.
+The `nb_thread=1` variant does nothing. The other two modify the Arcane `-A,S` parameter.
 
-Dans les `cases`, on peut voir des **variations résolues** : `nb_thread=4` pour `algo1` et `nb_thread=1` pour `algo2`.
-Une variation résolue peut être vue comme un `commons` : rien qu'en lisant le fichier ARCT, on sait quel bloc choisir.
-Donc le lancement est aussi simple qu'avant :
+In the `cases`, we can see **resolved variations**: `nb_thread=4` for `algo1` and `nb_thread=1` for
+`algo2`. A resolved variation can be seen as a `commons`: just by reading the ARCT file, we know which
+block to choose. So the launch is as simple as before:
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo2

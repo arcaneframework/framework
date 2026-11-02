@@ -1,14 +1,14 @@
-# Nouveautés et changements {#arcanetdoc_news}
+# News and changes {#arcanetdoc_news}
 
-Ce chapitre est dédié aux évolutions de %ArcaNet.  
-À chaque version de %ArcaNet, la page \ref arcanetdoc_news_changelog liste les modifications
-apportées.
+This chapter is dedicated to the evolutions of %ArcaNet.  
+For each version of %ArcaNet, the page \ref arcanetdoc_news_changelog lists the changes
+made.
 
 <br>
 
-Sommaire de ce chapitre :
+Contents of this chapter:
 1. \subpage arcanetdoc_news_changelog <br>
-  Récapitulatif de toutes les modifications apportées à %ArcaNet.
+  Summary of all the changes made to %ArcaNet.
 
 
 ____

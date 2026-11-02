@@ -1,13 +1,13 @@
-# Débuter avec %ArcaNet {#arcanetdoc_getting_started}
+# Getting started with %ArcaNet {#arcanetdoc_getting_started}
 
-Vous débutez sur %ArcaNet ? Ce chapitre devrait vous donner les notions de base.
+You are new to %ArcaNet? This chapter should give you the basics.
 
 <br>
 
-Sommaire de ce chapitre :
+Contents of this chapter:
 
 1. \subpage arcanetdoc_getting_started_about <br>
-  Description de %ArcaNet.
+  Description of %ArcaNet.
 
 
 

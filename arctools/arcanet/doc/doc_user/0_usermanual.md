@@ -1,31 +1,31 @@
-﻿# Manuel utilisateur de ArcaNet {#arcanetdoc_usermanual}
+﻿# ArcaNet user manual {#arcanetdoc_usermanual}
 
 \mainpage
 
-<!-- L'ordre des subpages est important ici. -->
+<!-- The order of the subpages is important here. -->
 
-Cette page contient la documentation pour les utilisateurs de %ArcaNet.
+This page contains the documentation for the users of %ArcaNet.
 
-La page \subpage arcanetdoc_news présente la liste des nouveautés de chaque version.
+The page \subpage arcanetdoc_news presents the list of the new features of each version.
 
-La documentation accessible depuis cette page s'adresse aux personnes
-désirant connaitre les fonctionnalités de %ArcaNet.
+The documentation accessible from this page is intended for people
+who want to know the features of %ArcaNet.
 
-La documentation se compose de chapitres (listés ci-dessous), composés eux-mêmes
-de sous-chapitres et/ou de pages.
+The documentation is made up of chapters (listed below), themselves made up
+of subchapters and/or pages.
 
-Chaque chapitre/sous-chapitre dispose d'un sommaire décrivant
-brièvement son contenu et d'une liste de ces pages.
+Each chapter/subchapter has a table of contents briefly describing
+its content and a list of its pages.
 
 <br>
 
-Les chapitres disponibles sont :
+The available chapters are:
 
 - \subpage arcanetdoc_getting_started <br>
-  Présente brièvement les principes et les types de base de %Arcane.
+  Briefly presents %ArcaNet and its tools.
 
 - \subpage arcanetdoc_arct <br>
-  Présente brièvement les principes et les types de base de %Arcane.
+  Presents the ARCT file format and the associated CMake functions.
 
 - \subpage arcanetdoc_arccher <br>
-  Présente brièvement les principes et les types de base de %Arcane.
+  Presents the ArcCher launcher.

@@ -1,8 +1,8 @@
-# Exemple : cas de base {#arcanetdoc_arct_cmake_example2}
+# Example: base cases {#arcanetdoc_arct_cmake_example2}
 
 [TOC]
 
-Fichier `testlist.arct` :
+File `testlist.arct`:
 
 ```json
 {
@@ -21,7 +21,7 @@ Fichier `testlist.arct` :
   "cases": {
     "algo1": {
       "_": {
-        "name": "Algorithme inter-boundingbox"
+        "name": "Inter-boundingbox algorithm"
       },
       "arcane": {
         "options": {
@@ -31,7 +31,7 @@ Fichier `testlist.arct` :
     },
     "algo2": {
       "_": {
-        "name": "Algorithme intra-boundingbox"
+        "name": "Intra-boundingbox algorithm"
       },
       "arcane": {
         "options": {
@@ -43,7 +43,7 @@ Fichier `testlist.arct` :
 }
 ```
 
-Fichier `tests.cmake` :
+File `tests.cmake`:
 
 ```cmake
 arct_config_create_or_edit_general(OVERWRITE_ARCT)
@@ -51,19 +51,19 @@ arct_arcane_dataset(PATH "config_2D_diagonal_circle.arc")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_case(NAME_CASE "algo1")
-arct_config_define_name(NAME "Algorithme inter-boundingbox")
+arct_config_define_name(NAME "Inter-boundingbox algorithm")
 arct_arcane_option(ADD "//nonreg/contact-pairs[]/use-contact-intra" VALUE "false")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_case(NAME_CASE "algo2")
-arct_config_define_name(NAME "Algorithme intra-boundingbox")
+arct_config_define_name(NAME "Intra-boundingbox algorithm")
 arct_arcane_option(ADD "//nonreg/contact-pairs[]/use-contact-intra" VALUE "true")
 arct_config_create_or_edit_end()
 
 arct_to_ctest()
 ```
 
-Tests générés :
+Generated tests:
 
 ```shell
 ctest -N
@@ -72,12 +72,12 @@ algo1
 algo2
 ```
 
-Reprenons l'exemple ARCT \ref arcanetdoc_arct_cases.
+Let's revisit the ARCT example \ref arcanetdoc_arct_cases.
 
-Deux cas sans variations donc deux tests générés.
+Two cases without variations so two generated tests.
 
-On peut remarquer que seul le premier `arct_config_create_or_edit_XXX()` possède l'option `OVERWRITE_ARCT`. Seul le
-premier appel doit écraser le fichier existant, s'il existe. Ensuite, on complète ce nouveau fichier.
+We can notice that only the first `arct_config_create_or_edit_XXX()` has the `OVERWRITE_ARCT` option.
+Only the first call must overwrite the existing file, if it exists. Then, we complete this new file.
 
 
 ____

@@ -1,23 +1,24 @@
-# Principes du format ARCT {#arcanetdoc_arct_basis}
+# Principles of the ARCT format {#arcanetdoc_arct_basis}
 
 [TOC]
 
-Un fichier ARCT décrit un ou plusieurs cas d'utilisation, pour un projet donné.
+An ARCT file describes one or more use cases, for a given project.
 
-Pour obtenir le résultat souhaité, il est possible que plusieurs programmes doivent être lancés à la chaine. Ce fichier
-permet de stocker des paramètres pour chaque programme. Par contre, ce fichier ne stocke pas l'ordre d'exécution de ces
-programmes.
+To obtain the desired result, several programs may have to be launched in a chain. This file makes it
+possible to store parameters for each program. However, this file does not store the execution order of
+these programs.
 
-Pour Arcane par exemple (ou pour les programmes utilisant Arcane), il est possible de lui donner en paramètre le chemin
-d'un fichier ARCT et le nom d'un cas d'utilisation pour qu'Arcane l'exécute.
+For Arcane for example (or for programs using Arcane), it is possible to give it as a parameter the path
+of an ARCT file and the name of a use case for Arcane to execute it.
 
-Évidemment, tous les programmes ne supporteront pas ce format de fichier. Pour ceux-là, le lanceur ArcCher s'occupera de
-lire le fichier ARCT et de leur passer les bons paramètres, de manière que ce soit transparent pour l'utilisateur.
+Obviously, not all programs will support this file format. For those, the ArcCher launcher will take care
+of reading the ARCT file and of passing them the right parameters, so that it is transparent for the
+user.
 
-Le format de fichier ARCT a été conçu initialement pour remplacer les fichiers de variations existants dans certains
-codes utilisant Arcane.
+The ARCT file format was initially designed to replace the variation files existing in some codes using
+Arcane.
 
-Un fichier de variations décrit une ou plusieurs variations de propriétés d'un jeu de données Arcane (.arc).
+A variation file describes one or more property variations of an Arcane dataset (.arc).
 
 ```xml
 <?xml version='1.0' ?>
@@ -28,8 +29,8 @@ Un fichier de variations décrit une ou plusieurs variations de propriétés d'u
 </variations>
 ```
 
-Avec un programme intermédiaire, il est possible de générer un ou plusieurs fichiers de jeu de données, un par variation
-possible.
+With an intermediate program, it is possible to generate one or more dataset files, one per possible
+variation.
 
 ```txt
 [dataset.arc] + [auto_variations.xml]
@@ -39,13 +40,13 @@ possible.
 - ...
 ```
 
-L'approche adoptée par le format ARCT est différente.
+The approach adopted by the ARCT format is different.
 
-Au lieu de générer des variations de jeux de données, on a cherché à générer des variations d'exécution.
+Instead of generating dataset variations, we sought to generate execution variations.
 
-## Briques de base
+## Basic building blocks
 
-Un fichier ARCT possède cette structure :
+An ARCT file has this structure:
 
 ```json5
 {
@@ -60,7 +61,7 @@ Un fichier ARCT possède cette structure :
   },
   
   "cases": {
-    "cas_1": {
+    "case_1": {
       // <config_block>
     }
   },
@@ -81,11 +82,11 @@ Un fichier ARCT possède cette structure :
 }
 ```
 
-Un bloc de configurations (`<config_block>`) est un objet JSON permettant d'apporter un bout de configuration à un ou
-plusieurs programmes.
+A configuration block (`<config_block>`) is a JSON object bringing a piece of configuration to one or
+several programs.
 
-Un bloc de configurations est lui-même composé de blocs réservés aux programmes (qui sont aussi des objets JSON). Par
-exemple :
+A configuration block is itself made up of blocks reserved for programs (which are also JSON objects).
+For example:
 
 ```json5
 {
@@ -101,19 +102,20 @@ exemple :
 }
 ```
 
-Le bloc `arcane` est réservé à Arcane. C'est à Arcane de définir son contenu et de le versionner. Ça ne dépend pas du
-format ARCT.
+The `arcane` block is reserved for Arcane. It is up to Arcane to define its content and to version it. It
+does not depend on the ARCT format.
 
-Un programme demandeur est un programme qui va prendre un fichier ARCT en argument et qui va utiliser un lecteur de
-fichier ARCT pour obtenir la configuration qu'il va devoir appliquer.
+A requesting program is a program which will take an ARCT file as an argument and which will use an ARCT
+file reader to get the configuration it will have to apply.
 
-Le lecteur de fichier ARCT va fournir une ou plusieurs listes de blocs de configurations au programme demandeur.
+The ARCT file reader will provide one or several lists of configuration blocks to the requesting program.
 
-Le programme demandeur devra dire au lecteur s'il supporte le multi-cas (lancement de plusieurs cas en une fois) ou non.
-S'il ne le supporte pas, alors une seule liste de blocs sera fournie par le lecteur (sinon, erreur).
+The requesting program will have to tell the reader whether it supports multi-case (launch of several
+cases at once) or not. If it does not support it, then only a single list of blocks will be provided by
+the reader (otherwise, error).
 
 ```txt
-[lecteur de fichier ARCT] + [fichier.arct]
+[ARCT file reader] + [file.arct]
 ->
 [
   [<config_block_1>, <config_block_2>, ...],
@@ -122,16 +124,16 @@ S'il ne le supporte pas, alors une seule liste de blocs sera fournie par le lect
 ]
 ```
 
-Le programme demandeur devra appliquer la configuration contenue dans chaque bloc. Il choisira comment fusionner les
-informations de ces blocs.
+The requesting program will have to apply the configuration contained in each block. It will choose how to
+merge the information of these blocks.
 
-Exemple :
-On peut avoir un bloc qui donne le nombre d'itérations à faire :
+Example:
+We can have a block giving the number of iterations to do:
 
 ```json
 {
   "_": {
-    "name": "10 itérations"
+    "name": "10 iterations"
   },
   "arcane": {
     "options": {
@@ -141,7 +143,7 @@ On peut avoir un bloc qui donne le nombre d'itérations à faire :
 }
 ```
 
-Un autre qui lance Arcane avec 4 sous-domaines en mémoire partagée :
+Another one which runs Arcane with 4 shared-memory subdomains:
 
 ```json
 {
@@ -156,97 +158,98 @@ Un autre qui lance Arcane avec 4 sous-domaines en mémoire partagée :
 }
 ```
 
-Arcane applique les options une par une et si une option apparait dans deux blocs, la plus récente est conservée.
+Arcane applies the options one by one and if an option appears in two blocks, the most recent one is kept.
 
-## Ordre des blocs
+## Block order
 
-Dans un lecteur de fichier ARCT, une liste de blocs de configurations est simplement une liste d'objets JSON triée selon
-l'ordre de lecture qu'il est nécessaire de suivre.
+In an ARCT file reader, a list of configuration blocks is simply a list of JSON objects sorted according
+to the reading order which is necessary to follow.
 
-Pour écrire ces listes de manière humainement lisible, cette syntaxe a été définie :
+To write these lists in a humanly readable way, this syntax has been defined:
 
-- `{}` désigne un bloc ainsi que ses dépendances,
-- `[]` désigne le bloc parent ; ainsi, tous les blocs avant sont des dépendances "before" et les blocs après sont des
-  dépendances "after",
-- `->` est simplement un séparateur de bloc qui montre l'ordre de lecture.
+- `{}` designates a block as well as its dependencies,
+- `[]` designates the parent block; thus, all the blocks before are "before" dependencies and the blocks
+  after are "after" dependencies,
+- `->` is simply a block separator which shows the reading order.
 
-Exemple :
-
-```txt
-{ nom_config_1 -> [general] } -> { { [nom_config_2] -> nom_config_4 } -> [nom_du_cas_1] -> nom_config_3 }
-```
-
-On peut voir que l'on a deux blocs principaux : `[general]` et `[nom_du_cas_1]` :
-
-- `[general]` a une dépendance "before" qui est `nom_config_1`.
-- `[nom_du_cas_1]` a deux dépendances :
-  - une dépendance "after" : `nom_config_3`
-  - une dépendance "before" : `[nom_config_2]` qui a une dépendance "after" :
-    - `nom_config_4`
-
-La liste d'objets JSON, à lire de gauche à droite dans l'ordre, est simplement celle-ci :
+Example:
 
 ```txt
-array = [nom_config_1, general, nom_config_2, nom_config_4, nom_du_cas_1, nom_config_3];
+{ config_1 -> [general] } -> { { [config_2] -> config_4 } -> [case_1] -> config_3 }
 ```
 
-\note On remplace juste les `->` par des `,` et on retire les `[]` et les `{}`...
+We can see that we have two main blocks: `[general]` and `[case_1]`:
 
-Si l'on met de côté les dépendances, l'ordre de lecture est systématiquement celui-ci :
+- `[general]` has a "before" dependency which is `config_1`.
+- `[case_1]` has two dependencies:
+  - an "after" dependency: `config_3`
+  - a "before" dependency: `[config_2]` which has an "after" dependency:
+    - `config_4`
+
+The list of JSON objects, to be read from left to right in order, is simply this one:
 
 ```txt
-{ [general] } -> { [cas_1] }
+array = [config_1, general, config_2, config_4, case_1, config_3];
 ```
 
-`general` est toujours le premier bloc (sauf s'il n'est pas présent). Ensuite, le bloc représentant le cas de base
-choisi par l'utilisateur (ici : `cas_1`) est ajouté à la liste.
+\note We just replace the `->` by `,` and remove the `[]` and the `{}`...
 
-## Nom des cas d'utilisation
+If we set aside the dependencies, the reading order is systematically this one:
 
-Il y a deux types de nom (de cas d'utilisation) : les noms complets et les noms incomplets.
+```txt
+{ [general] } -> { [case_1] }
+```
 
-Un nom complet est un nom qui, associé à un fichier ARCT, désigne un unique cas d'utilisation (une seule liste de blocs
-de configurations).
+`general` is always the first block (unless it is not present). Then, the block representing the base case
+chosen by the user (here: `case_1`) is added to the list.
 
-Un nom incomplet est un nom qui, associé à un fichier ARCT, désigne plusieurs cas d'utilisation (plusieurs listes de
-blocs de configurations).
+## Use case names
 
-Ces deux types de noms sont liés aux variations.
+There are two types of (use case) names: complete names and incomplete names.
 
-Une variation résolue est une variation dont on connait le variant qu'il est nécessaire de mettre dans la liste des
-blocs de configurations.
+A complete name is a name which, associated with an ARCT file, designates a single use case (a single list
+of configuration blocks).
 
-Une variation non résolue est une variation dont on ne connait pas le variant à choisir à partir des informations du
-fichier ARCT.
+An incomplete name is a name which, associated with an ARCT file, designates several use cases (several
+lists of configuration blocks).
 
-Si un bloc contient une variation non résolue, on aura plusieurs exécutions possibles. Il est possible de choisir, dans
-le nom de cas d'utilisation, le variant à utiliser. On résout donc la variation avec un nom complet. Si l'on utilise un
-nom incomplet, alors on aura plusieurs listes de blocs de configurations.
+These two types of names are related to variations.
 
-Pour résumer, dans un nom de cas d'utilisation, on doit retrouver le nom du cas de base en premier, puis les différentes
-résolutions de variation si c'est nécessaire.
+A resolved variation is a variation for which we know the variant which is necessary to put in the list of
+configuration blocks.
 
-Pour construire ces noms, nous utilisons les symboles suivants : `:`, `~`, `=`, `!` et `+`.
+An unresolved variation is a variation for which we do not know which variant to choose from the
+information of the ARCT file.
 
-Le symbole `:` permet de séparer les différents éléments du nom de cas. Il doit être utilisé uniquement pour séparer les
-différents éléments constituant le nom de cas. Il ne doit pas être mis au début ou à la fin du nom de cas (s'il n'y a
-pas de cas de base à exécuter, seulement des variations à résoudre, pas de `:` au début).
+If a block contains an unresolved variation, we will have several possible executions. It is possible to
+choose, in the use case name, the variant to use. The variation is thus resolved with a complete name. If
+an incomplete name is used, then we will have several lists of configuration blocks.
 
-Le symbole `=` permet de résoudre une variation.
+To sum up, in a use case name, the name of the base case must be found first, then the different variation
+resolutions if necessary.
 
-Le symbole `!` permet d'exclure des variants de l'ensemble des variants disponibles à lancer.
+To build these names, we use the following symbols: `:`, `~`, `=`, `!` and `+`.
 
-Le symbole `+` permet d'inclure des variants à lancer, parmi tous les variants disponibles.
+The `:` symbol separates the different elements of the case name. It must be used only to separate the
+different elements making up the case name. It must not be put at the beginning or at the end of the case
+name (if there is no base case to run, only variations to resolve, no `:` at the beginning).
 
-Les symboles `!` et `+` permettent de restreindre le nom de variants à traiter. Avec ces symboles, il est impossible de
-résoudre totalement une variation. Ces symboles peuvent donc être utilisés uniquement dans le cas de noms incomplets.
+The `=` symbol makes it possible to resolve a variation.
 
-Exemple : `cas_1:nb_proc=4:nb_iteration+10+20:eos-model!StiffenedGas`
+The `!` symbol excludes variants from the set of variants available to run.
 
-## Le format
+The `+` symbol includes variants to run, among all the available variants.
 
-Dans les pages suivantes, plusieurs exemples seront expliqués, du plus simple au plus complet. Deux programmes seront
-utilisés : Arcane et ArcCher. Les spécifications de leurs blocs réservés seront présentées au fil des exemples.
+The `!` and `+` symbols restrict the names of variants to process. With these symbols, it is impossible to
+totally resolve a variation. These symbols can therefore be used only in the case of incomplete names.
+
+Example: `case_1:nb_proc=4:nb_iteration+10+20:eos-model!StiffenedGas`
+
+## The format
+
+In the following pages, several examples will be explained, from the simplest to the most complete. Two
+programs will be used: Arcane and ArcCher. The specifications of their reserved blocks will be presented
+throughout the examples.
 
 ____
 

@@ -1,8 +1,8 @@
-# Exemple : blocs commons {#arcanetdoc_arct_cmake_example3}
+# Example: commons blocks {#arcanetdoc_arct_cmake_example3}
 
 [TOC]
 
-Fichier `testlist.arct` :
+File `testlist.arct`:
 
 ```json
 {
@@ -21,7 +21,7 @@ Fichier `testlist.arct` :
   "cases": {
     "algo1": {
       "_": {
-        "name": "Algorithme inter-boundingbox"
+        "name": "Inter-boundingbox algorithm"
       },
       "arcane": {
         "options": {
@@ -31,7 +31,7 @@ Fichier `testlist.arct` :
     },
     "algo2": {
       "_": {
-        "name": "Algorithme intra-boundingbox",
+        "name": "Intra-boundingbox algorithm",
         "depend_b": ["enable_post_processing"]
       },
       "arcane": {
@@ -45,7 +45,7 @@ Fichier `testlist.arct` :
   "commons": {
     "enable_post_processing": {
       "_": {
-        "name": "Activation de la sortie VtkHdf"
+        "name": "Enabling the VtkHdf output"
       },
       "arcane": {
         "options": {
@@ -58,7 +58,7 @@ Fichier `testlist.arct` :
 }
 ```
 
-Fichier `tests.cmake` :
+File `tests.cmake`:
 
 ```cmake
 arct_config_create_or_edit_general(OVERWRITE_ARCT)
@@ -66,18 +66,18 @@ arct_arcane_dataset(PATH "config_2D_diagonal_circle.arc")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_case(NAME_CASE "algo1")
-arct_config_define_name(NAME "Algorithme inter-boundingbox")
+arct_config_define_name(NAME "Inter-boundingbox algorithm")
 arct_arcane_option(ADD "//nonreg/contact-pairs[]/use-contact-intra" VALUE "false")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_case(NAME_CASE "algo2")
-arct_config_define_name(NAME "Algorithme intra-boundingbox")
+arct_config_define_name(NAME "Intra-boundingbox algorithm")
 arct_arcane_option(ADD "//nonreg/contact-pairs[]/use-contact-intra" VALUE "true")
 arct_config_dependency(ADD "enable_post_processing")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_common(NAME_COMMON "enable_post_processing")
-arct_config_define_name(NAME "Activation de la sortie VtkHdf")
+arct_config_define_name(NAME "Enabling the VtkHdf output")
 arct_arcane_option(ADD "//nonreg/post-processor-write" VALUE "true")
 arct_arcane_option(ADD "//nonreg/mesh-contact-param[]/div-nb-cell" VALUE "1")
 arct_config_create_or_edit_end()
@@ -85,7 +85,7 @@ arct_config_create_or_edit_end()
 arct_to_ctest()
 ```
 
-Tests générés :
+Generated tests:
 
 ```shell
 ctest -N
@@ -94,15 +94,15 @@ algo1
 algo2
 ```
 
-Reprenons l'exemple ARCT \ref arcanetdoc_arct_commons.
+Let's revisit the ARCT example \ref arcanetdoc_arct_commons.
 
-Toujours pas de variations donc deux tests.
+Still no variations so two tests.
 
-CMake s'occupe du tableau de dépendances, on a juste à demander à CMake d'ajouter un élément dedans (ou de le créer s'il
-n'existe pas).
+CMake takes care of the dependency array, we just have to ask CMake to add an element in it (or to create
+it if it does not exist).
 
-On peut aussi voir que l'on peut ajouter une dépendance sans qu'elle soit créée avant. En effet, on ne vérifie pas la
-validité des informations dans cette partie. La vérification sera effectuée par `arct_to_ctest()`.
+We can also see that a dependency can be added without it being created before. Indeed, the validity of
+the information is not checked in this part. The check will be done by `arct_to_ctest()`.
 
 ____
 

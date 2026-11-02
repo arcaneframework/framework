@@ -1,44 +1,44 @@
-# Format ARCT {#arcanetdoc_arct}
+# ARCT format {#arcanetdoc_arct}
 
-Le format de fichier ARCT est un schéma de fichier pour le format JSON.
+The ARCT file format is a file schema for the JSON format.
 
-Il permet de fournir des arguments de lancement à différents programmes.
+It makes it possible to provide launch arguments to different programs.
 
-\note Le fichier de spécification est disponible ici : \subpage arct_specs. Il est aussi possible de
-demander à une IA de lire le fichier de spécification et d'obtenir des infos à propos du format.
+\note The specification file is available here: \subpage arct_specs. It is also possible to
+ask an AI to read the specification file and get information about the format.
 
 <br>
 
-Sommaire de ce chapitre :
+Contents of this chapter:
 
 1. \subpage arcanetdoc_arct_basis <br>
-  Principes du format ARCT (résumé des spécifications).
+  Principles of the ARCT format (summary of the specifications).
 
 2. \subpage arcanetdoc_arct_general <br>
-   Exemple 1.
+   A minimal file: only a `general` block.
 
 3. \subpage arcanetdoc_arct_cases <br>
-   Exemple 2.
+   Base cases.
 
 4. \subpage arcanetdoc_arct_commons <br>
-   Exemple 3.
+   Common configurations and dependencies.
 
 5. \subpage arcanetdoc_arct_variations1 <br>
-   Exemple 4.
+   Resolved variations.
 
 6. \subpage arcanetdoc_arct_variations2 <br>
-   Exemple 5.
+   Unresolved variations.
 
 7. \subpage arcanetdoc_arct_variations3 <br>
-   Exemple 6.
+   Variant limiters (`!` and `+`).
 
 8. \subpage arcanetdoc_arct_variations4 <br>
-   Exemple 7.
+   Variations of variations.
 
-Un sous-chapitre est disponible pour expliquer comment utiliser les fonctions CMake fournies :
+A subchapter is available to explain how to use the provided CMake functions:
 
 - \subpage arcanetdoc_arct_cmake <br>
-  Fonctions CMake disponibles.
+  Available CMake functions.
 
 ____
 

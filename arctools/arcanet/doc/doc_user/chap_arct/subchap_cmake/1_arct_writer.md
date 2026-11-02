@@ -1,40 +1,41 @@
-# Écrivain de fichier ARCT en CMake {#arcanetdoc_arct_cmake_arct_writer}
+# ARCT file writer in CMake {#arcanetdoc_arct_cmake_arct_writer}
 
 [TOC]
 
-Pour écrire des tests de non-régression, nous avons créé plusieurs fonctions CMake afin de construire un fichier ARCT
-petit à petit. Ces fonctions peuvent remplacer les `add_test()` mais le fonctionnement est totalement différent.
+To write non-regression tests, we have created several CMake functions in order to build an ARCT file
+step by step. These functions can replace the `add_test()` but the way they work is totally different.
 
-`add_test()` permet d'ajouter un test en spécifiant son nom et la commande à exécuter pour lancer le test. Un test passe
-si la commande renvoie 0 (par défaut).
+`add_test()` adds a test by specifying its name and the command to execute to run the test. A test passes
+if the command returns 0 (by default).
 
-La contribution du projet ArcaNet ajoute une étape supplémentaire : le fichier ARCT.
+The contribution of the ArcaNet project adds an extra step: the ARCT file.
 
-Au lieu de faire des `add_test()`, l'utilisateur peut utiliser les fonctions CMake fournies pour décrire ses cas test,
-ajouter des variations, &c. Avec ArcCher, il est aussi possible de lancer les tests avec MPI (et peut-être même sur
-calculateur plus tard).
+Instead of making `add_test()`, the user can use the provided CMake functions to describe their test
+cases, add variations, etc. With ArcCher, it is also possible to run the tests with MPI (and maybe even
+on a computer later).
 
-Une fois le fichier ARCT construit, il est aujourd'hui possible de le convertir automatiquement en CTest via une autre
-fonction CMake. Plus tard, il sera possible d'utiliser ce fichier dans un autre lanceur de cas test : Schedane ou
-peut-être PCVS.
+Once the ARCT file is built, it is currently possible to convert it automatically into CTest via another
+CMake function. Later, it will be possible to use this file in another test case launcher: Schedane or
+maybe PCVS.
 
-## Initialisation du fichier ARCT
+## ARCT file initialization
 
-Deux modes d'utilisation de ces fonctions sont disponibles ; l'un permettant d'écrire le fichier ARCT petit à petit dans
-une variable CMake puis, à la fin, d'écrire son contenu dans un fichier ; l'autre ouvre, lit, écrit et ferme un fichier
-ARCT à chaque étape.
+Two modes of use of these functions are available; one making it possible to write the ARCT file step by
+step into a CMake variable and then, at the end, to write its content into a file; the other opens, reads,
+writes and closes an ARCT file at each step.
 
-Le premier mode permet d'optimiser un peu les performances mais nécessite d'avoir accès à la variable CMake en lecture
-et en écriture à chaque appel aux fonctions CMake ARCT (donc pas de fonctions utilisateur, uniquement des macros).
+The first mode makes it possible to optimize the performances a bit but requires having access to the
+CMake variable in read and write mode at each call to the ARCT CMake functions (so no user functions,
+only macros).
 
-Le second est plus simple mais peut devenir lent pour les gros fichiers ARCT. De plus, il nécessite de donner
-l'emplacement du fichier ARCT à chaque fois (si celui par défaut n'est pas utilisé).
+The second is simpler but can become slow for big ARCT files. Moreover, it requires to give the location
+of the ARCT file each time (if the default one is not used).
 
-Dans tous les exemples de cette documentation, on va utiliser le second mode. On va donc présenter le premier mode
-maintenant.
+In all the examples of this documentation, we will use the second mode. So we will present the first mode
+now.
 
-Ce mode nécessite l'utilisation de deux fonctions. Entre ces deux fonctions, on peut décrire le fichier ARCT avec les
-fonctions présentées plus tard.
+This mode requires the use of two functions. Between these two functions, the ARCT file can be described
+with the functions presented later.
 
 --------------------------
 
@@ -44,16 +45,16 @@ fonctions présentées plus tard.
 arct_begin(OVERWRITE_ARCT ARCT_PATH <path>)
 ```
 
-Cette première fonction permet d'ouvrir le fichier ARCT et de le copier dans une variable CMake s'il existe. Si ce
-fichier n'existe pas, la variable contiendra simplement un objet JSON vide.
+This first function opens the ARCT file and copies it into a CMake variable if it exists. If this
+file does not exist, the variable will simply contain an empty JSON object.
 
-Une option est disponible :
+One option is available:
 
-- `OVERWRITE_ARCT` : permet d'écraser le fichier ARCT existant s'il existe.
+- `OVERWRITE_ARCT`: overwrites the existing ARCT file if it exists.
 
-Un argument `oneValueArgs` facultatif est disponible :
+One optional `oneValueArgs` argument is available:
 
-- `ARCT_PATH <path>` : permet de donner l'emplacement du fichier ARCT à écrire. La valeur par défaut est
+- `ARCT_PATH <path>`: gives the location of the ARCT file to write. The default value is
   `${CMAKE_BINARY_DIR}/testlist.arct`.
 
 --------------------------
@@ -64,48 +65,49 @@ Un argument `oneValueArgs` facultatif est disponible :
 arct_end()
 ```
 
-Cette fonction permet simplement d'écrire le fichier ARCT à partir de la variable CMake.
+This function simply writes the ARCT file from the CMake variable.
 
 --------------------------
 
-Dans le second mode, le fichier est ouvert/lu par les fonctions `arct_config_create_or_edit_XXX()` et est écrit par la
-fonction `arct_config_create_or_edit_end()`.
+In the second mode, the file is opened/read by the `arct_config_create_or_edit_XXX()` functions and is
+written by the `arct_config_create_or_edit_end()` function.
 
-Pas besoin de spécifier un mode ou l'autre : l'utilisation de `arct_begin()` suffit pour déterminer l'utilisation du
-premier mode.
+No need to specify one mode or the other: the use of `arct_begin()` is enough to determine the use of the
+first mode.
 
-\warning Il n'est pas encore possible de créer des blocs réservés personnalisés. Les seuls disponibles sont ceux
-d'Arcane et d'ArcCher.
+\warning It is not yet possible to create custom reserved blocks. The only ones available are those of
+Arcane and ArcCher.
 
-## Ouverture et fermeture de blocs de configurations
+## Opening and closing configuration blocks
 
-Dans un fichier ARCT, il y a quatre parties contenant des blocs de configurations :
+In an ARCT file, there are four parts containing configuration blocks:
 
 - `general`,
 - `cases`,
 - `commons`,
 - `variations`.
 
-Pour chacune de ces parties, il y a une fonction permettant de créer ou éditer un bloc de configuration :
+For each of these parts, there is a function to create or edit a configuration block:
 
 - `arct_config_create_or_edit_general()`,
 - `arct_config_create_or_edit_case()`,
 - `arct_config_create_or_edit_common()`,
 - `arct_config_create_or_edit_variation()`.
 
-Et une fonction pour terminer l'édition (et écrire le fichier ARCT dans le cas du second mode) :
+And a function to end the edition (and write the ARCT file in the case of the second mode):
 
 - `arct_config_create_or_edit_end()`.
 
-Les fonctions CMake ARCT entre les fonctions `arct_config_create_or_edit_XXX()` et `arct_config_create_or_edit_end()`
-doivent pouvoir modifier les variables CMake définies par `arct_config_create_or_edit_XXX()`.
+The ARCT CMake functions between the `arct_config_create_or_edit_XXX()` functions and
+`arct_config_create_or_edit_end()` must be able to modify the CMake variables defined by
+`arct_config_create_or_edit_XXX()`.
 
-Les fonctions `arct_config_create_or_edit_XXX()` permettant de se substituer à la fonction `arct_begin()`, ces
-fonctions reprennent donc les paramètres de `arct_begin()`.
+The `arct_config_create_or_edit_XXX()` functions being able to substitute for the `arct_begin()` function,
+these functions therefore take back the parameters of `arct_begin()`.
 
-Ces fonctions permettent de créer une partie de fichier ARCT (si celle-ci n'existe pas déjà) et de la modifier.
-Toutes les fonctions CMake ARCT entre `arct_config_create_or_edit_XXX()` et `arct_config_create_or_edit_end()`
-concerneront le bloc `XXX`.
+These functions make it possible to create a part of an ARCT file (if it does not already exist) and to
+modify it. All the ARCT CMake functions between `arct_config_create_or_edit_XXX()` and
+`arct_config_create_or_edit_end()` will concern the `XXX` block.
 
 --------------------------
 
@@ -115,7 +117,8 @@ concerneront le bloc `XXX`.
 arct_config_create_or_edit_general(OVERWRITE_ARCT ARCT_PATH <path>)
 ```
 
-Cette fonction permet de créer et/ou de modifier le bloc de configuration `general` du fichier ARCT :
+This function makes it possible to create and/or modify the `general` configuration block of the ARCT
+file:
 
 ```json5
 {
@@ -125,14 +128,14 @@ Cette fonction permet de créer et/ou de modifier le bloc de configuration `gene
 }
 ```
 
-Une option est disponible :
+One option is available:
 
-- `OVERWRITE_ARCT` : permet d'écraser le fichier ARCT existant s'il existe. Aucun effet si le premier mode est utilisé.
+- `OVERWRITE_ARCT`: overwrites the existing ARCT file if it exists. No effect if the first mode is used.
 
-Un argument `oneValueArgs` facultatif est disponible :
+One optional `oneValueArgs` argument is available:
 
-- `ARCT_PATH <path>` : permet de donner l'emplacement du fichier ARCT à écrire. La valeur par défaut est
-  `${CMAKE_BINARY_DIR}/testlist.arct`. Aucun effet si le premier mode est utilisé.
+- `ARCT_PATH <path>`: gives the location of the ARCT file to write. The default value is
+  `${CMAKE_BINARY_DIR}/testlist.arct`. No effect if the first mode is used.
 
 --------------------------
 
@@ -142,7 +145,8 @@ Un argument `oneValueArgs` facultatif est disponible :
 arct_config_create_or_edit_case(OVERWRITE_ARCT ARCT_PATH <path> NAME_CASE <name_case>)
 ```
 
-Cette fonction permet de créer et/ou de modifier un des blocs de configuration de la partie `cases` du fichier ARCT :
+This function makes it possible to create and/or modify one of the configuration blocks of the `cases`
+part of the ARCT file:
 
 ```json5
 {
@@ -154,15 +158,15 @@ Cette fonction permet de créer et/ou de modifier un des blocs de configuration 
 }
 ```
 
-Une option est disponible :
+One option is available:
 
-- `OVERWRITE_ARCT` : permet d'écraser le fichier ARCT existant s'il existe. Aucun effet si le premier mode est utilisé.
+- `OVERWRITE_ARCT`: overwrites the existing ARCT file if it exists. No effect if the first mode is used.
 
-Deux arguments `oneValueArgs` sont disponibles :
+Two `oneValueArgs` arguments are available:
 
-- `ARCT_PATH <path>` (facultatif) : permet de donner l'emplacement du fichier ARCT à écrire. La valeur par défaut est
-  `${CMAKE_BINARY_DIR}/testlist.arct`. Aucun effet si le premier mode est utilisé.
-- `NAME_CASE <name_case>` (**obligatoire**) : permet de donner le nom du cas de base à créer/modifier par la suite.
+- `ARCT_PATH <path>` (optional): gives the location of the ARCT file to write. The default value is
+  `${CMAKE_BINARY_DIR}/testlist.arct`. No effect if the first mode is used.
+- `NAME_CASE <name_case>` (**mandatory**): gives the name of the base case to create/modify afterwards.
 
 --------------------------
 
@@ -172,7 +176,8 @@ Deux arguments `oneValueArgs` sont disponibles :
 arct_config_create_or_edit_common(OVERWRITE_ARCT ARCT_PATH <path> NAME_COMMON <name_common>)
 ```
 
-Cette fonction permet de créer et/ou de modifier un des blocs de configuration de la partie `commons` du fichier ARCT :
+This function makes it possible to create and/or modify one of the configuration blocks of the `commons`
+part of the ARCT file:
 
 ```json5
 {
@@ -184,16 +189,16 @@ Cette fonction permet de créer et/ou de modifier un des blocs de configuration 
 }
 ```
 
-Une option est disponible :
+One option is available:
 
-- `OVERWRITE_ARCT` : permet d'écraser le fichier ARCT existant s'il existe. Aucun effet si le premier mode est utilisé.
+- `OVERWRITE_ARCT`: overwrites the existing ARCT file if it exists. No effect if the first mode is used.
 
-Deux arguments `oneValueArgs` sont disponibles :
+Two `oneValueArgs` arguments are available:
 
-- `ARCT_PATH <path>` (facultatif) : permet de donner l'emplacement du fichier ARCT à écrire. La valeur par défaut est
-  `${CMAKE_BINARY_DIR}/testlist.arct`. Aucun effet si le premier mode est utilisé.
-- `NAME_COMMON <name_common>` (**obligatoire**) : permet de donner le nom de la configuration commune à créer/modifier
-  par la suite.
+- `ARCT_PATH <path>` (optional): gives the location of the ARCT file to write. The default value is
+  `${CMAKE_BINARY_DIR}/testlist.arct`. No effect if the first mode is used.
+- `NAME_COMMON <name_common>` (**mandatory**): gives the name of the common configuration to
+  create/modify afterwards.
 
 --------------------------
 
@@ -203,8 +208,8 @@ Deux arguments `oneValueArgs` sont disponibles :
 arct_config_create_or_edit_variation(OVERWRITE_ARCT ARCT_PATH <path> NAME_VARIATION <name_variation> NAME_VARIANT <name_variant>)
 ```
 
-Cette fonction permet de créer et/ou de modifier un des blocs de configuration d'un variant d'une variation de la partie
-`variations` du fichier ARCT :
+This function makes it possible to create and/or modify one of the configuration blocks of a variant of a
+variation of the `variations` part of the ARCT file:
 
 ```json5
 {
@@ -218,17 +223,18 @@ Cette fonction permet de créer et/ou de modifier un des blocs de configuration 
 }
 ```
 
-Une option est disponible :
+One option is available:
 
-- `OVERWRITE_ARCT` : permet d'écraser le fichier ARCT existant s'il existe. Aucun effet si le premier mode est utilisé.
+- `OVERWRITE_ARCT`: overwrites the existing ARCT file if it exists. No effect if the first mode is used.
 
-Trois arguments `oneValueArgs` sont disponibles :
+Three `oneValueArgs` arguments are available:
 
-- `ARCT_PATH <path>` (facultatif) : permet de donner l'emplacement du fichier ARCT à écrire. La valeur par défaut est
-  `${CMAKE_BINARY_DIR}/testlist.arct`. Aucun effet si le premier mode est utilisé.
-- `NAME_VARIATION <name_variation>` (**obligatoire**) : permet de donner le nom de la variation à créer/modifier par la
-  suite.
-- `NAME_VARIANT <name_variant>` (**obligatoire**) : permet de donner le nom du variant à créer/modifier par la suite.
+- `ARCT_PATH <path>` (optional): gives the location of the ARCT file to write. The default value is
+  `${CMAKE_BINARY_DIR}/testlist.arct`. No effect if the first mode is used.
+- `NAME_VARIATION <name_variation>` (**mandatory**): gives the name of the variation to create/modify
+  afterwards.
+- `NAME_VARIANT <name_variant>` (**mandatory**): gives the name of the variant to create/modify
+  afterwards.
 
 --------------------------
 
@@ -238,14 +244,14 @@ Trois arguments `oneValueArgs` sont disponibles :
 arct_config_create_or_edit_end()
 ```
 
-Cette fonction permet de mettre à jour la variable contenant le JSON ARCT. De plus, dans le second mode, elle écrit la
-variable dans le fichier ARCT.
+This function updates the variable containing the ARCT JSON. Moreover, in the second mode, it writes the
+variable into the ARCT file.
 
 --------------------------
 
-## Modification des propriétés du bloc réservé ARCT
+## Modifying the properties of the ARCT reserved block
 
-Plusieurs fonctions sont disponibles pour modifier les propriétés du bloc réservé ARCT :
+Several functions are available to modify the properties of the ARCT reserved block:
 
 ```json5
 {
@@ -257,7 +263,7 @@ Plusieurs fonctions sont disponibles pour modifier les propriétés du bloc rés
 }
 ```
 
-*`XXX` correspond au type de bloc choisi lors de l'appel à `arct_config_create_or_edit_XXX()`.*
+*`XXX` corresponds to the type of block chosen when calling `arct_config_create_or_edit_XXX()`.*
 
 
 --------------------------
@@ -268,7 +274,7 @@ Plusieurs fonctions sont disponibles pour modifier les propriétés du bloc rés
 arct_config_define_name(NAME <name>)
 ```
 
-Cette fonction permet d'ajouter un nom pour un bloc de configuration. Si un nom existe déjà, il sera écrasé :
+This function adds a name for a configuration block. If a name already exists, it will be overwritten:
 
 ```json5
 {
@@ -280,13 +286,13 @@ Cette fonction permet d'ajouter un nom pour un bloc de configuration. Si un nom 
 }
 ```
 
-\warning Il s'agit d'un nom d'affichage : le nom du bloc de configurations ne change pas.
+\warning This is a display name: the name of the configuration block does not change.
 
-Ce nom peut donc contenir tous les symboles que vous souhaitez.
+This name can therefore contain all the symbols you want.
 
-Un argument `oneValueArgs` est disponible :
+One `oneValueArgs` argument is available:
 
-- `NAME <name>` (**obligatoire**) : permet de donner un nom d'affichage au bloc de configuration.
+- `NAME <name>` (**mandatory**): gives a display name to the configuration block.
 
 --------------------------
 
@@ -296,11 +302,11 @@ Un argument `oneValueArgs` est disponible :
 arct_config_dependency([BEFORE|AFTER] ADD <name_dep>)
 ```
 
-Cette fonction permet d'ajouter une dépendance à un bloc de configuration.
+This function adds a dependency to a configuration block.
 
-Par défaut, l'option `BEFORE` est sélectionnée.
+By default, the `BEFORE` option is selected.
 
-Si l'option `BEFORE` est sélectionnée :
+If the `BEFORE` option is selected:
 
 ```json5
 {
@@ -312,7 +318,7 @@ Si l'option `BEFORE` est sélectionnée :
 }
 ```
 
-Si l'option `AFTER` est sélectionnée :
+If the `AFTER` option is selected:
 
 ```json5
 {
@@ -324,14 +330,14 @@ Si l'option `AFTER` est sélectionnée :
 }
 ```
 
-Deux options sont disponibles :
+Two options are available:
 
-- `BEFORE` : permet d'ajouter une dépendance *before*. Option par défaut.
-- `AFTER` : permet d'ajouter une dépendance *after*.
+- `BEFORE`: adds a *before* dependency. Default option.
+- `AFTER`: adds an *after* dependency.
 
-Un argument `oneValueArgs` est disponible :
+One `oneValueArgs` argument is available:
 
-- `ADD <name_dep>` (**obligatoire**) : permet d'ajouter une dépendance à la fin du tableau des dépendances.
+- `ADD <name_dep>` (**mandatory**): adds a dependency at the end of the dependency array.
 
 --------------------------
 
@@ -341,11 +347,11 @@ Un argument `oneValueArgs` est disponible :
 arct_config_variation([BEFORE|AFTER] ADD <name_variation> [EQUAL <name_variant>|INCLUDE <name_variant>...|EXCLUDE <name_variant>...])
 ```
 
-Cette fonction permet d'ajouter ou de modifier une dépendance de type variation.
+This function adds or modifies a variation-type dependency.
 
-Par défaut, l'option `BEFORE` est sélectionnée.
+By default, the `BEFORE` option is selected.
 
-Si l'option `BEFORE` est sélectionnée :
+If the `BEFORE` option is selected:
 
 ```json5
 {
@@ -357,7 +363,7 @@ Si l'option `BEFORE` est sélectionnée :
 }
 ```
 
-Si l'option `AFTER` est sélectionnée :
+If the `AFTER` option is selected:
 
 ```json5
 {
@@ -369,32 +375,31 @@ Si l'option `AFTER` est sélectionnée :
 }
 ```
 
-L'argument `ADD` permet d'ajouter une variation dans la liste des dépendances. Si la variation est déjà présente dans la
-liste, la fonction ajoutera un limiteur de variants à cette dépendance (si la liste contient `nb_proc!1`,
-`ADD nb_proc EXCLUDE 4` donnerait `nb_proc!1!4`).
+The `ADD` argument adds a variation to the dependency list. If the variation is already present in the
+list, the function will add a variant limiter to this dependency (if the list contains `nb_proc!1`,
+`ADD nb_proc EXCLUDE 4` would give `nb_proc!1!4`).
 
-Deux options sont disponibles :
+Two options are available:
 
-- `BEFORE` : permet d'ajouter une dépendance *before*. Option par défaut.
-- `AFTER` : permet d'ajouter une dépendance *after*.
+- `BEFORE`: adds a *before* dependency. Default option.
+- `AFTER`: adds an *after* dependency.
 
-Trois arguments `oneValueArgs` sont disponibles :
+Three `oneValueArgs` arguments are available:
 
-- `ADD <name_variation>` (**obligatoire**) : permet d'ajouter une variation à la fin du tableau des
-  dépendances ou permet d'ajouter une ou plusieurs inclusions/exclusions de variants dans une variation déjà présente
-  dans le tableau des dépendances.
-- `EQUAL <name_variant>` (facultatif) : permet de résoudre la variation passée avec l'argument `ADD` (symbole `=`).
+- `ADD <name_variation>` (**mandatory**): adds a variation at the end of the dependency array or adds one
+  or several variant inclusions/exclusions to a variation already present in the dependency array.
+- `EQUAL <name_variant>` (optional): resolves the variation passed with the `ADD` argument (`=` symbol).
 
-Deux arguments `multiValueArgs` sont disponibles :
+Two `multiValueArgs` arguments are available:
 
-- `INCLUDE <name_variant>...` (facultatif) : permet de restreindre la variation passée avec l'argument `ADD` à certains
-  variants (symbole `+`).
-- `EXCLUDE <name_variant>...` (facultatif) : permet d'exclure des variants de la variation passée avec l'argument `ADD`
-  (symbole `!`).
+- `INCLUDE <name_variant>...` (optional): restricts the variation passed with the `ADD` argument to
+  certain variants (`+` symbol).
+- `EXCLUDE <name_variant>...` (optional): excludes variants from the variation passed with the `ADD`
+  argument (`!` symbol).
 
-## Modification des propriétés du bloc réservé Arcane
+## Modifying the properties of the Arcane reserved block
 
-Plusieurs fonctions sont disponibles pour modifier les propriétés du bloc réservé Arcane :
+Several functions are available to modify the properties of the Arcane reserved block:
 
 ```json5
 {
@@ -406,7 +411,7 @@ Plusieurs fonctions sont disponibles pour modifier les propriétés du bloc rés
 }
 ```
 
-*`XXX` correspond au type de bloc choisi lors de l'appel à `arct_config_create_or_edit_XXX()`.*
+*`XXX` corresponds to the type of block chosen when calling `arct_config_create_or_edit_XXX()`.*
 
 --------------------------
 
@@ -416,7 +421,7 @@ Plusieurs fonctions sont disponibles pour modifier les propriétés du bloc rés
 arct_arcane_dataset(PATH <path_dataset>)
 ```
 
-Cette fonction permet de définir un jeu de données pour Arcane. Si un chemin existe déjà, il sera écrasé :
+This function defines a dataset for Arcane. If a path already exists, it will be overwritten:
 
 ```json5
 {
@@ -428,10 +433,10 @@ Cette fonction permet de définir un jeu de données pour Arcane. Si un chemin e
 }
 ```
 
-Un argument `oneValueArgs` est disponible :
+One `oneValueArgs` argument is available:
 
-- `PATH <path_dataset>` (**obligatoire**) : permet de donner un chemin pour trouver le jeu de données. Le chemin peut
-  être relatif au répertoire de travail.
+- `PATH <path_dataset>` (**mandatory**): gives a path to find the dataset. The path can be relative to
+  the working directory.
 
 --------------------------
 
@@ -441,7 +446,7 @@ Un argument `oneValueArgs` est disponible :
 arct_arcane_option(ADD <name_option> VALUE <value_option>)
 ```
 
-Cette fonction permet d'ajouter une option dans la liste des options à donner à Arcane :
+This function adds an option to the list of options to give to Arcane:
 
 ```json5
 {
@@ -456,20 +461,20 @@ Cette fonction permet d'ajouter une option dans la liste des options à donner �
 }
 ```
 
-Une option Arcane classique se transmet par la ligne de commande. Par exemple : `-A,MaxIteration=10` va donner ici
+A classic Arcane option is passed through the command line. For example: `-A,MaxIteration=10` gives here
 `arct_arcane_option(ADD "MaxIteration" VALUE "10")`.
 
-Compatible avec toutes les options Arcane (même les modifications du jeu de données, exemple :
+Compatible with all the Arcane options (even the dataset modifications, example:
 `arct_arcane_option(ADD "//meshes/mesh[]/generator/nb-part-x" VALUE "4")`).
 
-Deux arguments `oneValueArgs` sont disponibles :
+Two `oneValueArgs` arguments are available:
 
-- `ADD <name_option>` (**obligatoire**) : permet de donner le nom de l'option à ajouter.
-- `VALUE <value_option>` (**obligatoire**) : permet de donner la valeur de l'option à ajouter.
+- `ADD <name_option>` (**mandatory**): gives the name of the option to add.
+- `VALUE <value_option>` (**mandatory**): gives the value of the option to add.
 
-## Modification des propriétés du bloc réservé ArcCher
+## Modifying the properties of the ArcCher reserved block
 
-Plusieurs fonctions sont disponibles pour modifier les propriétés du bloc réservé ArcCher (Arcane launCher) :
+Several functions are available to modify the properties of the ArcCher reserved block (Arcane launCher):
 
 ```json5
 {
@@ -481,7 +486,7 @@ Plusieurs fonctions sont disponibles pour modifier les propriétés du bloc rés
 }
 ```
 
-*`XXX` correspond au type de bloc choisi lors de l'appel à `arct_config_create_or_edit_XXX()`.*
+*`XXX` corresponds to the type of block chosen when calling `arct_config_create_or_edit_XXX()`.*
 
 --------------------------
 
@@ -491,7 +496,7 @@ Plusieurs fonctions sont disponibles pour modifier les propriétés du bloc rés
 arct_arccher_mpi(PATH <path_mpirun> NB_PROC <nb_proc_mpi>)
 ```
 
-Cette fonction permet de définir les options MPI :
+This function defines the MPI options:
 
 ```json5
 {
@@ -504,23 +509,23 @@ Cette fonction permet de définir les options MPI :
 }
 ```
 
-Deux actions peuvent être faites, soit en un seul appel, soit en deux :
+Two actions can be done, either in a single call, or in two:
 
 ```cmake
 arct_arccher_mpi(PATH /usr/bin/mpirun NB_PROC 4)
 ```
 
-est équivalent à :
+is equivalent to:
 
 ```cmake
 arct_arccher_mpi(PATH /usr/bin/mpirun)
 arct_arccher_mpi(NB_PROC 4)
 ```
 
-Deux arguments `oneValueArgs` sont disponibles :
+Two `oneValueArgs` arguments are available:
 
-- `PATH <path_mpirun>` (facultatif) : permet de donner un chemin pour le binaire `mpirun/mpiexec`.
-- `NB_PROC <nb_proc_mpi>` (facultatif) : permet de donner un nombre de processus à utiliser.
+- `PATH <path_mpirun>` (optional): gives a path for the `mpirun/mpiexec` binary.
+- `NB_PROC <nb_proc_mpi>` (optional): gives a number of processes to use.
 
 --------------------------
 
@@ -530,7 +535,7 @@ Deux arguments `oneValueArgs` sont disponibles :
 arct_arccher_envvar(ADD <name_envvar> VALUE <value_envvar>)
 ```
 
-Cette fonction permet de définir des variables d'environnement qui seront positionnées au lancement :
+This function defines environment variables which will be set at launch:
 
 ```json5
 {
@@ -544,10 +549,10 @@ Cette fonction permet de définir des variables d'environnement qui seront posit
 }
 ```
 
-Deux arguments `oneValueArgs` sont disponibles :
+Two `oneValueArgs` arguments are available:
 
-- `ADD <name_envvar>` (**obligatoire**) : permet de donner le nom de la variable d'environnement à ajouter.
-- `VALUE <value_envvar>` (**obligatoire**) : permet de donner la valeur de la variable d'environnement à ajouter.
+- `ADD <name_envvar>` (**mandatory**): gives the name of the environment variable to add.
+- `VALUE <value_envvar>` (**mandatory**): gives the value of the environment variable to add.
 
 --------------------------
 
@@ -557,7 +562,7 @@ Deux arguments `oneValueArgs` sont disponibles :
 arct_arccher_executable(PATH <path_executable>)
 ```
 
-Cette fonction permet de définir où se situe l'exécutable du programme à lancer par ArcCher :
+This function defines where the executable of the program to be launched by ArcCher is located:
 
 ```json5
 {
@@ -569,9 +574,9 @@ Cette fonction permet de définir où se situe l'exécutable du programme à lan
 }
 ```
 
-Un argument `oneValueArgs` est disponible :
+One `oneValueArgs` argument is available:
 
-- `PATH <path_executable>` (facultatif) : permet de donner un chemin pour l'exécutable à lancer.
+- `PATH <path_executable>` (optional): gives a path for the executable to launch.
 
 --------------------------
 
@@ -581,8 +586,8 @@ Un argument `oneValueArgs` est disponible :
 arct_arccher_working_dir(PATH <path_workingdir>)
 ```
 
-Cette fonction permet de définir où est le répertoire de travail. Cela permet d'utiliser des chemins relatifs pour
-l'exécutable, le jeu de données, les maillages du jeu de données, &c.
+This function defines where the working directory is. This makes it possible to use relative paths for
+the executable, the dataset, the meshes of the dataset, etc.
 
 ```json5
 {
@@ -594,9 +599,9 @@ l'exécutable, le jeu de données, les maillages du jeu de données, &c.
 }
 ```
 
-Un argument `oneValueArgs` est disponible :
+One `oneValueArgs` argument is available:
 
-- `PATH <path_workingdir>` (facultatif) : permet de donner le chemin du répertoire de travail.
+- `PATH <path_workingdir>` (optional): gives the path of the working directory.
 
 ____
 

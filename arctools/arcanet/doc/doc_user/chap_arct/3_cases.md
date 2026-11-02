@@ -1,8 +1,8 @@
-# Exemple : cas de base {#arcanetdoc_arct_cases}
+# Example: base cases {#arcanetdoc_arct_cases}
 
 [TOC]
 
-Fichier `example.arct` :
+File `example.arct`:
 
 ```json
 {
@@ -20,7 +20,7 @@ Fichier `example.arct` :
   "cases": {
     "algo1": {
       "_": {
-        "name": "Algorithme inter-boundingbox"
+        "name": "Inter-boundingbox algorithm"
       },
       "arcane": {
         "options": {
@@ -30,7 +30,7 @@ Fichier `example.arct` :
     },
     "algo2": {
       "_": {
-        "name": "Algorithme intra-boundingbox"
+        "name": "Intra-boundingbox algorithm"
       },
       "arcane": {
         "options": {
@@ -42,15 +42,15 @@ Fichier `example.arct` :
 }
 ```
 
-On reste sur un exemple simple, mais en ajoutant deux cas de base : `algo1` et `algo2`.
+We stay on a simple example, but adding two base cases: `algo1` and `algo2`.
 
-On laisse le `dataset` dans `general` : on est sur un ARCT dédié à `config_2D_diagonal_circle`. On pourra simplement
-choisir deux algorithmes différents.
+We leave the `dataset` in `general`: this ARCT is dedicated to `config_2D_diagonal_circle`. We can simply
+choose between two different algorithms.
 
-On pourrait très bien répéter `dataset` dans les deux blocs `cases`, ça revient au même ici. Tous les blocs de
-configurations peuvent contenir les mêmes éléments.
+We could very well repeat the `dataset` in the two `cases` blocks, it comes down to the same here. All the
+configuration blocks can contain the same elements.
 
-Pour lancer l'algo 1, on peut faire ainsi :
+To run algo 1, we can do as follows:
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct -A,Case=algo1
@@ -59,9 +59,9 @@ Pour lancer l'algo 1, on peut faire ainsi :
 { [general] } -> { [algo1] }
 ```
 
-Si l'on ne met pas `-A,Case=algo1`, seul le bloc `general` sera pris en compte.
+If we do not add `-A,Case=algo1`, only the `general` block will be taken into account.
 
-Voici les blocs reçus par Arcane :
+Here are the blocks received by Arcane:
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct
@@ -70,10 +70,10 @@ Voici les blocs reçus par Arcane :
 { [general] }
 ```
 
-donne :
+gives:
 
 ```txt
-// Bloc 1
+// Block 1
 "arcane": {
   "dataset": "config_2D_diagonal_circle.arc"
 }
@@ -88,10 +88,10 @@ donne :
 { [general] } -> { [algo1] }
 ```
 
-donne :
+gives:
 
 ```txt
-// Bloc 1
+// Block 1
   "arcane": {
     "dataset": "config_2D_diagonal_circle.arc"
   }
@@ -99,9 +99,9 @@ donne :
 
 
 
-// Bloc 2
+// Block 2
   "_": {
-    "name": "Algorithme inter-boundingbox"
+    "name": "Inter-boundingbox algorithm"
   },
   "arcane": {
     "options": {
@@ -119,18 +119,18 @@ donne :
 { [general] } -> { [algo2] }
 ```
 
-donne :
+gives:
 
 ```txt
-// Bloc 1
+// Block 1
   "arcane": {
     "dataset": "config_2D_diagonal_circle.arc"
   }
 
 
-// Bloc 2
+// Block 2
   "_": {
-    "name": "Algorithme intra-boundingbox"
+    "name": "Intra-boundingbox algorithm"
   },
   "arcane": {
     "options": {

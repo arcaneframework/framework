@@ -1,8 +1,8 @@
-# Exemple : variations de variations (4) {#arcanetdoc_arct_cmake_example7}
+# Example: variations of variations (4) {#arcanetdoc_arct_cmake_example7}
 
 [TOC]
 
-Fichier `testlist.arct` :
+File `testlist.arct`:
 
 ```json
 {
@@ -24,7 +24,7 @@ Fichier `testlist.arct` :
   "cases": {
     "algo1": {
       "_": {
-        "name": "Algorithme inter-boundingbox",
+        "name": "Inter-boundingbox algorithm",
         "depend_b": ["test"]
       },
       "arcane": {
@@ -35,7 +35,7 @@ Fichier `testlist.arct` :
     },
     "algo2": {
       "_": {
-        "name": "Algorithme intra-boundingbox",
+        "name": "Intra-boundingbox algorithm",
         "depend_b": ["test=sequential"]
       },
       "arcane": {
@@ -49,7 +49,7 @@ Fichier `testlist.arct` :
   "commons": {
     "enable_post_processing": {
       "_": {
-        "name": "Activation de la sortie VtkHdf"
+        "name": "Enabling the VtkHdf output"
       },
       "arcane": {
         "options": {
@@ -136,7 +136,7 @@ Fichier `testlist.arct` :
     "test": {
       "sequential": {
         "_": {
-          "name": "Séquentiel"
+          "name": "Sequential"
         }
       },
       "mpi": {
@@ -153,7 +153,7 @@ Fichier `testlist.arct` :
       },
       "hybrid": {
         "_": {
-          "name": "Hybride",
+          "name": "Hybrid",
           "depend_b": ["nb_hybrid"]
         }
       }
@@ -162,7 +162,7 @@ Fichier `testlist.arct` :
 }
 ```
 
-Fichier `tests.cmake` :
+File `tests.cmake`:
 
 ```cmake
 arct_config_create_or_edit_general(OVERWRITE_ARCT)
@@ -171,19 +171,19 @@ arct_config_dependency(ADD "enable_post_processing")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_case(NAME_CASE "algo1")
-arct_config_define_name(NAME "Algorithme inter-boundingbox")
+arct_config_define_name(NAME "Inter-boundingbox algorithm")
 arct_arcane_option(ADD "//nonreg/contact-pairs[]/use-contact-intra" VALUE "false")
 arct_config_variation(ADD "test")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_case(NAME_CASE "algo2")
-arct_config_define_name(NAME "Algorithme intra-boundingbox")
+arct_config_define_name(NAME "Intra-boundingbox algorithm")
 arct_arcane_option(ADD "//nonreg/contact-pairs[]/use-contact-intra" VALUE "true")
 arct_config_variation(ADD "test" EQUAL "sequential")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_common(NAME_COMMON "enable_post_processing")
-arct_config_define_name(NAME "Activation de la sortie VtkHdf")
+arct_config_define_name(NAME "Enabling the VtkHdf output")
 arct_arcane_option(ADD "//nonreg/post-processor-write" VALUE "true")
 arct_arcane_option(ADD "//nonreg/mesh-contact-param[]/div-nb-cell" VALUE "1")
 arct_config_create_or_edit_end()
@@ -219,7 +219,7 @@ macro(generate_para)
   
   
   arct_config_create_or_edit_variation(NAME_VARIATION "test" NAME_VARIANT "sequential")
-  arct_config_define_name(NAME "Séquentiel")
+  arct_config_define_name(NAME "Sequential")
   arct_config_create_or_edit_end()
   
   arct_config_create_or_edit_variation(NAME_VARIATION "test" NAME_VARIANT "mpi")
@@ -233,7 +233,7 @@ macro(generate_para)
   arct_config_create_or_edit_end()
   
   arct_config_create_or_edit_variation(NAME_VARIATION "test" NAME_VARIANT "hybrid")
-  arct_config_define_name(NAME "Hybride")
+  arct_config_define_name(NAME "Hybrid")
   arct_config_variation(ADD "nb_hybrid")
   arct_config_create_or_edit_end()
 endmacro()
@@ -243,7 +243,7 @@ generate_para()
 arct_to_ctest()
 ```
 
-Tests générés :
+Generated tests:
 
 ```shell
 ctest -N
@@ -258,13 +258,13 @@ algo1:test=hybrid:nb_hybrid=16
 algo2:test=sequential
 ```
 
-Reprenons l'exemple ARCT \ref arcanetdoc_arct_variations4.
+Let's revisit the ARCT example \ref arcanetdoc_arct_variations4.
 
-Ici, il y a pas mal de variations. On teste un peu toutes les combinaisons de parallélisme.
+Here, there are quite a few variations. We test pretty much all the parallelism combinations.
 
-On peut créer une macro si l'on utilise plusieurs fichiers ARCT, afin d'éviter de recopier la même chose à chaque fois.
+We can create a macro if we use several ARCT files, in order to avoid copying the same thing each time.
 
-\remark Le format ARCT v1 ne permet pas d'importer des fichiers ARCT dans des fichiers ARCT.
+\remark The ARCT v1 format does not allow importing ARCT files into ARCT files.
 
 
 ____

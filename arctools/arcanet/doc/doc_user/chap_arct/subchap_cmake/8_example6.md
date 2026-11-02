@@ -1,8 +1,8 @@
-# Exemple : variations limitées (3) {#arcanetdoc_arct_cmake_example6}
+# Example: restricted variations (3) {#arcanetdoc_arct_cmake_example6}
 
 [TOC]
 
-Fichier `testlist.arct` :
+File `testlist.arct`:
 
 ```json
 {
@@ -21,7 +21,7 @@ Fichier `testlist.arct` :
   "cases": {
     "algo1": {
       "_": {
-        "name": "Algorithme inter-boundingbox",
+        "name": "Inter-boundingbox algorithm",
         "depend_b": ["nb_thread!1"]
       },
       "arcane": {
@@ -32,7 +32,7 @@ Fichier `testlist.arct` :
     },
     "algo2": {
       "_": {
-        "name": "Algorithme intra-boundingbox",
+        "name": "Intra-boundingbox algorithm",
         "depend_b": ["enable_post_processing", "nb_thread+1"]
       },
       "arcane": {
@@ -46,7 +46,7 @@ Fichier `testlist.arct` :
   "commons": {
     "enable_post_processing": {
       "_": {
-        "name": "Activation de la sortie VtkHdf"
+        "name": "Enabling the VtkHdf output"
       },
       "arcane": {
         "options": {
@@ -89,7 +89,7 @@ Fichier `testlist.arct` :
 }
 ```
 
-Fichier `tests.cmake` :
+File `tests.cmake`:
 
 ```cmake
 arct_config_create_or_edit_general(OVERWRITE_ARCT)
@@ -97,20 +97,20 @@ arct_arcane_dataset(PATH "config_2D_diagonal_circle.arc")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_case(NAME_CASE "algo1")
-arct_config_define_name(NAME "Algorithme inter-boundingbox")
+arct_config_define_name(NAME "Inter-boundingbox algorithm")
 arct_arcane_option(ADD "//nonreg/contact-pairs[]/use-contact-intra" VALUE "false")
 arct_config_variation(ADD "nb_thread" EXCLUDE "1")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_case(NAME_CASE "algo2")
-arct_config_define_name(NAME "Algorithme intra-boundingbox")
+arct_config_define_name(NAME "Intra-boundingbox algorithm")
 arct_arcane_option(ADD "//nonreg/contact-pairs[]/use-contact-intra" VALUE "true")
 arct_config_dependency(ADD "enable_post_processing")
 arct_config_variation(ADD "nb_thread" INCLUDE "1")
 arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_common(NAME_COMMON "enable_post_processing")
-arct_config_define_name(NAME "Activation de la sortie VtkHdf")
+arct_config_define_name(NAME "Enabling the VtkHdf output")
 arct_arcane_option(ADD "//nonreg/post-processor-write" VALUE "true")
 arct_arcane_option(ADD "//nonreg/mesh-contact-param[]/div-nb-cell" VALUE "1")
 arct_config_create_or_edit_end()
@@ -132,7 +132,7 @@ arct_config_create_or_edit_end()
 arct_to_ctest()
 ```
 
-Tests générés :
+Generated tests:
 
 ```shell
 ctest -N
@@ -142,18 +142,19 @@ algo1:nb_thread=4
 algo2:nb_thread=1
 ```
 
-Reprenons l'exemple ARCT \ref arcanetdoc_arct_variations3.
+Let's revisit the ARCT example \ref arcanetdoc_arct_variations3.
 
-On a deux limiteurs : `!` et `+`.
+We have two limiters: `!` and `+`.
 
-`!` correspond au mot-clef `EXCLUDE` et `+` correspond au mot-clef `INCLUDE`.
+`!` corresponds to the `EXCLUDE` keyword and `+` corresponds to the `INCLUDE` keyword.
 
-On peut aussi voir la différence entre `nb_thread=1` et `nb_thread+1` : pour `nb_thread+1`, il est nécessaire de
-résoudre la variation, même s'il n'y a qu'un seul variant inclus (donc mettre `nb_thread=1` dans le nom du cas).
+We can also see the difference between `nb_thread=1` and `nb_thread+1`: for `nb_thread+1`, it is necessary
+to resolve the variation, even if there is only one included variant (so put `nb_thread=1` in the case
+name).
 
-Ici, la raison est simplement de pouvoir voir explicitement `nb_thread=1` dans le nom du test.
-Un autre avantage est de pouvoir facilement rajouter des inclusions en ajoutant une ligne :
-`arct_config_variation(ADD "nb_thread" INCLUDE "2")` par exemple.
+Here, the reason is simply to be able to see `nb_thread=1` explicitly in the test name.
+Another advantage is to be able to easily add inclusions by adding a line:
+`arct_config_variation(ADD "nb_thread" INCLUDE "2")` for example.
 
 ____
 

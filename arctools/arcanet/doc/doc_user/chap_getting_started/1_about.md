@@ -1,14 +1,14 @@
-# Qu'est-ce que %ArcaNet ? {#arcanetdoc_getting_started_about}
+# What is %ArcaNet? {#arcanetdoc_getting_started_about}
 
 [TOC]
 
-%ArcaNet (Arcane Test) est un ensemble d'outils permettant de réaliser des tests
-de non-régression de fonctionnement et des tests de non-régression de performances.
+%ArcaNet (Arcane Test) is a set of tools making it possible to carry out functional
+non-regression tests and performance non-regression tests.
 
-Actuellement, deux outils sont disponibles :
+Currently, two tools are available:
 
-- Le format de fichier ARCT,
-- Le lanceur ArcCher.
+- The ARCT file format,
+- The ArcCher launcher.
 
 
 

@@ -1,9 +1,9 @@
-# Convertisseur ARCT -> CTest {#arcanetdoc_arct_cmake_arct_to_ctest}
+# ARCT -> CTest converter {#arcanetdoc_arct_cmake_arct_to_ctest}
 
 [TOC]
 
-Pour pouvoir lancer les différents cas d'un fichier ARCT, une fonction CMake a été ajoutée pour lire un fichier ARCT et
-ajouter un test par cas d'utilisation.
+To be able to run the different cases of an ARCT file, a CMake function has been added to read an ARCT
+file and add one test per use case.
 
 
 --------------------------
@@ -14,19 +14,19 @@ ajouter un test par cas d'utilisation.
 arct_to_ctest(ARCT_PATH <arct_path> ARCT_CONFIG_PATH <arct_config_path> CTEST_NAME_PREFIX <prefix> ARCCHER_PATH <arccher_path>)
 ```
 
-Cette fonction permet de lire un fichier ARCT et de créer un test par cas d'utilisation.
+This function reads an ARCT file and creates one test per use case.
 
-Les noms des tests correspondent aux noms complets de chaque cas d'utilisation.
+The test names correspond to the complete names of each use case.
 
-Quatre arguments `oneValueArgs` sont disponibles :
+Four `oneValueArgs` arguments are available:
 
-- `ARCT_PATH <arct_path>` (facultatif) : permet de donner l'emplacement du fichier ARCT à lire. La valeur par défaut est
+- `ARCT_PATH <arct_path>` (optional): gives the location of the ARCT file to read. The default value is
   `${CMAKE_BINARY_DIR}/testlist.arct`.
-- `ARCT_CONFIG_PATH <arct_config_path>` (facultatif) : permet de donner l'emplacement d'un second fichier ARCT à lire.
-  Seul le bloc `general` sera lu. Il sera lu en premier.
-- `CTEST_NAME_PREFIX <prefix>` (facultatif) : permet de donner un préfixe à ajouter aux noms des tests CTest.
-- `ARCCHER_PATH <arccher_path>` (facultatif) : permet de donner le chemin de l'exécutable ArcCher. Il sera défini par
-  défaut par Arcane, si l'on utilise l'ArcaNet de l'installation d'Arcane.
+- `ARCT_CONFIG_PATH <arct_config_path>` (optional): gives the location of a second ARCT file to read.
+  Only the `general` block will be read. It will be read first.
+- `CTEST_NAME_PREFIX <prefix>` (optional): gives a prefix to add to the CTest test names.
+- `ARCCHER_PATH <arccher_path>` (optional): gives the path of the ArcCher executable. It will be set by
+  default by Arcane, if one uses the ArcaNet of the Arcane installation.
 
 ____
 

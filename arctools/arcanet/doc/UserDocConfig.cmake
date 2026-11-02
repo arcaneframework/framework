@@ -4,8 +4,8 @@
 
 macro(adoc_userdoc_config_adoc_variables)
 
-  # Remplacer "${CMAKE_SOURCE_DIR}/src" par les emplacements des sources (il est possible de mettre la variable
-  # DOXYGEN_RECURSIVE à `YES` pour ne pas à avoir à spécifier tous les dossiers).
+  # Replace "${CMAKE_SOURCE_DIR}/src" with the locations of the sources (it is possible to set the
+  # DOXYGEN_RECURSIVE variable to `YES` to avoid having to specify all the directories).
   set(ADOC_DOXYGEN_INPUT ${ADOC_DOXYGEN_INPUT}
     "${DOC_DIR}/doc_common"
     "${DOC_DIR}/doc_common/chap_news"
@@ -24,13 +24,13 @@ endmacro()
 
 macro(adoc_userdoc_config_doxygen_variables)
 
-  # Remplacer "${CMAKE_SOURCE_DIR}/src" par l'emplacement des sources.
+  # Replace "${CMAKE_SOURCE_DIR}/src" with the location of the sources.
   set(DOXYGEN_STRIP_FROM_PATH ${DOXYGEN_STRIP_FROM_PATH}
   )
 
   # ----------------------------------------------------------------------------
 
-  # Remplacer "${CMAKE_SOURCE_DIR}/src" par l'emplacement des sources.
+  # Replace "${CMAKE_SOURCE_DIR}/src" with the location of the sources.
   set(DOXYGEN_STRIP_FROM_INC_PATH ${DOXYGEN_STRIP_FROM_INC_PATH}
   )
 

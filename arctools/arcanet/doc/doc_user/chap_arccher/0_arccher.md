@@ -1,13 +1,13 @@
-# Lanceur ArcCher {#arcanetdoc_arccher}
+# ArcCher launcher {#arcanetdoc_arccher}
 
 
 
 <br>
 
-Sommaire de ce chapitre :
+Contents of this chapter:
 
 1. \subpage arcanetdoc_arccher_about <br>
-  Description de ArcCher.
+  Description of ArcCher.
 
 
 

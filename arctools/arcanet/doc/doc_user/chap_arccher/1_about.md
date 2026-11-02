@@ -1,4 +1,4 @@
-# Qu'est-ce que ArcCher ? {#arcanetdoc_arccher_about}
+# What is ArcCher? {#arcanetdoc_arccher_about}
 
 [TOC]
 

@@ -1,8 +1,8 @@
-# Exemple : variations de variations (4) {#arcanetdoc_arct_variations4}
+# Example: variations of variations (4) {#arcanetdoc_arct_variations4}
 
 [TOC]
 
-Fichier `example.arct` :
+File `example.arct`:
 
 ```json
 {
@@ -24,7 +24,7 @@ Fichier `example.arct` :
   "cases": {
     "algo1": {
       "_": {
-        "name": "Algorithme inter-boundingbox",
+        "name": "Inter-boundingbox algorithm",
         "depend_b": ["test"]
       },
       "arcane": {
@@ -35,7 +35,7 @@ Fichier `example.arct` :
     },
     "algo2": {
       "_": {
-        "name": "Algorithme intra-boundingbox",
+        "name": "Intra-boundingbox algorithm",
         "depend_b": ["test=sequential"]
       },
       "arcane": {
@@ -49,7 +49,7 @@ Fichier `example.arct` :
   "commons": {
     "enable_post_processing": {
       "_": {
-        "name": "Activation de la sortie VtkHdf"
+        "name": "Enabling the VtkHdf output"
       },
       "arcane": {
         "options": {
@@ -128,7 +128,7 @@ Fichier `example.arct` :
     "test": {
       "sequential": {
         "_": {
-          "name": "Séquentiel"
+          "name": "Sequential"
         }
       },
       "mpi": {
@@ -145,7 +145,7 @@ Fichier `example.arct` :
       },
       "hybrid": {
         "_": {
-          "name": "Hybride",
+          "name": "Hybrid",
           "depend_b": ["nb_hybrid"]
         }
       }
@@ -154,15 +154,15 @@ Fichier `example.arct` :
 }
 ```
 
-Compliquons les choses.
+Let's complicate things.
 
-On a ajouté plusieurs variations afin de tester plusieurs types de parallélisme. On a aussi mis la dépendance
-`enable_post_processing` dans le bloc `general` pour simplifier un peu la lecture.
+We added several variations in order to test several types of parallelism. We also put the
+`enable_post_processing` dependency in the `general` block to simplify the reading a bit.
 
-\remark Tous les blocs de configurations peuvent avoir des dépendances. Tous les blocs de configurations peuvent être
-des dépendances, **sauf les blocs `cases` et le bloc `general`**.
+\remark All the configuration blocks can have dependencies. All the configuration blocks can be
+dependencies, **except the `cases` blocks and the `general` block**.
 
-D'abord, voyons les listes de blocs pour l'algo 1 :
+First, let's look at the block lists for algo 1:
 
 ```shell
 ./PasArcane --arct=example.arct --case=algo1
@@ -181,7 +181,7 @@ D'abord, voyons les listes de blocs pour l'algo 1 :
 { enable_post_processing -> [general] } -> { { { nb_proc=4 -> nb_thread=4 -> [nb_hybrid=16] } -> [test=hybrid] } -> [algo1] }
 ```
 
-Ainsi que les noms complets correspondants (dans le même ordre) :
+As well as the corresponding complete names (in the same order):
 
 ```txt
 algo1:test=sequential
@@ -196,15 +196,15 @@ algo1:test=hybrid:nb_hybrid=4
 algo1:test=hybrid:nb_hybrid=16
 ```
 
-La manière la plus aisée de lire ce fichier ARCT est de partir de l'un des `cases` (ou du `general`) et d'aller voir les
-dépendances une par une (en DFS).
+The easiest way to read this ARCT file is to start from one of the `cases` (or from the `general`) and to
+look at the dependencies one by one (DFS).
 
-\remark Pour un potentiel format **ARCT v2**, la possibilité de pouvoir ajouter des variants dans les blocs de
-configurations est étudiée. Le problème est l'ajout d'une couche de complexité supplémentaire :
+\remark For a potential **ARCT v2** format, the possibility of adding variants in configuration blocks is
+being studied. The problem is the addition of an extra layer of complexity:
 ```jsonc
 "algo1": {
   "_": {
-    "name": "Algorithme inter-boundingbox",
+    "name": "Inter-boundingbox algorithm",
     "depend_b": ["enable_post_processing"],
     "variant_b": {
       "sequential": [],
@@ -215,10 +215,10 @@ configurations est étudiée. Le problème est l'ajout d'une couche de complexit
   }
 }
 ```
-Et l'un des noms complets : `algo1=mpi:nb_proc=2`.
+And one of the complete names: `algo1=mpi:nb_proc=2`.
 <br>
-Ajouter des variants dans des blocs de configurations de variants de variations va vraiment compliquer les choses, cette
-partie a donc été retirée de **ARCT v1**.
+Adding variants in configuration blocks of variants of variations will really complicate things, so this
+part was removed from **ARCT v1**.
 
 
 ____

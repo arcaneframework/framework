@@ -1,8 +1,8 @@
-# Exemple simple {#arcanetdoc_arct_general}
+# Simple example {#arcanetdoc_arct_general}
 
 [TOC]
 
-Fichier `example.arct` :
+File `example.arct`:
 
 ```json
 {
@@ -13,7 +13,7 @@ Fichier `example.arct` :
   
   "general": {
     "_": {
-      "name": "Lancement basique"
+      "name": "Basic run"
     },
     "arcane": {
       "dataset": "config_2D_diagonal_circle.arc",
@@ -25,10 +25,10 @@ Fichier `example.arct` :
 }
 ```
 
-Cet exemple est très simple. Il permet de donner deux informations à Arcane : le jeu de données à utiliser et le nombre
-d'itérations à réaliser.
+This example is very simple. It gives two pieces of information to Arcane: the dataset to use and the
+number of iterations to carry out.
 
-Arcane supportant ce type de fichier, il suffit de le mettre en argument pour qu'il soit lu :
+Since Arcane supports this type of file, it is enough to pass it as an argument for it to be read:
 
 ```shell
 ./PotatoesSample1 -A,ParamFile=example.arct
@@ -37,9 +37,9 @@ Arcane supportant ce type de fichier, il suffit de le mettre en argument pour qu
 { [general] }
 ```
 
-Il n'y a pas de cas de base dans le fichier, donc pas besoin d'en spécifier.
+There is no base case in the file, so no need to specify one.
 
-À noter qu'un fichier comme celui-ci fonctionne aussi et est parfaitement valide (mais ne fait strictement rien) :
+Note that a file like this one also works and is perfectly valid (but does strictly nothing):
 
 ```json
 {
@@ -50,7 +50,7 @@ Il n'y a pas de cas de base dans le fichier, donc pas besoin d'en spécifier.
 }
 ```
 
-\note Le bloc `versions` est ajouté automatiquement.
+\note The `versions` block is added automatically.
 
 ____
 
