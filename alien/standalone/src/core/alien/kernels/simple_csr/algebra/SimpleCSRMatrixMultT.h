@@ -89,6 +89,42 @@ void SimpleCSRMatrixMultT<ValueT>::mult(const UniqueArray<Real>& x, UniqueArray<
     _seqMult(x, y);
 }
 
+
+template <typename ValueT>
+void SimpleCSRMatrixMultT<ValueT>::lowerUpperSynchronize(const VectorType& x_impl, VectorType& y_impl) const
+{
+  Real* x_ptr = const_cast<Real*>(x_impl.getDataPtr());
+  Real* y_ptr = y_impl.getDataPtr();
+  SendRecvOp<Real> op(x_ptr,
+                      m_matrix_impl.m_matrix_dist_info.m_send_info,
+                      m_matrix_impl.m_send_policy,
+                      y_ptr,
+                      m_matrix_impl.m_matrix_dist_info.m_recv_info,
+                      m_matrix_impl.m_recv_policy,
+                      m_matrix_impl.m_parallel_mng,
+                      m_matrix_impl.m_trace);
+  op.lowerRecv();
+  op.upperSend();
+}
+
+
+
+template <typename ValueT>
+void SimpleCSRMatrixMultT<ValueT>::upperLowerSynchronize(const VectorType& x_impl, VectorType& y_impl) const
+{
+  Real* x_ptr = const_cast<Real*>(x_impl.getDataPtr());
+  Real* y_ptr = y_impl.getDataPtr();
+  SendRecvOp<Real> op(x_ptr,
+                      m_matrix_impl.m_matrix_dist_info.m_send_info,
+                      m_matrix_impl.m_send_policy,
+                      y_ptr,
+                      m_matrix_impl.m_matrix_dist_info.m_recv_info,
+                      m_matrix_impl.m_recv_policy,
+                      m_matrix_impl.m_parallel_mng,
+                      m_matrix_impl.m_trace);
+  op.upperRecv();
+  op.lowerSend();
+}
 /*---------------------------------------------------------------------------*/
 
 template <typename ValueT>

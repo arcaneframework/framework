@@ -39,7 +39,15 @@ void SYCLBEllPackMatrixMultT<ValueT>::addLMult(Real alpha, const VectorType& x, 
 #ifdef ALIEN_USE_PERF_TIMER
   typename MatrixType::SentryType sentry(m_matrix_impl.timer(), "SYCL-AddLMult");
 #endif
+
+  //if (m_matrix_impl.m_is_parallel)
+  //  lowerUpperSynchronize(x,const_cast<VectorType&>(x)) ;
+  
+
   m_matrix_impl.addLMult(alpha, x, y);
+
+  //if (m_matrix_impl.m_is_parallel)
+  //  m_matrix_impl.endDistLMult(alpha, x, y) ;
 }
 
 template <typename ValueT>
@@ -48,7 +56,13 @@ void SYCLBEllPackMatrixMultT<ValueT>::addUMult(Real alpha, const VectorType& x, 
 #ifdef ALIEN_USE_PERF_TIMER
   typename MatrixType::SentryType sentry(m_matrix_impl.timer(), "SYCL-AddUMult");
 #endif
+  //if (m_matrix_impl.m_is_parallel)
+  //  lowerUpperSynchronize(x,const_cast<VectorType&>(x)) ;
+
   m_matrix_impl.addUMult(alpha, x, y);
+
+  //if (m_matrix_impl.m_is_parallel)
+  //  m_matrix_impl.endDistUMult(alpha, x, y) ;
 }
 
 template <typename ValueT>
@@ -146,6 +160,53 @@ void SYCLBEllPackMatrixMultT<ValueT>::_seqMult([[maybe_unused]] const UniqueArra
                                                [[maybe_unused]] UniqueArray<Real>& y_impl) const
 {
 }
+
+template <typename ValueT>
+void SYCLBEllPackMatrixMultT<ValueT>::lowerUpperSynchronize(const VectorType& x_impl, VectorType& y_impl) const
+{
+  int block_size = m_matrix_impl.blockSize() ;
+  alien_debug([&]{cout()<<"BEGIN lowerUpperSynchronize "<<block_size;}) ;
+
+  SYCLSendRecvOp<ValueT> op(x_impl.internal()->values(),
+                            m_matrix_impl.m_matrix_dist_info.m_send_info,
+                            m_matrix_impl.internal()->getSendIds(),
+                            m_matrix_impl.m_send_policy,
+                            y_impl.internal()->ghostValues(m_matrix_impl.getGhostSize()*block_size),
+                            m_matrix_impl.m_matrix_dist_info.m_recv_info,
+                            m_matrix_impl.internal()->getRecvIds(),
+                            m_matrix_impl.m_recv_policy,
+                            m_matrix_impl.m_parallel_mng,
+                            m_matrix_impl.m_trace,
+                            block_size);
+
+  op.lowerRecv();
+  op.upperSend();
+  alien_debug([&]{cout()<<"AFTER lowerUpperSynchronize "<<block_size;}) ;
+}
+
+template <typename ValueT>
+void SYCLBEllPackMatrixMultT<ValueT>::upperLowerSynchronize(const VectorType& x_impl, VectorType& y_impl) const
+{
+  int block_size = m_matrix_impl.blockSize() ;
+  alien_debug([&]{cout()<<"BEGIN upperLowerSynchronize "<<block_size;}) ;
+
+  SYCLSendRecvOp<ValueT> op(x_impl.internal()->values(),
+                            m_matrix_impl.m_matrix_dist_info.m_send_info,
+                            m_matrix_impl.internal()->getSendIds(),
+                            m_matrix_impl.m_send_policy,
+                            y_impl.internal()->ghostValues(m_matrix_impl.getGhostSize()*block_size),
+                            m_matrix_impl.m_matrix_dist_info.m_recv_info,
+                            m_matrix_impl.internal()->getRecvIds(),
+                            m_matrix_impl.m_recv_policy,
+                            m_matrix_impl.m_parallel_mng,
+                            m_matrix_impl.m_trace,
+                            block_size);
+
+  op.upperRecv();
+  op.lowerSend();
+  alien_debug([&]{cout()<<"END upperLowerSynchronize "<<block_size;}) ;
+}
+
 
 /*---------------------------------------------------------------------------*/
 template <typename ValueT>

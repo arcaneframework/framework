@@ -1316,9 +1316,9 @@ namespace SYCLInternal
 
   template <typename ValueT, int EllpackSize>
   bool MatrixInternal<ValueT, EllpackSize>::copy(std::size_t nb_blocks,
-                                               int block_size,
-                                               ValueBufferType& values_buffer,
-                                               int rhs_block_size)
+                                                 int block_size,
+                                                 ValueBufferType& values_buffer,
+                                                 int rhs_block_size)
   {
     auto env = SYCLEnv::instance();
     auto& queue = env->internal()->queue();
@@ -1479,7 +1479,6 @@ namespace SYCLInternal
     m_h_ext_values.resize(ext_block_nnz*N1xN1) ;
     m_ext_values.reset(new ValueBufferType(ext_block_nnz * N1xN1* ellpack_size)) ;
     {
-      ValueBufferType ext_csr_values_buffer(m_h_csr_ext_values.data(), sycl::range<1>(ext_nnz*N1xN1));
       queue.submit([&](sycl::handler& cgh)
                    {
                      auto access_block_row_offset  = ext_block_row_offset.template get_access<sycl::access::mode::read>(cgh);
@@ -1954,8 +1953,8 @@ namespace SYCLInternal
 
   template <typename ValueT, int EllPackSize>
   void MatrixInternal<ValueT, EllPackSize>::addExtMult(ValueBufferType& x,
-                                                     ValueBufferType& y,
-                                                     sycl::queue& queue) const
+                                                       ValueBufferType& y,
+                                                       sycl::queue& queue) const
   {
     auto device = queue.get_device();
 
@@ -1965,9 +1964,9 @@ namespace SYCLInternal
     // building the best number of global thread
     auto total_threads = num_groups * ellpack_size;
 
-    int N                  = this->m_N;
-    int NxN                = this->m_NxN;
-    //std::size_t pack_size  = ellpack_size;
+    //int N                  = this->m_N;
+    //int NxN                = this->m_NxN;
+    std::size_t pack_size  = ellpack_size;
 
     // clang-format off
     auto nrows             = m_profile->getNRows();
@@ -1979,7 +1978,7 @@ namespace SYCLInternal
     auto& block_row_offset = ext_profile->getBlockRowOffset();
     auto& block_cols       = ext_profile->getBlockCols();
     // clang-format on
-
+    if(this->m_N==1)
     {
       // clang-format off
       queue.submit([&](sycl::handler& cgh)
@@ -2001,8 +2000,8 @@ namespace SYCLInternal
 
                           for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
                           {
-                             auto block_id = i/ellpack_size ;
-                             auto local_id = i%ellpack_size ;
+                             auto block_id = i / pack_size ;
+                             auto local_id = i % pack_size ;
 
                              int block_row_offset   = access_block_row_offset[block_id]*ellpack_size ;
                              auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
@@ -2018,6 +2017,66 @@ namespace SYCLInternal
                       });
                    });
       // clang-format on
+    }
+    else
+    {
+       const bool done = dispatchN<2, 20>(
+           this->m_N,
+           [&](auto N)
+           {
+             addExtMultN<decltype(N)::value>(1., x, y, queue);
+           });
+       if (!done)
+       {
+        // clang-format off
+
+        int N                  = this->m_N;
+        queue.submit([&](sycl::handler& cgh)
+                     {
+                       auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_values           = m_ext_values->template get_access<sycl::access::mode::read>(cgh);
+
+                       auto access_row_ids          = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
+
+                       auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+
+                       auto tile = Tile(N) ;
+                       cgh.parallel_for<class compute_ext_mult>(
+                          sycl::range<1>{total_threads},
+                          [=] (sycl::item<1> item_id)
+                          {
+                            auto id = item_id.get_id(0);
+
+                            for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
+                            {
+                               auto block_id = i / pack_size ;
+                               auto local_id = i % pack_size ;
+
+                               int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
+                               auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+
+                               for(int ieq=0;ieq<N;++ieq)
+                               {
+                                 ValueType value = 0. ;
+                                 for(std::size_t k=block_row_offset;k<block_row_offset+block_row_size;++k)
+                                 {
+                                   // value += access_values[k]* access_x[access_cols[k]] ;
+                                   value += tile.mult(ieq,
+                                                      local_id,
+                                                      k,
+                                                      access_cols,
+                                                      access_values,
+                                                      access_x) ;
+                                 }
+                                 access_y[access_row_ids[i]*N+ieq] += value;
+                               }
+                            }
+                        });
+                     });
+       // clang-format on
+       }
     }
   }
 
@@ -2323,6 +2382,144 @@ namespace SYCLInternal
   }
 
   template <typename ValueT, int EllPackSize>
+  void MatrixInternal<ValueT, EllPackSize>::addExtLMult(ValueType alpha,
+                                                        ValueBufferType& x,
+                                                        ValueBufferType& y,
+                                                        sycl::queue& queue) const
+  {
+    auto device = queue.get_device();
+
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
+    // getting the maximum work group size per thread
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+    // building the best number of global thread
+    auto total_threads = num_groups * ellpack_size;
+
+    //int N                  = this->m_N;
+    //int NxN                = this->m_NxN;
+    std::size_t pack_size  = ellpack_size;
+
+    // clang-format off
+    auto nrows             = m_profile->getNRows();
+    auto nnz               = m_profile->getNnz();
+
+    auto interface_nrow    = m_ext_profile->getNRows();
+    auto ext_profile       = m_ext_profile->internal();
+    auto& kcol             = ext_profile->getKCol();
+    auto& block_row_offset = ext_profile->getBlockRowOffset();
+    auto& block_cols       = ext_profile->getBlockCols();
+    // clang-format on
+    if(this->m_N==1)
+    {
+      // clang-format off
+      queue.submit([&](sycl::handler& cgh)
+                   {
+                     auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_values           = m_ext_values->template get_access<sycl::access::mode::read>(cgh);
+
+                     auto access_row_ids          = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
+
+                     auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+
+                     cgh.parallel_for<class compute_ext_lmult>(
+                        sycl::range<1>{total_threads},
+                        [=] (sycl::item<1> item_id)
+                        {
+                          auto id = item_id.get_id(0);
+
+                          for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
+                          {
+                             auto block_id = i / pack_size ;
+                             auto local_id = i % pack_size ;
+
+                             int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
+                             auto block_row_size    = access_block_row_offset[block_id+1] - access_block_row_offset[block_id] ;
+
+                             ValueType value = 0. ;
+                             for(int j=0;j<block_row_size;++j)
+                             {
+                               auto k = block_row_offset+j*ellpack_size+local_id ;
+                               value += access_values[k]* access_x[access_cols[k]] ;
+                             }
+                             access_y[access_row_ids[i]] += alpha * value ;
+                          }
+                      });
+                   });
+      // clang-format on
+    }
+    else
+    {
+       const bool done = dispatchN<2, 20>(
+           this->m_N,
+           [&](auto N)
+           {
+             addExtLMultN<decltype(N)::value>(alpha, x, y, queue);
+           });
+       if (!done)
+       {
+        // clang-format off
+
+        int N                  = this->m_N;
+        queue.submit([&](sycl::handler& cgh)
+                     {
+                       auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_values           = m_ext_values->template get_access<sycl::access::mode::read>(cgh);
+
+                       auto access_row_ids          = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
+
+                       auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+
+                       auto tile = Tile(N) ;
+                       cgh.parallel_for<class compute_ext_lmult>(
+                          sycl::range<1>{total_threads},
+                          [=] (sycl::item<1> item_id)
+                          {
+                            auto id = item_id.get_id(0);
+
+                            for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
+                            {
+                               auto block_id = i / pack_size ;
+                               auto local_id = i % pack_size ;
+
+                               int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
+                               auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+
+                               for(int ieq=0;ieq<N;++ieq)
+                               {
+                                 ValueType value = 0. ;
+                                 for(std::size_t k=block_row_offset;k<block_row_offset+block_row_size;++k)
+                                 {
+                                   // value += access_values[k]* access_x[access_cols[k]] ;
+                                   value += tile.mult(ieq,
+                                                      local_id,
+                                                      k,
+                                                      access_cols,
+                                                      access_values,
+                                                      access_x) ;
+                                 }
+                                 access_y[access_row_ids[i]*N+ieq] += alpha * value;
+                               }
+                            }
+                        });
+                     });
+       // clang-format on
+       }
+    }
+  }
+
+  template <typename ValueT, int EllPackSize>
+  void MatrixInternal<ValueT, EllPackSize>::addExtLMult(ValueType alpha,
+                                                        ValueBufferType& x,
+                                                        ValueBufferType& y) const
+  {
+    this->addExtLMult(alpha, x, y, SYCLEnv::instance()->internal()->queue());
+  }
+
+  template <typename ValueT, int EllPackSize>
   void MatrixInternal<ValueT, EllPackSize>::addUMult(ValueType alpha,
                                                      ValueBufferType& x,
                                                      ValueBufferType& y,
@@ -2614,6 +2811,143 @@ namespace SYCLInternal
   void MatrixInternal<ValueT, EllPackSize>::addUMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y) const
   {
     this->addUMult(alpha, x, y, SYCLEnv::instance()->internal()->queue());
+  }
+
+  template <typename ValueT, int EllPackSize>
+  void MatrixInternal<ValueT, EllPackSize>::addExtUMult(ValueType alpha,
+                                                        ValueBufferType& x,
+                                                        ValueBufferType& y,
+                                                        sycl::queue& queue) const
+  {
+    auto device = queue.get_device();
+
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
+    // getting the maximum work group size per thread
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+    // building the best number of global thread
+    auto total_threads = num_groups * ellpack_size;
+
+    //int N                  = this->m_N;
+    //int NxN                = this->m_NxN;
+    std::size_t pack_size  = ellpack_size;
+
+    // clang-format off
+    auto nrows             = m_profile->getNRows();
+    auto nnz               = m_profile->getNnz();
+
+    auto interface_nrow    = m_ext_profile->getNRows();
+    auto ext_profile       = m_ext_profile->internal();
+    auto& kcol             = ext_profile->getKCol();
+    auto& block_row_offset = ext_profile->getBlockRowOffset();
+    auto& block_cols       = ext_profile->getBlockCols();
+    // clang-format on
+    if(this->m_N==1)
+    {
+      // clang-format off
+      queue.submit([&](sycl::handler& cgh)
+                   {
+                     auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_values           = m_ext_values->template get_access<sycl::access::mode::read>(cgh);
+
+                     auto access_row_ids          = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
+
+                     auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+                     auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+
+                     cgh.parallel_for<class compute_ext_umult>(
+                        sycl::range<1>{total_threads},
+                        [=] (sycl::item<1> item_id)
+                        {
+                          auto id = item_id.get_id(0);
+
+                          for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
+                          {
+                             auto block_id = i / pack_size ;
+                             auto local_id = i % pack_size ;
+
+                             int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
+                             auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+
+                             ValueType value = 0. ;
+                             for(int j=0;j<block_row_size;++j)
+                             {
+                               auto k = block_row_offset+j*pack_size+local_id ;
+                               value += access_values[k]* access_x[access_cols[k]] ;
+                             }
+                             access_y[access_row_ids[i]] += alpha * value ;
+                          }
+                      });
+                   });
+      // clang-format on
+    }
+    else
+    {
+       const bool done = dispatchN<2, 20>(
+           this->m_N,
+           [&](auto N)
+           {
+             addExtUMultN<decltype(N)::value>(alpha, x, y, queue);
+           });
+       if (!done)
+       {
+        // clang-format off
+
+        int N                  = this->m_N;
+        queue.submit([&](sycl::handler& cgh)
+                     {
+                       auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_values           = m_ext_values->template get_access<sycl::access::mode::read>(cgh);
+
+                       auto access_row_ids          = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
+
+                       auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+                       auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+
+                       auto tile = Tile(N) ;
+                       cgh.parallel_for<class compute_ext_umult>(
+                          sycl::range<1>{total_threads},
+                          [=] (sycl::item<1> item_id)
+                          {
+                            auto id = item_id.get_id(0);
+
+                            for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
+                            {
+                               auto block_id = i / pack_size ;
+                               auto local_id = i % pack_size ;
+
+                               int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
+                               auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+
+                               for(int ieq=0;ieq<N;++ieq)
+                               {
+                                 ValueType value = 0. ;
+                                 for(std::size_t k=block_row_offset;k<block_row_offset+block_row_size;++k)
+                                 {
+                                   // value += access_values[k]* access_x[access_cols[k]] ;
+                                   value += tile.mult(ieq,
+                                                      local_id,
+                                                      k,
+                                                      access_cols,
+                                                      access_values,
+                                                      access_x) ;
+                                 }
+                                 access_y[access_row_ids[i]*N+ieq] += alpha * value;
+                               }
+                            }
+                        });
+                     });
+       // clang-format on
+       }
+    }
+  }
+
+  template <typename ValueT, int EllPackSize>
+  void MatrixInternal<ValueT, EllPackSize>::addExtUMult(ValueType alpha, ValueBufferType& x,
+                                                     ValueBufferType& y) const
+  {
+    this->addExtUMult(alpha, x, y, SYCLEnv::instance()->internal()->queue());
   }
 
   template <typename ValueT, int EllPackSize>
@@ -3421,7 +3755,7 @@ namespace SYCLInternal
                                int end      = acc_bkcol[block_id+1] ;
                                int row_size = acc_kcol[i+1] - acc_kcol[i];
 
-                               rows[i]       = local_offset + i ;
+                               rows[i]       = (int) (local_offset + i) ;
                                ncols[i]      = row_size ;
 
                                auto offset   = acc_kcol[i];
@@ -3485,7 +3819,7 @@ namespace SYCLInternal
                                int end       = acc_bkcol[block_id+1] ;
                                int row_size  = acc_kcol[i+1] - acc_kcol[i];
                                int lrow_size = acc_lrowsize[i] ;
-                               rows[i]       = (int) local_offset + i ;
+                               rows[i]       = (int) (local_offset + i) ;
                                ncols[i]      = row_size ;
 
                                auto offset   = acc_kcol[i];
@@ -3839,10 +4173,22 @@ void SYCLBEllPackMatrix<ValueT>::addLMult(ValueT alpha, SYCLVector<ValueT> const
 }
 
 template <typename ValueT>
+void SYCLBEllPackMatrix<ValueT>::endDistLMult(ValueT alpha, SYCLVector<ValueT> const& x, SYCLVector<ValueT>& y) const
+{
+  m_matrixPKSIZE->addExtLMult(alpha, x.internal()->ghostValues(getGhostSize()*blockSize()), y.internal()->values());
+}
+
+template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::addUMult(ValueT alpha, SYCLVector<ValueT> const& x, SYCLVector<ValueT>& y) const
 {
   m_profilePKSIZE->dcol();
   return m_matrixPKSIZE->addUMult(alpha, x.internal()->values(), y.internal()->values());
+}
+
+template <typename ValueT>
+void SYCLBEllPackMatrix<ValueT>::endDistUMult(ValueT alpha, SYCLVector<ValueT> const& x, SYCLVector<ValueT>& y) const
+{
+  m_matrixPKSIZE->addExtUMult(alpha, x.internal()->ghostValues(getGhostSize()*blockSize()), y.internal()->values());
 }
 
 template <typename ValueT>

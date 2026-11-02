@@ -222,6 +222,7 @@ class Future
 
   T& operator()()
   {
+    //alien_info([&] { cout()<<"SYCL FUTURE value="<<m_value; });
     return m_value;
   }
 
@@ -1218,7 +1219,7 @@ class KernelInternal
   template <typename T>
   T end_map4_reduce_sum(sycl::event& event,
                         sycl::buffer<T>& res,
-                        std::size_t num_blocks)
+                        [[maybe_unused]] std::size_t num_blocks)
   {
     event.wait() ;
     auto h_access = res.get_host_access();
@@ -1371,7 +1372,7 @@ class KernelInternal
   template <typename T>
   T end_map5_reduce_sum(sycl::event& event,
                         sycl::buffer<T>& res,
-                        std::size_t num_blocks)
+                        [[maybe_unused]] std::size_t num_blocks)
   {
     event.wait() ;
     auto h_access = res.get_host_access();
@@ -2004,7 +2005,7 @@ class KernelInternal
   template <typename T>
   T end_dot_product_mi300(sycl::event& event,
                           sycl::buffer<T>& res,
-                          std::size_t num_blocks)
+                          [[maybe_unused]] std::size_t num_blocks)
   {
     event.wait() ;
     auto h_access = res.get_host_access();

@@ -42,6 +42,9 @@ class SimpleCSRMatrixMultT
   void addLMult(Real alpha, const VectorType& x, VectorType& y) const;
   void addUMult(Real alpha, const VectorType& x, VectorType& y) const;
 
+  void lowerUpperSynchronize(const VectorType& x, VectorType& y) const;
+  void upperLowerSynchronize(const VectorType& x, VectorType& y) const;
+
   void computeDiag(VectorType& y) const;
   void multDiag(VectorType& y) const;
   void computeInvDiag(VectorType& y) const;

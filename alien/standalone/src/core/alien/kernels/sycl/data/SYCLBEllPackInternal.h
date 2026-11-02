@@ -104,6 +104,7 @@ struct ALIEN_EXPORT StructInfoInternal
 template <int N> class MultNKernel;
 template <int N> class AddUMultNKernel;
 template <int N> class AddLMultNKernel;
+template <int N> class AddExtMultNKernel;
 
 template <int Nmin, typename F, int... Is>
 bool dispatchN(int n, F&& f, std::integer_sequence<int, Is...>)
@@ -371,9 +372,10 @@ class MatrixInternal
     auto& block_row_offset = internal_profile->getBlockRowOffset();
     auto& block_cols       = internal_profile->getBlockCols();
 
-    auto blocks_needed     = (nrows + ellpack_size - 1) / ellpack_size;
+    auto blocks_needed     = (nrows + pack_size - 1) / pack_size;
     auto blocks_target     = std::max(blocks_needed, num_groups * 4UL);
     auto total_threads     = blocks_target * pack_size;
+    std::size_t wg_size    = std::min<std::size_t>(pack_size, 128);
 
     queue.submit(
         [&](sycl::handler& cgh)
@@ -388,17 +390,18 @@ class MatrixInternal
           auto tile = TileT<N>() ;
 
           //sycl::local_accessor<ValueType, 1> lds_x{pack_size*N, cgh};
-          sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{pack_size}};
+          sycl::nd_range<1> r{sycl::range<1>{total_threads},sycl::range<1>{wg_size}};
           cgh.parallel_for<MultNKernel<N>>(r,
               [=](sycl::nd_item<1> item_id)
               {
-                 const std::size_t local_id  = item_id.get_local_id(0);
+                 //const std::size_t local_id  = item_id.get_local_id(0);
                  const std::size_t global_id = item_id.get_global_id(0);
                  const std::size_t stride     = item_id.get_global_range(0);
 
                  for (auto i = global_id; i < nrows; i += stride)
                  {
-                    auto block_id       = i / pack_size ;
+                    std::size_t block_id = i / pack_size ;
+                    std::size_t local_id = i % pack_size;
 
                     int begin           = access_block_row_offset[block_id] ;
                     int end             = access_block_row_offset[block_id+1] ;
@@ -438,6 +441,80 @@ class MatrixInternal
   }
   void mult(ValueBufferType& x, ValueBufferType& y) const;
   void mult(ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
+
+  template <int N>
+  void addExtMultN(ValueType alpha,
+                   ValueBufferType& x,
+                   ValueBufferType& y,
+                   QueueType& queue) const
+  {
+    auto device = queue.get_device();
+
+    auto num_groups = queue.get_device().get_info<sycl::info::device::max_compute_units>();
+    // getting the maximum work group size per thread
+    auto max_work_group_size = queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+
+    const std::size_t pack_size      = ellpack_size;
+    const std::size_t interface_nrow = m_ext_profile->getNRows();
+
+    auto ext_profile       = m_ext_profile->internal();
+    auto& block_row_offset = ext_profile->getBlockRowOffset();
+    auto& block_cols       = ext_profile->getBlockCols();
+
+    const std::size_t blocks_needed = (interface_nrow + pack_size - 1) / pack_size;
+    const std::size_t blocks_target = std::max<std::size_t>(blocks_needed, num_groups * 4);
+    const std::size_t total_threads = blocks_target * pack_size;
+    const std::size_t wg_size       = std::min<std::size_t>(pack_size, 128);
+
+    queue.submit([&](sycl::handler& cgh)
+    {
+      auto access_block_row_offset = block_row_offset.template get_access<sycl::access::mode::read>(cgh);
+      auto access_cols             = block_cols.template get_access<sycl::access::mode::read>(cgh);
+      auto access_values           = m_ext_values->template get_access<sycl::access::mode::read>(cgh);
+      auto access_row_ids          = m_interface_row_ids->template get_access<sycl::access::mode::read>(cgh);
+      auto access_x                = x.template get_access<sycl::access::mode::read>(cgh);
+      auto access_y                = y.template get_access<sycl::access::mode::read_write>(cgh);
+
+      const auto tile = TileT<N>();
+
+      cgh.parallel_for<AddExtMultNKernel<N>>(
+          sycl::nd_range<1>{ sycl::range<1>{total_threads}, sycl::range<1>{wg_size} },
+          [=](sycl::nd_item<1> item)
+          {
+            const std::size_t stride = item.get_global_range(0);
+            for (std::size_t i = item.get_global_id(0); i < interface_nrow; i += stride)
+            {
+              const std::size_t block_id = i / pack_size;
+              const std::size_t local_id = i % pack_size;
+              const int begin = access_block_row_offset[block_id];
+              const int end   = access_block_row_offset[block_id + 1];
+
+              ValueT value[N];
+              #pragma unroll
+              for (int e = 0; e < N; ++e) value[e] = 0;
+
+              for (int k = begin; k < end; ++k)
+              {
+                const int col = access_cols[k * pack_size + local_id];
+                if (col >= 0)                                  // ignore le padding
+                {
+                  ValueT xl[N];
+                  #pragma unroll
+                  for (int ju = 0; ju < N; ++ju) xl[ju] = access_x[col * N + ju];
+                  #pragma unroll
+                  for (int ieq = 0; ieq < N; ++ieq)
+                    #pragma unroll
+                    for (int ju = 0; ju < N; ++ju)
+                      value[ieq] += access_values[tile.ijk(k, ieq, ju) + local_id] * xl[ju];
+                }
+              }
+              const std::size_t row = access_row_ids[i];
+              #pragma unroll
+              for (int e = 0; e < N; ++e) access_y[row * N + e] += alpha * value[e];
+            }
+          });
+    });
+  }
 
   void addExtMult(ValueBufferType& x, ValueBufferType& y) const;
   void addExtMult(ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
@@ -673,6 +750,23 @@ class MatrixInternal
 
   void addLMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
   void addUMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
+
+
+  template<int N>
+  void addExtLMultN(ValueType alpha, ValueBufferType& x, ValueBufferType& y, QueueType& queue) const
+  {
+
+  }
+  void addExtLMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y) const;
+  void addExtLMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
+
+  template<int N>
+  void addExtUMultN(ValueType alpha, ValueBufferType& x, ValueBufferType& y, QueueType& queue) const
+  {
+
+  }
+  void addExtUMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y) const;
+  void addExtUMult(ValueType alpha, ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;
 
   void multDiag(ValueBufferType& x, ValueBufferType& y) const;
   void multDiag(ValueBufferType& x, ValueBufferType& y, QueueType& queue) const;

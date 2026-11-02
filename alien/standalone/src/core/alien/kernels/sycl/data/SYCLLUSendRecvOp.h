@@ -126,7 +126,7 @@ class SYCLLUSendRecvOp
     for (int irow = 0; irow < nrows; ++irow) {
       for (int k = kcol[irow] + local_row_size[irow]; k < kcol[irow + 1]; ++k) {
         int col = cols[k];
-        int id = col - nrows;
+        int id = int(col - nrows);
         m_recv_connectivity_ids[m_recv_connectivity_ids_ptr[id] + conn_size[id]] = irow;
         m_recv_connectivity_krow[m_recv_connectivity_ids_ptr[id] + conn_size[id]] = k;
         ++conn_size[id];

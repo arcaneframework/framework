@@ -165,6 +165,24 @@ void SYCLInternalLinearAlgebra::addUMult(Real alpha,
   Internal::SYCLBEllPackMatrixMultT<Real>(ma).addUMult(alpha, vx, vr);
 }
 
+void SYCLInternalLinearAlgebra::lowerUpperSynchronize(const SYCLBEllPackMatrix<Real>& ma,
+                                                      SYCLVector<Real>& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-luSynchronize");
+#endif
+  Internal::SYCLBEllPackMatrixMultT<Real>(ma).lowerUpperSynchronize(vr, vr);
+}
+
+void SYCLInternalLinearAlgebra::upperLowerSynchronize(const SYCLBEllPackMatrix<Real>& ma,
+                                                      SYCLVector<Real>& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-ulSynchronize");
+#endif
+  Internal::SYCLBEllPackMatrixMultT<Real>(ma).upperLowerSynchronize(vr, vr);
+}
+
 void SYCLInternalLinearAlgebra::
 multDiag(const SYCLBEllPackMatrix<Real>& ma,
          const SYCLVector<Real>& vy,
@@ -286,9 +304,11 @@ Real SYCLInternalLinearAlgebra::dot(const SYCLVector<Real>& vx, const SYCLVector
   auto value = m_internal->dot(vx.internal()->values(), vy.internal()->values());
   auto& dist = vx.distribution();
   if (dist.isParallel()) {
-    return Arccore::MessagePassing::mpAllReduce(dist.parallelMng(),
+    //alien_info([&] { cout()<<" LOCAL VALUE : "<<value; });
+    value = Arccore::MessagePassing::mpAllReduce(dist.parallelMng(),
                                                 Arccore::MessagePassing::ReduceSum,
                                                 value);
+    //alien_info([&] { cout()<<" GLOBAL VALUE : "<<value; });
   }
   return value;
 }
@@ -303,15 +323,22 @@ void SYCLInternalLinearAlgebra::dot(const SYCLVector<Real>& vx,
   m_internal->dot(vx.internal()->values(), vy.internal()->values(), res);
 
   auto& dist = vx.distribution();
+  //alien_info([&] { cout()<<"SYCL-DOT-F is_parallel="<<dist.isParallel(); });
   if (dist.isParallel()) {
     res.get() ;
     Real local_value = res() ;
     Real* x = &res();
+    //alien_info([&] { cout()<<" LOCAL VALUE : "<<local_value; });
+    /*
     auto request = mpNonBlockingAllReduce(dist.parallelMng(),
                                           Arccore::MessagePassing::ReduceSum,
                                           Arccore::ConstArrayView<Real>(1,&local_value),
                                           Arccore::ArrayView<Real>(1,x)) ;
     res.addRequest(dist.parallelMng(), request);
+    */
+    *x = Arccore::MessagePassing::mpAllReduce(
+          dist.parallelMng(), Arccore::MessagePassing::ReduceSum, local_value);
+    //alien_info([&] { cout()<<" GLOBAL VALUE : "<<*x; });
   }
 }
 
