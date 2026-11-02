@@ -183,7 +183,14 @@ class SolverStater : public BaseSolverStater
     solver_stat.m_solve_time += solver_stat.m_last_solve_time;
     ++solver_stat.m_solve_count;
     solver_stat.m_last_iteration_count = status.iteration_count;
-    solver_stat.m_iteration_count += solver_stat.m_last_iteration_count;
+    solver_stat.m_iteration_count += status.iteration_count;
+    if (!status.succeeded)
+    {
+      solver_stat.m_failed_solve_time += solver_stat.m_last_solve_time;
+      ++solver_stat.m_failed_solve_count;
+      solver_stat.m_failed_iteration_count += status.iteration_count;
+      solver_stat.m_failed_prepare_time +=  solver_stat.m_last_prepare_time;
+    }
   }
 
  private:

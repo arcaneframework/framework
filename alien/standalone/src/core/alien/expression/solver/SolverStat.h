@@ -78,8 +78,8 @@ class ALIEN_EXPORT SolverStat
  private:
   class InternalTraceSizer;
   void _internalPrint(std::ostream& o, const Integer prefix_size,
-                      const SolverStatus& status, String title) const;
-  void _internalFinalPrint(std::ostream& o, String title) const;
+                      const SolverStatus& status, const String& title) const;
+  void _internalFinalPrint(std::ostream& o, const String& title) const;
 };
 
 /*---------------------------------------------------------------------------*/

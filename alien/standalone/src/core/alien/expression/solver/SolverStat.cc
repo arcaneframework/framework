@@ -79,7 +79,7 @@ void SolverStat::reset()
   m_failed_prepare_time = 0;
   m_failed_solve_time = 0;
 
-  m_last_iteration_count;
+  m_last_iteration_count = 0;
   m_last_prepare_time = 0;
   m_last_solve_time = 0;
 }
@@ -171,54 +171,51 @@ void SolverStat::finalPrint(ITraceMng* traceMng, String title) const
 /*---------------------------------------------------------------------------*/
 
 void SolverStat::_internalPrint(std::ostream& o, const Integer prefix_size,
-                                const Alien::SolverStatus& status, String title = String()) const
+                                const Alien::SolverStatus& status, const String& title = String()) const
 {
-  char* prefix = NULL;
+  std::string prefix;
   if (prefix_size == 0) {
-    prefix = new char[2];
+    prefix.resize(1);
     prefix[0] = '\n';
-    prefix[1] = 0;
   }
   else {
-    prefix = new char[prefix_size + 1];
+    prefix.resize(prefix_size );
     prefix[0] = '\n';
     for (Integer i = 1; i < prefix_size; ++i)
       prefix[i] = ' ';
-    prefix[prefix_size] = 0;
   }
 
-  auto ss = o.precision();
-  o << "|--------------------------------------------------------|";
-  if (!title.null()) {
-    o << prefix << "| " << title << prefix
-      << "|--------------------------------------------------------|";
-  }
-  o << prefix
-    << "| Last convergence      : " << std::boolalpha << status.succeeded << prefix
-    << "| Last iteration number : " << status.iteration_count << prefix
-    << "| Last relative residual: " << status.residual << std::setprecision(5) << prefix
-    << "| Last prepare time     : wct:" << std::setw(10) << lastPrepareTime() << prefix
-    << "| Last solve time       : wct:" << std::setw(10) << lastSolveTime() << prefix
-    << "| Initialization time   : wct:" << std::setw(10) << initializationTime() << prefix
-    << "| Total prepare time    : wct:" << std::setw(10) << prepareTime() << prefix
-    << "| Total solve time      : wct:" << std::setw(10) << solveTime() << prefix
-    << "| Total iterations      : " << iterationCount() << prefix
-    << "| Solve count           : " << solveCount() << prefix
-    << "|--------------------------------------------------------|";
-  o.precision(ss);
-  delete[] prefix;
+  const auto sf = o.flags();
+  o << prefix << "|--------------------------------------------------------|"
+    << prefix << "| " << "Linear Solver : " << title
+    << prefix << "|--------------------------------------------------------|"
+    << prefix << "| Last convergence      : " << std::boolalpha << status.succeeded
+    << prefix << "| Last iteration number : " << status.iteration_count
+    << prefix << "| Last relative residual: " << status.residual
+    << std::scientific << std::setprecision(3)
+    << prefix << "| Last prepare time     : " << lastPrepareTime()
+    << prefix << "| Last solve time       : " << lastSolveTime()
+    << prefix << "|-----------------------|"
+    << prefix << "| Initialization time   : " << initializationTime()
+    << prefix << "| Total prepare time    : " << prepareTime()
+    << prefix << "| Total solve time      : " << solveTime()
+    << prefix << "| Total iterations      : " << iterationCount()
+    << prefix << "| Solve count           : " << solveCount()
+    << prefix << "|--------------------------------------------------------|";
+  o.setf(sf);
+
 }
 
-void SolverStat::_internalFinalPrint(std::ostream& o, String title) const
+void SolverStat::_internalFinalPrint(std::ostream& o, const String& title) const
 {
   auto total_time = m_initialization_time + m_prepare_time + m_solve_time;
   auto failed_total_time = m_failed_prepare_time + m_failed_solve_time;
 
   auto stream_flags = o.flags();
   o << '\n'
-    << "|--------------------------------------------------------|" << '\n'
-    << "| " << title << '\n'
-    << "|--------------------------------------------------------|" << '\n'
+    << "|--------------------------------------------------------|\n"
+    << "| " << "Linear Solver : " << title << '\n'
+    << "|--------------------------------------------------------|\n"
     << "Total Num calls       : " << m_solve_count << '\n'
     << "Failed Num calls      : " << m_failed_solve_count << " "
     << std::fixed << std::setprecision(1)
