@@ -1,4 +1,4 @@
-# ARCT v1
+# ARCT v1 {#arct_specs}
 
 ArcaNet File. Version 1.
 
@@ -27,8 +27,8 @@ incompatibilité invisible pour l'utilisateur final. Ce lanceur de programme ne 
 ## Fonctionnement général
 
 Un bloc de base de ce schéma de fichier est un objet JSON appelé **config_block** ("bloc de configurations") contenant
-des objets JSON destinés aux programmes demandeurs appelés **reserved_block** ("bloc réservé \[pour un programme
-demandeur\]").
+des objets JSON destinés aux programmes demandeurs appelés **reserved_block** ("bloc réservé (pour un programme
+demandeur)").
 
 Le principe de base de ce fichier est de construire une ou plusieurs listes de **config_block**, listes qui dépendront
 du nom de cas donné par l'utilisateur.
