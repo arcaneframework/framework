@@ -127,6 +127,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   const Alien::SolverStatus& getStatus() const final;
 
   const SolverStat& getSolverStat() const final { return m_stat; }
+  SolverStat& getSolverStat() { return m_stat; }
 
   String getName() const { return "mcgsolver"; }
 
@@ -222,16 +223,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   // multithread options
   bool m_use_thread = false;
   Integer m_num_thread = 0;
-
   Integer m_output_level = 0;
-
-  Integer m_solve_num = 0;
-  Integer m_total_iter_num = 0;
-
-  Timer m_init_timer;
-  Timer m_prepare_timer;
-  Timer m_system_timer;
-  Timer m_solve_timer;
 
   // From internal MCGSolver timing
   Real m_int_total_solve_time = 0;
@@ -239,6 +231,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT MCGInternalLinearSolver : public ILinearSolver,
   Real m_int_total_init_time = 0;
   Real m_int_total_update_time = 0;
 
+  SolverStater<MCGInternalLinearSolver> m_stater;
   SolverStat m_stat;
 
   IOptionsMCGSolver* m_options = nullptr;

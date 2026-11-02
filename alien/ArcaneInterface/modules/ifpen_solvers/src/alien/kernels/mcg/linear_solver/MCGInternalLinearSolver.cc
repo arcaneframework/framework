@@ -117,8 +117,9 @@ MCGInternalLinearSolver::AlienKOpt2MCGKOpt::getKernelOption(
 /*---------------------------------------------------------------------------*/
 MCGInternalLinearSolver::MCGInternalLinearSolver(
     Arccore::MessagePassing::IMessagePassingMng* parallel_mng, IOptionsMCGSolver* options)
-: m_parallel_mng(parallel_mng)
-, m_options(options)
+: m_parallel_mng(parallel_mng),
+  m_stater(this),
+  m_options(options)
 {
   m_dir_enum[std::string("+Z")] = *((int*)"+Z-Z");
   m_dir_enum[std::string("-Z")] = *((int*)"-Z+Z");
@@ -151,6 +152,7 @@ MCGInternalLinearSolver::~MCGInternalLinearSolver()
 {
   delete m_machine_info;
   delete m_mpi_info;
+
 #if 0
   if(m_logger)
     m_logger->report();
@@ -183,10 +185,10 @@ MCGInternalLinearSolver::init()
     m_logger->log("tol",oss.str());
   }
 #endif
-  m_init_timer.start();
-
   if (m_parallel_mng == nullptr)
     return;
+
+  m_stater.startInitializationMeasure();
 
   m_output_level = m_options->output();
   alien_info([&]{
@@ -315,7 +317,7 @@ MCGInternalLinearSolver::init()
 
   m_solver->init(m_kernel);
 
-  m_init_timer.stop();
+  m_stater.stopInitializationMeasure();
 
 #if 0
   if(m_logger)
@@ -339,7 +341,9 @@ MCGInternalLinearSolver::updateParallelMng(
 
 void
 MCGInternalLinearSolver::end()
-{}
+{
+  m_stat.finalPrint(Universe().traceMng(), "MCGSolver " + m_version);
+}
 
 Integer
 MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
@@ -352,7 +356,6 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
 
   Integer error = -1;
 
-  m_system_timer.start();
   if (_matrixChanged(A)) {
     _registerKey(A, b, x);
     m_system = std::make_unique<MCGSolverLinearSystem>(A.m_matrix, b.m_vector, part_info,m_mpi_info);
@@ -369,16 +372,16 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
 
   m_solver->setMatrixUpdate(m_A_update);
   m_solver->setRhsUpdate(m_b_update);
-  m_system_timer.stop();
 
-  m_solve_timer.start();
+  m_stater.stopPrepareMeasure();
+
+  m_stater.startSolveMeasure();
   try {
     error = m_solver->solve(m_system.get(), &m_mcg_status);
   }
   catch (std::exception& e) {
     alien_fatal( [this,&e] { cout() << e.what(); });
   }
-  m_solve_timer.stop();
 
   x.m_vector = m_system->getSol();
 
@@ -395,7 +398,6 @@ Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGD
 
   Integer error = -1;
 
-  m_system_timer.start();
   if (_matrixChanged(A)) {
     _registerKey(A, b);
     m_device_system = std::make_unique<MCGSolverDeviceLinearSystem>(A.m_matrix, b.m_vector,
@@ -413,17 +415,16 @@ Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGD
 
   m_solver->setMatrixUpdate(m_A_update);
   m_solver->setRhsUpdate(m_b_update);
-  m_system_timer.stop();
 
-  m_solve_timer.start();
+  m_stater.stopPrepareMeasure();
+
+  m_stater.startSolveMeasure();
   try {
     error = m_solver->solve(m_device_system.get(), &m_mcg_status);
   }
   catch (std::exception& e) {
     alien_fatal( [this,&e] { cout() << e.what(); });
   }
-
-  m_solve_timer.stop();
 
   x.m_vector = m_device_system->getSol();
 
@@ -442,7 +443,6 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
 
   Integer error = -1;
 
-  m_system_timer.start();
   if (_matrixChanged(A)) {
     _registerKey(A, b, x0);
     m_system = std::make_unique<MCGSolverLinearSystem>(A.m_matrix, b.m_vector, x0.m_vector, part_info,m_mpi_info);
@@ -466,17 +466,16 @@ MCGInternalLinearSolver::_solve(const MCGMatrixType& A, const MCGVectorType& b,
   m_solver->setRhsUpdate(m_b_update);
   m_solver->setx0Update(m_x0_update);
 
-  m_system_timer.stop();
+  m_stater.stopPrepareMeasure();
 
-  m_solve_timer.start();
+  m_stater.startSolveMeasure();
+
   try {
     error = m_solver->solve(m_system.get(), &m_mcg_status);
   }
   catch (std::exception& e) {
     alien_fatal( [this,&e] { cout() << e.what(); });
   }
-
-  m_solve_timer.stop();
 
   x.m_vector = m_system->getSol();
 
@@ -495,7 +494,6 @@ Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGD
 
   Integer error = -1;
 
-  m_system_timer.start();
   if (_matrixChanged(A)) {
     _registerKey(A, b, x0);
     m_device_system = std::make_unique<MCGSolverDeviceLinearSystem>(A.m_matrix, b.m_vector, x0.m_vector,
@@ -520,16 +518,16 @@ Integer MCGInternalLinearSolver::_solve(const MCGDeviceMatrixType &A, const MCGD
   m_solver->setRhsUpdate(m_b_update);
   m_solver->setx0Update(m_x0_update);
 
-  m_system_timer.stop();
+  m_stater.stopPrepareMeasure();
 
-  m_solve_timer.start();
+  m_stater.startSolveMeasure();
+
   try {
     error = m_solver->solve(m_system.get(), &m_mcg_status);
   }
   catch (std::exception& e) {
     alien_fatal( [this,&e] { cout() << e.what(); });
   }
-  m_solve_timer.stop();
 
   x.m_vector = m_device_system->getSol();
 
@@ -544,32 +542,28 @@ MCGInternalLinearSolver::getStatus() const {
 
 void
 MCGInternalLinearSolver::printInfo() const {
-  double total_solve_time = m_solve_timer.getElapse() + m_system_timer.getElapse();
+
+  m_stat.print(Universe().traceMng(), m_status, "MCGSolver " + m_version );
+
+#if 0
   alien_info([&] {
-    cout() << "\n|----------------------------------------------------|\n"
-                "| Linear Solver        : MCGSolver " << m_version << "\n"
-                "|----------------------------------------------------|\n"
-           << std::scientific << std::setprecision(4)
-           << "| total num of iter           : " << m_total_iter_num << "\n"
-           << "| solve num                   : " << m_solve_num << "\n"
-           << "| init time                   : " << m_init_timer.getElapse() << "\n"
-           << "| prepare time                : " << m_prepare_timer.getElapse() << "\n"
-           << "| total solver time           : " << total_solve_time << "\n"
-           << "| |--system time              : " << m_system_timer.getElapse() << " "
-           << m_system_timer.getElapse() / total_solve_time << "\n"
-           << "| |--solve time               : " << m_solve_timer.getElapse() << " "
-           << m_solve_timer.getElapse() / total_solve_time << "\n"
-           << "|    |--internal allocate time: " << m_int_total_allocate_time << " "
-           << m_int_total_allocate_time / total_solve_time << "\n"
-           << "|    |--internal init time    : " << m_int_total_init_time << " "
-           << m_int_total_init_time / total_solve_time << "\n"
-           << "|    |--internal udpdate time : " << m_int_total_update_time << " "
-           << m_int_total_update_time / total_solve_time << "\n"
-           << "|    |--internal solve time   : " << m_int_total_solve_time << " "
-           << m_int_total_solve_time / total_solve_time << "\n"
-           << std::defaultfloat
-           << "|----------------------------------------------------|\n";
+    cout()
+    << "\n"
+    << "|----------------------------------------------------|\n"
+    << "| MCGSolver Internal timers" << "\n"
+    << "|----------------------------------------------------|\n"
+    << std::setprecision(3)
+    << "| allocate time: " << m_int_total_allocate_time << " "
+    << m_int_total_allocate_time / m_stat.solveTime() << '\n'
+    << "| init time    : " << m_int_total_init_time << " "
+      << m_int_total_init_time / m_stat.solveTime() << '\n'
+    << "| udpdate time : " << m_int_total_update_time << " "
+      << m_int_total_update_time / m_stat.solveTime() << '\n'
+    << "| solve time   : " << m_int_total_solve_time << " "
+      << m_int_total_solve_time / m_stat.solveTime() << '\n'
+    << "|----------------------------------------------------|\n";
   });
+#endif
 }
 
 void MCGInternalLinearSolver::startNonLinear() {
@@ -582,11 +576,13 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
   if(m_logger)
     m_logger->start(eStep::solve);
 #endif
-  m_prepare_timer.start();
-  Integer error = -1;
 
   if (m_parallel_mng == nullptr)
     return true;
+
+  m_stater.startPrepareMeasure();
+
+  Integer error = -1;
 
   alien_debug([&] {
    cout() << "MCGInternalLinearSolver::solve A timestamp: " << A.impl()->timestamp();
@@ -652,8 +648,6 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
       }
     }
 
-    m_prepare_timer.stop();
-
     error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
   }
   else { // use gpu
@@ -701,38 +695,39 @@ MCGInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x) {
       }
     }
 
-    m_prepare_timer.stop();
-
     error = _solve(*matrix.internal(), *rhs.internal(), *sol.internal(), m_part_info);
 #else
     alien_fatal([]{std::cout << "no GPU support in MGCSolver";});
 #endif
-
   }
 
+  std::string status = "OK";
+  if (error !=0)
+  {
+    status = "Error";
+    m_status.succeeded = false;
+    m_status.error = m_mcg_status.m_error;
+  }
+  else
+  {
+    m_status.succeeded = true;
+    m_status.error = 0;
+  }
 
   m_status.residual = m_mcg_status.m_residual;
   m_status.iteration_count = m_mcg_status.m_num_iter;
-  m_solve_num += 1;
-  m_total_iter_num += m_mcg_status.m_num_iter;
+
+  m_stater.stopSolveMeasure();
 
   m_int_total_solve_time += m_mcg_status.m_solve_time;
   m_int_total_allocate_time += m_mcg_status.m_allocate_time;
   m_int_total_init_time += m_mcg_status.m_init_time;
   m_int_total_update_time += m_mcg_status.m_update_time;
 
-  std::string status = "OK";
-  m_status.succeeded = true;
-  m_status.error = 0;
-
-  if (error !=0) {
-    status = "Error";
-    m_status.succeeded = false;
-    m_status.error = m_mcg_status.m_error;
-  }
+  printInfo();
 
   if (m_output_level > 0 && m_parallel_mng->commRank() == 0) {
-    printInfo();
+
     alien_info([&] {
       cout() << "Resolution status    : " << status;
       cout() << "Error code           : " << m_mcg_status.m_error;
