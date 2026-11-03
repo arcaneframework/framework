@@ -203,6 +203,7 @@ public:
   , m_is_recursive(serialization_policy == PolyhedralTools::SerializationPolicy::SerializeFamilyAndConnectedFamilies)
   {
     ARCANE_ASSERT((serialization_policy != PolyhedralTools::SerializationPolicy::None),("Cannot serialize a family without a serialization policy"));
+    m_mesh->traceMng()->info() << "Serialization policy is recursive : " << std::boolalpha << m_is_recursive;
   }
 
   PolyhedralFamilySerializer(const PolyhedralFamilySerializer&) = delete;
@@ -2285,6 +2286,7 @@ _exchangeItems()
   // todo handle submeshes, cf. DynamicMesh
 
   Trace::Setter mci(traceMng(), _className());
+  m_trace_mng->info() << "START EXCHANGE ITEMS " ;
 
   if (!m_is_dynamic)
     ARCANE_FATAL("property isDynamic() has to be 'true'");
