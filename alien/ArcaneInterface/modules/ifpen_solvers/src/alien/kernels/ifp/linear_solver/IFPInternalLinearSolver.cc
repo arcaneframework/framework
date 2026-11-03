@@ -4,6 +4,7 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
+
 #include <alien/kernels/ifp/linear_solver/IFPInternalLinearSolver.h>
 
 #include <alien/expression/solver/ILinearSolver.h>
