@@ -216,26 +216,26 @@ void SolverStat::_internalFinalPrint(std::ostream& o, const String& title) const
     << "|--------------------------------------------------------|\n"
     << "| " << "Linear Solver : " << title << '\n'
     << "|--------------------------------------------------------|\n"
-    << "Total Num calls       : " << m_solve_count << '\n'
-    << "Failed Num calls      : " << m_failed_solve_count << " "
+    << "| Total Num calls       : " << m_solve_count << '\n'
+    << "| Failed Num calls      : " << m_failed_solve_count << " "
     << std::fixed << std::setprecision(1)
     <<  m_failed_solve_count/Real(m_solve_count)*100 << "%\n"
 
-    << "Total iterations      : " << m_iteration_count << '\n'
-    << "Failed iterations     : " << m_failed_iteration_count << " "
+    << "| Total iterations      : " << m_iteration_count << '\n'
+    << "| Failed iterations     : " << m_failed_iteration_count << " "
     << m_failed_iteration_count/Real(m_iteration_count)*100 << "%\n"
 
 
     << std::scientific << std::setprecision(3)
-    << "Total time            : " << total_time << '\n'
-    << "Failed total time     : " << failed_total_time << " "
+    << "| Total time            : " << total_time << '\n'
+    << "| Failed total time     : " << failed_total_time << " "
     << std::fixed << std::setprecision(1)
     << (failed_total_time/total_time)*100 << "%\n"
 
     << std::scientific << std::setprecision(3)
-    << "Init time             : " << m_initialization_time << '\n'
-    << "Total prepare time    : " << m_prepare_time << '\n'
-    << "Total solve time      : " << m_solve_time << '\n'
+    << "| Init time             : " << m_initialization_time << '\n'
+    << "| Total prepare time    : " << m_prepare_time << '\n'
+    << "| Total solve time      : " << m_solve_time << '\n'
     << "|--------------------------------------------------------|";
   o.flags(stream_flags);
 }
