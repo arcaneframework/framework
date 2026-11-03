@@ -654,9 +654,10 @@ HTSInternalLinearSolver::solve(IMatrix const& A, IVector const& b, IVector& x)
   }
 
   printInfo();
+#endif
 
   return solve_res;
-#endif
+
 }
 
 
