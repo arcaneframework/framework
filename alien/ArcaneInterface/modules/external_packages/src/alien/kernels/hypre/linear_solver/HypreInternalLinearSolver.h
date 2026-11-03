@@ -128,7 +128,6 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   Integer m_gpu_device_id = 0;
 
   SolverStat m_stat;
-  SolverStater<HypreInternalLinearSolver> m_stater;
 
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
   Arcane::Accelerator::Runner* m_runner = nullptr;

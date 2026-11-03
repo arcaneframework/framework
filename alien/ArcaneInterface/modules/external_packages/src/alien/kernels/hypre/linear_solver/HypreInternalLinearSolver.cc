@@ -239,7 +239,6 @@ HypreInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* pm,
                           Arcane::Accelerator::Runner* runner,
                           IOptionsHypreSolver* options)
 : m_parallel_mng(pm)
-, m_stater(this)
 , m_runner(runner)
 , m_options(options)
 {
@@ -279,8 +278,6 @@ HypreInternalLinearSolver::init()
   if(HypreInternalLinearSolver::m_library_plugin_is_initialized)
     return;
 
-  m_stater.startInitializationMeasure();
-
 #if defined(HYPRE_USING_CUDA) || defined(HYPRE_USING_HIP)
   if(m_options->execSpace() == HypreOptionTypes::Device)
   {
@@ -316,8 +313,6 @@ HypreInternalLinearSolver::init()
      });
    }
    HypreInternalLinearSolver::m_library_plugin_is_initialized = true;
-
-  m_stater.stopInitializationMeasure();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1258,8 +1253,6 @@ HypreInternalLinearSolver::solve(const HypreMatrix& A,
                                  const HypreVector& b,
                                  HypreVector& x)
 {
-  m_stater.startPrepareMeasure();
-
   const HYPRE_IJMatrix& ij_matrix = A.internal()->internal();
   const HYPRE_IJVector& bij_vector = b.internal()->internal();
   HYPRE_IJVector& xij_vector = x.internal()->internal();
@@ -1267,18 +1260,11 @@ HypreInternalLinearSolver::solve(const HypreMatrix& A,
   m_impl->setUp(ij_matrix);
   m_impl->setUp(bij_vector,xij_vector);
 
-  m_stater.stopPrepareMeasure();
-
-  m_stater.startSolveMeasure();
   m_status.succeeded = m_impl->solve();
 
   m_impl->getStatus(m_status);
   m_impl->end();
   m_impl.reset();
-
-  m_stater.stopSolveMeasure();
-
-  printInfo();
 
   return m_status.succeeded;
 }
@@ -1287,8 +1273,6 @@ bool
 HypreInternalLinearSolver::solve(const HypreVector& b,
                                  HypreVector& x)
 {
-  m_stater.startPrepareMeasure();
-
   const HYPRE_IJVector& bij_vector = b.internal()->internal();
   HYPRE_IJVector& xij_vector = x.internal()->internal();
   assert(m_impl.get()!=nullptr);
@@ -1296,13 +1280,7 @@ HypreInternalLinearSolver::solve(const HypreVector& b,
   if(!m_impl->m_is_setup)
     m_impl->setUp(bij_vector,xij_vector);
 
-  m_stater.stopPrepareMeasure();
-
-  m_stater.startSolveMeasure();
   m_status.succeeded = m_impl->solve() ;
-  m_stater.stopSolveMeasure();
-
-  printInfo();
 
   return m_status.succeeded;
 }
