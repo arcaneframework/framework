@@ -80,6 +80,13 @@ MeshExchanger::
 void MeshExchanger::
 build()
 {
+  // first define serialization policy if necessary
+  auto* family_serializers_mng = m_mesh->_internalApi()->familySerializerMng();
+  if (family_serializers_mng)
+  {
+    info() << "== Initialize Serialization ==";
+    family_serializers_mng->beginSerialization(mesh::PolyhedralTools::SerializationPolicy::SerializationFamilyOnly);
+  }
   if (!m_mesh->itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer) { // handle family order by hand
     // Sorted list of families specifically ordered to guarantee a certain order
     // during exchanges. For now, the order is determined as follows:
@@ -337,9 +344,6 @@ allocateReceivedItems()
 {
   _checkPhase(ePhase::AllocateItems);
   {
-    auto* family_serializers_mng = m_mesh->_internalApi()->familySerializerMng();
-    if (family_serializers_mng)
-      family_serializers_mng->beginSerialization(mesh::PolyhedralTools::SerializationPolicy::SerializationFamilyOnly);
     info() << "AllocItems date=" << platform::getCurrentDateTime();
     Timer::Action ts_action1(m_time_stats, "ReadAndAllocItems", true);
     // We must first perform the cell exchange
@@ -349,6 +353,7 @@ allocateReceivedItems()
       e->readAndAllocItems(); // Caution, no longer proceeds on different sub-meshes
     }
     // If needed, finalize item allocations (for polyhedral meshes)
+    auto* family_serializers_mng = m_mesh->_internalApi()->familySerializerMng();
     if (family_serializers_mng)
       family_serializers_mng->finalizeSerialization();
 
