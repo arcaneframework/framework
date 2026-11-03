@@ -54,9 +54,7 @@ IFPInternalLinearSolver::IFPInternalLinearSolver(
 
 /*---------------------------------------------------------------------------*/
 
-IFPInternalLinearSolver::~IFPInternalLinearSolver()
-{
-}
+IFPInternalLinearSolver::~IFPInternalLinearSolver() = default;
 
 /*---------------------------------------------------------------------------*/
 

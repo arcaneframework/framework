@@ -91,7 +91,7 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
 
   void init();
 
-  void init(HypreMatrix const& A) ;
+  void init(HypreMatrix const& A);
 
   void start() {
 
@@ -119,21 +119,20 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT HypreInternalLinearSolver
   void printInfo() const;
 
  private:
-  struct Impl ;
+  struct Impl;
 
-  std::unique_ptr<Impl> m_impl ;
+  std::unique_ptr<Impl> m_impl;
 
   Status m_status;
 
-  Integer m_gpu_device_id = 0 ;
+  Integer m_gpu_device_id = 0;
 
   SolverStat m_stat;
   SolverStater<HypreInternalLinearSolver> m_stater;
 
   Arccore::MessagePassing::IMessagePassingMng* m_parallel_mng = nullptr;
-  Arcane::Accelerator::Runner*                 m_runner       = nullptr;
-  IOptionsHypreSolver*                         m_options      = nullptr;
-
+  Arcane::Accelerator::Runner* m_runner = nullptr;
+  IOptionsHypreSolver* m_options = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -239,9 +239,9 @@ HypreInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* pm,
                           Arcane::Accelerator::Runner* runner,
                           IOptionsHypreSolver* options)
 : m_parallel_mng(pm)
+, m_stater(this)
 , m_runner(runner)
 , m_options(options)
-, m_stater(this)
 {
   if(m_runner)
     m_gpu_device_id = m_runner->deviceId().asInt32();
