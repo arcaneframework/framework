@@ -35,12 +35,9 @@ class ALIEN_EXPORT BaseSolverStater
   } eStateType;
 
  public:
-  BaseSolverStater()
-  : m_state(eNone)
-  , m_suspend_count(0)
-  {}
+  BaseSolverStater() = default;
 
-  virtual ~BaseSolverStater() {}
+  virtual ~BaseSolverStater() = default;
 
  public:
   static Real getVirtualTimeCounter() { return _getVirtualTime(); }
@@ -82,17 +79,15 @@ class ALIEN_EXPORT BaseSolverStater
 
   void _stopTimer();
 
- protected:
-  eStateType m_state;
-  Integer m_suspend_count;
-  Real m_real_time; //!< 'wall clock' time for the lastest start or stop
-  Real m_cpu_time; //!< 'cpu' time for the lastest start or stop
+  eStateType m_state = eNone;
+  Integer m_suspend_count = 0;
+  Real m_real_time = 0; //!< 'wall clock' time for the lastest start or stop
+  Real m_cpu_time = 0; //!< 'cpu' time for the lastest start or stop
 };
 
 template <typename SolverT>
 class SolverStater : public BaseSolverStater
 {
- public:
  public:
   /** Constructeur de la classe */
   SolverStater(SolverT* solver)

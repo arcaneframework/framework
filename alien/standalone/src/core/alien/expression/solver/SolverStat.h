@@ -58,7 +58,7 @@ class ALIEN_EXPORT SolverStat
   Real m_failed_prepare_time = 0;
   Real m_failed_solve_time = 0;
 
-  Integer m_last_iteration_count;
+  Integer m_last_iteration_count = 0;
   Real m_last_prepare_time = 0;
   Real m_last_solve_time = 0;
 
