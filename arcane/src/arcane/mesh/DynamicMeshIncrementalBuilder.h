@@ -52,6 +52,8 @@ class EdgeUniqueIdBuilder;
 /*!
  * \brief Construction of a mesh incrementally.
  */
+class IncrementalItemConnectivity;
+
 class DynamicMeshIncrementalBuilder
 : public TraceAccessor
 {
@@ -68,6 +70,15 @@ class DynamicMeshIncrementalBuilder
   void addCells(Integer nb_cell, Int64ConstArrayView cell_infos,
                 Integer sub_domain_id, Int32ArrayView cells,
                 bool allow_build_face = true);
+  /*!
+   * \brief Same as addCells(), filling the family arrays in bulk.
+   *
+   * Returns false without touching anything if the mesh is not one it can
+   * build, in which case addCells() has to do the work.
+   */
+  bool addCellsBulk(Integer nb_cell, Int64ConstArrayView cell_infos,
+                    Integer sub_domain_id, Int32ArrayView cells,
+                    bool allow_build_face);
   void addCells2(Integer nb_cell, Int64ConstArrayView cell_infos,
                  Integer sub_domain_id, Int32ArrayView cells,
                  bool allow_build_face = true);
@@ -142,6 +153,15 @@ class DynamicMeshIncrementalBuilder
   OneMeshItemAdder* oneMeshItemAdder() const { return m_one_mesh_item_adder; }
 
  private:
+
+  template <typename FamilyType>
+  void _allocateBulkByType(FamilyType* family, Int64ConstArrayView uids,
+                           ConstArrayView<Int16> type_ids, Int32 owner, Int32ArrayView lids);
+  void _fillBulkConnectivity(IncrementalItemConnectivity* c, Int32 nb_source,
+                             ConstArrayView<Int32> offsets, ConstArrayView<Int32> targets);
+  void _fillBulkReverseConnectivity(IncrementalItemConnectivity* c, Int32 nb_target,
+                                    Int32 nb_source, ConstArrayView<Int32> offsets,
+                                    ConstArrayView<Int32> targets);
 
   struct NodeInFace;
 
@@ -261,6 +281,7 @@ class DynamicMeshIncrementalBuilder
   bool m_has_amr;
 
   bool m_verbose = false; //!< True if messages are displayed
+  bool m_use_bulk_add_cells = false; //!< ARCANE_BULK_ADD_CELLS=1: addCells() fills the families in bulk
 
   //! Mesh building utilities
   OneMeshItemAdder* m_one_mesh_item_adder = nullptr; //!< Utility to add an item to the mesh

@@ -60,6 +60,14 @@ class ARCANE_MESH_EXPORT CellFamily
  public:
 
   virtual void build() override;
+  //! The true connectivity behind the selector, for a bulk fill
+  IncrementalItemConnectivity* nodeConnectivity() const;
+  IncrementalItemConnectivity* edgeConnectivity() const;
+  IncrementalItemConnectivity* faceConnectivity() const;
+
+  //! Allocates every item of \a uids at once, in one pass per family array
+  void allocateItemsBulk(Int64ConstArrayView uids, ItemTypeInfo* type, Int32 owner, Int32ArrayView lids);
+
   virtual void preAllocate(Integer nb_item);
 
  public:

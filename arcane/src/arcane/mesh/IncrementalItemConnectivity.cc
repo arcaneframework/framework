@@ -827,6 +827,59 @@ setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids)
 /*---------------------------------------------------------------------------*/
 
 void IncrementalItemConnectivity::
+setBulkConnectivity(Int32ConstArrayView nb_items, Int32ConstArrayView indexes,
+                    Int32ConstArrayView list)
+{
+  _checkMaterialize();
+  const Int32 nb_source = nb_items.size();
+  if (indexes.size() != nb_source)
+    ARCANE_FATAL("Incoherent sizes nb_items={0} indexes={1}", nb_source, indexes.size());
+  m_p->m_connectivity_nb_item_array.resize(nb_source);
+  m_p->m_connectivity_index_array.resize(nb_source);
+  m_p->m_connectivity_list_array.resize(list.size());
+  _notifyConnectivityNbItemChanged();
+  _notifyConnectivityIndexChanged();
+  _notifyConnectivityListChanged();
+  m_connectivity_nb_item.copy(nb_items);
+  m_connectivity_index.copy(indexes);
+  m_connectivity_list.copy(list);
+  m_p->m_max_nb_item = 0;
+  _computeMaxNbConnectedItem();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivity::
+resizeBulkConnectivity(Int32 nb_source, Int64 list_size, Int32ArrayView& nb_items,
+                       Int32ArrayView& indexes, Int32ArrayView& list)
+{
+  _checkMaterialize();
+  m_p->m_connectivity_nb_item_array.resize(nb_source);
+  m_p->m_connectivity_index_array.resize(nb_source);
+  m_p->m_connectivity_list_array.resize(list_size);
+  _notifyConnectivityNbItemChanged();
+  _notifyConnectivityIndexChanged();
+  _notifyConnectivityListChanged();
+  nb_items = m_connectivity_nb_item;
+  indexes = m_connectivity_index;
+  list = m_connectivity_list;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivity::
+endBulkConnectivity()
+{
+  m_p->m_max_nb_item = 0;
+  _computeMaxNbConnectedItem();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivity::
 removeConnectedItems(ItemLocalId source_item)
 {
   _checkMaterialize();

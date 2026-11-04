@@ -102,6 +102,53 @@ build()
 /*!
  */
 void DynamicMeshKindInfos::
+allocMany(Int64ConstArrayView uids, Int32ArrayView lids)
+{
+  const Int32 nb = uids.size();
+  if (nb == 0)
+    return;
+  // m_free_internals holds localIds to reuse, which would break the "consecutive
+  // from the current size" contract; the multi-buffer free list does not, it is
+  // only storage, and _allocOne() drains it the same way.
+  if (!m_free_internals.empty())
+    ARCANE_FATAL("allocMany() is only valid on a family holding no reusable localId");
+  m_internals.reserve(m_internals.size() + nb);
+  m_added_items.reserve(m_added_items.size() + nb);
+  for (Int32 i = 0; i < nb; ++i) {
+    ItemInternal* new_item = nullptr;
+    if (!m_free_internals_in_multi_buffer.empty()) {
+      new_item = m_free_internals_in_multi_buffer.back();
+      m_free_internals_in_multi_buffer.popBack();
+    }
+    else
+      new_item = m_item_internals_buffer->allocOne();
+    Int32 lid = m_internals.size();
+    new_item->setLocalId(lid);
+    m_internals.add(new_item);
+    m_added_items.add(lid);
+    lids[i] = lid;
+#ifdef ARCANE_ENABLE_EVENT_FOR_DYNAMICMESHKINDINFO
+    // Same notification as allocOne(): a family's item-list event is what some
+    // callers count items with, and a batch must not be silent.
+    _notifyAdd(new_item, uids[i]);
+#endif
+  }
+  m_nb_item += nb;
+  // Once for the whole batch, and not once per item.
+  _updateItemSharedInfoInternalView();
+  if (m_has_unique_id_map) {
+    m_items_map.resize(m_items_map.count() + nb, true);
+    for (Int32 i = 0; i < nb; ++i) {
+      if (!m_items_map.add(uids[i], m_internals[lids[i]]))
+        _badSameUniqueId(uids[i]);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMeshKindInfos::
 finalizeMeshChanged()
 {
   Trace::Setter mci(traceMng(), "Mesh");

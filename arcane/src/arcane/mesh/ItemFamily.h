@@ -392,6 +392,16 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _addConnectivitySelector(ItemConnectivitySelector* selector);
   void _buildConnectivitySelectors();
   void _preAllocate(Int32 nb_item, bool pre_alloc_connectivity);
+
+ public:
+
+  //! Whether _allocateInfosBulk() can be used: nothing allocated, nothing freed
+  bool canAllocateBulk() const;
+
+ protected:
+
+  void _allocateInfosBulk(Int64ConstArrayView uids, ItemTypeInfo* type,
+                          Int32 owner, Int32ArrayView lids);
   ItemInternalConnectivityList* _unstructuredItemInternalConnectivityList()
   {
     return itemInternalConnectivityList();
