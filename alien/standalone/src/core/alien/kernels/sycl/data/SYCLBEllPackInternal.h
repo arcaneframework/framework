@@ -681,13 +681,13 @@ class MatrixInternal
              [=](sycl::nd_item<1> item_id)
              {
 
-                const std::size_t local_id  = item_id.get_local_id(0);
                 const std::size_t global_id = item_id.get_global_id(0);
                 const std::size_t stride   = item_id.get_global_range(0);
 
                 for (auto i = global_id; i < nrows; i += stride)
                 {
                    auto block_id = i / pack_size ;
+                   auto local_id = i % pack_size ;
 
                    auto begin    = access_block_row_offset[block_id] ;
                    auto end      = access_block_row_offset[block_id+1] ;
@@ -898,9 +898,9 @@ class MatrixInternal
     auto& block_row_offset = ext_profile->getBlockRowOffset();
     auto& block_cols       = ext_profile->getBlockCols();
 
-    auto blocks_needed     = (interface_nrow + ellpack_size - 1) / ellpack_size;
+    auto blocks_needed     = (interface_nrow + pack_size - 1) / pack_size;
     auto blocks_target     = std::max(blocks_needed, num_groups * 4UL);
-    auto total_threads     = blocks_target * ellpack_size;
+    auto total_threads     = blocks_target * pack_size;
     {
      // clang-format off
 

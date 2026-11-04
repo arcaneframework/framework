@@ -319,7 +319,10 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
     auto& queue        = env->internal()->queue();
     auto total_threads = env->maxNumThreads() ;
     // clang-format on
-
+    /*
+    alien_info([&]{ cout()<<"LOWER RECV  : "<<m_recv_info.m_ids.size()<<" BKS="<<m_recv_buffer.size(); });
+    Universe().traceMng()->flush() ;
+    */
     if (m_recv_info.m_ids.size())
     {
       Arccore::Integer total_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
@@ -329,16 +332,19 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
       m_rbuffer.resize(total_recv_ids*m_block_size);
 #endif
     }
+    Integer off0 = m_recv_info.m_ids_offset[0];
     for (Integer i = 0; i < m_recv_info.m_first_upper_neighb; ++i)
     {
-      Integer off = m_recv_info.m_ids_offset[i];
+
+      Integer off = m_recv_info.m_ids_offset[i] ;
       Integer size = m_recv_info.m_ids_offset[i + 1] - off;
 #ifdef USE_SYCL_USM
-      ValueT* ptr = m_rbuffer + off*m_block_size;
+      ValueT* ptr = m_rbuffer + (off - off0) * m_block_size;
 #else
-      ValueT* ptr = m_rbuffer.data() + off*m_block_size;
+      ValueT* ptr = m_rbuffer.data() + (off - off0) * m_block_size;
 #endif
       Integer rank = m_recv_info.m_ranks[i];
+      //alien_info([&]{ cout()<<"LOWER RECV RANK : "<<rank<<" SIZE : "<<size<<" "<<m_block_size;}) ;
       Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueT>(size*m_block_size, ptr), rank);
     }
 
@@ -346,6 +352,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
     {
       std::size_t total_nb_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_first_upper_neighb] - m_recv_info.m_ids_offset[0];
 
+      if(total_nb_recv_ids>0)
       {
 #ifdef USE_SYCL_USM
         sycl::buffer<ValueType> rbuffer{ { sycl::buffer_allocation::view(m_rbuffer, queue.get_device()) }, total_nb_recv_ids*m_block_size };
@@ -405,12 +412,10 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
                                                                   {
                                                                    auto id = itemId.get_id(0);
                                                                    for(auto i=id;i<total_nb_recv_ids;i += total_threads)
-                                                                     #pragma unroll
                                                                      for(auto j=0;j<block_size;++j)
                                                                        access_recv_buffer[i*block_size+j] = access_rbuffer[i*block_size+j];
                                                                   });
                        });
-
         }
         // clang-format on
       }
@@ -432,6 +437,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
 #else
       m_sbuffer.resize(total_nb_send_ids * m_block_size);
 #endif
+      if(total_nb_send_ids>0)
       {
 #ifdef USE_SYCL_USM
         sycl::buffer<ValueType> sbuffer{ { sycl::buffer_allocation::empty_view(m_sbuffer, queue.get_device()) }, total_nb_send_ids * m_block_size };
@@ -478,7 +484,6 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
                                   {
                                     auto id = itemId.get_id(0);
                                     for( auto i=id; i<total_nb_send_ids; i+=total_threads)
-                                      #pragma unroll
                                       for( auto j=0; j<block_size; ++j)
                                         access_sbuffer[i*block_size+j] = access_send_buffer[access_ids[i]*block_size+j];
                                   });
@@ -489,7 +494,8 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
 
     }
     //for (Integer i = 0; i < m_send_info.m_num_neighbours; ++i) {
-    for (int i = m_send_info.m_first_upper_neighb - 1; i > -1; --i) {
+    for (int i = m_send_info.m_first_upper_neighb - 1; i > -1; --i)
+    {
       Integer off = m_send_info.m_ids_offset[i];
       Integer nb_send_ids = m_send_info.m_ids_offset[i + 1] - off;
 #ifdef USE_SYCL_USM
@@ -498,8 +504,12 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
       ValueT const* ptr = m_sbuffer.data() + off * m_block_size;
 #endif
       Integer rank = m_send_info.m_ranks[i];
-      Arccore::MessagePassing::mpSend(m_parallel_mng,
-                                      ConstArrayView<ValueT>(nb_send_ids*m_block_size, ptr), rank);
+      if(nb_send_ids>0)
+      {
+        Arccore::MessagePassing::mpSend(m_parallel_mng,
+                                        ConstArrayView<ValueT>(nb_send_ids*m_block_size, ptr),
+                                        rank);
+      }
     }
   }
 
@@ -511,7 +521,8 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
     auto total_threads = env->maxNumThreads() ;
     // clang-format on
 
-    if (m_recv_info.m_ids.size()) {
+    if (m_recv_info.m_ids.size())
+    {
       Arccore::Integer total_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[m_recv_info.m_first_upper_neighb];
 #ifdef USE_SYCL_USM
       m_rbuffer = sycl::malloc_shared<ValueT>(total_recv_ids*m_block_size, queue);
@@ -519,23 +530,28 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
       m_rbuffer.resize(total_recv_ids*m_block_size);
 #endif
     }
+    Integer off0 = m_recv_info.m_ids_offset[0];
     //for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
-    for (int i = m_recv_info.m_num_neighbours - 1; i > m_recv_info.m_first_upper_neighb - 1; --i) {
+    for (int i = m_recv_info.m_num_neighbours - 1; i > m_recv_info.m_first_upper_neighb - 1; --i)
+    {
       Integer off = m_recv_info.m_ids_offset[i];
       Integer size = m_recv_info.m_ids_offset[i + 1] - off;
 #ifdef USE_SYCL_USM
-      ValueT* ptr = m_rbuffer + off*m_block_size;
+      ValueT* ptr = m_rbuffer + (off-off0) * m_block_size;
 #else
-      ValueT* ptr = m_rbuffer.data() + off*m_block_size;
+      ValueT* ptr = m_rbuffer.data() + (off-off0) * m_block_size;
 #endif
       Integer rank = m_recv_info.m_ranks[i];
-      Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueT>(size*m_block_size, ptr), rank);
+      if(size>0)
+        Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueT>(size*m_block_size, ptr), rank);
     }
-    if (m_recv_info.m_ids.size()) {
+    if (m_recv_info.m_ids.size())
+    {
+      int offset = m_recv_info.m_ids_offset[m_recv_info.m_first_upper_neighb] - m_recv_info.m_ids_offset[0];
       //std::size_t total_nb_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
       std::size_t total_nb_recv_ids = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] -
           m_recv_info.m_ids_offset[m_recv_info.m_first_upper_neighb];
-
+      if(total_nb_recv_ids>0)
       {
 #ifdef USE_SYCL_USM
         sycl::buffer<ValueType> rbuffer{ { sycl::buffer_allocation::view(m_rbuffer, queue.get_device()) }, total_nb_recv_ids*m_block_size };
@@ -568,7 +584,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
                                                                   {
                                                                    auto id = itemId.get_id(0);
                                                                    for(auto i=id;i<total_nb_recv_ids;i += total_threads)
-                                                                     access_recv_buffer[i] = access_rbuffer[i];
+                                                                     access_recv_buffer[offset+i] = access_rbuffer[i];
                                                                   });
                        });
         }
@@ -595,9 +611,8 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
                                                                   {
                                                                    auto id = itemId.get_id(0);
                                                                    for(auto i=id;i<total_nb_recv_ids;i += total_threads)
-                                                                     #pragma unroll
                                                                      for(auto j=0;j<block_size;++j)
-                                                                       access_recv_buffer[i*block_size+j] = access_rbuffer[i*block_size+j];
+                                                                       access_recv_buffer[(offset+i)*block_size+j] = access_rbuffer[i*block_size+j];
                                                                   });
                        });
 
@@ -622,6 +637,7 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
 #else
       m_sbuffer.resize(total_nb_send_ids * m_block_size);
 #endif
+      if(total_nb_send_ids>0)
       {
 #ifdef USE_SYCL_USM
         sycl::buffer<ValueType> sbuffer{ { sycl::buffer_allocation::empty_view(m_sbuffer, queue.get_device()) }, total_nb_send_ids * m_block_size };
@@ -668,7 +684,6 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
                                   {
                                     auto id = itemId.get_id(0);
                                     for( auto i=id; i<total_nb_send_ids; i+=total_threads)
-                                      #pragma unroll
                                       for( auto j=0; j<block_size; ++j)
                                         access_sbuffer[i*block_size+j] = access_send_buffer[access_ids[offset+i]*block_size+j];
                                   });
@@ -688,8 +703,12 @@ class SYCLSendRecvOp : public Alien::SimpleCSRInternal::IASynchOp
       ValueT const* ptr = m_sbuffer.data() + off * m_block_size;
 #endif
       Integer rank = m_send_info.m_ranks[i];
-      Arccore::MessagePassing::mpSend(m_parallel_mng,
+      //alien_info([&]{ cout()<<"UPPER SEND : RANK : "<<rank<<" SIZE : "<<nb_send_ids<<" "<<m_block_size;}) ;
+      if(nb_send_ids>0)
+      {
+        Arccore::MessagePassing::mpSend(m_parallel_mng,
                                         ConstArrayView<ValueT>(nb_send_ids*m_block_size, ptr), rank);
+      }
     }
   }
 

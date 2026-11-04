@@ -292,15 +292,15 @@ class SendRecvOp : public IASynchOp
       Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueT>(size * m_unknowns_num, ptr), rank);
     }
     if (m_recv_info.m_ids.size() && !insitu) {
-      int size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] -
-      m_recv_info.m_ids_offset[m_recv_info.m_first_upper_neighb];
+      int offset = m_recv_info.m_ids_offset[m_recv_info.m_first_upper_neighb];
+      int size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - offset;
       if (m_unknowns_num == 1)
         for (int i = 0; i < size; ++i)
-          m_recv_buffer[m_recv_info.m_ids[i]] = m_rbuffer[i];
+          m_recv_buffer[m_recv_info.m_ids[offset + i]] = m_rbuffer[i];
       else
         for (int i = 0; i < size; ++i)
           for (int ui = 0; ui < m_unknowns_num; ++ui)
-            m_recv_buffer[m_recv_info.m_ids[i] * m_unknowns_num + ui] = m_rbuffer[i * m_unknowns_num + ui];
+            m_recv_buffer[m_recv_info.m_ids[offset + i] * m_unknowns_num + ui] = m_rbuffer[i * m_unknowns_num + ui];
     }
   }
 

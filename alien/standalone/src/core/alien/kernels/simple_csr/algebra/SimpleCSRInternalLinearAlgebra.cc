@@ -149,6 +149,18 @@ void SimpleCSRInternalLinearAlgebra::addLMult(Real alpha,
   Internal::SimpleCSRMatrixMultT<Real>(ma).addLMult(alpha, vx, vr);
 }
 
+
+void SimpleCSRInternalLinearAlgebra::endDistAddLMult(Real alpha,
+                                              const CSRMatrix& ma,
+                                              const CSRVector& vx,
+                                              CSRVector& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-AddLMult");
+#endif
+  Internal::SimpleCSRMatrixMultT<Real>(ma).endDistAddLMult(alpha, vx, vr);
+}
+
 void SimpleCSRInternalLinearAlgebra::addUMult(Real alpha,
                                               const CSRMatrix& ma,
                                               const CSRVector& vx,
@@ -158,6 +170,17 @@ void SimpleCSRInternalLinearAlgebra::addUMult(Real alpha,
   SentryType s(m_timer, "CSR-AddUMult");
 #endif
   Internal::SimpleCSRMatrixMultT<Real>(ma).addUMult(alpha, vx, vr);
+}
+
+void SimpleCSRInternalLinearAlgebra::endDistAddUMult(Real alpha,
+                                              const CSRMatrix& ma,
+                                              const CSRVector& vx,
+                                              CSRVector& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-endDistAddUMult");
+#endif
+  Internal::SimpleCSRMatrixMultT<Real>(ma).endDistAddUMult(alpha, vx, vr);
 }
 
 void SimpleCSRInternalLinearAlgebra::lowerUpperSynchronize(const CSRMatrix& ma,
