@@ -45,6 +45,16 @@ class SimpleCSRMatrixMultT
   void lowerUpperSynchronize(const VectorType& x, VectorType& y) const;
   void upperLowerSynchronize(const VectorType& x, VectorType& y) const;
 
+  void endDistAddLMult(Real alpha, const VectorType& x, VectorType& y) const
+  {
+    _endDistAddLMult(alpha, x, y);
+  }
+  
+  void endDistAddUMult(Real alpha, const VectorType& x, VectorType& y) const
+  {
+    _endDistAddUMult(alpha, x, y);
+  }
+
   void computeDiag(VectorType& y) const;
   void multDiag(VectorType& y) const;
   void computeInvDiag(VectorType& y) const;
@@ -60,6 +70,9 @@ class SimpleCSRMatrixMultT
 
   void _seqAddLMult(Real alpha, const VectorType& x, VectorType& y) const;
   void _seqAddUMult(Real alpha, const VectorType& x, VectorType& y) const;
+
+  void _endDistAddLMult(Real alpha, const VectorType& x, VectorType& y) const;
+  void _endDistAddUMult(Real alpha, const VectorType& x, VectorType& y) const;
 
   void _synchronizeBlock(VectorType& x) const;
   void _parallelMultBlock(const VectorType& x, VectorType& y) const;

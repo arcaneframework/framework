@@ -2484,11 +2484,11 @@ namespace SYCLInternal
 
                             for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
                             {
-                               auto block_id = i / pack_size ;
-                               auto local_id = i % pack_size ;
+                               std::size_t  block_id         = i / pack_size ;
+                               std::size_t  local_id         = i % pack_size ;
 
-                               int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
-                               auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                               std::size_t  block_row_offset = access_block_row_offset[block_id] * pack_size ;
+                               std::size_t  block_row_size   = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
                                for(int ieq=0;ieq<N;++ieq)
                                {
@@ -2867,11 +2867,11 @@ namespace SYCLInternal
 
                           for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
                           {
-                             auto block_id = i / pack_size ;
-                             auto local_id = i % pack_size ;
+                             std::size_t  block_id         = i / pack_size ;
+                             std::size_t  local_id         = i % pack_size ;
 
-                             int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
-                             auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                             std::size_t  block_row_offset = access_block_row_offset[block_id] * pack_size ;
+                             std::size_t  block_row_size   = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
                              ValueType value = 0. ;
                              for(int j=0;j<block_row_size;++j)
@@ -2919,11 +2919,12 @@ namespace SYCLInternal
 
                             for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
                             {
-                               auto block_id = i / pack_size ;
-                               auto local_id = i % pack_size ;
+                               std::size_t block_id         = i / pack_size ;
+                               std::size_t local_id         = i % pack_size ;
 
-                               int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
-                               auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                               std::size_t block_row_offset = access_block_row_offset[block_id] * pack_size ;
+                               std::size_t block_row_size   = access_block_row_offset[block_id+1] -
+                                   access_block_row_offset[block_id] ;
 
                                for(int ieq=0;ieq<N;++ieq)
                                {

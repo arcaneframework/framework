@@ -182,20 +182,12 @@ class FLUFactorisationAlgo
       std::copy(x_ptr, x_ptr + nrows, xk_ptr);
       if (this->m_is_parallel)
       {
-        typedef typename LUSendRecvTraits<TagType>::vector_op_type SendRecvOpType;
-        SendRecvOpType op(xk_ptr,
-                          this->m_lu_matrix->getDistStructInfo().m_send_info,
-                          this->m_lu_matrix->getSendPolicy(),
-                          xk_ptr,
-                          this->m_lu_matrix->getDistStructInfo().m_recv_info,
-                          this->m_lu_matrix->getRecvPolicy(),
-                          this->m_lu_matrix->getParallelMng(),
-                          nullptr);
 
         auto& local_row_size = this->m_lu_matrix->getDistStructInfo().m_local_row_size;
         int first_upper_ghost_index = this->m_lu_matrix->getDistStructInfo().m_first_upper_ghost_index;
-        op.lowerRecv();
-        op.upperSend();
+
+        algebra.lowerUpperSynchronize(*this->m_lu_matrix, xk);
+
         for (std::size_t irow = 0; irow < nrows; ++irow) {
           ValueType val = y_ptr[irow];
           for (int k = kcol[irow]; k < dcol[irow]; ++k)
@@ -263,20 +255,11 @@ class FLUFactorisationAlgo
       std::copy(x_ptr, x_ptr + nrows*N, xk_ptr);
       if (this->m_is_parallel)
       {
-        typedef typename LUSendRecvTraits<TagType>::vector_op_type SendRecvOpType;
-        SendRecvOpType op(xk_ptr,
-                          this->m_lu_matrix->getDistStructInfo().m_send_info,
-                          this->m_lu_matrix->getSendPolicy(),
-                          xk_ptr,
-                          this->m_lu_matrix->getDistStructInfo().m_recv_info,
-                          this->m_lu_matrix->getRecvPolicy(),
-                          this->m_lu_matrix->getParallelMng(),
-                          nullptr);
-
         auto& local_row_size = this->m_lu_matrix->getDistStructInfo().m_local_row_size;
         int first_upper_ghost_index = this->m_lu_matrix->getDistStructInfo().m_first_upper_ghost_index;
-        op.lowerRecv();
-        op.upperSend();
+
+        algebra.lowerUpperSynchronize(*this->m_lu_matrix, xk);
+
         for (std::size_t irow = 0; irow < nrows; ++irow)
         {
           //ValueType val = y_ptr[irow];
@@ -297,16 +280,22 @@ class FLUFactorisationAlgo
           //x_ptr[irow] = val;
           Block1DView(x_ptr+irow*N,N) = val ;
         }
+        
+        algebra.endDistAddLMult(-1, *this->m_lu_matrix, xk, x);
+        //alien_info([&]{ cout()<<"ADD BLMULT "<<algebra.norm2(x)<<" "<<algebra.norm2(xk);});
       }
       else
       {
 #ifdef PRINT_DEBUG_INFO
-        for (std::size_t irow = 0; irow < nrows; ++irow)
+        alien_info([&]
         {
-          std::cout<<"XK["<<irow<<"]=\n";
-          for(int i=0;i<N;++i)
-            std::cout<<xk_ptr[irow*N+i]<<std::endl;
-        }
+          for (std::size_t irow = 0; irow < nrows; ++irow)
+          {
+            cout()<<"XK["<<irow<<"]=\n";
+            for(int i=0;i<N;++i)
+              cout()<<'\t'<<xk_ptr[irow*N+i]<<" ";
+          }
+        });
 #endif
         for (std::size_t irow = 0; irow < nrows; ++irow)
         {
@@ -326,9 +315,10 @@ class FLUFactorisationAlgo
           //x_ptr[irow] = val;
           Block1DView(x_ptr+irow*N,N) = val ;
 #ifdef PRINT_DEBUG_INFO
-          std::cout<<"Y =\n"<<val<<std::endl ;
+          alien_info([&]{ cout()<<"Y = "<<Block1DView(const_cast<ValueType*>(y_ptr+irow*N),N);}) ;
 #endif
         }
+        //alien_info([&]{ cout()<<"ADD BLMULT "<<algebra.norm2(x)<<" "<<algebra.norm2(xk);});
       }
 #endif
     }
@@ -366,17 +356,8 @@ class FLUFactorisationAlgo
         auto& local_row_size = this->m_lu_matrix->getDistStructInfo().m_local_row_size;
         int first_upper_ghost_index = this->m_lu_matrix->getDistStructInfo().m_first_upper_ghost_index;
 
-        typedef typename LUSendRecvTraits<TagType>::vector_op_type SendRecvOpType;
-        SendRecvOpType op(xk_ptr,
-                          this->m_lu_matrix->getDistStructInfo().m_send_info,
-                          this->m_lu_matrix->getSendPolicy(),
-                          xk_ptr,
-                          this->m_lu_matrix->getDistStructInfo().m_recv_info,
-                          this->m_lu_matrix->getRecvPolicy(),
-                          this->m_lu_matrix->getParallelMng(),
-                          nullptr);
-        op.upperRecv();
-        op.lowerSend();
+        algebra.upperLowerSynchronize(*this->m_lu_matrix, xk);
+
         for (std::size_t irow = 0; irow < nrows; ++irow) {
           int dk = dcol[irow];
           ValueType val = y_ptr[irow];
@@ -444,25 +425,22 @@ class FLUFactorisationAlgo
       auto y_ptr  = y.data();
       auto x_ptr  = x.data();
       auto xk_ptr = xk.data();
+
+      auto inv_diag = m_inv_diag.data() ;
       // clang-format on
 
       std::copy(x_ptr, x_ptr + nrows*N, xk_ptr);
-      if (this->m_is_parallel) {
+      if (this->m_is_parallel)
+      {
         auto& local_row_size = this->m_lu_matrix->getDistStructInfo().m_local_row_size;
         int first_upper_ghost_index = this->m_lu_matrix->getDistStructInfo().m_first_upper_ghost_index;
 
-        typedef typename LUSendRecvTraits<TagType>::vector_op_type SendRecvOpType;
-        SendRecvOpType op(xk_ptr,
-                          this->m_lu_matrix->getDistStructInfo().m_send_info,
-                          this->m_lu_matrix->getSendPolicy(),
-                          xk_ptr,
-                          this->m_lu_matrix->getDistStructInfo().m_recv_info,
-                          this->m_lu_matrix->getRecvPolicy(),
-                          this->m_lu_matrix->getParallelMng(),
-                          nullptr);
-        op.upperRecv();
-        op.lowerSend();
-        for (std::size_t irow = 0; irow < nrows; ++irow) {
+        algebra.upperLowerSynchronize(*this->m_lu_matrix, xk);
+
+        algebra.endDistAddUMult(-1, *this->m_lu_matrix, xk, x);
+
+        for (std::size_t irow = 0; irow < nrows; ++irow)
+        {
           int dk = dcol[irow];
           //ValueType val = y_ptr[irow];
           val = Block1DView(const_cast<ValueType*>(y_ptr+irow*N),N) ;
@@ -480,6 +458,9 @@ class FLUFactorisationAlgo
           //val = val / values[dk];
           //x_ptr[irow] = val;
           Block1DView(x_ptr+irow*N,N) = BaseType::inv(Block2DView(const_cast<ValueType*>(values+dk*NxN),N,N)) * val;
+#ifdef PRINT_DEBUG_INFO
+          alien_info([&] { cout()<<"Y["<<irow<<"]=\n"<<Block1DView(x_ptr+irow*N,N);});
+#endif
         }
       }
       else
@@ -508,11 +489,10 @@ class FLUFactorisationAlgo
             std::cout<<Block2DView(const_cast<ValueType*>(values+k*NxN),N,N)<<std::endl;
 #endif
           }
-          //val = val / values[dk];
-          //x_ptr[irow] = val;
+
           Block1DView(x_ptr+irow*N,N) = BaseType::inv(Block2DView(const_cast<ValueType*>(values+dk*NxN),N,N)) * val;
 #ifdef PRINT_DEBUG_INFO
-          std::cout<<"Y["<<irow<<"]=\n"<<val<<std::endl;
+          alien_info([&] { cout()<<"Y["<<irow<<"]=\n"<<Block1DView(x_ptr+irow*N,N);});
 #endif
         }
 
@@ -520,7 +500,15 @@ class FLUFactorisationAlgo
         for (std::size_t irow = 0; irow < nrows; ++irow)
         {
           int dk = dcol[irow];
-          std::cout<<"INV DIAG["<<irow<<"]\n"<<BaseType::inv(Block2DView(const_cast<ValueType*>(values+dk*NxN),N,N))<<std::endl ;
+          std::cout<<"INV DIAG["<<irow<<"]:\n";
+          Block2D diag(N,N) ;
+          diag = BaseType::inv(Block2DView(const_cast<ValueType*>(values+dk*NxN),N,N));
+          for(int i=0;i<N;++i)
+          {
+            for(int j=0;j<N;++j)
+              std::cout<<diag(i,j)<<" ";
+            std::cout<<std::endl;
+          }
           std::cout<<"Y["<<irow<<"]=\n";
           for(int i=0;i<N;++i)
             std::cout<<x_ptr[irow*N+i]<<std::endl;
