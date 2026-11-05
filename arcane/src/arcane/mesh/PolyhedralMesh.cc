@@ -1060,6 +1060,7 @@ namespace mesh
     ARCANE_CHECK_POINTER(m_mesh);
     ARCANE_CHECK_POINTER(m_family);
     ARCANE_CHECK_POINTER(m_mng);
+    m_is_empty = false;
     ItemData item_data;
     if (items_local_ids)
       item_data.deserialize(buf, m_mesh, *items_local_ids);
