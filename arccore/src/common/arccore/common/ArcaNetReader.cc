@@ -31,6 +31,9 @@ ArcaNetReader(const JSONValue& root)
 : m_build_path(!platform::getEnvironmentVariable("ARCCORE_ARCANET_PATH").null())
 , m_root(root)
 {
+  if (m_root.null()) {
+    ARCCORE_FATAL("Root node is null");
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -100,6 +103,11 @@ read()
   if (!m_case_name.empty()) {
     const JSONValue cases = m_root.child("cases").child(m_case_name);
     if (cases.null()) {
+      // std::cout << "Available cases: ";
+      // for (auto elem : m_root.child("cases").keyValueChildren()) {
+      //   std::cout << elem.name() << ", ";
+      // }
+      // std::cout << std::endl;
       ARCCORE_FATAL("Case '{0}' not found.", m_case_name);
     }
     // std::cout << "Case part : " << case_clean << std::endl;

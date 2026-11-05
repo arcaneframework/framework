@@ -19,6 +19,7 @@
 
 #include "arccore/common/Array.h"
 #include "arccore/common/CommonGlobal.h"
+#include "arccore/common/JSONReader.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,171 +29,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*
- * Example of ArcaNet file (RC2) :
-{
-  "versions": {
-    "_": 0,
-    "arcane": 0,
-    "arccher": 0
-  },
-
-  // Coucou
-
-  "general": {
-    "_": {
-      "name": "Common"
-    },
-    "arcane": {
-      "dataset": "./dataset.arc",
-      "options": {
-        "//meshes/mesh/filename": "aaa.msh",
-        "T": 4
-      }
-    },
-    "arccher": {
-      "mpi": 4
-    }
-  },
-
-  "commons": {
-    "4procs": {
-      "_": {
-        "name": "4 Procs"
-      },
-      "arccher": {
-        "mpi": 4
-      }
-    },
-    "4threads": {
-      "_": {
-        "name": "4 Threads"
-      },
-      "arcane": {
-        "options": {
-          "S": 4
-        }
-      }
-    },
-    "16mpithreads": {
-      "_": {
-        "name": "16 Hybrid",
-        "depend_a": ["4procs", "4threads"]
-      }
-    }
-  },
-
-  "variations": {
-    "nb_iterations": {
-      "10": {
-        "_": {
-          "name": "10 itérations"
-        },
-        "arcane": {
-          "options": {
-            "MaxIteration": 10
-          }
-        }
-      },
-      "20": {
-        "_": {
-          "name": "20 itérations"
-        },
-        "arcane": {
-          "options": {
-            "MaxIteration": 20
-          }
-        }
-      },
-      "30": {
-        "_": {
-          "name": "30 itérations"
-        },
-        "arcane": {
-          "options": {
-            "MaxIteration": 30
-          }
-        }
-      }
-    }
-  },
-
-  "cases": {
-    // Reserved symbol for cases name : ":", "=", "~"
-
-    // How to call "case1" :
-    // - "case1" -> ok
-    "case1": {
-      "_": {
-        "name": "Cas 1",
-        // Reserved symbol for depend_a/depend_b elements : "=", "!", "+"
-        "depend_a": ["4procs", "nb_iterations=10"]
-      },
-
-      // Reserved symbol for prog name : ":", "=", "~"
-      "arcane": {
-        "options": {
-          "//meshes/mesh/filename": "aaa.msh",
-          "T": 4
-        }
-      },
-
-      "arccher": {
-        "mpi": 2
-      }
-    },
-
-    // How to call "case2" :
-    // - "case2" -> error
-    // - "case2:nb_iterations=10" -> ok
-    // - "case2:nb_iterations=20" -> error
-    // - "case2~init:nb_iterations=10" -> ok
-    // - "case2~init:nb_iterations=20" -> error
-    "case2": {
-      "_": {
-        "name": "Cas 2",
-        "depend_b": ["16mpithreads"],
-        "depend_a": ["nb_iterations!20"]
-      },
-      "arcane": {
-        "options": {
-          "//meshes/mesh/filename": "bbb.msh",
-          "T": 8
-        }
-      },
-      "arcane~init": {
-        "options": {
-          "//meshes/mesh/filename": "bbb.msh",
-          "T": 16
-        }
-      }
-    },
-    // How to call "case3" :
-    // - "case3" -> error
-    // - "case3:nb_iterations=10" -> ok
-    // - "case3:nb_iterations=20" -> ok
-    // - "case3:nb_iterations=30" -> error
-    "case3": {
-      "_": {
-        "name": "Cas 3",
-        "depend_a": ["4procs", "nb_iterations+10+20"]
-      },
-
-      "arcane": {
-        "options": {
-          "//meshes/mesh/filename": "ccc.msh",
-          "T": 4
-        }
-      },
-
-      "arccher": {
-        "mpi": 2
-      }
-    },
-  }
-}
- */
 
 /*!
  * \brief Class allowing to read ArcaNet files.
@@ -289,7 +125,7 @@ class ARCCORE_COMMON_EXPORT ArcaNetReader
   bool m_build_path = false;
   StringBuilder m_path;
   Integer m_level_path = 0;
-  const JSONValue& m_root;
+  JSONValue m_root;
   UniqueArray<String> m_explored;
   UniqueArray<String> m_variations_key_resolved;
   UniqueArray<String> m_variations_value_resolved;

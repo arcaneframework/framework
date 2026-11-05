@@ -43,7 +43,7 @@ struct RunParam
   String m_param_file;
   String m_case;
   String m_app_exec_path;
-  String m_mpi_exec_path;
+  String m_mpi_exec_path = "mpirun";
   String m_working_dir;
   Integer m_mpi_nb_proc = 0;
   std::unordered_map<std::string, std::string> m_env_var;
@@ -103,7 +103,7 @@ void readArccherPart(RunParam& runp, const JSONValue& arccher_part)
     }
   }
   {
-    const JSONValue node = arccher_part.child("mpi");
+    const JSONValue node = arccher_part.child("nb_proc");
     if (!node.null()) {
       runp.m_mpi_nb_proc = std::stoi(String(node.valueAsStringView()).localstr());
     }
