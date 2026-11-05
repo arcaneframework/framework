@@ -1895,6 +1895,53 @@ _allocateInfos(ItemInternal* item, Int64 uid, ItemSharedInfoWithType* isi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Whether the family is fresh: no item allocated, none freed
+bool ItemFamily::
+canAllocateBulk() const
+{
+  return m_infos->nbItem() == 0 && m_infos->hasNoItemInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \brief Allocates every item of \a uids at once.
+ *
+ * Same end state as _allocateInfos() called for each of them, with the work that
+ * does not depend on the item done once: the item variables are sized once, the
+ * ItemInternal views are republished once, and every source connectivity is told
+ * about the whole batch instead of one local id at a time.
+ */
+void ItemFamily::
+_allocateInfosBulk(Int64ConstArrayView uids, ItemTypeInfo* type,
+                   Int32 owner, Int32ArrayView lids)
+{
+  const Int32 nb = uids.size();
+  if (nb == 0)
+    return;
+
+  m_infos->allocMany(uids, lids);
+  const Int32 max_local_id = lids[nb - 1];
+  _resizeItemVariables(max_local_id + 1, false);
+
+  ItemSharedInfoWithType* isi = _findSharedInfo(type);
+  ItemSharedInfo* shared_info = isi->sharedInfo();
+  ItemTypeId iti = isi->itemTypeId();
+  for (Int32 i = 0; i < nb; ++i) {
+    ItemInternal* item = m_infos->itemInternal(lids[i]);
+    item->_setSharedInfo(shared_info, iti);
+    item->reinitialize(uids[i], owner, m_sub_domain_id);
+  }
+  m_nb_allocate_info += nb;
+
+  for (auto& c : m_source_incremental_item_connectivities)
+    c->_internalNotifySourceItemsAdded(lids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ItemFamily::
 _preAllocate(Int32 nb_item, bool pre_alloc_connectivity)
 {

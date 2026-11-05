@@ -243,6 +243,25 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
    */
   ARCANE_DEPRECATED_240 Int32ConstArrayView oldToNewLocalIds() const;
 
+  /*!
+   * \brief Allocates every item of \a uids at once, returning their localIds.
+   *
+   * Same result as calling allocOne() for each uid, without the per-item
+   * republication of the ItemInternal views: those are updated once, at the
+   * end. Only valid on a family holding no freed item, since the localIds it
+   * hands out are consecutive.
+   */
+  void allocMany(Int64ConstArrayView uids, Int32ArrayView lids);
+
+  /*!
+   * \brief Whether the family holds no ItemInternal at all.
+   *
+   * Not the same as nbItem()==0: a deallocated or emptied family keeps its
+   * ItemInternal slots on a free list, and the localIds allocMany() hands out
+   * would then not start at 0.
+   */
+  bool hasNoItemInternal() const { return m_internals.empty() && m_free_internals.empty(); }
+
   //! Removes all entities
   void clear();
 

@@ -257,6 +257,91 @@ findOrAllocOne(Int64 uid, ItemTypeId type_id, bool& is_alloc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IncrementalItemConnectivity* FaceFamily::
+nodeConnectivity() const
+{
+  return m_node_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IncrementalItemConnectivity* FaceFamily::
+edgeConnectivity() const
+{
+  return m_edge_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IncrementalItemConnectivity* FaceFamily::
+cellConnectivity() const
+{
+  return m_cell_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void FaceFamily::
+setBulkBackAndFrontCells(Int32ConstArrayView back_cells, Int32ConstArrayView front_cells)
+{
+  const Int32 nb_face = back_cells.size();
+  IncrementalItemConnectivity* c = m_cell_connectivity->trueCustomConnectivity();
+  const Int32 prealloc = c->preAllocatedSize();
+  const Int32 block = (prealloc > 0) ? prealloc : 2;
+  UniqueArray<Int32> index(nb_face);
+  UniqueArray<Int32> nb_item(nb_face);
+  UniqueArray<Int32> list;
+  list.reserve(static_cast<Int64>(nb_face + 1) * block);
+  list.resize(block);
+  list.fill(NULL_ITEM_LOCAL_ID);
+  ItemInternalArrayView faces = itemsInternal();
+  for (Int32 i = 0; i < nb_face; ++i) {
+    const Int32 back = back_cells[i];
+    const Int32 front = front_cells[i];
+    // The back cell is always the first.
+    Int32 n = 0;
+    const Int32 pos = list.size();
+    if (back != NULL_ITEM_LOCAL_ID) {
+      list.add(back);
+      ++n;
+    }
+    if (front != NULL_ITEM_LOCAL_ID) {
+      list.add(front);
+      ++n;
+    }
+    if (n == 0) {
+      index[i] = 0;
+      nb_item[i] = 0;
+    }
+    else {
+      const Int32 alloc = block * ((n + block - 1) / block);
+      for (Int32 z = n; z < alloc; ++z)
+        list.add(NULL_ITEM_LOCAL_ID);
+      index[i] = pos;
+      nb_item[i] = n;
+    }
+    faces[i]->_setFaceBackAndFrontCells(back, front);
+  }
+  c->setBulkConnectivity(nb_item, index, list);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void FaceFamily::
+allocateItemsBulk(Int64ConstArrayView uids, ItemTypeInfo* type, Int32 owner, Int32ArrayView lids)
+{
+  m_item_internal_list->faces = _itemsInternal();
+  _allocateInfosBulk(uids, type, owner, lids);
+  m_item_internal_list->faces = _itemsInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void FaceFamily::
 preAllocate(Integer nb_item)
 {

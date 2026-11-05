@@ -106,6 +106,15 @@ class OneMeshItemAdder
   Integer nbCell() const { return m_mesh_info.getNbCell(); }
   Integer nbEdge() const { return m_mesh_info.getNbEdge(); }
 
+  //! Adds the counts of a batch built outside of this class
+  void addBulkMeshInfos(Integer nb_node, Integer nb_edge, Integer nb_face, Integer nb_cell)
+  {
+    m_mesh_info.nbNode() += nb_node;
+    m_mesh_info.nbEdge() += nb_edge;
+    m_mesh_info.nbFace() += nb_face;
+    m_mesh_info.nbCell() += nb_cell;
+  }
+
   void setNextFaceUid(Int64 face_uid) { m_next_face_uid = face_uid; }
   void setNextEdgeUid(Int64 edge_uid) { m_next_edge_uid = edge_uid; }
 
@@ -121,6 +130,7 @@ class OneMeshItemAdder
    * \warning This method must be called before any entity creation.
    */
   void setUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId(bool v);
+  bool isUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId() const { return m_use_hash_for_edge_and_face_unique_id; }
 
  private:
 

@@ -150,6 +150,44 @@ preAllocate(Integer nb_item)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IncrementalItemConnectivity* NodeFamily::
+edgeConnectivity() const
+{
+  return m_edge_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IncrementalItemConnectivity* NodeFamily::
+cellConnectivity() const
+{
+  return m_cell_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IncrementalItemConnectivity* NodeFamily::
+faceConnectivity() const
+{
+  return m_face_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NodeFamily::
+allocateItemsBulk(Int64ConstArrayView uids, Int32 owner, Int32ArrayView lids)
+{
+  m_item_internal_list->nodes = _itemsInternal();
+  _allocateInfosBulk(uids, m_node_type, owner, lids);
+  m_item_internal_list->nodes = _itemsInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void NodeFamily::
 _endAllocate()
 {

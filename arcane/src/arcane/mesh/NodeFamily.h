@@ -117,6 +117,14 @@ class ARCANE_MESH_EXPORT NodeFamily
   void replaceFace(ItemLocalId node, Integer index, ItemLocalId face);
   void replaceCell(ItemLocalId node, Integer index, ItemLocalId cell);
 
+  //! The true connectivity behind the selector, for a bulk fill
+  IncrementalItemConnectivity* edgeConnectivity() const;
+  IncrementalItemConnectivity* cellConnectivity() const;
+  IncrementalItemConnectivity* faceConnectivity() const;
+
+  //! Allocates every node of \a uids at once, in one pass per family array
+  void allocateItemsBulk(Int64ConstArrayView uids, Int32 owner, Int32ArrayView lids);
+
   void addCellToNode(Node node, Cell new_cell);
   void addFaceToNode(Node node, Face new_face);
   void addEdgeToNode(Node node, Edge new_edge);

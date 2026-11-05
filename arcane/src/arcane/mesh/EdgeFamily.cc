@@ -218,6 +218,44 @@ computeSynchronizeInfos()
  * \brief Replaces the node at index \a index of the edge \a edge with *
  * that of localId() \a node_lid.
  */
+IncrementalItemConnectivity* EdgeFamily::
+nodeConnectivity() const
+{
+  return m_node_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IncrementalItemConnectivity* EdgeFamily::
+faceConnectivity() const
+{
+  return m_face_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IncrementalItemConnectivity* EdgeFamily::
+cellConnectivity() const
+{
+  return m_cell_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EdgeFamily::
+allocateItemsBulk(Int64ConstArrayView uids, Int32 owner, Int32ArrayView lids)
+{
+  m_item_internal_list->edges = _itemsInternal();
+  _allocateInfosBulk(uids, m_edge_type, owner, lids);
+  m_item_internal_list->edges = _itemsInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void EdgeFamily::
 replaceNode(ItemLocalId edge, Integer index, ItemLocalId node)
 {

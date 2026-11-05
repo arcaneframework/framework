@@ -34,12 +34,22 @@
 #include "arcane/mesh/FaceUniqueIdBuilder.h"
 #include "arcane/mesh/EdgeUniqueIdBuilder.h"
 #include "arcane/mesh/CellFamily.h"
+#include "arcane/mesh/EdgeFamily.h"
+#include "arcane/utils/SmallArray.h"
+#include "arcane/utils/FixedArray.h"
+#include "arcane/utils/HashTableMap2.h"
+#include "arcane/utils/CheckedConvert.h"
+#include "arcane/mesh/IncrementalItemConnectivity.h"
+#include "arcane/mesh/FaceFamily.h"
+#include "arcane/mesh/NodeFamily.h"
+#include "arcane/core/NodesOfItemReorderer.h"
 #include "arcane/mesh/GraphDoFs.h"
 #include "arcane/mesh/ParticleFamily.h"
 
 #include <set>
 #include <map>
 #include <algorithm>
+#include <utility>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,6 +76,8 @@ DynamicMeshIncrementalBuilder(DynamicMesh* mesh)
 {
   if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_VERBOSE_MESH_BUILDER", true))
     m_verbose = (v.value() != 0);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_BULK_ADD_CELLS", true))
+    m_use_bulk_add_cells = (v.value() != 0);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -126,6 +138,12 @@ addCells(Integer nb_cell, Int64ConstArrayView cells_infos,
          Int32 owner, Int32ArrayView cells,
          bool allow_build_face)
 {
+  // With ARCANE_BULK_ADD_CELLS=1, addCellsBulk() builds the same mesh by filling
+  // the family arrays instead of walking item by item. It returns false, having
+  // touched nothing, on a mesh it does not build, and the loop below then does
+  // the work.
+  if (m_use_bulk_add_cells && addCellsBulk(nb_cell, cells_infos, owner, cells, allow_build_face))
+    return;
   ItemTypeMng* itm = m_item_type_mng;
 
   Integer cells_infos_index = 0;
@@ -157,6 +175,552 @@ addCells(Integer nb_cell, Int64ConstArrayView cells_infos,
       cells[i_cell] = cell->localId();
     cells_infos_index += current_cell_nb_node;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+//! Largest face the bulk path handles, sizing its per-face scratch.
+//! Not ItemStaticInfo::MAX_FACE_NODE, which is the geometric bound.
+static const Integer MAX_BULK_FACE_NODE = 32;
+
+/*!
+ * \brief Adds cells by filling the family arrays, instead of one item at a time.
+ *
+ * addCells() walks the cells and, for each one, allocates the cell, then every
+ * node it does not know, then every edge and every face, connecting each as it
+ * goes, which is about thirty calls per cell into the connectivity machinery.
+ *
+ * Here the same traversal only discovers which nodes, edges and faces exist and
+ * which cell is on which side of a face, and writes the answers into flat
+ * arrays. The families are then filled in one pass each, three arrays per
+ * connectivity and one batch per family, with no per-item call at all.
+ *
+ * The traversal is deliberately identical to addCells()' one, in the same
+ * order, so that every localId, every uid and every face orientation come out
+ * the same: this is the same mesh, built differently. It handles the first
+ * allocation of a mesh of dimension 1, 2 or 3 whose cells all have the mesh
+ * dimension, with or without edges, of any order; anything else is left to
+ * addCells().
+ */
+bool DynamicMeshIncrementalBuilder::
+addCellsBulk(Integer nb_cell, Int64ConstArrayView cells_infos,
+             Integer sub_domain_id, Int32ArrayView cells,
+             bool allow_build_face)
+{
+  DynamicMesh* mesh = m_mesh;
+  ItemTypeMng* itm = m_item_type_mng;
+  const bool add_to_cells = cells.size() != 0;
+  if (add_to_cells && nb_cell != cells.size())
+    ARCANE_THROW(ArgumentException, "return array 'cells' has to have same size as number of cells");
+
+  // What this path does not know how to build. Anything here falls back.
+  if (nb_cell <= 0 || !allow_build_face)
+    return false;
+  if (mesh->parentMesh())
+    return false;
+  if (!mesh->meshKind().isMonoDimension())
+    return false;
+  const Int32 dimension = mesh->dimension();
+  if (dimension < 1 || dimension > 3)
+    return false;
+  NodeFamily& node_family = mesh->trueNodeFamily();
+  EdgeFamily& edge_family = mesh->trueEdgeFamily();
+  FaceFamily& face_family = mesh->trueFaceFamily();
+  CellFamily& cell_family = mesh->trueCellFamily();
+  // With edges, addCells() always connects a cell to its edges and an edge to
+  // its nodes, and the other edge connectivities only when the mesh keeps them.
+  const bool has_edge = hasEdge();
+  auto has_connectivity = [&](Integer c) { return Connectivity::hasConnectivity(m_connectivity, c); };
+  const bool has_node_edge = has_edge && has_connectivity(Connectivity::CT_NodeToEdge);
+  const bool has_edge_cell = has_edge && has_connectivity(Connectivity::CT_EdgeToCell);
+  const bool has_face_edge = has_edge && has_connectivity(Connectivity::CT_FaceToEdge);
+  const bool has_edge_face = has_edge && has_connectivity(Connectivity::CT_EdgeToFace);
+  if (has_edge) {
+    if (!has_connectivity(Connectivity::CT_CellToEdge) || !has_connectivity(Connectivity::CT_EdgeToNode))
+      return false;
+    if (!edge_family.canAllocateBulk())
+      return false;
+  }
+  // Only a fresh allocation: the localIds handed out are consecutive from 0,
+  // and an item already present would have to be looked up, not created. A
+  // family that was deallocated reports no item but keeps its ItemInternal
+  // slots on a free list, so it is not fresh either.
+  if (!node_family.canAllocateBulk() || !face_family.canAllocateBulk() || !cell_family.canAllocateBulk())
+    return false;
+
+  // ------------------------------------------------------------- pre-scan
+  // Sizes every array of the discovery pass, so that not one of them grows while
+  // it is being filled.
+  UniqueArray<Int64> cell_uids(nb_cell);
+  UniqueArray<Int16> cell_type_ids(nb_cell);
+  UniqueArray<Int32> cell_node_index(nb_cell + 1);
+  UniqueArray<Int32> cell_face_index(nb_cell + 1);
+  UniqueArray<Int32> cell_edge_index(nb_cell + 1);
+  Int32 total_cell_node = 0;
+  Int32 total_cell_face = 0;
+  Int32 total_cell_edge = 0;
+  Int32 total_face_edge = 0;
+  Int32 max_face_node = 0;
+  bool has_high_order_face = false;
+  {
+    Integer k = 0;
+    for (Integer i = 0; i < nb_cell; ++i) {
+      ItemTypeId type_id{ static_cast<Int16>(cells_infos[k]) };
+      // A generic polyhedron carries its own node count in cells_infos and
+      // its faces elsewhere: addCells() builds it.
+      if (type_id == ITI_GenericPolyhedron)
+        return false;
+      ItemTypeInfo* type = itm->typeFromId(type_id);
+      const Integer nb_node = type->nbLocalNode();
+      const Integer nb_face = type->nbLocalFace();
+      cell_type_ids[i] = type_id;
+      cell_uids[i] = cells_infos[k + 1];
+      cell_node_index[i] = total_cell_node;
+      cell_face_index[i] = total_cell_face;
+      cell_edge_index[i] = total_cell_edge;
+      total_cell_node += nb_node;
+      total_cell_face += nb_face;
+      if (has_edge)
+        total_cell_edge += type->nbLocalEdge();
+      for (Integer f = 0; f < nb_face; ++f) {
+        const Integer n = type->localFace(f).nbNode();
+        if (n > MAX_BULK_FACE_NODE)
+          return false; // the per-face scratch below is fixed-size
+        if (n > max_face_node)
+          max_face_node = n;
+        if (has_edge)
+          total_face_edge += type->localFace(f).nbEdge();
+        // A face of order 2 or more is connected to all its nodes, but only its
+        // linear nodes know it (see the node to face fill below).
+        ItemTypeInfo* face_type = itm->typeFromId(ItemTypeId::fromInteger(type->localFace(f).typeId()));
+        if (face_type->linearTypeInfo()->nbLocalNode() != n)
+          has_high_order_face = true;
+      }
+      k += 2 + nb_node;
+      if (k > cells_infos.size())
+        return false;
+    }
+    cell_node_index[nb_cell] = total_cell_node;
+    cell_face_index[nb_cell] = total_cell_face;
+    cell_edge_index[nb_cell] = total_cell_edge;
+  }
+
+  // ---------------------------------------------------------------- phase A
+  // Discovery. One pass over cells_infos, in the order addCells() uses, so that
+  // every localId, every uid and every face orientation come out the same.
+
+  UniqueArray<Int32> cell_nodes(total_cell_node);
+  UniqueArray<Int32> cell_faces(total_cell_face);
+  // A cell face creates at most one face, so these bound the face arrays.
+  UniqueArray<Int64> face_uids(total_cell_face);
+  UniqueArray<Int16> face_type_ids(total_cell_face);
+  UniqueArray<Int32> face_node_index(total_cell_face + 1);
+  UniqueArray<Int32> face_nodes(static_cast<Int64>(total_cell_face) * max_face_node);
+  // With faces of order 2 or more, the linear nodes of each face apart: they
+  // are the first of its sorted nodes.
+  UniqueArray<Int32> face_linear_index(has_high_order_face ? total_cell_face + 1 : 0);
+  UniqueArray<Int32> face_linear_nodes(has_high_order_face ? static_cast<Int64>(total_cell_face) * max_face_node : 0);
+  Int32 nb_face_linear_node = 0;
+  if (has_high_order_face)
+    face_linear_index[0] = 0;
+  UniqueArray<Int32> face_back_cell(total_cell_face);
+  UniqueArray<Int32> face_front_cell(total_cell_face);
+  UniqueArray<Int64> node_uids(total_cell_node);
+  Int32 nb_node = 0;
+  Int32 nb_face = 0;
+  Int32 nb_face_node = 0;
+  face_node_index[0] = 0;
+
+  impl::HashTableMap2<Int64, Int32> node_map(total_cell_node / 4 + 16, true);
+  /*
+   * A face is found by walking the faces already attached to its first sorted
+   * node: they are a handful, and they were created within a few cells of each
+   * other, so the walk stays in cache. This is what findFaceInNode2() does, over
+   * arrays this pass owns.
+   */
+  UniqueArray<Int32> node_first_face(total_cell_node);
+  node_first_face.fill(-1);
+  UniqueArray<Int32> face_chain_next(total_cell_face);
+
+  // The edges, when the mesh has some. An edge is its two nodes, the one of
+  // smaller uniqueId first, and is found among the edges attached to that node,
+  // as findEdgeInNode2() finds it. A cell edge creates at most one edge.
+  UniqueArray<Int32> cell_edges(total_cell_edge);
+  UniqueArray<Int64> edge_uids(total_cell_edge);
+  UniqueArray<Int32> edge_node_index(total_cell_edge + 1);
+  UniqueArray<Int32> edge_nodes(2 * static_cast<Int64>(total_cell_edge));
+  UniqueArray<Int32> node_first_edge(has_edge ? total_cell_node : 0);
+  node_first_edge.fill(-1);
+  UniqueArray<Int32> edge_chain_next(total_cell_edge);
+  // A face's edges are connected when the face is created, so they follow the
+  // face order, as the faces' nodes do.
+  UniqueArray<Int32> face_edge_index(has_edge ? total_cell_face + 1 : 0);
+  UniqueArray<Int32> face_edges(total_face_edge);
+  Int32 nb_edge = 0;
+  Int32 nb_face_edge = 0;
+  if (has_edge)
+    face_edge_index[0] = 0;
+  Int64 next_edge_uid = m_one_mesh_item_adder->nextEdgeUid();
+
+  NodesOfItemReorderer reorderer(itm);
+  SmallArray<Int64, 16> work_face_nodes;
+  FixedArray<Int32, MAX_BULK_FACE_NODE> work_face_lids;
+  FixedArray<Int32, MAX_BULK_FACE_NODE> sorted_lids;
+  Int64 next_face_uid = m_one_mesh_item_adder->nextFaceUid();
+  // As in addCells(), a face's uniqueId is either the next one or a hash of its
+  // sorted node uniqueIds.
+  const bool use_hash = m_one_mesh_item_adder->isUseNodeUniqueIdToGenerateEdgeAndFaceUniqueId();
+  FixedArray<Int64, MAX_BULK_FACE_NODE> sorted_uids;
+
+  Integer infos_index = 0;
+  for (Integer i_cell = 0; i_cell < nb_cell; ++i_cell) {
+    ItemTypeId cell_type_id{ static_cast<Int16>(cells_infos[infos_index]) };
+    ItemTypeInfo* cell_type = itm->typeFromId(cell_type_id);
+    const Integer cell_nb_node = cell_type->nbLocalNode();
+    Int64ConstArrayView cell_nodes_uid(cell_nb_node, &cells_infos[infos_index + 2]);
+    infos_index += 2 + cell_nb_node;
+
+    const Int32 node_base = cell_node_index[i_cell];
+    for (Integer i = 0; i < cell_nb_node; ++i) {
+      auto r = node_map.try_emplace(cell_nodes_uid[i], nb_node);
+      if (r.second)
+        node_uids[nb_node++] = cell_nodes_uid[i];
+      cell_nodes[node_base + i] = r.first->second;
+    }
+
+    // addCells() adds a cell's edges before its faces.
+    const Int32 edge_base = cell_edge_index[i_cell];
+    if (has_edge) {
+      const Integer cell_nb_edge = cell_type->nbLocalEdge();
+      for (Integer i_edge = 0; i_edge < cell_nb_edge; ++i_edge) {
+        const ItemTypeInfo::LocalEdge& le = cell_type->localEdge(i_edge);
+        Int32 first = cell_nodes[node_base + le.beginNode()];
+        Int32 second = cell_nodes[node_base + le.endNode()];
+        if (node_uids[first] > node_uids[second])
+          std::swap(first, second);
+        Int32 edge_index = -1;
+        for (Int32 e = node_first_edge[first]; e >= 0; e = edge_chain_next[e]) {
+          if (edge_nodes[2 * e + 1] == second) {
+            edge_index = e;
+            break;
+          }
+        }
+        if (edge_index < 0) {
+          edge_index = nb_edge;
+          if (use_hash) {
+            FixedArray<Int64, 2> uids;
+            uids[0] = node_uids[first];
+            uids[1] = node_uids[second];
+            edge_uids[nb_edge] = MeshUtils::generateHashUniqueId(uids.view());
+          }
+          else
+            edge_uids[nb_edge] = next_edge_uid++;
+          edge_nodes[2 * nb_edge] = first;
+          edge_nodes[2 * nb_edge + 1] = second;
+          edge_node_index[nb_edge] = 2 * nb_edge;
+          edge_chain_next[nb_edge] = node_first_edge[first];
+          node_first_edge[first] = nb_edge;
+          ++nb_edge;
+        }
+        cell_edges[edge_base + i_edge] = edge_index;
+      }
+    }
+
+    // A face is identified by its sorted node list, exactly as findFaceInNode2()
+    // identifies it.
+    const Integer cell_nb_face = cell_type->nbLocalFace();
+    const Int32 face_base = cell_face_index[i_cell];
+    for (Integer i_face = 0; i_face < cell_nb_face; ++i_face) {
+      const ItemTypeInfo::LocalFace& lf = cell_type->localFace(i_face);
+      const Integer face_nb_node = lf.nbNode();
+      work_face_nodes.resize(face_nb_node);
+      for (Integer z = 0; z < face_nb_node; ++z) {
+        const Int32 local = lf.node(z);
+        work_face_nodes[z] = cell_nodes_uid[local];
+        work_face_lids[z] = cell_nodes[node_base + local];
+      }
+      bool is_reorder = false;
+      if (dimension == 1)
+        is_reorder = reorderer.reorder1D(i_face, work_face_nodes[0]);
+      else
+        is_reorder = reorderer.reorder(ItemTypeId::fromInteger(lf.typeId()), work_face_nodes);
+      ConstArrayView<Int64> sorted_nodes = reorderer.sortedNodes();
+
+      // The sorted nodes are a permutation of the face's own nodes, so their
+      // localIds are found among the handful just gathered, with no trip through
+      // the node map.
+      for (Integer z = 0; z < face_nb_node; ++z) {
+        const Int64 uid = sorted_nodes[z];
+        Int32 lid = NULL_ITEM_LOCAL_ID;
+        for (Integer w = 0; w < face_nb_node; ++w) {
+          if (work_face_nodes[w] == uid) {
+            lid = work_face_lids[w];
+            break;
+          }
+        }
+        sorted_lids[z] = lid;
+      }
+
+      const Int32 first_node = sorted_lids[0];
+      Int32 face_index = -1;
+      for (Int32 f = node_first_face[first_node]; f >= 0; f = face_chain_next[f]) {
+        const Int32 begin = face_node_index[f];
+        if (face_node_index[f + 1] - begin != face_nb_node)
+          continue;
+        bool same = true;
+        for (Integer z = 0; same && z < face_nb_node; ++z)
+          same = (face_nodes[begin + z] == sorted_lids[z]);
+        if (same) {
+          face_index = f;
+          break;
+        }
+      }
+      if (face_index < 0) {
+        face_index = nb_face;
+        if (use_hash) {
+          for (Integer z = 0; z < face_nb_node; ++z)
+            sorted_uids[z] = node_uids[sorted_lids[z]];
+          face_uids[nb_face] = MeshUtils::generateHashUniqueId(SmallSpan<const Int64>(sorted_uids.data(), face_nb_node));
+        }
+        else
+          face_uids[nb_face] = next_face_uid++;
+        face_type_ids[nb_face] = static_cast<Int16>(lf.typeId());
+        face_back_cell[nb_face] = NULL_ITEM_LOCAL_ID;
+        face_front_cell[nb_face] = NULL_ITEM_LOCAL_ID;
+        for (Integer z = 0; z < face_nb_node; ++z)
+          face_nodes[nb_face_node + z] = sorted_lids[z];
+        nb_face_node += face_nb_node;
+        face_node_index[nb_face + 1] = nb_face_node;
+        if (has_high_order_face) {
+          const Integer face_nb_linear_node = itm->typeFromId(ItemTypeId::fromInteger(lf.typeId()))->linearTypeInfo()->nbLocalNode();
+          for (Integer z = 0; z < face_nb_linear_node; ++z)
+            face_linear_nodes[nb_face_linear_node + z] = sorted_lids[z];
+          nb_face_linear_node += face_nb_linear_node;
+          face_linear_index[nb_face + 1] = nb_face_linear_node;
+        }
+        face_chain_next[nb_face] = node_first_face[first_node];
+        node_first_face[first_node] = nb_face;
+        if (has_edge) {
+          const Integer face_nb_edge = lf.nbEdge();
+          for (Integer z = 0; z < face_nb_edge; ++z)
+            face_edges[nb_face_edge + z] = cell_edges[edge_base + lf.edge(z)];
+          nb_face_edge += face_nb_edge;
+          face_edge_index[nb_face + 1] = nb_face_edge;
+        }
+        ++nb_face;
+      }
+      cell_faces[face_base + i_face] = face_index;
+      // is_reorder means this cell is in FRONT of the face.
+      Int32& side = is_reorder ? face_front_cell[face_index] : face_back_cell[face_index];
+      if (side != NULL_ITEM_LOCAL_ID)
+        ARCANE_FATAL("face already has a cell on this side (face index={0})", face_index);
+      side = i_cell;
+    }
+  }
+
+  // ---------------------------------------------------------------- phase B
+  // The items themselves, one batch per family. The discovery order is also the
+  // local id order, so the arrays above index the families directly.
+
+  UniqueArray<Int32> lids(std::max(std::max(nb_node, nb_edge), std::max(nb_face, static_cast<Int32>(nb_cell))));
+  node_family.allocateItemsBulk(node_uids.subConstView(0, nb_node), sub_domain_id,
+                                lids.subView(0, nb_node));
+  if (has_edge) {
+    edge_node_index[nb_edge] = 2 * nb_edge;
+    edge_family.allocateItemsBulk(edge_uids.subConstView(0, nb_edge), sub_domain_id,
+                                  lids.subView(0, nb_edge));
+    for (Int32 i = 0; i < nb_edge; ++i) {
+      if (lids[i] != i)
+        ARCANE_FATAL("unexpected localId {0} for index {1} in family {2}", lids[i], i, edge_family.name());
+    }
+  }
+  _allocateBulkByType(&face_family, face_uids.subConstView(0, nb_face),
+                      face_type_ids.subConstView(0, nb_face), sub_domain_id, lids);
+  _allocateBulkByType(&cell_family, cell_uids.constView(), cell_type_ids.constView(),
+                      sub_domain_id, lids);
+
+  // ---------------------------------------------------------------- phase C
+  // The connectivities. Each is three arrays; the layout has to be the one the
+  // incremental path produces, since compactConnectivityList() checks it: the
+  // null item holds the first block, and every block starts on a multiple of
+  // preAllocatedSize().
+
+  _fillBulkConnectivity(cell_family.nodeConnectivity(), nb_cell, cell_node_index, cell_nodes);
+  _fillBulkConnectivity(cell_family.faceConnectivity(), nb_cell, cell_face_index, cell_faces);
+  _fillBulkConnectivity(face_family.nodeConnectivity(), nb_face,
+                        face_node_index.subConstView(0, nb_face + 1),
+                        face_nodes.subConstView(0, nb_face_node));
+  // face -> cell is written by FaceFamily, the class allowed to set the
+  // II_Boundary / II_HasBackCell / II_HasFrontCell flags that go with it.
+  face_family.setBulkBackAndFrontCells(face_back_cell.subConstView(0, nb_face),
+                                       face_front_cell.subConstView(0, nb_face));
+  _fillBulkReverseConnectivity(node_family.cellConnectivity(), nb_node, nb_cell,
+                               cell_node_index, cell_nodes);
+  // As in addCells(), a face is added to its linear nodes only, and only when
+  // the mesh keeps the node to face connectivity (a 1D mesh does not, by default).
+  if (has_connectivity(Connectivity::CT_NodeToFace)) {
+    if (has_high_order_face)
+      _fillBulkReverseConnectivity(node_family.faceConnectivity(), nb_node, nb_face,
+                                   face_linear_index.subConstView(0, nb_face + 1),
+                                   face_linear_nodes.subConstView(0, nb_face_linear_node));
+    else
+      _fillBulkReverseConnectivity(node_family.faceConnectivity(), nb_node, nb_face,
+                                   face_node_index.subConstView(0, nb_face + 1),
+                                   face_nodes.subConstView(0, nb_face_node));
+  }
+  if (has_edge) {
+    const ConstArrayView<Int32> e_index = edge_node_index.subConstView(0, nb_edge + 1);
+    const ConstArrayView<Int32> e_nodes = edge_nodes.subConstView(0, 2 * nb_edge);
+    const ConstArrayView<Int32> f_index = face_edge_index.subConstView(0, nb_face + 1);
+    const ConstArrayView<Int32> f_edges = face_edges.subConstView(0, nb_face_edge);
+    _fillBulkConnectivity(cell_family.edgeConnectivity(), nb_cell, cell_edge_index, cell_edges);
+    _fillBulkConnectivity(edge_family.nodeConnectivity(), nb_edge, e_index, e_nodes);
+    if (has_node_edge)
+      _fillBulkReverseConnectivity(node_family.edgeConnectivity(), nb_node, nb_edge, e_index, e_nodes);
+    if (has_edge_cell)
+      _fillBulkReverseConnectivity(edge_family.cellConnectivity(), nb_edge, nb_cell, cell_edge_index, cell_edges);
+    if (has_face_edge)
+      _fillBulkConnectivity(face_family.edgeConnectivity(), nb_face, f_index, f_edges);
+    if (has_edge_face)
+      _fillBulkReverseConnectivity(edge_family.faceConnectivity(), nb_edge, nb_face, f_index, f_edges);
+  }
+  if (add_to_cells) {
+    for (Integer i = 0; i < nb_cell; ++i)
+      cells[i] = i;
+  }
+
+  m_one_mesh_item_adder->setNextFaceUid(next_face_uid);
+  m_one_mesh_item_adder->setNextEdgeUid(next_edge_uid);
+  m_one_mesh_item_adder->addBulkMeshInfos(nb_node, nb_edge, nb_face, nb_cell);
+
+  return true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Allocates items in batches of one type, since a batch carries one shared info.
+ *
+ * Checks that the localIds handed out are the position in \a uids, which is
+ * what lets the discovery arrays index the families directly.
+ */
+template <typename FamilyType> void DynamicMeshIncrementalBuilder::
+_allocateBulkByType(FamilyType* family, Int64ConstArrayView uids,
+                    ConstArrayView<Int16> type_ids, Int32 owner, Int32ArrayView lids)
+{
+  ItemTypeMng* itm = m_item_type_mng;
+  const Int32 nb = uids.size();
+  Int32 begin = 0;
+  while (begin < nb) {
+    Int32 end = begin + 1;
+    while (end < nb && type_ids[end] == type_ids[begin])
+      ++end;
+    ItemTypeInfo* type = itm->typeFromId(ItemTypeId(type_ids[begin]));
+    Int32ArrayView batch = lids.subView(begin, end - begin);
+    family->allocateItemsBulk(uids.subConstView(begin, end - begin), type, owner, batch);
+    begin = end;
+  }
+  for (Int32 i = 0; i < nb; ++i) {
+    if (lids[i] != i)
+      ARCANE_FATAL("unexpected localId {0} for index {1} in family {2}",
+                   lids[i], i, family->name());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Fills a connectivity whose blocks are given in source-item order.
+ *
+ * \a offsets has nb_source+1 entries and \a targets the concatenated blocks.
+ */
+void DynamicMeshIncrementalBuilder::
+_fillBulkConnectivity(IncrementalItemConnectivity* c, Int32 nb_source,
+                      ConstArrayView<Int32> offsets, ConstArrayView<Int32> targets)
+{
+  const Int32 prealloc = c->preAllocatedSize();
+  const Int32 head = (prealloc <= 0) ? 1 : prealloc;
+  Int64 total = head;
+  for (Int32 i = 0; i < nb_source; ++i) {
+    const Int32 n = offsets[i + 1] - offsets[i];
+    if (n > 0)
+      total += (prealloc > 0) ? (prealloc * ((n + prealloc - 1) / prealloc)) : n;
+  }
+  Int32ArrayView nb_item, index, list;
+  c->resizeBulkConnectivity(nb_source, total, nb_item, index, list);
+  for (Int32 z = 0; z < head; ++z)
+    list[z] = NULL_ITEM_LOCAL_ID;
+  Int64 pos = head;
+  for (Int32 i = 0; i < nb_source; ++i) {
+    const Int32 begin = offsets[i];
+    const Int32 n = offsets[i + 1] - begin;
+    if (n == 0) {
+      index[i] = 0;
+      nb_item[i] = 0;
+      continue;
+    }
+    index[i] = CheckedConvert::toInt32(pos);
+    nb_item[i] = n;
+    for (Int32 z = 0; z < n; ++z)
+      list[pos + z] = targets[begin + z];
+    const Int32 alloc = (prealloc > 0) ? (prealloc * ((n + prealloc - 1) / prealloc)) : n;
+    for (Int32 z = n; z < alloc; ++z)
+      list[pos + z] = NULL_ITEM_LOCAL_ID;
+    pos += alloc;
+  }
+  c->endBulkConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Fills the reverse of a connectivity given in source-item order.
+ *
+ * Counting sort: one pass to count how many sources each target has, a prefix
+ * sum over the blocks, then one scatter. The sources of a given target come out
+ * in increasing source order, which is the order addCells() produces since it
+ * connects them as it walks the cells.
+ */
+void DynamicMeshIncrementalBuilder::
+_fillBulkReverseConnectivity(IncrementalItemConnectivity* c, Int32 nb_target,
+                             Int32 nb_source, ConstArrayView<Int32> offsets,
+                             ConstArrayView<Int32> targets)
+{
+  const Int32 prealloc = c->preAllocatedSize();
+  const Int32 head = (prealloc <= 0) ? 1 : prealloc;
+  UniqueArray<Int32> count(nb_target);
+  count.fill(0);
+  for (Int32 i = 0; i < nb_source; ++i) {
+    for (Int32 z = offsets[i]; z < offsets[i + 1]; ++z)
+      ++count[targets[z]];
+  }
+
+  UniqueArray<Int32> fill_pos(nb_target);
+  Int64 total = head;
+  for (Int32 t = 0; t < nb_target; ++t) {
+    const Int32 n = count[t];
+    if (n == 0) {
+      fill_pos[t] = 0;
+      continue;
+    }
+    fill_pos[t] = CheckedConvert::toInt32(total);
+    total += (prealloc > 0) ? (prealloc * ((n + prealloc - 1) / prealloc)) : n;
+  }
+  Int32ArrayView nb_item, index, list;
+  c->resizeBulkConnectivity(nb_target, total, nb_item, index, list);
+  list.fill(NULL_ITEM_LOCAL_ID);
+  for (Int32 t = 0; t < nb_target; ++t) {
+    nb_item[t] = count[t];
+    index[t] = fill_pos[t];
+  }
+  for (Int32 i = 0; i < nb_source; ++i) {
+    for (Int32 z = offsets[i]; z < offsets[i + 1]; ++z) {
+      const Int32 t = targets[z];
+      list[fill_pos[t]] = i;
+      ++fill_pos[t];
+    }
+  }
+  c->endBulkConnectivity();
 }
 
 /*---------------------------------------------------------------------------*/

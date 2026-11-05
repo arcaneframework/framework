@@ -244,6 +244,44 @@ findOrAllocOne(Int64 uid, ItemTypeInfo* type, bool& is_alloc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IncrementalItemConnectivity* CellFamily::
+nodeConnectivity() const
+{
+  return m_node_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IncrementalItemConnectivity* CellFamily::
+edgeConnectivity() const
+{
+  return m_edge_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IncrementalItemConnectivity* CellFamily::
+faceConnectivity() const
+{
+  return m_face_connectivity->trueCustomConnectivity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CellFamily::
+allocateItemsBulk(Int64ConstArrayView uids, ItemTypeInfo* type, Int32 owner, Int32ArrayView lids)
+{
+  m_item_internal_list->cells = _itemsInternal();
+  _allocateInfosBulk(uids, type, owner, lids);
+  m_item_internal_list->cells = _itemsInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void CellFamily::
 preAllocate(Integer nb_item)
 {

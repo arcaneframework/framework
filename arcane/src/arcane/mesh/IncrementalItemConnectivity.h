@@ -245,6 +245,32 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivity
 
   void addConnectedItems(ItemLocalId source_item, Integer nb_item);
   void setConnectedItems(ItemLocalId source_item, Int32ConstArrayView target_local_ids) override;
+
+  /*!
+   * \brief Replaces the whole connectivity with one the caller already knows.
+   *
+   * \a nb_items and \a indexes describe source item i, \a list holds the blocks
+   * they index. A caller that knows the connectivity of every source item writes
+   * three arrays here instead of calling addConnectedItem() once per connection.
+   *
+   * \a list must keep the layout the incremental path produces: the null item
+   * holds the first block, and every block starts on a multiple of
+   * preAllocatedSize(), since compactConnectivityList() checks it.
+   */
+  void setBulkConnectivity(Int32ConstArrayView nb_items, Int32ConstArrayView indexes,
+                           Int32ConstArrayView list);
+
+  /*!
+   * \brief Sizes the storage for a bulk fill and hands out the arrays to write.
+   *
+   * The caller fills them in place, then calls endBulkConnectivity(). Same
+   * contract as setBulkConnectivity(), without the copy.
+   */
+  void resizeBulkConnectivity(Int32 nb_source, Int64 list_size,
+                              Int32ArrayView& nb_items, Int32ArrayView& indexes,
+                              Int32ArrayView& list);
+  //! Closes a fill started by resizeBulkConnectivity()
+  void endBulkConnectivity();
   void removeConnectedItems(ItemLocalId source_item) override;
   void addConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) override;
   void removeConnectedItem(ItemLocalId source_item, ItemLocalId target_local_id) override;

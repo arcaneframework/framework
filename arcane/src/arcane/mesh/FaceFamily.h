@@ -67,6 +67,23 @@ class ARCANE_MESH_EXPORT FaceFamily
  public:
 
   void build() override;
+  /*!
+   * \brief Sets the cells of every face at once.
+   *
+   * \a back_cells and \a front_cells are indexed by face localId and hold
+   * NULL_ITEM_LOCAL_ID where there is no cell on that side. Writes the same
+   * flags and the same connectivity as setBackAndFrontCells() face by face.
+   */
+  void setBulkBackAndFrontCells(Int32ConstArrayView back_cells, Int32ConstArrayView front_cells);
+
+  //! The true connectivity behind the selector, for a bulk fill
+  IncrementalItemConnectivity* nodeConnectivity() const;
+  IncrementalItemConnectivity* edgeConnectivity() const;
+  IncrementalItemConnectivity* cellConnectivity() const;
+
+  //! Allocates every item of \a uids at once, in one pass per family array
+  void allocateItemsBulk(Int64ConstArrayView uids, ItemTypeInfo* type, Int32 owner, Int32ArrayView lids);
+
   virtual void preAllocate(Integer nb_item);
 
  public:

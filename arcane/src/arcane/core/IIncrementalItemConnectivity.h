@@ -22,6 +22,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::mesh
+{
+class ItemFamily;
+}
+
 namespace Arcane
 {
 
@@ -34,6 +39,9 @@ namespace Arcane
 class ARCANE_CORE_EXPORT IIncrementalItemSourceConnectivity
 {
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+
+  //! For access to _internalNotifySourceItemsAdded() when a family allocates a batch
+  friend class mesh::ItemFamily;
 
  protected:
 
