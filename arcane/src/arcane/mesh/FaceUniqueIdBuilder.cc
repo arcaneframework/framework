@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder.cc                                      (C) 2000-2025 */
+/* FaceUniqueIdBuilder.cc                                      (C) 2000-2026 */
 /*                                                                           */
 /* Construction of unique face identifiers.                                  */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 #include "arcane/core/IMeshUniqueIdMng.h"
 #include "arcane/core/IParallelExchanger.h"
 #include "arcane/core/IParallelMng.h"
+#include "arcane/core/IParallelNonBlockingCollective.h"
 #include "arcane/core/ISerializeMessage.h"
 #include "arcane/core/ISerializer.h"
 #include "arcane/core/ParallelMngUtils.h"
@@ -30,8 +31,13 @@
 #include "arcane/mesh/FaceUniqueIdBuilder.h"
 #include "arcane/mesh/ItemTools.h"
 #include "arcane/mesh/ItemsOwnerBuilder.h"
+#include "arcane/mesh/internal/Int64AllToAll.h"
 
 #include <unordered_set>
+#include <algorithm>
+#include <cstdint>
+#include <fstream>
+#include <utility>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,6 +64,10 @@ FaceUniqueIdBuilder(DynamicMeshIncrementalBuilder* mesh_builder)
 , m_mesh(mesh_builder->mesh())
 , m_mesh_builder(mesh_builder)
 {
+  // ARCANE_DISTRIBUTED_FACE_NUMBERING=1 distributes the computation of the face
+  // numbering of version 1 over the ranks instead of performing it on each.
+  auto distributed = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DISTRIBUTED_FACE_NUMBERING", true);
+  m_is_v1_distributed = distributed && distributed.value() != 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -197,6 +207,125 @@ class T_CellFaceInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace
+{
+
+//! The rank where the records of \a key meet when only equal keys have to meet
+inline Int32
+_bucketOfHash(Int64 key, Int32 nb_rank)
+{
+  // splitmix64 finaliser: equal keys meet, consecutive ones do not pile up.
+  uint64_t h = static_cast<uint64_t>(key);
+  h = (h ^ (h >> 30)) * 0xbf58476d1ce4e5b9ULL;
+  h = (h ^ (h >> 27)) * 0x94d049bb133111ebULL;
+  h ^= h >> 31;
+  return static_cast<Int32>(h % static_cast<uint64_t>(nb_rank));
+}
+
+/*!
+ * \brief Bounds of the slices of cell uniqueIds, one slice per rank.
+ *
+ * \a keys are this rank's run starts, sorted. The slices are cut so that each
+ * holds about the same number of runs whatever the numbering: a histogram of
+ * the keys over 4 buckets per slice is summed over the ranks, every bucket
+ * holding more than a slice's share is cut again in the same proportion, and
+ * the slices are cut on bucket bounds at multiples of the share. A slice then
+ * holds at most its share plus one bucket, i.e. twice the mean.
+ *
+ * \return nb_rank + 1 bounds: slice s holds [bounds[s], bounds[s+1]).
+ */
+UniqueArray<Int64>
+_sliceBounds(IParallelMng* pm, ConstArrayView<Int64> keys, Int64 g_lo, Int64 g_hi)
+{
+  const Int32 nb_rank = pm->commSize();
+  // The more buckets, the better the balance and the larger the sum over the
+  // ranks (nb_bucket_per_slice * nb_rank Int64).
+  const Int64 nb_bucket_per_slice = 4;
+
+  struct Bucket
+  {
+    Int64 lo;
+    Int64 width;
+    Int64 count; //!< -1 until counted
+  };
+  auto split = [](Array<Bucket>& out, Int64 lo, Int64 width, Int64 nb) {
+    const Int64 w = (width - 1) / nb + 1;
+    for (Int64 a = lo; a < lo + width; a += w)
+      out.add(Bucket{ a, std::min(w, lo + width - a), -1 });
+  };
+  // Counts the keys of the buckets not counted yet, summed over the ranks.
+  auto count = [&](Array<Bucket>& buckets) {
+    UniqueArray<Int32> todo;
+    for (Int32 i = 0; i < buckets.size(); ++i) {
+      if (buckets[i].count < 0)
+        todo.add(i);
+    }
+    UniqueArray<Int64> c(todo.size());
+    const Int64* k = keys.data();
+    const Int64* k_end = k + keys.size();
+    for (Int32 i = 0; i < todo.size(); ++i) {
+      const Bucket& b = buckets[todo[i]];
+      c[i] = std::lower_bound(k, k_end, b.lo + b.width) - std::lower_bound(k, k_end, b.lo);
+    }
+    pm->reduce(Parallel::ReduceSum, c);
+    for (Int32 i = 0; i < todo.size(); ++i)
+      buckets[todo[i]].count = c[i];
+  };
+
+  UniqueArray<Bucket> buckets;
+  split(buckets, g_lo, g_hi - g_lo + 1, nb_bucket_per_slice * nb_rank);
+  count(buckets);
+  Int64 total = 0;
+  for (const Bucket& b : buckets)
+    total += b.count;
+
+  // A bucket holding more than a slice's share is cut again, into as many
+  // buckets per share as at first. Every rank holds the same histogram, so
+  // every rank cuts the same buckets.
+  for (;;) {
+    UniqueArray<Bucket> next;
+    bool is_cut = false;
+    for (const Bucket& b : buckets) {
+      if (b.width > 1 && b.count * nb_rank > total) {
+        split(next, b.lo, b.width, (nb_bucket_per_slice * b.count * nb_rank + total - 1) / total);
+        is_cut = true;
+      }
+      else
+        next.add(b);
+    }
+    if (!is_cut)
+      break;
+    buckets = next;
+    count(buckets);
+  }
+
+  UniqueArray<Int64> bounds(nb_rank + 1, g_hi + 1);
+  bounds[0] = g_lo;
+  Int32 last = 0;
+  Int64 before = 0;
+  for (const Bucket& b : buckets) {
+    const Int32 s = static_cast<Int32>(std::min<Int64>(nb_rank - 1, before * nb_rank / total));
+    for (Int32 t = last + 1; t <= s; ++t)
+      bounds[t] = b.lo;
+    last = std::max(last, s);
+    before += b.count;
+  }
+  return bounds;
+}
+
+//! The slice of \a uid
+inline Int32
+_sliceOf(ConstArrayView<Int64> bounds, Int64 uid)
+{
+  // Empty slices repeat a bound; the last of equal bounds is the one that holds uid.
+  return static_cast<Int32>(std::upper_bound(bounds.begin(), bounds.end(), uid) - bounds.begin()) - 1;
+}
+
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
   \brief Calculates the unique numbers for each face in parallel.
 
@@ -205,34 +334,748 @@ class T_CellFaceInfo
   as the cell behind it (or to the current sub-domain for a
   boundary cell).
 
-  \todo optimize the algorithm so as not to have to create an array
-  sized to the total number of cells in the mesh (by proceeding in
-  several steps)
+  A face is numbered from its back cell: the cells, in increasing uniqueId,
+  each own a contiguous block of face ids, one per face they are behind plus
+  one per face of the domain boundary they hold, and a face takes its position
+  in the block. This is a global computation: a face's uniqueId depends on the
+  cells of every sub-domain with a smaller uniqueId.
 
-  \todo find a more optimal algorithm for searching for the owner of
-  each face to balance communications.
+  By default every rank performs that computation whole: it gathers the
+  sub-domain boundary faces and then the cells of the entire mesh, and numbers
+  the mesh sequentially to keep its own share (_v1ByAllGather()). With
+  ARCANE_DISTRIBUTED_FACE_NUMBERING=1 the computation itself is distributed
+  over the ranks (_v1Distributed()), with the same uniqueIds.
 */
 void FaceUniqueIdBuilder::
 _computeFacesUniqueIdsParallelV1()
 {
-  IParallelMng* pm = m_mesh->parallelMng();
-  Integer my_rank = pm->commRank();
-  Integer nb_rank = pm->commSize();
+  if (m_is_v1_distributed) {
+    _v1Distributed();
+    return;
+  }
 
   Integer nb_local_face = m_mesh_builder->oneMeshItemAdder()->nbFace();
-  Integer nb_local_cell = m_mesh_builder->oneMeshItemAdder()->nbCell();
-  bool is_verbose = m_mesh_builder->isVerbose();
 
   UniqueArray<Int64> faces_opposite_cell_uid(nb_local_face);
   faces_opposite_cell_uid.fill(NULL_ITEM_ID);
   UniqueArray<Integer> faces_opposite_cell_index(nb_local_face);
   UniqueArray<Integer> faces_opposite_cell_owner(nb_local_face);
+  HashTableMapT<Int64, Int64> cells_first_face_uid(m_mesh_builder->oneMeshItemAdder()->nbCell() * 2, true);
+  IntegerUniqueArray my_cells_nb_back_face;
+  UniqueArray<T_CellFaceInfo> my_cells_faces_info;
+
+  _v1ByAllGather(faces_opposite_cell_uid, faces_opposite_cell_index, faces_opposite_cell_owner,
+                 cells_first_face_uid, my_cells_nb_back_face, my_cells_faces_info);
+  _v1AssignFaceUniqueIds(faces_opposite_cell_uid, faces_opposite_cell_index, faces_opposite_cell_owner,
+                         cells_first_face_uid, my_cells_nb_back_face);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Distributed computation of the face numbering of version 1.
+ *
+ * Each rank computes a share of the numbering instead of all of it, and holds
+ * O(N/P + B) data instead of O(N), for N cells, P ranks and B faces on the
+ * boundary of its sub-domain; the number of collectives does not depend on N.
+ *
+ * Two facts come from the other sub-domains: for a face with one cell here,
+ * whether a cell is on the other side and on which rank (if not, the face is on
+ * the boundary of the domain); and where every cell's block starts, which is
+ * the sum of the block sizes of all the cells of smaller uniqueId, a prefix sum
+ * over the whole mesh. Only the rank in front of a shared face needs both: the
+ * rank behind it numbers it from its own cell's block.
+ *
+ * 1. Matching the faces, by a rendezvous. Each face with one cell here is sent
+ *    to a rank that every holder of the face computes from the face alone, a
+ *    hash of its smallest node uniqueId. The two halves of a shared face meet
+ *    there and each learns the rank of the other. A face that arrives alone is
+ *    on the domain boundary and gets no answer, but when its cell is in front
+ *    of it (it then counts in that cell's block) the cell is passed on to the
+ *    rank that computes the start of that cell's block.
+ * 2. The block starts, by a parallel prefix sum over the cells in uniqueId
+ *    order. The uniqueId range is cut in one slice per rank, at bounds taken
+ *    from a histogram so that the slices hold the same amount of work.
+ *    The cells of a rank form runs of consecutive uniqueIds, inside which no
+ *    cell of another rank can sit, so a run travels as one record (first,
+ *    count, back faces) to the rank of its slice. The totals of the slices are
+ *    summed over the ranks while step 1 completes, which gives every slice its
+ *    offset; a slice orders its runs, adds the boundary faces of step 1 and
+ *    answers each run with its start, from which the owner of the run deduces
+ *    the start of each of its cells.
+ * 3. The shared faces. The rank behind a shared face sends its uniqueId to the
+ *    rank in front; both list the faces they share in node order, so no key
+ *    travels with the uniqueIds.
+ *
+ * Step 2 is sent while step 1 travels. A mesh the numbering cannot describe (a
+ * face held by more than two sub-domains or behind on both, a cell held by two
+ * ranks or by none) is a fatal error: the gathering version numbers it
+ * inconsistently without a word.
+ *
+ * Step 1 is inspired by the rendezvous algorithm of Plimpton, Hendrickson and
+ * Stewart (J. Parallel Distrib. Comput., 2004).
+ */
+void FaceUniqueIdBuilder::
+_v1Distributed()
+{
+  IParallelMng* pm = m_mesh->parallelMng();
+  const Int32 nb_rank = pm->commSize();
+  const Int32 my_rank = pm->commRank();
+  ItemInternalMap& faces_map = m_mesh->facesMap();
+  ItemInternalMap& cells_map = m_mesh->cellsMap();
+  FaceLocalIdToFaceConverter faces(m_mesh->faceFamily());
+  CellLocalIdToCellConverter cells_of(m_mesh->cellFamily());
+  const Int32 nb_local_face = m_mesh_builder->oneMeshItemAdder()->nbFace();
+
+  // The faces with one cell here, and the cells by increasing uniqueId.
+  UniqueArray<Int32> bfaces;
+  Int32 max_nb_node = 0;
+  faces_map.eachItem([&](Face face) {
+    if (face.isSubDomainBoundary()) {
+      bfaces.add(face.localId());
+      max_nb_node = std::max(max_nb_node, face.nbNode());
+    }
+  });
+  const Int32 nb_bface = bfaces.size();
+
+  UniqueArray<std::pair<Int64, Int32>> cells;
+  cells.reserve(cells_map.count());
+  Int32 has_foreign_cell = 0;
+  cells_map.eachItem([&](Cell cell) {
+    cells.add(std::make_pair(cell.uniqueId().asInt64(), cell.localId()));
+    if (cell.owner() != my_rank)
+      has_foreign_cell = 1;
+  });
+  std::sort(cells.begin(), cells.end());
+  const Int32 nb_cell = cells.size();
+
+  Int64 g_lo = 0;
+  Int64 g_hi = 0;
+  {
+    Int64 v[4] = { max_nb_node, (nb_cell > 0) ? -cells[0].first : INT64_MIN,
+                   (nb_cell > 0) ? cells[nb_cell - 1].first : INT64_MIN, has_foreign_cell };
+    pm->reduce(Parallel::ReduceMax, ArrayView<Int64>(4, v));
+    max_nb_node = CheckedConvert::toInt32(v[0]);
+    has_foreign_cell = static_cast<Int32>(v[3]);
+    if (v[2] == INT64_MIN)
+      return; // no cell anywhere
+    g_lo = -v[1];
+    g_hi = v[2];
+  }
+
+  // --- Step 1, out: one record per face with one cell here, sorted node
+  // uniqueIds padded with -1, then the uniqueId of the cell if it is in front
+  // of the face, -1 if it is behind it.
+  const Int32 s1 = max_nb_node + 1;
+  UniqueArray<Int32> dest(nb_bface);
+  UniqueArray<Int64> e1_count(nb_rank, 0);
+  UniqueArray<Int64> keys(static_cast<Int64>(nb_bface) * max_nb_node);
+  UniqueArray<Int64> nodes_uid;
+  for (Int32 i = 0; i < nb_bface; ++i) {
+    Face face(faces[bfaces[i]]);
+    face.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+    nodes_uid.clear();
+    for (Node node : face.nodes())
+      nodes_uid.add(node.uniqueId().asInt64());
+    std::sort(nodes_uid.begin(), nodes_uid.end());
+    Int64* k = keys.data() + static_cast<Int64>(i) * max_nb_node;
+    for (Int32 z = 0; z < max_nb_node; ++z)
+      k[z] = (z < nodes_uid.size()) ? nodes_uid[z] : -1;
+    dest[i] = _bucketOfHash(k[0], nb_rank);
+    e1_count[dest[i]] += s1;
+  }
+  auto key_of = [&](Int32 i) { return keys.data() + static_cast<Int64>(i) * max_nb_node; };
+  // The order of two node keys, uniqueId by uniqueId
+  auto key_less = [max_nb_node](const Int64* ka, const Int64* kb) {
+    for (Int32 z = 0; z < max_nb_node; ++z) {
+      if (ka[z] != kb[z])
+        return ka[z] < kb[z];
+    }
+    return false;
+  };
+  auto is_back = [&](Int32 i) { return (faces[bfaces[i]].itemBase().flags() & ItemFlags::II_HasBackCell) != 0; };
+
+  UniqueArray<Int64> e1_index(nb_rank + 1, 0);
+  for (Int32 r = 0; r < nb_rank; ++r)
+    e1_index[r + 1] = e1_index[r] + e1_count[r] / s1;
+  // sent[p] = the face sent at position p of the buffer
+  UniqueArray<Int32> sent(nb_bface);
+  UniqueArray<Int64> e1_send(static_cast<Int64>(nb_bface) * s1);
+  {
+    UniqueArray<Int64> at(e1_index.subConstView(0, nb_rank));
+    for (Int32 i = 0; i < nb_bface; ++i) {
+      const Int64 p = at[dest[i]]++;
+      sent[CheckedConvert::toInt32(p)] = i;
+      Int64* r = e1_send.data() + p * s1;
+      const Int64* k = key_of(i);
+      for (Int32 z = 0; z < max_nb_node; ++z)
+        r[z] = k[z];
+      r[max_nb_node] = is_back(i) ? -1 : faces[bfaces[i]].cell(0).uniqueId().asInt64();
+    }
+  }
+  UniqueArray<Int64> e1_recv_count;
+  const Int64 e1_round = Int64AllToAll::exchangeCounts(pm, e1_count, e1_recv_count);
+  Int64AllToAll e1;
+  e1.start(pm, e1_send, e1_count, e1_recv_count, e1_round);
+
+  // --- While it travels: the runs, their slices, and step 2 out.
+  UniqueArray<Int32> cell_nb_back(nb_cell, 0);
+  UniqueArray<Int64> run_starts; // unsplit runs, for the slice bounds
+  for (Int32 c = 0; c < nb_cell; ++c) {
+    Cell cell(cells_of[cells[c].second]);
+    Int32 n = 0;
+    for (Face face : cell.faces()) {
+      if (face.backCell() == cell)
+        ++n;
+    }
+    cell_nb_back[c] = n;
+    if (c == 0 || cells[c].first != cells[c - 1].first + 1)
+      run_starts.add(cells[c].first);
+  }
+  const UniqueArray<Int64> bounds = _sliceBounds(pm, run_starts, g_lo, g_hi);
+
+  // Runs cut at the slice bounds: [run_first[r], run_first[r] + run_count[r]) are
+  // cells[run_cell[r] ...], all in slice run_slice[r].
+  UniqueArray<Int32> run_cell;
+  UniqueArray<Int32> run_slice;
+  UniqueArray<Int64> slice_total(nb_rank, 0); // this rank's part of every slice's total
+  {
+    Int32 s = 0;
+    for (Int32 c = 0; c < nb_cell; ++c) {
+      const Int64 uid = cells[c].first;
+      const Int32 old_s = s;
+      while (uid >= bounds[s + 1])
+        ++s;
+      if (c == 0 || uid != cells[c - 1].first + 1 || s != old_s) {
+        run_cell.add(c);
+        run_slice.add(s);
+      }
+      slice_total[s] += cell_nb_back[c];
+    }
+  }
+  const Int32 nb_run = run_cell.size();
+  run_cell.add(nb_cell);
+  UniqueArray<Int64> e2_count(nb_rank, 0);
+  for (Int32 r = 0; r < nb_run; ++r)
+    e2_count[run_slice[r]] += 3;
+  UniqueArray<Int64> e2_index(nb_rank + 1, 0);
+  for (Int32 r = 0; r < nb_rank; ++r)
+    e2_index[r + 1] = e2_index[r] + e2_count[r] / 3;
+  UniqueArray<Int32> run_sent(nb_run); // run_sent[p] = the run sent at position p
+  UniqueArray<Int64> e2_send(static_cast<Int64>(nb_run) * 3);
+  {
+    UniqueArray<Int64> at(e2_index.subConstView(0, nb_rank));
+    for (Int32 r = 0; r < nb_run; ++r) {
+      const Int64 p = at[run_slice[r]]++;
+      run_sent[CheckedConvert::toInt32(p)] = r;
+      Int64 nb_back = 0;
+      for (Int32 c = run_cell[r]; c < run_cell[r + 1]; ++c)
+        nb_back += cell_nb_back[c];
+      e2_send[p * 3 + 0] = cells[run_cell[r]].first;
+      e2_send[p * 3 + 1] = run_cell[r + 1] - run_cell[r];
+      e2_send[p * 3 + 2] = nb_back;
+    }
+  }
+  UniqueArray<Int64> e2_recv_count;
+  const Int64 e2_round = Int64AllToAll::exchangeCounts(pm, e2_count, e2_recv_count);
+  Int64AllToAll e2;
+  e2.start(pm, e2_send, e2_count, e2_recv_count, e2_round);
+
+  // --- Step 1 at the meeting rank: pair the halves.
+  e1.wait();
+  const Int32 n1 = CheckedConvert::toInt32(e1.received().size() / s1);
+  UniqueArray<Int32> rec_src(n1);
+  UniqueArray<Int32> rec_pos(n1);
+  for (Int32 r = 0, i = 0; r < nb_rank; ++r) {
+    const Int32 n = CheckedConvert::toInt32(e1_recv_count[r] / s1);
+    for (Int32 p = 0; p < n; ++p, ++i) {
+      rec_src[i] = r;
+      rec_pos[i] = p;
+    }
+  }
+  auto rec_of = [&](Int32 i) { return e1.received().data() + static_cast<Int64>(i) * s1; };
+  UniqueArray<Int32> order(n1);
+  for (Int32 i = 0; i < n1; ++i)
+    order[i] = i;
+  std::sort(order.begin(), order.end(), [&](Int32 a, Int32 b) { return key_less(rec_of(a), rec_of(b)); });
+  auto same_key = [&](Int32 a, Int32 b) {
+    const Int64* ka = rec_of(a);
+    const Int64* kb = rec_of(b);
+    for (Int32 z = 0; z < max_nb_node; ++z) {
+      if (ka[z] != kb[z])
+        return false;
+    }
+    return true;
+  };
+  auto key_string = [&](Int32 a) {
+    OStringStream o;
+    for (Int32 z = 0; z < max_nb_node && rec_of(a)[z] >= 0; ++z)
+      o() << ' ' << rec_of(a)[z];
+    return o.str();
+  };
+
+  // Answers to the halves of a pair, (position << 32) | rank of the other half;
+  // the cells in front of a lone face, to the rank of their slice.
+  UniqueArray<Int64> pair_answer; // (destination, answer) flattened
+  UniqueArray<Int64> lone_cell;   // (slice, cell uid) flattened
+  for (Int32 i = 0; i < n1;) {
+    Int32 j = i + 1;
+    while (j < n1 && same_key(order[i], order[j]))
+      ++j;
+    const Int32 a = order[i];
+    if (j - i == 1) {
+      const Int64 cell_uid = rec_of(a)[max_nb_node];
+      if (cell_uid >= 0) {
+        const Int32 s = _sliceOf(bounds, cell_uid);
+        lone_cell.add(s);
+        lone_cell.add(cell_uid);
+        slice_total[s] += 1;
+      }
+    }
+    else if (j - i == 2) {
+      const Int32 b = order[i + 1];
+      if (rec_src[a] == rec_src[b])
+        ARCANE_FATAL("Face numbering: the face of nodes ({0}) is held twice by sub-domain {1}",
+                     key_string(a), rec_src[a]);
+      if ((rec_of(a)[max_nb_node] < 0) == (rec_of(b)[max_nb_node] < 0))
+        ARCANE_FATAL("Face numbering: the face of nodes ({0}) is {1} in sub-domains {2} and {3}",
+                     key_string(a), (rec_of(a)[max_nb_node] < 0) ? "behind its cell" : "in front of its cell",
+                     rec_src[a], rec_src[b]);
+      pair_answer.add(rec_src[a]);
+      pair_answer.add((static_cast<Int64>(rec_pos[a]) << 32) | rec_src[b]);
+      pair_answer.add(rec_src[b]);
+      pair_answer.add((static_cast<Int64>(rec_pos[b]) << 32) | rec_src[a]);
+    }
+    else
+      ARCANE_FATAL("Face numbering: the face of nodes ({0}) is held by {1} sub-domains",
+                   key_string(a), j - i);
+    i = j;
+  }
+
+  // The totals of the slices, summed while step 1 comes back.
+  UniqueArray<Int64> g_slice_total(nb_rank, 0);
+  Parallel::Request total_request;
+  IParallelNonBlockingCollective* nbc = pm->nonBlockingCollective();
+  if (nbc)
+    total_request = nbc->allReduce(Parallel::ReduceSum, slice_total, g_slice_total);
+  else {
+    g_slice_total.copy(slice_total);
+    pm->reduce(Parallel::ReduceSum, g_slice_total);
+  }
+
+  // --- Step 1, back: to each rank [nb answers][answers][lone cells].
+  UniqueArray<Int64> b_count(nb_rank, 1);
+  UniqueArray<Int64> b_nb_answer(nb_rank, 0);
+  for (Int64 k = 0; k < pair_answer.size(); k += 2) {
+    ++b_count[pair_answer[k]];
+    ++b_nb_answer[pair_answer[k]];
+  }
+  for (Int64 k = 0; k < lone_cell.size(); k += 2)
+    ++b_count[lone_cell[k]];
+  UniqueArray<Int64> b_index(nb_rank + 1, 0);
+  for (Int32 r = 0; r < nb_rank; ++r)
+    b_index[r + 1] = b_index[r] + b_count[r];
+  UniqueArray<Int64> b_send(b_index[nb_rank]);
+  {
+    UniqueArray<Int64> at(nb_rank);
+    for (Int32 r = 0; r < nb_rank; ++r) {
+      b_send[b_index[r]] = b_nb_answer[r];
+      at[r] = b_index[r] + 1;
+    }
+    for (Int64 k = 0; k < pair_answer.size(); k += 2)
+      b_send[at[pair_answer[k]]++] = pair_answer[k + 1];
+    for (Int64 k = 0; k < lone_cell.size(); k += 2)
+      b_send[at[lone_cell[k]]++] = lone_cell[k + 1];
+  }
+  UniqueArray<Int64> b_recv_count;
+  const Int64 b_round = Int64AllToAll::exchangeCounts(pm, b_count, b_recv_count);
+  Int64AllToAll e1b;
+  e1b.start(pm, b_send, b_count, b_recv_count, b_round);
+  e1b.wait();
+
+  // partner[i] = the rank holding the other half of face i, -1 if it is alone.
+  UniqueArray<Int32> partner(nb_bface, -1);
+  UniqueArray<Int64> my_lone; // cells of my slice in front of a lone face
+  for (Int32 r = 0; r < nb_rank; ++r) {
+    Span<const Int64> m = e1b.from(r);
+    const Int64 nb_answer = m[0];
+    for (Int64 k = 1; k <= nb_answer; ++k) {
+      const Int64 pos = m[k] >> 32;
+      const Int32 other = static_cast<Int32>(m[k] & 0xffffffff);
+      partner[sent[CheckedConvert::toInt32(e1_index[r] + pos)]] = other;
+    }
+    for (Int64 k = nb_answer + 1; k < m.size(); ++k)
+      my_lone.add(m[k]);
+  }
+  std::sort(my_lone.begin(), my_lone.end());
+
+  // --- Step 2 at the rank of the slice: the runs in order, the lone faces
+  // in their cells, and the start of every run.
+  e2.wait();
+  if (nbc)
+    pm->waitAllRequests(ArrayView<Parallel::Request>(1, &total_request));
+  Int64 slice_start = 0;
+  for (Int32 r = 0; r < my_rank; ++r)
+    slice_start += g_slice_total[r];
+  const Int32 n2 = CheckedConvert::toInt32(e2.received().size() / 3);
+  const Int64* runs = e2.received().data();
+  UniqueArray<Int32> run_order(n2);
+  for (Int32 i = 0; i < n2; ++i)
+    run_order[i] = i;
+  std::sort(run_order.begin(), run_order.end(),
+            [&](Int32 a, Int32 b) { return runs[a * 3] < runs[b * 3]; });
+  UniqueArray<Int64> a_send(n2);
+  {
+    Int64 running = slice_start;
+    Int64 end_prev = INT64_MIN;
+    Int32 l = 0;
+    const Int32 nb_lone = my_lone.size();
+    for (Int32 i = 0; i < n2; ++i) {
+      const Int64* run = runs + run_order[i] * 3;
+      const Int64 first = run[0];
+      const Int64 end = first + run[1];
+      if (first < end_prev)
+        ARCANE_FATAL("Face numbering: the cell uniqueId={0} is held by two sub-domains", first);
+      if (l < nb_lone && my_lone[l] < first)
+        ARCANE_FATAL("Face numbering: the cell uniqueId={0} of a boundary face is held by no sub-domain", my_lone[l]);
+      a_send[run_order[i]] = running;
+      running += run[2];
+      for (; l < nb_lone && my_lone[l] < end; ++l)
+        ++running;
+      end_prev = end;
+    }
+    if (l < nb_lone)
+      ARCANE_FATAL("Face numbering: the cell uniqueId={0} of a boundary face is held by no sub-domain", my_lone[l]);
+    if (running - slice_start != g_slice_total[my_rank])
+      ARCANE_FATAL("Face numbering: slice {0} counts {1} faces, its runs {2}",
+                   my_rank, g_slice_total[my_rank], running - slice_start);
+  }
+
+  // --- Step 2, back: one start per run, in the order the runs came.
+  UniqueArray<Int64> a_count(nb_rank);
+  UniqueArray<Int64> a_recv_count(nb_rank);
+  for (Int32 r = 0; r < nb_rank; ++r) {
+    a_count[r] = e2_recv_count[r] / 3;
+    a_recv_count[r] = e2_count[r] / 3;
+  }
+  Int64AllToAll e2b;
+  e2b.start(pm, a_send, a_count, a_recv_count, e2_round);
+  e2b.wait();
+
+  // --- Every face of a cell of this rank that it numbers.
+  UniqueArray<Int64> faces_new_uid(nb_local_face);
+  faces_new_uid.fill(NULL_ITEM_ID);
+  UniqueArray<Int8> is_lone(nb_local_face, 0);
+  for (Int32 i = 0; i < nb_bface; ++i) {
+    if (partner[i] < 0)
+      is_lone[bfaces[i]] = 1;
+  }
+  for (Int32 p = 0; p < nb_run; ++p) {
+    const Int32 r = run_sent[p];
+    Int64 start = e2b.received()[p];
+    for (Int32 c = run_cell[r]; c < run_cell[r + 1]; ++c) {
+      Cell cell(cells_of[cells[c].second]);
+      Integer num_back = 0;
+      Integer num_lone = 0;
+      for (Face face : cell.faces()) {
+        Int64 face_new_uid = NULL_ITEM_UNIQUE_ID;
+        if (face.backCell() == cell) {
+          face_new_uid = start + num_back;
+          ++num_back;
+        }
+        else if (face.nbCell() == 1 && is_lone[face.localId()]) {
+          face_new_uid = start + cell_nb_back[c] + num_lone;
+          ++num_lone;
+        }
+        if (face_new_uid != NULL_ITEM_UNIQUE_ID) {
+          faces_new_uid[face.localId()] = face_new_uid;
+          face.mutableItemBase().setUniqueId(face_new_uid);
+          face.mutableItemBase().setOwner(my_rank, my_rank);
+        }
+      }
+      start += cell_nb_back[c] + num_lone;
+    }
+  }
+
+  // --- Step 3: the rank behind a shared face tells the rank in front.
+  {
+    const Int32 s3 = has_foreign_cell ? 2 : 1;
+    // The shared faces grouped by partner, back ones and front ones apart,
+    // each group in node order: both sides list the faces they share alike.
+    UniqueArray<Int32> shared;
+    for (Int32 i = 0; i < nb_bface; ++i) {
+      if (partner[i] >= 0)
+        shared.add(i);
+    }
+    std::sort(shared.begin(), shared.end(), [&](Int32 a, Int32 b) {
+      if (partner[a] != partner[b])
+        return partner[a] < partner[b];
+      return key_less(key_of(a), key_of(b));
+    });
+    // The messages of step 3 are no larger than those of step 1, so they
+    // need no more rounds; their sizes are known on both sides.
+    UniqueArray<Int64> e3_count(nb_rank, 0);
+    UniqueArray<Int64> e3_recv_count(nb_rank, 0);
+    UniqueArray<UniqueArray<Int32>> in_face(nb_rank);
+    for (Int32 i : shared) {
+      if (is_back(i))
+        e3_count[partner[i]] += s3;
+      else {
+        in_face[partner[i]].add(i);
+        e3_recv_count[partner[i]] += s3;
+      }
+    }
+    UniqueArray<Int64> e3_send;
+    for (Int32 i : shared) {
+      if (is_back(i)) {
+        e3_send.add(faces_new_uid[bfaces[i]]);
+        if (s3 == 2)
+          e3_send.add(faces[bfaces[i]].cell(0).owner());
+      }
+    }
+    Int64AllToAll e3;
+    e3.start(pm, e3_send, e3_count, e3_recv_count, e1_round);
+    e3.wait();
+    for (Int32 p = 0; p < nb_rank; ++p) {
+      Span<const Int64> in = e3.from(p);
+      for (Int32 k = 0; k < in_face[p].size(); ++k) {
+        Face face(faces[bfaces[in_face[p][k]]]);
+        const Int64 uid = in[static_cast<Int64>(k) * s3];
+        const Int32 owner = (s3 == 2) ? static_cast<Int32>(in[static_cast<Int64>(k) * s3 + 1]) : p;
+        faces_new_uid[face.localId()] = uid;
+        face.mutableItemBase().setUniqueId(uid);
+        face.mutableItemBase().setOwner(owner, my_rank);
+      }
+    }
+  }
+
+  // Only the verbose listing reads it; the cell on the other side of a shared
+  // face is not known here.
+  UniqueArray<Int64> faces_opposite_cell_uid;
+  if (m_mesh_builder->isVerbose()) {
+    faces_opposite_cell_uid.resize(nb_local_face, NULL_ITEM_ID);
+    for (Int32 i = 0; i < nb_bface; ++i) {
+      if (partner[i] >= 0)
+        faces_opposite_cell_uid[bfaces[i]] = -2;
+    }
+  }
+  _v1CheckAndDump(faces_new_uid, faces_opposite_cell_uid);
+
+  info() << "Distributed face numbering: " << nb_bface << " faces with one cell, "
+         << nb_run << " runs of cells, " << n2 << " runs in slice " << my_rank;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Sizes every cell's block of face ids: its back faces plus its faces
+ * of the domain boundary.
+ */
+void FaceUniqueIdBuilder::
+_v1CellBlockSizes(Int64ConstArrayView faces_opposite_cell_uid,
+                  IntegerArray& my_cells_nb_back_face,
+                  Array<T_CellFaceInfo>& my_cells_faces_info)
+{
+  ItemInternalMap& cells_map = m_mesh->cellsMap();
+  Int32 max_cell_local_id = 0;
+  cells_map.eachItem([&](Item cell) {
+    max_cell_local_id = std::max(max_cell_local_id, cell.localId());
+  });
+  my_cells_nb_back_face.resize(max_cell_local_id + 1);
+  my_cells_nb_back_face.fill(0);
+  my_cells_faces_info.clear();
+  my_cells_faces_info.reserve(m_mesh_builder->oneMeshItemAdder()->nbCell());
+
+  cells_map.eachItem([&](Cell cell) {
+    Int64 cell_uid = cell.uniqueId().asInt64();
+    Int32 cell_local_id = cell.localId();
+    Integer nb_back_face = 0;
+    Integer nb_true_boundary_face = 0;
+    for (Face face : cell.faces()) {
+      Int64 opposite_cell_uid = faces_opposite_cell_uid[face.localId()];
+      if (face.backCell() == cell)
+        ++nb_back_face;
+      else if (face.nbCell() == 1 && opposite_cell_uid == NULL_ITEM_ID) {
+        ++nb_true_boundary_face;
+      }
+    }
+    my_cells_nb_back_face[cell_local_id] = nb_back_face;
+    my_cells_faces_info.add(T_CellFaceInfo(cell_uid, nb_back_face, nb_true_boundary_face));
+  });
+  std::sort(std::begin(my_cells_faces_info), std::end(my_cells_faces_info));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Checks that every face has been numbered and, in verbose mode, writes
+ * one line per (cell, face) to faces_uid.<rank>.
+ *
+ * \a faces_opposite_cell_uid is NULL_ITEM_ID for a face of the domain boundary,
+ * the cell on the other side for a shared face, or a negative value when that
+ * cell is not known here (it is then not written).
+ */
+void FaceUniqueIdBuilder::
+_v1CheckAndDump(Int64ConstArrayView faces_new_uid, Int64ConstArrayView faces_opposite_cell_uid)
+{
+  Integer my_rank = m_mesh->parallelMng()->commRank();
+  Integer nb_local_face = m_mesh_builder->oneMeshItemAdder()->nbFace();
+  bool is_verbose = m_mesh_builder->isVerbose();
+  ItemInternalMap& cells_map = m_mesh->cellsMap();
+
+  // Verifies that all faces have been re-indexed
+  {
+    Integer nb_error = 0;
+    for (Integer i = 0, is = nb_local_face; i < is; ++i) {
+      if (faces_new_uid[i] == NULL_ITEM_UNIQUE_ID) {
+        ++nb_error;
+        if (nb_error < 10)
+          error() << "The face lid=" << i << " has not been re-indexed.";
+      }
+    }
+    if (nb_error != 0)
+      ARCANE_FATAL("Some ({0}) faces have not been reindexed", nb_error);
+  }
+
+  if (is_verbose) {
+    OStringStream ostr;
+    cells_map.eachItem([&](Cell cell) {
+      Int64 cell_uid = cell.uniqueId().asInt64();
+      Integer face_index = 0;
+      for (Face face : cell.faces()) {
+        Int64 opposite_cell_uid = faces_opposite_cell_uid[face.localId()];
+        bool shared = false;
+        bool true_boundary = false;
+        bool internal_other = false;
+        if (face.backCell() == cell) {
+        }
+        else if (face.nbCell() == 1) {
+          if (opposite_cell_uid == NULL_ITEM_ID)
+            true_boundary = true;
+          else
+            shared = true;
+        }
+        else {
+          internal_other = true;
+          opposite_cell_uid = face.backCell().uniqueId().asInt64();
+        }
+        ostr() << "NEW UNIQUE ID FOR FACE"
+               << " lid=" << face.localId()
+               << " cell=" << cell_uid
+               << " face=" << face.uniqueId()
+               << " nbcell=" << face.nbCell()
+               << " cellindex=" << face_index << " (";
+        for (Node node : face.nodes())
+          ostr() << ' ' << node.uniqueId();
+        ostr() << ")";
+        if (internal_other)
+          ostr() << " internal-other";
+        if (true_boundary)
+          ostr() << " true-boundary";
+        if (opposite_cell_uid >= 0) {
+          ostr() << " opposite " << opposite_cell_uid;
+        }
+        if (shared)
+          ostr() << " (shared)";
+        ostr() << "\n";
+        ++face_index;
+      }
+    });
+    info() << ostr.str();
+    String file_name("faces_uid.");
+    file_name = file_name + my_rank;
+    std::ofstream ofile(file_name.localstr());
+    ofile << ostr.str();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gives every face its uniqueId and its owner from the block starts.
+ */
+void FaceUniqueIdBuilder::
+_v1AssignFaceUniqueIds(Int64ConstArrayView faces_opposite_cell_uid,
+                       IntegerConstArrayView faces_opposite_cell_index,
+                       IntegerConstArrayView faces_opposite_cell_owner,
+                       HashTableMapT<Int64, Int64>& cells_first_face_uid,
+                       IntegerConstArrayView my_cells_nb_back_face)
+{
+  IParallelMng* pm = m_mesh->parallelMng();
+  Integer my_rank = pm->commRank();
+  Integer nb_local_face = m_mesh_builder->oneMeshItemAdder()->nbFace();
+  ItemInternalMap& cells_map = m_mesh->cellsMap();
 
   // For verification, ensures that all elements of this array
   // are valid, which means that all faces have been
   // renumbered
   UniqueArray<Int64> faces_new_uid(nb_local_face);
   faces_new_uid.fill(NULL_ITEM_ID);
+
+  cells_map.eachItem([&](Cell cell) {
+    Int64 cell_uid = cell.uniqueId();
+    Int32 cell_local_id = cell.localId();
+    Integer num_local_face = 0;
+    Integer num_true_boundary_face = 0;
+    for (Face face : cell.faces()) {
+      Int64 opposite_cell_uid = faces_opposite_cell_uid[face.localId()];
+      Int64 face_new_uid = NULL_ITEM_UNIQUE_ID;
+      if (face.backCell() == cell) {
+        if (!cells_first_face_uid.hasKey(cell_uid))
+          fatal() << "NO KEY 0 for cell_uid=" << cell_uid;
+        face_new_uid = cells_first_face_uid[cell_uid] + num_local_face;
+        face.mutableItemBase().setOwner(my_rank, my_rank);
+        ++num_local_face;
+      }
+      else if (face.nbCell() == 1) {
+        if (opposite_cell_uid == NULL_ITEM_UNIQUE_ID) {
+          // This is a boundary face of the initial domain
+          if (!cells_first_face_uid.hasKey(cell_uid))
+            fatal() << "NO KEY 1 for cell_uid=" << cell_uid;
+          face_new_uid = cells_first_face_uid[cell_uid] + my_cells_nb_back_face[cell_local_id] + num_true_boundary_face;
+          ++num_true_boundary_face;
+          face.mutableItemBase().setOwner(my_rank, my_rank);
+        }
+        else {
+          if (!cells_first_face_uid.hasKey(opposite_cell_uid))
+            fatal() << "NO KEY 1 for cell_uid=" << cell_uid << " opoosite=" << opposite_cell_uid;
+          face_new_uid = cells_first_face_uid[opposite_cell_uid] + faces_opposite_cell_index[face.localId()];
+          face.mutableItemBase().setOwner(faces_opposite_cell_owner[face.localId()], my_rank);
+        }
+      }
+      if (face_new_uid != NULL_ITEM_UNIQUE_ID) {
+        faces_new_uid[face.localId()] = face_new_uid;
+        face.mutableItemBase().setUniqueId(face_new_uid);
+      }
+    }
+  });
+
+  _v1CheckAndDump(faces_new_uid, faces_opposite_cell_uid);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief The all-gather: every rank receives every boundary face, then
+ * every cell of the mesh, and keeps what concerns it.
+ *
+ * \todo optimize the algorithm so as not to have to create an array
+ * sized to the total number of cells in the mesh (by proceeding in
+ * several steps)
+ */
+void FaceUniqueIdBuilder::
+_v1ByAllGather(Int64ArrayView faces_opposite_cell_uid,
+               IntegerArrayView faces_opposite_cell_index,
+               IntegerArrayView faces_opposite_cell_owner,
+               HashTableMapT<Int64, Int64>& cells_first_face_uid,
+               IntegerArray& my_cells_nb_back_face,
+               Array<T_CellFaceInfo>& my_cells_faces_info)
+{
+  IParallelMng* pm = m_mesh->parallelMng();
+  Integer my_rank = pm->commRank();
+  Integer nb_rank = pm->commSize();
+
+  Integer nb_local_face = m_mesh_builder->oneMeshItemAdder()->nbFace();
 
   Integer nb_recv_sub_domain_boundary_face = 0;
 
@@ -241,12 +1084,6 @@ _computeFacesUniqueIdsParallelV1()
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   ItemInternalMap& faces_map = m_mesh->facesMap();
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
-
-  // NOTE: this array is not useful on all cells. It
-  // is enough that it contains the cells that we need, that is to say
-  // ours + those connected to one of our faces. A hash table
-  // would be more appropriate.
-  HashTableMapT<Int64, Int64> cells_first_face_uid(m_mesh_builder->oneMeshItemAdder()->nbCell() * 2, true);
 
   // Gather data from other processors into recv_cells;
   // To prevent the arrays from being too large, we proceed in several
@@ -385,40 +1222,15 @@ _computeFacesUniqueIdsParallelV1()
 
   // Finds the max uniqueId of the cells across all subdomains.
   Int64 max_cell_uid = 0;
-  Int32 max_cell_local_id = 0;
   cells_map.eachItem([&](Item cell) {
     Int64 cell_uid = cell.uniqueId().asInt64();
-    Int32 cell_local_id = cell.localId();
     if (cell_uid > max_cell_uid)
       max_cell_uid = cell_uid;
-    if (cell_local_id > max_cell_local_id)
-      max_cell_local_id = cell_local_id;
   });
   Int64 global_max_cell_uid = pm->reduce(Parallel::ReduceMax, max_cell_uid);
   debug() << "GLOBAL MAX CELL UID=" << global_max_cell_uid;
 
-  UniqueArray<T_CellFaceInfo> my_cells_faces_info;
-  my_cells_faces_info.reserve(nb_local_cell);
-  IntegerUniqueArray my_cells_nb_back_face(max_cell_local_id + 1);
-  my_cells_nb_back_face.fill(0);
-
-  cells_map.eachItem([&](Cell cell) {
-    Int64 cell_uid = cell.uniqueId().asInt64();
-    Int32 cell_local_id = cell.localId();
-    Integer nb_back_face = 0;
-    Integer nb_true_boundary_face = 0;
-    for (Face face : cell.faces()) {
-      Int64 opposite_cell_uid = faces_opposite_cell_uid[face.localId()];
-      if (face.backCell() == cell)
-        ++nb_back_face;
-      else if (face.nbCell() == 1 && opposite_cell_uid == NULL_ITEM_ID) {
-        ++nb_true_boundary_face;
-      }
-    }
-    my_cells_nb_back_face[cell_local_id] = nb_back_face;
-    my_cells_faces_info.add(T_CellFaceInfo(cell_uid, nb_back_face, nb_true_boundary_face));
-  });
-  std::sort(std::begin(my_cells_faces_info), std::end(my_cells_faces_info));
+  _v1CellBlockSizes(faces_opposite_cell_uid, my_cells_nb_back_face, my_cells_faces_info);
 
   {
     Integer nb_phase = 16;
@@ -478,109 +1290,6 @@ _computeFacesUniqueIdsParallelV1()
         current_face_uid += global_cells_faces_info[i].m_nb_back_face + global_cells_faces_info[i].m_nb_true_boundary_face;
       }
     }
-  }
-
-  cells_map.eachItem([&](Cell cell) {
-    Int64 cell_uid = cell.uniqueId();
-    Int32 cell_local_id = cell.localId();
-    Integer num_local_face = 0;
-    Integer num_true_boundary_face = 0;
-    for (Face face : cell.faces()) {
-      Int64 opposite_cell_uid = faces_opposite_cell_uid[face.localId()];
-      Int64 face_new_uid = NULL_ITEM_UNIQUE_ID;
-      if (face.backCell() == cell) {
-        if (!cells_first_face_uid.hasKey(cell_uid))
-          fatal() << "NO KEY 0 for cell_uid=" << cell_uid;
-        face_new_uid = cells_first_face_uid[cell_uid] + num_local_face;
-        face.mutableItemBase().setOwner(my_rank, my_rank);
-        ++num_local_face;
-      }
-      else if (face.nbCell() == 1) {
-        if (opposite_cell_uid == NULL_ITEM_UNIQUE_ID) {
-          // This is a boundary face of the initial domain
-          if (!cells_first_face_uid.hasKey(cell_uid))
-            fatal() << "NO KEY 1 for cell_uid=" << cell_uid;
-          face_new_uid = cells_first_face_uid[cell_uid] + my_cells_nb_back_face[cell_local_id] + num_true_boundary_face;
-          ++num_true_boundary_face;
-          face.mutableItemBase().setOwner(my_rank, my_rank);
-        }
-        else {
-          if (!cells_first_face_uid.hasKey(opposite_cell_uid))
-            fatal() << "NO KEY 1 for cell_uid=" << cell_uid << " opoosite=" << opposite_cell_uid;
-          face_new_uid = cells_first_face_uid[opposite_cell_uid] + faces_opposite_cell_index[face.localId()];
-          face.mutableItemBase().setOwner(faces_opposite_cell_owner[face.localId()], my_rank);
-        }
-      }
-      if (face_new_uid != NULL_ITEM_UNIQUE_ID) {
-        faces_new_uid[face.localId()] = face_new_uid;
-        face.mutableItemBase().setUniqueId(face_new_uid);
-      }
-    }
-  });
-
-  // Verifies that all faces have been re-indexed
-  {
-    Integer nb_error = 0;
-    for (Integer i = 0, is = nb_local_face; i < is; ++i) {
-      if (faces_new_uid[i] == NULL_ITEM_UNIQUE_ID) {
-        ++nb_error;
-        if (nb_error < 10)
-          error() << "The face lid=" << i << " has not been re-indexed.";
-      }
-    }
-    if (nb_error != 0)
-      ARCANE_FATAL("Some ({0}) faces have not been reindexed", nb_error);
-  }
-
-  if (is_verbose) {
-    OStringStream ostr;
-    cells_map.eachItem([&](Cell cell) {
-      Int64 cell_uid = cell.uniqueId().asInt64();
-      Integer face_index = 0;
-      for (Face face : cell.faces()) {
-        Int64 opposite_cell_uid = faces_opposite_cell_uid[face.localId()];
-        bool shared = false;
-        bool true_boundary = false;
-        bool internal_other = false;
-        if (face.backCell() == cell) {
-        }
-        else if (face.nbCell() == 1) {
-          if (opposite_cell_uid == NULL_ITEM_ID)
-            true_boundary = true;
-          else
-            shared = true;
-        }
-        else {
-          internal_other = true;
-          opposite_cell_uid = face.backCell().uniqueId().asInt64();
-        }
-        ostr() << "NEW UNIQUE ID FOR FACE"
-               << " lid=" << face.localId()
-               << " cell=" << cell_uid
-               << " face=" << face.uniqueId()
-               << " nbcell=" << face.nbCell()
-               << " cellindex=" << face_index << " (";
-        for (Node node : face.nodes())
-          ostr() << ' ' << node.uniqueId();
-        ostr() << ")";
-        if (internal_other)
-          ostr() << " internal-other";
-        if (true_boundary)
-          ostr() << " true-boundary";
-        if (opposite_cell_uid != NULL_ITEM_ID) {
-          ostr() << " opposite " << opposite_cell_uid;
-        }
-        if (shared)
-          ostr() << " (shared)";
-        ostr() << "\n";
-        ++face_index;
-      }
-    });
-    info() << ostr.str();
-    String file_name("faces_uid.");
-    file_name = file_name + my_rank;
-    std::ofstream ofile(file_name.localstr());
-    ofile << ostr.str();
   }
 }
 

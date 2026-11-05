@@ -2404,11 +2404,12 @@ namespace SYCLInternal
     auto nnz               = m_profile->getNnz();
 
     auto interface_nrow    = m_ext_profile->getNRows();
+    auto first_upper_ghost = m_first_upper_ghost_index ;
     auto ext_profile       = m_ext_profile->internal();
     auto& kcol             = ext_profile->getKCol();
     auto& block_row_offset = ext_profile->getBlockRowOffset();
     auto& block_cols       = ext_profile->getBlockCols();
-    // clang-format on
+
     if(this->m_N==1)
     {
       // clang-format off
@@ -2441,7 +2442,8 @@ namespace SYCLInternal
                              for(int j=0;j<block_row_size;++j)
                              {
                                auto k = block_row_offset+j*ellpack_size+local_id ;
-                               value += access_values[k]* access_x[access_cols[k]] ;
+                               if(access_cols[k]<first_upper_ghost)
+                                 value += access_values[k]* access_x[access_cols[k]] ;
                              }
                              access_y[access_row_ids[i]] += alpha * value ;
                           }
@@ -2482,11 +2484,11 @@ namespace SYCLInternal
 
                             for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
                             {
-                               auto block_id = i / pack_size ;
-                               auto local_id = i % pack_size ;
+                               std::size_t  block_id         = i / pack_size ;
+                               std::size_t  local_id         = i % pack_size ;
 
-                               int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
-                               auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                               std::size_t  block_row_offset = access_block_row_offset[block_id] * pack_size ;
+                               std::size_t  block_row_size   = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
                                for(int ieq=0;ieq<N;++ieq)
                                {
@@ -2494,12 +2496,13 @@ namespace SYCLInternal
                                  for(std::size_t k=block_row_offset;k<block_row_offset+block_row_size;++k)
                                  {
                                    // value += access_values[k]* access_x[access_cols[k]] ;
-                                   value += tile.mult(ieq,
-                                                      local_id,
-                                                      k,
-                                                      access_cols,
-                                                      access_values,
-                                                      access_x) ;
+                                   if(access_cols[k]<first_upper_ghost)
+                                     value += tile.mult(ieq,
+                                                        local_id,
+                                                        k,
+                                                        access_cols,
+                                                        access_values,
+                                                        access_x) ;
                                  }
                                  access_y[access_row_ids[i]*N+ieq] += alpha * value;
                                }
@@ -2836,6 +2839,7 @@ namespace SYCLInternal
     auto nnz               = m_profile->getNnz();
 
     auto interface_nrow    = m_ext_profile->getNRows();
+    auto first_upper_ghost = m_first_upper_ghost_index ;
     auto ext_profile       = m_ext_profile->internal();
     auto& kcol             = ext_profile->getKCol();
     auto& block_row_offset = ext_profile->getBlockRowOffset();
@@ -2863,17 +2867,18 @@ namespace SYCLInternal
 
                           for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
                           {
-                             auto block_id = i / pack_size ;
-                             auto local_id = i % pack_size ;
+                             std::size_t  block_id         = i / pack_size ;
+                             std::size_t  local_id         = i % pack_size ;
 
-                             int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
-                             auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                             std::size_t  block_row_offset = access_block_row_offset[block_id] * pack_size ;
+                             std::size_t  block_row_size   = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
 
                              ValueType value = 0. ;
                              for(int j=0;j<block_row_size;++j)
                              {
                                auto k = block_row_offset+j*pack_size+local_id ;
-                               value += access_values[k]* access_x[access_cols[k]] ;
+                               if(access_cols[k]>=first_upper_ghost)
+                                 value += access_values[k]* access_x[access_cols[k]] ;
                              }
                              access_y[access_row_ids[i]] += alpha * value ;
                           }
@@ -2914,11 +2919,12 @@ namespace SYCLInternal
 
                             for (auto i = id; i < interface_nrow; i += item_id.get_range()[0])
                             {
-                               auto block_id = i / pack_size ;
-                               auto local_id = i % pack_size ;
+                               std::size_t block_id         = i / pack_size ;
+                               std::size_t local_id         = i % pack_size ;
 
-                               int block_row_offset   = access_block_row_offset[block_id] * pack_size ;
-                               auto block_row_size    = access_block_row_offset[block_id+1]-access_block_row_offset[block_id] ;
+                               std::size_t block_row_offset = access_block_row_offset[block_id] * pack_size ;
+                               std::size_t block_row_size   = access_block_row_offset[block_id+1] -
+                                   access_block_row_offset[block_id] ;
 
                                for(int ieq=0;ieq<N;++ieq)
                                {
@@ -2926,12 +2932,13 @@ namespace SYCLInternal
                                  for(std::size_t k=block_row_offset;k<block_row_offset+block_row_size;++k)
                                  {
                                    // value += access_values[k]* access_x[access_cols[k]] ;
-                                   value += tile.mult(ieq,
-                                                      local_id,
-                                                      k,
-                                                      access_cols,
-                                                      access_values,
-                                                      access_x) ;
+                                   if(access_cols[k]>=first_upper_ghost)
+                                     value += tile.mult(ieq,
+                                                        local_id,
+                                                        k,
+                                                        access_cols,
+                                                        access_values,
+                                                        access_x) ;
                                  }
                                  access_y[access_row_ids[i]*N+ieq] += alpha * value;
                                }
@@ -4083,6 +4090,7 @@ initMatrix(Arccore::MessagePassing::IMessagePassingMng* parallel_mng,
                                                   nullptr });
 
     m_matrixPKSIZE.reset( new MatrixInternalType{ m_profilePKSIZE.get(), block_size });
+    m_matrixPKSIZE->m_first_upper_ghost_index = m_matrix_dist_info.m_first_upper_ghost_index - m_local_size;
   }
 
   return true;

@@ -160,6 +160,7 @@
   IndexedItemConnectivityAccessor.h
   IncrementalItemConnectivity.cc
   IncrementalItemConnectivity.h
+  Int64AllToAll.cc
   LazyMemoryPool.cc
   ItemConnectivity.cc
   ItemConnectivity.h
@@ -250,6 +251,7 @@
   GraphDoFs.cc
 
   internal/DynamicMeshInternal.h
+  internal/Int64AllToAll.h
   internal/UniqueIdKeySortFunction.h
   internal/LazyMemoryPool.h
 )

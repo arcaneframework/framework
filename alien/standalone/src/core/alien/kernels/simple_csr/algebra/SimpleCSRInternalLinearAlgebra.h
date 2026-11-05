@@ -109,6 +109,9 @@ class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
   void addLMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
   void addUMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
 
+  void endDistAddLMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
+  void endDistAddUMult(Real alpha, const Matrix& A, const Vector& x, Vector& y) const;
+
   void lowerUpperSynchronize(const Matrix& A, Vector& y) const;
   void upperLowerSynchronize(const Matrix& A, Vector& y) const;
 

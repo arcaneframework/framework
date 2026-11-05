@@ -71,13 +71,25 @@ void SimpleCSRMatrixMultT<ValueT>::mult(const VectorType& x, VectorType& y) cons
 template <typename ValueT>
 void SimpleCSRMatrixMultT<ValueT>::addLMult(Real alpha, const VectorType& x, VectorType& y) const
 {
+  if (m_matrix_impl.m_is_parallel)
+    lowerUpperSynchronize(x,const_cast<VectorType&>(x)) ;
+
   _seqAddLMult(alpha, x, y);
+
+  if (m_matrix_impl.m_is_parallel)
+    _endDistAddLMult(alpha, x, y);
 }
 
 template <typename ValueT>
 void SimpleCSRMatrixMultT<ValueT>::addUMult(Real alpha, const VectorType& x, VectorType& y) const
 {
+  if (m_matrix_impl.m_is_parallel)
+    upperLowerSynchronize(x,const_cast<VectorType&>(x)) ;
+
   _seqAddUMult(alpha, x, y);
+
+  if (m_matrix_impl.m_is_parallel)
+    _endDistAddUMult(alpha, x, y);
 }
 
 template <typename ValueT>
@@ -95,6 +107,9 @@ void SimpleCSRMatrixMultT<ValueT>::lowerUpperSynchronize(const VectorType& x_imp
 {
   Real* x_ptr = const_cast<Real*>(x_impl.getDataPtr());
   Real* y_ptr = y_impl.getDataPtr();
+
+  const Integer block_size = m_matrix_impl.blockSize();
+
   SendRecvOp<Real> op(x_ptr,
                       m_matrix_impl.m_matrix_dist_info.m_send_info,
                       m_matrix_impl.m_send_policy,
@@ -102,7 +117,8 @@ void SimpleCSRMatrixMultT<ValueT>::lowerUpperSynchronize(const VectorType& x_imp
                       m_matrix_impl.m_matrix_dist_info.m_recv_info,
                       m_matrix_impl.m_recv_policy,
                       m_matrix_impl.m_parallel_mng,
-                      m_matrix_impl.m_trace);
+                      m_matrix_impl.m_trace,
+                      block_size);
   op.lowerRecv();
   op.upperSend();
 }
@@ -114,6 +130,8 @@ void SimpleCSRMatrixMultT<ValueT>::upperLowerSynchronize(const VectorType& x_imp
 {
   Real* x_ptr = const_cast<Real*>(x_impl.getDataPtr());
   Real* y_ptr = y_impl.getDataPtr();
+  const Integer block_size = m_matrix_impl.blockSize();
+
   SendRecvOp<Real> op(x_ptr,
                       m_matrix_impl.m_matrix_dist_info.m_send_info,
                       m_matrix_impl.m_send_policy,
@@ -121,7 +139,8 @@ void SimpleCSRMatrixMultT<ValueT>::upperLowerSynchronize(const VectorType& x_imp
                       m_matrix_impl.m_matrix_dist_info.m_recv_info,
                       m_matrix_impl.m_recv_policy,
                       m_matrix_impl.m_parallel_mng,
-                      m_matrix_impl.m_trace);
+                      m_matrix_impl.m_trace,
+                      block_size);
   op.upperRecv();
   op.lowerSend();
 }
@@ -274,6 +293,34 @@ void SimpleCSRMatrixMultT<ValueT>::_seqAddLMult(Real alpha, const VectorType& x_
 }
 
 template <typename ValueT>
+void SimpleCSRMatrixMultT<ValueT>::_endDistAddLMult(Real alpha,
+    const VectorType& x_impl, VectorType& y_impl) const
+{
+  Real* y_ptr                            = y_impl.getDataPtr();
+  Real* x_ptr                            = (Real*)x_impl.getDataPtr();
+  ConstArrayView<Real> matrix            = m_matrix_impl.m_matrix.getValues();
+  ConstArrayView<Integer> cols           = m_matrix_impl.m_matrix.getCSRProfile().getCols();
+  ConstArrayView<Integer> row_offset     = m_matrix_impl.m_matrix.getCSRProfile().getRowOffset();
+  ConstArrayView<Integer> local_row_size = m_matrix_impl.m_matrix_dist_info.m_local_row_size;
+
+  Integer interface_nrow                 = m_matrix_impl.m_matrix_dist_info.m_interface_nrow;
+  Integer first_upper_ghost_index        = m_matrix_impl.m_matrix_dist_info.m_first_upper_ghost_index;
+  ConstArrayView<Integer> row_ids        = m_matrix_impl.m_matrix_dist_info.m_interface_rows;
+
+  for (Integer i = 0; i < interface_nrow; ++i) {
+    Integer irow = row_ids[i];
+    Integer off = row_offset[irow] + local_row_size[irow];
+    Integer off2 = row_offset[irow + 1];
+    Real tmpy = 0.;
+    for (Integer j = off; j < off2; ++j) {
+      if(cols[j] < first_upper_ghost_index)
+        tmpy += matrix[j] * x_ptr[cols[j]];
+    }
+    y_ptr[irow] += alpha * tmpy;
+  }
+}
+
+template <typename ValueT>
 void SimpleCSRMatrixMultT<ValueT>::_seqAddUMult(Real alpha, const VectorType& x_impl, VectorType& y_impl) const
 {
 #ifdef ALIEN_USE_PERF_TIMER
@@ -291,6 +338,33 @@ void SimpleCSRMatrixMultT<ValueT>::_seqAddUMult(Real alpha, const VectorType& x_
       tmpy += alpha * matrix[j] * x_ptr[cols[j]];
     }
     y_ptr[irow] = tmpy;
+  }
+}
+
+template <typename ValueT>
+void SimpleCSRMatrixMultT<ValueT>::_endDistAddUMult(Real alpha,
+    const VectorType& x_impl, VectorType& y_impl) const
+{
+  Real* y_ptr                            = y_impl.getDataPtr();
+  Real* x_ptr                            = (Real*)x_impl.getDataPtr();
+  ConstArrayView<Real> matrix            = m_matrix_impl.m_matrix.getValues();
+  ConstArrayView<Integer> cols           = m_matrix_impl.m_matrix.getCSRProfile().getCols();
+  ConstArrayView<Integer> row_offset     = m_matrix_impl.m_matrix.getCSRProfile().getRowOffset();
+  ConstArrayView<Integer> local_row_size = m_matrix_impl.m_matrix_dist_info.m_local_row_size;
+  Integer interface_nrow                 = m_matrix_impl.m_matrix_dist_info.m_interface_nrow;
+  Integer first_upper_ghost_index        = m_matrix_impl.m_matrix_dist_info.m_first_upper_ghost_index;
+  ConstArrayView<Integer> row_ids        = m_matrix_impl.m_matrix_dist_info.m_interface_rows;
+
+  for (Integer i = 0; i < interface_nrow; ++i) {
+    Integer irow = row_ids[i];
+    Integer off = row_offset[irow] + local_row_size[irow];
+    Integer off2 = row_offset[irow + 1];
+    Real tmpy = 0.;
+    for (Integer j = off; j < off2; ++j) {
+      if(cols[j] >= first_upper_ghost_index)
+        tmpy += matrix[j] * x_ptr[cols[j]];
+    }
+    y_ptr[irow] += alpha * tmpy;
   }
 }
 

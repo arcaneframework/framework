@@ -225,21 +225,30 @@ class VectorInternal
 #ifdef PRINT_DEBUG_INFO
     {
       sycl::host_accessor<ValueT, 1, sycl::access::mode::read> diag_acc(m_values);
+      sycl::host_accessor<ValueT, 1, sycl::access::mode::read> y_acc(y);
       sycl::host_accessor<ValueT, 1, sycl::access::mode::read> z_acc(z);
-
-      for (std::size_t irow = 0; irow < nrows; ++irow)
-      {
-        std::cout<<"INV DIAG["<<irow<<"]:\n";
-        for(int i=0;i<N;++i)
-        {
-          for(int j=0;j<N;++j)
-            std::cout<<diag_acc[irow*NxN+i*N+j]<<" ";
-          std::cout<<std::endl;
-        }
-        std::cout<<"Y["<<irow<<"]=\n";
-        for(int i=0;i<N;++i)
-          std::cout<<z_acc[irow*N+i]<<std::endl;
-      }
+      //alien_info([&]
+                  {
+                    for (std::size_t irow = 0; irow < nrows; ++irow)
+                    {
+                      std::cout<<"X["<<irow<<"] = \n";
+                      for(int i=0;i<N;++i)
+                        std::cout<<y_acc[irow*N+i]<<" ";
+                      std::cout<<std::endl;
+                      /*
+                      cout()<<"INV DIAG["<<irow<<"]:\n";
+                      for(int i=0;i<N;++i)
+                      {
+                        for(int j=0;j<N;++j)
+                          std::cout<<diag_acc[irow*NxN+i*N+j]<<" ";
+                        std::cout<<std::endl;
+                      }*/
+                      std::cout<<"Y["<<irow<<"] = \n";
+                      for(int i=0;i<N;++i)
+                        std::cout<<z_acc[irow*N+i]<<" ";
+                      std::cout<<std::endl ;
+                    }
+                  } //);
     }
 #endif
   }
