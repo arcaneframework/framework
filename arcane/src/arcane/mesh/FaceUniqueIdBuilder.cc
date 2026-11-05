@@ -418,6 +418,7 @@ _computeFacesUniqueIdsParallelV1()
 void FaceUniqueIdBuilder::
 _v1Distributed()
 {
+  info() << "Computing FaceUniqueIds using distributed version 1";
   IParallelMng* pm = m_mesh->parallelMng();
   const Int32 nb_rank = pm->commSize();
   const Int32 my_rank = pm->commRank();
