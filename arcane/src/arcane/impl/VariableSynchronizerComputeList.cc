@@ -83,10 +83,11 @@ compute()
 
   UniqueArray<SharedArray<Int32>> boundary_items(nb_rank);
 
-  info() << "Compute synchronize informations group=" << m_item_group.name()
-         << " family=" << item_family->fullName()
-         << " group size=" << m_item_group.size()
-         << " is_verbose=" << m_is_verbose;
+  if(m_is_verbose) {
+    info() << "Compute synchronize informations group=" << m_item_group.name()
+           << " family=" << item_family->fullName()
+           << " group size=" << m_item_group.size();
+  }
 
   {
     Integer nb_error = 0;
@@ -125,8 +126,10 @@ compute()
   if (is_debug)
     _printSyncList();
 
-  info() << "End compute synchronize information group=" << m_item_group.name()
-         << " Date=" << platform::getCurrentDateTime();
+  if(m_is_verbose) {
+    info() << "End compute synchronize information group=" << m_item_group.name()
+           << " Date=" << platform::getCurrentDateTime();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -433,7 +436,7 @@ _createList(UniqueArray<SharedArray<Int32>>& boundary_items)
       ARCANE_FATAL("Inconsistent ghost count");
   }
 
-  info() << "VariableSynchronize:: end compute list group=" << m_item_group.name()
+  info(4) << "VariableSynchronize:: end compute list group=" << m_item_group.name()
          << " t_init=" << Trace::Precision(4, time_before_all_gather - time_begin, true)
          << " t_allgather=" << Trace::Precision(4, time_after_all_gather - time_before_all_gather, true)
          << " t_sendrecv=" << Trace::Precision(4, time_after_sendrecv_wait - time_before_sendrecv, true)
