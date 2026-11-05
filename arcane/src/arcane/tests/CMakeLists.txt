@@ -709,7 +709,7 @@ arcane_add_test(mesh2 testMesh-2.arc "-We,ARCANE_METIS_INPUT_OUTPUT_DIGEST,1" "-
 if (Parmetis_FOUND)
   arcane_add_test_parallel_thread(mesh2_face_unique_id_v5 testMesh-2-face-unique-id-v5.arc 4)
 endif ()
-arcane_add_test(mesh2_generate_edge_face_uid testMesh-2-generate-edge-face-uid.arc)
+arcane_add_test(mesh2_generate_edge_face_uid testMesh-2-generate-edge-face-uid.arc "-We,ARCANE_DISTRIBUTED_FACE_NUMBERING,1")
 arcane_add_test(mesh2_non_manifold testMesh-2-non-manifold.arc)
 arcane_add_test(mesh2_non_manifold_use_rank testMesh-2-non-manifold.arc "-We,ARCANE_ITEMS_OWNER_BUILDER_USE_RANK,1")
 arcane_add_test(mesh2_non_manifold_write_msh testMesh-2-non-manifold-write-msh.arc)
@@ -914,7 +914,10 @@ if (Parmetis_FOUND)
   arcane_add_test_parallel_thread(basicmeshsubdividerservice1-subdivide1-parmetis testArcaneBasicMeshSubdividerService1-subdivide1-parmetis.arc 4 -m 1)
 endif ()
 
-arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
+arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10
+  "-We,ARCANE_BULK_ADD_CELLS,1"
+  "-We,ARCANE_LAZY_CONNECTIVITY,1"
+)
 arcane_add_test(hydro5 testHydro-5.arc -m 50 -We,ARCANE_MASTER_HAS_OUTPUT_FILE,1)
 arcane_add_test_parallel_all(hydro5_thread_itemgroup testHydro-5.arc 3 4 -m 50 -We,ARCANE_USE_LOCK_FOR_ITEMGROUP_UPDATE,1)
 
