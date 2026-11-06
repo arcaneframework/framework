@@ -1288,7 +1288,7 @@ HypreInternalLinearSolver::solve(const HypreVector& b,
 void
 HypreInternalLinearSolver::end()
 {
-  m_stat.finalPrint( Universe().traceMng(),"Hypre");
+  m_stat.finalPrint( traceMng(),"Hypre");
 
   if(m_impl.get())
   {
