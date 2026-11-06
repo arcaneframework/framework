@@ -252,7 +252,7 @@ HTSInternalLinearSolver::updateParallelMng(
 void
 HTSInternalLinearSolver::end()
 {
-  m_stat.finalPrint( Universe().traceMng(),"HTSSolver");
+  m_stat.finalPrint( traceMng(),"HTSSolver");
 }
 
 #ifdef ALIEN_USE_HTSSOLVER
