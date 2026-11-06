@@ -87,10 +87,6 @@ class ALIEN_IFPEN_SOLVERS_EXPORT HTSInternalLinearSolver
   }
 
   void printInfo() const;
-  void printInfo();
-  void printCurrentTimeInfo() {}
-
-
 
  private:
   void updateLinearSystem();

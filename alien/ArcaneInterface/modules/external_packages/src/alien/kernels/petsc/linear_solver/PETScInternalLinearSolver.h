@@ -192,7 +192,7 @@ class ALIEN_EXTERNAL_PACKAGES_EXPORT PETScInternalLinearSolver
   //! Statistiques d'exécution du solveur
   SolverStat m_stat;
 
-  IOptionsPETScLinearSolver* m_options;
+  IOptionsPETScLinearSolver* m_options = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
