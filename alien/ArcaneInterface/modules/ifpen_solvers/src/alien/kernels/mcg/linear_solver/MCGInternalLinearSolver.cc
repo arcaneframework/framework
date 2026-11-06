@@ -342,7 +342,7 @@ MCGInternalLinearSolver::updateParallelMng(
 void
 MCGInternalLinearSolver::end()
 {
-  m_stat.finalPrint(Universe().traceMng(), "MCGSolver " + m_version);
+  m_stat.finalPrint(traceMng(), "MCGSolver " + m_version);
 }
 
 Integer
@@ -543,7 +543,7 @@ MCGInternalLinearSolver::getStatus() const {
 void
 MCGInternalLinearSolver::printInfo() const {
 
-  m_stat.print(Universe().traceMng(), m_status, "MCGSolver " + m_version );
+  m_stat.print(traceMng(), m_status, "MCGSolver " + m_version );
 
 #if 0
   alien_info([&] {
