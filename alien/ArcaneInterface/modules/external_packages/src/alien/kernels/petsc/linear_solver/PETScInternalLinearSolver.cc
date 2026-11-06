@@ -537,9 +537,7 @@ PETScInternalLinearSolver::solve(
 void
 PETScInternalLinearSolver::end()
 {
-  if (m_verbose != VerboseTypes::low) {
-    internalPrintInfo();
-  }
+  m_stat.finalPrint(traceMng(), "PETSc");
 }
 
 /*---------------------------------------------------------------------------*/
