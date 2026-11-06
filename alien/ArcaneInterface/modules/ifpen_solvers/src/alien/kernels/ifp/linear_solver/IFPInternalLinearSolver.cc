@@ -65,7 +65,9 @@ IFPInternalLinearSolver::init()
   if (m_parallel_mng == nullptr)
     return;
 
-  alien_info(m_print_info, [&] { cout() << "IFPInternalLinearSolver::init"; });
+  if (m_print_info) {
+    alien_info([&] { cout() << "IFPInternalLinearSolver::init"; });
+  }
 
   if (m_options->output() > 0)
     m_print_info = m_options->output();
@@ -162,7 +164,7 @@ IFPInternalLinearSolver::end()
     F2C(ifpsolverfreedata)();
   }
 
-  m_stat.finalPrint( Universe().traceMng(),"IFPSolver");
+  m_stat.finalPrint( traceMng(),"IFPSolver");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -178,10 +180,13 @@ IFPInternalLinearSolver::getStatus() const
 bool
 IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorSolType& x)
 {
-  alien_info(m_print_info, [&] {
-    cout() << "|--------------------------------------------------------|";
-    cout() << "| Start Linear Solver #" << m_stat.solveCount();
-  });
+  if (m_print_info)
+  {
+    alien_info([&] {
+      cout() << "|--------------------------------------------------------|";
+      cout() << "| Start Linear Solver #" << m_stat.solveCount();
+    });
+  }
 
   if (m_parallel_mng == nullptr)
     return true;
@@ -202,17 +207,22 @@ IFPInternalLinearSolver::solve(const MatrixType& A, const VectorType& b, VectorS
     if (m_keep_rhs) {
       Alien::IFPSolverInternal::VectorInternal::initRHS(false);
       x.impl()->get<BackEnd::tag::ifpsolver>();
-    } else
+    }
+    else {
       b.impl()->get<BackEnd::tag::ifpsolver>();
+    }
 
-    alien_fatal((not(matrix.internal()->m_filled and rhs.internal()->m_filled)), [&] {
-      cout() << "IFPSolver initialization error "
-             << " A: " << matrix.internal()->m_filled
-             << " rhs: " << rhs.internal()->m_filled;
-    });
+    if (not(matrix.internal()->m_filled and rhs.internal()->m_filled)) {
+      alien_fatal([&] {
+        cout() << "IFPSolver initialization error "
+               << " A: " << matrix.internal()->m_filled
+               << " rhs: " << rhs.internal()->m_filled;
+      });
+    }
 
-    alien_info((m_print_info and matrix.internal()->m_elliptic_split_tag),
-        [&] { cout() << "Elliptic split tag enabled"; });
+    if (m_print_info and matrix.internal()->m_elliptic_split_tag) {
+      alien_info([&]{ cout() << "Elliptic split tag enabled"; });
+    }
 
     if (!matrix.getSymmetricProfile() && m_options->ilu0Algo() == IFPSolverProperty::Normal)
       m_ilu0_algo = 3;

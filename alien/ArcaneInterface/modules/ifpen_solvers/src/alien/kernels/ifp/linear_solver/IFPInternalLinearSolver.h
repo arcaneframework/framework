@@ -18,7 +18,8 @@ namespace Alien {
 
 class SolverStat;
 
-class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver
+class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver,
+                                                           public ObjectWithTrace
 {
  private:
   typedef SolverStatus Status;
