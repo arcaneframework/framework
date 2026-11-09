@@ -534,7 +534,9 @@ class TraceMng
 
 extern "C++" ARCCORE_TRACE_EXPORT ITraceMng* arccoreCreateDefaultTraceMng()
 {
-  return new TraceMng();
+  TraceMng* trace_mng = new TraceMng();
+  trace_mng->finishInitialize();
+  return trace_mng;
 }
 
 /*---------------------------------------------------------------------------*/
