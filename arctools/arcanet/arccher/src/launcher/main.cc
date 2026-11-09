@@ -23,7 +23,6 @@
 
 #include <arccore/trace/ITraceMng.h>
 
-
 #include <reproc++/reproc.hpp>
 #include <reproc++/run.hpp>
 
@@ -38,12 +37,31 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class RunException
+: public std::exception
+{
+ public:
+
+  explicit RunException(int code)
+  : m_code(code)
+  {}
+
+  int code() const noexcept { return m_code; }
+
+ private:
+
+  int m_code = -1;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 struct RunParam
 {
   String m_param_file;
   String m_case;
   String m_app_exec_path;
-  String m_mpi_exec_path;
+  String m_mpi_exec_path = "mpirun";
   String m_working_dir;
   Integer m_mpi_nb_proc = 0;
   std::unordered_map<std::string, std::string> m_env_var;
@@ -103,7 +121,7 @@ void readArccherPart(RunParam& runp, const JSONValue& arccher_part)
     }
   }
   {
-    const JSONValue node = arccher_part.child("mpi");
+    const JSONValue node = arccher_part.child("nb_proc");
     if (!node.null()) {
       runp.m_mpi_nb_proc = std::stoi(String(node.valueAsStringView()).localstr());
     }
@@ -131,7 +149,6 @@ void readArccherPart(RunParam& runp, const JSONValue& arccher_part)
 
 void readJSON(RunParam& runp, CommandLineArguments& cla, ITraceMng* tm)
 {
-
   String config_file = cla.getParameter("ConfigFile");
   String param_file = cla.getParameter("ParamFile");
   String acase = cla.getParameter("Case");
@@ -139,8 +156,9 @@ void readJSON(RunParam& runp, CommandLineArguments& cla, ITraceMng* tm)
   runp.m_param_file = param_file;
   runp.m_case = acase;
 
-  tm->info() << "ConfigFile : " << config_file
-             << " -- ParamFile : " << param_file << " -- Case : " << acase;
+  tm->info() << "ConfigFile : " << config_file;
+  tm->info() << "ParamFile : " << param_file;
+  tm->info() << "Case : " << acase;
 
   if (!config_file.empty()) {
     if (platform::isFileReadable(config_file)) {
@@ -204,7 +222,7 @@ void createCmd(ITraceMng* tm, RunParam& runp, UniqueArray<std::string>& cmd)
   if (runp.m_mpi_nb_proc > 0) {
     cmd.add(runp.m_mpi_exec_path.localstr());
     cmd.add("-n");
-    cmd.add( String::fromNumber(runp.m_mpi_nb_proc).localstr());
+    cmd.add(String::fromNumber(runp.m_mpi_nb_proc).localstr());
   }
   cmd.add(runp.m_app_exec_path.localstr());
 
@@ -213,7 +231,14 @@ void createCmd(ITraceMng* tm, RunParam& runp, UniqueArray<std::string>& cmd)
     cmd.add(String::format("-A,Case={0}", runp.m_case).localstr());
   }
 
-  tm->info() << "Final cmd: " << cmd;
+  StringBuilder sb;
+  for (const auto& elem : cmd) {
+    sb += "\"";
+    sb += elem;
+    sb += "\" ";
+  }
+
+  tm->info() << "ExecCommand: " << sb;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -227,8 +252,8 @@ void run(RunParam& runp, ITraceMng* tm)
   reproc::process process;
   reproc::options options;
 
-  // options.redirect.out.type = reproc::redirect::pipe;
-  // options.redirect.err.type = reproc::redirect::pipe;
+  options.redirect.out.type = reproc::redirect::parent;
+  options.redirect.err.type = reproc::redirect::parent;
 
   options.env.behavior = reproc::env::type::extend;
 
@@ -241,24 +266,21 @@ void run(RunParam& runp, ITraceMng* tm)
   UniqueArray<std::string> cmd;
   createCmd(tm, runp, cmd);
 
-  int status = -1;
-  std::error_code ec;
+  {
+    std::error_code ec = process.start(cmd, options);
+    if (ec) {
+      throw std::system_error(ec);
+    }
+  }
 
-  // ec = process.start(cmd, options);
-  // if (ec) {
-  //   tm->error() << "Erreur de lancement: " << ec.message();
-  //   return;
-  // }
-  //
-  // std::tie(status, ec) = process.wait(reproc::infinite);
-  // if (ec) {
-  //   tm->error() << "Erreur : " << ec.message();
-  //   return;
-  // }
+  // auto [status, ec] = reproc::run(cmd, options);
 
-  std::tie(status, ec) = reproc::run(cmd, options);
+  auto [status, ec] = process.wait(reproc::infinite);
   if (ec) {
-    tm->error() << "Erreur : " << ec.message();
+    throw std::system_error(ec);
+  }
+  if (status) {
+    throw RunException(status);
   }
 }
 
@@ -267,13 +289,40 @@ void run(RunParam& runp, ITraceMng* tm)
 
 int main(int argc, char* argv[])
 {
-  return ExceptionUtils::callWithTryCatch([&]() {
+  try {
     Ref<ITraceMng> tm(makeRef(arccoreCreateDefaultTraceMng()));
+    Trace::Setter _(tm.get(), "ArcCher");
     CommandLineArguments cla(&argc, &argv);
     RunParam runp;
     readJSON(runp, cla, tm.get());
     run(runp, tm.get());
-  });
+  }
+
+  catch (const RunException& e) {
+    std::cerr << std::endl
+              << "** Can't continue with the execution." << std::endl
+              << "* Process return: " << e.code() << std::endl;
+    return e.code();
+  }
+  catch (const std::system_error& e) {
+    std::cerr << std::endl
+              << "** Can't continue with the execution." << std::endl
+              << "* Process return: " << e.code().value() << std::endl
+              << "* Process message: " << e.code().message() << std::endl
+              << "* Process what: " << e.what() << std::endl;
+    return e.code().value();
+  }
+  catch (const Exception& ex) {
+    return ExceptionUtils::print(ex, nullptr, false);
+  }
+  catch (const std::exception& ex) {
+    return ExceptionUtils::print(ex, nullptr, false);
+  }
+  catch (...) {
+    return ExceptionUtils::print(nullptr, false);
+  }
+
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
