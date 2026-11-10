@@ -126,6 +126,14 @@ HypreVector::setValues(const int nrow, const int* rows, const double* values)
 bool
 HypreVector::setValues(const int nrow, const double* values)
 {
+  /*
+  alien_info([&]
+              {
+                  cout()<<"HypreVector::setValues : "<<nrow;
+                  for(int i=0;i<nrow;++i)
+                    cout()<<"CSR2HYPRE["<<i<<"]"<<values[i];
+              });
+  */
   if (m_internal == nullptr)
     return false;
   if(getMemoryType()==BackEnd::Memory::Host)
@@ -164,6 +172,15 @@ HypreVector::getValues(const int nrow, double* values) const
     return false;
 
   return m_internal->getValues(nrow, m_rows.data(), values);
+  /*
+  alien_info([&]
+              {
+                  cout()<<"HypreVector::getValues : "<<nrow;
+                  for(int i=0;i<nrow;++i)
+                    cout()<<"HYPRE2CSR["<<i<<"]"<<values[i];
+              });
+  return ok;
+  */
 }
 /*---------------------------------------------------------------------------*/
 

@@ -370,6 +370,64 @@ class CSRStructInfo
     setSymmetric(profile.getSymmetric());
   }
 
+
+  void computeSubProfile(UniqueArray<Integer>& parent_lid,
+                         UniqueArray<Integer>& old2new_lid,
+                         const CSRStructInfo& profile,
+                         Integer parent_local_offset,
+                         ConstArrayView<Integer> filter,
+                         ConstArrayView<Integer> new_offset,
+                         Integer my_rank)
+  {
+    m_nrow = new_offset[my_rank+1] - new_offset[my_rank] ;
+    Integer nrow = profile.getNRows() ;
+    auto row_offset = profile.getRowOffset() ;
+    auto cols = profile.getCols() ;
+    m_row_offset.resize(m_nrow + 1) ;
+    m_row_offset[0] = 0 ;
+    Integer irow = 0 ;
+    Integer icount = 0 ;
+    parent_lid.resize(m_nrow) ;
+    old2new_lid.resize(nrow) ;
+    old2new_lid.fill(-1) ;
+    for (Integer i = 0; i < nrow; ++i)
+    {
+      if (filter[i] == 1)
+      {
+        parent_lid[irow] = i ;
+        old2new_lid[i] = irow ;
+        m_row_offset[irow] = icount;
+        for (Integer k = row_offset[i]; k < row_offset[i + 1]; ++k)
+        {
+          if(filter[cols[k]-parent_local_offset] == 1)
+            ++icount;
+        }
+        ++irow;
+      }
+    }
+    m_row_offset[irow] = icount ;
+    assert(irow == m_nrow);
+
+    m_cols.resize(icount);
+    for (Integer irow = 0; irow < m_nrow; ++irow)
+    {
+      Integer parent = parent_lid[irow];
+      Integer kstart = row_offset[parent];
+      Integer kend = row_offset[parent + 1];
+      Integer kcount = 0;
+      for (Integer k = kstart; k < kend; ++k)
+      {
+        Integer col = cols[k] - parent_local_offset;
+        if (filter[col] == 1)
+        {
+          m_cols[m_row_offset[irow] + kcount] = old2new_lid[col];
+          ++kcount;
+        }
+      }
+      assert(kcount == m_row_offset[irow + 1] - m_row_offset[irow]);
+    }
+  }
+
  protected:
   bool m_is_variable_block = false;
   Arccore::Integer m_nrow = 0;

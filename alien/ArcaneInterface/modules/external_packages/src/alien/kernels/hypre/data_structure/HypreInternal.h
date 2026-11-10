@@ -34,6 +34,39 @@ namespace Alien::Internal {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+class HypreEnv
+{
+public:
+  static HypreEnv* instance()
+  {
+    if (!m_instance)
+    {
+      m_instance = new HypreEnv();
+    }
+    return m_instance;
+  }
+
+  static void finalize()
+  {
+    if (m_instance)
+    {
+      delete m_instance;
+      m_instance = nullptr;
+    }
+  }
+
+  void setDeviceId(int device_id) ;
+
+private:
+  HypreEnv()
+  {}
+
+  ~HypreEnv()
+  {}
+
+  static HypreEnv *m_instance;
+};
+
 
 class MatrixInternal : public ObjectWithTrace
 {

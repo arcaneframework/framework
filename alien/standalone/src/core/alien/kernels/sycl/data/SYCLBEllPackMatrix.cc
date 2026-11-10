@@ -777,6 +777,7 @@ namespace SYCLInternal
         auto ext_internal_profile  = m_ext_profile->internal();
         auto& ext_kcol             = ext_internal_profile->getKCol();
         auto& ext_block_row_offset = ext_internal_profile->getBlockRowOffset();
+        auto& ext_block_cols       = ext_internal_profile->getBlockCols();
         //m_h_ext_values.resize(ext_block_nnz) ;
         m_ext_values.reset(new ValueBufferType(ext_block_nnz * ellpack_size * NxN)) ;
         {
@@ -829,25 +830,26 @@ namespace SYCLInternal
         }
         /*
         {
-            sycl::host_accessor<ValueT, 1, sycl::access::mode::read> h_acc(m_values);
-            sycl::host_accessor<int, 1, sycl::access::mode::read> kcol_acc(block_row_offset);
-            sycl::host_accessor<int, 1, sycl::access::mode::read> cols_acc(block_cols);
-            for(int irow=0;irow<nrows;++irow)
-            {
-              auto ib=irow/pack_size ;
-              auto il=irow%pack_size ;
-              alien_info([&] {
-              cout()<<"MAT["<<irow<<","<<ib<<","<<il<<"]:";
-              for(int k=kcol_acc[ib];k<kcol_acc[ib+1];++k)
+            sycl::host_accessor<ValueT, 1, sycl::access::mode::read> h_acc(*m_ext_values);
+            sycl::host_accessor<int, 1, sycl::access::mode::read> kcol_acc(ext_block_row_offset);
+            sycl::host_accessor<int, 1, sycl::access::mode::read> cols_acc(ext_block_cols);
+
+            alien_info([&] {
+              for(int i=0;i<interface_nrows;++i)
               {
-                cout()<<"\t K"<<k<<" "<<cols_acc[k*pack_size+il];
-                for(int i=0;i<N;++i)
-                  for(int j=0;j<N;++j)
-                    cout()<<"\t\t"<<h_acc[(k*NxN+i*N+j)*pack_size+il]<<",";
-                //std::cout<<std::endl;
+                auto ib = i / pack_size ;
+                auto il = i % pack_size ;
+                cout()<<"EXT MAT["<<i<<","<<ib<<","<<il<<"]:";
+                for(int k=kcol_acc[ib];k<kcol_acc[ib+1];++k)
+                {
+                  cout()<<"\t K"<<k<<" "<<cols_acc[k*pack_size+il];
+                  for(int i=0;i<N;++i)
+                    for(int j=0;j<N;++j)
+                      cout()<<"\t\t"<<h_acc[(k*NxN+i*N+j)*pack_size+il];
+                  //std::cout<<std::endl;
+                }
               }
-              });
-            }
+            });
         }*/
         m_values_is_update = true;
       }
@@ -1442,10 +1444,10 @@ namespace SYCLInternal
 
   template <typename ValueT, int EllpackSize>
   bool MatrixInternal<ValueT, EllpackSize>::copy(std::size_t nb_blocks,
-                                               int block_size,
-                                               ValueBufferType& values_buffer,
-                                               ValueBufferType& ext_values_buffer,
-                                               int rhs_block_size)
+                                                 int block_size,
+                                                 ValueBufferType& values_buffer,
+                                                 ValueBufferType& ext_values_buffer,
+                                                 int rhs_block_size)
   {
     copy(nb_blocks,block_size,values_buffer,rhs_block_size) ;
 
@@ -1475,9 +1477,10 @@ namespace SYCLInternal
     auto ext_internal_profile  = m_ext_profile->internal();
     auto& ext_kcol             = ext_internal_profile->getKCol();
     auto& ext_block_row_offset = ext_internal_profile->getBlockRowOffset();
+    auto& ext_block_cols       = ext_internal_profile->getBlockCols() ;
 
     m_h_ext_values.resize(ext_block_nnz*N1xN1) ;
-    m_ext_values.reset(new ValueBufferType(ext_block_nnz * N1xN1* ellpack_size)) ;
+    m_ext_values.reset(new ValueBufferType(ext_block_nnz * N1xN1 * pack_size)) ;
     {
       queue.submit([&](sycl::handler& cgh)
                    {
@@ -1489,16 +1492,17 @@ namespace SYCLInternal
                          sycl::range<1>{total_threads},
                          [=] (sycl::item<1> item_id)
                          {
-                           auto id = item_id.get_id(0);
-                           for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
+                           auto id     = item_id.get_id(0);
+                           auto stride = item_id.get_range()[0];
+                           for (auto i = id; i < interface_nrows; i += stride)
                            {
-                              auto block_id = i/pack_size ;
-                              auto local_id = i%pack_size ;
+                              auto block_id           = i / pack_size ;
+                              auto local_id           = i % pack_size ;
 
                               auto begin              = access_block_row_offset[block_id] ;
                               auto end                = access_block_row_offset[block_id+1] ;
 
-                              for(int k=begin;k<begin;++k)
+                              for(int k=begin;k<end;++k)
                               {
                                 for(int i=0;i<N1;++i)
                                   for(int j=0;j<N1;++j)
@@ -3714,31 +3718,6 @@ namespace SYCLInternal
     auto& block_cols       = internal_profile->getBlockCols() ;
 
     auto local_row_size    = m_profile->localRowSize();
-    /*
-    {
-      std::cout<<"CHECK KCOL : "<<std::endl ;
-      sycl::host_accessor<int, 1, sycl::access::mode::read> h_kcol(kcol);
-      sycl::host_accessor<int, 1, sycl::access::mode::read> h_bkcol(block_row_offset);
-      sycl::host_accessor<int, 1, sycl::access::mode::read> h_bcols(block_cols);
-      sycl::host_accessor<ValueT, 1, sycl::access::mode::read> h_values(m_values);
-      for(int irow=0;irow<nrows;++irow)
-      {
-        auto block_id = irow/pack_size ;
-        auto local_id = irow%pack_size ;
-        std::cout<<"KCOL["<<irow<<"] = "<<h_kcol[irow]<<" ROW SIZE = "<<h_kcol[irow+1]-h_kcol[irow]<<std::endl ;
-
-        int begin    = h_bkcol[block_id] ;
-        int end      = h_bkcol[block_id+1] ;
-        int row_size = h_kcol[irow+1] - h_kcol[irow];
-
-        std::cout<<"ELLPACK MAT["<<irow<<","<<block_id<<","<<local_id<<"]:";
-        for(int k=begin;k<end;++k)
-        {
-            std::cout<<h_bcols[k*pack_size+local_id]<<" "<<h_values[k*pack_size+local_id]<<" ";
-        }
-        std::cout<<std::endl ;
-      }
-    }*/
     if(local_row_size == nullptr)
     {
 
@@ -3872,8 +3851,8 @@ namespace SYCLInternal
 
                            for (auto i = id; i < interface_nrows; i += item_id.get_range()[0])
                            {
-                              auto block_id = i/pack_size ;
-                              auto local_id = i%pack_size ;
+                              auto block_id = i / pack_size ;
+                              auto local_id = i % pack_size ;
                               auto begin    = acc_ext_bkcol[block_id] ;
                               auto end      = acc_ext_bkcol[block_id+1] ;
 
@@ -3900,7 +3879,52 @@ namespace SYCLInternal
           queue.memcpy(h_data.data(), values, nnz * sizeof(ValueT)).wait();
           std::vector<int> h_cols(nnz) ;
           queue.memcpy(h_cols.data(), cols, nnz * sizeof(int)).wait();
+
           sycl::host_accessor<int, 1, sycl::access::mode::read> h_kcol(kcol);
+          sycl::host_accessor<int, 1, sycl::access::mode::read> h_bkcol(ext_block_row_offset);
+          sycl::host_accessor<int, 1, sycl::access::mode::read> h_bcols(ext_block_cols);
+          sycl::host_accessor<int, 1, sycl::access::mode::read> h_row_ids(*m_interface_row_ids);
+          sycl::host_accessor<int, 1, sycl::access::mode::read> h_recv_uids(*m_recv_uids);
+          sycl::host_accessor<ValueT, 1, sycl::access::mode::read> h_values(*m_ext_values);
+
+          alien_info([&]
+                     {
+                        for(int i=0;i<interface_nrows;++i)
+                        {
+                          auto block_id = i / pack_size ;
+                          auto local_id = i % pack_size ;
+
+                          auto row_id   = h_row_ids[i];
+
+                          int begin    = h_bkcol[block_id] ;
+                          int end      = h_bkcol[block_id+1] ;
+                          int row_size = h_kcol[row_id+1] - h_kcol[row_id];
+                          int lrow_size = local_row_size[row_id] ;
+
+                          auto offset   = h_kcol[row_id] + lrow_size;
+                          /*
+                          cout()<<"KCOL["<<i<<" "<<row_id<<"] = "<<h_kcol[row_id]
+                                   <<" ROW SIZE = "<<row_size
+                                   <<" LOCAL ROW SIZE = "<<lrow_size ;
+
+                          for(int k=begin;k<end;++k)
+                          {
+                            auto j = k-begin ;
+                            if(j<row_size-lrow_size)
+                            {
+                              cout() << "\t\t("<<h_recv_uids[h_bcols[k*pack_size+local_id]]
+                                      <<","<<h_bcols[k*pack_size+local_id]
+                                      <<","<<h_values[k*pack_size+local_id]<<")" ;
+                            }
+                          }*/
+                          cout()<<"CXR ["<<row_id<<"] = "<<h_kcol[row_id]<<" "<<h_kcol[row_id+1]<<" "<<lrow_size<<" "<<row_size ;
+                          for (int k = h_kcol[row_id]; k < h_kcol[row_id + 1]; ++k)
+                          {
+                            cout() << "\t\t(" << h_cols[k] << "," << h_data[k] << ")";
+                          }
+                        }
+                     });
+          /*
           alien_info([&] {
             cout()<<"SYCL DEVICE COPY : "<<nrows<<" "<<nnz<<" "<<ext_nnz<<" "<<interface_nrows;
           for(int irow=0;irow<nrows;++irow)
@@ -3912,7 +3936,7 @@ namespace SYCLInternal
             }
             std::cout<<std::endl ;
           }
-          });
+          });*/
         }
 #endif
     }
@@ -4275,15 +4299,15 @@ void SYCLBEllPackMatrix<ValueT>::copy(SYCLBEllPackMatrix<ValueT> const& matrix)
     auto nb_blocks = m_profilePKSIZE->getBlockNnz();
     if(m_is_parallel)
       m_matrixPKSIZE->copy(nb_blocks,
-                         block_size,
-                         matrix.m_matrixPKSIZE->m_values,
-                         (*matrix.m_matrixPKSIZE->m_ext_values),
-                         matrix.blockSize()) ;
+                           block_size,
+                           matrix.m_matrixPKSIZE->m_values,
+                           (*matrix.m_matrixPKSIZE->m_ext_values),
+                           matrix.blockSize()) ;
     else
       m_matrixPKSIZE->copy(nb_blocks,
-                         block_size,
-                         matrix.m_matrixPKSIZE->m_values,
-                         matrix.blockSize()) ;
+                           block_size,
+                           matrix.m_matrixPKSIZE->m_values,
+                           matrix.blockSize()) ;
   }
 }
 

@@ -48,7 +48,11 @@ public:
   {
     if constexpr (requires{algebra.computeCxr(m_matrix,m_cxr_matrix) ;})
     {
-      m_block_size = algebra.computeCxr(m_matrix,m_cxr_matrix) ;
+      m_block_size = m_matrix.blockSize() ;
+      if(m_block_size==1)
+        algebra.computeCxr(m_matrix,m_cxr_matrix,m_parent_lid) ;
+      else
+        algebra.computeCxr(m_matrix,m_cxr_matrix) ;
     }
     else
       throw Arccore::FatalErrorException(A_FUNCINFO, "Using Algebra that does not implemented computeCxr Op");
@@ -68,7 +72,10 @@ public:
   template<typename AlgebraT>
   void get(AlgebraT& algebra, VectorType const& x,VectorType& cxr_x)
   {
-    algebra.copy(x,m_block_size,cxr_x,1);
+    if(m_block_size==1)
+      algebra.copy(x,m_parent_lid, cxr_x) ;
+    else
+      algebra.copy(x,m_block_size,cxr_x,1);
     /*
     if(m_use_diag_scal)
     {
@@ -89,14 +96,21 @@ public:
   template<typename AlgebraT>
   void combine(AlgebraT& algebra, VectorType const& cxr_x, VectorType& x)
   {
-    algebra.axpy(1.,cxr_x,1,x,m_block_size);
+    //std::cout<<"CXR OP COMBINE"<<std::endl ;
+    if(m_block_size==1)
+      algebra.axpy(1.,cxr_x,x,m_parent_lid);
+    else
+      algebra.axpy(1.,cxr_x,1,x,m_block_size);
   }
 
 
   template<typename AlgebraT>
   void copy(AlgebraT& algebra, VectorType const& cxr_x, VectorType& x)
   {
-    algebra.copy(cxr_x,1,x,m_block_size);
+    if (m_block_size == 1)
+      algebra.copy(cxr_x, x, m_parent_lid);
+    else
+      algebra.copy(cxr_x,1,x,m_block_size);
   }
 
 private:
@@ -104,6 +118,7 @@ private:
   MatrixType        m_cxr_matrix ;
   VectorType        m_v;
   int               m_block_size = 1 ;
+  UniqueArray<int>  m_parent_lid ;
 
   bool              m_use_diag_scal = false;
   VectorType        m_cxr_diag_scal ;

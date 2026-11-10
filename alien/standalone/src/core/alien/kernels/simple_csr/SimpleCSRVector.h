@@ -118,7 +118,6 @@ class SimpleCSRVector : public IVectorImpl
   void init(const VectorDistribution& dist,
             const bool need_allocate) override
   {
-    alien_debug([&] { cout() << "Initializing SimpleCSRVector " << this; });
     if (this->m_multi_impl) {
       if (this->vblock()) {
         m_vblock.reset(new VBlockImpl(*this->vblock(), this->distribution()));

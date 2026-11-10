@@ -106,6 +106,7 @@ namespace Alien
         // R_Cpr = X1-X_Cpr
         //m_kernel->xmy(m_r_Cxr,m_x_Cxr);
         alg.scal(-1.,m_x_Cxr) ;
+
         alg.axpy(1.,m_x_Cxr,m_r_Cxr) ;
 
         m_cxr_op->scal(alg,m_r_Cxr) ;

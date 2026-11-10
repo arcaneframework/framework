@@ -67,7 +67,7 @@ SimpleCSRInternalLinearAlgebra::~SimpleCSRInternalLinearAlgebra()
 SimpleCSRInternalLinearAlgebra::ResourceType
 SimpleCSRInternalLinearAlgebra::resource(Matrix const& A)
 {
-  return std::make_tuple(&A.distribution().rowDistribution(),A.blockSize());
+  return std::make_tuple(&A.rowDistribution(),A.blockSize());
 }
 
 void SimpleCSRInternalLinearAlgebra::allocate(ResourceType resource, Vector& v)
@@ -275,6 +275,17 @@ void SimpleCSRInternalLinearAlgebra::axpy(Real alpha,
   CBLASMPIKernel::axpy(vx.distribution(), alpha, vx, stride_x, vr, stride_r);
 }
 
+
+void SimpleCSRInternalLinearAlgebra::axpy(Real alpha,
+                                          const CSRVector& vx,
+                                          CSRVector& vr,
+                                          ConstArrayView<Integer> strides_r) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-AXPY");
+#endif
+  CBLASMPIKernel::axpy(vr.distribution(), alpha, vx, vr, strides_r);
+}
 /*---------------------------------------------------------------------------*/
 
 void SimpleCSRInternalLinearAlgebra::aypx([[maybe_unused]] Real alpha,
@@ -292,7 +303,31 @@ void SimpleCSRInternalLinearAlgebra::copy(const Vector& vx,
                                           Vector& vr,
                                           Integer stride_r) const
 {
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-COPY");
+#endif
   CBLASMPIKernel::copy(vx.distribution(), vx, stride_x, vr, stride_r);
+}
+
+
+void SimpleCSRInternalLinearAlgebra::copy(const Vector& vx,
+                                          ConstArrayView<Integer> strides_x,
+                                          Vector& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-COPY");
+#endif
+  CBLASMPIKernel::copy(vr.distribution(), vx, strides_x, vr);
+}
+
+void SimpleCSRInternalLinearAlgebra::copy(const Vector& vx,
+                                          Vector& vr,
+                                          ConstArrayView<Integer> strides_r) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-COPY");
+#endif
+  CBLASMPIKernel::copy(vr.distribution(), vx, vr, strides_r);
 }
 /*---------------------------------------------------------------------------*/
 
@@ -370,6 +405,42 @@ Integer SimpleCSRInternalLinearAlgebra::computeCxr(const CSRMatrix& a, CSRMatrix
   auto block_size = a.blockSize() ;
   cxr_a.setBlockSize(1) ;
   cxr_a.copy(a) ;
+  return block_size ;
+}
+
+Integer SimpleCSRInternalLinearAlgebra::computeCxr(const CSRMatrix& a,
+                                                   CSRMatrix& cxr_a,
+                                                   UniqueArray<Integer>& strides) const
+{
+  auto block_size = a.blockSize() ;
+  cxr_a.setBlockSize(1) ;
+  {
+    const ISpace& space = a.rowSpace();
+    const MatrixDistribution& dist = a.distribution();
+
+    bool elliptic_split_tag_found = false ;
+
+    Integer domain_offset = dist.rowOffset();
+    Integer local_size    = dist.localRowSize();
+
+    UniqueArray<Integer> filter(local_size);
+    filter.fill(0);
+    for (Integer i = 0; i < space.nbField(); ++i)
+    {
+        const UniqueArray<Integer>& indices = space.field(i);
+        if (space.fieldLabel(i) == "Elliptic" and not indices.empty())
+        {
+          elliptic_split_tag_found = true;
+          for (Integer j = 0; j < indices.size(); ++j)
+          {
+            const Integer index = indices[j];
+            //alien_info([&] { cout()<< "Elliptic index "<<j<<" "<<index;}) ;
+            filter[index - domain_offset] = 1 ;
+          }
+        }
+    }
+    cxr_a.copy(a,filter,strides) ;
+  }
   return block_size ;
 }
 

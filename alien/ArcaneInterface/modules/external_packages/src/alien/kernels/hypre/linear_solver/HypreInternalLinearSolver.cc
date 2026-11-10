@@ -28,6 +28,8 @@
 #include <alien/kernels/hypre/data_structure/HypreVector.h>
 #include <alien/kernels/hypre/data_structure/HypreMatrix.h>
 #include <alien/kernels/hypre/data_structure/HypreInternal.h>
+#include <alien/utils/system/MachineInfo.h>
+
 #include "HypreOptionTypes.h"
 
 #include <ALIEN/axl/HypreSolver_IOptions.h>
@@ -134,7 +136,7 @@ HypreLibrary::HypreLibrary(bool exec_on_device, bool use_device_memory, int devi
   if(exec_on_device)
   {
     m_device_id = device_id ;
-    //hypre_SetDevice(m_device_id, nullptr);
+    Alien::Internal::HypreEnv::instance()->setDeviceId(m_device_id) ;
   }
 #if HYPRE_RELEASE_NUMBER >= 22900
   if (!HYPRE_Initialized()){
@@ -226,6 +228,7 @@ HypreLibrary::HypreLibrary(bool exec_on_device, bool use_device_memory, int devi
 
 HypreLibrary::~HypreLibrary()
 {
+  Alien::Internal::HypreEnv::finalize() ;
 #if HYPRE_HAVE_HYPRE_FINALIZE
   HYPRE_Finalize() ;
 #endif
@@ -242,8 +245,13 @@ HypreInternalLinearSolver(Arccore::MessagePassing::IMessagePassingMng* pm,
 , m_runner(runner)
 , m_options(options)
 {
-  if(m_runner)
+  if(m_runner && isAcceleratorPolicy(m_runner->executionPolicy()))
     m_gpu_device_id = m_runner->deviceId().asInt32();
+  else
+  {
+    auto machine_info = MachineInfo(m_parallel_mng) ;
+    m_gpu_device_id = machine_info.deviceId() ;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -283,6 +291,7 @@ HypreInternalLinearSolver::init()
         HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(true,false)) ;
       alien_info([&] {
         cout()<<"Hypre Initialisation : Exec on Device ";
+        cout()<<"           Device ID : "<<m_gpu_device_id;
         switch(m_options->memoryType())
         {
           case HypreOptionTypes::HostMemory:

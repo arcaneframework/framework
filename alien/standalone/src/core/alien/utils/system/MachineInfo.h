@@ -7,8 +7,10 @@
 
 #pragma once
 
+#include <alien/utils/Precomp.h>
+
 namespace Alien {
-  class MachineInfo
+  class ALIEN_EXPORT MachineInfo
   {
   public :
     MachineInfo(Arccore::MessagePassing::IMessagePassingMng* parellel_mng) ;

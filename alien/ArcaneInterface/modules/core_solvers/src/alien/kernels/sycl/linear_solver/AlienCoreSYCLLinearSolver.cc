@@ -13,6 +13,7 @@
 #include <arcane/Timer.h>
 #include <arccore/common/accelerator/Runner.h>
 #include <arccore/common/accelerator/DeviceId.h>
+#include <arccore/common/accelerator/DeviceInfo.h>
 
 #include "alien/kernels/sycl/AlienSolverSYCLPrecomp.h"
 
@@ -61,6 +62,7 @@
 
 #include <alien/expression/krylov/AlienKrylov.h>
 #include <alien/utils/StdTimer.h>
+#include <alien/utils/system/MachineInfo.h>
 
 /*---------------------------------------------------------------------------*/
 
@@ -75,9 +77,34 @@ AlienCoreSYCLLinearSolver(Arccore::MessagePassing::IMessagePassingMng* parallel_
 : BaseType(parallel_mng, runner, options)
 , m_stater(this)
 {
-  if(runner)
+  int rank = 0;
+  if (m_parallel_mng)
+    rank = m_parallel_mng->commRank();
+
+  if(runner && isAcceleratorPolicy(runner->executionPolicy()))
   {
-    auto device_id = m_runner->deviceId().asInt32();
+    auto device_info = m_runner->deviceInfo();
+    std::cout<<"==============================================================="<<std::endl;
+    std::cout<<" DEVICE INFO : "<<std::endl;
+    std::cout<<"        RANK : "<<rank<<std::endl;
+    std::cout<<"        NAME : "<<device_info.name()<<std::endl;
+    std::cout<<"          ID : "<<device_info.deviceId()<<std::endl;
+    std::cout<<"         UID : "<<device_info.uuidAsString()<<std::endl;
+    std::cout<<"==============================================================="<<std::endl;
+
+    auto env = SYCLEnv::instance(device_info.deviceId().asInt32());
+  }
+  else
+  {
+    auto machine_info = MachineInfo(parallel_mng) ;
+    auto device_id = machine_info.deviceId() ;
+
+    std::cout<<"==============================================================="<<std::endl;
+    std::cout<<" DEVICE INFO : "<<std::endl;
+    std::cout<<"        RANK : "<<rank<<std::endl;
+    std::cout<<"          ID : "<<device_id<<std::endl;
+    std::cout<<"==============================================================="<<std::endl;
+
     auto env = SYCLEnv::instance(device_id);
   }
 }
