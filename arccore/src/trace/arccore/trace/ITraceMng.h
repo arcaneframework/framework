@@ -294,6 +294,11 @@ class ARCCORE_TRACE_EXPORT ITraceMng
   virtual void setErrorFileName(const String& file_name) = 0;
 
   /*!
+   * \brief Gets the error file name.
+   */
+  virtual String errorFileName() = 0;
+
+  /*!
    * \brief Sets the log file name to \a file_name.
    *
    * If a log file is already open, it is closed and a new one
