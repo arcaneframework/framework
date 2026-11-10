@@ -33,6 +33,16 @@
 // Eigen3
 #cmakedefine ALIEN_USE_EIGEN3
 
+// Cuda
+#ifndef ALIEN_USE_CUDA
+#cmakedefine ALIEN_USE_CUDA
+#endif
+
+// HIP
+#ifndef ALIEN_USE_HIP
+#cmakedefine ALIEN_USE_HIP
+#endif
+
 // SYCL
 #ifndef ALIEN_USE_SYCL
 #cmakedefine ALIEN_USE_SYCL

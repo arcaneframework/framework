@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <numeric>
+
 #include <alien/kernels/simple_csr/CSRStructInfo.h>
 #include <alien/kernels/simple_csr/SimpleCSRPrecomp.h>
 
@@ -109,6 +111,48 @@ class MatrixInternal
       }
     }
     m_profile->copy(internal.getCSRProfile());
+  }
+
+
+  template <typename T>
+  void computeSubMatrix(UniqueArray<Integer>& parent_lids,
+                        const MatrixInternal<T>& internal,
+                        Integer parent_local_offset,
+                        ConstArrayView<Integer> filter,
+                        ConstArrayView<Integer> new_offset,
+                        Integer my_rank)
+  {
+    UniqueArray<Integer> old2new_lids;
+    m_profile->computeSubProfile(parent_lids,
+                                 old2new_lids,
+                                 internal.getCSRProfile(),
+                                 parent_local_offset,
+                                 filter,
+                                 new_offset,
+                                 my_rank);
+
+    m_values.resize(m_profile->getNnz()) ;
+    auto kcol = m_profile->getRowOffset() ;
+    auto parent_kcol = internal.getCSRProfile().getRowOffset() ;
+    auto parent_cols = internal.getCSRProfile().getCols() ;
+    auto const& parent_values = internal.getValues() ;
+    for (Integer irow = 0; irow < m_profile->getNRows(); ++irow)
+    {
+      Integer parent_row    = parent_lids[irow];
+      Integer kstart        = kcol[irow];
+      Integer kend          = kcol[irow + 1];
+      Integer parent_kstart = parent_kcol[parent_row];
+      Integer parent_kend   = parent_kcol[parent_row + 1];
+      Integer k = kstart;
+      for (Integer pk = parent_kstart; pk < parent_kend; ++pk)
+      {
+        Integer col = parent_cols[pk] - parent_local_offset;
+        if (filter[col] != 1)
+          continue;
+        m_values[k] = parent_values[pk];
+        ++k;
+      }
+    }
   }
 
   bool needUpdate()

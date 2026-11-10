@@ -41,6 +41,40 @@ class CBLASMPIKernel
     cblas::copy(dist.localSize(), (ValueType*)x.getDataPtr(), stride_x, y.getDataPtr(), stride_y);
   }
 
+
+  template <typename Distribution, typename VectorT>
+  static void copy([[maybe_unused]] Distribution const& dist,
+                   const VectorT& x,
+                   ConstArrayView<Integer> strides,
+                   VectorT& y)
+  {
+    typedef typename VectorT::ValueType ValueType;
+    std::size_t local_size = y.scalarizedLocalSize();
+    auto x_ptr = x.getDataPtr();
+    auto y_ptr = y.getDataPtr();
+    for (std::size_t i = 0; i < local_size; ++i)
+    {
+         y_ptr[i] = x_ptr[strides[i]] ;
+    }
+  }
+
+  template <typename Distribution, typename VectorT>
+  static void copy([[maybe_unused]] Distribution const& dist,
+                   const VectorT& x,
+                   VectorT& y,
+                   ConstArrayView<Integer> strides)
+  {
+    typedef typename VectorT::ValueType ValueType;
+    std::size_t local_size = x.scalarizedLocalSize();
+    auto x_ptr = x.getDataPtr();
+    auto y_ptr = y.getDataPtr();
+    for (std::size_t i = 0; i < local_size; ++i)
+    {
+         y_ptr[strides[i]] = x_ptr[i] ;
+    }
+  }
+
+
   template <typename Distribution, typename VectorT>
   static void axpy(Distribution const& dist ALIEN_UNUSED_PARAM,
                    typename VectorT::ValueType alpha, const VectorT& x, VectorT& y)
@@ -58,6 +92,24 @@ class CBLASMPIKernel
   {
     cblas::axpy(x.scalarizedLocalSize(), alpha, x.getDataPtr(), stride_x, y.getDataPtr(), stride_y);
   }
+
+  template <typename Distribution, typename VectorT>
+  static void axpy([[maybe_unused]] Distribution const& dist,
+                   typename VectorT::ValueType alpha,
+                   const VectorT& x,
+                   VectorT& y,
+                   ConstArrayView<Integer> strides)
+  {
+    typedef typename VectorT::ValueType ValueType;
+    std::size_t local_size = x.scalarizedLocalSize();
+    auto x_ptr = x.getDataPtr();
+    auto y_ptr = y.getDataPtr();
+    for (std::size_t i = 0; i < local_size; ++i)
+    {
+         y_ptr[strides[i]] += alpha * x_ptr[i] ;
+    }
+  }
+
   template <typename Distribution, typename VectorT>
   static void scal(Distribution const& dist ALIEN_UNUSED_PARAM,
                    typename VectorT::ValueType alpha, VectorT& x)
@@ -103,7 +155,7 @@ class CBLASMPIKernel
     ValueType value = cblas::dot(x.scalarizedLocalSize(), (ValueType*)x.getDataPtr(), 1,
                                  (ValueType*)y.getDataPtr(), 1);
     if (dist.isParallel()) {
-      value = Arccore::MessagePassing::mpAllReduce(dist.parallelMng(), 
+      value = Arccore::MessagePassing::mpAllReduce(dist.parallelMng(),
                                                    Arccore::MessagePassing::ReduceSum, value);
     }
     return value;

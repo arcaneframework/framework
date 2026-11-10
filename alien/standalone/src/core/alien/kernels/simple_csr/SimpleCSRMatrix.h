@@ -181,6 +181,14 @@ class SimpleCSRMatrix : public IMatrixImpl
       m_own_block_size = block_size ;
   }
 
+  const VectorDistribution& rowDistribution() const
+  {
+    if(m_local_row_distribution.get())
+      return *m_local_row_distribution ;
+     else
+      return this->distribution().rowDistribution();
+  }
+
   IMessagePassingMng* getParallelMng()
   {
     return m_parallel_mng;
@@ -335,6 +343,58 @@ class SimpleCSRMatrix : public IMatrixImpl
     m_matrix_dist_info.copy(matrix.m_matrix_dist_info);
   }
 
+  void copy(SimpleCSRMatrix const& matrix,
+            ConstArrayView<Integer> filter,
+            UniqueArray<Integer>& parent_lids)
+  {
+    m_parallel_mng = distribution().parallelMng();
+    if(m_parallel_mng)
+    {
+      m_nproc = m_parallel_mng->commSize();
+      m_myrank = m_parallel_mng->commRank();
+    }
+    else
+    {
+      m_nproc = 1;
+      m_myrank = 0;
+    }
+
+    m_send_policy = matrix.m_send_policy;
+    m_recv_policy = matrix.m_recv_policy;
+    m_trace = matrix.m_trace;
+
+    m_local_size = std::accumulate(filter.begin(), filter.end(), 0);
+    UniqueArray<Integer> new_offset(m_nproc + 1);
+    new_offset[0] = 0;
+    if(m_nproc>1)
+    {
+      m_is_parallel = true;
+      Arccore::MessagePassing::mpAllGather(m_parallel_mng,
+                                           ConstArrayView<Integer>(1,&m_local_size),
+                                           ArrayView<Integer>(m_nproc,&new_offset[1]));
+      for (Integer i = 1; i <= m_nproc; ++i)
+        new_offset[i] += new_offset[i - 1];
+    }
+    else
+    {
+      new_offset[1] = m_local_size;
+      m_is_parallel = false;
+    }
+      
+    m_local_offset = new_offset[m_myrank];
+    m_global_size = new_offset[m_nproc];
+    m_ghost_size = matrix.m_ghost_size;
+    m_local_row_distribution.reset(new VectorDistribution(m_global_size,m_local_size,m_parallel_mng));
+    m_matrix.computeSubMatrix(parent_lids,
+                              matrix.m_matrix,
+                              matrix.m_local_offset,
+                              filter,
+                              new_offset,
+                              m_myrank);
+
+    m_matrix_dist_info.compute(m_nproc,new_offset,m_myrank,m_parallel_mng,*m_matrix.m_profile);
+  }
+
   void copyProfile(SimpleCSRMatrix const& matrix)
   {
     m_is_parallel = matrix.m_is_parallel;
@@ -435,6 +495,7 @@ class SimpleCSRMatrix : public IMatrixImpl
   SimpleCSRInternal::CommProperty::ePolicyType m_recv_policy;
   IMessagePassingMng* m_parallel_mng = nullptr;
   Integer m_own_block_size = 1;
+  std::unique_ptr<VectorDistribution> m_local_row_distribution;
   Integer m_nproc = 1;
   Integer m_myrank = 0;
   ITraceMng* m_trace = nullptr;

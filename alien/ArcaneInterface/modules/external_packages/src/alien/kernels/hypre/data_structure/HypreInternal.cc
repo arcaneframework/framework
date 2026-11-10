@@ -163,6 +163,20 @@ namespace Alien::Internal {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+HypreEnv* HypreEnv::m_instance = nullptr ;
+
+void HypreEnv::setDeviceId(int device_id)
+{
+#if defined(HYPRE_USING_CUDA)
+    cudaSetDevice(device_id);
+    std::cout<<"HYPRE SET CUDA DEVICE : "<<device_id<<std::endl;
+#endif
+#if defined(HYPRE_USING_HIP)
+    hipSetDevice(device_id);
+    std::cout<<"HYPRE SET HIP DEVICE : "<<device_id<<std::endl;
+#endif
+}
+
 MatrixInternal::~MatrixInternal()
 {
   if (m_internal)
@@ -220,7 +234,7 @@ MatrixInternal::addMatrixValues(const int nrow, const IndexType* rows, const Arc
           m_internal, nrow, hypre_ncols.data(), rows, cols, values, true);
 
       return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
-    } 
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -277,7 +291,7 @@ MatrixInternal::setMatrixValues(const int nrow, const IndexType* rows, const int
     });
   }
 #endif
-  
+
     if constexpr (std::is_same_v<Arccore::Integer, HYPRE_Int>) {
       HYPRE_Int const* hypre_ncols = reinterpret_cast<HYPRE_Int const*>(ncols);
       const HYPRE_Int ierr = hypreMatrixValues(
@@ -288,7 +302,7 @@ MatrixInternal::setMatrixValues(const int nrow, const IndexType* rows, const int
       const HYPRE_Int ierr = hypreMatrixValues(
          m_internal, nrow, hypre_ncols.data(), rows, cols, values, false);
       return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
-    } 
+    }
 }
 
 
@@ -553,7 +567,7 @@ VectorInternal::setInitValues(
       rows,
       values,
       false);
-  
+
   return (ierr == 0 || ierr == HYPRE_ERROR_CONV);
 }
 

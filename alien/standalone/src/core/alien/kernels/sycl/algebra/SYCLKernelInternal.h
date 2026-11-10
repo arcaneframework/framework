@@ -362,7 +362,7 @@ class KernelInternal
     }
   }
 
-#ifdef NAIVE
+#ifdef USE_NAIVE
   template <typename T>
   void scal(T a,
             sycl::buffer<T>& y)
@@ -408,50 +408,55 @@ class KernelInternal
       // clang-format on
     }
   }
-#endif
+#else
   template <typename T>
   void scal(T a,
             sycl::buffer<T>& y)
   {
-    using VecT = sycl::vec<T, 2>;
+    constexpr int W = (16 / sizeof(T)) > 0 ? int(16 / sizeof(T)) : 1;
+    using VecT = sycl::vec<T, W>;
 
     auto& queue       = m_env->internal()->queue();
-    const size_t n    = y.size();
-    const size_t n2   = n / 2;           // éléments traités vectoriellement
-    const size_t tail = n % 2;
+    const std::size_t n    = y.size();
+    if (n == 0)
+        return;
 
-    static constexpr size_t WG_SIZE = 256;
-    const size_t blocks  = std::max((n2 + WG_SIZE - 1) / WG_SIZE,
-                                    m_max_num_groups * 4UL);
-    const size_t total   = blocks * WG_SIZE;
+    const std::size_t nv  = n / W;                       // nombre de vecteurs complets
 
-    // ── Reinterprétation des buffers en vec<T,2> ──────────────────────────
-    // Requiert que les buffers soient alignés 16 bytes (garantit par
-    // sycl::buffer qui aligne sur max_required_work_group_size).
-    sycl::buffer<VecT> y2{ y.template reinterpret<VecT>(sycl::range<1>{n2}) };
+    constexpr std::size_t WG = 256;
+    const std::size_t groups =
+        std::max<std::size_t>(1,std::min((nv + WG - 1) / WG,
+                                     size_t(m_max_num_groups) * 8));
+    const std::size_t total  = groups * WG;
 
-    queue.submit([&](sycl::handler& cgh) {
-        auto ay = y2.template get_access<sycl::access::mode::read_write>(cgh);
+    queue.submit(
+        [&](sycl::handler& cgh)
+        {
+           sycl::accessor ay{ y, cgh, sycl::read_write };
 
-        cgh.parallel_for<class vector_xcal_vec>(
-            sycl::nd_range<1>{ {total}, {WG_SIZE} },
-            [=](sycl::nd_item<1> item) {
-                const size_t stride = item.get_global_range()[0];
-                for (size_t i = item.get_global_id(0); i < n2; i += stride) {
-                    // Un seul load 128-bit pour x, un pour y
-                    ay[i] = VecT{a, a} * ay[i];
-                }
-            });
+            cgh.parallel_for<class vector_xcal_vec>(
+                sycl::nd_range<1>{ {total}, {WG} },
+                [=](sycl::nd_item<1> item)
+                {
+                    T* p = &ay[0];
+                    const size_t id     = item.get_global_id(0);
+                    const size_t stride = item.get_global_range()[0];
+                    if (reinterpret_cast<uintptr_t>(p) % alignof(VecT) == 0)
+                    {
+                        VecT* pv = reinterpret_cast<VecT*>(p);
+                        for (size_t i = id; i < nv; i += stride)
+                        {
+                            pv[i] = a * pv[i] ;
+                        }
+                        if ((n & 1) && id == 0) p[n-1] *= a;
+                    }
+                    else
+                    {
+                      for (size_t i = id; i < n; i += stride)
+                        p[i] *= a;
+                    }
+                });
     });
-
-    // Epilogue scalaire si n est impair (rare en pratique)
-    if (tail) {
-        sycl::buffer<T> yt{ y.template reinterpret<T>(sycl::range<1>{n}) };
-        queue.submit([&](sycl::handler& cgh) {
-            auto ay = yt.template get_access<sycl::access::mode::read_write>(cgh);
-            cgh.single_task([=]{ ay[n-1] = a * ay[n-1]; });
-        });
-    }
 
   }
 
@@ -460,50 +465,64 @@ class KernelInternal
             sycl::buffer<T>& x,
             sycl::buffer<T>& y)
   {
-      using VecT = sycl::vec<T, 2>;
+    // Largeur vectorielle pour des accès de 128 bits : double -> 2, float -> 4
+      constexpr int W = (16 / sizeof(T)) > 0 ? int(16 / sizeof(T)) : 1;
+      using VecT = sycl::vec<T, W>;
 
       auto& queue       = m_env->internal()->queue();
-      const size_t n    = y.size();
-      const size_t n2   = n / 2;           // éléments traités vectoriellement
-      const size_t tail = n % 2;
+      const std::size_t n    = y.size();
+      if (n == 0)
+        return;
 
-      static constexpr size_t WG_SIZE = 256;
-      const size_t blocks  = std::max((n2 + WG_SIZE - 1) / WG_SIZE,
-                                      m_max_num_groups * 4UL);
-      const size_t total   = blocks * WG_SIZE;
+      const std::size_t nv   = n / W;           // éléments traités vectoriellement
 
-      // ── Reinterprétation des buffers en vec<T,2> ──────────────────────────
-      // Requiert que les buffers soient alignés 16 bytes (garantit par
-      // sycl::buffer qui aligne sur max_required_work_group_size).
-      sycl::buffer<VecT> x2{ x.template reinterpret<VecT>(sycl::range<1>{n2}) };
-      sycl::buffer<VecT> y2{ y.template reinterpret<VecT>(sycl::range<1>{n2}) };
+      constexpr std::size_t WG = 256;
+      const std::size_t groups = std::max<size_t>(1,
+                              std::min((nv + WG - 1) / WG,
+                                       size_t(m_max_num_groups) * 8));
+      const std::size_t total  = groups * WG;
 
-      queue.submit([&](sycl::handler& cgh) {
-          auto ax = x2.template get_access<sycl::access::mode::read>(cgh);
-          auto ay = y2.template get_access<sycl::access::mode::read_write>(cgh);
 
-          cgh.parallel_for<class vector_axpy_vec>(
-              sycl::nd_range<1>{ {total}, {WG_SIZE} },
-              [=](sycl::nd_item<1> item) {
-                  const size_t stride = item.get_global_range()[0];
-                  for (size_t i = item.get_global_id(0); i < n2; i += stride) {
-                      // Un seul load 128-bit pour x, un pour y
-                      ay[i] = ay[i] + VecT{a, a} * ax[i]; // fused multiply-add
+      queue.submit([&](sycl::handler& cgh)
+      {
+          sycl::accessor ax{ x, cgh, sycl::read_only };
+          sycl::accessor ay{ y, cgh, sycl::read_write };
+
+          cgh.parallel_for<class vector_axpy_buffer_vec>(
+                sycl::nd_range<1>{ sycl::range<1>{ total }, sycl::range<1>{ WG } },
+                [=](sycl::nd_item<1> it) {
+                  const T* px = &ax[0];
+                  T*       py = &ay[0];
+
+                  const size_t gid    = it.get_global_id(0);
+                  const size_t stride = it.get_global_range(0);
+
+                  const bool aligned =
+                      (reinterpret_cast<uintptr_t>(px) % alignof(VecT) == 0) &&
+                      (reinterpret_cast<uintptr_t>(py) % alignof(VecT) == 0);
+
+                  if (aligned) {
+                    const VecT* vx = reinterpret_cast<const VecT*>(px);
+                    VecT*       vy = reinterpret_cast<VecT*>(py);
+
+                    // Corps vectorisé : un LDG.128 sur x, un sur y, un STG.128 sur y
+                    for (size_t i = gid; i < nv; i += stride)
+                      vy[i] = vy[i] + a * vx[i];
+
+                    // Queue (n % W éléments), traitée en scalaire
+                    for (size_t i = nv * W + gid; i < n; i += stride)
+                      py[i] += a * px[i];
                   }
-              });
+                  else
+                  {
+                    // Repli scalaire si les pointeurs ne sont pas alignés (sous-buffer, offset...)
+                    for (size_t i = gid; i < n; i += stride)
+                      py[i] += a * px[i];
+                  }
+                });
       });
-
-      // Epilogue scalaire si n est impair (rare en pratique)
-      if (tail) {
-          sycl::buffer<T> xt{ x.template reinterpret<T>(sycl::range<1>{n}) };
-          sycl::buffer<T> yt{ y.template reinterpret<T>(sycl::range<1>{n}) };
-          queue.submit([&](sycl::handler& cgh) {
-              auto ax = xt.template get_access<sycl::access::mode::read>(cgh);
-              auto ay = yt.template get_access<sycl::access::mode::read_write>(cgh);
-              cgh.single_task([=]{ ay[n-1] += a * ax[n-1]; });
-          });
-      }
   }
+#endif
 
   template <typename T>
   void axpy(T const a,
