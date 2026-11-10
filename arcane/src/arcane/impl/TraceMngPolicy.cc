@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TraceMngPolicy.cc                                           (C) 2000-2019 */
+/* TraceMngPolicy.cc                                           (C) 2000-2026 */
 /*                                                                           */
 /* Policy for configuring trace managers.                                    */
 /*---------------------------------------------------------------------------*/
@@ -169,6 +169,10 @@ _initializeTraceMng(ITraceMng* trace, bool is_master, const String& rank_str)
   _initializeTraceClasses(trace);
   trace->setMaster(is_master);
   trace->finishInitialize();
+
+  if (is_master) {
+    Platform::removeFile(trace->errorFileName());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
