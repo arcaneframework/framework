@@ -371,35 +371,28 @@ class CSRStructInfo
   }
 
 
-  void computeSubProfile(UniqueArray<Integer>& parent_lid,
-                         UniqueArray<Integer>& old2new_lid,
-                         const CSRStructInfo& profile,
-                         Integer parent_local_offset,
+  void computeSubProfile(ConstArrayView<Integer> parent_lid,
+                         ConstArrayView<Integer> old2new_uid,
+                         Integer parent_nrow,
+                         ConstArrayView<Integer> parent_kcol,
+                         ConstArrayView<Integer> parent_cols,
                          ConstArrayView<Integer> filter,
                          ConstArrayView<Integer> new_offset,
                          Integer my_rank)
   {
     m_nrow = new_offset[my_rank+1] - new_offset[my_rank] ;
-    Integer nrow = profile.getNRows() ;
-    auto row_offset = profile.getRowOffset() ;
-    auto cols = profile.getCols() ;
     m_row_offset.resize(m_nrow + 1) ;
     m_row_offset[0] = 0 ;
     Integer irow = 0 ;
     Integer icount = 0 ;
-    parent_lid.resize(m_nrow) ;
-    old2new_lid.resize(nrow) ;
-    old2new_lid.fill(-1) ;
-    for (Integer i = 0; i < nrow; ++i)
+    for (Integer i = 0; i < parent_nrow; ++i)
     {
       if (filter[i] == 1)
       {
-        parent_lid[irow] = i ;
-        old2new_lid[i] = irow ;
         m_row_offset[irow] = icount;
-        for (Integer k = row_offset[i]; k < row_offset[i + 1]; ++k)
+        for (Integer k = parent_kcol[i]; k < parent_kcol[i + 1]; ++k)
         {
-          if(filter[cols[k]-parent_local_offset] == 1)
+          if(filter[parent_cols[k]] == 1)
             ++icount;
         }
         ++irow;
@@ -412,21 +405,93 @@ class CSRStructInfo
     for (Integer irow = 0; irow < m_nrow; ++irow)
     {
       Integer parent = parent_lid[irow];
-      Integer kstart = row_offset[parent];
-      Integer kend = row_offset[parent + 1];
+      Integer kstart = parent_kcol[parent];
+      Integer kend   = parent_kcol[parent + 1];
       Integer kcount = 0;
       for (Integer k = kstart; k < kend; ++k)
       {
-        Integer col = cols[k] - parent_local_offset;
+        Integer col = parent_cols[k];
         if (filter[col] == 1)
         {
-          m_cols[m_row_offset[irow] + kcount] = old2new_lid[col];
+          m_cols[m_row_offset[irow] + kcount] = old2new_uid[col];
           ++kcount;
         }
       }
       assert(kcount == m_row_offset[irow + 1] - m_row_offset[irow]);
     }
   }
+
+  void computeSubProfile(ConstArrayView<Integer> parent_lid,
+                         ConstArrayView<Integer> old2new_uid,
+                         Integer parent_local_offset,
+                         Integer parent_nrow,
+                         ConstArrayView<Integer> parent_kcol,
+                         ConstArrayView<Integer> parent_cols,
+                         ConstArrayView<Integer> parent_local_row_sizes,
+                         ConstArrayView<Integer> filter,
+                         ConstArrayView<Integer> new_offset,
+                         Integer my_rank)
+  {
+    m_nrow = new_offset[my_rank+1] - new_offset[my_rank] ;
+    m_row_offset.resize(m_nrow + 1) ;
+    m_row_offset[0] = 0 ;
+    Integer irow = 0 ;
+    Integer icount = 0 ;
+    for (Integer i = 0; i < parent_nrow; ++i)
+    {
+      if (filter[i] == 1)
+      {
+        m_row_offset[irow] = icount;
+        Integer kstart = parent_kcol[i];
+        Integer kend   = parent_kcol[i + 1];
+        Integer local_row_size = parent_local_row_sizes[i];
+
+        for (Integer k = kstart; k < kstart + local_row_size; ++k)
+        {
+          if(filter[parent_cols[k]] == 1)
+            ++icount;
+        }
+        for (Integer k = kstart + local_row_size; k < kend; ++k)
+        {
+          if(filter[parent_cols[k]] == 1)
+            ++icount;
+        }
+        ++irow;
+      }
+    }
+    m_row_offset[irow] = icount ;
+    assert(irow == m_nrow);
+
+    m_cols.resize(icount);
+    for (Integer irow = 0; irow < m_nrow; ++irow)
+    {
+      Integer parent = parent_lid[irow];
+      Integer kstart = parent_kcol[parent];
+      Integer kend   = parent_kcol[parent + 1];
+      Integer local_row_size = parent_local_row_sizes[parent];
+      Integer kcount = 0;
+      for (Integer k = kstart; k < kstart + local_row_size; ++k)
+      {
+        Integer col = parent_cols[k];
+        if (filter[col] == 1)
+        {
+          m_cols[m_row_offset[irow] + kcount] = old2new_uid[col];
+          ++kcount;
+        }
+      }
+      for (Integer k = kstart + local_row_size; k < kend; ++k)
+      {
+        Integer col = parent_cols[k];
+        if (filter[col] == 1)
+        {
+          m_cols[m_row_offset[irow] + kcount] = old2new_uid[col];
+          ++kcount;
+        }
+      }
+      assert(kcount == m_row_offset[irow + 1] - m_row_offset[irow]);
+    }
+  }
+
 
  protected:
   bool m_is_variable_block = false;

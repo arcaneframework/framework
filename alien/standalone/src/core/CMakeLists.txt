@@ -60,6 +60,10 @@ IF(ALIEN_USE_SYCL)
   add_subdirectory(alien/kernels/sycl)
 endif()
 
+if(ALIEN_USE_CUDA)
+  find_package(CUDAToolkit REQUIRED)
+endif()
+
 set(alien_core_list
         alien/Alien.h
         alien/core/backend/BackEnd.h
@@ -205,6 +209,10 @@ if(TARGET cuda)
   target_link_libraries(alien_core PUBLIC cuda)
 endif ()
 
+if (TARGET CUDA::cudart)
+  target_link_libraries(alien_core PUBLIC CUDA::cudart)
+endif()
+
 set_property(TARGET alien_core PROPERTY CXX_STANDARD 17)
 
 message(STATUS "Using AVX Simd instructions ? -> ${ALIEN_WANT_AVX}")
@@ -302,7 +310,7 @@ if(MSVC_TOOLSET_VERSION GREATER_EQUAL 143)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${ARCANEFRAMEWORK_BINARY_DIR}/lib)
   endif()
-    
+
   install(TARGETS alien_core EXPORT ${ALIEN_EXPORT_TARGET}
     LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/lib
     RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}/lib
@@ -314,7 +322,7 @@ if(MSVC_TOOLSET_VERSION GREATER_EQUAL 143)
     RUNTIME DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
     ARCHIVE DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
   )
-else()	
+else()
   install(TARGETS alien_core EXPORT ${ALIEN_EXPORT_TARGET}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -325,7 +333,7 @@ else()
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 endif()
-      
+
 install(
         FILES ${CMAKE_CURRENT_BINARY_DIR}/alien/AlienExport.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien

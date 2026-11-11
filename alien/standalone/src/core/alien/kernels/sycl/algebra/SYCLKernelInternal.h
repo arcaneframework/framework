@@ -549,6 +549,35 @@ class KernelInternal
       // clang-format on
     }
   }
+
+  template <typename T>
+  void axpy(T const a,
+            sycl::buffer<T>& x,
+            sycl::buffer<T>& y,
+            ConstArrayView<Integer> stride_y)
+  {
+    sycl::range<1> work_items{ m_total_threads };
+
+    auto x_length = x.size() ;
+    sycl::buffer<Integer, 1> s(stride_y.unguardedBasePointer(),sycl::range<1>(x_length));
+    {
+      // clang-format off
+       m_env->internal()->queue().submit([&](sycl::handler& cgh)
+                                         {
+                                           auto access_x = x.template get_access<sycl::access::mode::read>(cgh);
+                                           auto access_s = s.template get_access<sycl::access::mode::read>(cgh);
+                                           auto access_y = y.template get_access<sycl::access::mode::read_write>(cgh);
+                                           cgh.parallel_for<class vector_axpy_s>(sycl::range<1>{m_total_threads}, [=] (sycl::item<1> itemId)
+                                                                              {
+                                                                                 auto id = itemId.get_id(0);
+                                                                                 for (auto i = id; i < x_length; i += itemId.get_range()[0])
+                                                                                    access_y[access_s[i]] += a * access_x[i];
+                                                                              });
+                                         });
+      // clang-format on
+    }
+  }
+
   template <typename T>
   void pointwiseMult(sycl::buffer<T>& x,
                      sycl::buffer<T>& y,
@@ -683,6 +712,60 @@ class KernelInternal
                                                                                     access_y[i*stride_y] = access_x[i*stride_x];
                                                                               });
                                          });
+      // clang-format on
+    }
+  }
+
+  template <typename T>
+  void copy(sycl::buffer<T>& x,
+            ConstArrayView<Integer> stride_x,
+            sycl::buffer<T>& y)
+  {
+    auto y_length = y.size();
+    sycl::buffer<Integer, 1> s(stride_x.unguardedBasePointer(),sycl::range<1>(y_length));
+    sycl::range<1> work_items{ m_total_threads };
+    {
+      // clang-format off
+      m_env->internal()->queue().submit(
+           [&](sycl::handler& cgh)
+           {
+             auto access_x = x.template get_access<sycl::access::mode::read>(cgh);
+             auto access_y = y.template get_access<sycl::access::mode::read_write>(cgh);
+             auto access_s = x.template get_access<sycl::access::mode::read>(cgh);
+             cgh.parallel_for<class vector_copy_sx>(sycl::range<1>{m_total_threads}, [=] (sycl::item<1> itemId)
+                                                {
+                                                   auto id = itemId.get_id(0);
+                                                   for (auto i = id; i < y_length; i += itemId.get_range()[0])
+                                                      access_y[i] = access_x[access_s[i]];
+                                                });
+           });
+      // clang-format on
+    }
+  }
+
+  template <typename T>
+  void copy(sycl::buffer<T>& x,
+            sycl::buffer<T>& y,
+            ConstArrayView<Integer> stride_y)
+  {
+    auto x_length = x.size();
+    sycl::buffer<Integer, 1> s(stride_y.unguardedBasePointer(),sycl::range<1>(x_length));
+    sycl::range<1> work_items{ m_total_threads };
+    {
+      // clang-format off
+      m_env->internal()->queue().submit(
+           [&](sycl::handler& cgh)
+           {
+             auto access_x = x.template get_access<sycl::access::mode::read>(cgh);
+             auto access_y = y.template get_access<sycl::access::mode::read_write>(cgh);
+             auto access_s = x.template get_access<sycl::access::mode::read>(cgh);
+             cgh.parallel_for<class vector_copy_sy>(sycl::range<1>{m_total_threads}, [=] (sycl::item<1> itemId)
+                                                {
+                                                   auto id = itemId.get_id(0);
+                                                   for (auto i = id; i < x_length; i += itemId.get_range()[0])
+                                                      access_y[access_s[i]] = access_x[i];
+                                                });
+           });
       // clang-format on
     }
   }
