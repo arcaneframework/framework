@@ -1147,6 +1147,7 @@ namespace mesh
         auto target_family_kind = m_mesh->_impl()->itemKindNeoToArcane(connectivity.target_family.itemKind());
         auto target_family = m_mesh->findItemFamily(target_family_kind,target_family_name,false,false);
         ARCANE_ASSERT(target_family,(String::format("Cannot find target family {0}",target_family_name).localstr()));
+        // Create a serializer for target family
         auto target_family_serializer =
           makeRef(new PolyhedralFamilySerializer{m_mesh,target_family,m_mng,PolyhedralTools::SerializationPolicy::SerializationFamilyOnly});
         auto [ite,inserted]  = m_recursive_synchronizer.insert({target_family_name,target_family_serializer});
@@ -1158,19 +1159,31 @@ namespace mesh
         // todo another access ?
         connected_items_lids.addRange(Int32ConstArrayView{connectivity[item_lid].size(),connectivity[item_lid].m_ptr});
       }
-      // Create a serializer for target family
       m_mesh->traceMng()->info() << "Serialize connected items for family " << target_family_name;
       target_family_serializer_iterator->second->serializeItems(buf,connected_items_lids);
-      }
+    }
   }
 
   void PolyhedralFamilySerializer::_deserializeConnectedItems(ISerializer* buf)
   {
     if (! m_is_recursive) return;
     ARCANE_CHECK_POINTER(buf);
-    for (auto const& [family_name,serializer] : m_recursive_synchronizer) {
-      m_mesh->traceMng()->info() << "deserialize connected items for family " << serializer->family()->name();
-      serializer->deserializeItems(buf,nullptr);
+    ARCANE_CHECK_POINTER(m_mesh);
+    for (auto const& connectivity : m_mesh->_impl()->connectivities(m_family)){
+      String target_family_name = connectivity.target_family.name();
+      auto target_family_serializer_iterator = m_recursive_synchronizer.find(target_family_name);
+      if (target_family_serializer_iterator == m_recursive_synchronizer.end())
+      {
+        auto target_family_kind = m_mesh->_impl()->itemKindNeoToArcane(connectivity.target_family.itemKind());
+        auto target_family = m_mesh->findItemFamily(target_family_kind,target_family_name,false,false);
+        ARCANE_ASSERT(target_family,(String::format("Cannot find target family {0}",target_family_name).localstr()));
+        auto target_family_serializer =
+          makeRef(new PolyhedralFamilySerializer{m_mesh,target_family,m_mng,PolyhedralTools::SerializationPolicy::SerializationFamilyOnly});
+        auto [ite,inserted]  = m_recursive_synchronizer.insert({target_family_name,target_family_serializer});
+        target_family_serializer_iterator = ite;
+      }
+      m_mesh->traceMng()->info() << "deserialize connected items for family " << target_family_name;
+      target_family_serializer_iterator->second->deserializeItems(buf,nullptr);
     }
   }
 
