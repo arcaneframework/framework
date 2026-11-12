@@ -333,6 +333,7 @@ class TraceMng
   Trace::eDebugLevel configDbgLevel() const override { return _configDbgLevel(); }
 
   void setErrorFileName(const String& file_name) override;
+  String errorFileName() override;
   void setLogFileName(const String& file_name) override;
 
   void setClassConfig(const String& name, const TraceClassConfig& config) override;
@@ -534,7 +535,9 @@ class TraceMng
 
 extern "C++" ARCCORE_TRACE_EXPORT ITraceMng* arccoreCreateDefaultTraceMng()
 {
-  return new TraceMng();
+  TraceMng* trace_mng = new TraceMng();
+  trace_mng->finishInitialize();
+  return trace_mng;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -646,6 +649,15 @@ setErrorFileName(const String& file_name)
   m_is_error_disabled = m_error_file_name.null();
   if (!m_is_error_disabled)
     m_error_file = _createFileStream(file_name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String TraceMng::
+errorFileName()
+{
+  return m_error_file_name;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1210,9 +1222,6 @@ finishInitialize()
   m_default_trace_class = TraceClass("Internal", &m_default_trace_class_config);
   m_current_msg_class = m_default_trace_class;
   m_trace_class_stack.push_back(m_default_trace_class);
-  if (m_is_master) {
-    Platform::removeFile(m_error_file_name);
-  }
 }
 
 /*---------------------------------------------------------------------------*/
