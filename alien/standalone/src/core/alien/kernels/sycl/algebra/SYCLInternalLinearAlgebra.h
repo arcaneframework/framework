@@ -90,8 +90,12 @@ class ALIEN_EXPORT SYCLInternalLinearAlgebra
   void copy(const Vector& x, Vector& r) const;
 
   void axpy(Real alpha, const Vector& x, Integer stride_x, Vector& r, Integer stride_r) const;
-  void aypx(Real alpha, Vector& y, Integer stride_y, const Vector& x, Integer stride_x) const;
+  void axpy(Real alpha, const Vector& x, Vector& r, ConstArrayView<Integer> stride_r) const;
+  void aypx(Real alpha, Vector& y, Integer stride_y, const Vector& x,Integer stride_x) const;
+
   void copy(const Vector& x, Integer stride_x, Vector& r, Integer stride_r) const;
+  void copy(const Vector& x, ConstArrayView<Integer> strides_x, Vector& r) const;
+  void copy(const Vector& x, Vector& r, ConstArrayView<Integer> strides_r) const;
 
   Real dot(const Vector& x, const Vector& y) const;
   void dot(const Vector& x, const Vector& y, SYCLInternal::Future<Real>& res) const;
@@ -118,6 +122,7 @@ class ALIEN_EXPORT SYCLInternalLinearAlgebra
   }
 
   Integer computeCxr(const Matrix& a, Matrix& cxr_a) const ;
+  Integer computeCxr(const Matrix& a, Matrix& cxr_a, UniqueArray<Integer>& strides) const ;
   Integer computeCxr(const Matrix& a, Vector const& diag_scal, Matrix& cxr_a) const ;
 
   static ResourceType resource(Matrix const& A);

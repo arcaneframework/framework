@@ -4311,6 +4311,152 @@ void SYCLBEllPackMatrix<ValueT>::copy(SYCLBEllPackMatrix<ValueT> const& matrix)
   }
 }
 
+
+template <typename ValueT>
+void SYCLBEllPackMatrix<ValueT>::copy(SYCLBEllPackMatrix<ValueT> const& matrix,
+                                      ConstArrayView<Integer> filter,
+                                      UniqueArray<Integer>& parent_lids)
+{
+  m_parallel_mng = distribution().parallelMng();
+  if(m_parallel_mng)
+  {
+    m_nproc = m_parallel_mng->commSize();
+    m_myrank = m_parallel_mng->commRank();
+  }
+  else
+  {
+    m_nproc = 1;
+    m_myrank = 0;
+  }
+
+  m_send_policy = matrix.m_send_policy;
+  m_recv_policy = matrix.m_recv_policy;
+  m_trace = matrix.m_trace;
+
+  m_local_size = std::accumulate(filter.begin(), filter.end(), 0);
+  UniqueArray<Integer> new_offset(m_nproc + 1);
+  new_offset[0] = 0;
+  if(m_nproc>1)
+  {
+    m_is_parallel = true;
+    Arccore::MessagePassing::mpAllGather(m_parallel_mng,
+                                         ConstArrayView<Integer>(1,&m_local_size),
+                                         ArrayView<Integer>(m_nproc,&new_offset[1]));
+    for (Integer i = 1; i <= m_nproc; ++i)
+      new_offset[i] += new_offset[i - 1];
+  }
+  else
+  {
+    new_offset[1] = m_local_size;
+    m_is_parallel = false;
+  }
+
+  m_local_offset = new_offset[m_myrank];
+  m_global_size = new_offset[m_nproc];
+  m_own_row_distribution.reset(new VectorDistribution(m_global_size,m_local_size,m_parallel_mng));
+  if(m_is_parallel)
+  {
+    UniqueArray<Integer> all_filter(matrix.m_local_size + matrix.m_ghost_size);
+    std::copy(filter.begin(),filter.end(),all_filter.begin());
+    /*
+    using SendRecvOp = SimpleCSRInternal::SendRecvOp<Integer> ;
+    auto op = SendRecvOp(all_filter.unguardedBasePointer(),
+                         matrix.m_matrix_dist_info.m_send_info,
+                         matrix.m_send_policy,
+                         all_filter.unguardedBasePointer(),
+                         matrix.m_matrix_dist_info.m_recv_info,
+                         matrix.m_recv_policy,
+                         m_parallel_mng,
+                         nullptr);
+    op.start();
+    op.end();
+    */
+    m_ghost_size = std::accumulate(all_filter.begin()+matrix.m_local_size, all_filter.end(), 0);
+
+
+    parent_lids.resize(m_local_size+m_ghost_size) ;
+    UniqueArray<Integer> old2new_uid(matrix.m_local_size + matrix.m_ghost_size);
+    old2new_uid.fill(-1) ;
+    Integer irow = 0 ;
+    for (Integer i = 0; i < matrix.m_local_size; ++i)
+    {
+      if (all_filter[i] == 1)
+      {
+        parent_lids[irow] = i ;
+        old2new_uid[i] = m_local_offset + irow ;
+        ++irow;
+      }
+    }
+    assert(irow==m_local_size) ;
+    /*
+    {
+      using SendRecvOp = SimpleCSRInternal::SendRecvOp<Integer> ;
+      auto op = SendRecvOp( old2new_uid.unguardedBasePointer(),
+                            matrix.m_matrix_dist_info.m_send_info,
+                            matrix.m_send_policy,
+                            old2new_uid.unguardedBasePointer(),
+                            matrix.m_matrix_dist_info.m_recv_info,
+                            matrix.m_recv_policy,
+                            m_parallel_mng,
+                            nullptr);
+      op.start();
+      op.end();
+    }*/
+
+    for (Integer i = matrix.m_local_size; i < matrix.m_local_size + matrix.m_ghost_size; ++i)
+    {
+      if (all_filter[i] == 1)
+      {
+        parent_lids[irow] = i ;
+        ++irow;
+      }
+    }
+    assert(irow==m_local_size+m_ghost_size) ;
+    /*
+    m_matrix.computeSubMatrix(parent_lids,
+                              old2new_uid,
+                              matrix.m_local_offset,
+                              matrix.m_local_size,
+                              matrix.m_matrix.m_values,
+                              matrix.getCSRProfile().getRowOffset(),
+                              matrix.m_matrix_dist_info.m_cols,
+                              matrix.m_matrix_dist_info.m_local_row_size,
+                              all_filter,
+                              new_offset,
+                              m_myrank);*/
+  }
+  else
+  {
+    parent_lids.resize(m_local_size) ;
+    UniqueArray<Integer> old2new_uid(matrix.m_local_size);
+    old2new_uid.fill(-1) ;
+    Integer irow = 0 ;
+    for (Integer i = 0; i < matrix.m_local_size; ++i)
+    {
+      if (filter[i] == 1)
+      {
+        parent_lids[irow] = i ;
+        old2new_uid[i] = irow ;
+        ++irow;
+      }
+    }
+    assert(irow==m_local_size) ;
+    /*
+    m_matrix.computeSubMatrix(parent_lids,
+                              old2new_uid,
+                              matrix.m_local_size,
+                              matrix.m_matrix.m_values,
+                              matrix.getCSRProfile().getRowOffset(),
+                              matrix.getCSRProfile().getCols(),
+                              matrix.m_local_offset,
+                              filter,
+                              new_offset,
+                              m_myrank);*/
+  }
+
+  //m_matrix_dist_info.compute(m_nproc,new_offset,m_myrank,m_parallel_mng,*m_matrix.m_profile);
+}
+
 template <typename ValueT>
 void SYCLBEllPackMatrix<ValueT>::
 allocateDevicePointers(std::size_t nrows,

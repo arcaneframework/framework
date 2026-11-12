@@ -114,28 +114,28 @@ class MatrixInternal
   }
 
 
-  template <typename T>
-  void computeSubMatrix(UniqueArray<Integer>& parent_lids,
-                        const MatrixInternal<T>& internal,
+  void computeSubMatrix(ConstArrayView<Integer> parent_lids,
+                        ConstArrayView<Integer> old2new_uids,
+                        Integer parent_nrow,
+                        ConstArrayView<ValueType> parent_values,
+                        ConstArrayView<Integer> parent_kcol,
+                        ConstArrayView<Integer> parent_cols,
                         Integer parent_local_offset,
                         ConstArrayView<Integer> filter,
-                        ConstArrayView<Integer> new_offset,
+                        ConstArrayView<Integer> new_offsets,
                         Integer my_rank)
   {
-    UniqueArray<Integer> old2new_lids;
     m_profile->computeSubProfile(parent_lids,
-                                 old2new_lids,
-                                 internal.getCSRProfile(),
-                                 parent_local_offset,
+                                 old2new_uids,
+                                 parent_nrow,
+                                 parent_kcol,
+                                 parent_cols,
                                  filter,
-                                 new_offset,
+                                 new_offsets,
                                  my_rank);
 
     m_values.resize(m_profile->getNnz()) ;
     auto kcol = m_profile->getRowOffset() ;
-    auto parent_kcol = internal.getCSRProfile().getRowOffset() ;
-    auto parent_cols = internal.getCSRProfile().getCols() ;
-    auto const& parent_values = internal.getValues() ;
     for (Integer irow = 0; irow < m_profile->getNRows(); ++irow)
     {
       Integer parent_row    = parent_lids[irow];
@@ -148,6 +148,60 @@ class MatrixInternal
       {
         Integer col = parent_cols[pk] - parent_local_offset;
         if (filter[col] != 1)
+          continue;
+        m_values[k] = parent_values[pk];
+        ++k;
+      }
+    }
+  }
+
+  void computeSubMatrix(ConstArrayView<Integer> parent_lids,
+                        ConstArrayView<Integer> old2new_uids,
+                        Integer parent_local_offset,
+                        Integer parent_nrow,
+                        ConstArrayView<ValueType> parent_values,
+                        ConstArrayView<Integer> parent_kcol,
+                        ConstArrayView<Integer> parent_cols,
+                        ConstArrayView<Integer> parent_local_row_sizes,
+                        ConstArrayView<Integer> all_filter,
+                        ConstArrayView<Integer> new_offsets,
+                        Integer my_rank)
+  {
+    Integer local_offset = new_offsets[my_rank] ;
+    m_profile->computeSubProfile(parent_lids,
+                                 old2new_uids,
+                                 parent_local_offset,
+                                 parent_nrow,
+                                 parent_kcol,
+                                 parent_cols,
+                                 parent_local_row_sizes,
+                                 all_filter,
+                                 new_offsets,
+                                 my_rank);
+
+    m_values.resize(m_profile->getNnz()) ;
+    auto kcol = m_profile->getRowOffset() ;
+    for (Integer irow = 0; irow < m_profile->getNRows(); ++irow)
+    {
+      Integer parent_row     = parent_lids[irow];
+      Integer kstart         = kcol[irow];
+      Integer kend           = kcol[irow + 1];
+      Integer parent_kstart  = parent_kcol[parent_row];
+      Integer parent_kend    = parent_kcol[parent_row + 1];
+      Integer local_row_size = parent_local_row_sizes[parent_row];
+      Integer k = kstart;
+      for (Integer pk = parent_kstart; pk < parent_kstart + local_row_size; ++pk)
+      {
+        Integer col = parent_cols[pk];
+        if (all_filter[col] != 1)
+          continue;
+        m_values[k] = parent_values[pk];
+        ++k;
+      }
+      for (Integer pk = parent_kstart + local_row_size; pk < parent_kend; ++pk)
+      {
+        Integer col = parent_cols[pk];
+        if (all_filter[col] != 1)
           continue;
         m_values[k] = parent_values[pk];
         ++k;

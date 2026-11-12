@@ -269,6 +269,16 @@ void SYCLInternalLinearAlgebra::axpy(Real alpha,
   m_internal->axpy(alpha, vx.internal()->values(), stride_x, vr.internal()->values(), stride_r);
 }
 
+void SYCLInternalLinearAlgebra::axpy(Real alpha,
+                                          const SYCLVector<Real>& vx,
+                                          SYCLVector<Real>& vr,
+                                          ConstArrayView<Integer> strides_r) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-AXPY");
+#endif
+  m_internal->axpy(alpha, vx.internal()->values(), vr.internal()->values(), strides_r);
+}
 /*---------------------------------------------------------------------------*/
 
 void SYCLInternalLinearAlgebra::aypx(Real alpha ALIEN_UNUSED_PARAM,
@@ -294,6 +304,26 @@ void SYCLInternalLinearAlgebra::copy(const SYCLVector<Real>& vx,
   m_internal->copy(vx.internal()->values(), stride_x, vr.internal()->values(), stride_r);
 }
 
+void SYCLInternalLinearAlgebra::copy(const SYCLVector<Real>& vx,
+                                     ConstArrayView<Integer> strides_x,
+                                     SYCLVector<Real>& vr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-COPY");
+#endif
+  m_internal->copy(vx.internal()->values(), strides_x, vr.internal()->values());
+}
+
+
+void SYCLInternalLinearAlgebra::copy(const SYCLVector<Real>& vx,
+                                     SYCLVector<Real>& vr,
+                                     ConstArrayView<Integer> strides_r) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "SYCL-COPY");
+#endif
+  m_internal->copy(vx.internal()->values(), vr.internal()->values(), strides_r);
+}
 /*---------------------------------------------------------------------------*/
 
 Real SYCLInternalLinearAlgebra::dot(const SYCLVector<Real>& vx, const SYCLVector<Real>& vy) const
@@ -400,6 +430,42 @@ Integer SYCLInternalLinearAlgebra::computeCxr(const Matrix& a, Matrix& cxr_a) co
   auto block_size = a.blockSize() ;
   cxr_a.setBlockSize(1) ;
   cxr_a.copy(a) ;
+  return block_size ;
+}
+
+Integer SYCLInternalLinearAlgebra::computeCxr(const Matrix& a,
+                                              Matrix& cxr_a,
+                                              UniqueArray<Integer>& strides) const
+{
+  auto block_size = a.blockSize() ;
+  cxr_a.setBlockSize(1) ;
+  {
+    const ISpace& space = a.rowSpace();
+    const MatrixDistribution& dist = a.distribution();
+
+    bool elliptic_split_tag_found = false ;
+
+    Integer domain_offset = dist.rowOffset();
+    Integer local_size    = dist.localRowSize();
+
+    UniqueArray<Integer> filter(local_size);
+    filter.fill(0);
+    for (Integer i = 0; i < space.nbField(); ++i)
+    {
+        const UniqueArray<Integer>& indices = space.field(i);
+        if (space.fieldLabel(i) == "Elliptic" and not indices.empty())
+        {
+          elliptic_split_tag_found = true;
+          for (Integer j = 0; j < indices.size(); ++j)
+          {
+            const Integer index = indices[j];
+            //alien_info([&] { cout()<< "Elliptic index "<<j<<" "<<index;}) ;
+            filter[index - domain_offset] = 1 ;
+          }
+        }
+    }
+    cxr_a.copy(a,filter,strides) ;
+  }
   return block_size ;
 }
 

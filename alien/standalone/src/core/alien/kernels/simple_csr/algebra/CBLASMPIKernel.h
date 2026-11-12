@@ -127,7 +127,7 @@ class CBLASMPIKernel
     auto x_ptr = x.getDataPtr();
     auto y_ptr = y.getDataPtr();
     auto z_ptr = z.getDataPtr();
-    for (std::size_t i = 0; i < local_size; ++i) {
+    for (Integer i = 0; i < local_size; ++i) {
       z_ptr[i] = x_ptr[i] * y_ptr[i];
 #ifdef PRINT_DEBUG_INFO
       std::cout<<"X Y Z ["<<i<<"] :  "<<x_ptr[i]<<"*"<<y_ptr[i]<<"="<<z_ptr[i]<<std::endl ;
@@ -142,7 +142,7 @@ class CBLASMPIKernel
   {
     auto local_size = y.scalarizedLocalSize();
     auto y_ptr = y.getDataPtr();
-    for (std::size_t i = 0; i < local_size; ++i) {
+    for (Integer i = 0; i < local_size; ++i) {
       y_ptr[i] = alpha;
     }
   }
@@ -165,7 +165,7 @@ class CBLASMPIKernel
   static typename VectorT::ValueType nrm0(Distribution const& dist, const VectorT& x)
   {
     typedef typename VectorT::ValueType ValueType;
-    auto local_size = x.scalarizedLocalSize();
+    std::size_t local_size = x.scalarizedLocalSize();
     auto x_ptr = x.getDataPtr();
     ValueType value = ValueType() ;
     for(std::size_t i = 0; i < local_size; ++i)
@@ -208,7 +208,7 @@ class CBLASMPIKernel
   static typename VectorT::ValueType nrmInf(Distribution const& dist, const VectorT& x)
   {
     typedef typename VectorT::ValueType ValueType;
-    auto local_size = x.scalarizedLocalSize();
+    std::size_t local_size = x.scalarizedLocalSize();
     auto x_ptr = x.getDataPtr();
     ValueType value = ValueType() ;
     for(std::size_t i = 0; i < local_size; ++i)

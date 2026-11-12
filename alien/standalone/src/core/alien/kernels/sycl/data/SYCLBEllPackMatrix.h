@@ -170,9 +170,21 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
       m_own_block_size = block_size;
   }
 
+
+  const VectorDistribution& rowDistribution() const
+  {
+    if(m_own_row_distribution.get())
+      return *m_own_row_distribution ;
+     else
+      return this->distribution().rowDistribution();
+  }
+
   bool setMatrixValues(Arccore::Real const* values, bool only_host);
 
   void copy(SYCLBEllPackMatrix const& matrix) ;
+  void copy(SYCLBEllPackMatrix const& matrix,
+            ConstArrayView<Integer> filter,
+            UniqueArray<Integer>& parent_lids) ;
 
   void notifyChanges();
   void endUpdate();
@@ -261,6 +273,7 @@ class ALIEN_EXPORT SYCLBEllPackMatrix : public IMatrixImpl
   std::vector<int>                        m_ext_block_row_offset ;
 
   Integer                                 m_own_block_size = 1 ;
+  std::unique_ptr<VectorDistribution>     m_own_row_distribution;
 
   bool                                    m_is_parallel  = false;
   IMessagePassingMng*                     m_parallel_mng = nullptr;
