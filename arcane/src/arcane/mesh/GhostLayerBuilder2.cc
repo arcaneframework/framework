@@ -942,6 +942,7 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
   }
   exchanger->initializeCommunicationsMessages();
   auto* serializer_mng = m_mesh_internal->familySerializerMng();
+  ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer());
   if (serializer_mng)
     serializer_mng->beginSerialization(mesh::PolyhedralTools::SerializationPolicy::SerializeFamilyAndConnectedFamilies);
   for (Integer i = 0, ns = exchanger->nbSender(); i < ns; ++i) {
@@ -949,7 +950,6 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
     Int32 rank = sm->destination().value();
     ISerializer* s = sm->serializer();
     Int32ConstArrayView items_to_send = cells_to_send[rank];
-    ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer());
     s->setMode(ISerializer::ModeReserve);
     cell_serializer->serializeItems(s, items_to_send);
     s->allocateBuffer();
@@ -962,7 +962,6 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
     ISerializeMessage* sm = exchanger->messageToReceive(i);
     ISerializer* s = sm->serializer();
     s->setMode(ISerializer::ModeGet);
-    ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer());
     cell_serializer->deserializeItems(s, nullptr);
   }
   if (serializer_mng)
