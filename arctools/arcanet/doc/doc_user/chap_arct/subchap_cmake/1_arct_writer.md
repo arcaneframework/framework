@@ -503,7 +503,7 @@ This function defines the MPI options:
   "XXX": {
     "arccher": {
       "mpi_binary": "<path_mpirun>",
-      "mpi": <nb_proc_mpi>
+      "nb_proc": <nb_proc_mpi>
     }
   }
 }
@@ -526,6 +526,30 @@ Two `oneValueArgs` arguments are available:
 
 - `PATH <path_mpirun>` (optional): gives a path for the `mpirun/mpiexec` binary.
 - `NB_PROC <nb_proc_mpi>` (optional): gives a number of processes to use.
+
+--------------------------
+
+### arct_arccher_thread
+
+```cmake
+arct_arccher_thread(NB_THREAD <nb_thread>)
+```
+
+This function defines the number of thread:
+
+```json5
+{
+  "XXX": {
+    "arccher": {
+      "nb_thread": <nb_thread>
+    }
+  }
+}
+```
+
+One `oneValueArgs` arguments are available:
+
+- `NB_THREAD <nb_thread>` (optional): gives a number of thread to use.
 
 --------------------------
 

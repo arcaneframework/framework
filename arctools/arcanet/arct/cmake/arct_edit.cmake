@@ -514,4 +514,22 @@ function(arct_arccher_working_dir)
 endfunction()
 
 # ----------------------------------------------------------------------------
+
+function(arct_arccher_thread)
+  set(options)
+  set(oneValueArgs PATH NB_THREAD)
+  set(multiValueArgs)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (NOT DEFINED ARCANET_JSON_PART_PATH)
+    message(FATAL_ERROR "'arct_arccher_thread()' cannot be called without a call to a 'arct_config_create_or_edit_X()' function.")
+  endif ()
+
+  if (DEFINED ARGS_NB_THREAD)
+    _arct_internal_arccher_define_nb_thread("${ARGS_NB_THREAD}")
+  endif ()
+endfunction()
+
+# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
