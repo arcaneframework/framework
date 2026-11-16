@@ -80,6 +80,9 @@ readCommonPart(RunParam2& runp, const JSONValue& arccher_part)
     if (key == "run") {
       continue;
     }
+    if (key == "_CODE" || key == "_ARCT_PATH" || key == "_CASE_NAME") {
+      ARCCORE_FATAL("You cannot set reserved options -- Option : {0}", key);
+    }
     JSONValue value = elem.value();
     if (value.null()) {
       continue;
@@ -116,7 +119,7 @@ firstReadArccherGeneralPart(const JSONValue& arccher_part)
   {
     const JSONValue node = arccher_part.child("run");
     if (!node.null()) {
-      m_run->m_run.clear(); // TODO A voir dans les specs.
+      // m_run->m_run.clear(); // TODO A voir dans les specs.
       for (auto elem : node.valueAsArray()) {
         m_run->m_run.add(elem.valueAsStringView());
       }
@@ -192,7 +195,7 @@ readCodesExecutors(std::unordered_map<std::string, CodeExecutor>& codes_executor
           String key = elem.name();
           CmdOpt& cmd_opt = exec.m_cmdopt[key.localstr()];
           {
-            const JSONValue node2 = elem.value().child("opt");
+            const JSONValue node2 = elem.value().child("format");
             if (!node2.null()) {
               cmd_opt.m_opt = node2.valueAsStringView();
             }
@@ -214,12 +217,6 @@ readCodesExecutors(std::unordered_map<std::string, CodeExecutor>& codes_executor
             if (!node2.null()) {
               cmd_opt.m_needed = _JSONValueAsBool(node2);
             }
-          }
-          if (!cmd_opt.m_optional && !cmd_opt.m_needed) {
-            ARCCORE_FATAL("Coherence error -- optional : {0} -- needed : {1} -- key : {2}", key, cmd_opt.m_optional, cmd_opt.m_needed);
-          }
-          if (cmd_opt.m_optional && cmd_opt.m_needed && cmd_opt.m_default.empty()) {
-            ARCCORE_FATAL("Coherence error 2");
           }
         }
       }

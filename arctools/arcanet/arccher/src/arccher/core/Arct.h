@@ -33,8 +33,8 @@ struct CmdOpt
 {
   Arcane::String m_opt = "{}";
   Arcane::String m_default = "";
-  bool m_optional = true;
-  bool m_needed = true;
+  bool m_optional = false;
+  bool m_needed = false;
 };
 
 struct CodeExecutor

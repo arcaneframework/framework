@@ -58,9 +58,6 @@ getVariable(RunParam2& code_params, CodeExecutor& code_executor, const String& v
       info() << "Var name : " << variable_name << " -- Value : ";
       return "";
     }
-    if (cmd_opt.m_default.empty()) {
-      ARCCORE_FATAL("{0} need default", variable_name);
-    }
     variable = cmd_opt.m_default;
   }
 

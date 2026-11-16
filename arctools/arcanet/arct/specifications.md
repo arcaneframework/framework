@@ -371,6 +371,18 @@ For a given configuration block and for a requested alternative:
 It is important to note that the name of the base case is optional (it can be useless if we want to launch only
 the `general` block). A case name can therefore start with `~`. However, `~` alone is not allowed.
 
+Only one alternative is allowed in a use case name: the symbol `~` can appear only once.
+
+#### Reserved characters
+
+The following characters cannot be used in the name of the alternative:
+
+- `:`,
+- `=`,
+- `~` (it's a separator between base name and alternative name),
+- `!`,
+- `+`.
+
 ### ARCT reserved block
 
 This reserved block is described by this specification file and can be used by the requesting programs (it is up
@@ -1077,6 +1089,7 @@ Examples of invalid names:
 - `variation_1=variant_1:case_1`.
 - `variation_1=variant_1:case_1~init`.
 - `variation_1=variant_1:~init`.
+- `case_1~init~init2`.
 
 Note: spaces in the name are not supported.
 

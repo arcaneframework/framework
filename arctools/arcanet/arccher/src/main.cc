@@ -17,6 +17,7 @@
 
 #include <arccore/common/CommandLineArguments.h>
 #include <arccore/common/ExceptionUtils.h>
+#include <arccore/base/Exception.h>
 
 #include <arccore/trace/ITraceMng.h>
 
@@ -79,6 +80,9 @@ int main(int argc, char* argv[])
     tm->info() << "Process message: " << e.code().message();
     tm->info() << "Process what: " << e.what();
     return e.code().value();
+  }
+  catch (const Exception& ex) {
+    return ExceptionUtils::print(ex, tm, false);
   }
   catch (const std::exception& ex) {
     return ExceptionUtils::print(ex, tm, false);
