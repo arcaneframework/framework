@@ -92,7 +92,10 @@ private:
       }
     }
     info() << "Nb own cell " << nb_own_cell << " nb ghost cell " << nb_ghost_cell;
-    if (nb_ghost_cell == 0 && mesh()->ghostLayerMng()->nbGhostLayer() > 0 && mesh()->cellFamily()->nbItem() > 0)
+    bool has_all_cells = mesh()->ownCells().size() == mesh()->parallelMng()->reduce(Parallel::ReduceSum,mesh()->ownCells().size());
+    if (nb_ghost_cell == 0 && mesh()->ghostLayerMng()->nbGhostLayer() > 0
+                           && mesh()->cellFamily()->nbItem() > 0
+                           && !has_all_cells)
       fatal() << "No ghost cell but ghost layers are present";
   }
 
