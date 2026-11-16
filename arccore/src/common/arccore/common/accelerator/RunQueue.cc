@@ -358,7 +358,7 @@ setMemoryRessource(eMemoryResource mem)
 /*---------------------------------------------------------------------------*/
 
 eMemoryResource RunQueue::
-memoryRessource() const
+memoryResource() const
 {
   if (m_p)
     return m_p->m_memory_ressource;
@@ -369,11 +369,9 @@ memoryRessource() const
 /*---------------------------------------------------------------------------*/
 
 eMemoryResource RunQueue::
-memoryResource() const
+memoryRessource() const
 {
-  if (m_p)
-    return m_p->m_memory_ressource;
-  return eMemoryResource::Unknown;
+  return memoryResource();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -397,6 +395,15 @@ isConcurrentCommandCreation() const
   if (m_p)
     return m_p->isConcurrentCommandCreation();
   return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+DeviceId RunQueue::
+deviceId() const
+{
+  return m_p->m_runner_impl->deviceId();
 }
 
 /*---------------------------------------------------------------------------*/

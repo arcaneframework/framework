@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueue.h                                                  (C) 2000-2025 */
+/* RunQueue.h                                                  (C) 2000-2026 */
 /*                                                                           */
 /* Execution queue management on an accelerator.                             */
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,6 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Execution queue for an accelerator.
  *
@@ -157,6 +156,9 @@ class ARCCORE_COMMON_EXPORT RunQueue
   //! Performs a memory prefetch
   void prefetchMemory(const MemoryPrefetchArgs& args) const;
 
+  //! Device associated with this instance.
+  DeviceId deviceId() const;
+
   /*!
    * \name Event Management
    * \pre !isNull()
@@ -178,9 +180,16 @@ class ARCCORE_COMMON_EXPORT RunQueue
    * \brief Allocation options associated with this queue.
    *
    * It is possible to change the memory resource and thus the allocator used
-   * via setMemoryRessource().
+   * via setMemoryResource().
    */
   MemoryAllocationOptions allocationOptions() const;
+
+  /*!
+   * \brief Sets the memory resource used for allocations with this instance.
+   *
+   * \deprecated Use setMemoryResource() instead.
+   */
+  void setMemoryRessource(eMemoryResource mem);
 
   /*!
    * \brief Sets the memory resource used for allocations with this instance.
@@ -193,7 +202,7 @@ class ARCCORE_COMMON_EXPORT RunQueue
    *
    * \pre !isNull()
    */
-  void setMemoryRessource(eMemoryResource mem);
+  void setMemoryResource(eMemoryResource mem);
 
   //! Memory resource used for allocations with this instance.
   eMemoryResource memoryRessource() const;
