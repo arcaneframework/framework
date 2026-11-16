@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DeviceId.h                                                  (C) 2000-2025 */
+/* DeviceId.h                                                  (C) 2000-2026 */
 /*                                                                           */
 /* Identifier of a system component.                                         */
 /*---------------------------------------------------------------------------*/
@@ -24,11 +24,10 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
- * \brief Identifier of a system component.
+ * \brief Identifier of an accelerator device.
  *
- * The component can be an accelerator or the host.
+ * The device can be an accelerator or the host.
  */
 class ARCCORE_COMMON_EXPORT DeviceId
 {
@@ -71,9 +70,16 @@ class ARCCORE_COMMON_EXPORT DeviceId
 
  public:
 
-  friend ARCCORE_COMMON_EXPORT
-  std::ostream&
+  friend ARCCORE_COMMON_EXPORT std::ostream&
   operator<<(std::ostream& o, const DeviceId& device_id);
+  friend bool operator==(const DeviceId& d1, const DeviceId& d2)
+  {
+    return d1.m_device_id == d2.m_device_id;
+  }
+  friend bool operator!=(const DeviceId& d1, const DeviceId& d2)
+  {
+    return d1.m_device_id != d2.m_device_id;
+  }
 
  private:
 
