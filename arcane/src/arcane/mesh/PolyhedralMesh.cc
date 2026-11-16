@@ -150,6 +150,7 @@ class PolyhedralFamilySerializersMng : public IItemFamilySerializerMngInternal
   Integer m_nb_serializers = 0;
   UniqueArray<PolyhedralFamilySerializer*> m_serializers;
   PolyhedralTools::SerializationPolicy m_serialization_policy = PolyhedralTools::SerializationPolicy::None;
+  PolyhedralTools::ConnectivityUpdatePolicy m_connectivity_update_policy = PolyhedralTools::ConnectivityUpdatePolicy::ReplaceExistingConnectivities;
 
  public:
 
@@ -175,6 +176,11 @@ class PolyhedralFamilySerializersMng : public IItemFamilySerializerMngInternal
     m_serialization_policy = policy;
   }
   void finalizeSerialization() override;
+
+  void setUpdateConnectivityPolicy(mesh::PolyhedralTools::ConnectivityUpdatePolicy connectivity_update_policy) override
+  {
+    m_connectivity_update_policy = connectivity_update_policy;
+  }
 };
 
 /*---------------------------------------------------------------------------*/

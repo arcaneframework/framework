@@ -22,6 +22,7 @@ namespace mesh
   namespace PolyhedralTools
   {
     enum class SerializationPolicy{SerializationFamilyOnly,SerializeFamilyAndConnectedFamilies,None};
+    enum class ConnectivityUpdatePolicy{ReplaceExistingConnectivities,AddToExistingConnectivities};
   }
 }
 
@@ -56,6 +57,13 @@ class ARCANE_CORE_EXPORT IItemFamilySerializerMngInternal
    * all serializations for all families have been completed.
    */
   virtual void finalizeSerialization() = 0;
+
+  /*!
+   * \brief Choose the update connectivity policy
+   * @param connectivity_update_policy : defines when setting a connectivity for an existing item
+   * the new connectivities replace the existing connectivities or ar added to them
+   */
+  virtual  void setUpdateConnectivityPolicy(mesh::PolyhedralTools::ConnectivityUpdatePolicy connectivity_update_policy) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
