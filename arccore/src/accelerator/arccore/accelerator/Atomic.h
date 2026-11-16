@@ -30,8 +30,14 @@
 namespace Arcane::Accelerator
 {
 //! List of types supporting atomic operations.
+// Atomic operations are supported on the same types as CUDA and ROCM
+// (int, unsigned int, unsigned long long, double) and also on
+// 'float', 'long' and 'unsigned long'.
 template <typename T>
-concept AcceleratorAtomicConcept = std::same_as<T, float> || std::same_as<T, double> || std::same_as<T, Int32> || std::same_as<T, Int64>;
+concept AcceleratorAtomicConcept = std::same_as<T, float> || std::same_as<T, double>
+  || std::same_as<T, int> || std::same_as<T, unsigned int>
+  || std::same_as<T, long> || std::same_as<T, unsigned long>
+  || std::same_as<T, long long> || std::same_as<T, unsigned long long>;
 } // namespace Arcane::Accelerator
 
 namespace Arcane::Accelerator::Impl

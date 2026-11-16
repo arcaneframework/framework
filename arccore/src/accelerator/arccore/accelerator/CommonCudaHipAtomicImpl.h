@@ -14,17 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// This file must only be included by 'arcane/accelerator/Reduce.h'
+// This file must only be included by 'arcane/accelerator/Atomic.h'
 // and is only valid when compiled by the CUDA and HIP compilers
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-// Warning: with ROCm and a GPU on a PCI express bus, most
-// atomic methods do not work if the pointer is allocated
-// in unified memory. The problem seems to occur with atomicMin, atomicMax,
-// atomicInc. However, atomicAdd seems to work if concurrent accesses
-// are not too numerous.
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,104 +36,221 @@ class CommonCudaHipAtomicMax;
 template <typename DataType>
 class CommonCudaHipAtomicMin;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Macro to directly use CUDA or ROCM atomic operation
+#define ARCCORE_IMPL_USE_CUDAROCM_ATOMIC(datatype) \
+  template <> \
+  class CommonCudaHipAtomic<datatype, eAtomicOperation::Add> \
+  { \
+   public: \
+\
+    static ARCCORE_DEVICE datatype apply(datatype* ptr, datatype v) \
+    { \
+      return ::atomicAdd(ptr, v); \
+    } \
+  }; \
+  template <> \
+  class CommonCudaHipAtomic<datatype, eAtomicOperation::Max> \
+  { \
+   public: \
+\
+    static ARCCORE_DEVICE datatype apply(datatype* ptr, datatype v) \
+    { \
+      return ::atomicMax(ptr, v); \
+    } \
+  }; \
+  template <> \
+  class CommonCudaHipAtomic<datatype, eAtomicOperation::Min> \
+  { \
+   public: \
+\
+    static ARCCORE_DEVICE datatype apply(datatype* ptr, datatype v) \
+    { \
+      return ::atomicMin(ptr, v); \
+    } \
+  };
+
+ARCCORE_IMPL_USE_CUDAROCM_ATOMIC(int);
+ARCCORE_IMPL_USE_CUDAROCM_ATOMIC(unsigned int);
+ARCCORE_IMPL_USE_CUDAROCM_ATOMIC(unsigned long long);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <>
-class CommonCudaHipAtomic<int, eAtomicOperation::Add>
+class CommonCudaHipAtomic<long long, eAtomicOperation::Add>
 {
  public:
 
-  static ARCCORE_DEVICE int apply(int* ptr, int v)
+  static ARCCORE_DEVICE long long apply(long long* ptr, long long v)
   {
-    return ::atomicAdd(ptr, v);
+    void* p = ptr;
+    return static_cast<long long>(::atomicAdd(static_cast<unsigned long long*>(p), v));
   }
 };
 
 template <>
-class CommonCudaHipAtomic<int, eAtomicOperation::Max>
-{
- public:
-
-  static ARCCORE_DEVICE int apply(int* ptr, int v)
-  {
-    return ::atomicMax(ptr, v);
-  }
-};
-
-template <>
-class CommonCudaHipAtomic<int, eAtomicOperation::Min>
-{
- public:
-
-  static ARCCORE_DEVICE int apply(int* ptr, int v)
-  {
-    return ::atomicMin(ptr, v);
-  }
-};
-
-template <>
-class CommonCudaHipAtomic<Int64, eAtomicOperation::Add>
-{
- public:
-
-  static ARCCORE_DEVICE Int64 apply(Int64* ptr, Int64 v)
-  {
-    static_assert(sizeof(Int64) == sizeof(long long int), "Bad pointer size");
-    return static_cast<Int64>(::atomicAdd((unsigned long long int*)ptr, v));
-  }
-};
-
-template <>
-class CommonCudaHipAtomic<Int64, eAtomicOperation::Max>
+class CommonCudaHipAtomic<long long, eAtomicOperation::Max>
 {
  public:
 
 #if defined(__HIP__)
-  static ARCCORE_DEVICE Int64 apply(Int64* ptr, Int64 v)
+  static ARCCORE_DEVICE long long apply(long long* ptr, long long v)
   {
-    unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(ptr);
+    void* p = ptr;
+    unsigned long long int* address_as_ull = static_cast<unsigned long long int*>(p);
     unsigned long long int old = *address_as_ull, assumed;
 
     do {
       assumed = old;
-      Int64 assumed_as_int64 = static_cast<Int64>(assumed);
+      long long assumed_as_int64 = static_cast<Int64>(assumed);
       old = atomicCAS(address_as_ull, assumed,
                       static_cast<unsigned long long int>(v > assumed_as_int64 ? v : assumed_as_int64));
     } while (assumed != old);
-    return static_cast<Int64>(old);
+    return static_cast<long long>(old);
   }
 #else
-  static ARCCORE_DEVICE Int64 apply(Int64* ptr, Int64 v)
+  static ARCCORE_DEVICE long long apply(long long* ptr, long long v)
   {
-    return static_cast<Int64>(::atomicMax((long long int*)ptr, v));
+    void* p = ptr;
+    return static_cast<long long>(::atomicMax(static_cast<long long int*>(p), v));
   }
 #endif
 };
 
 template <>
-class CommonCudaHipAtomic<Int64, eAtomicOperation::Min>
+class CommonCudaHipAtomic<long long, eAtomicOperation::Min>
 {
  public:
 
 #if defined(__HIP__)
-  static ARCCORE_DEVICE Int64 apply(Int64* ptr, Int64 v)
+  static ARCCORE_DEVICE long long apply(long long* ptr, long long v)
   {
-    unsigned long long int* address_as_ull = reinterpret_cast<unsigned long long int*>(ptr);
+    void* p = ptr;
+    unsigned long long int* address_as_ull = static_cast<unsigned long long int*>(p);
     unsigned long long int old = *address_as_ull, assumed;
 
     do {
       assumed = old;
-      Int64 assumed_as_int64 = static_cast<Int64>(assumed);
+      long long assumed_as_int64 = static_cast<Int64>(assumed);
       old = atomicCAS(address_as_ull, assumed,
                       static_cast<unsigned long long int>(v < assumed_as_int64 ? v : assumed_as_int64));
     } while (assumed != old);
-    return static_cast<Int64>(old);
+    return static_cast<long long>(old);
   }
 #else
-  static ARCCORE_DEVICE Int64 apply(Int64* ptr, Int64 v)
+  static ARCCORE_DEVICE long long apply(long long* ptr, long long v)
   {
-    return static_cast<Int64>(::atomicMin((long long int*)ptr, v));
+    void* p = ptr;
+    return static_cast<long long>(::atomicMin(static_cast<long long int*>(p), v));
   }
 #endif
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <>
+class CommonCudaHipAtomic<long, eAtomicOperation::Add>
+{
+ public:
+
+  static ARCCORE_DEVICE long apply(long* ptr, long v)
+  {
+    void* p = ptr;
+    if constexpr (sizeof(long) == sizeof(long long))
+      return static_cast<long>(::atomicAdd(static_cast<unsigned long long int*>(p), v));
+    else
+      return ::atomicAdd(static_cast<int*>(p), v);
+  }
+};
+
+template <>
+class CommonCudaHipAtomic<long, eAtomicOperation::Max>
+{
+ public:
+
+  static ARCCORE_DEVICE long apply(long* ptr, long v)
+  {
+    void* p = ptr;
+    if constexpr (sizeof(long) == sizeof(long long))
+      return CommonCudaHipAtomic<long long, eAtomicOperation::Max>::apply(static_cast<long long*>(p), v);
+    else
+      return ::atomicMax(static_cast<int*>(p), v);
+  }
+};
+
+template <>
+class CommonCudaHipAtomic<long, eAtomicOperation::Min>
+{
+ public:
+
+  static ARCCORE_DEVICE long apply(long* ptr, long v)
+  {
+    void* p = ptr;
+    if constexpr (sizeof(long) == sizeof(long long))
+      return CommonCudaHipAtomic<long long, eAtomicOperation::Min>::apply(static_cast<long long*>(p), v);
+    else
+      return ::atomicMin(static_cast<int*>(p), v);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <>
+class CommonCudaHipAtomic<unsigned long, eAtomicOperation::Add>
+{
+ public:
+
+  static ARCCORE_DEVICE unsigned long apply(unsigned long* ptr, unsigned long v)
+  {
+    void* p = ptr;
+    if constexpr (sizeof(unsigned long) == sizeof(long long))
+      return static_cast<unsigned long>(::atomicAdd(static_cast<unsigned long long*>(p), v));
+    else
+      return ::atomicAdd(static_cast<unsigned int*>(p), v);
+  }
+};
+
+template <>
+class CommonCudaHipAtomic<unsigned long, eAtomicOperation::Max>
+{
+ public:
+
+  static ARCCORE_DEVICE unsigned long apply(unsigned long* ptr, unsigned long v)
+  {
+    void* p = ptr;
+    if constexpr (sizeof(unsigned long) == sizeof(long long))
+      return CommonCudaHipAtomic<unsigned long long, eAtomicOperation::Max>::apply(static_cast<unsigned long long*>(p), v);
+    else
+      return ::atomicMax(static_cast<unsigned int*>(p), v);
+  }
+};
+
+template <>
+class CommonCudaHipAtomic<unsigned long, eAtomicOperation::Min>
+{
+ public:
+
+  static ARCCORE_DEVICE long apply(unsigned long* ptr, unsigned long v)
+  {
+    void* p = ptr;
+    if constexpr (sizeof(unsigned long) == sizeof(unsigned long long))
+      return CommonCudaHipAtomic<unsigned long long, eAtomicOperation::Min>::apply(static_cast<unsigned long long*>(p), v);
+    else
+      return ::atomicMin(static_cast<unsigned int*>(p), v);
+  }
+};
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Devices with architecture less than 6.0 do not support
 // atomicAdd on 'double'.
@@ -233,6 +341,88 @@ class CommonCudaHipAtomic<double, eAtomicOperation::Min>
     return atomicMinDouble(ptr, v);
   }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// AtomicMax and AtomicMix is not supported for CUDA on 'float'.
+
+__device__ inline float
+atomicMaxFloat(float* address, float val)
+{
+  static_assert(sizeof(float) == sizeof(unsigned int), "Bad pointer size");
+  unsigned int* address_as_ui = (unsigned int*)address;
+  unsigned long long int old = *address_as_ui, assumed;
+
+  do {
+    assumed = old;
+    float assumed_as_float = __uint_as_float(assumed);
+    old = atomicCAS(address_as_ui, assumed,
+                    __float_as_uint(val > assumed_as_float ? val : assumed_as_float));
+    // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+  } while (assumed != old);
+
+  return __uint_as_float(old);
+}
+
+__device__ inline float
+atomicMinFloat(float* address, float val)
+{
+  unsigned int* address_as_ui = (unsigned int*)address;
+  unsigned int old = *address_as_ui, assumed;
+
+  do {
+    assumed = old;
+    float assumed_as_float = __uint_as_float(assumed);
+    old = atomicCAS(address_as_ui, assumed,
+                    __float_as_uint(val < assumed_as_float ? val : assumed_as_float));
+    // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+  } while (assumed != old);
+
+  return __uint_as_float(old);
+}
+
+template <>
+class CommonCudaHipAtomic<float, eAtomicOperation::Add>
+{
+ public:
+
+  static ARCCORE_DEVICE float apply(float* ptr, float v)
+  {
+    return ::atomicAdd(ptr, v);
+  }
+};
+
+template <>
+class CommonCudaHipAtomic<float, eAtomicOperation::Max>
+{
+ public:
+
+  static ARCCORE_DEVICE float apply(float* ptr, float v)
+  {
+#if defined(__HIP__)
+    return ::atomicMax(ptr, v);
+#else
+    return atomicMaxFloat(ptr, v);
+#endif
+  }
+};
+
+template <>
+class CommonCudaHipAtomic<float, eAtomicOperation::Min>
+{
+ public:
+
+  static ARCCORE_DEVICE float apply(float* ptr, float v)
+  {
+#if defined(__HIP__)
+    return ::atomicMin(ptr, v);
+#else
+    return atomicMinFloat(ptr, v);
+#endif
+  }
+};
+
+#undef ARCCORE_IMPL_USE_CUDAROCM_ATOMIC
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
