@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AtomicUnitTest.cc                                           (C) 2000-2025 */
+/* AtomicUnitTest.cc                                           (C) 2000-2026 */
 /*                                                                           */
 /* Test service for 'atomic' functions on accelerator.                       */
 /*---------------------------------------------------------------------------*/
@@ -156,6 +156,17 @@ _executeTestOperation()
   _executeTestType<Real, Operation>();
   _executeTestType<Int32, Operation>();
   _executeTestType<Int64, Operation>();
+
+  _executeTestType<float, Operation>();
+  _executeTestType<double, Operation>();
+
+  _executeTestType<int, Operation>();
+  _executeTestType<long, Operation>();
+  _executeTestType<long long, Operation>();
+
+  _executeTestType<unsigned int, Operation>();
+  _executeTestType<unsigned long, Operation>();
+  _executeTestType<unsigned long long int, Operation>();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -168,11 +179,8 @@ _executeTestType()
   ax::eExecutionPolicy policy = m_runner.executionPolicy();
   if (isAcceleratorPolicy(policy)) {
     info() << "ExecuteTest1: using accelerator";
-    if (policy != ax::eExecutionPolicy::HIP) {
-      // Does not work on large arrays (>50000 values) with ROCM
-      _executeTest1<DataType, Operation>(eMemoryRessource::UnifiedMemory);
-      _executeTest1<DataType, Operation>(eMemoryRessource::HostPinned);
-    }
+    _executeTest1<DataType, Operation>(eMemoryRessource::UnifiedMemory);
+    _executeTest1<DataType, Operation>(eMemoryRessource::HostPinned);
     _executeTest1<DataType, Operation>(eMemoryRessource::Device);
   }
   else {
@@ -197,8 +205,10 @@ _executeTest1(eMemoryRessource mem_ressource)
   DataType init_value = {};
   for (Int32 i = 0; i < nb_value; ++i) {
     DataType x = static_cast<DataType>(i % (nb_value / 4));
-    if ((i % 2) == 0)
-      x = -x;
+    if constexpr (std::is_signed_v<DataType>) {
+      if ((i % 2) == 0)
+        x = -x;
+    }
     v0[i] = x;
     DataType value_to_apply = x + add0;
     switch (Operation) {
@@ -237,8 +247,10 @@ _executeTest1(eMemoryRessource mem_ressource)
     {
       auto [i] = iter();
       DataType x = static_cast<DataType>(i % (nb_value / 4));
-      if ((i % 2) == 0)
-        x = -x;
+      if constexpr (std::is_signed_v<DataType>) {
+        if ((i % 2) == 0)
+          x = -x;
+      }
       DataType v = x + add0;
       DataType old_v = ax::doAtomic<Operation>(inout_a(iter), v);
       DataType new_v = inout_a(iter);
