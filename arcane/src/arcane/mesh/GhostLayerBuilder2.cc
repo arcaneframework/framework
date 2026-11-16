@@ -944,7 +944,10 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
   auto* serializer_mng = m_mesh_internal->familySerializerMng();
   ScopedPtrT<IItemFamilySerializer> cell_serializer(m_mesh->cellFamily()->policyMng()->createSerializer());
   if (serializer_mng)
+  {
     serializer_mng->beginSerialization(mesh::PolyhedralTools::SerializationPolicy::SerializeFamilyAndConnectedFamilies);
+    serializer_mng->setUpdateConnectivityPolicy(mesh::PolyhedralTools::ConnectivityUpdatePolicy::AddToExistingConnectivities);
+  }
   for (Integer i = 0, ns = exchanger->nbSender(); i < ns; ++i) {
     ISerializeMessage* sm = exchanger->messageToSend(i);
     Int32 rank = sm->destination().value();
