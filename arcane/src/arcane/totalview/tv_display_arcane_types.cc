@@ -244,7 +244,7 @@ int TV_ttf_display_type(const Arcane::ItemInternal* obj)
   // occur
 
   using Arcane::Integer;
-  char strtype[32];
+  char strtype[128];
 
   arcane_ttf_header();
   TV_ttf_add_row("local_id", "Integer", reinterpret_cast<const int*>(obj));
