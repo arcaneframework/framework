@@ -71,6 +71,7 @@ class PolyhedralFamilySerializersMng;
 namespace PolyhedralTools
 {
   class ItemLocalIds;
+  enum class ConnectivityUpdatePolicy;
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -109,7 +110,7 @@ class PolyhedralMesh
   void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info) override;
   // Get items local ids after creation. Argument family_ids will be resized in the method
   void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info, ArrayView<Int32UniqueArray> family_lids);
-  void scheduleAllocateItems(const Arcane::ItemAllocationInfo::FamilyInfo& family_info, PolyhedralTools::ItemLocalIds& future_item_local_ids);
+  void scheduleAllocateItems(const Arcane::ItemAllocationInfo::FamilyInfo& family_info, PolyhedralTools::ItemLocalIds& future_item_local_ids, PolyhedralTools::ConnectivityUpdatePolicy connectivity_update_policy);
   void applyScheduledAllocateItems(UniqueArray<std::shared_ptr<PolyhedralTools::ItemLocalIds>> item_lids);
   void removeNeedRemoveMarkedItems();
   PolyhedralFamilySerializersMng* polyhedralFamilySerializersMng();

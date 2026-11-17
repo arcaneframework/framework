@@ -171,6 +171,11 @@ class PolyhedralFamilySerializersMng : public IItemFamilySerializerMngInternal
     ++m_nb_serializers;
   }
 
+  PolyhedralTools::ConnectivityUpdatePolicy connectivityUpdatePolicy() const
+  {
+    return m_connectivity_update_policy;
+  }
+
   void beginSerialization(PolyhedralTools::SerializationPolicy policy) override
   {
     m_serialization_policy = policy;
@@ -1091,7 +1096,7 @@ namespace mesh
       // and that's all, they will be filled in finalizeSerialization
     }
     m_future_item_lids_array.push_back(std::make_shared<PolyhedralTools::ItemLocalIds>());
-    m_mesh->scheduleAllocateItems(m_family_info, *m_future_item_lids_array.back().get());
+    m_mesh->scheduleAllocateItems(m_family_info, *m_future_item_lids_array.back().get(), m_mng->connectivityUpdatePolicy());
 
     // Add serializer in mng. Update is triggered when finalizeSerialization is called
     m_mng->addSerializer(this);
@@ -1620,7 +1625,8 @@ _allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info, ArrayView
 /*---------------------------------------------------------------------------*/
 
 void Arcane::mesh::PolyhedralMesh::
-scheduleAllocateItems(const Arcane::ItemAllocationInfo::FamilyInfo& family_info, mesh::PolyhedralTools::ItemLocalIds& item_local_ids)
+scheduleAllocateItems(const Arcane::ItemAllocationInfo::FamilyInfo& family_info, mesh::PolyhedralTools::ItemLocalIds& item_local_ids,
+  PolyhedralTools::ConnectivityUpdatePolicy connectivity_update_policy)
 {
   // Second step read a vtk polyhedral mesh
   m_subdomain->traceMng()->info() << "--PolyhedralMesh: schedule allocate items --";
