@@ -1,12 +1,9 @@
-/*
- * PETScLinearSolver.h
- *
- *  Created on: 22 déc. 2014
- *      Author: gratienj
- */
-
-#ifndef ALIEN_IFPLINEARSOLVER_H_
-#define ALIEN_IFPLINEARSOLVER_H_
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+#pragma once
 
 #include <alien/utils/Precomp.h>
 #include <alien/expression/solver/SolverStater.h>
@@ -21,7 +18,8 @@ namespace Alien {
 
 class SolverStat;
 
-class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver
+class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver,
+                                                           public ObjectWithTrace
 {
  private:
   typedef SolverStatus Status;
@@ -74,7 +72,7 @@ class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver
   // A. Anciaux
   bool _solveRs(bool m_resizeable);
 
-  void internalPrintInfo() const;
+  void printInfo() const;
 
   void updateParameters();
 
@@ -98,4 +96,3 @@ class ALIEN_IFPEN_SOLVERS_EXPORT IFPInternalLinearSolver : public ILinearSolver
 
 } // namespace Alien
 
-#endif /* PETSCLINEARSOLVER_H_ */

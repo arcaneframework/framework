@@ -243,8 +243,7 @@ MTLInternalLinearSolver::_solve(MatrixInternal::MTLMatrixType const& matrix,
 void
 MTLInternalLinearSolver::end()
 {
-  if (m_output_level > 0)
-    internalPrintInfo();
+  m_stat.finalPrint(traceMng(),"MTL");
 }
 
 /*---------------------------------------------------------------------------*/

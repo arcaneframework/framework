@@ -1,8 +1,10 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
+#pragma once
+
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
 /* alienc                                         (C) 2000-2024              */
@@ -10,8 +12,6 @@
 /* Stats for Alien solvers                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#pragma once
 
 #include <alien/expression/solver/ILinearSolver.h>
 #include <alien/expression/solver/SolverStat.h>
@@ -35,12 +35,9 @@ class ALIEN_EXPORT BaseSolverStater
   } eStateType;
 
  public:
-  BaseSolverStater()
-  : m_state(eNone)
-  , m_suspend_count(0)
-  {}
+  BaseSolverStater() = default;
 
-  virtual ~BaseSolverStater() {}
+  virtual ~BaseSolverStater() = default;
 
  public:
   static Real getVirtualTimeCounter() { return _getVirtualTime(); }
@@ -82,17 +79,15 @@ class ALIEN_EXPORT BaseSolverStater
 
   void _stopTimer();
 
- protected:
-  eStateType m_state;
-  Integer m_suspend_count;
-  Real m_real_time; //!< 'wall clock' time for the lastest start or stop
-  Real m_cpu_time; //!< 'cpu' time for the lastest start or stop
+  eStateType m_state = eNone;
+  Integer m_suspend_count = 0;
+  Real m_real_time = 0; //!< 'wall clock' time for the lastest start or stop
+  Real m_cpu_time = 0; //!< 'cpu' time for the lastest start or stop
 };
 
 template <typename SolverT>
 class SolverStater : public BaseSolverStater
 {
- public:
  public:
   /** Constructeur de la classe */
   SolverStater(SolverT* solver)
@@ -127,7 +122,6 @@ class SolverStater : public BaseSolverStater
 
     auto& solver_stat = m_solver->getSolverStat();
     solver_stat.m_initialization_time += m_real_time;
-    solver_stat.m_initialization_cpu_time += m_cpu_time;
   }
 
   void startPrepareMeasure()
@@ -144,11 +138,9 @@ class SolverStater : public BaseSolverStater
     auto& solver_stat = m_solver->getSolverStat();
     if (m_suspend_count == 0) {
       solver_stat.m_last_prepare_time = m_real_time;
-      solver_stat.m_last_prepare_cpu_time = m_cpu_time;
     }
     else {
       solver_stat.m_last_prepare_time += m_real_time;
-      solver_stat.m_last_prepare_cpu_time += m_cpu_time;
     }
     m_state = eNone;
     ++m_suspend_count;
@@ -162,12 +154,10 @@ class SolverStater : public BaseSolverStater
 
     auto& solver_stat = m_solver->getSolverStat();
     solver_stat.m_last_prepare_time += m_real_time;
-    solver_stat.m_last_prepare_cpu_time += m_cpu_time;
 
     m_suspend_count = 0;
     m_state = eNone;
     solver_stat.m_prepare_time += solver_stat.m_last_prepare_time;
-    solver_stat.m_prepare_cpu_time += solver_stat.m_last_prepare_cpu_time;
   }
 
   void startSolveMeasure()
@@ -185,12 +175,17 @@ class SolverStater : public BaseSolverStater
     auto const& status = m_solver->getStatus();
     auto& solver_stat = m_solver->getSolverStat();
     solver_stat.m_last_solve_time = m_real_time;
-    solver_stat.m_last_solve_cpu_time = m_cpu_time;
     solver_stat.m_solve_time += solver_stat.m_last_solve_time;
-    solver_stat.m_solve_cpu_time += solver_stat.m_last_solve_cpu_time;
     ++solver_stat.m_solve_count;
     solver_stat.m_last_iteration_count = status.iteration_count;
-    solver_stat.m_iteration_count += solver_stat.m_last_iteration_count;
+    solver_stat.m_iteration_count += status.iteration_count;
+    if (!status.succeeded)
+    {
+      solver_stat.m_failed_solve_time += solver_stat.m_last_solve_time;
+      ++solver_stat.m_failed_solve_count;
+      solver_stat.m_failed_iteration_count += status.iteration_count;
+      solver_stat.m_failed_prepare_time +=  solver_stat.m_last_prepare_time;
+    }
   }
 
  private:

@@ -274,21 +274,25 @@ HypreInternalLinearSolver::initializeLibrary(bool exec_on_device,
                                              bool use_device_memory,
                                              Integer device_id)
 {
-  if(Alien::HypreInternalLinearSolver::m_library_plugin_is_initialized) return ;
-  HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(exec_on_device,use_device_memory,device_id)) ;
+  if(Alien::HypreInternalLinearSolver::m_library_plugin_is_initialized)
+    return;
+
+  HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(exec_on_device,use_device_memory,device_id));
 }
 
 void
 HypreInternalLinearSolver::init()
 {
-  if(HypreInternalLinearSolver::m_library_plugin_is_initialized) return ;
+  if(HypreInternalLinearSolver::m_library_plugin_is_initialized)
+    return;
+
 #if defined(HYPRE_USING_CUDA) || defined(HYPRE_USING_HIP)
   if(m_options->execSpace() == HypreOptionTypes::Device)
   {
       if(m_options->memoryType() == HypreOptionTypes::DeviceMemory)
-        HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(true,true,m_gpu_device_id)) ;
+        HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(true,true,m_gpu_device_id));
       else
-        HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(true,false)) ;
+        HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(true,false));
       alien_info([&] {
         cout()<<"Hypre Initialisation : Exec on Device ";
         cout()<<"           Device ID : "<<m_gpu_device_id;
@@ -311,13 +315,13 @@ HypreInternalLinearSolver::init()
    else
 #endif
    {
-     HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(false,false)) ;
+     HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary(false,false));
      alien_info([&] {
        cout()<<"Hypre Initialisation : Exec on Host ";
        cout()<<"                       use Host Memory";
      });
    }
-   HypreInternalLinearSolver::m_library_plugin_is_initialized = true ;
+   HypreInternalLinearSolver::m_library_plugin_is_initialized = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1261,15 +1265,17 @@ HypreInternalLinearSolver::solve(const HypreMatrix& A,
   const HYPRE_IJMatrix& ij_matrix = A.internal()->internal();
   const HYPRE_IJVector& bij_vector = b.internal()->internal();
   HYPRE_IJVector& xij_vector = x.internal()->internal();
-  init(A) ;
-  m_impl->setUp(ij_matrix) ;
-  m_impl->setUp(bij_vector,xij_vector) ;
-  m_status.succeeded = m_impl->solve() ;
-  m_impl->getStatus(m_status) ;
-  m_impl->end() ;
-  m_impl.reset() ;
-  return m_status.succeeded;
+  init(A);
+  m_impl->setUp(ij_matrix);
+  m_impl->setUp(bij_vector,xij_vector);
 
+  m_status.succeeded = m_impl->solve();
+
+  m_impl->getStatus(m_status);
+  m_impl->end();
+  m_impl.reset();
+
+  return m_status.succeeded;
 }
 
 bool
@@ -1278,17 +1284,21 @@ HypreInternalLinearSolver::solve(const HypreVector& b,
 {
   const HYPRE_IJVector& bij_vector = b.internal()->internal();
   HYPRE_IJVector& xij_vector = x.internal()->internal();
-  assert(m_impl.get()!=nullptr) ;
-  assert(m_impl->m_initialized) ;
+  assert(m_impl.get()!=nullptr);
+  assert(m_impl->m_initialized);
   if(!m_impl->m_is_setup)
-    m_impl->setUp(bij_vector,xij_vector) ;
+    m_impl->setUp(bij_vector,xij_vector);
+
   m_status.succeeded = m_impl->solve() ;
+
   return m_status.succeeded;
 }
 
 void
 HypreInternalLinearSolver::end()
 {
+  m_stat.finalPrint( traceMng(),"Hypre");
+
   if(m_impl.get())
   {
     m_impl->end();
@@ -1301,6 +1311,13 @@ const Alien::SolverStatus&
 HypreInternalLinearSolver::getStatus() const
 {
   return m_status;
+}
+
+void HypreInternalLinearSolver::printInfo() const
+{
+  m_stat.print(
+      Universe().traceMng(), m_status, "Hypre");
+
 }
 
 /*---------------------------------------------------------------------------*/

@@ -85,6 +85,8 @@ void test(Alien::ITraceMng* tm,const std::string& format,
 
   tm->info() << " ";
   tm->info() << "... example finished !!!";
+
+  solver->end();
 }
 
 

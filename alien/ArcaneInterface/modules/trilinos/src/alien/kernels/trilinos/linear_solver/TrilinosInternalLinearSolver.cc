@@ -43,6 +43,7 @@
 #include <alien/core/backend/SolverFabricRegisterer.h>
 #include <alien/core/block/ComputeBlockOffsets.h>
 #include <arccore/message_passing_mpi/MessagePassingMpiGlobal.h>
+#include <HARTSSolver/Utils/TraceMng.h>
 
 /*---------------------------------------------------------------------------*/
 const std::string TrilinosOptionTypes::solver_type[NumOfSolver] = { "BICGSTAB", "CG",
@@ -173,9 +174,7 @@ template <typename TagT>
 void
 TrilinosInternalLinearSolver<TagT>::end()
 {
-  if (m_output_level > 0) {
-    internalPrintInfo();
-  }
+  m_stat.finalPrint(traceMng(), "Trilinos");
 }
 
 template <typename TagT>

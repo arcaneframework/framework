@@ -95,7 +95,5 @@
 	<description>Parallel implementation of ILU0 without interface parts with 2D partitioning</description>
       </enumvalue>
     </enumeration>
-
-
   </options>
 </service>
