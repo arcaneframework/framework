@@ -765,12 +765,26 @@ namespace mesh
     /*---------------------------------------------------------------------------*/
     /*---------------------------------------------------------------------------*/
 
+    Neo::Mesh::ConnectivityOperation neoConnectivityOperationFromConnectiviyUpdatePolicy(
+      PolyhedralTools::ConnectivityUpdatePolicy connectivity_update_policy)
+    {
+      switch (connectivity_update_policy) {
+      case PolyhedralTools::ConnectivityUpdatePolicy::AddToExistingConnectivities :
+        return Neo::Mesh::ConnectivityOperation::Modify;
+        // return Neo::Mesh::ConnectivityOperation::ModifyAndAddToExisting;
+      case PolyhedralTools::ConnectivityUpdatePolicy::ReplaceExistingConnectivities:
+        return Neo::Mesh::ConnectivityOperation::Modify;
+// v      return Neo::Mesh::ConnectivityOperation::ModifyAndReplaceExisting;
+      }
+    }
+
     void scheduleUpdateConnectivity(PolyhedralFamily* arcane_source_item_family,
                                     PolyhedralTools::ItemLocalIds& source_items,
                                     Integer nb_connected_items_per_item,
                                     PolyhedralFamily* arcane_target_item_family,
                                     Int64ConstArrayView target_items_uids,
-                                    String const& name)
+                                    String const& name,
+                                    PolyhedralTools::ConnectivityUpdatePolicy connectivity_update_policy)
     {
       // add connectivity in Neo
       _scheduleAddConnectivity(arcane_source_item_family,
@@ -779,7 +793,7 @@ namespace mesh
                                arcane_target_item_family,
                                target_items_uids,
                                name,
-                               Neo::Mesh::ConnectivityOperation::Modify);
+                               neoConnectivityOperationFromConnectiviyUpdatePolicy(connectivity_update_policy));
     }
 
     /*---------------------------------------------------------------------------*/
@@ -789,7 +803,8 @@ namespace mesh
                                     Int32ConstSmallSpan nb_connected_items_per_item,
                                     PolyhedralFamily* arcane_target_item_family,
                                     Int64ConstSmallSpan target_items_uids,
-                                    String const& connectivity_name)
+                                    String const& connectivity_name,
+                                    PolyhedralTools::ConnectivityUpdatePolicy connectivity_update_policy)
     {
       _scheduleAddConnectivity(arcane_source_item_family,
                                source_items,
@@ -797,7 +812,7 @@ namespace mesh
                                arcane_target_item_family,
                                target_items_uids,
                                connectivity_name,
-                               Neo::Mesh::ConnectivityOperation::Modify);
+                               neoConnectivityOperationFromConnectiviyUpdatePolicy(connectivity_update_policy));
     }
 
     /*---------------------------------------------------------------------------*/
@@ -1655,7 +1670,8 @@ scheduleAllocateItems(const Arcane::ItemAllocationInfo::FamilyInfo& family_info,
                                        current_connected_family_info.nb_connected_items_per_item,
                                        connected_family,
                                        current_connected_family_info.connected_items_uids,
-                                       current_connected_family_info.connectivity_name);
+                                       current_connected_family_info.connectivity_name,
+                                       connectivity_update_policy);
   }
 }
 
