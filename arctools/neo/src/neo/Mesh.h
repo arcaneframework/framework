@@ -95,7 +95,9 @@ class Mesh
   enum class ConnectivityOperation
   {
     Add,
-    Modify
+    Modify,
+    ModifyAndAddToExisting,
+    ModifyAndReplaceExisting
   };
 
   static std::string removedTargetItemIndexfilteredItemPropertyName(std::string const& connectivity_name) {
