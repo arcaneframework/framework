@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2024 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2026 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicIndexManager                                         (C) 2000-2024   */
+/* BasicIndexManager                                         (C) 2000-2026   */
 /*                                                                           */
 /* Basic indexing between algebra and mesh worlds. Depends on Arcane         */
 /*---------------------------------------------------------------------------*/
@@ -128,18 +128,28 @@ namespace ArcaneTools {
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
     VectorIndexSet buildVectorIndexSet(const Arccore::String name,
         const Arcane::ItemGroup& itemGroup, const Arccore::Integer n);
+    VectorIndexSet buildVectorIndexSet(const Arccore::String name,
+        const Arcane::ItemGroup& itemGroup, const Arccore::Integer n,
+        const EntrySortMode sort);
 
     //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
     VectorIndexSet buildVectorIndexSet(const Arccore::String name,
         const Arccore::IntegerConstArrayView localIds, const IAbstractFamily& family,
         const Arccore::Integer n);
+    VectorIndexSet buildVectorIndexSet(const Arccore::String name,
+        const Arccore::IntegerConstArrayView localIds, const IAbstractFamily& family,
+        const Arccore::Integer n,
+        const EntrySortMode sort);
 
     //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
     //! abstraite
     /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
     VectorIndexSet buildVectorIndexSet(const Arccore::String name,
         const IAbstractFamily& family, const Arccore::Integer n);
+    VectorIndexSet buildVectorIndexSet(const Arccore::String name,
+        const IAbstractFamily& family, const Arccore::Integer n,
+        const EntrySortMode sort);
 
     //! Demande de dé-indexation d'une partie d'une entrée
     /*! Utilisable uniquement avant prepare */
@@ -236,8 +246,10 @@ namespace ArcaneTools {
 
     struct EntryIndexComparator
     {
-      inline bool operator()(
-          const InternalEntryIndex& a, const InternalEntryIndex& b) const;
+      IIndexManager::EntrySortMode m_sort = IIndexManager::EntrySortMode::KindUidsCreationIndex;
+      EntryIndexComparator(IIndexManager::EntrySortMode sort) : m_sort(sort) {}
+      explicit EntryIndexComparator() = default;
+      inline bool operator()(const InternalEntryIndex& a, const InternalEntryIndex& b) const;
     };
 
     //! Table des Entry connues localement
@@ -246,6 +258,7 @@ namespace ArcaneTools {
 
     //! Index de creation des entrées
     Arccore::Integer m_creation_index = 0;
+    IIndexManager::EntrySortMode m_sort_mode = IIndexManager::EntrySortMode::KindUidsCreationIndex;
 
     //! Famille des familles abstraites associées aux familles du maillage
 
