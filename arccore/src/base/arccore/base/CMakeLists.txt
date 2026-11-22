@@ -10,6 +10,10 @@ arccore_add_component_library(base
 
 target_link_libraries(arccore_base PUBLIC $<BUILD_INTERFACE:arccore_build_compile_flags>)
 
+if(CMAKE_DL_LIBS)
+  target_link_libraries(arccore_base PRIVATE ${CMAKE_DL_LIBS})
+endif()
+
 if(ARCCORE_ENABLE_GLIB)
   target_link_libraries(arccore_base PRIVATE arcconpkg_Glib)
   target_compile_definitions(arccore_base PRIVATE ARCCORE_HAS_GLIB)

@@ -59,6 +59,7 @@
   GenericRegisterer.h
   GenericRegisterer.cc
   GlibDynamicLibraryLoader.cc
+  NativeDynamicLibraryLoader.cc
   HPReal.cc
   HPReal.h
   IDirectory.h
