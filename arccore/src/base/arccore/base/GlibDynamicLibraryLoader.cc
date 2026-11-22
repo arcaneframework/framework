@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GlibDynamicLibraryLoader.cc                                 (C) 2000-2025 */
+/* GlibDynamicLibraryLoader.cc                                 (C) 2000-2026 */
 /*                                                                           */
 /* Dynamic library loader with Glib (uses gmodule).                          */
 /*---------------------------------------------------------------------------*/
@@ -197,17 +197,18 @@ createGlibDynamicLibraryLoader()
   return idll;
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 namespace
 {
   GlibDynamicLibraryLoader glib_dynamic_loader;
-  IDynamicLibraryLoader* global_default_loader = &glib_dynamic_loader;
-} // namespace
+}
 
-IDynamicLibraryLoader* IDynamicLibraryLoader::getDefault()
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" IDynamicLibraryLoader*
+getDefaultGlibDynamicLibraryLoader()
 {
-  return global_default_loader;
+  return &glib_dynamic_loader;
 }
 
 /*---------------------------------------------------------------------------*/
