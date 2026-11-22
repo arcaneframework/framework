@@ -871,3 +871,33 @@ TEST(NeoMeshAPITest,FilterNullItemInConnectivity) {
   EXPECT_EQ(face_family.nbElements(), 0);
   // Add a test (maybe a dedicated one) where source and item targets are removed
 }
+
+TEST(NeoMeshAPITest,ChangeConnectivityKeepingExistingValues) {
+  auto mesh = Neo::Mesh{ "ChangeConnectivityKeepingExistingValues" };
+  auto& cell_family = mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
+  auto& dof_family = mesh.addFamily(Neo::ItemKind::IK_Dof, "dof_family");
+  std::vector<Neo::utils::Int64> cell_uids{ 0, 1 };
+  std::vector<Neo::utils::Int64> dof_uids{ 0, 1, 2, 3, 4 };
+  std::vector<Neo::utils::Int64> cell_dofs{ 0, 1, 2, 3, 0, 4 };
+  std::vector<Neo::utils::Int64> cell_dofs2{ 3, 4, 1, 2};
+  std::vector<Neo::utils::Int32> cell_nb_added_connected_item{2,2};
+  auto future_cells = Neo::FutureItemRange{};
+  auto future_dofs = Neo::FutureItemRange{};
+  mesh.scheduleAddItems(cell_family, cell_uids, future_cells);
+  mesh.scheduleAddItems(dof_family, dof_uids, future_dofs);
+  // Add en two identical connectivities
+  mesh.scheduleAddConnectivity(cell_family, future_cells, dof_family, 3,
+                               cell_dofs, "cell_to_dofs1");
+  mesh.scheduleAddConnectivity(cell_family, future_cells, dof_family, 3,
+                             cell_dofs, "cell_to_dofs2");
+  mesh.applyScheduledOperations();
+  // Add two different types of modification with the same data for the two connectivities
+  // In the first one we add new connected dofs keeping the existing ones
+  // In the second one we add new connected dofs replacing the existing ones
+  mesh.scheduleAddConnectivity(cell_family, future_cells, dof_family, cell_nb_added_connected_item,
+                               cell_dofs2, "cell_to_dofs1",Neo::Mesh::ConnectivityOperation::ModifyAndAddToExisting);
+  mesh.scheduleAddConnectivity(cell_family, future_cells, dof_family, cell_nb_added_connected_item,
+                               cell_dofs2, "cell_to_dofs2",Neo::Mesh::ConnectivityOperation::ModifyAndReplaceExisting);
+  mesh.applyScheduledOperations();
+  //Check modification: todo
+}
