@@ -537,9 +537,7 @@ PETScInternalLinearSolver::solve(
 void
 PETScInternalLinearSolver::end()
 {
-  if (m_verbose != VerboseTypes::low) {
-    internalPrintInfo();
-  }
+  m_stat.finalPrint(traceMng(), "PETSc");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -622,7 +620,7 @@ PETScInternalLinearSolver::internalPrintInfo() const
 {
   if (traceMng())
     m_stat.print(const_cast<Arccore::ITraceMng*>(traceMng()), m_status,
-        "Linear Solver : PETScLinearSolver");
+        "PETScLinearSolver");
 }
 
 /*---------------------------------------------------------------------------*/

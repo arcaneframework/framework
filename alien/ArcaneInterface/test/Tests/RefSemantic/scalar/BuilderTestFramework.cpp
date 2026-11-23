@@ -167,6 +167,8 @@ main(int argc, char** argv)
       tm->fatal() << "Error, relative residual norm is to high (" << normr / normb << " vs. "
                   << arguments["tol"].as<double>() << "\n";
 
+    solver->end();
+
     tm->info() << " ";
     tm->info() << "... example finished !!!";
 #endif // ALIEN_USE_PETSC
