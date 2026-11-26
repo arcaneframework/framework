@@ -99,7 +99,7 @@ File `testlist.arct`:
           "name": "1 proc"
         },
         "arccher": {
-          "mpi": 1
+          "nb_proc": 1
         }
       },
       "2": {
@@ -107,7 +107,7 @@ File `testlist.arct`:
           "name": "2 procs"
         },
         "arccher": {
-          "mpi": 2
+          "nb_proc": 2
         }
       },
       "4": {
@@ -115,7 +115,7 @@ File `testlist.arct`:
           "name": "4 procs"
         },
         "arccher": {
-          "mpi": 4
+          "nb_proc": 4
         }
       }
     },

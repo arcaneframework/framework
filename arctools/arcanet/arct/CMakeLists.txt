@@ -22,6 +22,10 @@ install(FILES
 install(FILES specifications.md
   DESTINATION ${ARCANET_SPEC_INSTALL_DIR})
 
+
+include(cmake/arct_functions.cmake)
+include(cmake/test.cmake)
+
 # ----------------------------------------------------------------------------
 # Local Variables:
 # tab-width: 2

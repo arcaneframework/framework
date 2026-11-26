@@ -28,12 +28,14 @@ arct_config_create_or_edit_end()
 
 arct_config_create_or_edit_variation(NAME_VARIATION "nb_thread" NAME_VARIANT "2")
 arct_config_define_name(NAME "2 threads")
+arct_arccher_thread(NB_THREAD 2)
 arct_arcane_option(ADD "S" VALUE "2")
 arct_config_create_or_edit_end()
 
 
 arct_config_create_or_edit_variation(NAME_VARIATION "nb_thread" NAME_VARIANT "4")
 arct_config_define_name(NAME "4 threads")
+arct_arccher_thread(NB_THREAD 4)
 arct_arcane_option(ADD "S" VALUE "4")
 arct_config_create_or_edit_end()
 

@@ -186,7 +186,7 @@ macro(_arct_internal_arccher_define_mpi_nb_procs nb_mpi)
     string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "{}")
   endif ()
 
-  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "mpi" "${nb_mpi}")
+  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "nb_proc" "${nb_mpi}")
 
   #
 
@@ -239,6 +239,21 @@ macro(_arct_internal_arccher_define_working_dir working_dir)
   endif ()
 
   string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "working_dir" "\"${working_dir}\"")
+
+  #
+
+  set(ARCANET_JSON_PART "${ARCANET_JSON_PART}" PARENT_SCOPE)
+endmacro()
+
+# ----------------------------------------------------------------------------
+
+macro(_arct_internal_arccher_define_nb_thread nb_thread)
+  string(JSON ARCANET_GET ERROR_VARIABLE ARCANET_ERROR GET ${ARCANET_JSON_PART} "arccher")
+  if (NOT ARCANET_ERROR STREQUAL "NOTFOUND")
+    string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "{}")
+  endif ()
+
+  string(JSON ARCANET_JSON_PART SET ${ARCANET_JSON_PART} "arccher" "nb_thread" "${nb_thread}")
 
   #
 

@@ -44,6 +44,10 @@ CmdLine(ITraceMng* tm, Arct* runp)
 String CmdLine::
 getVariable(RunParam2& code_params, CodeExecutor& code_executor, const String& variable_name)
 {
+  if (!code_executor.m_cmdopt.contains(variable_name.localstr())) {
+    ARCCORE_FATAL("{0} not found in cmdopt part", variable_name);
+  }
+
   CmdOpt& cmd_opt = code_executor.m_cmdopt[variable_name.localstr()];
 
   String variable;
