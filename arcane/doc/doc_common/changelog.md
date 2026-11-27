@@ -9,7 +9,7 @@ are listed here: \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Versions 4.2.3+ (October 2026)
+## Arcane Version 4.2.4 (November 27, 2026)
 
 ### New Features/Improvements
 
@@ -71,6 +71,22 @@ ___
 - Adds support for polyhedrons in VTKHDF output (\pr{2830}).
 - Enables HYPRE with mixed and big integer configurations in Alien
   (\pr{2829}, \pr{2831}).
+- Supports particles without cells in mesh load balancing (\pr{2838}).
+- Improves mesh initialization by leaving unused connectivities unallocated,
+  building initial item-family arrays in bulk, and distributing face numbering
+  across ranks (\pr{2835}, \pr{2851}, \pr{2854}, \pr{2855}).
+- Improves parallel block-structured Alien solvers, including CprAMG on GPUs,
+  block-size support and AMG scaling (\pr{2840}, \pr{2844}, \pr{2845},
+  \pr{2847}, \pr{2856}).
+- Adds multi-GPU Alien solver support and validation (\pr{2856}).
+
+### Accelerator API
+
+- Adds \arcaneacc{RunQueue::deviceId()} to retrieve the device associated with a
+  run queue (\pr{2859}).
+- Extends accelerator atomic operations to additional arithmetic types,
+  including `long`, `unsigned long`, `long long` and `unsigned long long`
+  (\pr{2861}).
 
 ### Changes
 
@@ -85,6 +101,9 @@ ___
   configuration (\pr{2726}, \pr{2750}).
 - Moves `Directory` from Arcane to Arccore (\pr{2770}).
 - Removes the Glib thread implementation (\pr{2820}).
+- Removes the dependency of \arcane{ItemTypeInfo} on \arcane{ItemTypeMng},
+  encapsulates its fields, and supports temporary polyhedron type information
+  (\pr{2841}, \pr{2842}).
 
 ### Corrections
 
@@ -98,6 +117,11 @@ ___
   \pr{2789}, \pr{2815}).
 - Fixes potential deadlocks and memory leaks in stack tracing and property-tree
   handling (\pr{2818}, \pr{2819}).
+- Fixes parallel block-structured Alien solver and SYCL issues, including
+  FILU0 and compilation corrections (\pr{2850}, \pr{2852},
+  \pr{2858}).
+- Fixes compilation with CUDA 12.4 and a potential buffer-overflow warning in
+  the TotalView helper (\pr{2839}, \pr{2862}).
 
 ### Internal
 
@@ -111,6 +135,9 @@ ___
 - Improves mesh statistics construction and adds a service to customize mesh
   building (\pr{2824}, \pr{2825}).
 - Adds a HLLC test with an obstacle (\pr{2828}).
+- Reduces verbosity when computing variable synchronizers (\pr{2853}).
+- Adds a native dynamic-library loader and tests its use (\pr{2863}).
+- Updates trace-manager initialization and error-file handling (\pr{2857}).
 
 ### Compilation and Continuous Integration (CI)
 
@@ -132,6 +159,11 @@ ___
 - Adds a missing header for accelerator kernel launching (\pr{2771}).
 - Replaces TextTransform with Scriban for generating geometry classes
   (\pr{2836}).
+- Builds and installs ArcaNet with Arcane, updates the ARCT CMake integration,
+  and adds ArcaNet documentation (\pr{2843}, \pr{2848}).
+- Adds the AVX FMA compiler flag for AVX-512 builds (\pr{2849}).
+- Updates Alien's AdaptiveCpp integration (\pr{2844}).
+- Updates the application build system to use .NET 9.0.320 (\pr{2860}).
 
 ___
 
