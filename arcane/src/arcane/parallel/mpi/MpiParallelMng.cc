@@ -380,7 +380,7 @@ class MpiParallelMng::Impl
 
   void initializeWindowCreator() override
   {
-    m_parallel_mng->traceMng()->info() << "initializeWindowCreator() MPI";
+    m_parallel_mng->traceMng()->debug() << "initializeWindowCreator() MPI";
     m_parallel_mng->adapter()->initializeWindowCreator(m_parallel_mng->machineCommunicator());
   }
 
